@@ -39,7 +39,6 @@ namespace
         , std::list<we::type::memory_transfer>()
         )
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -88,7 +87,6 @@ namespace
       ( we::type::transition_t ( "net"
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )

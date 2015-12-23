@@ -10,15 +10,15 @@
 
 namespace
 {
-  class fake_drts_worker_waiting_for_cancel
-    : public utils::fake_drts_worker_notifying_module_call_submission
+  class fake_drts_worker_waiting_for_cancel final
+    : public utils::no_thread::fake_drts_worker_notifying_module_call_submission
   {
   public:
     fake_drts_worker_waiting_for_cancel
         ( std::function<void (std::string)> announce_job
         , const utils::agent& master_agent
         )
-      : utils::fake_drts_worker_notifying_module_call_submission
+      : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master_agent)
       , _pending_cancel_requests (0)
     {}
@@ -49,6 +49,7 @@ namespace
     boost::mutex _mtx_cancel;
     boost::condition_variable_any _cond_cancel;
     std::size_t _pending_cancel_requests;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 }
 

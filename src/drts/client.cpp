@@ -15,8 +15,6 @@
 
 #include <we/type/activity.hpp>
 #include <we/type/copy.hpp>
-//! \todo eliminate this include (that completes type transition_t::data)
-#include <we/type/net.hpp>
 
 #include <boost/format.hpp>
 

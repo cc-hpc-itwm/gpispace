@@ -15,8 +15,6 @@
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
-#include <fhgcom/peer.hpp>
-
 #include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 

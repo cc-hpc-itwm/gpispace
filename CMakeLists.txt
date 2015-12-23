@@ -5,7 +5,6 @@ cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
 set (CMAKE_MODULE_PATH
   "${CMAKE_MODULE_PATH}"
   "${CMAKE_SOURCE_DIR}/modules"
-  "${CMAKE_SOURCE_DIR}/cmake/modules"
   "$ENV{CMAKE_MODULE_PATH}"
 )
 
@@ -97,7 +96,6 @@ find_package (LibRT REQUIRED QUIET)
 find_package (LibReadline REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 find_package (Threads REQUIRED QUIET)
-find_package (libssh2 QUIET REQUIRED)
 
 include (${QT_USE_FILE})
 include (CTest)

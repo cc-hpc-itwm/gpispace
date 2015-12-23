@@ -21,30 +21,11 @@ namespace we
 {
   namespace
   {
-    expr::eval::context input (we::type::activity_t const& activity)
-    {
-      expr::eval::context context;
-
-      for ( std::pair< pnet::type::value::value_type
-                     , we::port_id_type
-                     > const& token_on_port
-          : activity.input()
-          )
-      {
-        context.bind_ref
-          ( activity.transition().ports_input().at (token_on_port.second).name()
-          , token_on_port.first
-          );
-      }
-
-      return context;
-    }
-
     unsigned long evaluate_size_or_die ( we::type::activity_t const& activity
                                        , std::string const& expression
                                        )
     {
-      expr::eval::context context (input (activity));
+      expr::eval::context context (activity.evaluation_context());
 
       return boost::get<unsigned long>
         (expr::parse::parser (expression).eval_all (context));
@@ -221,15 +202,17 @@ namespace we
         }
       }
 
+      expr::eval::context const input {act.evaluation_context()};
+
       transfer ( get_global_data, virtual_memory_api, shared_memory
-               , memory_buffer, module_call.gets (input (act))
+               , memory_buffer, module_call.gets (input)
                );
 
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
-          (module_call.puts_evaluated_before_call (input (act)));
+          (module_call.puts_evaluated_before_call (input));
 
-      expr::eval::context out (input (act));
+      expr::eval::context out (input);
 
       {
         drts::worker::redirect_output const clog (context, fhg::log::TRACE, std::clog);
@@ -237,7 +220,7 @@ namespace we
         drts::worker::redirect_output const cerr (context, fhg::log::WARN, std::cerr);
 
         loader[module_call.module()].call
-          (module_call.function(), context, input (act), out, pointers);
+          (module_call.function(), context, input, out, pointers);
       }
 
       for ( std::pair<we::port_id_type, we::type::port_t> const& port_by_id

@@ -1,0 +1,23 @@
+_scriptdir=$(readlink -f ${BASH_SOURCE}); source "${_scriptdir%/*}"/common
+
+external=/home/projects/sdpa/external
+
+export BOOST_ROOT=${external}/boost/1.59.0
+export LIBREADLINE_HOME=${external}/readline/6.3
+export LIBTERMCAP_HOME=${external}/termcap/1.3.1
+path chrpath/0.16/bin
+path cmake/3.4.1/bin
+path gcc/4.9.3/bin
+path git/2.6.4/bin
+path qt/4.8.6/bin
+pkg_config_path GPI2/1.2.0/lib64/pkgconfig
+pkg_config_path hwloc/1.11.1/lib/pkgconfig
+pkg_config_path libssh2/1.6.0/lib/pkgconfig
+pkg_config_path openssl/1.0.2e/lib/pkgconfig
+
+export CC=$(which gcc)
+export CXX=$(which c++)
+ld_library_path gcc/4.9.3/lib64
+
+gspc_testing_rif_strategy=ssh
+gspc_parallel_test_and_build_jobs=$(grep ^processor /proc/cpuinfo | wc -l)

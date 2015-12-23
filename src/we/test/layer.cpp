@@ -19,9 +19,11 @@
 #include <util-generic/testing/random_string.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/range/algorithm.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/range/algorithm.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <functional>
 #include <list>
@@ -121,6 +123,7 @@ struct daemon
     while ( _in_progress_jobs_rts
           + _in_progress_jobs_layer
           + _in_progress_replies
+          + _in_progress_cancels.size()
           > 0
           )
     {
@@ -150,6 +153,20 @@ struct daemon
     --_in_progress_ ## COUNTER;                                 \
   }                                                             \
   _in_progress_condition.notify_one()
+
+  std::unordered_set<we::layer::id_type> _in_progress_cancels;
+
+#define ADD_CANCEL_IN_PROGRESS(ID)                              \
+  {                                                             \
+    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    _in_progress_cancels.emplace (ID);                          \
+  }
+
+#define REMOVE_CANCEL_IN_PROGRESS(ID)                           \
+  {                                                             \
+    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    _in_progress_cancels.erase (ID);                            \
+  }
 
   DECLARE_EXPECT_CLASS ( submit
                        , we::layer::id_type* id
@@ -189,7 +206,7 @@ struct daemon
 
   void cancel (we::layer::id_type id)
   {
-    INC_IN_PROGRESS (replies);
+    ADD_CANCEL_IN_PROGRESS (id);
 
     std::list<expect_cancel*>::iterator const e
       ( boost::find_if ( _to_cancel
@@ -230,6 +247,7 @@ struct daemon
     _to_finished.erase (e);
 
     DEC_IN_PROGRESS (jobs_layer);
+    REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
   DECLARE_EXPECT_CLASS ( failed
@@ -256,6 +274,7 @@ struct daemon
     _to_failed.erase (e);
 
     DEC_IN_PROGRESS (jobs_layer);
+    REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
   DECLARE_EXPECT_CLASS ( canceled
@@ -279,7 +298,7 @@ struct daemon
     _to_canceled.erase (e);
 
     DEC_IN_PROGRESS (jobs_layer);
-    DEC_IN_PROGRESS (replies);
+    REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
   DECLARE_EXPECT_CLASS ( discover
@@ -403,13 +422,14 @@ struct daemon
                    )
   {
     DEC_IN_PROGRESS (jobs_rts);
+    REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.finished (id, act);
   }
 
   void do_cancel (we::layer::id_type id)
   {
-    INC_IN_PROGRESS (replies);
+    ADD_CANCEL_IN_PROGRESS (id);
 
     layer.cancel (id);
   }
@@ -417,14 +437,15 @@ struct daemon
   void do_failed (we::layer::id_type id, std::string message)
   {
     DEC_IN_PROGRESS (jobs_rts);
+    REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.failed (id, message);
   }
 
   void do_canceled (we::layer::id_type id)
   {
-    DEC_IN_PROGRESS (replies);
     DEC_IN_PROGRESS (jobs_rts);
+    REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.canceled (id);
   }
@@ -476,21 +497,21 @@ struct daemon
   }
 
   std::mt19937 _random_engine;
-  we::layer layer;
   mutable boost::mutex _in_progress_mutex;
+  we::layer layer;
   boost::condition_variable_any _in_progress_condition;
   unsigned long _in_progress_jobs_rts;
   unsigned long _in_progress_jobs_layer;
   unsigned long _in_progress_replies;
 };
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 {
   we::type::transition_t transition
     ( "expression"
     , we::type::expression_t ("${out} := ${in} + 1L")
     , boost::none
-    , true
     , we::type::property::type()
     , we::priority_type()
     );
@@ -529,6 +550,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
   we::type::transition_t transition
@@ -541,7 +563,6 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
       , std::list<we::type::memory_transfer>()
       )
     , boost::none
-    , true
     , we::type::property::type()
     , we::priority_type()
     );
@@ -590,6 +611,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_one_child, daemon)
 {
@@ -617,6 +639,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_two_childs, daemon)
 {
@@ -653,6 +676,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (two_sequential_jobs_shall_be_properly_handled, daemon)
 {
@@ -699,6 +723,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (two_interleaving_jobs_shall_be_properly_handled, daemon)
 {
@@ -747,6 +772,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
@@ -780,47 +806,99 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_FIXTURE_TEST_CASE
-  (canceled_shall_be_called_after_cancel_two_childs, daemon)
+namespace
 {
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (2);
-
-  we::layer::id_type const id (generate_id());
-
-  we::layer::id_type child_id_a;
-  we::layer::id_type child_id_b;
-
+  struct cancel_test_daemon : public daemon
   {
-    expect_submit const _a (this, &child_id_a, activity_child);
-    expect_submit const _b (this, &child_id_b, activity_child);
+    enum method
+    {
+      canceled
+    , failed
+    , finished
+    };
+    static std::array<method, 3> methods;
 
-    do_submit (id, activity_input);
-  }
+    void test_routine (method first_child, method second_child)
+    {
+      we::type::activity_t activity_input;
+      we::type::activity_t activity_output;
+      we::type::activity_t activity_child;
+      we::type::activity_t activity_result;
+      std::tie (activity_input, activity_output, activity_child, activity_result)
+        = activity_with_child (2);
 
-  {
-    expect_cancel const _a (this, child_id_a);
-    expect_cancel const _b (this, child_id_b);
+      we::layer::id_type const id (generate_id());
 
-    do_cancel (id);
-  }
+      we::layer::id_type child_id_a;
+      we::layer::id_type child_id_b;
 
-  do_canceled (child_id_a);
+      {
+        expect_submit const _a (this, &child_id_a, activity_child);
+        expect_submit const _b (this, &child_id_b, activity_child);
 
-  {
-    expect_canceled const _ (this, id);
+        do_submit (id, activity_input);
+      }
 
-    //! \todo There is an uncheckable(?) race here: rts_canceled may
-    //! be called before do_canceled (second child)!
+      {
+        expect_cancel const _a (this, child_id_a);
+        expect_cancel const _b (this, child_id_b);
 
-    do_canceled (child_id_b);
-  }
+        do_cancel (id);
+      }
+
+      auto&& do_method
+        ( [&] (we::layer::id_type const& id, method how)
+          {
+            switch (how)
+            {
+            case canceled: do_canceled (id); break;
+            case failed: do_failed (id, "interleaved with cancel"); break;
+            case finished: do_finished (id, activity_result); break;
+            }
+          }
+        );
+
+      do_method (child_id_a, first_child);
+
+      {
+        expect_canceled const _ (this, id);
+
+        //! \todo There is an uncheckable(?) race here: rts_canceled may
+        //! be called before do_canceled (second child)!
+
+
+        do_method (child_id_b, second_child);
+      }
+    }
+  };
+  std::array<cancel_test_daemon::method, 3> cancel_test_daemon::methods
+    { { cancel_test_daemon::canceled
+      , cancel_test_daemon::failed
+      , cancel_test_daemon::finished
+      }
+    };
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (canceled_shall_be_called_after_cancel_two_childs, cancel_test_daemon)
+{
+  test_routine (canceled, canceled);
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_DATA_TEST_CASE
+  ( any_terminiation_during_canceling_is_equivalent_to_canceled
+  , boost::unit_test::data::make (cancel_test_daemon::methods)
+  * boost::unit_test::data::make (cancel_test_daemon::methods)
+  , first_child
+  , second_child
+  )
+{
+  cancel_test_daemon().test_routine (first_child, second_child);
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   ( canceled_shall_be_called_after_cancel_two_childs_with_one_child_finished
   , daemon
@@ -863,6 +941,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
 {
   we::type::activity_t activity_input;
@@ -881,7 +960,8 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
     do_submit (id, activity_input);
   }
 
-  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+  const std::string message
+    (fhg::util::testing::random_string_without_zero());
 
   {
     expect_failed const _ (this, id, message);
@@ -890,6 +970,7 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
 {
@@ -912,7 +993,8 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, activity_input);
   }
 
-  const std::string message (rand() % 0xFE + 1, rand() % 0xFE + 1);
+  const std::string message
+    (fhg::util::testing::random_string_without_zero());
 
   {
     expect_cancel const _ (this, child_id_b);
@@ -930,6 +1012,53 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (sibling_jobs_shall_be_canceled_on_child_failure_and_any_termination_is_okay, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  std::tie (activity_input, activity_output, activity_child, activity_result)
+    = activity_with_child (3);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+  we::layer::id_type child_id_c;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+    expect_submit const _c (this, &child_id_c, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  const std::string message
+    (fhg::util::testing::random_string_without_zero());
+
+  {
+    expect_cancel const _b (this, child_id_b);
+    expect_cancel const _c (this, child_id_c);
+
+    do_failed (child_id_a, message);
+  }
+
+  {
+    expect_failed const _ (this, id, message);
+
+    //! \todo There is an uncheckable(?) race here: rts_failed may
+    //! be called before do_* (second and third child)!
+
+    do_finished (child_id_b, activity_result);
+    do_failed (child_id_c, message);
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_N_childs, daemon)
 {
@@ -969,6 +1098,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (discovered_shall_be_called_after_discover_one_child, daemon)
 {
@@ -1017,6 +1147,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (discovered_shall_be_called_after_discover_two_childs, daemon)
 {
@@ -1083,6 +1214,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
 {
   we::type::activity_t activity_input;
@@ -1170,7 +1302,6 @@ namespace
         , std::list<we::type::memory_transfer>()
         )
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -1196,7 +1327,6 @@ namespace
       , we::type::expression_t
           ("${response} := ${request.value} + 1L; ${out} := ${in};")
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -1267,7 +1397,6 @@ namespace
       ( we::type::transition_t ( "net"
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )
@@ -1310,6 +1439,7 @@ namespace
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
 {
   we::type::activity_t activity_input;
@@ -1394,6 +1524,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
 {
   we::type::activity_t activity_input;
@@ -1457,7 +1588,6 @@ namespace
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , true
       , we::type::property::type()
       , we::priority_type()
       );
@@ -1522,7 +1652,6 @@ namespace
       ( we::type::transition_t ( fhg::util::testing::random_string()
                                , net
                                , boost::none
-                               , true
                                , we::type::property::type()
                                , we::priority_type()
                                )
@@ -1606,6 +1735,7 @@ namespace
   };
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
   wfe_and_counter_of_submitted_requirements helper (30);

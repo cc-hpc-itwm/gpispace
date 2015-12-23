@@ -4,8 +4,6 @@
 
 #include <we/type/transition.hpp>
 
-#include <we/context.hpp>
-
 #include <we/type/activity.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
@@ -177,50 +175,6 @@ namespace we
         return _transition;
       }
 
-      namespace
-      {
-        class executor : public boost::static_visitor<void>
-        {
-        private:
-          type::activity_t& _activity;
-          context* _ctxt;
-
-        public:
-          executor (type::activity_t& activity, context* ctxt)
-            : _activity (activity)
-            , _ctxt (ctxt)
-          {}
-
-          void operator () (we::type::net_type const& net) const
-          {
-            if (_activity.transition().is_internal())
-              {
-                _ctxt->handle_internally (_activity, net);
-              }
-            else
-              {
-                _ctxt->handle_externally (_activity, net);
-              }
-          }
-
-          void operator() (we::type::module_call_t const& mod) const
-          {
-            _ctxt->handle_externally (_activity, mod);
-          }
-
-          void operator() (we::type::expression_t const&) const
-          {
-            throw std::logic_error ("executor (expression)");
-          }
-        };
-      }
-
-      void activity_t::execute (context* ctxt)
-      {
-        boost::apply_visitor
-          (executor (*this, ctxt), transition().data());
-      }
-
       const activity_t::input_t& activity_t::input() const
       {
         return _input;
@@ -268,6 +222,25 @@ namespace we
         activity_t::transition_id() const
       {
         return _transition_id;
+      }
+
+      expr::eval::context activity_t::evaluation_context() const
+      {
+        expr::eval::context context;
+
+        for ( std::pair< pnet::type::value::value_type
+                       , we::port_id_type
+                       > const& token_on_port
+            : _input
+            )
+        {
+          context.bind_ref
+            ( transition().ports_input().at (token_on_port.second).name()
+            , token_on_port.first
+            );
+        }
+
+        return context;
       }
     }
 }

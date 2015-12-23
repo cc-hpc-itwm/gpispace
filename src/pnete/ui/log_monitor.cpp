@@ -2,7 +2,6 @@
 
 #include <util-qt/connect.hpp>
 
-#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/activity.hpp>
 
 #include <fhglog/appender/call.hpp>
@@ -313,6 +312,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   _log_table->setWordWrap (false);
   _log_table->verticalHeader()->setVisible (false);
   _log_table->horizontalHeader()->setStretchLastSection (true);
+  _log_table->verticalHeader()->setResizeMode
+    (QHeaderView::ResizeToContents);
 
   QGroupBox* filter_level_box (new QGroupBox (tr ("Filter"), this));
 

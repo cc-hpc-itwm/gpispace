@@ -113,7 +113,6 @@ namespace xml
         ACCESS (warning_port_not_connected)
         ACCESS (warning_unexpected_element)
         ACCESS (warning_overwrite_function_name_trans)
-        ACCESS (warning_overwrite_function_internal_trans)
         ACCESS (warning_property_overwritten)
         ACCESS (warning_type_map_duplicate)
         ACCESS (warning_type_get_duplicate)
@@ -150,7 +149,6 @@ namespace xml
         WARN (port_not_connected)
         WARN (unexpected_element)
         WARN (overwrite_function_name_trans)
-        WARN (overwrite_function_internal_trans)
         WARN (property_overwritten)
         WARN (type_map_duplicate)
         WARN (type_get_duplicate)
@@ -257,7 +255,6 @@ namespace xml
         bool _warning_port_not_connected;
         bool _warning_unexpected_element;
         bool _warning_overwrite_function_name_trans;
-        bool _warning_overwrite_function_internal_trans;
         bool _warning_property_overwritten;
         bool _warning_type_map_duplicate;
         bool _warning_type_get_duplicate;
@@ -308,7 +305,6 @@ namespace xml
         std::string _option_Wport_not_connected;
         std::string _option_Wunexpected_element;
         std::string _option_Woverwrite_function_name_trans;
-        std::string _option_Woverwrite_function_internal_trans;
         std::string _option_Wproperty_overwritten;
         std::string _option_Wtype_map_duplicate;
         std::string _option_Wtype_get_duplicate;

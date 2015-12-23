@@ -1576,6 +1576,86 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
   }
 }
 
+BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
+                        , fixture_scheduler_and_requirements
+                        )
+{
+  _worker_manager.addWorker ( "worker_0"
+                            , {sdpa::Capability("A", "worker_0")}
+                            , random_ulong()
+                            , false
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
+
+  const sdpa::job_id_t job_0 ("job_0");
+  const sdpa::job_id_t job_1 ("job_1");
+  const sdpa::job_id_t job_2 ("job_2");
+
+  add_job (job_0, require ("A"));
+  _scheduler.enqueueJob (job_0);
+
+  add_job (job_1, require ("A"));
+  _scheduler.enqueueJob (job_1);
+
+  add_job (job_2, require ("A"));
+  _scheduler.enqueueJob (job_2);
+
+  {
+    sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+    BOOST_REQUIRE (!assignment.empty());
+    BOOST_REQUIRE (assignment.count (job_0));
+    BOOST_REQUIRE (assignment.count (job_1));
+    BOOST_REQUIRE (assignment.count (job_2));
+
+    // the worker 0 is submitted one of the assigned jobs
+    std::set<sdpa::job_id_t> jobs_started (_scheduler.start_pending_jobs (serve_job));
+
+    BOOST_REQUIRE ( jobs_started.count (job_0)
+                 || jobs_started.count (job_1)
+                 || jobs_started.count (job_2)
+                  );
+  }
+
+  _worker_manager.addWorker ( "worker_1"
+                            , { sdpa::Capability("A", "worker_1")}
+                            , random_ulong()
+                            , false
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
+
+  {
+    sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (_scheduler.assignJobsToWorkers());
+
+    BOOST_REQUIRE (!assignment.empty());
+
+    BOOST_REQUIRE (assignment.count (job_0));
+    BOOST_REQUIRE (assignment.count (job_1));
+    BOOST_REQUIRE (assignment.count (job_2));
+
+    BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_0"})
+                  || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_0"})
+                  || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_0"})
+                  );
+
+    // the worker 1 is assigned a job that was stolen from the worker 0
+    BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_1"})
+                  || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_1"})
+                  || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_1"})
+                  );
+
+    std::set<sdpa::job_id_t> jobs_started (_scheduler.start_pending_jobs (serve_job));
+
+    // only the worker 1 should get a job started, as worker 0 is still reserved
+    // (until the submitted job finishes)
+    BOOST_REQUIRE_EQUAL (jobs_started.size(), 1);
+  }
+}
+
 struct fixture_add_new_workers
 {
   fixture_add_new_workers()

@@ -43,7 +43,6 @@ namespace
     static std::string const modcall ("yellow");
     static std::string const expression ("white");
     static std::string const node ("white");
-    static std::string const subnet_internal ("grey");
   }
 
   namespace style
@@ -186,7 +185,6 @@ namespace
     bool show_token;
     bool show_signature;
     bool show_priority;
-    bool show_intext;
     bool show_virtual;
     bool show_tunnel_connection;
 
@@ -209,7 +207,6 @@ namespace
       , show_token (true)
       , show_signature (true)
       , show_priority (false)
-      , show_intext (false)
       , show_virtual (true)
       , show_tunnel_connection (true)
     {}
@@ -416,11 +413,6 @@ namespace
 
     std::ostringstream intext;
 
-    if (opts.show_intext)
-    {
-      intext << "|" << (t.is_internal() ? "internal" : "external");
-    }
-
     std::ostringstream cond;
 
     if (t.condition())
@@ -546,7 +538,6 @@ namespace
     s << fhg::util::deeper (indent)
       << bgcolor ( t.expression() ? color::expression
                  : t.module_call() ? color::modcall
-                 : t.is_internal() ? color::subnet_internal
                  : color::external
                  )
       << indent
@@ -610,10 +601,6 @@ try
     ( "priority"
     , BOOLVAL (options.show_priority)
     , "whether or not to show the transition priority"
-    )
-    ( "intext"
-    , BOOLVAL (options.show_intext)
-    , "whether or not to show the transition internal/external flag"
     )
     ( "virtual"
     , BOOLVAL (options.show_virtual)

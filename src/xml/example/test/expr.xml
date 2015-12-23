@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<defun name="test" internal="false">
+<defun name="test">
 <in name="a" type="long"/>
 <out name="b" type="long"/>
 <out name="c" type="long"/>

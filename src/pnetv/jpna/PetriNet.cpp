@@ -2,6 +2,8 @@
 
 #include <memory>
 
+#include <util-generic/cxx14/make_unique.hpp>
+
 namespace jpna {
 
 PetriNet::~PetriNet() {
@@ -15,8 +17,9 @@ PetriNet::~PetriNet() {
                                          , we::priority_type priority
                                          )
   {
-    std::auto_ptr<Transition> result
-      (new Transition ( transitions_.size()
+    std::unique_ptr<Transition> result
+      (fhg::util::cxx14::make_unique<Transition>
+                      ( transitions_.size()
                       , name
                       , condition_always_true
                       , priority

@@ -8,15 +8,10 @@
     <cinclude href="boost/asio/connect.hpp"/>
     <cinclude href="boost/asio/io_service.hpp"/>
     <cinclude href="boost/asio/ip/tcp.hpp"/>
-    <cinclude href="condition_variable"/>
-    <cinclude href="mutex"/>
+    <cinclude href="thread"/>
+    <cinclude href="chrono"/>
     <cxx flag="--std=c++11"/>
     <code><![CDATA[
-    std::condition_variable cancel_received;
-
-    _pnetc_context->set_module_call_do_cancel
-      (std::bind (&std::condition_variable::notify_all, &cancel_received));
-
     boost::asio::io_service io_service;
     boost::asio::ip::tcp::socket socket (io_service);
 
@@ -30,11 +25,29 @@
                 )
       );
 
-    std::mutex mutex;
-    std::unique_lock<std::mutex> lock (mutex);
-    cancel_received.wait (lock);
+    std::this_thread::sleep_for (std::chrono::seconds (2));
 
-    return we::type::literal::control();
+    try
+    {
+      _pnetc_context->execute_and_kill_on_cancel
+        ( []()
+          {
+            while (1) {}
+          }
+        )
+        ;
+    }
+    catch (drts::worker::context::cancelled const&)
+    {
+      return we::type::literal::control();
+    }
+    catch (...)
+    {
+      // fallthrough
+    }
+
+    //! \note: continue to work in order to let the test fail with a timeout
+    while (1) {};
     ]]></code>
   </module>
 </defun>

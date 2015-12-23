@@ -1,0 +1,24 @@
+path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${PATH:-}:" != *":${path}:"* ]]; then
+    PATH="${path}${PATH:+":$PATH"}"
+  fi
+}
+export PATH
+pkg_config_path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${PKG_CONFIG_PATH:-}:" != *":${path}:"* ]]; then
+    PKG_CONFIG_PATH="${path}${PKG_CONFIG_PATH:+":$PKG_CONFIG_PATH"}"
+  fi
+}
+export PKG_CONFIG_PATH
+ld_library_path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${LD_LIBRARY_PATH:-}:" != *":${path}:"* ]]; then
+    LD_LIBRARY_PATH="${path}${LD_LIBRARY_PATH:+":$LD_LIBRARY_PATH"}"
+  fi
+}
+export LD_LIBRARY_PATH

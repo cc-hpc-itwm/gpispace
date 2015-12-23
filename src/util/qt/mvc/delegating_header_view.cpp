@@ -247,6 +247,11 @@ namespace fhg
           }
         }
 
+        boost::optional<int> delegating_header_view::current_editor() const
+        {
+          return _editor.section;
+        }
+
         void delegating_header_view::set_editor_geometry()
         {
           if (_editor.section && _editor.widget && _editor.close_button)

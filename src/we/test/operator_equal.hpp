@@ -100,7 +100,6 @@ namespace we
     {
       return lhs.name() == rhs.name()
         && lhs.data() == rhs.data()
-        && lhs.is_internal() == rhs.is_internal()
         && lhs.condition() == rhs.condition()
         && lhs.ports_input() == rhs.ports_input()
         && lhs.ports_output() == rhs.ports_output()

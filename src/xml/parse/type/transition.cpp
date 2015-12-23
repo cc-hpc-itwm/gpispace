@@ -37,7 +37,6 @@ namespace xml
         , const std::string& name
         , const boost::optional<we::priority_type>& priority_
         , const boost::optional<bool>& finline_
-        , const boost::optional<bool>& internal_
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
@@ -45,7 +44,6 @@ namespace xml
         , _name (name)
         , priority (priority_)
         , finline (finline_)
-        , internal (internal_)
       {
         _id_mapper->put (_id, *this);
       }
@@ -111,7 +109,6 @@ namespace xml
         , const requirements_type& requirements_
         , const boost::optional<we::priority_type>& priority_
         , const boost::optional<bool>& finline_
-        , const boost::optional<bool>& internal_
         , const we::type::property::type& properties
         )
         : with_position_of_definition (pod)
@@ -130,7 +127,6 @@ namespace xml
         , requirements (requirements_)
         , priority (priority_)
         , finline (finline_)
-        , internal (internal_)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -685,7 +681,6 @@ namespace xml
           , requirements
           , priority
           , finline
-          , internal
           , _properties
           ).make_reference_id();
       }
@@ -764,13 +759,6 @@ namespace xml
                      );
         }
 
-        if (fun.internal && trans.internal && *trans.internal != *fun.internal)
-        {
-          state.warn ( warning::overwrite_function_internal_trans
-                       (id_transition, id_function)
-                     );
-        }
-
         if (  not trans.priority // WORK HERE: make it work with prio
            && fun.is_net()
            && (
@@ -839,7 +827,6 @@ namespace xml
               ( prefix + "IN"
               , we::type::expression_t()
               , we::type::expression_t (cond_in, parsed_condition_in)
-              , true
               , properties
               , we::priority_type()
               );
@@ -915,7 +902,6 @@ namespace xml
               ( prefix + "OUT"
               , we::type::expression_t()
               , boost::none
-              , true
               , properties
               , we::priority_type()
               );
@@ -1028,7 +1014,6 @@ namespace xml
                                , state
                                , port_id_in
                                , port_id_out
-                               , trans.internal
                                , trans.conditions()
                                , trans.properties()
                                , trans.requirements
@@ -1132,7 +1117,6 @@ namespace xml
           s.attr ("name", t.name());
           s.attr ("priority", t.priority);
           s.attr ("inline", t.finline);
-          s.attr ("internal", t.internal);
 
           ::we::type::property::dump::dump (s, t.properties());
           ::xml::parse::type::dump::dump (s, t.requirements);

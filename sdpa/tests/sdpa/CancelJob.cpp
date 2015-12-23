@@ -14,8 +14,8 @@
 
 namespace
 {
-  class fake_drts_worker_notifying_submission_and_cancel
-    : public utils::fake_drts_worker_notifying_module_call_submission
+  class fake_drts_worker_notifying_submission_and_cancel final
+    : public utils::no_thread::fake_drts_worker_notifying_module_call_submission
   {
   public:
     fake_drts_worker_notifying_submission_and_cancel
@@ -23,7 +23,7 @@ namespace
         , std::function<void (std::string)> announce_cancel
         , const utils::agent& master_agent
         )
-      : utils::fake_drts_worker_notifying_module_call_submission
+      : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master_agent)
       , _announce_cancel (announce_cancel)
     {}
@@ -56,6 +56,7 @@ namespace
 
   private:
     std::function<void (std::string)> _announce_cancel;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 }
 

@@ -26,7 +26,6 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
     ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
-    , bool()
     , we::type::property::type()
     , we::priority_type()
     );
@@ -51,7 +50,6 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
-    , bool()
     , properties
     , we::priority_type()
     );
@@ -76,7 +74,6 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_long)
     ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
-    , bool()
     , properties
     , we::priority_type()
     );
@@ -100,7 +97,6 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
     ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
-    , bool()
     , properties
     , we::priority_type()
     );
@@ -142,7 +138,6 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
     ( fhg::util::testing::random_string()
     , we::type::expression_t()
     , boost::none
-    , bool()
     , properties
     , we::priority_type()
     );

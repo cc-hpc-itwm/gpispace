@@ -8,7 +8,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    class Agent : public GenericDaemon
+    class Agent final : public GenericDaemon
     {
     public:
       Agent ( const std::string& name
@@ -35,6 +35,10 @@ namespace sdpa
       {
         throw std::runtime_error("The agent should not call handleDeleteJobEvent!");
       }
+
+    private:
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_handler_thread;
     };
   }
 }

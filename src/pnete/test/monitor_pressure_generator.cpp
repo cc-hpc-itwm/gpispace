@@ -26,7 +26,6 @@ struct activity
     , _act ( we::type::transition_t ( "activity-" + _id
                                     , we::type::expression_t()
                                     , boost::none
-                                    , true
                                     , we::type::property::type()
                                     , we::priority_type()
                                     )
