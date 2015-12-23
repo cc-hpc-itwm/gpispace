@@ -29,8 +29,6 @@
 
 #include <gpi-space/pc/type/flags.hpp>
 
-namespace fs = boost::filesystem;
-
 namespace gpi
 {
   namespace pc
@@ -245,7 +243,7 @@ namespace gpi
                                      );
           }
 
-          fs::create_directories (m_path);
+          boost::filesystem::create_directories (m_path);
 
           {
             fhg::util::write_file ( detail::version_path (m_path)
