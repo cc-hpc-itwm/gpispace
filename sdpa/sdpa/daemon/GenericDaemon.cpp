@@ -598,15 +598,13 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  const we::type::schedule_data schedule_data (activity.get_schedule_data());
-
   const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
   addJob ( job_id
          , activity.to_string()
          , boost::none
          , job_requirements_t ( activity.transition().requirements()
-                              , schedule_data
+                              , activity.get_schedule_data()
                               , _virtual_memory_api->transfer_costs (activity)
                               , computational_cost
                               , total_memory_buffer_size (activity)
