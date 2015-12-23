@@ -601,10 +601,6 @@ try
   const we::type::schedule_data schedule_data (activity.get_schedule_data());
 
   const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
-  if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)
-  {
-    throw std::runtime_error ("invalid number of workers required: 0UL");
-  }
 
   addJob ( job_id
          , activity.to_string()
