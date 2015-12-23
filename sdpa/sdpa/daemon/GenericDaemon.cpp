@@ -581,18 +581,6 @@ void GenericDaemon::handleErrorEvent
   }
 }
 
-namespace
-{
-  unsigned long total_memory_buffer_size (const we::type::activity_t& activity)
-  {
-    if (!activity.transition().module_call())
-      return 0;
-
-    return activity.transition().module_call()
-      ->memory_buffer_size_total (activity.evaluation_context());
-  }
-}
-
 void GenericDaemon::submit ( const we::layer::id_type& job_id
                            , const we::type::activity_t& activity
                            )
@@ -607,7 +595,7 @@ try
                               , activity.get_schedule_data()
                               , _virtual_memory_api->transfer_costs (activity)
                               , computational_cost
-                              , total_memory_buffer_size (activity)
+                              , activity.memory_buffer_size_total()
                               )
          );
 

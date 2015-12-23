@@ -80,6 +80,15 @@ namespace we
 
         schedule_data get_schedule_data() const;
 
+        unsigned long memory_buffer_size_total() const
+        {
+          return !_transition.module_call()
+            ? 0UL
+            : _transition.module_call()
+              ->memory_buffer_size_total (evaluation_context())
+            ;
+        }
+
       private:
         friend class boost::serialization::access;
         template<class Archive>
