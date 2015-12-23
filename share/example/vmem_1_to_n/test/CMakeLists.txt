@@ -5,7 +5,6 @@ math (EXPR num_bytes "192 << 20")
 fhg_add_test (test.cpp
   PROJECT share_example_vmem_1_to_n
   BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/.."
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"

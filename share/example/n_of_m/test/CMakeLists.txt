@@ -3,7 +3,6 @@
 fhg_add_test (test.cpp
   PROJECT share_example_n_of_m
   BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../"
        --command "${CMAKE_CURRENT_BINARY_DIR}/demo.bin"

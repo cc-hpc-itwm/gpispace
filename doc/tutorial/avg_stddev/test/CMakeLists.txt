@@ -15,8 +15,7 @@ target_link_libraries (gen.bin
 fhg_add_test (test.cpp
   PROJECT doc_tutorial_avg_stddev
   BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
-                      PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"

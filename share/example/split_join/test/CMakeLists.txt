@@ -8,7 +8,6 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
   fhg_add_test (test.cpp
     PROJECT share_example_${SPLIT_JOIN_MAIN}
     BOOST_UNIT_TEST
-    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
     ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
          --source-directory "${CMAKE_CURRENT_BINARY_DIR}/../"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
@@ -33,7 +32,6 @@ foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})
   fhg_add_test (test.cpp
     PROJECT share_example_${SPLIT_JOIN_MAIN}
     BOOST_UNIT_TEST
-    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
     ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
          --source-directory "${CMAKE_CURRENT_BINARY_DIR}/../"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
