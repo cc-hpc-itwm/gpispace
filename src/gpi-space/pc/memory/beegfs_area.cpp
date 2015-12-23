@@ -9,6 +9,7 @@
 
 #include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/print_exception.hpp>
@@ -51,44 +52,16 @@ namespace gpi
         {
           return p / "lock";
         }
+        namespace
+        {
+          boost::filesystem::path lock_info_path (boost::filesystem::path const& path)
+          {
+            return lock_path (path) / "info";
+          }
+        }
       }
       namespace
       {
-        struct lock_info
-        {
-          std::string hostname;
-          pid_t pid;
-
-          bool operator== (lock_info const& other) const
-          {
-            return std::tie (hostname, pid)
-              == std::tie (other.hostname, other.pid);
-          }
-
-          lock_info()
-            : hostname (fhg::util::hostname())
-            , pid (fhg::util::syscall::getpid())
-          {}
-
-          lock_info (boost::filesystem::path const& path)
-          {
-            std::string const content (fhg::util::read_file (path));
-            std::istringstream iss (content);
-            boost::archive::text_iarchive ia (iss);
-            ia & hostname;
-            ia & pid;
-          }
-          void write (int fd) const
-          {
-            std::ostringstream oss;
-            boost::archive::text_oarchive oa (oss);
-            oa & hostname;
-            oa & pid;
-            std::string const content (oss.str());
-            fhg::util::syscall::write (fd, content.data(), content.size());
-          }
-        };
-
         struct scoped_file
         {
           scoped_file ( boost::filesystem::path const& path
@@ -161,75 +134,36 @@ namespace gpi
       }
 
       beegfs_area_t::lock_file_helper::lock_file_helper
-          (beegfs_area_t* area)
-        : _area (area)
+        (beegfs_area_t& area)
+      try
+        : filesystem_lock_directory (detail::lock_path (area.m_path))
       {
-        lock_info const local_lock_info;
-
-        boost::filesystem::path const lock_file
-          (detail::lock_path (_area->m_path));
-
-        // abort if it exists -> we have it already open?
-        try
-        {
-          _fd = fhg::util::syscall::open
-            ( lock_file.string ().c_str ()
-            , O_CREAT + O_RDWR + O_EXCL
-            , S_IRUSR + S_IWUSR
-            );
-        }
-        catch (...)
-        {
-          // still in use?
-
-          // lock was successful, check who owns/owned it and abort
-          lock_info const existing_lock_info (lock_file);
-
-          if (local_lock_info == existing_lock_info)
-          {
-            throw std::logic_error ("segment already open");
-          }
-
-          if (existing_lock_info.hostname != local_lock_info.hostname)
-          {
-            throw std::runtime_error
-              ( "beegfs segment may still be in use by: host="
-              + existing_lock_info.hostname + " pid="
-              + std::to_string (existing_lock_info.pid)
-              + ", if this is wrong, remove " + lock_file.string()
-              );
-          }
-
-          _fd = fhg::util::syscall::open
-            ( lock_file.string ().c_str ()
-            , O_CREAT + O_RDWR
-            , S_IRUSR + S_IWUSR
-            );
-        }
-
-        if (lockf (_fd, F_TLOCK, 0) < 0)
-        {
-          fhg::util::syscall::close (_fd);
-          throw std::runtime_error ("unable to lock segment");
-        }
-
-        local_lock_info.write (_fd);
-
-        fhg::util::syscall::fdatasync (_fd);
+        std::ostringstream oss;
+        boost::archive::text_oarchive oa (oss);
+        oa & fhg::util::hostname();
+        oa & fhg::util::syscall::getpid();
+        fhg::util::write_file
+          (detail::lock_info_path (area.m_path), oss.str());
       }
-
-      beegfs_area_t::lock_file_helper::~lock_file_helper()
+      catch (...)
       {
-        if (0 != lockf (_fd, F_ULOCK, 0))
-        {
-          LLOG ( WARN
-               , _area->_logger
-               , "could not unlock beegfs area: " << _area->m_path
-               );
-        }
-        ::close (_fd);
+        std::string const content
+          (fhg::util::read_file (detail::lock_info_path (area.m_path)));
+        std::istringstream iss (content);
+        boost::archive::text_iarchive ia (iss);
+        std::string hostname;
+        ia & hostname;
+        pid_t pid;
+        ia & pid;
 
-        boost::filesystem::remove (detail::lock_path (_area->m_path));
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "segment may still be in use by: host=" + hostname
+              + " pid=" + std::to_string (pid)
+              + ", if this is wrong, remove "
+              + static_cast<boost::filesystem::path const&> (*this).string()
+              )
+          );
       }
 
       void beegfs_area_t::open()
@@ -295,7 +229,8 @@ namespace gpi
 
         if (get_owner())
         {
-          _lock_file = lock_file_helper (this);
+          _lock_file
+            = fhg::util::cxx14::make_unique<lock_file_helper> (*this);
         }
         FHG_UTIL_FINALLY ([&] { if (!succeeded) { _lock_file.reset(); }});
 
