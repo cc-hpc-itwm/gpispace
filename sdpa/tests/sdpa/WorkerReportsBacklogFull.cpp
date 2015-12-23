@@ -25,8 +25,7 @@ namespace
     virtual void handleSubmitJobEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
     {
-      const std::string name
-        (we::type::activity_t (e->description()).transition().name());
+      const std::string name (e->activity().transition().name());
 
       add_job (name, *e->job_id(), source);
       announce_job (name);

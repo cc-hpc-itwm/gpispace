@@ -283,7 +283,7 @@ void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_
       for (const worker_id_t& worker_id : workers)
       {
         child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->description(), workers);
+          .submit_job (ptrJob->id(), ptrJob->activity(), workers);
       }
   }
 }
@@ -295,7 +295,7 @@ std::string GenericDaemon::gen_id()
 }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
-                               , const we::type::activity_t desc
+                               , const we::type::activity_t activity
                                , boost::optional<master_info_t::iterator> owner
                                )
     {
@@ -305,13 +305,13 @@ std::string GenericDaemon::gen_id()
 
       Job* pJob = new Job
         ( job_id
-        , desc
+        , activity
         , opaque_job_master_t (static_cast<const void*> (&owner))
-        , job_requirements_t ( desc.transition().requirements()
-                             , desc.get_schedule_data()
-                             , _virtual_memory_api->transfer_costs (desc)
+        , job_requirements_t ( activity.transition().requirements()
+                             , activity.get_schedule_data()
+                             , _virtual_memory_api->transfer_costs (activity)
                              , computational_cost
-                             , desc.memory_buffer_size_total()
+                             , activity.memory_buffer_size_total()
                              )
         );
 
@@ -362,7 +362,7 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  Job* pJob (addJob (job_id, e.description(), itMaster));
+  Job* pJob (addJob (job_id, e.activity(), itMaster));
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -376,10 +376,10 @@ void GenericDaemon::handleSubmitJobEvent
   {
     try
     {
-      const we::type::activity_t act (pJob->description());
+      const we::type::activity_t act (pJob->activity());
       workflowEngine()->submit (job_id, act);
 
-      // Should set the workflow_id here, or send it together with the workflow description
+      // Should set the workflow_id here, or send it together with the activity
       pJob->Dispatch();
 
       if (m_guiService)
@@ -692,7 +692,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   if (m_guiService)
   {
-    const we::type::activity_t act (pJob->description());
+    const we::type::activity_t act (pJob->activity());
     const sdpa::daemon::NotificationEvent evt
       ( {name()}
       , pJob->id()
@@ -1447,12 +1447,12 @@ namespace sdpa
     }
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
-                                                , we::type::activity_t description
+                                                , we::type::activity_t activity
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, description, workers);
+        (_address, id, activity, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const

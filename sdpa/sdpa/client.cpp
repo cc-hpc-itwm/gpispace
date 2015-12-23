@@ -194,10 +194,10 @@ namespace sdpa
       return state;
     }
 
-    sdpa::job_id_t Client::submitJob(const we::type::activity_t &desc)
+    sdpa::job_id_t Client::submitJob (we::type::activity_t const& activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (boost::none, desc)).job_id();
+        (sdpa::events::SubmitJobEvent (boost::none, activity)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)

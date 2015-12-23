@@ -5,11 +5,11 @@ namespace sdpa
   namespace daemon
   {
     Job::Job ( const job_id_t id
-             , const we::type::activity_t desc
+             , const we::type::activity_t activity
              , opaque_job_master_t owner
              , job_requirements_t requirements
              )
-      : desc_ (desc)
+      : _activity (activity)
       , id_ (id)
       , m_owner (std::move (owner))
       , _requirements (requirements)
@@ -19,10 +19,6 @@ namespace sdpa
       start();
     }
 
-    const we::type::activity_t & Job::description() const
-    {
-      return desc_;
-    }
     const job_id_t & Job::id() const
     {
       return id_;

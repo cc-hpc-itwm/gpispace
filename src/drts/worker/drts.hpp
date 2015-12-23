@@ -50,12 +50,12 @@ public:
     using owner_type = map_of_masters_t::const_iterator;
 
     Job ( std::string const& jobid
-        , we::type::activity_t const& description_
+        , we::type::activity_t const& activity_
         , owner_type const& owner_
         , std::set<std::string> const& workers_
         )
       : id (jobid)
-      , description (description_)
+      , activity (activity_)
       , owner (owner_)
       , workers (workers_)
       , state (Job::PENDING)
@@ -64,7 +64,7 @@ public:
     {}
 
     std::string const id;
-    we::type::activity_t const description;
+    we::type::activity_t const activity;
     owner_type const owner;
     std::set<std::string> const workers;
     std::atomic<state_t> state;

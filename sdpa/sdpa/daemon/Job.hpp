@@ -100,12 +100,15 @@ namespace sdpa
     {
     public:
       Job ( const job_id_t id
-          , const we::type::activity_t desc
+          , const we::type::activity_t
           , opaque_job_master_t owner
           , job_requirements_t
           );
 
-      const we::type::activity_t& description() const;
+      we::type::activity_t const& activity() const
+      {
+        return _activity;
+      }
       const job_id_t& id() const;
       opaque_job_master_t const& owner() const;
       job_requirements_t requirements() const;
@@ -124,7 +127,7 @@ namespace sdpa
 
     private:
       mutable boost::mutex mtx_;
-      we::type::activity_t desc_;
+      we::type::activity_t _activity;
       job_id_t id_;
       opaque_job_master_t m_owner;
       job_requirements_t _requirements;

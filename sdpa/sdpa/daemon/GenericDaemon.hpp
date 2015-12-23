@@ -210,7 +210,7 @@ namespace sdpa {
 
     private:
       Job* addJob ( const sdpa::job_id_t& job_id
-                  , const we::type::activity_t desc
+                  , const we::type::activity_t
                   , boost::optional<master_info_t::iterator> owner
                   );
 

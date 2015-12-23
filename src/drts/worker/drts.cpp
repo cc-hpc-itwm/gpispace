@@ -43,14 +43,14 @@ struct wfe_task_t
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
-             , we::type::activity_t const& description
+             , we::type::activity_t const& activity
              , std::string worker_name
              , std::set<std::string> workers
              , fhg::log::Logger& logger
              )
     : id (id_)
     , state (PENDING)
-    , activity (description)
+    , activity (activity)
     , context
       (drts::worker::context_constructor (worker_name, workers, logger))
   {}
@@ -329,7 +329,7 @@ void DRTSImpl::handleSubmitJobEvent
 
   std::shared_ptr<DRTSImpl::Job> job
     ( std::make_shared<DRTSImpl::Job> ( *e->job_id()
-                                      , e->description()
+                                      , e->activity()
                                       , master
                                       , e->workers()
                                       )
@@ -526,7 +526,7 @@ void DRTSImpl::job_execution_thread()
       job->result = we::type::activity_t();
 
       wfe_task_t task
-        (job->id, job->description, m_my_name, job->workers, _logger);
+        (job->id, job->activity, m_my_name, job->workers, _logger);
 
       if (_notification_service)
       {
@@ -624,7 +624,7 @@ void DRTSImpl::job_execution_thread()
       LLOG (ERROR, _logger, error);
       job->state = DRTSImpl::Job::FAILED;
 
-      job->result = job->description;
+      job->result = job->activity;
       job->message = error;
     }
 
