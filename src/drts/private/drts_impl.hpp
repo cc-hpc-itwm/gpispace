@@ -34,7 +34,6 @@ namespace gspc
                       >
       remove_worker (rifd_entry_points const&);
 
-    boost::optional<unsigned long> _virtual_memory_per_node;
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
     std::pair<std::list<std::string>, unsigned long> const
@@ -53,7 +52,6 @@ namespace gspc
                              , boost::filesystem::path sdpa_home
                              , boost::optional<boost::filesystem::path> const& log_dir
                              , bool delete_logfiles
-                             , boost::optional<std::size_t> gpi_mem
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
                              , std::vector<fhg::drts::worker_description> worker_descriptions
                              , boost::optional<unsigned short> vmem_port

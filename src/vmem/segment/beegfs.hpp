@@ -1,0 +1,27 @@
+#pragma once
+
+#include <boost/filesystem/path.hpp>
+
+#include <stdexcept>
+
+namespace fhg
+{
+  namespace vmem
+  {
+    namespace segment
+    {
+      namespace beegfs
+      {
+        struct requirements_not_met : std::runtime_error
+        {
+          requirements_not_met (boost::filesystem::path const& path)
+            : std::runtime_error
+                ("BeeGFS segment requirements not met for " + path.string())
+          {}
+        };
+
+        void check_requirements (boost::filesystem::path const&);
+      }
+    }
+  }
+}

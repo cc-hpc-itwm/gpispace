@@ -94,7 +94,6 @@ namespace fhg
       , boost::filesystem::path sdpa_home
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
-      , boost::optional<std::size_t> gpi_mem
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&

@@ -8,7 +8,7 @@ namespace gpi
 {
   typedef uint64_t offset_t;
   using rank_t = unsigned short;
-  typedef uint64_t queue_desc_t; // queue descriptor
+  using queue_desc_t = unsigned char;
   typedef uint64_t size_t;
   typedef float    version_t;
   typedef unsigned short port_t;
@@ -16,4 +16,7 @@ namespace gpi
 
   using notification_t = unsigned int;
   using notification_id_t = unsigned short;
+
+  using timeout_t = unsigned long;
+  using segment_id_t = unsigned char;
 }

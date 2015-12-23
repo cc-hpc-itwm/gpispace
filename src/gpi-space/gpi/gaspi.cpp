@@ -20,26 +20,13 @@ namespace gpi
 {
   namespace api
   {
-    static_assert
-      ( std::is_same<notification_t, gaspi_notification_t>::value
-      , "HACK: don't expose GASPI.h to users, but we still need the types"
-      );
-    static_assert
-      ( std::is_same<rank_t, gaspi_rank_t>::value
-      , "HACK: don't expose GASPI.h to users, but we still need the types"
-      );
-    static_assert
-      ( std::is_same<notification_id_t, gaspi_notification_id_t>::value
-      , "HACK: don't expose GASPI.h to users, but we still need the types"
-      );
-
     namespace
     {
       void throw_gaspi_error ( std::string const& function_name
                              , gaspi_return_t rc
                              )
       {
-        throw gpi::exception::gpi_error
+        throw gpi::exception::gaspi_error
           ( gpi::error::internal_error()
           , function_name + " failed: " + gaspi_error_str (rc)
           + " (" + std::to_string (rc) + ")"
@@ -63,76 +50,45 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
-    namespace
-    {
-      struct time_left
-      {
-        template<typename Duration>
-          time_left (Duration timeout)
-            : _end (std::chrono::steady_clock::now() + timeout)
-        {}
-        gaspi_timeout_t operator()() const
-        {
-          auto const left
-            ( std::chrono::duration_cast<std::chrono::milliseconds>
-                (_end - std::chrono::steady_clock::now()).count()
-            );
-
-          return left < 0 ? GASPI_TEST : left;
-        }
-
-      private:
-        std::chrono::steady_clock::time_point const _end;
-      };
-    }
-
-    gaspi_t::gaspi_t ( fhg::log::Logger& logger
-                     , const unsigned long long memory_size
-                     , const unsigned short port
-                     , const std::chrono::seconds& timeout
-                     , unsigned short communication_port
+    gaspi_t::gaspi_t ( fhg::vmem::gaspi_context& gaspi_context
+                     , fhg::log::Logger& logger
+                     , const unsigned long long per_node_size
+                     , fhg::vmem::gaspi_timeout& time_left
                      )
-      : _logger (logger)
-      , m_mem_size (memory_size)
+      : _gaspi_context (gaspi_context)
+      , _logger (logger)
+      , _per_node_size (per_node_size)
       , m_dma (nullptr)
-      , m_replacement_gpi_segment (0)
+      , _segment_id (gaspi_context)
       , _current_queue (0)
     {
-      time_left const time_left (timeout);
-
-      gaspi_config_t config;
-      FAIL_ON_NON_ZERO (gaspi_config_get, &config);
-      config.sn_port = port;
-      FAIL_ON_NON_ZERO (gaspi_config_set, config);
-
-      if (sys::get_total_memory_size() < m_mem_size)
+      if (sys::get_total_memory_size() < _per_node_size)
       {
-        throw gpi::exception::gpi_error
+        throw gpi::exception::gaspi_error
           ( gpi::error::startup_failed()
           , "not enough memory: requested memory size ("
-          + std::to_string (m_mem_size) + ") exceeds total memory size ("
+          + std::to_string (_per_node_size) + ") exceeds total memory size ("
           + std::to_string (sys::get_total_memory_size()) + ")"
           );
       }
-      else if (sys::get_avail_memory_size() < m_mem_size)
+      else if (sys::get_avail_memory_size() < _per_node_size)
       {
         LLOG( WARN
             , _logger
-           , "requested memory size (" << m_mem_size << ")"
+           , "requested memory size (" << _per_node_size << ")"
            <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
            );
       }
 
-      FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());
       FAIL_ON_NON_ZERO ( gaspi_segment_create
-                       , m_replacement_gpi_segment
-                       , m_mem_size
+                       , _segment_id
+                       , _per_node_size
                        , GASPI_GROUP_ALL
                        , time_left()
                        , GASPI_MEM_UNINITIALIZED
                        );
       FAIL_ON_NON_ZERO ( gaspi_segment_ptr
-                       , m_replacement_gpi_segment
+                       , _segment_id
                        , &m_dma
                        );
 
@@ -167,23 +123,25 @@ namespace gpi
 
       _notification_ids_per_node
         = std::min ( available_notifications
-                   / gaspi_number_t (number_of_nodes())
+                   / gaspi_number_t (_gaspi_context.number_of_nodes())
                    , maximum_notifications_per_rank
-                   );
+                   )
+        //! \note only use even amounts (ping + pong ids)
+        & ~notification_id_t (1);
       if (_notification_ids_per_node < 2)
       {
         throw std::runtime_error
           ( "need at least two notification ids per rank ("
           + std::to_string (available_notifications)
           + " notification ids available in total, but "
-          + std::to_string (number_of_nodes()) + " ranks)"
+          + std::to_string (_gaspi_context.number_of_nodes()) + " ranks)"
           );
       }
 
       {
         std::vector<gaspi_notification_id_t> ping_ids (ping_ids_count());
-        std::iota (ping_ids.begin(), ping_ids.end(), ids_begin (rank()));
-        for (gaspi_rank_t rank (0); rank < number_of_nodes(); ++rank)
+        std::iota (ping_ids.begin(), ping_ids.end(), ids_begin (_gaspi_context.rank()));
+        for (gaspi_rank_t rank (0); rank < _gaspi_context.number_of_nodes(); ++rank)
         {
           _ping_ids[rank].put_many (ping_ids.begin(), ping_ids.end());
         }
@@ -197,121 +155,19 @@ namespace gpi
         std::swap (_notification_check, thread);
       }
 
-      struct hostname_and_port_t
-      {
-        char hostname[HOST_NAME_MAX + 1]; // + \0
-        unsigned short port;
-      };
-
-      const gaspi_segment_id_t exchange_hostname_and_port_segment {1};
-
-      FAIL_ON_NON_ZERO ( gaspi_segment_create
-                       , exchange_hostname_and_port_segment
-                       , 2 * sizeof (hostname_and_port_t)
-                       , GASPI_GROUP_ALL
-                       , time_left()
-                       , GASPI_MEM_UNINITIALIZED
-                       );
-      void* exchange_hostname_and_port_data_raw;
-      FAIL_ON_NON_ZERO ( gaspi_segment_ptr
-                       , exchange_hostname_and_port_segment
-                       , &exchange_hostname_and_port_data_raw
-                       );
-
-      hostname_and_port_t* exchange_hostname_and_port_data_send
-        (static_cast<hostname_and_port_t*> (exchange_hostname_and_port_data_raw));
-      hostname_and_port_t* exchange_hostname_and_port_data_receive
-        (exchange_hostname_and_port_data_send + 1);
-
-      strncpy ( exchange_hostname_and_port_data_send->hostname
-              , fhg::util::hostname().c_str()
-              , sizeof (exchange_hostname_and_port_data_send->hostname)
-              );
-      exchange_hostname_and_port_data_send->port = communication_port;
-
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
-
-      m_rank_to_hostname.resize (number_of_nodes());
-      _communication_port_by_rank.resize (number_of_nodes());
-
-      m_rank_to_hostname[rank()] =
-        exchange_hostname_and_port_data_send->hostname;
-      _communication_port_by_rank[rank()] =
-        exchange_hostname_and_port_data_send->port;
-
-      for ( gaspi_rank_t r ((rank() + 1) % number_of_nodes())
-          ; r != rank()
-          ; r = (r + 1) % number_of_nodes()
-          )
-      {
-        memset ( exchange_hostname_and_port_data_receive
-               , 0
-               , sizeof (hostname_and_port_t)
-               );
-
-        FAIL_ON_NON_ZERO ( gaspi_read
-                         , exchange_hostname_and_port_segment
-                         , sizeof (hostname_and_port_t)
-                         , r
-                         , exchange_hostname_and_port_segment
-                         , 0
-                         , sizeof (hostname_and_port_t)
-                         , 0
-                         , time_left()
-                         );
-        FAIL_ON_NON_ZERO (gaspi_wait, 0, time_left());
-
-        m_rank_to_hostname[r] =
-          exchange_hostname_and_port_data_receive->hostname;
-        _communication_port_by_rank[r] =
-          exchange_hostname_and_port_data_receive->port;
-      }
-
-      FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
-      FAIL_ON_NON_ZERO (gaspi_segment_delete, exchange_hostname_and_port_segment);
     }
 
     gaspi_t::~gaspi_t()
     {
       _notification_check.reset();
 
-      FAIL_ON_NON_ZERO (gaspi_proc_term, GASPI_BLOCK);
+      FAIL_ON_NON_ZERO (gaspi_segment_delete, _segment_id);
     }
 
-    gpi::size_t gaspi_t::number_of_queues() const
+    gpi::size_t gaspi_t::per_node_size() const
     {
-      gaspi_number_t queue_num;
-      FAIL_ON_NON_ZERO (gaspi_queue_num, &queue_num);
-      return queue_num;
-    }
-
-    gpi::size_t gaspi_t::number_of_nodes() const
-    {
-      gaspi_rank_t num_ranks;
-      FAIL_ON_NON_ZERO (gaspi_proc_num, &num_ranks);
-      return num_ranks;
-    }
-
-    gpi::size_t gaspi_t::memory_size() const
-    {
-      return m_mem_size;
-    }
-
-    gpi::rank_t gaspi_t::rank() const
-    {
-      gaspi_rank_t rank;
-      FAIL_ON_NON_ZERO (gaspi_proc_rank, &rank);
-      return rank;
-    }
-
-    std::string const& gaspi_t::hostname_of_rank (const gpi::rank_t r) const
-    {
-      return m_rank_to_hostname[r];
-    }
-
-    unsigned short gaspi_t::communication_port_of_rank (gpi::rank_t rank) const
-    {
-      return _communication_port_by_rank[rank];
+      return _per_node_size;
     }
 
     void* gaspi_t::dma_ptr() const
@@ -377,10 +233,10 @@ namespace gpi
 
         queues.emplace
           ( queued_operation<1> ( gaspi_read
-                                , m_replacement_gpi_segment
+                                , _segment_id
                                 , l_off
                                 , from_node
-                                , m_replacement_gpi_segment
+                                , _segment_id
                                 , r_off
                                 , to_transfer
                                 )
@@ -439,10 +295,10 @@ namespace gpi
         const size_t to_transfer (std::min (chunk_size, remaining));
 
         queued_operation<2> ( gaspi_write_notify
-                            , m_replacement_gpi_segment
+                            , _segment_id
                             , l_off
                             , to_node
-                            , m_replacement_gpi_segment
+                            , _segment_id
                             , r_off
                             , to_transfer
                             , next_ping_id (to_node)
@@ -492,7 +348,7 @@ namespace gpi
     }
     notification_id_t gaspi_t::total_number_of_notifications() const
     {
-      return _notification_ids_per_node * number_of_nodes();
+      return _notification_ids_per_node * _gaspi_context.number_of_nodes();
     }
 
     rank_t gaspi_t::sending_rank (notification_id_t notification_id) const
@@ -515,14 +371,14 @@ namespace gpi
     notification_id_t gaspi_t::corresponding_local_ping_id
       (notification_id_t pong_id) const
     {
-      return ids_begin (rank())
+      return ids_begin (_gaspi_context.rank())
         + notification_id_offset (pong_id)
         - pong_ids_offset();
     }
     notification_id_t gaspi_t::corresponding_local_pong_id
       (notification_id_t ping_id) const
     {
-      return ids_begin (rank())
+      return ids_begin (_gaspi_context.rank())
         + notification_id_offset (ping_id)
         + pong_ids_offset();
     }
@@ -536,7 +392,7 @@ namespace gpi
         gaspi_notification_id_t notification_id;
         gaspi_return_t const waitsome_result
           ( gaspi_notify_waitsome
-              ( m_replacement_gpi_segment
+              ( _segment_id
               , 0
               , total_number_of_notifications()
               , &notification_id
@@ -556,7 +412,7 @@ namespace gpi
 
         gaspi_notification_t write_id;
         FAIL_ON_NON_ZERO ( gaspi_notify_reset
-                         , m_replacement_gpi_segment
+                         , _segment_id
                          , notification_id
                          , &write_id
                          );
@@ -576,7 +432,7 @@ namespace gpi
         {
           queued_operation<1>
             ( gaspi_notify
-            , m_replacement_gpi_segment
+            , _segment_id
             , sending_rank (notification_id)
             , corresponding_local_pong_id (notification_id)
             , write_id

@@ -1,10 +1,14 @@
 #pragma once
 
+#include <gpi-space/gpi/gaspi.hpp>
+
 #include <gpi-space/pc/type/segment_type.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/handle_buffer.hpp>
 
 #include <gpi-space/pc/global/itopology.hpp>
+
+#include <vmem/gaspi_context.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
@@ -18,10 +22,10 @@ namespace gpi
   {
     namespace memory
     {
-      class gpi_area_t : public area_t
+      class gaspi_area_t : public area_t
       {
       public:
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GPI;
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GASPI;
 
         typedef fhg::thread::queue<handle_buffer_t> handle_pool_t;
 
@@ -29,18 +33,23 @@ namespace gpi
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , api::gaspi_t& gaspi
+                                 , fhg::vmem::gaspi_context&
+                                 , type::id_t owner
                                  );
 
       protected:
-        gpi_area_t ( fhg::log::Logger&
-                   , const gpi::pc::type::process_id_t creator
-                   , const std::string & name
-                   , const gpi::pc::type::flags_t flags
-                   , gpi::pc::global::itopology_t & topology
-                   , handle_generator_t&
-                   , api::gaspi_t&
-                   );
+        gaspi_area_t ( fhg::log::Logger&
+                     , const gpi::pc::type::process_id_t creator
+                     , const std::string & name
+                     , const gpi::pc::type::flags_t flags
+                     , gpi::pc::global::itopology_t & topology
+                     , handle_generator_t&
+                     , fhg::vmem::gaspi_context&
+                     , fhg::vmem::gaspi_timeout&
+                     , type::size_t memory_size
+                     , type::size_t num_com_buffers
+                     , type::size_t com_buffer_size
+                     );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
         virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
@@ -70,8 +79,6 @@ namespace gpi
           ) override;
 
       private:
-        virtual void init () override;
-
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                             , const gpi::pc::type::offset_t begin
                             , const gpi::pc::type::size_t   range_size
@@ -92,6 +99,9 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
+        fhg::vmem::gaspi_context& _gaspi_context;
+        api::gaspi_t _gaspi;
+
         void * m_ptr;
 
         handle_pool_t m_com_handles; // local allocations that can be used to transfer data
@@ -100,8 +110,6 @@ namespace gpi
         gpi::pc::type::size_t m_com_buffer_size;
 
         gpi::pc::global::itopology_t & _topology;
-
-        api::gaspi_t& _gaspi;
       };
     }
   }

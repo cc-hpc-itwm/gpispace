@@ -53,17 +53,17 @@ namespace gpi
 {
   namespace exception
   {
-    struct gpi_error : public std::runtime_error
+    struct gaspi_error : public std::runtime_error
     {
       explicit
-      gpi_error (gpi::error::code_t const & ec, std::string const & m)
+      gaspi_error (gpi::error::code_t const & ec, std::string const & m)
         : std::runtime_error (ec.name ())
         , value (ec.value())
         , user_message (m)
-        , message ("gpi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name() + ": " + user_message)
+        , message ("gaspi::error[" + boost::lexical_cast<std::string>(value) + "]: " + ec.name() + ": " + user_message)
       {}
 
-      virtual ~gpi_error () = default;
+      virtual ~gaspi_error () = default;
 
       virtual const char * what () const noexcept override
       {

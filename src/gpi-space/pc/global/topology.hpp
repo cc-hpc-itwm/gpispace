@@ -7,6 +7,8 @@
 #include <rpc/function_description.hpp>
 #include <rpc/server_with_multiple_clients.hpp>
 
+#include <vmem/gaspi_context.hpp>
+
 #include <boost/noncopyable.hpp>
 
 #include <memory>
@@ -24,7 +26,7 @@ namespace gpi
       {
       public:
         topology_t ( memory::manager_t& memory_manager
-                   , api::gaspi_t&
+                   , fhg::vmem::gaspi_context&
                    , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>
                    );
 
@@ -49,7 +51,7 @@ namespace gpi
       private:
         mutable std::mutex m_global_alloc_mutex;
 
-        api::gaspi_t& _gaspi;
+        fhg::vmem::gaspi_context& _gaspi_context;
 
         FHG_RPC_FUNCTION_DESCRIPTION ( alloc_desc
                                      , void ( type::segment_id_t

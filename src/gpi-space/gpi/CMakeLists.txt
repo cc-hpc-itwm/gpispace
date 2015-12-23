@@ -3,6 +3,7 @@ extended_add_library (NAME gpi-space-gpiapi
           "gaspi.cpp"
   LIBRARIES GASPI::static
             Util::Generic
+            GPISpace::vmem
 )
 #! \todo move into extended_add_library
 target_include_directories (gpi-space-gpiapi

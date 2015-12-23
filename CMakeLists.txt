@@ -9,6 +9,7 @@ set (CMAKE_MODULE_PATH
 )
 
 add_subdirectory (cmake)
+
 include (add_macros)
 include (beautify_find_boost)
 include (require_compiler_version)
@@ -95,7 +96,6 @@ find_package (LibRT REQUIRED QUIET)
 find_package (LibReadline REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
 find_package (Threads REQUIRED QUIET)
-find_package (libssh2 QUIET REQUIRED)
 
 include (${QT_USE_FILE})
 include (CTest)
@@ -124,6 +124,7 @@ endif()
 
 bundle_boost (DESTINATION "external/boost")
 
+add_subdirectory (external)
 add_subdirectory (doc)
 add_subdirectory (fhglog)
 add_subdirectory (playground/bl)

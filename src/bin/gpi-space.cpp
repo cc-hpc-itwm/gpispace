@@ -23,6 +23,8 @@
 
 #include <rif/started_process_promise.hpp>
 
+#include <vmem/gaspi_context.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/make_shared.hpp>
@@ -36,7 +38,6 @@ namespace
 {
   namespace option
   {
-    constexpr const char* const gpi_mem ("gpi-mem");
     constexpr const char* const gpi_timeout ("gpi-timeout");
     constexpr const char* const log_file ("log-file");
     constexpr const char* const log_host ("log-host");
@@ -74,10 +75,6 @@ int main (int argc, char** argv)
       , boost::program_options::value
           <fhg::util::boost::program_options::nonempty_string>()->required()
       , "log level"
-      )
-      ( option::gpi_mem
-      , boost::program_options::value<std::size_t>()->required()
-      , "memory to allocate (in bytes)"
       )
       ( option::gpi_timeout
       , boost::program_options::value
@@ -146,8 +143,6 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::nonempty_string>()
       );
 
-    std::size_t const gpi_mem (vm.at (option::gpi_mem).as<std::size_t>());
-
     std::chrono::seconds const gpi_timeout
       ( vm.at (option::gpi_timeout)
         .as<fhg::util::boost::program_options::positive_integral<std::size_t>>()
@@ -181,21 +176,17 @@ int main (int argc, char** argv)
     auto topology_rpc_server
       (fhg::util::cxx14::make_unique<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>());
 
-    gpi::api::gaspi_t gaspi ( logger
-                            , gpi_mem
-                            , port
-                            , gpi_timeout
-                            , topology_rpc_server->local_endpoint().port()
-                            );
+    fhg::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
+    fhg::vmem::gaspi_context gaspi_context
+      ( initialization_timeout
+      , port
+      , topology_rpc_server->local_endpoint().port()
+      );
 
-    // other url examples are:
-    //      gpi://?buffers=8&buffer_size=4194304 GPI memory
-    //      sfs://<path>?create=true&size=1073741824
     const gpi::pc::container::manager_t container_manager
       ( logger
       , socket_path.string()
-      , {"gpi://?buffer_size=4194304&buffers=8"}
-      , gaspi
+      , gaspi_context
       , std::move (topology_rpc_server)
       );
 

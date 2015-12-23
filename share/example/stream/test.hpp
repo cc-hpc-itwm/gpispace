@@ -124,7 +124,11 @@ namespace share_example_stream_test
       (vm, installation, topology (size_slot), rifds.entry_points());
 
     gspc::vmem_allocation const allocation_buffer
-      (drts.alloc (size, workflow_name + "_buffer"));
+      ( drts.alloc ( gspc::vmem::gaspi_segment_description()
+                   , size
+                   , workflow_name + "_buffer"
+                   )
+      );
     gspc::client client (drts);
 
     gspc::workflow workflow (make.pnet());

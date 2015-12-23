@@ -100,14 +100,17 @@ namespace gspc
       remove_worker (rifd_entry_points const&);
 
     vmem_allocation alloc
-      (unsigned long size, std::string const& description) const;
+      ( vmem::segment_description
+      , unsigned long size
+      , std::string const& name
+      ) const;
     vmem_allocation alloc_and_fill
-      ( unsigned long size
-      , std::string const& description
+      ( vmem::segment_description
+      , unsigned long size
+      , std::string const& name
       , char const* const data
       ) const;
 
-    unsigned long virtual_memory_total() const;
     unsigned long number_of_unique_nodes() const;
 
     stream create_stream ( std::string const& name

@@ -7,12 +7,13 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
+
+#include <vmem/gaspi_context.hpp>
 
 #include <boost/thread/scoped_thread.hpp>
 
@@ -36,9 +37,7 @@ namespace gpi
       public:
         typedef boost::shared_ptr<area_t> area_ptr;
 
-        static const gpi::pc::type::segment_id_t MAX_PREALLOCATED_SEGMENT_ID=16;
-
-        manager_t (fhg::log::Logger&, api::gaspi_t&);
+        manager_t (fhg::log::Logger&, fhg::vmem::gaspi_context&);
         ~manager_t ();
 
         void clear ();
@@ -82,7 +81,6 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t info (const gpi::pc::type::handle_t hdl) const;
         std::map<std::string, double> get_transfer_costs (const std::list<gpi::pc::type::memory_region_t>&) const;
 
-        void garbage_collect () {}
         void garbage_collect (const gpi::pc::type::process_id_t);
 
         type::memcpy_id_t memcpy ( type::memory_location_t const & dst
@@ -100,7 +98,6 @@ namespace gpi
         gpi::pc::type::segment_id_t
         add_memory ( const gpi::pc::type::process_id_t proc_id
                    , const std::string & url
-                   , const gpi::pc::type::segment_id_t seg_id
                    , global::topology_t& topology
                    );
 
@@ -115,7 +112,6 @@ namespace gpi
                    , global::topology_t& topology
                    );
 
-        void add_area (area_ptr const &area);
       private:
         typedef boost::recursive_mutex mutex_type;
         typedef boost::unique_lock<mutex_type> lock_type;
@@ -126,6 +122,7 @@ namespace gpi
                                   , gpi::pc::type::segment_id_t
                                   > handle_to_segment_t;
 
+        void add_area (area_ptr const &area);
         area_ptr get_area (const gpi::pc::type::segment_id_t);
         area_ptr get_area (const gpi::pc::type::segment_id_t) const;
         area_ptr get_area_by_handle (const gpi::pc::type::handle_t);
@@ -140,7 +137,7 @@ namespace gpi
         mutable mutex_type m_mutex;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
-        api::gaspi_t& _gaspi;
+        fhg::vmem::gaspi_context& _gaspi_context;
 
         std::mutex _memcpy_task_guard;
         std::size_t _next_memcpy_id;

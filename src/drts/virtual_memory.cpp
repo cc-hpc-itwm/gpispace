@@ -18,19 +18,21 @@
 namespace gspc
 {
   vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+                                   , vmem::segment_description segment_desc
                                    , unsigned long size
                                    , std::string const& description
                                    )
     : _ ( new vmem_allocation::implementation
-          (drts->_->_virtual_memory_api, size, description)
+            (drts->_->_virtual_memory_api, segment_desc, size, description)
         )
   {}
   vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+                                   , vmem::segment_description segment_desc
                                    , unsigned long size
                                    , std::string const& description
                                    , char const* const data
                                    )
-    : vmem_allocation (drts, size, description)
+    : vmem_allocation (drts, segment_desc, size, description)
   {
     scoped_allocation const buffer
       (drts->_->_virtual_memory_api, "vmem_allocation_buffer", size);

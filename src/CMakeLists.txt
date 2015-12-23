@@ -3,6 +3,7 @@
 add_subdirectory (fhgcom)
 
 add_subdirectory (gpi-space)
+add_subdirectory (vmem)
 
   add_subdirectory (pnete)
   add_subdirectory (util)

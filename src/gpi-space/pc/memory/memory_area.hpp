@@ -50,8 +50,6 @@ namespace gpi
         int type () const;
         gpi::pc::type::flags_t flags () const;
 
-        virtual void init ();
-
         // WORK HERE:
         //    this function *must not* be called from the dtor
         //    otherwise we endup calling pure virtual functions
@@ -62,7 +60,6 @@ namespace gpi
         gpi::pc::type::id_t get_id () const;
 
         gpi::pc::type::id_t get_owner () const;
-        void set_owner (gpi::pc::type::id_t);
 
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::process_id_t proc_id

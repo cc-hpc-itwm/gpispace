@@ -4,6 +4,8 @@
 
 #include <gpi-space/types.hpp>
 
+#include <vmem/gaspi_context.hpp>
+
 #include <fhg/util/thread/queue.hpp>
 
 #include <boost/noncopyable.hpp>
@@ -25,26 +27,16 @@ namespace gpi
     class gaspi_t : boost::noncopyable
     {
     public:
-      gaspi_t ( fhg::log::Logger&
-              , const unsigned long long memory_size
-              , const unsigned short port
-              , const std::chrono::seconds& timeout
-              , unsigned short communication_port
+      gaspi_t ( fhg::vmem::gaspi_context&
+              , fhg::log::Logger&
+              , const unsigned long long per_node_size
+              , fhg::vmem::gaspi_timeout&
               );
       ~gaspi_t();
 
-      gpi::size_t memory_size() const;
-      gpi::rank_t rank() const;
-      gpi::size_t number_of_nodes() const;
+      gpi::size_t per_node_size() const;
 
       void* dma_ptr() const;
-
-      std::string const& hostname_of_rank (const gpi::rank_t) const;
-      unsigned short communication_port_of_rank (gpi::rank_t) const;
-
-      //! \todo do not expose: used to determine count of memory
-      //! management task threads, which is just bad.
-      gpi::size_t number_of_queues() const;
 
       struct read_dma_info
       {
@@ -74,10 +66,12 @@ namespace gpi
       template<std::size_t queue_entry_count, typename Fun, typename... Args>
         queue_desc_t queued_operation (Fun&&, Args&&...);
 
+      fhg::vmem::gaspi_context& _gaspi_context;
+
       fhg::log::Logger& _logger;
-      size_t m_mem_size;
+      size_t _per_node_size;
       void *m_dma;
-      size_t m_replacement_gpi_segment;
+      fhg::vmem::gaspi_context::reserved_segment_id _segment_id;
       gpi::size_t _max_transfer_size;
 
       std::vector<std::string> m_rank_to_hostname;

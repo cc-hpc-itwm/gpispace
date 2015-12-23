@@ -61,16 +61,14 @@ namespace gpi
       }
 
       void
-      handle_generator_t::initialize_counter ( const gpi::pc::type::segment::segment_type seg
-                                             , gpi::pc::type::size_t start
-                                             )
+      handle_generator_t::initialize_counter (const gpi::pc::type::segment::segment_type seg)
       {
         fhg_assert (seg >= 0);
 
         if ( (size_t)seg >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
 
-        m_counter [seg] = start;
+        m_counter [seg] = 0;
       }
     }
   }

@@ -6,12 +6,12 @@
 #include <boost/filesystem.hpp>
 #include <boost/variant/static_visitor.hpp>
 
-#include <util-generic/syscall.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
+#include <util-generic/syscall.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/url.hpp>
@@ -153,10 +153,12 @@ namespace gpi
           handle_message_t ( fhg::log::Logger& logger
                            , gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
+                           , global::topology_t& topology
                            )
             : _logger (logger)
             , m_proc_id (proc_id)
             , _memory_manager (memory_manager)
+            , _topology (topology)
           {}
 
           /**********************************************/
@@ -255,6 +257,31 @@ namespace gpi
               (gpi::pc::proto::error::success, "success");
           }
 
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::add_memory_t & add_mem) const
+          try
+          {
+            return proto::segment::message_t
+              ( proto::segment::add_reply_t
+                  ( _memory_manager.add_memory
+                      (m_proc_id, add_mem.url, _topology)
+                  )
+              );
+          }
+          catch (...)
+          {
+            return proto::segment::message_t
+              (proto::segment::add_reply_t (std::current_exception()));
+          }
+
+          gpi::pc::proto::message_t
+            operator () (const gpi::pc::proto::segment::del_memory_t & del_mem) const
+          {
+            _memory_manager.del_memory (m_proc_id, del_mem.id, _topology);
+            return
+              gpi::pc::proto::error::error_t (gpi::pc::proto::error::success);
+          }
+
           /**********************************************/
           /***     C O N T R O L   R E L A T E D      ***/
           /**********************************************/
@@ -285,6 +312,7 @@ namespace gpi
           fhg::log::Logger& _logger;
           gpi::pc::type::process_id_t const& m_proc_id;
           memory::manager_t& _memory_manager;
+          global::topology_t& _topology;
         };
 
         gpi::pc::proto::message_t handle_message
@@ -292,17 +320,20 @@ namespace gpi
           , gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
+          , global::topology_t& topology
           )
         {
           try
           {
             return boost::apply_visitor
-              (handle_message_t (logger, id, memory_manager), request);
+              (handle_message_t (logger, id, memory_manager, topology), request);
           }
-          catch (std::exception const& ex)
+          catch (...)
           {
             return gpi::pc::proto::error::error_t
-              (gpi::pc::proto::error::bad_request, ex.what());
+              ( gpi::pc::proto::error::bad_request
+              , fhg::util::current_exception_printer().string()
+              );
           }
         }
 
@@ -359,7 +390,7 @@ namespace gpi
               );
 
             gpi::pc::proto::message_t const reply
-              (handle_message (_logger, process_id, request, _memory_manager));
+              (handle_message (_logger, process_id, request, _memory_manager, _topology));
 
             fhg::util::nest_exceptions<std::runtime_error>
               ( [&]
@@ -427,8 +458,7 @@ namespace gpi
 
       manager_t::manager_t ( fhg::log::Logger& logger
                            , std::string const & p
-                           , std::vector<std::string> const& default_memory_urls
-                           , api::gaspi_t& gaspi
+                           , fhg::vmem::gaspi_context& gaspi_context
                            , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
@@ -436,31 +466,12 @@ namespace gpi
         , m_socket (-1)
         , m_stopping (false)
         , m_process_counter (0)
-        , _memory_manager (_logger, gaspi)
-        , _topology (_memory_manager, gaspi, std::move (topology_rpc_server))
+        , _memory_manager (_logger, gaspi_context)
+        , _topology ( _memory_manager
+                    , gaspi_context
+                    , std::move (topology_rpc_server)
+                    )
       {
-        if ( default_memory_urls.size ()
-           >= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID
-           )
-        {
-          throw std::runtime_error ("too many predefined memory urls!");
-        }
-
-        if (_topology.is_master ())
-        {
-          gpi::pc::type::id_t id = 1;
-          for (std::string const& url : default_memory_urls)
-          {
-            _memory_manager.add_memory
-              ( 0 // owner
-              , url
-              , id
-              , _topology
-              );
-            ++id;
-          }
-        }
-
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {

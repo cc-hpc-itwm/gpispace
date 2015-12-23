@@ -7,43 +7,39 @@
 #include <gpi-space/pc/global/itopology.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
+#include <fhg/util/thread/queue.hpp>
+
 namespace gpi
 {
   namespace pc
   {
     namespace memory
     {
-      class sfs_area_t : public area_t
+      class beegfs_area_t : public area_t
       {
       public:
         typedef boost::filesystem::path path_t;
 
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SFS;
-        static const int SFS_VERSION = 0x0001;
+        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
+        static const int BEEGFS_AREA_VERSION = 0x0001;
 
         static area_ptr_t create ( fhg::log::Logger&
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
+                                 , type::id_t owner
                                  );
 
-        // cleanup a file segment
-        static void cleanup (path_t const & path);
+        beegfs_area_t ( fhg::log::Logger&
+                      , const gpi::pc::type::process_id_t creator
+                      , const path_t & path
+                      , const gpi::pc::type::size_t size        // total
+                      , const gpi::pc::type::flags_t flags
+                      , gpi::pc::global::itopology_t & topology
+                      , handle_generator_t&
+                      );
 
-        sfs_area_t ( fhg::log::Logger&
-                   , const gpi::pc::type::process_id_t creator
-                   , const path_t & path
-                   , const gpi::pc::type::size_t size        // total
-                   , const gpi::pc::type::flags_t flags
-                   , gpi::pc::global::itopology_t & topology
-                   , handle_generator_t&
-                   );
-
-        ~sfs_area_t ();
-
-        int save_state (boost::system::error_code &ec);
-        int open (boost::system::error_code & ec);
-        int close (boost::system::error_code & ec);
+        ~beegfs_area_t ();
 
       protected:
         int get_type_id () const;
@@ -78,21 +74,25 @@ namespace gpi
                       , gpi::pc::type::size_t amount
                       ) override;
 
-        bool initialize ( path_t const & path
-                        , const gpi::pc::type::size_t size
-                        , boost::system::error_code &ec
-                        );
+        std::string version_string() const;
+
+        void open();
+        void close();
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t
                                   ) const override;
 
-        void * m_ptr;
-        int    m_fd;
-        int    m_lock_fd;
+        fhg::thread::queue<int> _fds;
+        struct lock_file_helper
+        {
+          lock_file_helper (beegfs_area_t*);
+          ~lock_file_helper();
+          beegfs_area_t* _area;
+          int _fd;
+        };
+        boost::optional<lock_file_helper> _lock_file;
         path_t m_path;
         int    m_version;
-
-        gpi::pc::type::size_t   m_size;
 
         gpi::pc::global::itopology_t & m_topology;
       };

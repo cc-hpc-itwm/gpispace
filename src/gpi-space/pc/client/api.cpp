@@ -179,6 +179,33 @@ namespace gpi
         }
       }
 
+      type::segment_id_t api_t::create_segment (std::string const& info)
+      {
+        proto::message_t const reply
+          ( communicate ( proto::segment::message_t
+                            (proto::segment::add_memory_t (info))
+                        )
+          );
+
+        return boost::get<proto::segment::add_reply_t>
+          (boost::get<proto::segment::message_t> (reply)).get();
+      }
+      void api_t::delete_segment (type::segment_id_t segment_id)
+      {
+        proto::message_t const reply
+          ( communicate ( proto::segment::message_t
+                            (proto::segment::del_memory_t (segment_id))
+                        )
+          );
+
+        std::string const error
+          (boost::get<proto::error::error_t> (reply).detail);
+        if (!error.empty())
+        {
+          throw std::runtime_error (error);
+        }
+      }
+
       namespace
       {
         gpi::pc::type::handle_id_t
@@ -444,6 +471,45 @@ namespace gpi
         // remove local
         lock_type lock (m_mutex);
         m_segments.erase (id);
+      }
+
+      decltype (remote_segment::gaspi) remote_segment::gaspi = {};
+      decltype (remote_segment::filesystem) remote_segment::filesystem = {};
+
+      remote_segment::remote_segment
+          ( api_t& api
+          , decltype (gaspi)
+          , type::size_t size
+          , type::size_t communication_buffer_size
+          , type::size_t num_communication_buffers
+          )
+        : remote_segment
+            ( api
+            , "gaspi://?total_size=" + std::to_string (size)
+            + "&buffer_size=" + std::to_string (communication_buffer_size)
+            + "&buffers=" + std::to_string (num_communication_buffers)
+            )
+      {}
+      remote_segment::remote_segment ( api_t& api
+                                     , decltype (filesystem)
+                                     , type::size_t size
+                                     , boost::filesystem::path location
+                                     )
+        : remote_segment
+            ( api
+            , "beegfs://" + location.string()
+            + "?total_size=" + std::to_string (size)
+            )
+      {}
+
+      remote_segment::remote_segment (api_t& api, std::string const& info)
+        : _api (api)
+        , _segment_id (_api.create_segment (info))
+      {}
+
+      remote_segment::~remote_segment()
+      {
+        _api.delete_segment (_segment_id);
       }
     }
   }

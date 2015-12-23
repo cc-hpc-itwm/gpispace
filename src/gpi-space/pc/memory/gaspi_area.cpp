@@ -1,4 +1,4 @@
-#include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/gaspi_area.hpp>
 
 #include <utility>
 
@@ -9,6 +9,8 @@
 #include <gpi-space/pc/global/topology.hpp>
 
 #include <gpi-space/pc/url.hpp>
+
+#include <util-generic/divru.hpp>
 
 #include <we/type/range.hpp>
 
@@ -23,41 +25,45 @@ namespace gpi
   {
     namespace memory
     {
-      gpi_area_t::gpi_area_t ( fhg::log::Logger& logger
-                             , const gpi::pc::type::process_id_t creator
-                             , const std::string & name
-                             , const gpi::pc::type::flags_t flags
-                             , gpi::pc::global::itopology_t & topology
-                             , handle_generator_t& handle_generator
-                             , api::gaspi_t& gaspi
-                             )
+      gaspi_area_t::gaspi_area_t ( fhg::log::Logger& logger
+                                 , const gpi::pc::type::process_id_t creator
+                                 , const std::string & name
+                                 , const gpi::pc::type::flags_t flags
+                                 , gpi::pc::global::itopology_t & topology
+                                 , handle_generator_t& handle_generator
+                                 , fhg::vmem::gaspi_context& gaspi_context
+                                 , fhg::vmem::gaspi_timeout& time_left
+                                 , type::size_t per_node_size
+                                 , type::size_t num_com_buffers
+                                 , type::size_t com_buffer_size
+                                 )
         : area_t ( logger
-                 , gpi_area_t::area_type
+                 , gaspi_area_t::area_type
                  , creator
                  , name
-                 , gaspi.memory_size()
+                 , per_node_size
                  , flags
                  , handle_generator
                  )
-        , m_ptr (gaspi.dma_ptr())
-        , m_num_com_buffers (8)
-        , m_com_buffer_size (4* (1<<20))
+        , _gaspi_context (gaspi_context)
+        , _gaspi (_gaspi_context, logger, per_node_size, time_left)
+        , m_ptr (_gaspi.dma_ptr())
+        , m_num_com_buffers (num_com_buffers)
+        , m_com_buffer_size (com_buffer_size)
         , _topology (topology)
-        , _gaspi (gaspi)
-      {}
-
-      void gpi_area_t::init ()
       {
         fhg_assert (m_num_com_buffers > 0);
         fhg_assert (m_com_buffer_size > 0);
 
-        // TODO: make  this lazy, just define  a maximum number  of buffers, but
-        // try to allocate them only when actually needed.
+        //! \todo move to different gaspi segment to have separate
+        //! allocation and not operate in the user's one. this could
+        //! then also be used to reduce the buffer count when having
+        //! multiple areas.
         size_t num_buffers_allocated = 0;
         for (size_t i = 0; i < m_num_com_buffers; ++i)
         {
           const std::string hdl_name =
-            name () + "-com-" + boost::lexical_cast<std::string>(i);
+            name + "-com-" + boost::lexical_cast<std::string>(i);
           try
           {
             gpi::pc::type::handle_t com_hdl =
@@ -107,14 +113,14 @@ namespace gpi
       }
 
       Arena_t
-      gpi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
+      gaspi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
         return gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL)
           ? ARENA_UP : ARENA_DOWN;
       }
 
       void *
-      gpi_area_t::raw_ptr (gpi::pc::type::offset_t off)
+      gaspi_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
         return
           (m_ptr && off < descriptor ().local_size)
@@ -123,13 +129,13 @@ namespace gpi
       }
 
       bool
-      gpi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
+      gaspi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
       {
         return false;
       }
 
       void
-      gpi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      gaspi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
@@ -146,7 +152,7 @@ namespace gpi
       }
 
       void
-      gpi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      gaspi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
         {
@@ -155,12 +161,12 @@ namespace gpi
       }
 
       bool
-      gpi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
-                                , const gpi::pc::type::offset_t begin
-                                , const gpi::pc::type::offset_t end
-                                ) const
+      gaspi_area_t::is_range_local( const gpi::pc::type::handle::descriptor_t &hdl
+                                  , const gpi::pc::type::offset_t begin
+                                  , const gpi::pc::type::offset_t end
+                                  ) const
       {
-        gpi::pc::type::id_t     my_rank = _gaspi.rank ();
+        gpi::pc::type::id_t     my_rank = _gaspi_context.rank ();
 
         if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
           my_rank = 0;
@@ -178,14 +184,14 @@ namespace gpi
       }
 
       gpi::pc::type::size_t
-      gpi_area_t::get_local_size ( const gpi::pc::type::size_t size
-                                 , const gpi::pc::type::flags_t flgs
-                                 ) const
+      gaspi_area_t::get_local_size ( const gpi::pc::type::size_t size
+                                   , const gpi::pc::type::flags_t flgs
+                                   ) const
       {
         if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
         {
           // static distribution scheme with overhead
-          const size_t num_nodes = _gaspi.number_of_nodes ();
+          const size_t num_nodes = _gaspi_context.number_of_nodes ();
           size_t overhead = (0 != (size % num_nodes)) ? 1 : 0;
           return (size / num_nodes + overhead);
         }
@@ -312,10 +318,10 @@ namespace gpi
         void do_send ( fhg::log::Logger& logger
                      , area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
-                     , gpi_area_t & dst_area
+                     , gaspi_area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gpi::pc::type::size_t amount
-                     , gpi_area_t::handle_pool_t & handle_pool
+                     , gaspi_area_t::handle_pool_t & handle_pool
                      , api::gaspi_t& gaspi
                      )
         {
@@ -364,10 +370,10 @@ namespace gpi
         void do_recv ( fhg::log::Logger& logger
                      , area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
-                     , gpi_area_t & src_area
+                     , gaspi_area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gpi::pc::type::size_t amount
-                     , gpi_area_t::handle_pool_t & handle_pool
+                     , gaspi_area_t::handle_pool_t & handle_pool
                      , api::gaspi_t& gaspi
                      )
         {
@@ -411,7 +417,7 @@ namespace gpi
         }
       }
 
-      std::packaged_task<void()> gpi_area_t::get_specific_transfer_task
+      std::packaged_task<void()> gaspi_area_t::get_specific_transfer_task
         ( const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
         , area_t & dst_area
@@ -459,7 +465,7 @@ namespace gpi
           );
       }
 
-      std::packaged_task<void()> gpi_area_t::get_send_task
+      std::packaged_task<void()> gaspi_area_t::get_send_task
         ( area_t & src_area
         , const gpi::pc::type::memory_location_t src
         , const gpi::pc::type::memory_location_t dst
@@ -482,7 +488,7 @@ namespace gpi
           );
       }
 
-      std::packaged_task<void()> gpi_area_t::get_recv_task
+      std::packaged_task<void()> gaspi_area_t::get_recv_task
         ( area_t & dst_area
         , const gpi::pc::type::memory_location_t dst
         , const gpi::pc::type::memory_location_t src
@@ -503,9 +509,9 @@ namespace gpi
           );
       }
 
-      double gpi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
-                                            , const gpi::rank_t rank
-                                            ) const
+      double gaspi_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
+                                              , const gpi::rank_t rank
+                                              ) const
       {
         const gpi::pc::type::handle::descriptor_t allocation
           (descriptor (transfer.location.handle));
@@ -524,12 +530,13 @@ namespace gpi
         return transfer.size + remote_transfer_cost_weight * (transfer.size - local_part.size());
       }
 
-      area_ptr_t gpi_area_t::create
+      area_ptr_t gaspi_area_t::create
         ( fhg::log::Logger& logger
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , api::gaspi_t& gaspi
+        , fhg::vmem::gaspi_context& gaspi_context
+        , type::id_t owner
         )
       {
         url_t url (url_s);
@@ -538,18 +545,27 @@ namespace gpi
           boost::lexical_cast<type::size_t>(url.get ("buffer_size").get_value_or ("4194304"));
         type::size_t numbuf =
           boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
+        type::size_t const total_size
+          (boost::lexical_cast<type::size_t> (url.get ("total_size").get()));
+        type::size_t const per_node_size
+          ( fhg::util::divru (total_size, gaspi_context.number_of_nodes())
+          + comsize * numbuf
+          );
 
-        gpi_area_t * area = new gpi_area_t ( logger
-                                           , GPI_PC_INVAL
-                                           , "GPI"
-                                           , gpi::pc::F_PERSISTENT
-                                           + gpi::pc::F_GLOBAL
-                                           , topology
-                                           , handle_generator
-                                           , gaspi
-                                           );
-        area->m_num_com_buffers = numbuf;
-        area->m_com_buffer_size = comsize;
+        //! \todo get from user? use for other areas as well? remove?
+        fhg::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
+        gaspi_area_t * area = new gaspi_area_t ( logger
+                                               , owner
+                                               , "GASPI"
+                                               , gpi::pc::F_GLOBAL
+                                               , topology
+                                               , handle_generator
+                                               , gaspi_context
+                                               , time_left
+                                               , per_node_size
+                                               , numbuf
+                                               , comsize
+                                               );
         return area_ptr_t (area);
       }
     }

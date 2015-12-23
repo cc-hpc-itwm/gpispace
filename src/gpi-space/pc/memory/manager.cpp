@@ -5,14 +5,14 @@
 #include <fhglog/LogMacros.hpp>
 
 #include <util-generic/finally.hpp>
+#include <util-generic/print_exception.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/memory/gpi_area.hpp>
+#include <gpi-space/pc/memory/gaspi_area.hpp>
 #include <gpi-space/pc/memory/handle_generator.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/sfs_area.hpp>
+#include <gpi-space/pc/memory/beegfs_area.hpp>
 #include <gpi-space/pc/memory/shm_area.hpp>
 
 #include <string>
@@ -29,30 +29,33 @@ namespace gpi
                                , std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
-                               , api::gaspi_t& gaspi
+                               , fhg::vmem::gaspi_context& gaspi_context
+                               , type::id_t owner
                                )
       {
         url_t url (url_s);
 
         return
-          ( url.type() == "gpi" ? gpi_area_t::create (logger, url_s, topology, handle_generator, gaspi)
-          : url.type() == "sfs" ? sfs_area_t::create (logger, url_s, topology, handle_generator)
+          ( url.type() == "gaspi" ? gaspi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner)
+          : url.type() == "beegfs" ? beegfs_area_t::create (logger, url_s, topology, handle_generator, owner)
           : throw std::runtime_error
               ("no memory type registered with: '" + url_s + "'")
           );
       }
       }
 
-      manager_t::manager_t (fhg::log::Logger& logger, api::gaspi_t& gaspi)
+      manager_t::manager_t ( fhg::log::Logger& logger
+                           , fhg::vmem::gaspi_context& gaspi_context
+                           )
         : _logger (logger)
-        , _gaspi (gaspi)
+        , _gaspi_context (gaspi_context)
         , _next_memcpy_id (0)
-        , _handle_generator (gaspi.rank())
+        , _handle_generator (gaspi_context.rank())
       {
         _handle_generator.initialize_counter
-          (gpi::pc::type::segment::SEG_INVAL, MAX_PREALLOCATED_SEGMENT_ID);
+          (gpi::pc::type::segment::SEG_INVAL);
 
-        const std::size_t number_of_queues (gaspi.number_of_queues());
+        const std::size_t number_of_queues (gaspi_context.number_of_queues());
         for (std::size_t i (0); i < number_of_queues; ++i)
         {
           _task_threads.emplace_back
@@ -117,6 +120,8 @@ namespace gpi
                                  , const area_ptr &area
                                  )
       {
+        area->set_id
+          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         add_area (area);
         attach_process (creator, area->get_id ());
 
@@ -250,22 +255,13 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        if (area->get_id () == (gpi::pc::type::id_t (-1)))
+        if (m_areas.find (area->get_id ()) != m_areas.end())
         {
-          area->set_id
-            (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
-        }
-        else
-        {
-          if (m_areas.find (area->get_id ()) != m_areas.end())
-          {
-            throw std::runtime_error
-              ("cannot add another gpi segment: id already in use!");
-          }
+          throw std::runtime_error
+            ("cannot add another gpi segment: id already in use!");
         }
 
         m_areas [area->get_id ()] = area;
-        area->init ();
       }
 
       manager_t::area_ptr
@@ -408,9 +404,9 @@ namespace gpi
         {
           const area_ptr area (get_area_by_handle (transfer.location.handle));
 
-          for (gpi::rank_t rank = 0; rank < _gaspi.number_of_nodes(); ++rank)
+          for (gpi::rank_t rank = 0; rank < _gaspi_context.number_of_nodes(); ++rank)
           {
-            costs[_gaspi.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
+            costs[_gaspi_context.hostname_of_rank (rank)] += area->get_transfer_costs (transfer, rank);
           }
         }
 
@@ -478,8 +474,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi));
-        area->set_owner (0);
+        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi_context, 0));
         area->set_id (seg_id);
         add_area (area);
         return 0;
@@ -488,43 +483,76 @@ namespace gpi
       gpi::pc::type::segment_id_t
       manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
                             , const std::string & url_s
-                            , const gpi::pc::type::segment_id_t seg_id
                             , global::topology_t& topology
                             )
       {
-        area_ptr_t area (create_area (_logger, url_s, topology, _handle_generator, _gaspi));
-        area->set_owner (proc_id);
-        if (seg_id > 0)
-          area->set_id (seg_id);
+        //! \note for beegfs, master creates file that slaves need to
+        //! open determining filesize from the opened file. thus, to
+        //! avoid a race, the master is doing this before all
+        //! others. gaspi on the other side needs simultaneous
+        //! initialization for gaspi_segment_create etc.
+        bool const require_earlier_master_initialization
+          (url_t (url_s).type() == "beegfs");
 
-        add_area (area);
+        type::segment_id_t const id
+          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        bool successfully_added (false);
+        FHG_UTIL_FINALLY ( [&]
+                           {
+                             if (!successfully_added)
+                             {
+                               try
+                               {
+                                 del_memory (proc_id, id, topology);
+                               }
+                               catch (...)
+                               {
+                                 LLOG ( ERROR
+                                      , _logger
+                                      , "additional error in cleanup: "
+                                      << fhg::util::current_exception_printer()
+                                      );
+                               }
+                             }
+                           }
+                         );
 
-        if (area->flags () & F_GLOBAL)
+        if (require_earlier_master_initialization)
         {
-          try
-          {
-            url_t old_url (url_s);
-            url_t new_url (old_url.type(), old_url.path());
-            new_url.set ("persistent", "true");
-            topology.add_memory
-              (area->get_id (), boost::lexical_cast<std::string>(new_url));
-          }
-          catch (std::exception const & up)
-          {
-            try
-            {
-              del_memory (proc_id, area->get_id (), topology);
-            }
-            catch (...)
-            {
-              // ignore follow up exception
-            }
+          area_ptr_t area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context, proc_id);
+          area->set_id (id);
 
-            throw;
-          }
+          add_area (area);
+
+          topology.add_memory (id, url_s);
+        }
+        else
+        {
+          std::future<void> local
+            ( std::async
+                ( std::launch::async
+                , [&]
+                  {
+                    area_ptr_t area ( create_area ( _logger
+                                                  , url_s
+                                                  , topology
+                                                  , _handle_generator
+                                                  , _gaspi_context
+                                                  , proc_id
+                                                  )
+                                    );
+                    area->set_id (id);
+                    add_area (area);
+                  }
+                )
+            );
+
+          topology.add_memory (id, url_s);
+          local.get();
         }
 
-        return area->get_id ();
+        successfully_added = true;
+        return id;
       }
 
       int
@@ -544,8 +572,6 @@ namespace gpi
       {
         if (0 == seg_id)
           throw std::runtime_error ("invalid segment id");
-        if (seg_id <= gpi::pc::memory::manager_t::MAX_PREALLOCATED_SEGMENT_ID)
-          throw std::runtime_error ("permission denied");
 
         {
           lock_type lock (m_mutex);

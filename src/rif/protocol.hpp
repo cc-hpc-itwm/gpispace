@@ -59,7 +59,6 @@ namespace fhg
         ( start_vmem
         , pid_t ( boost::filesystem::path command
                 , fhg::log::Level log_level
-                , std::size_t memory_in_bytes
                 , boost::filesystem::path socket
                 , unsigned short gaspi_port
                 , std::chrono::seconds proc_init_timeout
