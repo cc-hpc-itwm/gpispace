@@ -1,8 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <drts/worker/context.hpp>
-#include <drts/worker/context_impl.hpp>
-
 #include <drts/private/scoped_allocation.hpp>
 
 #include <fhg/util/thread/bounded_queue.hpp>
@@ -18,7 +15,6 @@
 #include <sdpa/events/SDPAEvent.hpp>
 
 #include <we/loader/loader.hpp>
-#include <we/type/activity.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -31,35 +27,7 @@
 #include <string>
 #include <vector>
 
-struct wfe_task_t
-{
-  enum state_t
-  {
-    PENDING
-  , CANCELED
-  , CANCELED_DUE_TO_WORKER_SHUTDOWN
-  , FINISHED
-  , FAILED
-  };
-
-  std::string id;
-  state_t state;
-  we::type::activity_t activity;
-  drts::worker::context context;
-
-  wfe_task_t ( std::string id_
-             , std::string const& description
-             , std::string worker_name
-             , std::set<std::string> workers
-             , fhg::log::Logger& logger
-             )
-    : id (id_)
-    , state (PENDING)
-    , activity (description)
-    , context
-      (drts::worker::context_constructor (worker_name, workers, logger))
-  {}
-};
+struct wfe_task_t;
 
 class DRTSImpl final : public sdpa::events::EventHandler
 {
@@ -82,12 +50,12 @@ public:
     using owner_type = map_of_masters_t::const_iterator;
 
     Job ( std::string const& jobid
-        , std::string const& description_
+        , we::type::activity_t const& activity_
         , owner_type const& owner_
         , std::set<std::string> const& workers_
         )
       : id (jobid)
-      , description (description_)
+      , activity (activity_)
       , owner (owner_)
       , workers (workers_)
       , state (Job::PENDING)
@@ -96,11 +64,11 @@ public:
     {}
 
     std::string const id;
-    std::string const description;
+    we::type::activity_t const activity;
     owner_type const owner;
     std::set<std::string> const workers;
     std::atomic<state_t> state;
-    std::string result;
+    we::type::activity_t result;
     std::string message;
   };
 

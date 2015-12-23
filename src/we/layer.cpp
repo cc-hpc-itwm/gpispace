@@ -9,8 +9,6 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
-#include <boost/range/adaptor/map.hpp>
-
 #include <functional>
 #include <sstream>
 
@@ -392,31 +390,6 @@ namespace we
       );
   }
 
-  namespace
-  {
-    bool output_missing (type::activity_t const& activity)
-    {
-      if ( activity.output().size()
-         < activity.transition().ports_output().size()
-         )
-      {
-        return true;
-      }
-
-      std::unordered_set<port_id_type> port_ids_with_output;
-
-      for ( port_id_type port_id : activity.output()
-          | boost::adaptors::map_values
-          )
-      {
-        port_ids_with_output.emplace (port_id);
-      }
-
-      return port_ids_with_output.size()
-        != activity.transition().ports_output().size();
-    }
-  }
-
   void layer::workflow_response
     ( id_type id
     , std::string const& response_id
@@ -491,7 +464,7 @@ namespace we
                                  . get ({"drts", "wait_for_output"})
                                  . get_value_or (false)
                                  )
-              && output_missing (*activity_data._activity)
+              && activity_data._activity->output_missing()
               )
            )
         {
@@ -814,7 +787,8 @@ namespace we
       )
     {
       //! \note We wrap all input activites in a net.
-      _activity->inject (child, workflow_response);
+      boost::get<we::type::net_type> (_activity->transition().data())
+        .inject (child, workflow_response);
     }
 
 

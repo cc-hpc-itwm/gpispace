@@ -5,6 +5,7 @@
 #include <we/type/activity.fwd.hpp>
 
 #include <we/type/id.hpp>
+#include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
 
 #include <we/workflow_response.hpp>
@@ -56,11 +57,6 @@ namespace we
         const we::type::transition_t& transition() const;
         we::type::transition_t& transition();
 
-        // allowed for net_type only
-        void inject (const activity_t&, we::workflow_response_callback
-                            = [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&) {}
-);
-
         const input_t& input() const;
         void add_input
           ( we::port_id_type const&
@@ -72,12 +68,26 @@ namespace we
           ( we::port_id_type const&
           , pnet::type::value::value_type const&
           );
+        void add_output (expr::eval::context const&);
+
+        bool output_missing() const;
 
         boost::optional<we::transition_id_type> const&
           transition_id() const;
 
         //! \note context contains references to input
         expr::eval::context evaluation_context() const;
+
+        schedule_data get_schedule_data() const;
+
+        unsigned long memory_buffer_size_total() const
+        {
+          return !_transition.module_call()
+            ? 0UL
+            : _transition.module_call()
+              ->memory_buffer_size_total (evaluation_context())
+            ;
+        }
 
       private:
         friend class boost::serialization::access;
@@ -94,6 +104,7 @@ namespace we
         we::type::transition_t _transition;
         boost::optional<we::transition_id_type> _transition_id;
 
+        friend class net_type;
         input_t _input;
         output_t _output;
       };

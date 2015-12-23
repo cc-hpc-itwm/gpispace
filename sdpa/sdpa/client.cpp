@@ -194,10 +194,10 @@ namespace sdpa
       return state;
     }
 
-    sdpa::job_id_t Client::submitJob(const job_desc_t &desc)
+    sdpa::job_id_t Client::submitJob (we::type::activity_t const& activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (boost::none, desc)).job_id();
+        (sdpa::events::SubmitJobEvent (boost::none, activity)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)
@@ -285,7 +285,7 @@ namespace sdpa
         (sdpa::events::DeleteJobEvent (jid));
     }
 
-    sdpa::client::result_t Client::retrieveResults(const job_id_t &jid)
+    we::type::activity_t Client::retrieveResults(const job_id_t &jid)
     {
       return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
         (sdpa::events::RetrieveJobResultsEvent (jid)).result();

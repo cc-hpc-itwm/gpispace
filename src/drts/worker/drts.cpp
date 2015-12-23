@@ -1,5 +1,8 @@
 #include <drts/worker/drts.hpp>
 
+#include <drts/worker/context.hpp>
+#include <drts/worker/context_impl.hpp>
+
 #include <util-generic/hostname.hpp>
 
 #include <fhg/util/macros.hpp>
@@ -17,10 +20,41 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 
+#include <we/type/activity.hpp>
 #include <we/loader/module_call.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
+
+struct wfe_task_t
+{
+  enum state_t
+  {
+    PENDING
+  , CANCELED
+  , CANCELED_DUE_TO_WORKER_SHUTDOWN
+  , FINISHED
+  , FAILED
+  };
+
+  std::string id;
+  state_t state;
+  we::type::activity_t activity;
+  drts::worker::context context;
+
+  wfe_task_t ( std::string id_
+             , we::type::activity_t const& activity
+             , std::string worker_name
+             , std::set<std::string> workers
+             , fhg::log::Logger& logger
+             )
+    : id (id_)
+    , state (PENDING)
+    , activity (activity)
+    , context
+      (drts::worker::context_constructor (worker_name, workers, logger))
+  {}
+};
 
 namespace
 {
@@ -64,7 +98,7 @@ namespace
                                                   )
                                , sub->transition().data()
                                );
-          _activity.inject (*sub);
+          net.inject (*sub);
 
           if (task.state == wfe_task_t::CANCELED)
           {
@@ -78,13 +112,15 @@ namespace
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&]
           {
-            we::loader::module_call ( loader
-                                    , _virtual_memory_api
-                                    , _shared_memory
-                                    , &task.context
-                                    , _activity
-                                    , mod
-                                    );
+            _activity.add_output
+              ( we::loader::module_call ( loader
+                                        , _virtual_memory_api
+                                        , _shared_memory
+                                        , &task.context
+                                        , _activity.evaluation_context()
+                                        , mod
+                                        )
+              );
           }
         , "call to '" + mod.module() + "::" + mod.function() + "' failed"
         );
@@ -293,7 +329,7 @@ void DRTSImpl::handleSubmitJobEvent
 
   std::shared_ptr<DRTSImpl::Job> job
     ( std::make_shared<DRTSImpl::Job> ( *e->job_id()
-                                      , e->description()
+                                      , e->activity()
                                       , master
                                       , e->workers()
                                       )
@@ -487,10 +523,10 @@ void DRTSImpl::job_execution_thread()
 
     try
     {
-      job->result = we::type::activity_t().to_string();
+      job->result = we::type::activity_t();
 
       wfe_task_t task
-        (job->id, job->description, m_my_name, job->workers, _logger);
+        (job->id, job->activity, m_my_name, job->workers, _logger);
 
       if (_notification_service)
       {
@@ -543,7 +579,7 @@ void DRTSImpl::job_execution_thread()
       if (task.state == wfe_task_t::PENDING)
       {
         task.state = wfe_task_t::FINISHED;
-        job->result = task.activity.to_string();
+        job->result = task.activity;
       }
 
       if (wfe_task_t::FINISHED == task.state)
@@ -588,7 +624,7 @@ void DRTSImpl::job_execution_thread()
       LLOG (ERROR, _logger, error);
       job->state = DRTSImpl::Job::FAILED;
 
-      job->result = job->description;
+      job->result = job->activity;
       job->message = error;
     }
 

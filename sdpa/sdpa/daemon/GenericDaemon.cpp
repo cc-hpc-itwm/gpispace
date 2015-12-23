@@ -283,7 +283,7 @@ void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_
       for (const worker_id_t& worker_id : workers)
       {
         child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->description(), workers);
+          .submit_job (ptrJob->id(), ptrJob->activity(), workers);
       }
   }
 }
@@ -295,14 +295,28 @@ std::string GenericDaemon::gen_id()
 }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
-                               , const job_desc_t desc
+                               , we::type::activity_t activity
                                , boost::optional<master_info_t::iterator> owner
-                               , const job_requirements_t& job_req_list
                                )
     {
       boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-      Job* pJob = new Job( job_id, desc, opaque_job_master_t (static_cast<const void*> (&owner)), job_req_list);
+      const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
+
+      job_requirements_t requirements
+        { activity.transition().requirements()
+        , activity.get_schedule_data()
+        , _virtual_memory_api->transfer_costs (activity)
+        , computational_cost
+        , activity.memory_buffer_size_total()
+        };
+
+      Job* pJob = new Job
+        ( job_id
+        , std::move (activity)
+        , opaque_job_master_t (static_cast<const void*> (&owner))
+        , std::move (requirements)
+        );
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -351,13 +365,7 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  // One should parse the workflow in order to be able to create a valid job
-  Job* pJob (addJob ( job_id
-                    , e.description()
-                    , itMaster
-                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0, 0} //!Note: a master job needs no shared mem allocation
-                    )
-             );
+  Job* pJob (addJob (job_id, e.activity(), itMaster));
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -371,10 +379,10 @@ void GenericDaemon::handleSubmitJobEvent
   {
     try
     {
-      const we::type::activity_t act (pJob->description());
+      const we::type::activity_t act (pJob->activity());
       workflowEngine()->submit (job_id, act);
 
-      // Should set the workflow_id here, or send it together with the workflow description
+      // Should set the workflow_id here, or send it together with the activity
       pJob->Dispatch();
 
       if (m_guiService)
@@ -581,42 +589,12 @@ void GenericDaemon::handleErrorEvent
   }
 }
 
-namespace
-{
-  unsigned long total_memory_buffer_size (const we::type::activity_t& activity)
-  {
-    if (!activity.transition().module_call())
-      return 0;
-
-    return activity.transition().module_call()
-      ->memory_buffer_size_total (activity.evaluation_context());
-  }
-}
-
 void GenericDaemon::submit ( const we::layer::id_type& job_id
                            , const we::type::activity_t& activity
                            )
 try
 {
-  const we::type::schedule_data schedule_data
-    (activity.transition().get_schedule_data<unsigned long> (activity.input(), "num_worker"));
-
-  const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
-  if (schedule_data.num_worker() && schedule_data.num_worker().get() == 0UL)
-  {
-    throw std::runtime_error ("invalid number of workers required: 0UL");
-  }
-
-  addJob ( job_id
-         , activity.to_string()
-         , boost::none
-         , job_requirements_t ( activity.transition().requirements()
-                              , schedule_data
-                              , _virtual_memory_api->transfer_costs (activity)
-                              , computational_cost
-                              , total_memory_buffer_size (activity)
-                              )
-         );
+  addJob (job_id, activity, boost::none);
 
   _scheduler.enqueueJob (job_id);
   request_scheduling();
@@ -676,11 +654,11 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
   }
 
-  pJob->JobFinished (result.to_string());
+  pJob->JobFinished (result);
 
   if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
   {
-    parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
+    parent_proxy (this, pJob->owner()).job_finished (id, result);
   }
 
   if (m_guiService)
@@ -695,7 +673,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     m_guiService->notify (evt);
   }
 
-  notify_subscribers<events::JobFinishedEvent> (id, id, result.to_string());
+  notify_subscribers<events::JobFinishedEvent> (id, id, result);
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
@@ -717,7 +695,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   if (m_guiService)
   {
-    const we::type::activity_t act (pJob->description());
+    const we::type::activity_t act (pJob->activity());
     const sdpa::daemon::NotificationEvent evt
       ( {name()}
       , pJob->id()
@@ -1472,12 +1450,12 @@ namespace sdpa
     }
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
-                                                , job_desc_t description
+                                                , we::type::activity_t activity
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, description, workers);
+        (_address, id, activity, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const
@@ -1561,7 +1539,7 @@ namespace sdpa
     }
 
     void GenericDaemon::parent_proxy::job_finished
-      (job_id_t id, job_result_t result) const
+      (job_id_t id, we::type::activity_t result) const
     {
       _that->sendEventToOther<events::JobFinishedEvent> (_address, id, result);
     }
@@ -1610,7 +1588,7 @@ namespace sdpa
     }
 
     void GenericDaemon::parent_proxy::retrieve_job_results_reply
-      (job_id_t id, job_result_t result) const
+      (job_id_t id, we::type::activity_t result) const
     {
       _that->sendEventToOther<events::JobResultsReplyEvent>
         (_address, id, result);

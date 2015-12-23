@@ -100,18 +100,21 @@ namespace sdpa
     {
     public:
       Job ( const job_id_t id
-          , const job_desc_t desc
+          , we::type::activity_t
           , opaque_job_master_t owner
           , job_requirements_t
           );
 
-      const job_desc_t& description() const;
+      we::type::activity_t const& activity() const
+      {
+        return _activity;
+      }
       const job_id_t& id() const;
       opaque_job_master_t const& owner() const;
       job_requirements_t requirements() const;
 
       std::string error_message () const;
-      const job_result_t& result() const;
+      const we::type::activity_t& result() const;
 
       status::code getStatus() const;
 
@@ -119,17 +122,17 @@ namespace sdpa
       void CancelJobAck();
       void Dispatch();
       void JobFailed (std::string error_message);
-      void JobFinished (job_result_t);
+      void JobFinished (we::type::activity_t);
       void Reschedule();
 
     private:
       mutable boost::mutex mtx_;
-      job_desc_t desc_;
+      we::type::activity_t _activity;
       job_id_t id_;
       opaque_job_master_t m_owner;
       job_requirements_t _requirements;
 
       std::string m_error_message;
-      job_result_t result_;
+      we::type::activity_t result_;
     };
 }}

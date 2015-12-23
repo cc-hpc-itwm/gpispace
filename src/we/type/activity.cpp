@@ -8,10 +8,11 @@
 
 #include <util-generic/nest_exceptions.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -82,65 +83,6 @@ namespace we
         boost::archive::text_oarchive ar (oss);
         ar << BOOST_SERIALIZATION_NVP (*this);
         return oss.str();
-      }
-
-      void activity_t::inject
-        ( const activity_t& child
-        , we::workflow_response_callback workflow_response
-        )
-      {
-        we::type::net_type& net
-          (boost::get<we::type::net_type> (_transition.data()));
-
-        for (const activity_t::token_on_port_t& top : child.output())
-        {
-          if ( net.port_to_place().count (*child.transition_id())
-             && net.port_to_place().at (*child.transition_id())
-                .left.count (top.second)
-             )
-          {
-            net.put_value
-              ( net.port_to_place().at (*child.transition_id())
-              .left.find (top.second)->get_right()
-              , top.first
-              );
-          }
-          else
-          {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  assert ( net.port_to_response().at (*child.transition_id())
-                         . left.count (top.second)
-                         );
-
-                  pnet::type::value::value_type const description
-                    ([this, &net, &child, &top]
-                     {
-                       std::string const to
-                         ( net.port_to_response().at (*child.transition_id())
-                         . left.find (top.second)->get_right()
-                         );
-
-                       we::port_id_type const input_port_id
-                         (child.transition().input_port_by_name (to));
-
-                       return std::find_if
-                         ( child._input.begin(), child._input.end()
-                         , [&input_port_id] (token_on_port_t const& input_top)
-                           {
-                             return input_top.second == input_port_id;
-                           }
-                         )->first;
-                     }()
-                    );
-
-                  workflow_response (description, top.first);
-                }
-              , "inject result: sending workflow response failed"
-              );
-          }
-        }
       }
 
       void activity_t::add_input
@@ -217,6 +159,35 @@ namespace we
       {
         _output.emplace_back (value, port_id);
       }
+      void activity_t::add_output (expr::eval::context const& output)
+      {
+        for ( std::pair<port_id_type, port_t> const& port_by_id
+            : _transition.ports_output()
+            )
+        {
+          add_output
+            (port_by_id.first, output.value (port_by_id.second.name()));
+        }
+      }
+
+      bool activity_t::output_missing() const
+      {
+        output_t const out (output());
+
+        if (out.size() < _transition.ports_output().size())
+        {
+          return true;
+        }
+
+        std::unordered_set<port_id_type> port_ids_with_output;
+
+        for (port_id_type port_id : out | boost::adaptors::map_values)
+        {
+          port_ids_with_output.emplace (port_id);
+        }
+
+        return port_ids_with_output.size() != _transition.ports_output().size();
+      }
 
       boost::optional<we::transition_id_type> const&
         activity_t::transition_id() const
@@ -241,6 +212,37 @@ namespace we
         }
 
         return context;
+      }
+
+      namespace
+      {
+        template<typename T>
+          boost::optional<T> eval_schedule_data
+            ( transition_t const& transition
+            , expr::eval::context context
+            , const std::string& key
+            )
+        {
+          boost::optional<const property::value_type&> expression_value
+            (transition.prop().get ({"fhg", "drts", "schedule", key}));
+
+          if (!expression_value)
+          {
+            return boost::none;
+          }
+
+          expression_t const expression
+            (boost::get<std::string> (expression_value.get()));
+
+          return boost::get<T> (expression.ast().eval_all (context));
+        }
+      }
+
+      schedule_data activity_t::get_schedule_data() const
+      {
+        return { eval_schedule_data<unsigned long>
+                   (_transition, evaluation_context(), "num_worker")
+               };
       }
     }
 }

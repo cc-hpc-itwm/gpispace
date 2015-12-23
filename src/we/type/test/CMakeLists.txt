@@ -48,7 +48,7 @@ fhg_add_test (sig.cpp
   LINK_LIBRARIES sig_op pnet
 )
 
-fhg_add_test (transition.cpp
+fhg_add_test (get_schedule_data.cpp
   BOOST_UNIT_TEST
   PROJECT we_type
   LINK_LIBRARIES pnet

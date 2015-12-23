@@ -8,12 +8,13 @@
 #include <set>
 #include <sdpa/job_states.hpp>
 
+#include <we/type/net.hpp>
+#include <we/type/activity.hpp>
+
 namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::list<job_id_t> job_id_list_t;
-	typedef std::string job_desc_t;
 	typedef std::string worker_id_t;
-	typedef std::string job_result_t;
 	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 
   using name_host_port_tuple

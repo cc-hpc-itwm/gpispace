@@ -113,7 +113,7 @@ namespace gspc
   {
     put (workflow._->_activity, values_on_ports);
 
-    return _->_client.submitJob (workflow._->_activity.to_string());
+    return _->_client.submitJob (workflow._->_activity);
   }
 
   void client::put_token ( job_id_t job_id

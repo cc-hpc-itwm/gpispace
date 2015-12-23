@@ -102,9 +102,9 @@ namespace utils
     return act;
   }
 
-  std::string module_call()
+  we::type::activity_t module_call()
   {
-    return module_call (fhg::util::testing::random_string()).to_string();
+    return module_call (fhg::util::testing::random_string());
   }
 
   we::type::activity_t net_with_one_child_requiring_workers (unsigned long count)
@@ -523,8 +523,7 @@ namespace utils
       virtual void handleSubmitJobEvent
         (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
       {
-        const std::string name
-          (we::type::activity_t (e->description()).transition().name());
+        const std::string name (e->activity().transition().name());
 
         add_job (name, *e->job_id(), source);
 
@@ -544,7 +543,7 @@ namespace utils
         _jobs.erase (name);
 
         _network.perform<sdpa::events::JobFinishedEvent>
-          (job._owner, job._id, we::type::activity_t().to_string());
+          (job._owner, job._id, we::type::activity_t());
       }
 
       sdpa::job_id_t job_id (std::string name)
@@ -666,7 +665,7 @@ namespace utils
       _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
 
       _network.perform<sdpa::events::JobFinishedEvent>
-        (source, *e->job_id(), we::type::activity_t().to_string());
+        (source, *e->job_id(), we::type::activity_t());
     }
     virtual void handleJobFinishedAckEvent
       (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent*) override
@@ -744,7 +743,7 @@ namespace utils
           )
     {}
 
-    sdpa::job_id_t submit_job (std::string workflow)
+    sdpa::job_id_t submit_job (we::type::activity_t workflow)
     {
       return _.submitJob (workflow);
     }
@@ -791,7 +790,7 @@ namespace utils
       return _.discoverJobStates (discover_id, id);
     }
 
-    sdpa::client::result_t retrieve_job_results (const sdpa::job_id_t& id)
+    we::type::activity_t retrieve_job_results (const sdpa::job_id_t& id)
     {
       return _.retrieveResults (id);
     }
@@ -810,7 +809,7 @@ namespace utils
 
 
     static sdpa::status::code submit_job_and_wait_for_termination
-      (std::string workflow, const orchestrator& orch)
+      (we::type::activity_t workflow, const orchestrator& orch)
     {
       client c (orch);
 
@@ -819,7 +818,7 @@ namespace utils
     }
 
     static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
-      (std::string workflow, const orchestrator& orch)
+      (we::type::activity_t workflow, const orchestrator& orch)
     {
       client c (orch);
 
@@ -830,7 +829,7 @@ namespace utils
     {
       submitted_job (we::type::activity_t workflow, orchestrator const& orch)
         : _client (new client (orch))
-        , _job_id (_client->submit_job (workflow.to_string()))
+        , _job_id (_client->submit_job (workflow))
       {}
 
       ~submitted_job()

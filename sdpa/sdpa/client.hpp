@@ -18,7 +18,6 @@ namespace sdpa
 {
   namespace client
   {
-    typedef sdpa::job_result_t result_t;
     struct job_info_t
     {
       std::string error_message;
@@ -33,12 +32,12 @@ namespace sdpa
              );
       ~Client();
 
-      job_id_t submitJob(const job_desc_t &);
+      job_id_t submitJob(const we::type::activity_t &);
       void cancelJob(const job_id_t &);
       status::code queryJob(const job_id_t &);
       status::code queryJob(const job_id_t &, job_info_t &);
       void deleteJob(const job_id_t &);
-      result_t retrieveResults(const job_id_t &);
+      we::type::activity_t retrieveResults(const job_id_t &);
       sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
       void put_token
         (job_id_t, std::string place_name, pnet::type::value::value_type);
