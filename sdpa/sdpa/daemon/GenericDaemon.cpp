@@ -297,12 +297,23 @@ std::string GenericDaemon::gen_id()
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , const we::type::activity_t desc
                                , boost::optional<master_info_t::iterator> owner
-                               , const job_requirements_t& job_req_list
                                )
     {
       boost::mutex::scoped_lock const _ (_job_map_mutex);
 
-      Job* pJob = new Job( job_id, desc, opaque_job_master_t (static_cast<const void*> (&owner)), job_req_list);
+      const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
+
+      Job* pJob = new Job
+        ( job_id
+        , desc
+        , opaque_job_master_t (static_cast<const void*> (&owner))
+        , job_requirements_t ( desc.transition().requirements()
+                             , desc.get_schedule_data()
+                             , _virtual_memory_api->transfer_costs (desc)
+                             , computational_cost
+                             , desc.memory_buffer_size_total()
+                             )
+        );
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -351,13 +362,7 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  // One should parse the workflow in order to be able to create a valid job
-  Job* pJob (addJob ( job_id
-                    , e.description()
-                    , itMaster
-                    , {{}, we::type::schedule_data(), null_transfer_cost, 1.0, 0} //!Note: a master job needs no shared mem allocation
-                    )
-             );
+  Job* pJob (addJob (job_id, e.description(), itMaster));
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -586,18 +591,7 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
-
-  addJob ( job_id
-         , activity
-         , boost::none
-         , job_requirements_t ( activity.transition().requirements()
-                              , activity.get_schedule_data()
-                              , _virtual_memory_api->transfer_costs (activity)
-                              , computational_cost
-                              , activity.memory_buffer_size_total()
-                              )
-         );
+  addJob (job_id, activity, boost::none);
 
   _scheduler.enqueueJob (job_id);
   request_scheduling();
