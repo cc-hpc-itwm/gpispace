@@ -100,7 +100,7 @@ namespace sdpa
     {
     public:
       Job ( const job_id_t id
-          , const we::type::activity_t
+          , we::type::activity_t
           , opaque_job_master_t owner
           , job_requirements_t
           );

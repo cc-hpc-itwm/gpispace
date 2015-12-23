@@ -295,7 +295,7 @@ std::string GenericDaemon::gen_id()
 }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
-                               , const we::type::activity_t activity
+                               , we::type::activity_t activity
                                , boost::optional<master_info_t::iterator> owner
                                )
     {
@@ -303,16 +303,19 @@ std::string GenericDaemon::gen_id()
 
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
+      job_requirements_t requirements
+        { activity.transition().requirements()
+        , activity.get_schedule_data()
+        , _virtual_memory_api->transfer_costs (activity)
+        , computational_cost
+        , activity.memory_buffer_size_total()
+        };
+
       Job* pJob = new Job
         ( job_id
-        , activity
+        , std::move (activity)
         , opaque_job_master_t (static_cast<const void*> (&owner))
-        , job_requirements_t ( activity.transition().requirements()
-                             , activity.get_schedule_data()
-                             , _virtual_memory_api->transfer_costs (activity)
-                             , computational_cost
-                             , activity.memory_buffer_size_total()
-                             )
+        , std::move (requirements)
         );
 
       if (!job_map_.emplace (job_id, pJob).second)

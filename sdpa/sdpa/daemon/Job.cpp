@@ -5,14 +5,14 @@ namespace sdpa
   namespace daemon
   {
     Job::Job ( const job_id_t id
-             , const we::type::activity_t activity
+             , we::type::activity_t activity
              , opaque_job_master_t owner
              , job_requirements_t requirements
              )
-      : _activity (activity)
+      : _activity (std::move (activity))
       , id_ (id)
       , m_owner (std::move (owner))
-      , _requirements (requirements)
+      , _requirements (std::move (requirements))
       , m_error_message()
       , result_()
     {
