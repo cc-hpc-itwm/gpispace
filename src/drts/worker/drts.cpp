@@ -43,7 +43,7 @@ struct wfe_task_t
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
-             , std::string const& description
+             , we::type::activity_t const& description
              , std::string worker_name
              , std::set<std::string> workers
              , fhg::log::Logger& logger
@@ -523,7 +523,7 @@ void DRTSImpl::job_execution_thread()
 
     try
     {
-      job->result = we::type::activity_t().to_string();
+      job->result = we::type::activity_t();
 
       wfe_task_t task
         (job->id, job->description, m_my_name, job->workers, _logger);
@@ -579,7 +579,7 @@ void DRTSImpl::job_execution_thread()
       if (task.state == wfe_task_t::PENDING)
       {
         task.state = wfe_task_t::FINISHED;
-        job->result = task.activity.to_string();
+        job->result = task.activity;
       }
 
       if (wfe_task_t::FINISHED == task.state)

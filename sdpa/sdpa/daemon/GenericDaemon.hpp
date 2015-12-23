@@ -210,7 +210,7 @@ namespace sdpa {
 
     private:
       Job* addJob ( const sdpa::job_id_t& job_id
-                  , const job_desc_t desc
+                  , const we::type::activity_t desc
                   , boost::optional<master_info_t::iterator> owner
                   , const job_requirements_t& job_req_list
                   );
@@ -352,7 +352,7 @@ namespace sdpa {
           (boost::optional<std::exception_ptr>) const;
 
         void submit_job
-          (boost::optional<job_id_t>, job_desc_t, std::set<worker_id_t> const&) const;
+          (boost::optional<job_id_t>, we::type::activity_t, std::set<worker_id_t> const&) const;
         void cancel_job (job_id_t) const;
 
         void job_failed_ack (job_id_t) const;
@@ -388,7 +388,7 @@ namespace sdpa {
         void notify_shutdown() const;
 
         void job_failed (job_id_t, std::string error_message) const;
-        void job_finished (job_id_t, job_result_t) const;
+        void job_finished (job_id_t, we::type::activity_t) const;
 
         void cancel_job_ack (job_id_t) const;
         //! \todo Client only. Move to client_proxy?
@@ -404,7 +404,7 @@ namespace sdpa {
         void query_job_status_reply
           (job_id_t, status::code, std::string error_message) const;
         //! \todo Client only. Move to client_proxy?
-        void retrieve_job_results_reply (job_id_t, job_result_t) const;
+        void retrieve_job_results_reply (job_id_t, we::type::activity_t) const;
 
         void put_token_response ( std::string put_token_id
                                 , boost::optional<std::exception_ptr>

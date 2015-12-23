@@ -5,7 +5,7 @@ namespace sdpa
   namespace daemon
   {
     Job::Job ( const job_id_t id
-             , const job_desc_t desc
+             , const we::type::activity_t desc
              , opaque_job_master_t owner
              , job_requirements_t requirements
              )
@@ -19,7 +19,7 @@ namespace sdpa
       start();
     }
 
-    const job_desc_t & Job::description() const
+    const we::type::activity_t & Job::description() const
     {
       return desc_;
     }
@@ -41,7 +41,7 @@ namespace sdpa
       boost::mutex::scoped_lock const _ (mtx_);
       return m_error_message;
     }
-    const job_result_t& Job::result() const
+    const we::type::activity_t& Job::result() const
     {
       boost::mutex::scoped_lock const _ (mtx_);
       return result_;
@@ -74,7 +74,7 @@ namespace sdpa
       process_event (e_failed());
       m_error_message = error_message;
     }
-    void Job::JobFinished (job_result_t result)
+    void Job::JobFinished (we::type::activity_t result)
     {
       boost::mutex::scoped_lock const _ (mtx_);
       process_event (e_finished());

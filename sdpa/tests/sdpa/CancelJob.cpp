@@ -193,7 +193,7 @@ BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
   job_submitted_0.wait();
   job_submitted_1.wait();

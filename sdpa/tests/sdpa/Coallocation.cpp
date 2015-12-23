@@ -19,7 +19,7 @@ BOOST_FIXTURE_TEST_CASE (testCoallocationWorkflow, setup_logging)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (2).to_string(), orchestrator)
+      (utils::net_with_one_child_requiring_workers (2), orchestrator)
     , sdpa::status::FINISHED
     );
 }
@@ -40,7 +40,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
   // 2. submit workflow which generates tasks (2) that require 2 workers
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
   // 3. start worker 2
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -116,7 +116,7 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
   fhg::util::thread::event<std::string> job_submitted_2;
   bool worker_2_shall_not_get_a_job (false);
@@ -168,7 +168,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_two_children_requiring_n_workers (3).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
 
   fhg::util::thread::event<std::string> job_submitted_1;
   fhg::util::thread::event<std::string> cancel_requested_1;

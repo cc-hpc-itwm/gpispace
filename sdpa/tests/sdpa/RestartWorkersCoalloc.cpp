@@ -60,7 +60,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_run
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_one_child_requiring_workers (2).to_string()));
+    (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_one_child_requiring_workers (2).to_string()));
+    (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 

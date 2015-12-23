@@ -57,7 +57,7 @@ namespace
       _network.perform<sdpa::events::SubmitJobAckEvent> (job._owner, job._id);
 
       _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t().to_string());
+        (job._owner, job._id, we::type::activity_t());
 
       _jobs.erase (name);
     }
@@ -74,7 +74,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_c
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_one_child_requiring_workers (3).to_string()));
+    (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
   fhg::util::thread::event<std::string> job_submitted_1;
 
@@ -122,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_canc
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_one_child_requiring_workers (3).to_string()));
+    (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
   fhg::util::thread::event<std::string> job_submitted_1;
 
@@ -176,7 +176,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibli
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_one_child_requiring_workers (3).to_string()));
+    (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
@@ -231,7 +231,7 @@ BOOST_FIXTURE_TEST_CASE
 
   utils::client client (orchestrator);
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2).to_string()));
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
   fhg::util::thread::event<std::string> job_submitted_1;
 

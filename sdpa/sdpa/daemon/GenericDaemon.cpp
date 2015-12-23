@@ -295,7 +295,7 @@ std::string GenericDaemon::gen_id()
 }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
-                               , const job_desc_t desc
+                               , const we::type::activity_t desc
                                , boost::optional<master_info_t::iterator> owner
                                , const job_requirements_t& job_req_list
                                )
@@ -589,7 +589,7 @@ try
   const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
   addJob ( job_id
-         , activity.to_string()
+         , activity
          , boost::none
          , job_requirements_t ( activity.transition().requirements()
                               , activity.get_schedule_data()
@@ -657,11 +657,11 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
   }
 
-  pJob->JobFinished (result.to_string());
+  pJob->JobFinished (result);
 
   if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
   {
-    parent_proxy (this, pJob->owner()).job_finished (id, result.to_string());
+    parent_proxy (this, pJob->owner()).job_finished (id, result);
   }
 
   if (m_guiService)
@@ -676,7 +676,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
     m_guiService->notify (evt);
   }
 
-  notify_subscribers<events::JobFinishedEvent> (id, id, result.to_string());
+  notify_subscribers<events::JobFinishedEvent> (id, id, result);
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
@@ -1453,7 +1453,7 @@ namespace sdpa
     }
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
-                                                , job_desc_t description
+                                                , we::type::activity_t description
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
@@ -1542,7 +1542,7 @@ namespace sdpa
     }
 
     void GenericDaemon::parent_proxy::job_finished
-      (job_id_t id, job_result_t result) const
+      (job_id_t id, we::type::activity_t result) const
     {
       _that->sendEventToOther<events::JobFinishedEvent> (_address, id, result);
     }
@@ -1591,7 +1591,7 @@ namespace sdpa
     }
 
     void GenericDaemon::parent_proxy::retrieve_job_results_reply
-      (job_id_t id, job_result_t result) const
+      (job_id_t id, we::type::activity_t result) const
     {
       _that->sendEventToOther<events::JobResultsReplyEvent>
         (_address, id, result);

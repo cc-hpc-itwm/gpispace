@@ -13,7 +13,7 @@ BOOST_FIXTURE_TEST_CASE (testInvalidNumberOfWorkersRequired, setup_logging)
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (0).to_string(), orchestrator)
+      (utils::net_with_one_child_requiring_workers (0), orchestrator)
     , sdpa::status::FAILED
     );
 }

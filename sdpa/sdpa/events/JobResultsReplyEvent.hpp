@@ -13,7 +13,7 @@ namespace sdpa
       typedef boost::shared_ptr<JobResultsReplyEvent> Ptr;
 
       JobResultsReplyEvent ( const sdpa::job_id_t& a_job_id
-                           , const job_result_t& a_result
+                           , const we::type::activity_t& a_result
                            )
         : sdpa::events::JobEvent (a_job_id)
         , result_ (a_result)
@@ -25,13 +25,13 @@ namespace sdpa
         handler->handleJobResultsReplyEvent (source, this);
       }
 
-      const job_result_t& result() const
+      const we::type::activity_t& result() const
       {
         return result_;
       }
 
     private:
-      job_result_t result_;
+      we::type::activity_t result_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (JobResultsReplyEvent, e)
@@ -43,7 +43,7 @@ namespace sdpa
     LOAD_CONSTRUCT_DATA_DEF (JobResultsReplyEvent, e)
     {
       LOAD_JOBEVENT_CONSTRUCT_DATA (job_id);
-      LOAD_FROM_ARCHIVE (job_result_t, result);
+      LOAD_FROM_ARCHIVE (we::type::activity_t, result);
 
       ::new (e) JobResultsReplyEvent (job_id, result);
     }

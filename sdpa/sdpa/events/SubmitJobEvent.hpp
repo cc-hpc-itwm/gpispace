@@ -15,7 +15,7 @@ namespace sdpa
 
       SubmitJobEvent
         ( const boost::optional<sdpa::job_id_t>& a_job_id
-        , const job_desc_t& a_description
+        , const we::type::activity_t& a_description
         , std::set<worker_id_t> const& workers = {}
         )
           : SDPAEvent()
@@ -28,7 +28,7 @@ namespace sdpa
       {
         return _job_id;
       }
-      const sdpa::job_desc_t& description() const
+      const we::type::activity_t& description() const
       {
         return desc_;
       }
@@ -45,7 +45,7 @@ namespace sdpa
 
     private:
       boost::optional<sdpa::job_id_t> _job_id;
-      sdpa::job_desc_t desc_;
+      we::type::activity_t desc_;
       std::set<worker_id_t> _workers;
     };
 
@@ -61,7 +61,7 @@ namespace sdpa
     {
       LOAD_SDPAEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (boost::optional<sdpa::job_id_t>, job_id);
-      LOAD_FROM_ARCHIVE (sdpa::job_desc_t, description);
+      LOAD_FROM_ARCHIVE (we::type::activity_t, description);
       LOAD_FROM_ARCHIVE (std::set<sdpa::worker_id_t>, workers);
 
       ::new (e) SubmitJobEvent (job_id, description, workers);
