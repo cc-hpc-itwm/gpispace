@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 #include <mmgr/trie.h>
-#include <mmgr/unused.h>
+
+#include <util-generic/unused.hpp>
 
 #if (TRIE_BITS < 1)
 #undef TRIE_BITS

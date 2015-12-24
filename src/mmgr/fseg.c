@@ -3,7 +3,8 @@
 
 #include <mmgr/fseg.h>
 #include <mmgr/trie.h>
-#include <mmgr/unused.h>
+
+#include <util-generic/unused.hpp>
 
 void
 fseg_ins (PFSeg_t PFSeg, const Key_t Key, const Value_t Value)

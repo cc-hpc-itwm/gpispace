@@ -6,7 +6,7 @@
 #include <mmgr/fseg.h>
 #include <mmgr/heap.h>
 
-#include <mmgr/unused.h>
+#include <util-generic/unused.hpp>
 
 #include <assert.h>
 

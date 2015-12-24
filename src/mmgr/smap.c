@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 #include <mmgr/smap.h>
-#include <mmgr/unused.h>
+
+#include <util-generic/unused.hpp>
 
 typedef struct node_t
 {

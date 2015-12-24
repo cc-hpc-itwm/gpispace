@@ -2,7 +2,8 @@
 #include <stdlib.h>
 
 #include <mmgr/ostab.h>
-#include <mmgr/unused.h>
+
+#include <util-generic/unused.hpp>
 
 #include <assert.h>
 
