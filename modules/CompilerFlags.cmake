@@ -20,6 +20,7 @@ endmacro ()
 # warnings
 CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -W)
 CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wall)
+CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Werror)
 CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wextra)
 check_and_add_compiler_flag (FLAGS_WARNINGS -Wunreachable-code-break)
 check_and_add_compiler_flag (FLAGS_WARNINGS -Wimplicit-fallthrough)
