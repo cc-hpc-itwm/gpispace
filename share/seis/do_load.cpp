@@ -37,7 +37,15 @@ void do_load ( const std::string & filename
 
       fseek (inp, part * part_size, SEEK_SET);
 
-      fread (pos, size, 1, inp);
+      if (1 != fread (pos, size, 1, inp))
+      {
+        throw std::runtime_error
+          ( "do_load: Could not read data part " + std::to_string (part)
+          + " (part_size = " + std::to_string (part_size)
+          + ") of size " + std::to_string (size)
+          + " from " + filename
+          );
+      }
 
       fclose (inp);
     }
@@ -54,7 +62,15 @@ void do_load ( const std::string & filename
 
       fseek (inp, size_of_fileheader + part * part_size, SEEK_SET);
 
-      fread (pos, size, 1, inp);
+      if (1 != fread (pos, size, 1, inp))
+      {
+        throw std::runtime_error
+          ( "do_load: Could not read data part " + std::to_string (part)
+          + " (part_size = " + std::to_string (part_size)
+          + ") of size " + std::to_string (size)
+          + " from " + filename
+          );
+      }
 
       fclose (inp);
 

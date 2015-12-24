@@ -41,7 +41,11 @@ void determine_size ( const std::string & filename
 	   fseek (inp, sizeof(SegYBHeader) + sizeof(SegYEBCHeader), SEEK_SET);
 
       SegYHeader Header;
-      fread ((char*)&Header, sizeof(SegYHeader), 1, inp);
+      if (1 != fread ((char*)&Header, sizeof(SegYHeader), 1, inp))
+      {
+        throw std::runtime_error
+          ("determine_size: Could not read SegYHeader from " + filename);
+      };
       if ( (type == "segy") && (endianess != BIGENDIAN) )
       {
 	  swap_bytes((void*)&(Header.ns), 1, sizeof(unsigned short));
