@@ -31,13 +31,6 @@ CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Wno-unknown-pragmas)
 CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Werror=range-loop-analysis)
 CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -Werror=extra-semi)
 
-if (${CMAKE_CXX_COMPILER_ID} MATCHES "Intel")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 191")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 1170")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 1292")
-  set (FLAGS_WARNINGS "${FLAGS_WARNINGS} -diag-disable 2196")
-endif()
-
 # to avoid warnings when using gcc 4.5
 CHECK_AND_ADD_COMPILER_FLAG (FLAGS_WARNINGS -fno-strict-aliasing)
 
