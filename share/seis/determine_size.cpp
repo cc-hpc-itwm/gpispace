@@ -34,7 +34,7 @@ void determine_size ( const std::string & filename
 
        if (inp == NULL)
          {
-           throw std::runtime_error ("do_load: could not open " + filename);
+           throw std::runtime_error ("determine_size: could not open " + filename);
          }
 
        if (type == "segy")
