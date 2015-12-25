@@ -19,4 +19,4 @@ fhg_add_test (test.cpp
 )
 
 
-add_executable (demo.bin demo.c)
+add_executable (demo.bin demo.cpp)
