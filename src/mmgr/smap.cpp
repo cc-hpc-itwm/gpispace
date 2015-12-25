@@ -15,7 +15,7 @@ typedef struct node_t
 static inline PTree_t
 empty ()
 {
-  const PTree_t t = malloc (sizeof (Tree_t));
+  const PTree_t t = static_cast<PTree_t> (malloc (sizeof (Tree_t)));
 
   if (t == NULL)
     {
@@ -67,7 +67,7 @@ smap_ins (PSMap_t PPTree, const Key_t Key, const Value_t Value)
 PValue_t
 smap_get (const SMap_t PCTree, const Key_t Key)
 {
-  PTree_t PTree = PCTree;
+  PTree_t PTree = static_cast<PTree_t> (PCTree);
 
   while (PTree != NULL && Key != PTree->key)
     {
@@ -83,7 +83,7 @@ smap_get_atleast (const SMap_t PCTree, PKey_t PWantHave)
   if (PWantHave == NULL)
     return NULL;
 
-  PTree_t PTree = PCTree;
+  PTree_t PTree = static_cast<PTree_t> (PCTree);
 
   while (PTree != NULL && *PWantHave > PTree->key)
     {
@@ -104,7 +104,7 @@ smap_get_atleast_minimal (const SMap_t PCTree, PKey_t PWantHave)
   if (PWantHave == NULL)
     return NULL;
 
-  PTree_t PTree = PCTree;
+  PTree_t PTree = static_cast<PTree_t> (PCTree);
 
   if (PTree == NULL)
     return NULL;
@@ -151,7 +151,7 @@ smap_del (PSMap_t PPTree, const Key_t Key, const SMAP_DEL_SEL_t del_sel)
   if (PPTree == NULL)
     return False;
 
-  PTree_t *PPParent = PPTree;
+  PTree_t *PPParent = static_cast<PTree_t*> (PPTree);
   PTree_t PTree = *(PTree_t *) PPTree;
 
   while (PTree != NULL && Key != PTree->key)
@@ -237,14 +237,14 @@ void
 smap_work_preorder (const SMap_t PCTree, const fSMapWorkCut_t fSMapWorkCut,
                     void *Pdat)
 {
-  smap_work_level (PCTree, fSMapWorkCut, 0, Pdat);
+  smap_work_level (static_cast<PTree_t> (PCTree), fSMapWorkCut, 0, Pdat);
 }
 
 void
 smap_work_inorder (const SMap_t PCTree, const fSMapWork_t fSMapWork,
                    void *Pdat)
 {
-  const PTree_t PTree = PCTree;
+  const PTree_t PTree = static_cast<PTree_t> (PCTree);
 
   if (PTree == NULL)
     return;
@@ -253,7 +253,7 @@ smap_work_inorder (const SMap_t PCTree, const fSMapWork_t fSMapWork,
 
   fSMapWork (PTree->key, PTree->value, Pdat);
 
-  smap_work_inorder (PTree->child[1], fSMapWork, Pdat);
+  smap_work_inorder (static_cast<SMap_t> (PTree->child[1]), fSMapWork, Pdat);
 }
 
 void

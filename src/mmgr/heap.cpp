@@ -19,7 +19,7 @@ heap_size (const Heap_t Heap)
   if (Heap == NULL)
     return 0;
 
-  const pheap_t pheap = Heap;
+  const pheap_t pheap = static_cast<pheap_t> (Heap);
 
   return pheap->pos;
 }
@@ -30,7 +30,7 @@ heap_min (const Heap_t Heap)
   if (heap_size (Heap) == 0)
     HEAP_ERROR_EMPTY;
 
-  const pheap_t pheap = Heap;
+  const pheap_t pheap = static_cast<pheap_t> (Heap);
 
   return pheap->arr[0];
 }
@@ -41,12 +41,12 @@ heap_mk (Size_t size)
   if (size == 0)
     return NULL;
 
-  const pheap_t pheap = malloc (sizeof (heap_t));
+  const pheap_t pheap = static_cast<pheap_t> (malloc (sizeof (heap_t)));
 
   if (pheap == NULL)
     HEAP_ERROR_MALLOC_FAILED;
 
-  pheap->arr = malloc (size * sizeof (Offset_t));
+  pheap->arr = static_cast<POffset_t> (malloc (size * sizeof (Offset_t)));
 
   if (pheap->arr == NULL)
     HEAP_ERROR_MALLOC_FAILED;

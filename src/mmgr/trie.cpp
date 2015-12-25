@@ -29,7 +29,7 @@ typedef struct node_t
 static inline PTrie_t
 empty ()
 {
-  const PTrie_t t = calloc (1, sizeof (Trie_t));
+  const PTrie_t t = static_cast<PTrie_t> (calloc (1, sizeof (Trie_t)));
 
   if (t == NULL)
     TRIE_ERROR_MALLOC_FAILED;
@@ -67,7 +67,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 
   if (PTrie->data == NULL)
     {
-      PTrie->data = malloc (sizeof (Value_t));
+      PTrie->data = static_cast<PValue_t> (malloc (sizeof (Value_t)));
 
       if (PTrie->data == NULL)
         TRIE_ERROR_MALLOC_FAILED;
@@ -79,7 +79,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
 PValue_t
 trie_getany (const PTrieMap_t PCTrie)
 {
-  PTrie_t PTrie = PCTrie;
+  PTrie_t PTrie = static_cast<PTrie_t> (PCTrie);
 
   while (PTrie != NULL && PTrie->data == NULL)
     {
@@ -105,7 +105,7 @@ trie_getany (const PTrieMap_t PCTrie)
 PValue_t
 trie_get (const PTrieMap_t PCTrie, Key_t Key)
 {
-  PTrie_t PTrie = PCTrie;
+  PTrie_t PTrie = static_cast<PTrie_t> (PCTrie);
 
   while (PTrie != NULL && Key > 0)
     {
@@ -193,7 +193,7 @@ trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
 Size_t
 trie_memused (const TrieMap_t PCTrie, const fUser_t fUser)
 {
-  const PTrie_t PTrie = PCTrie;
+  const PTrie_t PTrie = static_cast<PTrie_t> (PCTrie);
 
   if (PTrie == NULL)
     return 0;
@@ -253,7 +253,7 @@ trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
 void
 trie_work (const TrieMap_t PCTrie, const fTrieWork_t fTrieWork, void *Pdat)
 {
-  trie_work_key (PCTrie, fTrieWork, 0, 0, Pdat);
+  trie_work_key (static_cast<PTrie_t> (PCTrie), fTrieWork, 0, 0, Pdat);
 }
 
 static void

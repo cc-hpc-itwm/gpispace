@@ -20,7 +20,7 @@ ostab_ins (POStab_t postab, const Key_t Key, const Offset_t Offset,
   Bool_t was_there = False;
   const PValue_t PVal = trie_ins (postab, Key, &was_there);
   const pdata_t data =
-    (was_there == True) ? ((pdata_t) (*PVal)) : malloc (sizeof (data_t));
+    (was_there == True) ? ((pdata_t) (*PVal)) : (pdata_t) malloc (sizeof (data_t));
 
   if (data == NULL)
     OSTAB_ERROR_MALLOC_FAILED;
@@ -108,7 +108,7 @@ fWork (const Key_t Key, const PValue_t PVal, void *Pwd)
   assert (PVal != NULL);
 
   const pdata_t pdata = (pdata_t) (*PVal);
-  const pwork_dat_t pwd = Pwd;
+  const pwork_dat_t pwd = static_cast<pwork_dat_t> (Pwd);
 
   pwd->fOStabWork (Key, pdata->offset, pdata->size, pwd->Pdat);
 }

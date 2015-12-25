@@ -5,7 +5,9 @@
 
 #include <util-generic/unused.hpp>
 
-#define FOR_ARENA(id) for (Arena_t id = ARENA_UP; id <= ARENA_DOWN; ++id)
+#include <initializer_list>
+
+#define FOR_ARENA(id) for (Arena_t id : {ARENA_UP, ARENA_DOWN})
 
 static const Arena_t Other[2] = { ARENA_DOWN, ARENA_UP };
 
@@ -21,7 +23,7 @@ dtmmgr_init (PDTmmgr_t PDTmmgr, const MemSize_t MemSize, const Align_t Align)
   if (PDTmmgr == NULL || *(pdtmmgr_t *) PDTmmgr != NULL)
     return;
 
-  *(pdtmmgr_t *) PDTmmgr = malloc (sizeof (dtmmgr_t));
+  *(pdtmmgr_t *) PDTmmgr = static_cast<pdtmmgr_t> (malloc (sizeof (dtmmgr_t)));
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;
 
@@ -104,7 +106,7 @@ dtmmgr_offset_size (const DTmmgr_t DTmmgr, const Handle_t Handle,
   if (DTmmgr == NULL)
     return RET_FAILURE;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   MemSize_t Size = 0;
 
@@ -134,7 +136,7 @@ dtmmgr_memsize (const DTmmgr_t DTmmgr)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return pdtmmgr->mem_size;
 }
@@ -145,7 +147,7 @@ dtmmgr_memfree (const DTmmgr_t DTmmgr)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   MemSize_t FreeGlobal = tmmgr_memfree (pdtmmgr->arena[ARENA_UP]);
   MemSize_t FreeLocal = tmmgr_memfree (pdtmmgr->arena[ARENA_DOWN]);
@@ -159,7 +161,7 @@ dtmmgr_memused (const DTmmgr_t DTmmgr)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return pdtmmgr->mem_size - dtmmgr_memfree (DTmmgr);
 }
@@ -170,7 +172,7 @@ dtmmgr_numhandle (const DTmmgr_t DTmmgr, const Arena_t Arena)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return tmmgr_numhandle (pdtmmgr->arena[Arena]);
 }
@@ -181,7 +183,7 @@ dtmmgr_numalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return tmmgr_numalloc (pdtmmgr->arena[Arena]);
 }
@@ -192,7 +194,7 @@ dtmmgr_numfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return tmmgr_numfree (pdtmmgr->arena[Arena]);
 }
@@ -203,7 +205,7 @@ dtmmgr_sumalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return tmmgr_sumalloc (pdtmmgr->arena[Arena]);
 }
@@ -214,7 +216,7 @@ dtmmgr_sumfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
   if (DTmmgr == NULL)
     return 0;
 
-  pdtmmgr_t pdtmmgr = DTmmgr;
+  pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
 
   return tmmgr_sumfree (pdtmmgr->arena[Arena]);
 }
@@ -230,7 +232,7 @@ static void
 fMemmoveSwapped (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
                  const MemSize_t Size, void *PDat)
 {
-  pmemmoveswap_t pmemmoveswap = PDat;
+  pmemmoveswap_t pmemmoveswap = static_cast<pmemmoveswap_t> (PDat);
 
   if (pmemmoveswap->fMemmove != NULL)
     pmemmoveswap->fMemmove (pmemmoveswap->MemSize - OffsetDest,
