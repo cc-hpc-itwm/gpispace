@@ -213,6 +213,11 @@ namespace sdpa {
                   , we::type::activity_t
                   , boost::optional<master_info_t::iterator> owner
                   );
+      Job* addJob ( const sdpa::job_id_t& job_id
+                  , we::type::activity_t
+                  , boost::optional<master_info_t::iterator> owner
+                  , job_requirements_t
+                  );
 
     public:
       Job* findJob(const sdpa::job_id_t& job_id ) const;

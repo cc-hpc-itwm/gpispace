@@ -299,8 +299,6 @@ std::string GenericDaemon::gen_id()
                                , boost::optional<master_info_t::iterator> owner
                                )
     {
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
-
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
       job_requirements_t requirements
@@ -311,12 +309,25 @@ std::string GenericDaemon::gen_id()
         , activity.memory_buffer_size_total()
         };
 
+      return
+        addJob (job_id, std::move (activity), owner, std::move (requirements));
+    }
+
+
+    Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
+                               , we::type::activity_t activity
+                               , boost::optional<master_info_t::iterator> owner
+                               , job_requirements_t requirements
+                               )
+    {
       Job* pJob = new Job
         ( job_id
         , std::move (activity)
         , opaque_job_master_t (static_cast<const void*> (&owner))
         , std::move (requirements)
         );
+
+      boost::mutex::scoped_lock const _ (_job_map_mutex);
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -365,7 +376,12 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  Job* pJob (addJob (job_id, e.activity(), itMaster));
+  Job* pJob (addJob ( job_id
+                    , e.activity()
+                    , itMaster
+                    , {{}, {}, null_transfer_cost, 1.0, 0}
+                    )
+            );
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
