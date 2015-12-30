@@ -1,6 +1,7 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
 add_subdirectory (fhgcom)
+add_subdirectory (fhglog)
 
 add_subdirectory (gpi-space)
 add_subdirectory (vmem)

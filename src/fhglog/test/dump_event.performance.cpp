@@ -2,7 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <tests/dump_event.common.hpp>
+#include <fhglog/test/dump_event.common.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/measure_average_time.hpp>

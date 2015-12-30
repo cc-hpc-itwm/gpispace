@@ -14,3 +14,4 @@ ADD_LIBRARY (fhglog ${srcs})
 target_link_libraries (fhglog fhg-util Boost::filesystem Util::Generic)
 
 add_subdirectory (appender/test)
+add_subdirectory (test)

@@ -4,7 +4,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <fhglog/LogMacros.hpp>
-#include <tests/dump_event.common.hpp>
+#include <fhglog/test/dump_event.common.hpp>
 
 BOOST_AUTO_TEST_CASE (encode_decode)
 {

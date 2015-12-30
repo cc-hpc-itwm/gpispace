@@ -64,3 +64,10 @@ fhg_add_runtime_executable (NAME pnetd
             ${Boost_SERIALIZATION_LIBRARY}
             ${Boost_SYSTEM_LIBRARY}
 )
+
+fhg_add_runtime_executable (NAME fhglog-dump
+  SOURCES "fhglog-dump.cpp"
+  LIBRARIES fhglog
+            Boost::program_options
+            Util::Generic
+)
