@@ -1,4 +1,4 @@
-#include <installation.hpp>
+#include <installation_path.hpp>
 
 #include <xml/parse/type/function.hpp>
 
@@ -1273,7 +1273,7 @@ namespace xml
                  << std::endl;
         }
 
-        gspc::installation const installation;
+        gspc::installation_path const installation;
 
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;

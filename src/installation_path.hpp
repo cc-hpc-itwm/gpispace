@@ -6,10 +6,10 @@
 
 namespace gspc
 {
-  class installation : public boost::filesystem::path
+  class installation_path : public boost::filesystem::path
   {
   public:
-    installation()
+    installation_path()
       : boost::filesystem::path
         (fhg::util::executable_path().parent_path().parent_path())
     {}
