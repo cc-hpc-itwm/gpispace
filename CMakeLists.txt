@@ -110,7 +110,6 @@ endmacro()
 
 include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
-include_directories ("${CMAKE_SOURCE_DIR}/util")
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 # TODO : Remove again?
@@ -128,4 +127,3 @@ add_subdirectory (playground/bl)
 add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
-add_subdirectory (util)
