@@ -101,7 +101,6 @@ include (${QT_USE_FILE})
 include (CTest)
 include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
-include (car_cdr_macros)
 include (fhg_test_macros)
 
 macro (fhg_add_runtime_executable)
