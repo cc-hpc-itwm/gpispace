@@ -136,6 +136,7 @@ add_subdirectory (network)
 add_subdirectory (rpc)
 
 add_subdirectory (rif)
+add_subdirectory (sdpa)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
 

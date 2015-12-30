@@ -24,3 +24,5 @@ target_link_libraries (sdpa
   pnet
   Util::Generic
 )
+
+add_subdirectory (test)
