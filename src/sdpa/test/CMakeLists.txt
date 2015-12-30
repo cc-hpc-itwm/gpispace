@@ -1,6 +1,3 @@
-add_subdirectory(sdpa)
-add_subdirectory(bin)
-
 fhg_add_test (drts_should_handle_multiple_workflows_being_submitted_during_lifetime.cpp
   PROJECT sdpa_test
   BOOST_UNIT_TEST

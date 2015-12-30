@@ -26,3 +26,5 @@ target_link_libraries (sdpa
 )
 
 add_subdirectory (test)
+add_subdirectory (test/bin)
+add_subdirectory (test/sdpa)
