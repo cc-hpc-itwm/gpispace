@@ -1,7 +1,26 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-add_subdirectory (fhgcom)
-add_subdirectory (fhglog)
+extended_add_library (NAME fhgcom
+  SOURCES "fhgcom/connection.cpp"
+          "fhgcom/header.cpp"
+          "fhgcom/peer.cpp"
+  LIBRARIES fhglog Util::Generic Network
+)
+add_subdirectory (fhgcom/tests)
+
+extended_add_library (NAME fhglog
+  SOURCES "fhglog/Configuration.cpp"
+          "fhglog/Logger.cpp"
+          "fhglog/event.cpp"
+          "fhglog/level.cpp"
+          "fhglog/appender/file.cpp"
+          "fhglog/appender/stream.cpp"
+          "fhglog/remote/server.cpp"
+          "fhglog/remote/appender.cpp"
+          LIBRARIES fhg-util Boost::filesystem Util::Generic
+)
+add_subdirectory (fhglog/appender/test)
+add_subdirectory (fhglog/test)
 
 add_subdirectory (gpi-space)
 add_subdirectory (vmem)
