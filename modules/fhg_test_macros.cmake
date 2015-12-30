@@ -1,16 +1,12 @@
 include(car_cdr_macros)
 
 set (FILES_REQUIRED_IN_INSTALLATION
-  "${CMAKE_INSTALL_PREFIX}/bin/agent"
-  "${CMAKE_INSTALL_PREFIX}/bin/drts-kernel"
   "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
-  "${CMAKE_INSTALL_PREFIX}/bin/gpi-space"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-bootstrap-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-monitor"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-teardown-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
-  "${CMAKE_INSTALL_PREFIX}/bin/orchestrator"
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetc"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetd"
@@ -73,6 +69,10 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/librif-started_process_promise.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libgspc.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so"
+  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
+  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
+  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/gpi-space"
+  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/orchestrator"
   #! \note This does not include bundled libraries!
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/sdpa/libdo_load.so"

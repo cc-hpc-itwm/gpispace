@@ -21,6 +21,7 @@ fhg_add_runtime_executable (NAME gpi-space
             Boost::thread
             Boost::system
   CREATE_BUNDLE_INFO
+  INSTALL_DESTINATION "libexec/gspc"
 )
 
 fhg_add_runtime_executable (NAME pnet2dot

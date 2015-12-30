@@ -184,7 +184,7 @@ namespace
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
       ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
-          ( sdpa_home / "bin" / "agent"
+          ( sdpa_home / "libexec" / "gspc" / "agent"
           , agent_startup_arguments
           , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
@@ -373,7 +373,7 @@ namespace fhg
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( sdpa_home / "bin" / "drts-kernel"
+                       ( sdpa_home / "libexec" / "gspc" / "drts-kernel"
                        , kernel_arguments (name)
                        , environment
                        ).get()
@@ -511,7 +511,7 @@ namespace fhg
             ( [&]
               {
                 return rif::client (master).execute_and_get_startup_messages
-                  ( sdpa_home / "bin" / "orchestrator"
+                  ( sdpa_home / "libexec" / "gspc" / "orchestrator"
                   , {"-u", "0", "-n", "orchestrator"}
                   , logging_environment
                       (log_host, log_port, log_dir, verbose, "orchestrator")
@@ -602,7 +602,7 @@ namespace fhg
                       }
 
                       return client->start_vmem
-                        ( sdpa_home / "bin" / "gpi-space"
+                        ( sdpa_home / "libexec" / "gspc" / "gpi-space"
                         , verbose ? fhg::log::TRACE : fhg::log::INFO
                         , gpi_socket.get()
                         , vmem_port.get()

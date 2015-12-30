@@ -16,6 +16,7 @@ fhg_add_runtime_executable (NAME drts-kernel
             Boost::thread
             HWLOC::static
   CREATE_BUNDLE_INFO
+  INSTALL_DESTINATION "libexec/gspc"
 )
 
 install (FILES context_fwd.hpp context.hpp

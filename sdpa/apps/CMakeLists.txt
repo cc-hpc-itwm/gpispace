@@ -11,6 +11,7 @@ fhg_add_runtime_executable (NAME orchestrator
             Boost::program_options
             Boost::system
   CREATE_BUNDLE_INFO
+  INSTALL_DESTINATION "libexec/gspc"
 )
 
 fhg_add_runtime_executable (NAME agent
@@ -24,4 +25,5 @@ fhg_add_runtime_executable (NAME agent
             Boost::program_options
             Boost::system
   CREATE_BUNDLE_INFO
+  INSTALL_DESTINATION "libexec/gspc"
 )
