@@ -16,7 +16,7 @@ namespace test
   boost::filesystem::path workflow_library
     (gspc::installation const& installation)
   {
-    return installation.gspc_home() / "share" / "sdpa" / "xml" / "lib";
+    return installation.gspc_home() / "share" / "gspc" / "xml" / "lib";
   }
   boost::filesystem::path boost_root
     (gspc::installation const& installation)

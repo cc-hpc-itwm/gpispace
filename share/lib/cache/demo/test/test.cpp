@@ -66,7 +66,7 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
     , installation_dir
     , test::option::options()
     . add (new test::option::include
-             (installation.gspc_home() / "share" / "sdpa" / "xml")
+             (installation.gspc_home() / "share" / "gspc" / "xml")
           )
     );
 

@@ -58,7 +58,7 @@ else()
 endif()
 
 set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION;-DBOOST_TT_HAS_PLUS_HPP_INCLUDED;-DBOOST_TT_HAS_PLUS_ASSIGN_HPP_INCLUDED;-DBOOST_TT_HAS_MINUS_HPP_INCLUDED;-DBOOST_TT_HAS_MINUS_ASSIGN_HPP_INCLUDED")
-set (PNETC_LIB_DIR "share/sdpa/xml/lib")
+set (PNETC_LIB_DIR "share/gspc/xml/lib")
 
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
 add_definitions ("-DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES")
@@ -69,7 +69,7 @@ add_definitions ("-DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES")
 # the precondition shall be checked everywhere, where needed.
 add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 
-# sdpa needs boost::mpl::vector with more than $default elements for state machine
+# gpi-space needs boost::mpl::vector with more than $default elements for state machine
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 

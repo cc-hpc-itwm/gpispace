@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
     , installation_dir
     , test::option::options()
     . add (new test::option::gen::library_path
-            (installation.gspc_home() / "libexec" / "sdpa")
+            (installation.gspc_home() / "libexec" / "gspc")
           )
     );
 

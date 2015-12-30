@@ -368,7 +368,7 @@ namespace fhg
                    environment.emplace
                      ( "LD_LIBRARY_PATH"
                      , (installation_path.lib()).string() + ":"
-                     + (installation_path / "libexec" / "sdpa").string()
+                     + (installation_path.libexec()).string()
                      );
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages

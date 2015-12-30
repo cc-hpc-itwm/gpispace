@@ -5,7 +5,7 @@ extended_add_library (NAME determine_size
           "swap_bytes.cpp"
   INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/seis"
   INSTALL
-  INSTALL_DESTINATION "libexec/sdpa"
+  INSTALL_DESTINATION "libexec/gspc"
 )
 extended_add_library (NAME do_load
   TYPE SHARED
@@ -13,7 +13,7 @@ extended_add_library (NAME do_load
           "swap_bytes.cpp"
   INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/seis"
   INSTALL
-  INSTALL_DESTINATION "libexec/sdpa"
+  INSTALL_DESTINATION "libexec/gspc"
 )
 extended_add_library (NAME do_write
   TYPE SHARED
@@ -21,7 +21,7 @@ extended_add_library (NAME do_write
           "swap_bytes.cpp"
   INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/seis"
   INSTALL
-  INSTALL_DESTINATION "libexec/sdpa"
+  INSTALL_DESTINATION "libexec/gspc"
 )
 
 install (FILES do_load.hpp determine_size.hpp do_write.hpp
