@@ -49,7 +49,7 @@ namespace gspc
                              , bool verbose
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
-                             , boost::filesystem::path sdpa_home
+                             , installation_path
                              , boost::optional<boost::filesystem::path> const& log_dir
                              , bool delete_logfiles
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
@@ -81,7 +81,7 @@ namespace gspc
       bool _verbose;
       boost::optional<boost::filesystem::path> _gpi_socket;
       std::vector<boost::filesystem::path> _app_path;
-      boost::filesystem::path _sdpa_home;
+      installation_path _installation_path;
       boost::optional<boost::filesystem::path> _log_dir;
       std::vector<fhg::drts::worker_description> _worker_descriptions;
 

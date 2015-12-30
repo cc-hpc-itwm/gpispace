@@ -155,7 +155,7 @@ namespace
     , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , bool verbose
-    , boost::filesystem::path const& sdpa_home
+    , gspc::installation_path const& installation_path
     , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
@@ -184,7 +184,7 @@ namespace
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
       ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
-          ( sdpa_home / "libexec" / "gspc" / "agent"
+          ( installation_path.agent()
           , agent_startup_arguments
           , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
@@ -225,7 +225,7 @@ namespace fhg
     , boost::optional<boost::filesystem::path> const& log_dir
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
-    , boost::filesystem::path const& sdpa_home
+    , gspc::installation_path const& installation_path
     , std::ostream& info_output
     )
   {
@@ -367,13 +367,13 @@ namespace fhg
                      );
                    environment.emplace
                      ( "LD_LIBRARY_PATH"
-                     , (sdpa_home / "lib").string() + ":"
-                     + (sdpa_home / "libexec" / "sdpa").string()
+                     , (installation_path.lib()).string() + ":"
+                     + (installation_path / "libexec" / "sdpa").string()
                      );
 
                    std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
                      ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( sdpa_home / "libexec" / "gspc" / "drts-kernel"
+                       ( installation_path.drts_kernel()
                        , kernel_arguments (name)
                        , environment
                        ).get()
@@ -462,7 +462,7 @@ namespace fhg
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
-      , boost::filesystem::path sdpa_home
+      , gspc::installation_path const& installation_path
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
@@ -511,7 +511,7 @@ namespace fhg
             ( [&]
               {
                 return rif::client (master).execute_and_get_startup_messages
-                  ( sdpa_home / "libexec" / "gspc" / "orchestrator"
+                  ( installation_path.orchestrator()
                   , {"-u", "0", "-n", "orchestrator"}
                   , logging_environment
                       (log_host, log_port, log_dir, verbose, "orchestrator")
@@ -602,7 +602,7 @@ namespace fhg
                       }
 
                       return client->start_vmem
-                        ( sdpa_home / "libexec" / "gspc" / "gpi-space"
+                        ( installation_path.vmem()
                         , verbose ? fhg::log::TRACE : fhg::log::INFO
                         , gpi_socket.get()
                         , vmem_port.get()
@@ -667,7 +667,7 @@ namespace fhg
                                           , log_port
                                           , gpi_socket
                                           , verbose
-                                          , sdpa_home
+                                          , installation_path
                                           , log_dir
                                           , processes
                                           , info_output

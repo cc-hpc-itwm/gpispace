@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <installation_path.hpp>
+
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <rif/entry_point.hpp>
@@ -79,7 +81,7 @@ namespace fhg
       , boost::optional<boost::filesystem::path> const& log_dir
       , boost::optional<boost::filesystem::path> const& gpi_socket
       , std::vector<boost::filesystem::path> const& app_path
-      , boost::filesystem::path const& sdpa_home
+      , gspc::installation_path const&
       , std::ostream& info_output
       );
 
@@ -91,7 +93,7 @@ namespace fhg
       , bool gpi_enabled
       , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
-      , boost::filesystem::path sdpa_home
+      , gspc::installation_path const&
       , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
