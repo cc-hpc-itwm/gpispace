@@ -1,8 +1,10 @@
 #include <rif/started_process_promise.hpp>
 
+#include <util-generic/executable_path.hpp>
 #include <util-generic/serialization/exception.hpp>
 
 #include <boost/archive/text_oarchive.hpp>
+#include <boost/format.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/serialization/string.hpp>
@@ -29,6 +31,32 @@ namespace fhg
            );
     }
 
+    namespace
+    {
+      int parse_fd (int argc, char** argv)
+      {
+        std::string const usage
+          (( boost::format ("Usage: %1% <pipefd> [args]...")
+           % fhg::util::executable_path()
+           ).str()
+          );
+
+        if (argc < 2)
+        {
+          throw std::invalid_argument (usage);
+        }
+
+        try
+        {
+          return std::stoi (argv[1]);
+        }
+        catch (...)
+        {
+          throw std::invalid_argument (usage);
+        }
+      }
+    }
+
     //! \todo This is not too nice. Better hard code a specific file
     //! descriptor and ensure that one is used?
     started_process_promise::started_process_promise
@@ -37,12 +65,7 @@ namespace fhg
       , _argc (argc)
       , _argv (argv)
       , _replacement_argv (argv, argv + argc)
-      , _startup_pipe_fd
-          ( argc >= 2
-          ? std::stoi (argv[1])
-          : throw std::runtime_error
-              ("command line requires at least 'exe pipefd'")
-          )
+      , _startup_pipe_fd (parse_fd (argc, argv))
     {
       _replacement_argv.erase (std::next (_replacement_argv.begin()));
       _argv = _replacement_argv.data();
