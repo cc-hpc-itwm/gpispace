@@ -1291,6 +1291,8 @@ namespace xml
                << (installation.boost_root() / "include")          << std::endl;
         stream << "LDFLAGS += -L "
                << (installation.boost_root() / "lib")              << std::endl;
+        stream << "LDFLAGS += -Wl,-rpath-link="
+               << (installation.boost_root() / "lib")              << std::endl;
         stream                                                     << std::endl;
         stream << "LDFLAGS += -L " << installation.lib()           << std::endl;
         stream                                                     << std::endl;
