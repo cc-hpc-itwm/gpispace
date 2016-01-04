@@ -3,8 +3,6 @@
 
 #include <mmgr/dtmmgr.h>
 
-#include <util-generic/unused.hpp>
-
 #include <initializer_list>
 
 #define FOR_ARENA(id) for (Arena_t id : {ARENA_UP, ARENA_DOWN})
