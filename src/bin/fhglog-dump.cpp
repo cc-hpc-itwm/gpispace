@@ -51,7 +51,6 @@ try
 
   boost::program_options::variables_map vm;
   boost::program_options::store (boost::program_options::parse_command_line(argc, argv, desc), vm);
-  boost::program_options::notify (vm);
 
   if (vm.count("help"))
   {
@@ -59,6 +58,8 @@ try
     std::cerr << desc << std::endl;
     return EXIT_SUCCESS;
   }
+
+  boost::program_options::notify (vm);
 
   fhg::log::Logger logger;
   logger.setLevel
