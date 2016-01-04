@@ -2,6 +2,7 @@
 
 #include <rif/started_process_promise.hpp>
 
+#include <util-generic/executable_path.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/printer/vector.hpp>
@@ -10,6 +11,7 @@
 #include <util-generic/warning.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
+#include <boost/format.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
@@ -94,7 +96,11 @@ BOOST_AUTO_TEST_CASE (missing_special_argument_throws)
         char** argv (arguments.argv());
         fhg::rif::started_process_promise promise (argc, argv);
       }
-    , std::runtime_error ("command line requires at least 'exe pipefd'")
+    , std::invalid_argument
+        (( boost::format ("Usage: %1% <pipefd> [args]...")
+         % fhg::util::executable_path()
+         ).str()
+        )
     );
 
 }
