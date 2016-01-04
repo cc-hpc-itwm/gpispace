@@ -7,11 +7,6 @@
 
 #include <mmgr/word.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef void *SMap_t, *PSMap_t;
 
   typedef enum
@@ -53,8 +48,4 @@ extern "C"
 
 #ifndef SMAP_ERROR_MALLOC_FAILED
 #define SMAP_ERROR_MALLOC_FAILED SMAP_ERROR_HANDLER(__FILE__,__LINE__,"malloc")
-#endif
-
-#ifdef __cplusplus
-}
 #endif

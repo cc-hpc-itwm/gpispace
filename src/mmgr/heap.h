@@ -3,11 +3,6 @@
 
 #include <mmgr/word.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef void *Heap_t, *PHeap_t;
 
   static const Size_t heap_initial_size = (1 << 6);
@@ -32,8 +27,4 @@ extern "C"
 
 #ifndef HEAP_ERROR_EMPTY
 #define HEAP_ERROR_EMPTY HEAP_ERROR_HANDLER(__FILE__,__LINE__,"min: heap is empty")
-#endif
-
-#ifdef __cplusplus
-}
 #endif

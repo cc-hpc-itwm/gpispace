@@ -7,11 +7,6 @@
 
 #include <mmgr/smap.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef SMap_t FSeg_t, *PFSeg_t;
 
   extern void fseg_ins (PFSeg_t, const Key_t, const Value_t);
@@ -34,8 +29,4 @@ extern "C"
 
 #ifndef FSEG_ERROR_MALLOC_FAILED
 #define FSEG_ERROR_MALLOC_FAILED FSEG_ERROR_HANDLER(__FILE__,__LINE__,"malloc")
-#endif
-
-#ifdef __cplusplus
-}
 #endif

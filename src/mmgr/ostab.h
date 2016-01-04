@@ -7,11 +7,6 @@
 
 #include <mmgr/trie.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef TrieMap_t OStab_t, *POStab_t;
 
   /* O(number of bits in Key_t) */
@@ -39,8 +34,4 @@ extern "C"
 
 #ifndef OSTAB_ERROR_MALLOC_FAILED
 #define OSTAB_ERROR_MALLOC_FAILED OSTAB_ERROR_HANDLER(__FILE__,__LINE__,"malloc")
-#endif
-
-#ifdef __cplusplus
-}
 #endif

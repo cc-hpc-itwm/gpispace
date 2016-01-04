@@ -3,11 +3,6 @@
 
 #include <inttypes.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef unsigned long Word_t, *PWord_t;
   typedef unsigned long Size_t, *PSize_t;
 
@@ -19,7 +14,3 @@ extern "C"
   typedef Size_t (*fUser_t) (PValue_t);
 
   static const fUser_t fUserNone = (fUser_t) nullptr;
-
-#ifdef __cplusplus
-}
-#endif

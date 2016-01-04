@@ -3,11 +3,6 @@
 
 #include <mmgr/word.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef void *Tmmgr_t, *PTmmgr_t;
 
   typedef Word_t MemSize_t, *PMemSize_t;
@@ -83,8 +78,4 @@ extern "C"
 
 #ifndef TMMGR_ERROR_STRANGE
 #define TMMGR_ERROR_STRANGE TMMGR_ERROR_HANDLER(__FILE__,__LINE__,"STRANGE")
-#endif
-
-#ifdef __cplusplus
-}
 #endif

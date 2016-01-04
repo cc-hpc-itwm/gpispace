@@ -5,11 +5,6 @@
 
 #include <mmgr/word.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef void *TrieMap_t, *PTrieMap_t;
 
   /* let N be the number of elements in the map */
@@ -45,8 +40,4 @@ extern "C"
 
 #ifndef TRIE_ERROR_STRANGE
 #define TRIE_ERROR_STRANGE TRIE_ERROR_HANDLER(__FILE__,__LINE__,"STRANGE")
-#endif
-
-#ifdef __cplusplus
-}
 #endif

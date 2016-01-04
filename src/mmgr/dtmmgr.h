@@ -9,11 +9,6 @@
 
 #include <mmgr/tmmgr.h>
 
-#ifdef __cplusplus
-extern "C"
-{
-#endif
-
   typedef void *DTmmgr_t, *PDTmmgr_t;
 
   extern void dtmmgr_init (PDTmmgr_t, const MemSize_t, const Align_t);
@@ -54,8 +49,4 @@ extern "C"
 
 #ifndef DTMMGR_ERROR_MALLOC_FAILED
 #define DTMMGR_ERROR_MALLOC_FAILED DTMMGR_ERROR_HANDLER(__FILE__,__LINE__,"malloc")
-#endif
-
-#ifdef __cplusplus
-}
 #endif
