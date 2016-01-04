@@ -9,12 +9,12 @@
 void
 fseg_ins (PFSeg_t PFSeg, const Key_t Key, const Value_t Value)
 {
-  PValue_t PVal = (PFSeg == NULL) ? NULL : smap_get (*PFSeg, Key);
-  TrieMap_t TrieMap = (PVal == NULL) ? NULL : (TrieMap_t) (*PVal);
+  PValue_t PVal = (PFSeg == nullptr) ? nullptr : smap_get (*PFSeg, Key);
+  TrieMap_t TrieMap = (PVal == nullptr) ? nullptr : (TrieMap_t) (*PVal);
 
-  *trie_ins (&TrieMap, Value, NULL) = Value;
+  *trie_ins (&TrieMap, Value, nullptr) = Value;
 
-  if (PVal == NULL)
+  if (PVal == nullptr)
     smap_ins (PFSeg, Key, (Value_t) TrieMap);
 }
 
@@ -23,7 +23,7 @@ fseg_get (const FSeg_t FSeg, const Key_t Key)
 {
   PValue_t PVal = smap_get (FSeg, Key);
 
-  return (PVal == NULL) ? NULL : trie_getany ((TrieMap_t) (*PVal));
+  return (PVal == nullptr) ? nullptr : trie_getany ((TrieMap_t) (*PVal));
 }
 
 PValue_t
@@ -31,7 +31,7 @@ fseg_get_atleast (const FSeg_t FSeg, PKey_t PKey)
 {
   PValue_t PVal = smap_get_atleast (FSeg, PKey);
 
-  return (PVal == NULL) ? NULL : trie_getany ((TrieMap_t) (*PVal));
+  return (PVal == nullptr) ? nullptr : trie_getany ((TrieMap_t) (*PVal));
 }
 
 PValue_t
@@ -39,25 +39,25 @@ fseg_get_atleast_minimal (const FSeg_t FSeg, PKey_t PKey)
 {
   PValue_t PVal = smap_get_atleast_minimal (FSeg, PKey);
 
-  return (PVal == NULL) ? NULL : trie_getany ((TrieMap_t) (*PVal));
+  return (PVal == nullptr) ? nullptr : trie_getany ((TrieMap_t) (*PVal));
 }
 
 void
 fseg_del (PFSeg_t PFSeg, const Key_t Key, const Value_t Value,
           const SMAP_DEL_SEL_t del_sel)
 {
-  if (PFSeg == NULL)
+  if (PFSeg == nullptr)
     return;
 
   PValue_t PVal = smap_get (*PFSeg, Key);
 
-  if (PVal != NULL)
+  if (PVal != nullptr)
     {
       TrieMap_t tm = (TrieMap_t) (*PVal);
 
       trie_del (&tm, Value, fUserNone);
 
-      if (tm == NULL)
+      if (tm == nullptr)
         {
           smap_del (PFSeg, Key, del_sel);
         }
@@ -75,7 +75,7 @@ fFree (const Key_t UNUSED (Key), const Value_t Value, void *Pdat)
 Size_t
 fseg_free (PFSeg_t PFSeg)
 {
-  if (PFSeg == NULL)
+  if (PFSeg == nullptr)
     return 0;
 
   Size_t Size = 0;

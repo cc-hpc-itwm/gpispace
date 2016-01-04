@@ -14,7 +14,7 @@ typedef struct
 Size_t
 heap_size (const Heap_t Heap)
 {
-  if (Heap == NULL)
+  if (Heap == nullptr)
     return 0;
 
   const pheap_t pheap = static_cast<pheap_t> (Heap);
@@ -37,16 +37,16 @@ static inline pheap_t
 heap_mk (Size_t size)
 {
   if (size == 0)
-    return NULL;
+    return nullptr;
 
   const pheap_t pheap = static_cast<pheap_t> (malloc (sizeof (heap_t)));
 
-  if (pheap == NULL)
+  if (pheap == nullptr)
     HEAP_ERROR_MALLOC_FAILED;
 
   pheap->arr = static_cast<POffset_t> (malloc (size * sizeof (Offset_t)));
 
-  if (pheap->arr == NULL)
+  if (pheap->arr == nullptr)
     HEAP_ERROR_MALLOC_FAILED;
 
   pheap->pos = 0;
@@ -58,7 +58,7 @@ heap_mk (Size_t size)
 static inline void
 heap_copy (pheap_t dest, pheap_t src, Size_t size)
 {
-  if (dest == NULL || src == NULL)
+  if (dest == nullptr || src == nullptr)
     return;
 
   memcpy (dest->arr, src->arr, size * sizeof (Offset_t));
@@ -95,10 +95,10 @@ swap (pheap_t pheap, Size_t x, Size_t y)
 void
 heap_ins (PHeap_t PHeap, const Offset_t Offset)
 {
-  if (PHeap == NULL)
+  if (PHeap == nullptr)
     return;
 
-  if (*(pheap_t *) PHeap == NULL)
+  if (*(pheap_t *) PHeap == nullptr)
     {
       *(pheap_t *) PHeap = heap_mk (heap_initial_size);
     }
@@ -146,7 +146,7 @@ small (pheap_t pheap, Size_t Node, Size_t Child)
 void
 heap_delmin (PHeap_t PHeap)
 {
-  if (PHeap == NULL || *(pheap_t *) PHeap == NULL)
+  if (PHeap == nullptr || *(pheap_t *) PHeap == nullptr)
     return;
 
   pheap_t pheap = *(pheap_t *) PHeap;
@@ -208,7 +208,7 @@ heap_delmin (PHeap_t PHeap)
 Size_t
 heap_free (PHeap_t PHeap)
 {
-  if (PHeap == NULL || *(pheap_t *) PHeap == NULL)
+  if (PHeap == nullptr || *(pheap_t *) PHeap == nullptr)
     return 0;
 
   pheap_t pheap = *(pheap_t *) PHeap;
@@ -218,7 +218,7 @@ heap_free (PHeap_t PHeap)
   free (pheap->arr);
   free (pheap);
 
-  *(pheap_t *) PHeap = NULL;
+  *(pheap_t *) PHeap = nullptr;
 
   return Bytes;
 }

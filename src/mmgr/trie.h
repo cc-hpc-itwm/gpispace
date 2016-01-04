@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <mmgr/null.h>
 #include <mmgr/word.h>
 
 #ifdef __cplusplus

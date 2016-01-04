@@ -20,19 +20,19 @@ typedef struct
 void
 dtmmgr_init (PDTmmgr_t PDTmmgr, const MemSize_t MemSize, const Align_t Align)
 {
-  if (PDTmmgr == NULL || *(pdtmmgr_t *) PDTmmgr != NULL)
+  if (PDTmmgr == nullptr || *(pdtmmgr_t *) PDTmmgr != nullptr)
     return;
 
   *(pdtmmgr_t *) PDTmmgr = static_cast<pdtmmgr_t> (malloc (sizeof (dtmmgr_t)));
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;
 
-  if (pdtmmgr == NULL)
+  if (pdtmmgr == nullptr)
     DTMMGR_ERROR_MALLOC_FAILED;
 
   FOR_ARENA (Arena)
     {
-      pdtmmgr->arena[Arena] = NULL;
+      pdtmmgr->arena[Arena] = nullptr;
 
       tmmgr_init (pdtmmgr->arena + Arena, MemSize, Align);
     }
@@ -44,7 +44,7 @@ dtmmgr_init (PDTmmgr_t PDTmmgr, const MemSize_t MemSize, const Align_t Align)
 MemSize_t
 dtmmgr_finalize (PDTmmgr_t PDTmmgr)
 {
-  if (PDTmmgr == NULL || *(pdtmmgr_t *) PDTmmgr == NULL)
+  if (PDTmmgr == nullptr || *(pdtmmgr_t *) PDTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;
@@ -55,7 +55,7 @@ dtmmgr_finalize (PDTmmgr_t PDTmmgr)
 
   free (pdtmmgr);
 
-  *(pdtmmgr_t *) PDTmmgr = NULL;
+  *(pdtmmgr_t *) PDTmmgr = nullptr;
 
   return Bytes;
 }
@@ -64,7 +64,7 @@ AllocReturn_t
 dtmmgr_alloc (PDTmmgr_t PDTmmgr, const Handle_t Handle, const Arena_t Arena,
               const MemSize_t Size)
 {
-  if (PDTmmgr == NULL || *(pdtmmgr_t *) PDTmmgr == NULL)
+  if (PDTmmgr == nullptr || *(pdtmmgr_t *) PDTmmgr == nullptr)
     return ALLOC_FAILURE;
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;
@@ -83,7 +83,7 @@ dtmmgr_alloc (PDTmmgr_t PDTmmgr, const Handle_t Handle, const Arena_t Arena,
 HandleReturn_t
 dtmmgr_free (PDTmmgr_t PDTmmgr, const Handle_t Handle, const Arena_t Arena)
 {
-  if (PDTmmgr == NULL || *(pdtmmgr_t *) PDTmmgr == NULL)
+  if (PDTmmgr == nullptr || *(pdtmmgr_t *) PDTmmgr == nullptr)
     return RET_FAILURE;
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;
@@ -103,7 +103,7 @@ dtmmgr_offset_size (const DTmmgr_t DTmmgr, const Handle_t Handle,
                     const Arena_t Arena, POffset_t POffset,
                     PMemSize_t PMemSize)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return RET_FAILURE;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -116,14 +116,14 @@ dtmmgr_offset_size (const DTmmgr_t DTmmgr, const Handle_t Handle,
   if (HandleReturn == RET_SUCCESS)
     {
       // invert for the local arena
-      if (Arena == ARENA_DOWN && POffset != NULL)
+      if (Arena == ARENA_DOWN && POffset != nullptr)
         {
           assert (pdtmmgr->mem_size >= *POffset + Size);
 
           *POffset = pdtmmgr->mem_size - (*POffset + Size);
         }
 
-      if (PMemSize != NULL)
+      if (PMemSize != nullptr)
         *PMemSize = Size;
     }
 
@@ -133,7 +133,7 @@ dtmmgr_offset_size (const DTmmgr_t DTmmgr, const Handle_t Handle,
 MemSize_t
 dtmmgr_memsize (const DTmmgr_t DTmmgr)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -144,7 +144,7 @@ dtmmgr_memsize (const DTmmgr_t DTmmgr)
 MemSize_t
 dtmmgr_memfree (const DTmmgr_t DTmmgr)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -158,7 +158,7 @@ dtmmgr_memfree (const DTmmgr_t DTmmgr)
 MemSize_t
 dtmmgr_memused (const DTmmgr_t DTmmgr)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -169,7 +169,7 @@ dtmmgr_memused (const DTmmgr_t DTmmgr)
 Count_t
 dtmmgr_numhandle (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -180,7 +180,7 @@ dtmmgr_numhandle (const DTmmgr_t DTmmgr, const Arena_t Arena)
 Count_t
 dtmmgr_numalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -191,7 +191,7 @@ dtmmgr_numalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
 Count_t
 dtmmgr_numfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -202,7 +202,7 @@ dtmmgr_numfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
 MemSize_t
 dtmmgr_sumalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -213,7 +213,7 @@ dtmmgr_sumalloc (const DTmmgr_t DTmmgr, const Arena_t Arena)
 MemSize_t
 dtmmgr_sumfree (const DTmmgr_t DTmmgr, const Arena_t Arena)
 {
-  if (DTmmgr == NULL)
+  if (DTmmgr == nullptr)
     return 0;
 
   pdtmmgr_t pdtmmgr = static_cast<pdtmmgr_t> (DTmmgr);
@@ -234,7 +234,7 @@ fMemmoveSwapped (const OffsetDest_t OffsetDest, const OffsetSrc_t OffsetSrc,
 {
   pmemmoveswap_t pmemmoveswap = static_cast<pmemmoveswap_t> (PDat);
 
-  if (pmemmoveswap->fMemmove != NULL)
+  if (pmemmoveswap->fMemmove != nullptr)
     pmemmoveswap->fMemmove (pmemmoveswap->MemSize - OffsetDest,
                             pmemmoveswap->MemSize - OffsetSrc, Size,
                             pmemmoveswap->Dat);
@@ -245,7 +245,7 @@ dtmmgr_defrag (PDTmmgr_t PDTmmgr, const Arena_t Arena,
                const fMemmove_t fMemmove, const PMemSize_t PMemSize,
                void *PDat)
 {
-  if (PDTmmgr == NULL || *(pdtmmgr_t *) PDTmmgr == NULL)
+  if (PDTmmgr == nullptr || *(pdtmmgr_t *) PDTmmgr == nullptr)
     return;
 
   pdtmmgr_t pdtmmgr = *(pdtmmgr_t *) PDTmmgr;

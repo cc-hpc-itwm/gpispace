@@ -31,7 +31,7 @@ empty ()
 {
   const PTrie_t t = static_cast<PTrie_t> (calloc (1, sizeof (Trie_t)));
 
-  if (t == NULL)
+  if (t == nullptr)
     TRIE_ERROR_MALLOC_FAILED;
 
   return t;
@@ -40,10 +40,10 @@ empty ()
 PValue_t
 trie_ins (PTrieMap_t PPTrie, Key_t Key, bool* Pwas_there)
 {
-  if (PPTrie == NULL)
-    return NULL;
+  if (PPTrie == nullptr)
+    return nullptr;
 
-  if (*(PTrie_t *) PPTrie == NULL)
+  if (*(PTrie_t *) PPTrie == nullptr)
     {
       *(PTrie_t *) PPTrie = empty ();
     }
@@ -52,7 +52,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, bool* Pwas_there)
 
   while (Key > 0)
     {
-      if (PTrie->child[REM(Key)] == NULL)
+      if (PTrie->child[REM(Key)] == nullptr)
         {
           PTrie->child[REM(Key)] = empty ();
         }
@@ -62,14 +62,14 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, bool* Pwas_there)
       DIV (Key);
     }
 
-  if (Pwas_there != NULL)
-    *Pwas_there = (PTrie->data == NULL) ? false : true;
+  if (Pwas_there != nullptr)
+    *Pwas_there = (PTrie->data == nullptr) ? false : true;
 
-  if (PTrie->data == NULL)
+  if (PTrie->data == nullptr)
     {
       PTrie->data = static_cast<PValue_t> (malloc (sizeof (Value_t)));
 
-      if (PTrie->data == NULL)
+      if (PTrie->data == nullptr)
         TRIE_ERROR_MALLOC_FAILED;
     }
 
@@ -81,13 +81,13 @@ trie_getany (const PTrieMap_t PCTrie)
 {
   PTrie_t PTrie = static_cast<PTrie_t> (PCTrie);
 
-  while (PTrie != NULL && PTrie->data == NULL)
+  while (PTrie != nullptr && PTrie->data == nullptr)
     {
       ItChild_t child = 0;
 
     CHILD:
 
-      if (PTrie->child[child] != NULL || child == NCHILD - 1)
+      if (PTrie->child[child] != nullptr || child == NCHILD - 1)
         {
           PTrie = PTrie->child[child];
         }
@@ -99,7 +99,7 @@ trie_getany (const PTrieMap_t PCTrie)
         }
     }
 
-  return (PTrie == NULL) ? NULL : PTrie->data;
+  return (PTrie == nullptr) ? nullptr : PTrie->data;
 }
 
 PValue_t
@@ -107,20 +107,20 @@ trie_get (const PTrieMap_t PCTrie, Key_t Key)
 {
   PTrie_t PTrie = static_cast<PTrie_t> (PCTrie);
 
-  while (PTrie != NULL && Key > 0)
+  while (PTrie != nullptr && Key > 0)
     {
       PTrie = PTrie->child[REM(Key)];
 
       DIV (Key);
     }
 
-  return (PTrie == NULL) ? NULL : PTrie->data;
+  return (PTrie == nullptr) ? nullptr : PTrie->data;
 }
 
 void
 trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 {
-  if (PPTrie == NULL || *(PTrie_t *) PPTrie == NULL)
+  if (PPTrie == nullptr || *(PTrie_t *) PPTrie == nullptr)
     return;
 
   if (Key > 0)
@@ -129,14 +129,14 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 
       trie_del (&(PTrie->child[REM(Key)]), QUOT(Key), fUser);
 
-      FOR_CHILD (child) if (PTrie->child[child] != NULL)
+      FOR_CHILD (child) if (PTrie->child[child] != nullptr)
         return;
 
-      if (PTrie->data == NULL)
+      if (PTrie->data == nullptr)
         {
           free (PTrie);
 
-          *(PTrie_t *) PPTrie = NULL;
+          *(PTrie_t *) PPTrie = nullptr;
         }
 
       return;
@@ -144,39 +144,39 @@ trie_del (PTrieMap_t PPTrie, const Key_t Key, const fUser_t fUser)
 
   const PTrie_t PTrie = *(PTrie_t *) PPTrie;
 
-  if (fUser != NULL && PTrie->data != NULL)
+  if (fUser != nullptr && PTrie->data != nullptr)
     fUser (PTrie->data);
 
   free (PTrie->data);
 
-  PTrie->data = NULL;
+  PTrie->data = nullptr;
 
-  FOR_CHILD (child) if (PTrie->child[child] != NULL)
+  FOR_CHILD (child) if (PTrie->child[child] != nullptr)
     return;
 
   free (PTrie);
 
-  *(PTrie_t *) PPTrie = NULL;
+  *(PTrie_t *) PPTrie = nullptr;
 }
 
 Value_t
 trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
 {
-  if (PPTrie == NULL || *(PTrie_t *) PPTrie == NULL)
+  if (PPTrie == nullptr || *(PTrie_t *) PPTrie == nullptr)
     return 0;
 
   Size_t Bytes = sizeof (Trie_t);
 
   const PTrie_t PTrie = *(PTrie_t *) PPTrie;
 
-  if (PTrie->data != NULL)
+  if (PTrie->data != nullptr)
     {
-      if (fUser != NULL)
+      if (fUser != nullptr)
         Bytes += fUser (PTrie->data);
 
       free (PTrie->data);
 
-      PTrie->data = NULL;
+      PTrie->data = nullptr;
 
       Bytes += sizeof (Value_t);
     }
@@ -185,7 +185,7 @@ trie_free (PTrieMap_t PPTrie, const fUser_t fUser)
 
   free (PTrie);
 
-  *(PTrie_t *) PPTrie = NULL;
+  *(PTrie_t *) PPTrie = nullptr;
 
   return Bytes;
 }
@@ -195,14 +195,14 @@ trie_memused (const TrieMap_t PCTrie, const fUser_t fUser)
 {
   const PTrie_t PTrie = static_cast<PTrie_t> (PCTrie);
 
-  if (PTrie == NULL)
+  if (PTrie == nullptr)
     return 0;
 
   Size_t Bytes = sizeof (Trie_t);
 
-  if (PTrie->data != NULL)
+  if (PTrie->data != nullptr)
     {
-      if (fUser != NULL)
+      if (fUser != nullptr)
         Bytes += fUser (PTrie->data);
 
       Bytes += sizeof (Size_t);
@@ -237,10 +237,10 @@ static void
 trie_work_key (const PTrie_t PTrie, const fTrieWork_t fTrieWork,
                const Key_t Key, const Word_t Level, void *Pdat)
 {
-  if (PTrie == NULL)
+  if (PTrie == nullptr)
     return;
 
-  if (PTrie->data != NULL)
+  if (PTrie->data != nullptr)
     {
       fTrieWork (Key, PTrie->data, Pdat);
     }

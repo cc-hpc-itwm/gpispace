@@ -2,7 +2,6 @@
 #pragma once
 
 #include <inttypes.h>
-#include <mmgr/null.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -19,7 +18,7 @@ extern "C"
 
   typedef Size_t (*fUser_t) (PValue_t);
 
-  static const fUser_t fUserNone = (fUser_t) NULL;
+  static const fUser_t fUserNone = (fUser_t) nullptr;
 
 #ifdef __cplusplus
 }

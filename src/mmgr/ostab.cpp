@@ -22,7 +22,7 @@ ostab_ins (POStab_t postab, const Key_t Key, const Offset_t Offset,
   const pdata_t data =
     (was_there == true) ? ((pdata_t) (*PVal)) : (pdata_t) malloc (sizeof (data_t));
 
-  if (data == NULL)
+  if (data == nullptr)
     OSTAB_ERROR_MALLOC_FAILED;
 
   data->offset = Offset;
@@ -39,15 +39,15 @@ ostab_get (const OStab_t ostab, const Key_t Key, POffset_t POffset,
 {
   const PValue_t PVal = trie_get (ostab, Key);
 
-  if (PVal == NULL)
+  if (PVal == nullptr)
     return false;
 
   const pdata_t pdata = (pdata_t) (*PVal);
 
-  if (POffset != NULL)
+  if (POffset != nullptr)
     *POffset = pdata->offset;
 
-  if (PSize != NULL)
+  if (PSize != nullptr)
     *PSize = pdata->size;
 
   return true;
@@ -56,7 +56,7 @@ ostab_get (const OStab_t ostab, const Key_t Key, POffset_t POffset,
 static Size_t
 fUser_free (const PValue_t PVal)
 {
-  if (PVal == NULL)
+  if (PVal == nullptr)
     return 0;
 
   const pdata_t pdata = (pdata_t) (*PVal);
@@ -105,7 +105,7 @@ typedef struct
 static void
 fWork (const Key_t Key, const PValue_t PVal, void *Pwd)
 {
-  assert (PVal != NULL);
+  assert (PVal != nullptr);
 
   const pdata_t pdata = (pdata_t) (*PVal);
   const pwork_dat_t pwd = static_cast<pwork_dat_t> (Pwd);
