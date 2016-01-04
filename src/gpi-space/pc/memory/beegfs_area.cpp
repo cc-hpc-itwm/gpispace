@@ -147,19 +147,32 @@ namespace gpi
       }
       catch (...)
       {
-        std::string const content
-          (fhg::util::read_file (detail::lock_info_path (area.m_path)));
-        std::istringstream iss (content);
-        boost::archive::text_iarchive ia (iss);
         std::string hostname;
-        ia & hostname;
         pid_t pid;
-        ia & pid;
+        bool info_available (false);
+        try
+        {
+          std::string const content
+            (fhg::util::read_file (detail::lock_info_path (area.m_path)));
+          std::istringstream iss (content);
+          boost::archive::text_iarchive ia (iss);
+          ia & hostname;
+          ia & pid;
+
+          info_available = true;
+        }
+        catch (...)
+        {
+          //! \note ignore: just directory existed but no info file
+        }
 
         std::throw_with_nested
           ( std::runtime_error
-              ( "segment may still be in use by: host=" + hostname
-              + " pid=" + std::to_string (pid)
+              ( "segment may still be in use"
+              + ( info_available
+                ? " by host=" + hostname + " pid=" + std::to_string (pid)
+                : ""
+                )
               + ", if this is wrong, remove "
               + static_cast<boost::filesystem::path const&> (*this).string()
               )
