@@ -15,20 +15,20 @@ BOOST_AUTO_TEST_CASE (trie)
   BOOST_REQUIRE_EQUAL (trie_getany (tm), (unsigned long*) nullptr);
   BOOST_REQUIRE_EQUAL (tm, (TrieMap_t) nullptr);
 
-  Bool_t was_there;
+  bool was_there;
 
   {
     const PValue_t PVal = trie_ins (&tm, 23, &was_there);
 
     BOOST_REQUIRE_NE (tm, (TrieMap_t) nullptr);
     BOOST_REQUIRE_NE (PVal, (unsigned long*) nullptr);
-    BOOST_REQUIRE_EQUAL (was_there, False);
+    BOOST_REQUIRE_EQUAL (was_there, false);
 
     *PVal = 23;
 
     const PValue_t PVal2 = trie_ins (&tm, 23, &was_there);
 
-    BOOST_REQUIRE_EQUAL (was_there, True);
+    BOOST_REQUIRE_EQUAL (was_there, true);
     BOOST_REQUIRE_EQUAL (PVal, PVal2);
 
     BOOST_REQUIRE_EQUAL (trie_get (tm, 23), PVal);
@@ -95,13 +95,13 @@ BOOST_AUTO_TEST_CASE (dups)
 
   for (Size_t i = 0; i < (1 << 22); ++i)
   {
-    Bool_t was_there;
+    bool was_there;
 
     BOOST_REQUIRE_NE ( trie_ins (&tm, rand(), &was_there)
                      , (unsigned long*) nullptr
                      );
 
-    dups += (was_there == True) ? 1 : 0;
+    dups += (was_there == true) ? 1 : 0;
   }
 
   BOOST_REQUIRE_EQUAL (dups, 4207);

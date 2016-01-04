@@ -103,9 +103,9 @@ BOOST_AUTO_TEST_CASE (smap)
 
   BOOST_REQUIRE_EQUAL (smap_get (sm, 23), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), false);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), True);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), true);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
 
   PValue_t PVal;
@@ -115,16 +115,16 @@ BOOST_AUTO_TEST_CASE (smap)
   BOOST_REQUIRE_NE (PVal, (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (*PVal, 23);
 
-  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), True);
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), true);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), False);
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), false);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1023), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), false);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), false);
 
   PVal = smap_get (sm, 1023);
 
@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE (smap)
 
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1044, SMAP_DEL_DEFAULT), False);
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1044, SMAP_DEL_DEFAULT), false);
   BOOST_REQUIRE_EQUAL (smap_size (sm), 2);
 
   PVal = smap_get (sm, 1023);
@@ -153,7 +153,7 @@ BOOST_AUTO_TEST_CASE (smap)
 
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), True);
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1023, SMAP_DEL_DEFAULT), true);
 
   BOOST_REQUIRE_EQUAL (smap_size (sm), 1);
 
@@ -166,7 +166,7 @@ BOOST_AUTO_TEST_CASE (smap)
 
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1099, SMAP_DEL_DEFAULT), True);
+  BOOST_REQUIRE_EQUAL (smap_del (&sm, 1099, SMAP_DEL_DEFAULT), true);
 
   BOOST_REQUIRE_EQUAL (smap_size (sm), 0);
 
@@ -174,10 +174,10 @@ BOOST_AUTO_TEST_CASE (smap)
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1099), (PValue_t) nullptr);
   BOOST_REQUIRE_EQUAL (smap_get (sm, 1044), (PValue_t) nullptr);
 
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), False);
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), False);
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1044, 44), False);
-  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1013, 13), False);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1023, 23), false);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1099, 99), false);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1044, 44), false);
+  BOOST_REQUIRE_EQUAL (smap_ins (&sm, 1013, 13), false);
 
   {
     std::ostringstream oss;
@@ -271,9 +271,9 @@ BOOST_AUTO_TEST_CASE (dups)
 
   for (Word_t i = 0; i < (1 << 20); ++i)
   {
-    Bool_t was_there = smap_ins (&sm, (Key_t) rand (), (Value_t) i);
+    bool was_there = smap_ins (&sm, (Key_t) rand (), (Value_t) i);
 
-    dups += (was_there == True) ? 1 : 0;
+    dups += (was_there == true) ? 1 : 0;
   }
 
   BOOST_REQUIRE_EQUAL (dups, 266);

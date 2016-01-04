@@ -29,11 +29,11 @@ empty ()
   return t;
 }
 
-Bool_t
+bool
 smap_ins (PSMap_t PPTree, const Key_t Key, const Value_t Value)
 {
   if (PPTree == NULL)
-    return False;
+    return false;
 
   if (*(PTree_t *) PPTree == NULL)
     {
@@ -41,7 +41,7 @@ smap_ins (PSMap_t PPTree, const Key_t Key, const Value_t Value)
       (*(PTree_t *) PPTree)->key = Key;
       (*(PTree_t *) PPTree)->value = Value;
 
-      return False;
+      return false;
     }
   else
     {
@@ -59,7 +59,7 @@ smap_ins (PSMap_t PPTree, const Key_t Key, const Value_t Value)
         {
           PTree->value = Value;
 
-          return True;
+          return true;
         }
     }
 }
@@ -145,11 +145,11 @@ smap_get_atleast_minimal (const SMap_t PCTree, PKey_t PWantHave)
     }
 }
 
-Bool_t
+bool
 smap_del (PSMap_t PPTree, const Key_t Key, const SMAP_DEL_SEL_t del_sel)
 {
   if (PPTree == NULL)
-    return False;
+    return false;
 
   PTree_t *PPParent = static_cast<PTree_t*> (PPTree);
   PTree_t PTree = *(PTree_t *) PPTree;
@@ -161,7 +161,7 @@ smap_del (PSMap_t PPTree, const Key_t Key, const SMAP_DEL_SEL_t del_sel)
     }
 
   if (PTree == NULL)
-    return False;
+    return false;
 
   const unsigned int PTreeChildMap
     = ((PTree->child[0] == NULL) ? 0 : (1 << 0))
@@ -214,7 +214,7 @@ smap_del (PSMap_t PPTree, const Key_t Key, const SMAP_DEL_SEL_t del_sel)
       exit (EXIT_FAILURE);
     }
 
-  return True;
+  return true;
 }
 
 static void

@@ -38,7 +38,7 @@ empty ()
 }
 
 PValue_t
-trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
+trie_ins (PTrieMap_t PPTrie, Key_t Key, bool* Pwas_there)
 {
   if (PPTrie == NULL)
     return NULL;
@@ -63,7 +63,7 @@ trie_ins (PTrieMap_t PPTrie, Key_t Key, PBool_t Pwas_there)
     }
 
   if (Pwas_there != NULL)
-    *Pwas_there = (PTrie->data == NULL) ? False : True;
+    *Pwas_there = (PTrie->data == NULL) ? false : true;
 
   if (PTrie->data == NULL)
     {

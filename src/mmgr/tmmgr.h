@@ -2,7 +2,6 @@
 #pragma once
 
 #include <mmgr/word.h>
-#include <mmgr/bool.h>
 
 #ifdef __cplusplus
 extern "C"

@@ -3,7 +3,6 @@
 
 #pragma once
 
-#include <mmgr/bool.h>
 #include <mmgr/null.h>
 #include <mmgr/word.h>
 
@@ -17,7 +16,7 @@ extern "C"
   /* let N be the number of elements in the map */
   /* let b be the number of bits in one Key_t  */
 
-  /* O(b) */ extern PValue_t trie_ins (PTrieMap_t, const Key_t, PBool_t);
+  /* O(b) */ extern PValue_t trie_ins (PTrieMap_t, const Key_t, bool*);
   /* O(b) */ extern PValue_t trie_get (const TrieMap_t, const Key_t);
   /* O(b) */ extern PValue_t trie_getany (const TrieMap_t);
   /* O(b) */ extern void trie_del (PTrieMap_t, const Key_t, const fUser_t);

@@ -1,8 +1,6 @@
 
 #include <mmgr/heap.h>
 
-#include <mmgr/bool.h>
-
 #include <stdlib.h>
 #include <string.h>
 
@@ -138,11 +136,11 @@ heap_ins (PHeap_t PHeap, const Offset_t Offset)
   ++pheap->pos;
 }
 
-static inline Bool_t
+static inline bool
 small (pheap_t pheap, Size_t Node, Size_t Child)
 {
-  return (Child >= pheap->pos) ? False : (pheap->arr[Child] <
-                                          pheap->arr[Node] ? True : False);
+  return (Child >= pheap->pos) ? false : (pheap->arr[Child] <
+                                          pheap->arr[Node] ? true : false);
 }
 
 void
@@ -162,20 +160,20 @@ heap_delmin (PHeap_t PHeap)
   Size_t ChildL = childL (Node);
   Size_t ChildR = childR (Node);
 
-  Bool_t smallL = small (pheap, Node, ChildL);
-  Bool_t smallR = small (pheap, Node, ChildR);
+  bool smallL = small (pheap, Node, ChildL);
+  bool smallR = small (pheap, Node, ChildR);
 
-  while (smallL == True || smallR == True)
+  while (smallL == true || smallR == true)
     {
-      if (smallL == True && smallR == True)
+      if (smallL == true && smallR == true)
         {
           if (pheap->arr[ChildL] > pheap->arr[ChildR])
             {
-              smallL = False;
+              smallL = false;
             }
         }
 
-      if (smallL == True)
+      if (smallL == true)
         {
           swap (pheap, Node, ChildL);
 

@@ -14,23 +14,23 @@ BOOST_AUTO_TEST_CASE (ostab)
   BOOST_REQUIRE_EQUAL (ostab_memused (ostab), 0);
   BOOST_REQUIRE_EQUAL (ostab_size (ostab), 0);
 
-  BOOST_REQUIRE_EQUAL (ostab_ins (&ostab, 23, 0xfff, 1 << 20), False);
-  BOOST_REQUIRE_EQUAL (ostab_ins (&ostab, 42, 0xaff, 1 << 12), False);
+  BOOST_REQUIRE_EQUAL (ostab_ins (&ostab, 23, 0xfff, 1 << 20), false);
+  BOOST_REQUIRE_EQUAL (ostab_ins (&ostab, 42, 0xaff, 1 << 12), false);
 
   BOOST_REQUIRE_EQUAL (ostab_size (ostab), 2);
 
   Offset_t Offset;
   Size_t Size;
 
-  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 23, &Offset, &Size), True);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 23, &Offset, &Size), true);
   BOOST_REQUIRE_EQUAL (Offset, 0xfff);
   BOOST_REQUIRE_EQUAL (Size, 1 << 20);
 
-  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 42, &Offset, &Size), True);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 42, &Offset, &Size), true);
   BOOST_REQUIRE_EQUAL (Offset, 0xaff);
   BOOST_REQUIRE_EQUAL (Size, 1 << 12);
 
-  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 99, &Offset, &Size), False);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 99, &Offset, &Size), false);
 
   ostab_del (&ostab, 99);
 
@@ -40,13 +40,13 @@ BOOST_AUTO_TEST_CASE (ostab)
 
   BOOST_REQUIRE_EQUAL (ostab_size (ostab), 1);
 
-  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 23, &Offset, &Size), False);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 23, &Offset, &Size), false);
 
-  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 42, &Offset, &Size), True);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 42, &Offset, &Size), true);
   BOOST_REQUIRE_EQUAL (Offset, 0xaff);
   BOOST_REQUIRE_EQUAL (Size, 1 << 12);
 
-  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 99, &Offset, &Size), False);
+  BOOST_REQUIRE_EQUAL (ostab_get (ostab, 99, &Offset, &Size), false);
 
   Size_t const memused (ostab_memused (ostab));
 

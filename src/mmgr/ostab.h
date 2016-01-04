@@ -15,9 +15,9 @@ extern "C"
   typedef TrieMap_t OStab_t, *POStab_t;
 
   /* O(number of bits in Key_t) */
-  extern Bool_t ostab_ins (POStab_t, const Key_t, const Offset_t,
+  extern bool ostab_ins (POStab_t, const Key_t, const Offset_t,
                            const Size_t);
-  extern Bool_t ostab_get (const OStab_t, const Key_t, POffset_t, PSize_t);
+  extern bool ostab_get (const OStab_t, const Key_t, POffset_t, PSize_t);
   extern void ostab_del (POStab_t, const Key_t);
 
   /* O(number of elements in map) */

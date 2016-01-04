@@ -190,10 +190,10 @@ tmmgr_offset_size (const Tmmgr_t Tmmgr, const Handle_t Handle,
 
   ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
 
-  Bool_t was_there =
+  bool was_there =
     ostab_get (ptmmgr->handle_to_offset_and_size, Handle, POffset, PMemSize);
 
-  if (was_there == False)
+  if (was_there == false)
     return RET_HANDLE_UNKNOWN;
 
   return RET_SUCCESS;

@@ -13,14 +13,14 @@ typedef struct
   Size_t size;
 } data_t, *pdata_t;
 
-Bool_t
+bool
 ostab_ins (POStab_t postab, const Key_t Key, const Offset_t Offset,
            const Size_t Size)
 {
-  Bool_t was_there = False;
+  bool was_there = false;
   const PValue_t PVal = trie_ins (postab, Key, &was_there);
   const pdata_t data =
-    (was_there == True) ? ((pdata_t) (*PVal)) : (pdata_t) malloc (sizeof (data_t));
+    (was_there == true) ? ((pdata_t) (*PVal)) : (pdata_t) malloc (sizeof (data_t));
 
   if (data == NULL)
     OSTAB_ERROR_MALLOC_FAILED;
@@ -33,14 +33,14 @@ ostab_ins (POStab_t postab, const Key_t Key, const Offset_t Offset,
   return was_there;
 }
 
-Bool_t
+bool
 ostab_get (const OStab_t ostab, const Key_t Key, POffset_t POffset,
            PSize_t PSize)
 {
   const PValue_t PVal = trie_get (ostab, Key);
 
   if (PVal == NULL)
-    return False;
+    return false;
 
   const pdata_t pdata = (pdata_t) (*PVal);
 
@@ -50,7 +50,7 @@ ostab_get (const OStab_t ostab, const Key_t Key, POffset_t POffset,
   if (PSize != NULL)
     *PSize = pdata->size;
 
-  return True;
+  return true;
 }
 
 static Size_t
