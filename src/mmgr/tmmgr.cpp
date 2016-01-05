@@ -4,7 +4,7 @@
 #include <mmgr/ostab.h>
 #include <mmgr/trie.h>
 #include <mmgr/fseg.h>
-#include <mmgr/heap.h>
+#include <mmgr/heap.hpp>
 
 #include <util-generic/unused.hpp>
 
@@ -479,7 +479,7 @@ fHeap ( const Offset_t Offset
       , void *PDat
       )
 {
-  heap_ins (PDat, Offset);
+  static_cast<gspc::mmgr::heap*> (PDat)->insert (Offset);
 }
 
 void
@@ -494,26 +494,26 @@ tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
   if (PFreeSizeWanted != nullptr && *PFreeSizeWanted > tmmgr_memfree (ptmmgr))
     return;
 
-  Heap_t HeapOffFree = (Heap_t) nullptr;
-  Heap_t HeapOffUsed = (Heap_t) nullptr;
+  gspc::mmgr::heap HeapOffFree;
+  gspc::mmgr::heap HeapOffUsed;
 
   trie_work (ptmmgr->free_segment_start, fHeap, &HeapOffFree);
   trie_work (ptmmgr->offset_to_handle, fHeap, &HeapOffUsed);
 
-  while (heap_size (HeapOffFree) > 0 && heap_size (HeapOffUsed) > 0)
+  while (HeapOffFree.size() > 0 && HeapOffUsed.size() > 0)
     {
-      Offset_t OffsetFree = heap_min (HeapOffFree);
-      Offset_t OffsetUsed = heap_min (HeapOffUsed);
+      Offset_t OffsetFree {HeapOffFree.min()};
+      Offset_t OffsetUsed {HeapOffUsed.min()};
 
-      while (heap_size (HeapOffUsed) > 0 && OffsetUsed < OffsetFree)
+      while (HeapOffUsed.size() > 0 && OffsetUsed < OffsetFree)
         {
-          heap_delmin (&HeapOffUsed);
+          HeapOffUsed.delete_min();
 
-          if (heap_size (HeapOffUsed) > 0)
-            OffsetUsed = heap_min (HeapOffUsed);
+          if (HeapOffUsed.size() > 0)
+            OffsetUsed = HeapOffUsed.min();
         }
 
-      if (heap_size (HeapOffUsed) > 0)
+      if (HeapOffUsed.size() > 0)
         {
           if (PFreeSizeWanted != nullptr
               && OffsetFree + *PFreeSizeWanted <= OffsetUsed)
@@ -537,16 +537,15 @@ tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
           tmmgr_del (ptmmgr, Handle, OffsetUsed, SizeUsed);
           tmmgr_ins (ptmmgr, Handle, OffsetFree, SizeUsed);
 
-          heap_delmin (&HeapOffFree);
-          heap_delmin (&HeapOffUsed);
+          HeapOffFree.delete_min();
+          HeapOffUsed.delete_min();
 
-          if (heap_size (HeapOffFree) == 0
-              || heap_min (HeapOffFree) != OffsetFree + SizeUsed)
-            heap_ins (&HeapOffFree, OffsetFree + SizeUsed);
+          if (HeapOffFree.size() == 0
+              || HeapOffFree.min() != OffsetFree + SizeUsed)
+            HeapOffFree.insert (OffsetFree + SizeUsed);
         }
     }
 
 HAVE_ENOUGH:
-  heap_free (&HeapOffFree);
-  heap_free (&HeapOffUsed);
+  return;
 }

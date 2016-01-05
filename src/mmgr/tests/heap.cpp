@@ -1,106 +1,119 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #define BOOST_TEST_MODULE mmgr_heap
 #include <boost/test/unit_test.hpp>
 
-#include <mmgr/heap.h>
+#include <mmgr/heap.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 BOOST_AUTO_TEST_CASE (heap)
 {
-  Heap_t h = nullptr;
+  gspc::mmgr::heap h;
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
+  BOOST_REQUIRE_EQUAL (h.size(), 0);
 
-  heap_ins (&h, 12);
+  h.insert (12);
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 1);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
+  BOOST_REQUIRE_EQUAL (h.size(), 1);
+  BOOST_REQUIRE_EQUAL (h.min(), 12);
 
-  heap_ins (&h, 13);
+  h.insert (13);
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 2);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.size(), 2);
+  BOOST_REQUIRE_EQUAL (h.min(), 12);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 1);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 13);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.size(), 1);
+  BOOST_REQUIRE_EQUAL (h.min(), 13);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
+  BOOST_REQUIRE_EQUAL (h.size(), 0);
 
-  heap_ins (&h, 10);
-  heap_ins (&h, 11);
-  heap_ins (&h, 12);
-  heap_ins (&h, 9);
-  heap_ins (&h, 8);
-  heap_ins (&h, 7);
+  h.insert (10);
+  h.insert (11);
+  h.insert (12);
+  h.insert (9);
+  h.insert (8);
+  h.insert (7);
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 7);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 7);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 8);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 8);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 9);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 9);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 10);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 10);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 11);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 11);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 12);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
+  BOOST_REQUIRE_EQUAL (h.size(), 0);
 
-  heap_ins (&h, 10);
-  heap_ins (&h, 11);
-  heap_ins (&h, 12);
-  heap_ins (&h, 9);
-  heap_ins (&h, 8);
-  heap_ins (&h, 7);
-  heap_ins (&h, 10);
-  heap_ins (&h, 11);
-  heap_ins (&h, 12);
-  heap_ins (&h, 9);
-  heap_ins (&h, 8);
-  heap_ins (&h, 7);
+  h.insert (10);
+  h.insert (11);
+  h.insert (12);
+  h.insert (9);
+  h.insert (8);
+  h.insert (7);
+  h.insert (10);
+  h.insert (11);
+  h.insert (12);
+  h.insert (9);
+  h.insert (8);
+  h.insert (7);
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 7);
-  heap_delmin (&h);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 7);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 7);
+  h.delete_min();
+  BOOST_REQUIRE_EQUAL (h.min(), 7);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 8);
-  heap_delmin (&h);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 8);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 8);
+  h.delete_min();
+  BOOST_REQUIRE_EQUAL (h.min(), 8);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 9);
-  heap_delmin (&h);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 9);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 9);
+  h.delete_min();
+  BOOST_REQUIRE_EQUAL (h.min(), 9);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 10);
-  heap_delmin (&h);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 10);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 10);
+  h.delete_min();
+  BOOST_REQUIRE_EQUAL (h.min(), 10);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 11);
-  heap_delmin (&h);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 11);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 11);
+  h.delete_min();
+  BOOST_REQUIRE_EQUAL (h.min(), 11);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
-  heap_delmin (&h);
-  BOOST_REQUIRE_EQUAL (heap_min (h), 12);
-  heap_delmin (&h);
+  BOOST_REQUIRE_EQUAL (h.min(), 12);
+  h.delete_min();
+  BOOST_REQUIRE_EQUAL (h.min(), 12);
+  h.delete_min();
 
-  BOOST_REQUIRE_EQUAL (heap_size (h), 0);
+  BOOST_REQUIRE_EQUAL (h.size(), 0);
+}
 
-  BOOST_REQUIRE_EQUAL (heap_free (&h), 152);
+BOOST_AUTO_TEST_CASE (min_empty_throws_heap_empty)
+{
+  fhg::util::testing::require_exception
+    ( []() { gspc::mmgr::heap().min(); }
+    , gspc::mmgr::exception::heap_empty ("min")
+    );
+}
+
+BOOST_AUTO_TEST_CASE (delete_min_empty_throws_heap_empty)
+{
+  fhg::util::testing::require_exception
+    ( []() { gspc::mmgr::heap().delete_min(); }
+    , gspc::mmgr::exception::heap_empty ("delete_min")
+    );
 }
