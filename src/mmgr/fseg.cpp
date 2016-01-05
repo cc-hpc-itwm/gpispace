@@ -65,7 +65,10 @@ fseg_del (PFSeg_t PFSeg, const Key_t Key, const Value_t Value,
 }
 
 static void
-fFree (const Key_t UNUSED (Key), const Value_t Value, void *Pdat)
+fFree ( const Key_t FHG_UTIL_UNUSED (Key, "no dynamic allocation for Key")
+      , const Value_t Value
+      , void *Pdat
+      )
 {
   TrieMap_t TrieMap = (TrieMap_t) Value;
 
@@ -88,7 +91,10 @@ fseg_free (PFSeg_t PFSeg)
 }
 
 static void
-fMemUsed (const Key_t UNUSED (Key), const Value_t Value, void *Pdat)
+fMemUsed ( const Key_t FHG_UTIL_UNUSED (Key, "no dynamic allocation for Key")
+         , const Value_t Value
+         , void *Pdat
+         )
 {
   TrieMap_t TrieMap = (TrieMap_t) Value;
 
@@ -106,7 +112,10 @@ fseg_memused (const FSeg_t FSeg)
 }
 
 static void
-fSize (const Key_t UNUSED (Key), const Value_t Value, void *Pdat)
+fSize ( const Key_t FHG_UTIL_UNUSED (Key, "no size independent from Key")
+      , const Value_t Value
+      , void *Pdat
+      )
 {
   TrieMap_t TrieMap = (TrieMap_t) Value;
 

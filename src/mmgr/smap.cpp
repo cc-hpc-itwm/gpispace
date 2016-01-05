@@ -283,7 +283,10 @@ smap_free (PSMap_t PPTree)
 }
 
 static void
-fCountMem (const Key_t UNUSED (Key), const Value_t UNUSED (Value), void *Pdat)
+fCountMem ( const Key_t FHG_UTIL_UNUSED (Key, "memsize independent from Key")
+          , const Value_t FHG_UTIL_UNUSED (Value, "memsize independent from Value")
+          , void *Pdat
+          )
 {
   *(PSize_t) Pdat += sizeof (Tree_t);
 }
@@ -299,8 +302,10 @@ smap_memused (const SMap_t PCTree)
 }
 
 static void
-fCountSize (const Key_t UNUSED (Key), const Value_t UNUSED (Value),
-            void *Pdat)
+fCountSize ( const Key_t FHG_UTIL_UNUSED (Key, "size independet from Key")
+           , const Value_t FHG_UTIL_UNUSED (Value, "size independet from Value")
+           , void *Pdat
+           )
 {
   *(PSize_t) Pdat += 1;
 }

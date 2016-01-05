@@ -79,7 +79,7 @@ ostab_free (POStab_t postab)
 }
 
 static Size_t
-fUser_count (const PValue_t UNUSED (PVal))
+fUser_count (const PValue_t FHG_UTIL_UNUSED (PVal, "not counting the pointer"))
 {
   return sizeof (data_t);
 }

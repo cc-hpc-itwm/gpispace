@@ -257,7 +257,10 @@ trie_work (const TrieMap_t PCTrie, const fTrieWork_t fTrieWork, void *Pdat)
 }
 
 static void
-fCount (const Key_t UNUSED (Key), const PValue_t UNUSED (PVal), void *PSize)
+fCount ( const Key_t FHG_UTIL_UNUSED (Key, "size independent from Key")
+       , const PValue_t FHG_UTIL_UNUSED (PVal, "size independent from Value")
+       , void *PSize
+       )
 {
   *(PSize_t) PSize += 1;
 }

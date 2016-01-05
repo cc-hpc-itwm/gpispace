@@ -470,7 +470,14 @@ tmmgr_sumfree (const Tmmgr_t Tmmgr)
 }
 
 static void
-fHeap (const Offset_t Offset, const PValue_t UNUSED (PVal), void *PDat)
+fHeap ( const Offset_t Offset
+      , const PValue_t FHG_UTIL_UNUSED
+                       (PVal, "Size (for traversal of free_segment_start) and"
+                              "Handle (for traversal of offset_to_handle)"
+                              "are not stored in the offset heap"
+                       )
+      , void *PDat
+      )
 {
   heap_ins (PDat, Offset);
 }
