@@ -58,6 +58,33 @@ namespace gpi
           {
             return lock_path (path) / "info";
           }
+
+          struct lock_info
+          {
+            lock_info (boost::filesystem::path const& path)
+            {
+              std::string const content
+                (fhg::util::read_file (detail::lock_info_path (path)));
+              std::istringstream iss (content);
+              boost::archive::text_iarchive ia (iss);
+              ia & hostname;
+              ia & pid;
+            }
+
+            static void write_local_information
+              (boost::filesystem::path const& path)
+            {
+              std::ostringstream oss;
+              boost::archive::text_oarchive oa (oss);
+              oa & fhg::util::hostname();
+              oa & fhg::util::syscall::getpid();
+              fhg::util::write_file
+                (detail::lock_info_path (path), oss.str());
+            }
+
+            std::string hostname;
+            pid_t pid;
+          };
         }
       }
       namespace
@@ -138,43 +165,33 @@ namespace gpi
       try
         : filesystem_lock_directory (detail::lock_path (area.m_path))
       {
-        std::ostringstream oss;
-        boost::archive::text_oarchive oa (oss);
-        oa & fhg::util::hostname();
-        oa & fhg::util::syscall::getpid();
-        fhg::util::write_file
-          (detail::lock_info_path (area.m_path), oss.str());
+        detail::lock_info::write_local_information (area.m_path);
       }
       catch (...)
       {
-        std::string hostname;
-        pid_t pid;
-        bool info_available (false);
+        boost::optional<std::string> additional_information;
         try
         {
-          std::string const content
-            (fhg::util::read_file (detail::lock_info_path (area.m_path)));
-          std::istringstream iss (content);
-          boost::archive::text_iarchive ia (iss);
-          ia & hostname;
-          ia & pid;
-
-          info_available = true;
+          detail::lock_info const existing (area.m_path);
+          additional_information
+            = " (existing lock was created by pid "
+            + std::to_string (existing.pid)
+            + " on host " + existing.hostname + ")";
         }
         catch (...)
         {
-          //! \note ignore: just directory existed but no info file
+          //! \note ignore: just directory existed but no info file,
+          //! or reading it failed due to being corrupt or the lock
+          //! being removed the exact same time we tried to
+          //! lock. either way, we can't give additional information
+          //! to the user
         }
 
         std::throw_with_nested
           ( std::runtime_error
-              ( "segment may still be in use"
-              + ( info_available
-                ? " by host=" + hostname + " pid=" + std::to_string (pid)
-                : ""
-                )
-              + ", if this is wrong, remove "
+              ( "segment is still locked or creating lock at directory "
               + static_cast<boost::filesystem::path const&> (*this).string()
+              + " failed" + additional_information.get_value_or ("")
               )
           );
       }
