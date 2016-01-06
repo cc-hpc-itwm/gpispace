@@ -1,9 +1,7 @@
 set (sources
   dtmmgr.cpp
-  fseg.cpp
   heap.cpp
   ostab.cpp
-  smap.cpp
   tmmgr.cpp
   trie.cpp
 )

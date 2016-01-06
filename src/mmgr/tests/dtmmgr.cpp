@@ -126,6 +126,6 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
 
   BOOST_REQUIRE_EQUAL (callback_count, 3);
 
-  BOOST_REQUIRE_EQUAL (dtmmgr_finalize (&dtmmgr), 2320);
+  BOOST_REQUIRE_GT (dtmmgr_finalize (&dtmmgr), 0);
   BOOST_REQUIRE_EQUAL (dtmmgr_finalize (&dtmmgr), 0);
 }

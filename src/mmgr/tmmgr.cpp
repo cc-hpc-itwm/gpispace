@@ -3,18 +3,21 @@
 
 #include <mmgr/ostab.h>
 #include <mmgr/trie.h>
-#include <mmgr/fseg.h>
 #include <mmgr/heap.hpp>
 
 #include <util-generic/unused.hpp>
 
 #include <assert.h>
 
+#include <map>
+#include <unordered_set>
+
 typedef struct
 {
   OStab_t handle_to_offset_and_size;
   TrieMap_t offset_to_handle;
-  FSeg_t free_offset_by_size;
+  std::map<MemSize_t, std::unordered_multiset<Offset_t>>
+    free_offset_by_size;
   TrieMap_t free_segment_start;
   TrieMap_t free_segment_end;
   MemSize_t mem_size;
@@ -46,8 +49,24 @@ tmmgr_del_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
 {
   Offset_t OffsetEnd = OffsetStart + Size;
 
-  fseg_del (&ptmmgr->free_offset_by_size, Size, OffsetStart,
-            SMAP_DEL_DEFAULT);
+  {
+    auto pos_size (ptmmgr->free_offset_by_size.find (Size));
+    if (pos_size == ptmmgr->free_offset_by_size.end())
+    {
+      throw std::runtime_error ("Missing Size " + std::to_string (Size));
+    }
+    auto& offsets (pos_size->second);
+    auto pos_offset (offsets.find (OffsetStart));
+    if (pos_offset == offsets.end())
+    {
+      throw std::logic_error ("Missing Offset " + std::to_string (OffsetStart));
+    }
+    offsets.erase (pos_offset);
+    if (offsets.empty())
+    {
+      ptmmgr->free_offset_by_size.erase (pos_size);
+    }
+  }
   trie_del (&ptmmgr->free_segment_start, OffsetStart, fUserNone);
   trie_del (&ptmmgr->free_segment_end, OffsetEnd, fUserNone);
 }
@@ -60,7 +79,7 @@ tmmgr_ins_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
     {
       Offset_t OffsetEnd = OffsetStart + Size;
 
-      fseg_ins (&ptmmgr->free_offset_by_size, Size, OffsetStart);
+      ptmmgr->free_offset_by_size[Size].emplace (OffsetStart);
       *trie_ins (&ptmmgr->free_segment_start, OffsetStart, nullptr) = Size;
       *trie_ins (&ptmmgr->free_segment_end, OffsetEnd, nullptr) = Size;
     }
@@ -72,7 +91,7 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
   if (PTmmgr == nullptr || *(ptmmgr_t *) PTmmgr != nullptr)
     return 0;
 
-  *(ptmmgr_t *) PTmmgr = static_cast<ptmmgr_t> (malloc (sizeof (tmmgr_t)));
+  *(ptmmgr_t *) PTmmgr = new tmmgr_t;
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
 
@@ -81,7 +100,6 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 
   ptmmgr->handle_to_offset_and_size = (OStab_t) nullptr;
   ptmmgr->offset_to_handle = (TrieMap_t) nullptr;
-  ptmmgr->free_offset_by_size = (FSeg_t) nullptr;
   ptmmgr->free_segment_start = (TrieMap_t) nullptr;
   ptmmgr->free_segment_end = (TrieMap_t) nullptr;
 
@@ -170,11 +188,10 @@ tmmgr_finalize (PTmmgr_t PTmmgr)
 
   Bytes += ostab_free (&ptmmgr->handle_to_offset_and_size);
   Bytes += trie_free (&ptmmgr->offset_to_handle, fUserNone);
-  Bytes += fseg_free (&ptmmgr->free_offset_by_size);
   Bytes += trie_free (&ptmmgr->free_segment_start, fUserNone);
   Bytes += trie_free (&ptmmgr->free_segment_end, fUserNone);
 
-  free (ptmmgr);
+  delete ptmmgr;
 
   *(ptmmgr_t *) PTmmgr = nullptr;
 
@@ -255,15 +272,16 @@ tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle,
   if (tmmgr_offset_size (ptmmgr, Handle, nullptr, nullptr) == RET_SUCCESS)
     return ALLOC_DUPLICATE_HANDLE;
 
-  MemSize_t size = Size;
+  auto pos (ptmmgr->free_offset_by_size.lower_bound (Size));
 
-  POffset_t POffset =
-    fseg_get_atleast_minimal (ptmmgr->free_offset_by_size, &size);
-
-  if (POffset == nullptr)
+  if (pos == ptmmgr->free_offset_by_size.end())
+  {
     return ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY;
+  }
 
-  tmmgr_ins (ptmmgr, Handle, *POffset, Size);
+  Offset_t Offset (*pos->second.begin());
+
+  tmmgr_ins (ptmmgr, Handle, Offset, Size);
 
   ++ptmmgr->num_alloc;
   ptmmgr->sum_alloc += Size;
