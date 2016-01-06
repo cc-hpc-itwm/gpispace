@@ -1,7 +1,6 @@
 
 #include <mmgr/tmmgr.h>
 
-#include <mmgr/ostab.h>
 #include <mmgr/trie.h>
 #include <mmgr/heap.hpp>
 
@@ -10,11 +9,13 @@
 #include <assert.h>
 
 #include <map>
+#include <unordered_map>
 #include <unordered_set>
 
 typedef struct
 {
-  OStab_t handle_to_offset_and_size;
+  std::unordered_map<Handle_t, std::pair<Offset_t, MemSize_t>>
+    handle_to_offset_and_size;
   TrieMap_t offset_to_handle;
   std::map<MemSize_t, std::unordered_multiset<Offset_t>>
     free_offset_by_size;
@@ -98,7 +99,6 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
   if (ptmmgr == nullptr)
     TMMGR_ERROR_MALLOC_FAILED;
 
-  ptmmgr->handle_to_offset_and_size = (OStab_t) nullptr;
   ptmmgr->offset_to_handle = (TrieMap_t) nullptr;
   ptmmgr->free_segment_start = (TrieMap_t) nullptr;
   ptmmgr->free_segment_end = (TrieMap_t) nullptr;
@@ -186,7 +186,6 @@ tmmgr_finalize (PTmmgr_t PTmmgr)
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
   MemSize_t Bytes = sizeof (tmmgr_t);
 
-  Bytes += ostab_free (&ptmmgr->handle_to_offset_and_size);
   Bytes += trie_free (&ptmmgr->offset_to_handle, fUserNone);
   Bytes += trie_free (&ptmmgr->free_segment_start, fUserNone);
   Bytes += trie_free (&ptmmgr->free_segment_end, fUserNone);
@@ -207,11 +206,21 @@ tmmgr_offset_size (const Tmmgr_t Tmmgr, const Handle_t Handle,
 
   ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
 
-  bool was_there =
-    ostab_get (ptmmgr->handle_to_offset_and_size, Handle, POffset, PMemSize);
+  auto pos (ptmmgr->handle_to_offset_and_size.find (Handle));
 
-  if (was_there == false)
+  if (pos == ptmmgr->handle_to_offset_and_size.end())
+  {
     return RET_HANDLE_UNKNOWN;
+  }
+
+  if (POffset)
+  {
+    *POffset = pos->second.first;
+  }
+  if (PMemSize)
+  {
+    *PMemSize = pos->second.second;
+  }
 
   return RET_SUCCESS;
 }
@@ -251,7 +260,8 @@ tmmgr_ins (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
   tmmgr_del_free_seg (ptmmgr, Offset, OldFreeSize);
   tmmgr_ins_free_seg (ptmmgr, Offset + Size, NewFreeSize);
 
-  ostab_ins (&ptmmgr->handle_to_offset_and_size, Handle, Offset, Size);
+  ptmmgr->handle_to_offset_and_size.emplace
+    (Handle, std::make_pair (Offset, Size));
   *trie_ins (&ptmmgr->offset_to_handle, Offset, nullptr) = Handle;
 }
 
@@ -297,7 +307,7 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 
   ptmmgr->mem_free += Size;
 
-  ostab_del (&ptmmgr->handle_to_offset_and_size, Handle);
+  ptmmgr->handle_to_offset_and_size.erase (Handle);
   trie_del (&ptmmgr->offset_to_handle, Offset, fUserNone);
 
   PMemSize_t PSizeL = trie_get (ptmmgr->free_segment_end, Offset);
@@ -440,7 +450,7 @@ tmmgr_numhandle (const Tmmgr_t Tmmgr)
 
   ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
 
-  return ostab_size (ptmmgr->handle_to_offset_and_size);
+  return ptmmgr->handle_to_offset_and_size.size();
 }
 
 Count_t
