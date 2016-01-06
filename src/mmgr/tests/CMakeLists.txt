@@ -1,5 +1,4 @@
 fhg_add_test (dtmmgr.cpp BOOST_UNIT_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
 fhg_add_test (heap.cpp BOOST_UNIT_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
 fhg_add_test (tmmgr.cpp BOOST_UNIT_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
-fhg_add_test (trie.cpp BOOST_UNIT_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
 fhg_add_test (perftmmgr.cpp BOOST_UNIT_TEST PERFORMANCE_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)

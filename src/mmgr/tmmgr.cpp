@@ -1,7 +1,6 @@
 
 #include <mmgr/tmmgr.h>
 
-#include <mmgr/trie.h>
 #include <mmgr/heap.hpp>
 
 #include <util-generic/unused.hpp>
@@ -16,11 +15,11 @@ typedef struct
 {
   std::unordered_map<Handle_t, std::pair<Offset_t, MemSize_t>>
     handle_to_offset_and_size;
-  TrieMap_t offset_to_handle;
+  std::unordered_map<Offset_t, Handle_t> offset_to_handle;
   std::map<MemSize_t, std::unordered_multiset<Offset_t>>
     free_offset_by_size;
-  TrieMap_t free_segment_start;
-  TrieMap_t free_segment_end;
+  std::unordered_map<Offset_t, Size_t> free_segment_start;
+  std::unordered_map<Offset_t, Size_t> free_segment_end;
   MemSize_t mem_size;
   MemSize_t mem_free;
   MemSize_t min_free;
@@ -68,8 +67,8 @@ tmmgr_del_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
       ptmmgr->free_offset_by_size.erase (pos_size);
     }
   }
-  trie_del (&ptmmgr->free_segment_start, OffsetStart, fUserNone);
-  trie_del (&ptmmgr->free_segment_end, OffsetEnd, fUserNone);
+  ptmmgr->free_segment_start.erase (OffsetStart);
+  ptmmgr->free_segment_end.erase (OffsetEnd);
 }
 
 static void
@@ -81,8 +80,8 @@ tmmgr_ins_free_seg (ptmmgr_t ptmmgr, const Offset_t OffsetStart,
       Offset_t OffsetEnd = OffsetStart + Size;
 
       ptmmgr->free_offset_by_size[Size].emplace (OffsetStart);
-      *trie_ins (&ptmmgr->free_segment_start, OffsetStart, nullptr) = Size;
-      *trie_ins (&ptmmgr->free_segment_end, OffsetEnd, nullptr) = Size;
+      ptmmgr->free_segment_start.emplace (OffsetStart, Size);
+      ptmmgr->free_segment_end.emplace (OffsetEnd, Size);
     }
 }
 
@@ -98,10 +97,6 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 
   if (ptmmgr == nullptr)
     TMMGR_ERROR_MALLOC_FAILED;
-
-  ptmmgr->offset_to_handle = (TrieMap_t) nullptr;
-  ptmmgr->free_segment_start = (TrieMap_t) nullptr;
-  ptmmgr->free_segment_end = (TrieMap_t) nullptr;
 
   ptmmgr->align = Align;
 
@@ -139,13 +134,14 @@ tmmgr_resize (PTmmgr_t PTmmgr, const MemSize_t NewSizeUnaligned)
 
   MemSize_t Delta =
     (NewSize > OldSize) ? (NewSize - OldSize) : (OldSize - NewSize);
-  PMemSize_t PFreeSize = trie_get (ptmmgr->free_segment_end, OldSize);
 
-  if (PFreeSize != nullptr)
+  auto free_segment_end (ptmmgr->free_segment_end.find (OldSize));
+
+  if (free_segment_end != ptmmgr->free_segment_end.end())
     {
       /* longer a free segment */
 
-      MemSize_t FreeSize = *PFreeSize;
+      MemSize_t FreeSize = free_segment_end->second;
 
       assert (NewSize > OldSize || Delta <= FreeSize);
 
@@ -185,10 +181,6 @@ tmmgr_finalize (PTmmgr_t PTmmgr)
 
   ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
   MemSize_t Bytes = sizeof (tmmgr_t);
-
-  Bytes += trie_free (&ptmmgr->offset_to_handle, fUserNone);
-  Bytes += trie_free (&ptmmgr->free_segment_start, fUserNone);
-  Bytes += trie_free (&ptmmgr->free_segment_end, fUserNone);
 
   delete ptmmgr;
 
@@ -241,28 +233,28 @@ tmmgr_ins (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
   if (ptmmgr->high_water < Offset + Size)
     ptmmgr->high_water = Offset + Size;
 
-  PMemSize_t PSizeStart = trie_get (ptmmgr->free_segment_start, Offset);
+  auto PSizeStart (ptmmgr->free_segment_start.find (Offset));
 
-  assert (PSizeStart != nullptr);
-  assert (Size <= *PSizeStart);
+  assert (PSizeStart != ptmmgr->free_segment_start.end());
+  assert (Size <= PSizeStart->second);
 
 #ifndef NDEBUG
-  PMemSize_t PSizeEnd =
+  auto free_segment_end
+    (ptmmgr->free_segment_end.find (Offset + PSizeStart->second));
 #endif
-    trie_get (ptmmgr->free_segment_end, Offset + (*PSizeStart));
 
-  assert (PSizeEnd != nullptr);
-  assert (*PSizeStart == *PSizeEnd);
+  assert (free_segment_end != ptmmgr->free_segment_end.end());
+  assert (PSizeStart->second == free_segment_end->second);
 
-  Size_t OldFreeSize = *PSizeStart;
-  Size_t NewFreeSize = *PSizeStart - Size;
+  Size_t OldFreeSize = PSizeStart->second;
+  Size_t NewFreeSize = PSizeStart->second - Size;
 
   tmmgr_del_free_seg (ptmmgr, Offset, OldFreeSize);
   tmmgr_ins_free_seg (ptmmgr, Offset + Size, NewFreeSize);
 
   ptmmgr->handle_to_offset_and_size.emplace
     (Handle, std::make_pair (Offset, Size));
-  *trie_ins (&ptmmgr->offset_to_handle, Offset, nullptr) = Handle;
+  ptmmgr->offset_to_handle.emplace (Offset, Handle);
 }
 
 AllocReturn_t
@@ -308,22 +300,24 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
   ptmmgr->mem_free += Size;
 
   ptmmgr->handle_to_offset_and_size.erase (Handle);
-  trie_del (&ptmmgr->offset_to_handle, Offset, fUserNone);
+  ptmmgr->offset_to_handle.erase (Offset);
 
-  PMemSize_t PSizeL = trie_get (ptmmgr->free_segment_end, Offset);
-  PMemSize_t PSizeR = trie_get (ptmmgr->free_segment_start, Offset + Size);
+  auto PSizeL (ptmmgr->free_segment_end.find (Offset));
+  auto PSizeR (ptmmgr->free_segment_start.find (Offset + Size));
 
   if (Offset + Size == ptmmgr->high_water)
     {
-      ptmmgr->high_water = Offset - ((PSizeL == nullptr) ? 0 : *PSizeL);
+      ptmmgr->high_water = Offset - ((PSizeL == ptmmgr->free_segment_end.end()) ? 0 : PSizeL->second);
     }
 
-  if (PSizeL != nullptr && PSizeR != nullptr)
+  if (  PSizeL != ptmmgr->free_segment_end.end()
+     && PSizeR != ptmmgr->free_segment_start.end()
+     )
     {
       /* join left and right segment */
 
-      Size_t SizeL = *PSizeL;
-      Size_t SizeR = *PSizeR;
+      Size_t SizeL = PSizeL->second;
+      Size_t SizeR = PSizeR->second;
 
       assert (Offset >= SizeL);
 
@@ -334,11 +328,11 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
       tmmgr_del_free_seg (ptmmgr, OffsetR, SizeR);
       tmmgr_ins_free_seg (ptmmgr, OffsetL, SizeL + Size + SizeR);
     }
-  else if (PSizeL != nullptr)
+  else if (PSizeL != ptmmgr->free_segment_end.end())
     {
       /* longer the left segment */
 
-      MemSize_t SizeL = *PSizeL;
+      MemSize_t SizeL = PSizeL->second;
 
       assert (Offset >= SizeL);
 
@@ -347,11 +341,11 @@ tmmgr_del (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
       tmmgr_del_free_seg (ptmmgr, OffsetL, SizeL);
       tmmgr_ins_free_seg (ptmmgr, OffsetL, SizeL + Size);
     }
-  else if (PSizeR != nullptr)
+  else if (PSizeR != ptmmgr->free_segment_start.end())
     {
       /* longer the right segment */
 
-      MemSize_t SizeR = *PSizeR;
+      MemSize_t SizeR = PSizeR->second;
 
       Offset_t OffsetR = Offset + Size;
 
@@ -497,19 +491,6 @@ tmmgr_sumfree (const Tmmgr_t Tmmgr)
   return ptmmgr->sum_free;
 }
 
-static void
-fHeap ( const Offset_t Offset
-      , const PValue_t FHG_UTIL_UNUSED
-                       (PVal, "Size (for traversal of free_segment_start) and"
-                              "Handle (for traversal of offset_to_handle)"
-                              "are not stored in the offset heap"
-                       )
-      , void *PDat
-      )
-{
-  static_cast<gspc::mmgr::heap*> (PDat)->insert (Offset);
-}
-
 void
 tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
               const PMemSize_t PFreeSizeWanted, void *PDat)
@@ -525,8 +506,14 @@ tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
   gspc::mmgr::heap HeapOffFree;
   gspc::mmgr::heap HeapOffUsed;
 
-  trie_work (ptmmgr->free_segment_start, fHeap, &HeapOffFree);
-  trie_work (ptmmgr->offset_to_handle, fHeap, &HeapOffUsed);
+  for (auto const& free_segment_start : ptmmgr->free_segment_start)
+  {
+    HeapOffFree.insert (free_segment_start.first);
+  }
+  for (auto const& offset_to_handle : ptmmgr->offset_to_handle)
+  {
+    HeapOffUsed.insert (offset_to_handle.first);
+  }
 
   while (HeapOffFree.size() > 0 && HeapOffUsed.size() > 0)
     {
@@ -547,12 +534,12 @@ tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
               && OffsetFree + *PFreeSizeWanted <= OffsetUsed)
             goto HAVE_ENOUGH;
 
-          PHandle_t PHandle = trie_get (ptmmgr->offset_to_handle, OffsetUsed);
+          auto PHandle (ptmmgr->offset_to_handle.find (OffsetUsed));
 
-          if (PHandle == nullptr)
+          if (PHandle == ptmmgr->offset_to_handle.end())
             TMMGR_ERROR_STRANGE;
 
-          Handle_t Handle = *PHandle;
+          Handle_t Handle = PHandle->second;
           MemSize_t SizeUsed;
 
           if (tmmgr_offset_size (ptmmgr, Handle, nullptr, &SizeUsed) !=

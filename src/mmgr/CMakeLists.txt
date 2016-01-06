@@ -2,7 +2,6 @@ set (sources
   dtmmgr.cpp
   heap.cpp
   tmmgr.cpp
-  trie.cpp
 )
 
 extended_add_library (NAME mmgr SOURCES ${sources})
