@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/format.hpp>
+
 #include <map>
 #include <stdexcept>
 #include <unordered_map>
@@ -24,16 +26,109 @@ namespace gspc
       public: _type _name() const { return _ ## _name; } \
       private: _type _ ## _name
 
-      class unknown_handle : public std::invalid_argument
+      class invalid_argument : public std::invalid_argument
+      {
+      public:
+        invalid_argument (boost::format const& f)
+          : std::invalid_argument (f.str())
+        {}
+      };
+      class runtime_error : public std::runtime_error
+      {
+      public:
+        runtime_error (boost::format const& f)
+          : std::runtime_error (f.str())
+        {}
+      };
+
+      class unknown_handle : public invalid_argument
       {
         MEMBER (Handle_t, handle);
 
      public:
         unknown_handle (Handle_t handle)
-          : std::invalid_argument ("Unknown Handle " + std::to_string (handle))
+          : invalid_argument ( boost::format ("Unknown Handle '%1%'")
+                             % handle
+                             )
           , _handle (handle)
         {}
       };
+
+      namespace alloc
+      {
+        class duplicate_handle : public invalid_argument
+        {
+          MEMBER (Handle_t, handle);
+
+        public:
+          duplicate_handle (Handle_t handle)
+            : invalid_argument ( boost::format ("Duplicate Handle '%1%'")
+                               % handle
+                               )
+          {}
+        };
+
+        class insufficient_contiguous_memory : public runtime_error
+        {
+          MEMBER (Handle_t, handle);
+          MEMBER (MemSize_t, size_unaligned);
+          MEMBER (MemSize_t, size_aligned);
+          MEMBER (MemSize_t, mem_free);
+
+        public:
+          insufficient_contiguous_memory ( Handle_t handle
+                                         , MemSize_t size_unaligned
+                                         , MemSize_t size_aligned
+                                         , MemSize_t mem_free
+                                         )
+            : runtime_error
+              ( boost::format ("Insufficient contiguous memory:"
+                              " Trying to alloc '%2%' (aligned: '%3%') bytes"
+                              " for handle '%1%' and mem_free '%4%',"
+                              " but no free block of memory is large enough"
+                              )
+              % handle
+              % size_unaligned
+              % size_aligned
+              % mem_free
+              )
+            , _handle (handle)
+            , _size_unaligned (size_unaligned)
+            , _size_aligned (size_aligned)
+            , _mem_free (mem_free)
+          {}
+        };
+
+        class insufficient_memory : public runtime_error
+        {
+          MEMBER (Handle_t, handle);
+          MEMBER (MemSize_t, size_unaligned);
+          MEMBER (MemSize_t, size_aligned);
+          MEMBER (MemSize_t, mem_free);
+
+        public:
+          insufficient_memory ( Handle_t handle
+                              , MemSize_t size_unaligned
+                              , MemSize_t size_aligned
+                              , MemSize_t mem_free
+                              )
+            : runtime_error
+              ( boost::format ("Insufficient memory:"
+                              " Trying to alloc '%2%' (aligned: '%3%') bytes"
+                              " for handle '%1%', but mem_free is '%4%'"
+                              )
+              % handle
+              % size_unaligned
+              % size_aligned
+              % mem_free
+              )
+            , _handle (handle)
+            , _size_unaligned (size_unaligned)
+            , _size_aligned (size_aligned)
+            , _mem_free (mem_free)
+          {}
+        };
+      }
 #undef MEMBER
     }
 
@@ -50,17 +145,7 @@ namespace gspc
       };
 
       ResizeReturn_t resize (MemSize_t);
-
-      enum AllocReturn_t
-        { ALLOC_SUCCESS,
-          ALLOC_DUPLICATE_HANDLE,
-          ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY,
-          ALLOC_INSUFFICIENT_MEMORY,
-          ALLOC_FAILURE
-        };
-
-      AllocReturn_t alloc (Handle_t, MemSize_t);
-
+      void alloc (Handle_t, MemSize_t);
       void free (Handle_t);
       std::pair<Offset_t, MemSize_t> offset_size (Handle_t) const;
 

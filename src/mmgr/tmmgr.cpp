@@ -87,32 +87,30 @@ namespace gspc
       return RESIZE_SUCCESS;
     }
 
-    tmmgr::AllocReturn_t tmmgr::alloc (Handle_t Handle, MemSize_t SizeUnaligned)
+    void tmmgr::alloc (Handle_t Handle, MemSize_t SizeUnaligned)
     {
       MemSize_t const Size (alignUp (SizeUnaligned, _align));
 
       if (_mem_free < Size)
       {
-        return ALLOC_INSUFFICIENT_MEMORY;
+        throw error::alloc::insufficient_memory
+          (Handle, SizeUnaligned, Size, _mem_free);
       }
 
       if (_handle_to_offset_and_size.count (Handle) > 0)
       {
-        return ALLOC_DUPLICATE_HANDLE;
+        throw error::alloc::duplicate_handle (Handle);
       }
 
       auto pos (_free_offset_by_size.lower_bound (Size));
 
       if (pos == _free_offset_by_size.end())
       {
-        return ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY;
+        throw error::alloc::insufficient_contiguous_memory
+          (Handle, SizeUnaligned, Size, _mem_free);
       }
 
-      Offset_t Offset (*pos->second.begin());
-
-      insert_handle (Handle, Offset, Size);
-
-      return ALLOC_SUCCESS;
+      insert_handle (Handle, *pos->second.begin(), Size);
     }
 
     void tmmgr::free (Handle_t Handle)

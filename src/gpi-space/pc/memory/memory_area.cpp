@@ -301,67 +301,45 @@ namespace gpi
 
         gspc::vmem::dtmmgr::Arena_t arena = grow_direction(hdl.flags);
 
-        gspc::vmem::tmmgr::AllocReturn_t alloc_return
-            (m_mmgr.alloc (hdl.id, arena, hdl.local_size));
-
-        switch (alloc_return)
+        try
         {
-        case gspc::vmem::tmmgr::ALLOC_SUCCESS:
-          {
-            hdl.offset = m_mmgr.offset_size (hdl.id, arena).first;
-            try
-            {
-              alloc_hook (hdl);
-            }
-            catch (std::exception const & ex)
-            {
-              m_mmgr.free (hdl.id, arena);
-              std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
-            }
-          }
-          break;
-        case gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-          // TODO:
-          //    defrag (local_size);
-          //        release locks (? how)
-          //          block all accesses to this area
-          //              // memcpy/allocs should return EAGAIN
-          //          wait for transactions to finish
-          //          real_defrag
-          //        reacquire locks
+          m_mmgr.alloc (hdl.id, arena, hdl.local_size);
+        }
+        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory)
+        {
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-        case gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY:
+        }
+        catch (gspc::vmem::error::alloc::insufficient_memory)
+        {
           throw std::runtime_error
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-        case gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE:
+        }
+        catch (gspc::vmem::error::alloc::duplicate_handle)
+        {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
             + " segment " + std::to_string (m_descriptor.id)
             );
-        case gspc::vmem::tmmgr::ALLOC_FAILURE:
-          throw std::runtime_error
-            ( "internal error during allocation: requested_size = "
-            + std::to_string (hdl.local_size)
-            + " handle = " + std::to_string (hdl.id)
-            + " segment = " + std::to_string (m_descriptor.id)
-            );
-        default:
-          throw std::runtime_error
-            ( "unexpected error during allocation: requested_size = "
-            + std::to_string (hdl.local_size)
-            + " handle = " + std::to_string (hdl.id)
-            + " segment = " + std::to_string (m_descriptor.id)
-            + " error = " + std::to_string (alloc_return)
-            );
+        }
+
+        hdl.offset = m_mmgr.offset_size (hdl.id, arena).first;
+        try
+        {
+          alloc_hook (hdl);
+        }
+        catch (std::exception const & ex)
+        {
+          m_mmgr.free (hdl.id, arena);
+          std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
         }
       }
 

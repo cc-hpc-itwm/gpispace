@@ -52,8 +52,7 @@ namespace
 
       for (gspc::vmem::Handle_t const& handle : handles)
       {
-        BOOST_REQUIRE_EQUAL
-          (tmmgr.alloc (handle, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
+        tmmgr.alloc (handle, 1);
       }
     }
 

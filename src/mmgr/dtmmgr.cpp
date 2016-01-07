@@ -17,18 +17,10 @@ namespace gspc
       , _mem_size (_arena[ARENA_UP].memsize())
     {}
 
-    tmmgr::AllocReturn_t dtmmgr::alloc
-      (Handle_t Handle, Arena_t Arena, MemSize_t Size)
+    void dtmmgr::alloc (Handle_t Handle, Arena_t Arena, MemSize_t Size)
     {
-      tmmgr::AllocReturn_t const AllocReturn
-        (_arena[Arena].alloc (Handle, Size));
-
-      if (AllocReturn == tmmgr::ALLOC_SUCCESS)
-      {
-        _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
-      }
-
-      return AllocReturn;
+      _arena[Arena].alloc (Handle, Size);
+      _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
     }
 
     void dtmmgr::free (Handle_t Handle, Arena_t Arena)

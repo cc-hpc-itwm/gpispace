@@ -15,16 +15,16 @@ BOOST_AUTO_TEST_CASE (dtmmgr)
 
   BOOST_REQUIRE_EQUAL (dtmmgr.numhandle (gspc::vmem::dtmmgr::ARENA_DOWN), 0);
 
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (0, gspc::vmem::dtmmgr::ARENA_UP, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (1, gspc::vmem::dtmmgr::ARENA_DOWN, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (2, gspc::vmem::dtmmgr::ARENA_UP, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (3, gspc::vmem::dtmmgr::ARENA_DOWN, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (4, gspc::vmem::dtmmgr::ARENA_UP, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (5, gspc::vmem::dtmmgr::ARENA_DOWN, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (6, gspc::vmem::dtmmgr::ARENA_UP, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (7, gspc::vmem::dtmmgr::ARENA_DOWN, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (8, gspc::vmem::dtmmgr::ARENA_UP, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
-  BOOST_REQUIRE_EQUAL (dtmmgr.alloc (9, gspc::vmem::dtmmgr::ARENA_DOWN, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
+  dtmmgr.alloc (0, gspc::vmem::dtmmgr::ARENA_UP, 1);
+  dtmmgr.alloc (1, gspc::vmem::dtmmgr::ARENA_DOWN, 1);
+  dtmmgr.alloc (2, gspc::vmem::dtmmgr::ARENA_UP, 1);
+  dtmmgr.alloc (3, gspc::vmem::dtmmgr::ARENA_DOWN, 1);
+  dtmmgr.alloc (4, gspc::vmem::dtmmgr::ARENA_UP, 1);
+  dtmmgr.alloc (5, gspc::vmem::dtmmgr::ARENA_DOWN, 1);
+  dtmmgr.alloc (6, gspc::vmem::dtmmgr::ARENA_UP, 1);
+  dtmmgr.alloc (7, gspc::vmem::dtmmgr::ARENA_DOWN, 1);
+  dtmmgr.alloc (8, gspc::vmem::dtmmgr::ARENA_UP, 1);
+  dtmmgr.alloc (9, gspc::vmem::dtmmgr::ARENA_DOWN, 1);
 
   BOOST_REQUIRE_EQUAL (dtmmgr.offset_size (0, gspc::vmem::dtmmgr::ARENA_UP).first, 0);
   BOOST_REQUIRE_EQUAL (dtmmgr.offset_size (2, gspc::vmem::dtmmgr::ARENA_UP).first, 2);
