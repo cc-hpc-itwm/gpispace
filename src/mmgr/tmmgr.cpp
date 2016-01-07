@@ -115,7 +115,72 @@ namespace gspc
 
     void tmmgr::free (Handle_t Handle)
     {
-      delete_handle (Handle, offset_size (Handle));
+      std::pair<Offset_t, MemSize_t> const OffsetSize (offset_size (Handle));
+
+      Offset_t const Offset (OffsetSize.first);
+      MemSize_t const Size (OffsetSize.second);
+
+      assert (Size > 0);
+
+      _mem_free += Size;
+
+      _handle_to_offset_and_size.erase (Handle);
+      _offset_to_handle.erase (Offset);
+
+      auto PSizeL (_free_segment_end.find (Offset));
+      auto PSizeR (_free_segment_start.find (Offset + Size));
+
+      if (Offset + Size == _high_water)
+      {
+        _high_water = Offset - ((PSizeL == _free_segment_end.end()) ? 0 : PSizeL->second);
+      }
+
+      if (  PSizeL != _free_segment_end.end()
+         && PSizeR != _free_segment_start.end()
+         )
+      {
+        /* join left and right segment */
+
+        Size_t const SizeL (PSizeL->second);
+        Size_t const SizeR (PSizeR->second);
+
+        assert (Offset >= SizeL);
+
+        Offset_t const OffsetL (Offset - SizeL);
+        Offset_t const OffsetR (Offset + Size);
+
+        delete_free_segment (OffsetL, SizeL);
+        delete_free_segment (OffsetR, SizeR);
+        insert_free_segment (OffsetL, SizeL + Size + SizeR);
+      }
+      else if (PSizeL != _free_segment_end.end())
+      {
+        /* longer the left segment */
+
+        MemSize_t const SizeL (PSizeL->second);
+
+        assert (Offset >= SizeL);
+
+        Offset_t const OffsetL (Offset - SizeL);
+
+        delete_free_segment (OffsetL, SizeL);
+        insert_free_segment (OffsetL, SizeL + Size);
+      }
+      else if (PSizeR != _free_segment_start.end())
+      {
+        /* longer the right segment */
+
+        MemSize_t const SizeR (PSizeR->second);
+
+        Offset_t const OffsetR (Offset + Size);
+
+        delete_free_segment (OffsetR, SizeR);
+        insert_free_segment (Offset, Size + SizeR);
+      }
+      else
+      {
+        insert_free_segment (Offset, Size);
+      }
     }
 
     std::pair<Offset_t, Size_t> tmmgr::offset_size (Handle_t Handle) const
@@ -201,74 +266,6 @@ namespace gspc
 
       _handle_to_offset_and_size.emplace (Handle, std::make_pair (Offset, Size));
       _offset_to_handle.emplace (Offset, Handle);
-    }
-
-    void tmmgr::delete_handle (Handle_t Handle, std::pair<Offset_t, MemSize_t> OffsetSize)
-    {
-      Offset_t const Offset (OffsetSize.first);
-      MemSize_t const Size (OffsetSize.second);
-
-      assert (Size > 0);
-
-      _mem_free += Size;
-
-      _handle_to_offset_and_size.erase (Handle);
-      _offset_to_handle.erase (Offset);
-
-      auto PSizeL (_free_segment_end.find (Offset));
-      auto PSizeR (_free_segment_start.find (Offset + Size));
-
-      if (Offset + Size == _high_water)
-      {
-        _high_water = Offset - ((PSizeL == _free_segment_end.end()) ? 0 : PSizeL->second);
-      }
-
-      if (  PSizeL != _free_segment_end.end()
-         && PSizeR != _free_segment_start.end()
-         )
-      {
-        /* join left and right segment */
-
-        Size_t const SizeL (PSizeL->second);
-        Size_t const SizeR (PSizeR->second);
-
-        assert (Offset >= SizeL);
-
-        Offset_t const OffsetL (Offset - SizeL);
-        Offset_t const OffsetR (Offset + Size);
-
-        delete_free_segment (OffsetL, SizeL);
-        delete_free_segment (OffsetR, SizeR);
-        insert_free_segment (OffsetL, SizeL + Size + SizeR);
-      }
-      else if (PSizeL != _free_segment_end.end())
-      {
-        /* longer the left segment */
-
-        MemSize_t const SizeL (PSizeL->second);
-
-        assert (Offset >= SizeL);
-
-        Offset_t const OffsetL (Offset - SizeL);
-
-        delete_free_segment (OffsetL, SizeL);
-        insert_free_segment (OffsetL, SizeL + Size);
-      }
-      else if (PSizeR != _free_segment_start.end())
-      {
-        /* longer the right segment */
-
-        MemSize_t const SizeR (PSizeR->second);
-
-        Offset_t const OffsetR (Offset + Size);
-
-        delete_free_segment (OffsetR, SizeR);
-        insert_free_segment (Offset, Size + SizeR);
-      }
-      else
-      {
-        insert_free_segment (Offset, Size);
-      }
     }
   }
 }
