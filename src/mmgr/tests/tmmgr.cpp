@@ -3,119 +3,115 @@
 #define BOOST_TEST_MODULE mmgr_tmmgr
 #include <boost/test/unit_test.hpp>
 
-#include <mmgr/tmmgr.h>
+#include <mmgr/tmmgr.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
-#include <stdio.h>
-#include <stdlib.h>
-
 #define REQUIRE_ALLOC_SUCCESS(h,s,o,g)                                  \
   {                                                                     \
-    BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, h, s), ALLOC_SUCCESS);    \
+    BOOST_REQUIRE_EQUAL ( tmmgr.alloc (h, s)                            \
+                        , gspc::vmem::tmmgr::ALLOC_SUCCESS              \
+                        );                                              \
                                                                         \
-    Offset_t Offset;                                                    \
-    Size_t Size;                                                        \
+    gspc::vmem::Offset_t Offset;                                        \
+    gspc::vmem::Size_t Size;                                            \
                                                                         \
-    tmmgr_offset_size (tmmgr, h, &Offset, &Size);                       \
+    tmmgr.offset_size (h, &Offset, &Size);                              \
     BOOST_REQUIRE_EQUAL (Offset, o);                                    \
     BOOST_REQUIRE_EQUAL (Size, g);                                      \
   }
 
 BOOST_AUTO_TEST_CASE (tmmgr)
 {
-  Tmmgr_t tmmgr = nullptr;
+  gspc::vmem::tmmgr tmmgr (45, 1);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_init (&tmmgr, 45, 1), 45);
-
-  BOOST_REQUIRE_EQUAL (tmmgr_memsize (tmmgr), 45);
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 45);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.memsize(), 45);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 45);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 0);
 
   for (int i (0); i < 10; ++i)
   {
     REQUIRE_ALLOC_SUCCESS (i, 1, i, 1);
   }
 
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 2), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 6), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 3), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 7), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 8), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 1), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 5), RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 4), RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (2), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (6), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (3), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (7), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (8), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (1), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (5), gspc::vmem::tmmgr::RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (4), gspc::vmem::tmmgr::RET_SUCCESS);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 43);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 10);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 2);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 43);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 10);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 2);
 
   REQUIRE_ALLOC_SUCCESS (1, 1, 1, 1);
 
   REQUIRE_ALLOC_SUCCESS (11, 4, 2, 4);
   REQUIRE_ALLOC_SUCCESS (12, 4, 10, 4);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 11, 4), ALLOC_DUPLICATE_HANDLE);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 12, 4), ALLOC_DUPLICATE_HANDLE);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 13, 35), ALLOC_INSUFFICIENT_MEMORY);
-  BOOST_REQUIRE_EQUAL ( tmmgr_alloc (&tmmgr, 13, 34)
-                      , ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY
-                      );
+  BOOST_REQUIRE_EQUAL
+    (tmmgr.alloc (11, 4), gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL
+    (tmmgr.alloc (12, 4), gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL
+    (tmmgr.alloc (13, 35), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL
+    ( tmmgr.alloc (13, 34)
+    , gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY
+    );
 
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 13), RET_HANDLE_UNKNOWN);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (13), gspc::vmem::tmmgr::RET_HANDLE_UNKNOWN);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 34);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 14);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 5);
-
-  BOOST_REQUIRE_NE (tmmgr_finalize (&tmmgr), 0);
-  BOOST_REQUIRE_EQUAL (tmmgr_finalize (&tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 34);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 14);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 5);
 }
 
 BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 {
-  Tmmgr_t tmmgr = nullptr;
+  gspc::vmem::tmmgr tmmgr (45, (1 << 4));
 
-  BOOST_REQUIRE_EQUAL (tmmgr_init (&tmmgr, 45, (1 << 4)), 32);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 32);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 0);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 32);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.resize (67), gspc::vmem::tmmgr::RESIZE_SUCCESS);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 67), RESIZE_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 0);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 64);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.resize (64), gspc::vmem::tmmgr::RESIZE_SUCCESS);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 64), RESIZE_SUCCESS);
-
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 64);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 0);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 0);
 
   REQUIRE_ALLOC_SUCCESS (0, 1, 0, 16);
   REQUIRE_ALLOC_SUCCESS (1, 1, 16, 16);
   REQUIRE_ALLOC_SUCCESS (2, 1, 32, 16);
   REQUIRE_ALLOC_SUCCESS (3, 1, 48, 16);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 4, 1), ALLOC_INSUFFICIENT_MEMORY);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 5, 1), ALLOC_INSUFFICIENT_MEMORY);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 6, 1), ALLOC_INSUFFICIENT_MEMORY);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 7, 1), ALLOC_INSUFFICIENT_MEMORY);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 8, 1), ALLOC_INSUFFICIENT_MEMORY);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 9, 1), ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (4, 1), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (5, 1), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (6, 1), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (7, 1), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (8, 1), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (9, 1), gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 0);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 64);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 4);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 64);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 4);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 1000), RESIZE_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.resize (1000), gspc::vmem::tmmgr::RESIZE_SUCCESS);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 0, 1), ALLOC_DUPLICATE_HANDLE);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 1, 1), ALLOC_DUPLICATE_HANDLE);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 2, 1), ALLOC_DUPLICATE_HANDLE);
-  BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, 3, 1), ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (0, 1), gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (1, 1), gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (2, 1), gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE);
+  BOOST_REQUIRE_EQUAL (tmmgr.alloc (3, 1), gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE);
   REQUIRE_ALLOC_SUCCESS (4, 1, 64, 16);
   REQUIRE_ALLOC_SUCCESS (5, 1, 80, 16);
   REQUIRE_ALLOC_SUCCESS (6, 1, 96, 16);
@@ -123,15 +119,13 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
   REQUIRE_ALLOC_SUCCESS (8, 1, 128, 16);
   REQUIRE_ALLOC_SUCCESS (9, 1, 144, 16);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_memfree (tmmgr), 832);
-  BOOST_REQUIRE_EQUAL (tmmgr_highwater (tmmgr), 160);
-  BOOST_REQUIRE_EQUAL (tmmgr_numhandle (tmmgr), 10);
+  BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 832);
+  BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 160);
+  BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 10);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 150), RESIZE_BELOW_MEMUSED);
+  BOOST_REQUIRE_EQUAL (tmmgr.resize (150), gspc::vmem::tmmgr::RESIZE_BELOW_MEMUSED);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, 0), RET_SUCCESS);
+  BOOST_REQUIRE_EQUAL (tmmgr.free (0), gspc::vmem::tmmgr::RET_SUCCESS);
 
-  BOOST_REQUIRE_EQUAL (tmmgr_resize (&tmmgr, 150), RESIZE_BELOW_HIGHWATER);
-
-  BOOST_REQUIRE_NE (tmmgr_finalize (&tmmgr), 0);
+  BOOST_REQUIRE_EQUAL (tmmgr.resize (150), gspc::vmem::tmmgr::RESIZE_BELOW_HIGHWATER);
 }

@@ -38,21 +38,15 @@ namespace gpi
                        , size
                        , flags
                        )
-        , m_mmgr (nullptr)
+        , m_mmgr (m_descriptor.local_size, 1)
         , _handle_generator (handle_generator)
       {
         reinit ();
       }
 
-      area_t::~area_t ()
-      {
-        dtmmgr_finalize (&m_mmgr);
-      }
-
       void area_t::reinit ()
       {
-        dtmmgr_finalize (&m_mmgr);
-        dtmmgr_init (&m_mmgr, m_descriptor.local_size, 1);
+        m_mmgr = gspc::vmem::dtmmgr (m_descriptor.local_size, 1);
 
         update_descriptor_from_mmgr ();
       }
@@ -233,10 +227,7 @@ namespace gpi
 
         if (hdl.offset != offset)
         {
-          dtmmgr_free ( &m_mmgr
-                      , hdl.id
-                      , grow_direction (hdl.flags)
-                      );
+          m_mmgr.free (hdl.id, grow_direction (hdl.flags));
 
           throw std::runtime_error
             ( "remote_alloc failed: offset mismatch: expected = "
@@ -287,10 +278,10 @@ namespace gpi
 
       void area_t::update_descriptor_from_mmgr()
       {
-        m_descriptor.avail = dtmmgr_memfree (m_mmgr);
+        m_descriptor.avail = m_mmgr.memfree();
         m_descriptor.allocs =
-            dtmmgr_numhandle (m_mmgr, ARENA_UP)
-          + dtmmgr_numhandle (m_mmgr, ARENA_DOWN);
+            m_mmgr.numhandle (gspc::vmem::dtmmgr::ARENA_UP)
+          + m_mmgr.numhandle (gspc::vmem::dtmmgr::ARENA_DOWN);
         // dtmmgr_numalloc -> total allocs
         // dtmmgr_numfree -> total frees
         m_descriptor.ts.touch();
@@ -308,22 +299,17 @@ namespace gpi
             );
         }
 
-        Arena_t arena = grow_direction(hdl.flags);
+        gspc::vmem::dtmmgr::Arena_t arena = grow_direction(hdl.flags);
 
-        AllocReturn_t alloc_return
-            (dtmmgr_alloc (&m_mmgr, hdl.id, arena, hdl.local_size));
+        gspc::vmem::tmmgr::AllocReturn_t alloc_return
+            (m_mmgr.alloc (hdl.id, arena, hdl.local_size));
 
         switch (alloc_return)
         {
-        case ALLOC_SUCCESS:
+        case gspc::vmem::tmmgr::ALLOC_SUCCESS:
           {
-            Offset_t offset (0);
-            dtmmgr_offset_size ( m_mmgr
-                               , hdl.id
-                               , arena
-                               , &offset
-                               , nullptr
-                               );
+            gspc::vmem::Offset_t offset (0);
+            m_mmgr.offset_size (hdl.id, arena, &offset, nullptr);
             hdl.offset = offset;
             try
             {
@@ -331,12 +317,12 @@ namespace gpi
             }
             catch (std::exception const & ex)
             {
-              dtmmgr_free (&m_mmgr, hdl.id, arena);
+              m_mmgr.free (hdl.id, arena);
               std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
             }
           }
           break;
-        case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
+        case gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
           // TODO:
           //    defrag (local_size);
           //        release locks (? how)
@@ -351,19 +337,19 @@ namespace gpi
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-        case ALLOC_INSUFFICIENT_MEMORY:
+        case gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_MEMORY:
           throw std::runtime_error
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-        case ALLOC_DUPLICATE_HANDLE:
+        case gspc::vmem::tmmgr::ALLOC_DUPLICATE_HANDLE:
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
             + " segment " + std::to_string (m_descriptor.id)
             );
-        case ALLOC_FAILURE:
+        case gspc::vmem::tmmgr::ALLOC_FAILURE:
           throw std::runtime_error
             ( "internal error during allocation: requested_size = "
             + std::to_string (hdl.local_size)
@@ -402,15 +388,12 @@ namespace gpi
             );
         }
 
-        Arena_t arena (grow_direction(desc.flags));
-        HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
-                                                  , hdl
-                                                  , arena
-                                                  )
-                                     );
+        gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+        gspc::vmem::tmmgr::HandleReturn_t handle_return
+          (m_mmgr.free (hdl, arena));
         switch (handle_return)
         {
-        case RET_SUCCESS:
+        case gspc::vmem::tmmgr::RET_SUCCESS:
           m_handles.erase (hdl);
           update_descriptor_from_mmgr ();
           try
@@ -422,9 +405,9 @@ namespace gpi
             std::throw_with_nested (std::runtime_error ("free_hook failed"));
           }
           break;
-        case RET_HANDLE_UNKNOWN:
+        case gspc::vmem::tmmgr::RET_HANDLE_UNKNOWN:
           throw std::runtime_error ("inconsistent state: no such handle");
-        case RET_FAILURE:
+        case gspc::vmem::tmmgr::RET_FAILURE:
           throw std::runtime_error ("no such handle");
         }
       }
@@ -452,21 +435,18 @@ namespace gpi
              );
         }
 
-        Arena_t arena (grow_direction(desc.flags));
-        HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
-                                                  , hdl
-                                                  , arena
-                                                  )
-                                     );
+        gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+        gspc::vmem::tmmgr::HandleReturn_t handle_return
+          (m_mmgr.free (hdl, arena));
         switch (handle_return)
         {
-        case RET_SUCCESS:
+        case gspc::vmem::tmmgr::RET_SUCCESS:
           m_handles.erase (hdl);
           update_descriptor_from_mmgr ();
           break;
-        case RET_HANDLE_UNKNOWN:
+        case gspc::vmem::tmmgr::RET_HANDLE_UNKNOWN:
           throw std::runtime_error ("inconsistent state: no such handle");
-        case RET_FAILURE:
+        case gspc::vmem::tmmgr::RET_FAILURE:
           throw std::runtime_error ("no such handle");
         }
       }

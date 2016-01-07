@@ -1,9 +1,7 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #define BOOST_TEST_MODULE mmgr_perftmmgr
 #include <boost/test/unit_test.hpp>
 
-#include <mmgr/tmmgr.h>
+#include <mmgr/tmmgr.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
@@ -15,9 +13,9 @@ namespace
 {
   static std::size_t num_handles (1 << 18);
 
-  std::set<Handle_t> handles_random()
+  std::set<gspc::vmem::Handle_t> handles_random()
   {
-    std::set<Handle_t> handles;
+    std::set<gspc::vmem::Handle_t> handles;
 
     srand (314159);
 
@@ -29,11 +27,11 @@ namespace
     return handles;
   }
 
-  std::set<Handle_t> handles_sequence()
+  std::set<gspc::vmem::Handle_t> handles_sequence()
   {
-    std::set<Handle_t> handles;
+    std::set<gspc::vmem::Handle_t> handles;
 
-    for (Handle_t h (0); h < num_handles; ++h)
+    for (gspc::vmem::Handle_t h (0); h < num_handles; ++h)
     {
       handles.insert (h);
     }
@@ -41,11 +39,9 @@ namespace
     return handles;
   }
 
-  void test_fill_clear (std::set<Handle_t> const& handles)
+  void test_fill_clear (std::set<gspc::vmem::Handle_t> const& handles)
   {
-    Tmmgr_t tmmgr = nullptr;
-
-    tmmgr_init (&tmmgr, num_handles, 1);
+    gspc::vmem::tmmgr tmmgr (num_handles, 1);
 
     std::chrono::steady_clock::time_point const start
       (std::chrono::steady_clock::now());
@@ -54,9 +50,10 @@ namespace
       fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
         const max_time_for_alloc (1);
 
-      for (Handle_t const& handle : handles)
+      for (gspc::vmem::Handle_t const& handle : handles)
       {
-        BOOST_REQUIRE_EQUAL (tmmgr_alloc (&tmmgr, handle, 1), ALLOC_SUCCESS);
+        BOOST_REQUIRE_EQUAL
+          (tmmgr.alloc (handle, 1), gspc::vmem::tmmgr::ALLOC_SUCCESS);
       }
     }
 
@@ -68,9 +65,10 @@ namespace
               (std::chrono::steady_clock::now() - start)
             );
 
-      for (Handle_t const& handle : handles)
+      for (gspc::vmem::Handle_t const& handle : handles)
       {
-        BOOST_REQUIRE_EQUAL (tmmgr_free (&tmmgr, handle), RET_SUCCESS);
+        BOOST_REQUIRE_EQUAL
+          (tmmgr.free (handle), gspc::vmem::tmmgr::RET_SUCCESS);
       }
     }
   }
