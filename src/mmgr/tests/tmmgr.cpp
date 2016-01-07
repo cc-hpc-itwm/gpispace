@@ -86,13 +86,13 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
   BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 0);
 
-  BOOST_REQUIRE_EQUAL (tmmgr.resize (67), gspc::vmem::tmmgr::RESIZE_SUCCESS);
+  tmmgr.resize (67);
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 64);
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
   BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 0);
 
-  BOOST_REQUIRE_EQUAL (tmmgr.resize (64), gspc::vmem::tmmgr::RESIZE_SUCCESS);
+  tmmgr.resize (64);
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 64);
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
@@ -132,7 +132,7 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 64);
   BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 4);
 
-  BOOST_REQUIRE_EQUAL (tmmgr.resize (1000), gspc::vmem::tmmgr::RESIZE_SUCCESS);
+  tmmgr.resize (1000);
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (0, 1); }
@@ -162,9 +162,15 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 160);
   BOOST_REQUIRE_EQUAL (tmmgr.numhandle(), 10);
 
-  BOOST_REQUIRE_EQUAL (tmmgr.resize (150), gspc::vmem::tmmgr::RESIZE_BELOW_MEMUSED);
+  fhg::util::testing::require_exception
+    ( [&tmmgr]() { tmmgr.resize (150); }
+    , gspc::vmem::error::resize::below_mem_used (150, 144, 992, 832)
+    );
 
   tmmgr.free (0);
 
-  BOOST_REQUIRE_EQUAL (tmmgr.resize (150), gspc::vmem::tmmgr::RESIZE_BELOW_HIGHWATER);
+  fhg::util::testing::require_exception
+    ( [&tmmgr]() { tmmgr.resize (150); }
+    , gspc::vmem::error::resize::below_high_water (150, 144, 160)
+    );
 }

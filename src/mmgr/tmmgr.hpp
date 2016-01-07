@@ -129,6 +129,65 @@ namespace gspc
           {}
         };
       }
+
+      namespace resize
+      {
+        class below_mem_used : public runtime_error
+        {
+          MEMBER (MemSize_t, new_size_unaligned);
+          MEMBER (MemSize_t, new_size_aligned);
+          MEMBER (MemSize_t, mem_size);
+          MEMBER (MemSize_t, mem_free);
+
+        public:
+          below_mem_used ( MemSize_t new_size_unaligned
+                         , MemSize_t new_size_aligned
+                         , MemSize_t mem_size
+                         , MemSize_t mem_free
+                         )
+            : runtime_error
+              ( boost::format ("Resize below memory used:"
+                              " Trying to resize to '%1%' (aligned: '%2%') bytes"
+                              " but mem_size is '%3%' and mem_free '%4%'"
+                              )
+              % new_size_unaligned
+              % new_size_aligned
+              % mem_size
+              % mem_free
+              )
+            , _new_size_unaligned (new_size_unaligned)
+            , _new_size_aligned (new_size_aligned)
+            , _mem_size (mem_size)
+            , _mem_free (mem_free)
+          {}
+        };
+
+        class below_high_water : public runtime_error
+        {
+          MEMBER (MemSize_t, new_size_unaligned);
+          MEMBER (MemSize_t, new_size_aligned);
+          MEMBER (MemSize_t, high_water);
+
+        public:
+          below_high_water ( MemSize_t new_size_unaligned
+                           , MemSize_t new_size_aligned
+                           , MemSize_t high_water
+                           )
+            : runtime_error
+              ( boost::format ("Resize below high water:"
+                              " Trying to resize to '%1%' (aligned: '%2%') bytes"
+                              " but high_water is '%3%'"
+                              )
+              % new_size_unaligned
+              % new_size_aligned
+              % high_water
+              )
+            , _new_size_unaligned (new_size_unaligned)
+            , _new_size_aligned (new_size_aligned)
+            , _high_water (high_water)
+          {}
+        };
+      }
 #undef MEMBER
     }
 
@@ -137,14 +196,7 @@ namespace gspc
     public:
       tmmgr (MemSize_t, Align_t);
 
-      enum ResizeReturn_t
-      { RESIZE_SUCCESS,
-        RESIZE_BELOW_HIGHWATER,
-        RESIZE_BELOW_MEMUSED,
-        RESIZE_FAILURE
-      };
-
-      ResizeReturn_t resize (MemSize_t);
+      void resize (MemSize_t);
       void alloc (Handle_t, MemSize_t);
       void free (Handle_t);
       std::pair<Offset_t, MemSize_t> offset_size (Handle_t) const;

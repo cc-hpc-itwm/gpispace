@@ -29,25 +29,27 @@ namespace gspc
       insert_free_segment (0, _mem_size);
     }
 
-    tmmgr::ResizeReturn_t tmmgr::resize (MemSize_t NewSizeUnaligned)
+    void tmmgr::resize (MemSize_t NewSizeUnaligned)
     {
       MemSize_t const NewSize (alignDown (NewSizeUnaligned, _align));
 
       if (NewSize < _mem_size - _mem_free)
       {
-        return RESIZE_BELOW_MEMUSED;
+        throw error::resize::below_mem_used
+          (NewSizeUnaligned, NewSize, _mem_size, _mem_free);
       }
 
       if (NewSize < _high_water)
       {
-        return RESIZE_BELOW_HIGHWATER;
+        throw error::resize::below_high_water
+          (NewSizeUnaligned, NewSize, _high_water);
       }
 
       MemSize_t const OldSize (_mem_size);
 
       if (NewSize == OldSize)
       {
-        return RESIZE_SUCCESS;
+        return;
       }
 
       MemSize_t const Delta
@@ -83,8 +85,6 @@ namespace gspc
       _mem_size = NewSize;
       _mem_free =
         ((NewSize > OldSize) ? (_mem_free + Delta) : (_mem_free - Delta));
-
-      return RESIZE_SUCCESS;
     }
 
     void tmmgr::alloc (Handle_t Handle, MemSize_t SizeUnaligned)
