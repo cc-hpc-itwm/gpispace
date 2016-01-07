@@ -1,7 +1,13 @@
 
 #pragma once
 
-#include <mmgr/word.h>
+#include <inttypes.h>
+
+  typedef unsigned long Word_t;
+  typedef unsigned long Size_t;
+
+  typedef Size_t Offset_t, *POffset_t;
+  typedef Size_t Handle_t;
 
   typedef void *Tmmgr_t, *PTmmgr_t;
 
