@@ -13,7 +13,7 @@ namespace gspc
     }
 
     dtmmgr::dtmmgr (MemSize_t MemSize, Align_t Align)
-      : _arena (2, {MemSize, Align})
+      : _arena {{{MemSize, Align}, {MemSize, Align}}}
       , _mem_size (_arena[ARENA_UP].memsize())
     {}
 

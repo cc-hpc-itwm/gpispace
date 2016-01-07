@@ -8,7 +8,7 @@
 #pragma once
 
 #include <mmgr/tmmgr.hpp>
-#include <vector>
+#include <array>
 
 namespace gspc
 {
@@ -40,7 +40,7 @@ namespace gspc
       }
 
     private:
-      std::vector<tmmgr> _arena;
+      std::array<tmmgr, 2> _arena;
       MemSize_t _mem_size;
     };
   }
