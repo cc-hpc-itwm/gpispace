@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <stdexcept>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -16,6 +17,25 @@ namespace gspc
     using MemSize_t = Word_t;
     using Align_t = Word_t;
     using Count_t = Word_t;
+
+    namespace error
+    {
+#define MEMBER(_type, _name)                             \
+      public: _type _name() const { return _ ## _name; } \
+      private: _type _ ## _name
+
+      class unknown_handle : public std::invalid_argument
+      {
+        MEMBER (Handle_t, handle);
+
+     public:
+        unknown_handle (Handle_t handle)
+          : std::invalid_argument ("Unknown Handle " + std::to_string (handle))
+          , _handle (handle)
+        {}
+      };
+#undef MEMBER
+    }
 
     class tmmgr
     {
@@ -41,14 +61,8 @@ namespace gspc
 
       AllocReturn_t alloc (Handle_t, MemSize_t);
 
-      enum HandleReturn_t
-       { RET_SUCCESS,
-         RET_HANDLE_UNKNOWN,
-         RET_FAILURE
-       };
-
-      HandleReturn_t free (Handle_t);
-      HandleReturn_t offset_size (Handle_t, Offset_t*, MemSize_t*);
+      void free (Handle_t);
+      std::pair<Offset_t, MemSize_t> offset_size (Handle_t) const;
 
       MemSize_t memsize() const
       {
@@ -84,7 +98,7 @@ namespace gspc
       void insert_free_segment (Offset_t, MemSize_t);
 
       void insert_handle (Handle_t, Offset_t, MemSize_t);
-      void delete_handle (Handle_t, Offset_t, MemSize_t);
+      void delete_handle (Handle_t, std::pair<Offset_t, MemSize_t>);
     };
   }
 }

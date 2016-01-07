@@ -31,43 +31,27 @@ namespace gspc
       return AllocReturn;
     }
 
-    tmmgr::HandleReturn_t dtmmgr::free (Handle_t Handle, Arena_t Arena)
+    void dtmmgr::free (Handle_t Handle, Arena_t Arena)
     {
-      tmmgr::HandleReturn_t const HandleReturn (_arena[Arena].free (Handle));
-
-      if (HandleReturn == tmmgr::RET_SUCCESS)
-      {
-        _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
-      }
-
-      return HandleReturn;
+      _arena[Arena].free (Handle);
+      _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
     }
 
-    tmmgr::HandleReturn_t dtmmgr::offset_size
-      (Handle_t Handle, Arena_t Arena, Offset_t* POffset, MemSize_t* PMemSize)
+    std::pair<Offset_t, MemSize_t> dtmmgr::offset_size
+      (Handle_t Handle, Arena_t Arena) const
     {
-      MemSize_t Size (0);
+      std::pair<Offset_t, MemSize_t> OffsetSize
+        (_arena[Arena].offset_size (Handle));
 
-      tmmgr::HandleReturn_t const HandleReturn
-        (_arena[Arena].offset_size (Handle, POffset, &Size));
-
-      if (HandleReturn == tmmgr::RET_SUCCESS)
+      // invert for the local arena
+      if (Arena == ARENA_DOWN)
       {
-        // invert for the local arena
-        if (Arena == ARENA_DOWN && POffset != nullptr)
-        {
-          assert (_mem_size >= *POffset + Size);
+        assert (_mem_size >= OffsetSize.first + OffsetSize.second);
 
-          *POffset = _mem_size - (*POffset + Size);
-        }
-
-        if (PMemSize != nullptr)
-        {
-          *PMemSize = Size;
-        }
+        OffsetSize.first = _mem_size - (OffsetSize.first + OffsetSize.second);
       }
 
-      return HandleReturn;
+      return OffsetSize;
     }
   }
 }

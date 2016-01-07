@@ -6,6 +6,7 @@
 #include <mmgr/tmmgr.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #define REQUIRE_ALLOC_SUCCESS(h,s,o,g)                                  \
   {                                                                     \
@@ -13,12 +14,11 @@
                         , gspc::vmem::tmmgr::ALLOC_SUCCESS              \
                         );                                              \
                                                                         \
-    gspc::vmem::Offset_t Offset;                                        \
-    gspc::vmem::Size_t Size;                                            \
+    std::pair<gspc::vmem::Offset_t, gspc::vmem::MemSize_t> const        \
+      OffsetSize (tmmgr.offset_size (h));                               \
                                                                         \
-    tmmgr.offset_size (h, &Offset, &Size);                              \
-    BOOST_REQUIRE_EQUAL (Offset, o);                                    \
-    BOOST_REQUIRE_EQUAL (Size, g);                                      \
+    BOOST_REQUIRE_EQUAL (OffsetSize.first, o);                          \
+    BOOST_REQUIRE_EQUAL (OffsetSize.second, g);                         \
   }
 
 BOOST_AUTO_TEST_CASE (tmmgr)
@@ -35,14 +35,14 @@ BOOST_AUTO_TEST_CASE (tmmgr)
     REQUIRE_ALLOC_SUCCESS (i, 1, i, 1);
   }
 
-  BOOST_REQUIRE_EQUAL (tmmgr.free (2), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (6), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (3), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (7), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (8), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (1), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (5), gspc::vmem::tmmgr::RET_SUCCESS);
-  BOOST_REQUIRE_EQUAL (tmmgr.free (4), gspc::vmem::tmmgr::RET_SUCCESS);
+  tmmgr.free (2);
+  tmmgr.free (6);
+  tmmgr.free (3);
+  tmmgr.free (7);
+  tmmgr.free (8);
+  tmmgr.free (1);
+  tmmgr.free (5);
+  tmmgr.free (4);
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 43);
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 10);
@@ -64,7 +64,10 @@ BOOST_AUTO_TEST_CASE (tmmgr)
     , gspc::vmem::tmmgr::ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY
     );
 
-  BOOST_REQUIRE_EQUAL (tmmgr.free (13), gspc::vmem::tmmgr::RET_HANDLE_UNKNOWN);
+  fhg::util::testing::require_exception
+    ( [&tmmgr]() { tmmgr.free (13); }
+    , gspc::vmem::error::unknown_handle (13)
+    );
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 34);
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 14);
@@ -125,7 +128,7 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 
   BOOST_REQUIRE_EQUAL (tmmgr.resize (150), gspc::vmem::tmmgr::RESIZE_BELOW_MEMUSED);
 
-  BOOST_REQUIRE_EQUAL (tmmgr.free (0), gspc::vmem::tmmgr::RET_SUCCESS);
+  tmmgr.free (0);
 
   BOOST_REQUIRE_EQUAL (tmmgr.resize (150), gspc::vmem::tmmgr::RESIZE_BELOW_HIGHWATER);
 }

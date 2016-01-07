@@ -67,8 +67,7 @@ namespace
 
       for (gspc::vmem::Handle_t const& handle : handles)
       {
-        BOOST_REQUIRE_EQUAL
-          (tmmgr.free (handle), gspc::vmem::tmmgr::RET_SUCCESS);
+        tmmgr.free (handle);
       }
     }
   }

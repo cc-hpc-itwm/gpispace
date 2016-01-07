@@ -25,9 +25,8 @@ namespace gspc
         };
 
       tmmgr::AllocReturn_t alloc (Handle_t, Arena_t, MemSize_t);
-      tmmgr::HandleReturn_t free (Handle_t, Arena_t);
-      tmmgr::HandleReturn_t offset_size
-        (Handle_t, Arena_t, Offset_t*, MemSize_t*);
+      void free (Handle_t, Arena_t);
+      std::pair<Offset_t, MemSize_t> offset_size (Handle_t, Arena_t) const;
 
       MemSize_t memfree() const
       {

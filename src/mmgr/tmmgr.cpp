@@ -96,7 +96,7 @@ namespace gspc
         return ALLOC_INSUFFICIENT_MEMORY;
       }
 
-      if (offset_size (Handle, nullptr, nullptr) == RET_SUCCESS)
+      if (_handle_to_offset_and_size.count (Handle) > 0)
       {
         return ALLOC_DUPLICATE_HANDLE;
       }
@@ -115,41 +115,21 @@ namespace gspc
       return ALLOC_SUCCESS;
     }
 
-    tmmgr::HandleReturn_t tmmgr::free (Handle_t Handle)
+    void tmmgr::free (Handle_t Handle)
     {
-      Offset_t Offset;
-      MemSize_t Size;
-
-      if (offset_size (Handle, &Offset, &Size) == RET_HANDLE_UNKNOWN)
-      {
-        return RET_HANDLE_UNKNOWN;
-      }
-
-      delete_handle (Handle, Offset, Size);
-
-      return RET_SUCCESS;
+      delete_handle (Handle, offset_size (Handle));
     }
 
-    tmmgr::HandleReturn_t tmmgr::offset_size
-      (Handle_t Handle, Offset_t* POffset, MemSize_t* PMemSize)
+    std::pair<Offset_t, Size_t> tmmgr::offset_size (Handle_t Handle) const
     {
       auto pos (_handle_to_offset_and_size.find (Handle));
 
       if (pos == _handle_to_offset_and_size.end())
       {
-        return RET_HANDLE_UNKNOWN;
+        throw error::unknown_handle (Handle);
       }
 
-      if (POffset)
-      {
-        *POffset = pos->second.first;
-      }
-      if (PMemSize)
-      {
-        *PMemSize = pos->second.second;
-      }
-
-      return RET_SUCCESS;
+      return pos->second;
     }
 
     void tmmgr::delete_free_segment (Offset_t OffsetStart, MemSize_t Size)
@@ -225,8 +205,11 @@ namespace gspc
       _offset_to_handle.emplace (Offset, Handle);
     }
 
-    void tmmgr::delete_handle (Handle_t Handle, Offset_t Offset, MemSize_t Size)
+    void tmmgr::delete_handle (Handle_t Handle, std::pair<Offset_t, MemSize_t> OffsetSize)
     {
+      Offset_t const Offset (OffsetSize.first);
+      MemSize_t const Size (OffsetSize.second);
+
       assert (Size > 0);
 
       _mem_free += Size;

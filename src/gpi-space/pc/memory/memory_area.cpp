@@ -308,9 +308,7 @@ namespace gpi
         {
         case gspc::vmem::tmmgr::ALLOC_SUCCESS:
           {
-            gspc::vmem::Offset_t offset (0);
-            m_mmgr.offset_size (hdl.id, arena, &offset, nullptr);
-            hdl.offset = offset;
+            hdl.offset = m_mmgr.offset_size (hdl.id, arena).first;
             try
             {
               alloc_hook (hdl);
@@ -389,26 +387,17 @@ namespace gpi
         }
 
         gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
-        gspc::vmem::tmmgr::HandleReturn_t handle_return
-          (m_mmgr.free (hdl, arena));
-        switch (handle_return)
+
+        m_mmgr.free (hdl, arena);
+        m_handles.erase (hdl);
+        update_descriptor_from_mmgr ();
+        try
         {
-        case gspc::vmem::tmmgr::RET_SUCCESS:
-          m_handles.erase (hdl);
-          update_descriptor_from_mmgr ();
-          try
-          {
-            free_hook (desc);
-          }
-          catch (std::exception const & ex)
-          {
-            std::throw_with_nested (std::runtime_error ("free_hook failed"));
-          }
-          break;
-        case gspc::vmem::tmmgr::RET_HANDLE_UNKNOWN:
-          throw std::runtime_error ("inconsistent state: no such handle");
-        case gspc::vmem::tmmgr::RET_FAILURE:
-          throw std::runtime_error ("no such handle");
+          free_hook (desc);
+        }
+        catch (std::exception const & ex)
+        {
+          std::throw_with_nested (std::runtime_error ("free_hook failed"));
         }
       }
 
@@ -436,19 +425,10 @@ namespace gpi
         }
 
         gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
-        gspc::vmem::tmmgr::HandleReturn_t handle_return
-          (m_mmgr.free (hdl, arena));
-        switch (handle_return)
-        {
-        case gspc::vmem::tmmgr::RET_SUCCESS:
-          m_handles.erase (hdl);
-          update_descriptor_from_mmgr ();
-          break;
-        case gspc::vmem::tmmgr::RET_HANDLE_UNKNOWN:
-          throw std::runtime_error ("inconsistent state: no such handle");
-        case gspc::vmem::tmmgr::RET_FAILURE:
-          throw std::runtime_error ("no such handle");
-        }
+
+        m_mmgr.free (hdl, arena);
+        m_handles.erase (hdl);
+        update_descriptor_from_mmgr ();
       }
 
       gpi::pc::type::segment::descriptor_t const &
