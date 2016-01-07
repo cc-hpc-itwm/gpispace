@@ -43,27 +43,11 @@
 
   extern MemSize_t tmmgr_memsize (const Tmmgr_t);
   extern MemSize_t tmmgr_memfree (const Tmmgr_t);
-  extern MemSize_t tmmgr_memused (const Tmmgr_t);
-  extern MemSize_t tmmgr_minfree (const Tmmgr_t);
   extern MemSize_t tmmgr_highwater (const Tmmgr_t);
 
   typedef Word_t Count_t;
 
   extern Count_t tmmgr_numhandle (const Tmmgr_t);
-  extern Count_t tmmgr_numalloc (const Tmmgr_t);
-  extern Count_t tmmgr_numfree (const Tmmgr_t);
-  extern MemSize_t tmmgr_sumalloc (const Tmmgr_t);
-  extern MemSize_t tmmgr_sumfree (const Tmmgr_t);
-
-  typedef Offset_t OffsetDest_t;
-  typedef Offset_t OffsetSrc_t;
-
-  typedef void (*fMemmove_t) (const OffsetDest_t, const OffsetSrc_t,
-                              const MemSize_t, void *);
-
-  /* stops, when enough contiguous memory is available */
-  extern void tmmgr_defrag (PTmmgr_t, const fMemmove_t, const PMemSize_t,
-                            void *);
 
   /* *********************************************************************** */
 

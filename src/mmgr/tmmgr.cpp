@@ -1,8 +1,6 @@
 
 #include <mmgr/tmmgr.h>
 
-#include <mmgr/heap.hpp>
-
 #include <util-generic/unused.hpp>
 
 #include <assert.h>
@@ -22,13 +20,8 @@ typedef struct
   std::unordered_map<Offset_t, Size_t> free_segment_end;
   MemSize_t mem_size;
   MemSize_t mem_free;
-  MemSize_t min_free;
   MemSize_t high_water;
   Align_t align;
-  Count_t num_alloc;
-  Count_t num_free;
-  MemSize_t sum_alloc;
-  MemSize_t sum_free;
 } tmmgr_t, *ptmmgr_t;
 
 static inline MemSize_t
@@ -100,11 +93,9 @@ tmmgr_init (PTmmgr_t PTmmgr, const MemSize_t MemSize, const Align_t Align)
 
   ptmmgr->align = Align;
 
-  ptmmgr->mem_size = ptmmgr->mem_free = ptmmgr->min_free =
+  ptmmgr->mem_size = ptmmgr->mem_free =
     alignDown (MemSize, ptmmgr->align);
   ptmmgr->high_water = 0;
-  ptmmgr->num_alloc = ptmmgr->num_free = 0;
-  ptmmgr->sum_alloc = ptmmgr->sum_free = 0;
 
   tmmgr_ins_free_seg (ptmmgr, 0, ptmmgr->mem_size);
 
@@ -167,9 +158,6 @@ tmmgr_resize (PTmmgr_t PTmmgr, const MemSize_t NewSizeUnaligned)
     (NewSize >
      OldSize) ? (ptmmgr->mem_free + Delta) : (ptmmgr->mem_free - Delta);
 
-  if (ptmmgr->mem_free < ptmmgr->min_free)
-    ptmmgr->min_free = ptmmgr->mem_free;
-
   return RESIZE_SUCCESS;
 }
 
@@ -227,9 +215,6 @@ tmmgr_ins (ptmmgr_t ptmmgr, const Handle_t Handle, const Offset_t Offset,
 
   ptmmgr->mem_free -= Size;
 
-  if (ptmmgr->mem_free < ptmmgr->min_free)
-    ptmmgr->min_free = ptmmgr->mem_free;
-
   if (ptmmgr->high_water < Offset + Size)
     ptmmgr->high_water = Offset + Size;
 
@@ -284,9 +269,6 @@ tmmgr_alloc (PTmmgr_t PTmmgr, const Handle_t Handle,
   Offset_t Offset (*pos->second.begin());
 
   tmmgr_ins (ptmmgr, Handle, Offset, Size);
-
-  ++ptmmgr->num_alloc;
-  ptmmgr->sum_alloc += Size;
 
   return ALLOC_SUCCESS;
 }
@@ -373,9 +355,6 @@ tmmgr_free (PTmmgr_t PTmmgr, const Handle_t Handle)
       RET_HANDLE_UNKNOWN)
     return RET_HANDLE_UNKNOWN;
 
-  ++ptmmgr->num_free;
-  ptmmgr->sum_free += Size;
-
   tmmgr_del (ptmmgr, Handle, Offset, Size);
 
   return RET_SUCCESS;
@@ -404,28 +383,6 @@ tmmgr_memfree (const Tmmgr_t Tmmgr)
 }
 
 MemSize_t
-tmmgr_memused (const Tmmgr_t Tmmgr)
-{
-  if (Tmmgr == nullptr)
-    return 0;
-
-  ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
-
-  return ptmmgr->mem_size - ptmmgr->mem_free;
-}
-
-MemSize_t
-tmmgr_minfree (const Tmmgr_t Tmmgr)
-{
-  if (Tmmgr == nullptr)
-    return 0;
-
-  ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
-
-  return ptmmgr->min_free;
-}
-
-MemSize_t
 tmmgr_highwater (const Tmmgr_t Tmmgr)
 {
   if (Tmmgr == nullptr)
@@ -445,122 +402,4 @@ tmmgr_numhandle (const Tmmgr_t Tmmgr)
   ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
 
   return ptmmgr->handle_to_offset_and_size.size();
-}
-
-Count_t
-tmmgr_numalloc (const Tmmgr_t Tmmgr)
-{
-  if (Tmmgr == nullptr)
-    return 0;
-
-  ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
-
-  return ptmmgr->num_alloc;
-}
-
-Count_t
-tmmgr_numfree (const Tmmgr_t Tmmgr)
-{
-  if (Tmmgr == nullptr)
-    return 0;
-
-  ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
-
-  return ptmmgr->num_free;
-}
-
-MemSize_t
-tmmgr_sumalloc (const Tmmgr_t Tmmgr)
-{
-  if (Tmmgr == nullptr)
-    return 0;
-
-  ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
-
-  return ptmmgr->sum_alloc;
-}
-
-MemSize_t
-tmmgr_sumfree (const Tmmgr_t Tmmgr)
-{
-  if (Tmmgr == nullptr)
-    return 0;
-
-  ptmmgr_t ptmmgr = static_cast<ptmmgr_t> (Tmmgr);
-
-  return ptmmgr->sum_free;
-}
-
-void
-tmmgr_defrag (PTmmgr_t PTmmgr, const fMemmove_t fMemmove,
-              const PMemSize_t PFreeSizeWanted, void *PDat)
-{
-  if (PTmmgr == nullptr || *(ptmmgr_t *) PTmmgr == nullptr)
-    return;
-
-  ptmmgr_t ptmmgr = *(ptmmgr_t *) PTmmgr;
-
-  if (PFreeSizeWanted != nullptr && *PFreeSizeWanted > tmmgr_memfree (ptmmgr))
-    return;
-
-  gspc::mmgr::heap HeapOffFree;
-  gspc::mmgr::heap HeapOffUsed;
-
-  for (auto const& free_segment_start : ptmmgr->free_segment_start)
-  {
-    HeapOffFree.insert (free_segment_start.first);
-  }
-  for (auto const& offset_to_handle : ptmmgr->offset_to_handle)
-  {
-    HeapOffUsed.insert (offset_to_handle.first);
-  }
-
-  while (HeapOffFree.size() > 0 && HeapOffUsed.size() > 0)
-    {
-      Offset_t OffsetFree {HeapOffFree.min()};
-      Offset_t OffsetUsed {HeapOffUsed.min()};
-
-      while (HeapOffUsed.size() > 0 && OffsetUsed < OffsetFree)
-        {
-          HeapOffUsed.delete_min();
-
-          if (HeapOffUsed.size() > 0)
-            OffsetUsed = HeapOffUsed.min();
-        }
-
-      if (HeapOffUsed.size() > 0)
-        {
-          if (PFreeSizeWanted != nullptr
-              && OffsetFree + *PFreeSizeWanted <= OffsetUsed)
-            goto HAVE_ENOUGH;
-
-          auto PHandle (ptmmgr->offset_to_handle.find (OffsetUsed));
-
-          if (PHandle == ptmmgr->offset_to_handle.end())
-            TMMGR_ERROR_STRANGE;
-
-          Handle_t Handle = PHandle->second;
-          MemSize_t SizeUsed;
-
-          if (tmmgr_offset_size (ptmmgr, Handle, nullptr, &SizeUsed) !=
-              RET_SUCCESS)
-            TMMGR_ERROR_STRANGE;
-
-          if (fMemmove != nullptr)
-            fMemmove (OffsetFree, OffsetUsed, SizeUsed, PDat);
-
-          tmmgr_del (ptmmgr, Handle, OffsetUsed, SizeUsed);
-          tmmgr_ins (ptmmgr, Handle, OffsetFree, SizeUsed);
-
-          HeapOffFree.delete_min();
-          HeapOffUsed.delete_min();
-
-          if (HeapOffFree.size() == 0
-              || HeapOffFree.min() != OffsetFree + SizeUsed)
-            HeapOffFree.insert (OffsetFree + SizeUsed);
-        }
-    }
-
-HAVE_ENOUGH:
-  return;
 }

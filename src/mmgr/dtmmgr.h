@@ -27,18 +27,9 @@
                                             const Arena_t, POffset_t,
                                             PMemSize_t);
 
-  extern MemSize_t dtmmgr_memsize (const DTmmgr_t);
   extern MemSize_t dtmmgr_memfree (const DTmmgr_t);
-  extern MemSize_t dtmmgr_memused (const DTmmgr_t);
 
   extern Count_t dtmmgr_numhandle (const DTmmgr_t, const Arena_t);
-  extern Count_t dtmmgr_numalloc (const DTmmgr_t, const Arena_t);
-  extern Count_t dtmmgr_numfree (const DTmmgr_t, const Arena_t);
-  extern MemSize_t dtmmgr_sumalloc (const DTmmgr_t, const Arena_t);
-  extern MemSize_t dtmmgr_sumfree (const DTmmgr_t, const Arena_t);
-
-  extern void dtmmgr_defrag (PDTmmgr_t, const Arena_t, const fMemmove_t,
-                             const PMemSize_t, void *);
 
   /* *********************************************************************** */
 

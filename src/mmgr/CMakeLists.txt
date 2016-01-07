@@ -1,6 +1,5 @@
 set (sources
   dtmmgr.cpp
-  heap.cpp
   tmmgr.cpp
 )
 
