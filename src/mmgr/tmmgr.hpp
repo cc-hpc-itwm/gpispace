@@ -233,8 +233,6 @@ namespace gspc
 
       void delete_free_segment (Offset_t, MemSize_t);
       void insert_free_segment (Offset_t, MemSize_t);
-
-      void insert_handle (Handle_t, Offset_t, MemSize_t);
     };
   }
 }

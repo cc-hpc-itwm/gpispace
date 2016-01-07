@@ -110,7 +110,39 @@ namespace gspc
           (Handle, SizeUnaligned, Size, _mem_free);
       }
 
-      insert_handle (Handle, *pos->second.begin(), Size);
+      Offset_t const Offset (*pos->second.begin());
+
+      assert (Size > 0);
+      assert (Size <= _mem_free);
+
+      _mem_free -= Size;
+
+      if (_high_water < Offset + Size)
+      {
+        _high_water = Offset + Size;
+      }
+
+      auto PSizeStart (_free_segment_start.find (Offset));
+
+      assert (PSizeStart != _free_segment_start.end());
+      assert (Size <= PSizeStart->second);
+
+#ifndef NDEBUG
+      auto free_segment_end
+        (_free_segment_end.find (Offset + PSizeStart->second));
+#endif
+
+      assert (free_segment_end != _free_segment_end.end());
+      assert (PSizeStart->second == free_segment_end->second);
+
+      Size_t const OldFreeSize (PSizeStart->second);
+      Size_t const NewFreeSize (PSizeStart->second - Size);
+
+      delete_free_segment (Offset, OldFreeSize);
+      insert_free_segment (Offset + Size, NewFreeSize);
+
+      _handle_to_offset_and_size.emplace (Handle, std::make_pair (Offset, Size));
+      _offset_to_handle.emplace (Offset, Handle);
     }
 
     void tmmgr::free (Handle_t Handle)
@@ -231,41 +263,6 @@ namespace gspc
         _free_segment_start.emplace (OffsetStart, Size);
         _free_segment_end.emplace (OffsetEnd, Size);
       }
-    }
-
-    void tmmgr::insert_handle (Handle_t Handle, Offset_t Offset, MemSize_t Size)
-    {
-      assert (Size > 0);
-      assert (Size <= _mem_free);
-
-      _mem_free -= Size;
-
-      if (_high_water < Offset + Size)
-      {
-        _high_water = Offset + Size;
-      }
-
-      auto PSizeStart (_free_segment_start.find (Offset));
-
-      assert (PSizeStart != _free_segment_start.end());
-      assert (Size <= PSizeStart->second);
-
-#ifndef NDEBUG
-      auto free_segment_end
-        (_free_segment_end.find (Offset + PSizeStart->second));
-#endif
-
-      assert (free_segment_end != _free_segment_end.end());
-      assert (PSizeStart->second == free_segment_end->second);
-
-      Size_t const OldFreeSize (PSizeStart->second);
-      Size_t const NewFreeSize (PSizeStart->second - Size);
-
-      delete_free_segment (Offset, OldFreeSize);
-      insert_free_segment (Offset + Size, NewFreeSize);
-
-      _handle_to_offset_and_size.emplace (Handle, std::make_pair (Offset, Size));
-      _offset_to_handle.emplace (Offset, Handle);
     }
   }
 }
