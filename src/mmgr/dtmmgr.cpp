@@ -1,6 +1,6 @@
 #include <mmgr/dtmmgr.hpp>
 
-#include <cassert>
+#include <fhg/assert.hpp>
 
 namespace gspc
 {
@@ -38,7 +38,7 @@ namespace gspc
       // invert for the local arena
       if (Arena == ARENA_DOWN)
       {
-        assert (_mem_size >= OffsetSize.first + OffsetSize.second);
+        fhg_assert (_mem_size >= OffsetSize.first + OffsetSize.second);
 
         OffsetSize.first = _mem_size - (OffsetSize.first + OffsetSize.second);
       }

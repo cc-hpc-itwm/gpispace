@@ -1,7 +1,7 @@
 
 #include <mmgr/tmmgr.hpp>
 
-#include <cassert>
+#include <fhg/assert.hpp>
 
 namespace gspc
 {
@@ -63,7 +63,7 @@ namespace gspc
 
         MemSize_t const FreeSize (free_segment_end->second);
 
-        assert (NewSize > OldSize || Delta <= FreeSize);
+        fhg_assert (NewSize > OldSize || Delta <= FreeSize);
 
         MemSize_t const NewFreeSize =
           ((NewSize > OldSize) ? (FreeSize + Delta) : (FreeSize - Delta));
@@ -77,7 +77,7 @@ namespace gspc
       {
         /* add a new free segment */
 
-        assert (NewSize > OldSize);
+        fhg_assert (NewSize > OldSize);
 
         insert_free_segment ((Offset_t) OldSize, Delta);
       }
@@ -112,8 +112,8 @@ namespace gspc
 
       Offset_t const Offset (*pos->second.begin());
 
-      assert (Size > 0);
-      assert (Size <= _mem_free);
+      fhg_assert (Size > 0);
+      fhg_assert (Size <= _mem_free);
 
       _mem_free -= Size;
 
@@ -124,14 +124,14 @@ namespace gspc
 
       auto PSizeStart (_free_segment_start.find (Offset));
 
-      assert (PSizeStart != _free_segment_start.end());
-      assert (Size <= PSizeStart->second);
-      assert ( _free_segment_end.find (Offset + PSizeStart->second)
-             != _free_segment_end.end()
-             );
-      assert (  PSizeStart->second
-             == _free_segment_end.at (Offset + PSizeStart->second)
-             );
+      fhg_assert (PSizeStart != _free_segment_start.end());
+      fhg_assert (Size <= PSizeStart->second);
+      fhg_assert ( _free_segment_end.find (Offset + PSizeStart->second)
+                 != _free_segment_end.end()
+                 );
+      fhg_assert ( PSizeStart->second
+                 == _free_segment_end.at (Offset + PSizeStart->second)
+                 );
 
       Size_t const OldFreeSize (PSizeStart->second);
       Size_t const NewFreeSize (PSizeStart->second - Size);
@@ -150,7 +150,7 @@ namespace gspc
       Offset_t const Offset (OffsetSize.first);
       MemSize_t const Size (OffsetSize.second);
 
-      assert (Size > 0);
+      fhg_assert (Size > 0);
 
       _mem_free += Size;
 
@@ -174,7 +174,7 @@ namespace gspc
         Size_t const SizeL (PSizeL->second);
         Size_t const SizeR (PSizeR->second);
 
-        assert (Offset >= SizeL);
+        fhg_assert (Offset >= SizeL);
 
         Offset_t const OffsetL (Offset - SizeL);
         Offset_t const OffsetR (Offset + Size);
@@ -189,7 +189,7 @@ namespace gspc
 
         MemSize_t const SizeL (PSizeL->second);
 
-        assert (Offset >= SizeL);
+        fhg_assert (Offset >= SizeL);
 
         Offset_t const OffsetL (Offset - SizeL);
 
