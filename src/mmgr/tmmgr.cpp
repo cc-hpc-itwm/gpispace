@@ -126,14 +126,12 @@ namespace gspc
 
       assert (PSizeStart != _free_segment_start.end());
       assert (Size <= PSizeStart->second);
-
-#ifndef NDEBUG
-      auto free_segment_end
-        (_free_segment_end.find (Offset + PSizeStart->second));
-#endif
-
-      assert (free_segment_end != _free_segment_end.end());
-      assert (PSizeStart->second == free_segment_end->second);
+      assert ( _free_segment_end.find (Offset + PSizeStart->second)
+             != _free_segment_end.end()
+             );
+      assert (  PSizeStart->second
+             == _free_segment_end.at (Offset + PSizeStart->second)
+             );
 
       Size_t const OldFreeSize (PSizeStart->second);
       Size_t const NewFreeSize (PSizeStart->second - Size);
