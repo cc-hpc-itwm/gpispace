@@ -1,0 +1,1 @@
+make -j "${gspc_parallel_test_and_build_jobs}" install

@@ -1,64 +1,58 @@
 before_script:
-  - set -u
-  - source ".buildenv/${HOSTNAME}"
+  - set -euo pipefail
+  - source ".ci/env/${HOSTNAME}"
 
   - git submodule update --init --recursive
 
-  - source_directory="$(pwd)"
-  - base_directory="${source_directory}"
-  - build_directory="${base_directory}/build"
-  - install_directory="${base_directory}/install"
-  - shared_directory_for_tests="${base_directory}/shared_for_tests"
-  - mkdir -p "${build_directory}"
-  - cd "${build_directory}"
-  - cmake -DSHARED_DIRECTORY_FOR_TESTS="${shared_directory_for_tests}"
-          -DTESTING_RIF_STRATEGY="${gspc_testing_rif_strategy}"
-          -DCMAKE_INSTALL_PREFIX="${install_directory}"
-          "${source_directory}"
-  - export CCACHE_SLOPPINESS=file_macro
+  - source ".ci/jobs/before"
 
-build:
+build-centos-6.5:
   stage: build
   script:
-    - make -j "${gspc_parallel_test_and_build_jobs}" install
+    - source ".ci/jobs/build"
+  tags:
+    - centos-6.5
 
-test:
+build-centos-5.7:
+  stage: build
+  script:
+    - source ".ci/jobs/build"
+  tags:
+    - centos-5.7
+
+test-centos-6.5:
   stage: test
   script:
-    - cd "${build_directory}"
-    - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
-    - mkdir -p "${shared_directory_for_tests}"
-    - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
-    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    - source ".ci/jobs/test"
+  tags:
+    - centos-6.5
 
-    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel || true" EXIT
-    - ctest --output-on-failure --timeout 180 --schedule-random
-            -LE "performance_test|requires_vmem"
-            -j "${gspc_parallel_test_and_build_jobs}"
-
-virtual_memory_test:
+test-centos-5.7:
   stage: test
   script:
-    - cd "${build_directory}"
-    - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
-    - mkdir -p "${shared_directory_for_tests}"
-    - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
-    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    - source ".ci/jobs/test"
+  tags:
+    - centos-5.7
 
-    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gpi-space || true" EXIT
-    - ctest --output-on-failure --timeout 180 --schedule-random
-            -L "requires_vmem"
-
-performance_test:
+virtual_memory_test-centos-6.5:
   stage: test
   script:
-    - cd "${build_directory}"
-    - make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
-    - mkdir -p "${shared_directory_for_tests}"
-    - export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
-    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    - source ".ci/jobs/virtual_memory_test"
+  tags:
+    - centos-6.5
 
-    - trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel || true" EXIT
-    - ctest --output-on-failure --timeout 180 --schedule-random
-            -L "performance_test"
+performance_test-centos-6.5:
+  stage: test
+  script:
+    - source ".ci/jobs/performance_test"
   allow_failure: true
+  tags:
+    - centos-6.5
+
+performance_test-centos-5.7:
+  stage: test
+  script:
+    - source ".ci/jobs/performance_test"
+  allow_failure: true
+  tags:
+    - centos-5.7
