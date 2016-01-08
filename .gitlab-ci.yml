@@ -1,50 +1,51 @@
 before_script:
   - set -euo pipefail
-  - source ".ci/env/${HOSTNAME}"
+  - ci_scripts_dir="${PWD}/.ci"
+  - source "${ci_scripts_dir}/env/${HOSTNAME}"
 
   - git submodule update --init --recursive
 
-  - source ".ci/jobs/before"
+  - source "${ci_scripts_dir}/jobs/before"
 
 build-centos-6.5:
   stage: build
   script:
-    - source ".ci/jobs/build"
+    - source "${ci_scripts_dir}/jobs/build"
   tags:
     - centos-6.5
 
 build-centos-5.7:
   stage: build
   script:
-    - source ".ci/jobs/build"
+    - source "${ci_scripts_dir}/jobs/build"
   tags:
     - centos-5.7
 
 test-centos-6.5:
   stage: test
   script:
-    - source ".ci/jobs/test"
+    - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-6.5
 
 test-centos-5.7:
   stage: test
   script:
-    - source ".ci/jobs/test"
+    - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-5.7
 
 virtual_memory_test-centos-6.5:
   stage: test
   script:
-    - source ".ci/jobs/virtual_memory_test"
+    - source "${ci_scripts_dir}/jobs/virtual_memory_test"
   tags:
     - centos-6.5
 
 performance_test-centos-6.5:
   stage: test
   script:
-    - source ".ci/jobs/performance_test"
+    - source "${ci_scripts_dir}/jobs/performance_test"
   allow_failure: true
   tags:
     - centos-6.5
@@ -52,7 +53,7 @@ performance_test-centos-6.5:
 performance_test-centos-5.7:
   stage: test
   script:
-    - source ".ci/jobs/performance_test"
+    - source "${ci_scripts_dir}/jobs/performance_test"
   allow_failure: true
   tags:
     - centos-5.7
