@@ -24,9 +24,8 @@ namespace gspc
           ARENA_DOWN
         };
 
-      void alloc (Handle_t, Arena_t, MemSize_t);
+      std::pair<Offset_t, MemSize_t> alloc (Handle_t, Arena_t, MemSize_t);
       void free (Handle_t, Arena_t);
-      std::pair<Offset_t, MemSize_t> offset_size (Handle_t, Arena_t) const;
 
       MemSize_t memfree() const
       {

@@ -197,9 +197,8 @@ namespace gspc
       tmmgr (MemSize_t, Align_t);
 
       void resize (MemSize_t);
-      void alloc (Handle_t, MemSize_t);
+      std::pair<Offset_t, MemSize_t> alloc (Handle_t, MemSize_t);
       void free (Handle_t);
-      std::pair<Offset_t, MemSize_t> offset_size (Handle_t) const;
 
       MemSize_t memsize() const
       {

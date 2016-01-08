@@ -303,7 +303,7 @@ namespace gpi
 
         try
         {
-          m_mmgr.alloc (hdl.id, arena, hdl.local_size);
+          hdl.offset = m_mmgr.alloc (hdl.id, arena, hdl.local_size).first;
         }
         catch (gspc::vmem::error::alloc::insufficient_contiguous_memory)
         {
@@ -331,7 +331,6 @@ namespace gpi
             );
         }
 
-        hdl.offset = m_mmgr.offset_size (hdl.id, arena).first;
         try
         {
           alloc_hook (hdl);

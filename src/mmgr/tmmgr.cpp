@@ -87,7 +87,8 @@ namespace gspc
         ((NewSize > OldSize) ? (_mem_free + Delta) : (_mem_free - Delta));
     }
 
-    void tmmgr::alloc (Handle_t Handle, MemSize_t SizeUnaligned)
+    std::pair<Offset_t, MemSize_t> tmmgr::alloc
+      (Handle_t Handle, MemSize_t SizeUnaligned)
     {
       MemSize_t const Size (alignUp (SizeUnaligned, _align));
 
@@ -141,14 +142,21 @@ namespace gspc
 
       _handle_to_offset_and_size.emplace (Handle, std::make_pair (Offset, Size));
       _offset_to_handle.emplace (Offset, Handle);
+
+      return {Offset, Size};
     }
 
     void tmmgr::free (Handle_t Handle)
     {
-      std::pair<Offset_t, MemSize_t> const OffsetSize (offset_size (Handle));
+      auto pos (_handle_to_offset_and_size.find (Handle));
 
-      Offset_t const Offset (OffsetSize.first);
-      MemSize_t const Size (OffsetSize.second);
+      if (pos == _handle_to_offset_and_size.end())
+      {
+        throw error::unknown_handle (Handle);
+      }
+
+      Offset_t const Offset (pos->second.first);
+      MemSize_t const Size (pos->second.second);
 
       fhg_assert (Size > 0);
 
@@ -211,18 +219,6 @@ namespace gspc
       {
         insert_free_segment (Offset, Size);
       }
-    }
-
-    std::pair<Offset_t, Size_t> tmmgr::offset_size (Handle_t Handle) const
-    {
-      auto pos (_handle_to_offset_and_size.find (Handle));
-
-      if (pos == _handle_to_offset_and_size.end())
-      {
-        throw error::unknown_handle (Handle);
-      }
-
-      return pos->second;
     }
 
     void tmmgr::delete_free_segment (Offset_t OffsetStart, MemSize_t Size)

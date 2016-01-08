@@ -17,23 +17,12 @@ namespace gspc
       , _mem_size (_arena[ARENA_UP].memsize())
     {}
 
-    void dtmmgr::alloc (Handle_t Handle, Arena_t Arena, MemSize_t Size)
-    {
-      _arena[Arena].alloc (Handle, Size);
-      _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
-    }
-
-    void dtmmgr::free (Handle_t Handle, Arena_t Arena)
-    {
-      _arena[Arena].free (Handle);
-      _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
-    }
-
-    std::pair<Offset_t, MemSize_t> dtmmgr::offset_size
-      (Handle_t Handle, Arena_t Arena) const
+    std::pair<Offset_t, MemSize_t> dtmmgr::alloc
+      (Handle_t Handle, Arena_t Arena, MemSize_t Size)
     {
       std::pair<Offset_t, MemSize_t> OffsetSize
-        (_arena[Arena].offset_size (Handle));
+        (_arena[Arena].alloc (Handle, Size));
+      _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
 
       // invert for the local arena
       if (Arena == ARENA_DOWN)
@@ -44,6 +33,12 @@ namespace gspc
       }
 
       return OffsetSize;
+    }
+
+    void dtmmgr::free (Handle_t Handle, Arena_t Arena)
+    {
+      _arena[Arena].free (Handle);
+      _arena[other[Arena]].resize (_mem_size - _arena[Arena].highwater());
     }
   }
 }
