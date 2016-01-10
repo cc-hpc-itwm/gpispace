@@ -190,7 +190,7 @@ namespace fhg
     gaspi_context::reserved_segment_id::reserved_segment_id (gaspi_context& context)
       : _context (context)
     {
-      std::unique_lock<std::mutex> const _ (_context._segment_id_guard);
+      std::lock_guard<std::mutex> const _ (_context._segment_id_guard);
       if (_context._segment_ids.empty())
       {
         throw std::runtime_error ("no segment id available");
@@ -201,7 +201,7 @@ namespace fhg
 
     gaspi_context::reserved_segment_id::~reserved_segment_id()
     {
-      std::unique_lock<std::mutex> const _ (_context._segment_id_guard);
+      std::lock_guard<std::mutex> const _ (_context._segment_id_guard);
       _context._segment_ids.emplace (_id);
     }
 

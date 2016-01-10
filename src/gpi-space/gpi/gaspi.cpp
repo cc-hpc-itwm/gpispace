@@ -184,7 +184,7 @@ namespace gpi
       //! threads and thus how many queue entries can be taken if a
       //! thread gets suspended and woken up again between the queue
       //! entry check and the actual operation.
-      std::unique_lock<std::mutex> const _ (_queue_operation_guard);
+      std::lock_guard<std::mutex> const _ (_queue_operation_guard);
 
       gaspi_number_t queue_size_max;
       gaspi_number_t queue_size;
@@ -282,7 +282,7 @@ namespace gpi
       std::size_t const chunks (fhg::util::divru (amount, chunk_size));
 
       {
-        std::unique_lock<std::mutex> const _ (_notification_guard);
+        std::lock_guard<std::mutex> const _ (_notification_guard);
         if (!_outstanding_notifications.emplace (write_id, chunks).second)
         {
           throw std::logic_error
@@ -420,7 +420,7 @@ namespace gpi
         if (is_pong (notification_id))
         {
           {
-            std::unique_lock<std::mutex> const _ (_notification_guard);
+            std::lock_guard<std::mutex> const _ (_notification_guard);
             --_outstanding_notifications.at (write_id);
           }
 

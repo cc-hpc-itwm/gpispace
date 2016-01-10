@@ -308,7 +308,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
                      no_longer_do_status_update = true;
                      {
-                       std::unique_lock<std::mutex> const _
+                       std::lock_guard<std::mutex> const _
                          (no_longer_do_status_update_guard);
 
                        client.put_token
@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
         unsigned long updates (0);
         while (true)
         {
-          std::unique_lock<std::mutex> const _ (no_longer_do_status_update_guard);
+          std::lock_guard<std::mutex> const _ (no_longer_do_status_update_guard);
           if (no_longer_do_status_update)
           {
             break;
