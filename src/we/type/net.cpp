@@ -455,7 +455,7 @@ namespace we
       _enabled_choice.erase (tid);
     }
 
-    std::list<net_type::token_to_be_deleted_type> net_type::do_extract
+    std::forward_list<net_type::token_to_be_deleted_type> net_type::do_extract
       ( transition_id_type tid
       , std::function<void ( port_id_type
                            , pnet::type::value::value_type const&
@@ -463,7 +463,7 @@ namespace we
                       > fun
       ) const
     {
-      std::list<token_to_be_deleted_type> tokens_to_be_deleted;
+      std::forward_list<token_to_be_deleted_type> tokens_to_be_deleted;
 
       for ( std::pair<place_id_type const, pos_and_distance_type> const& pt
           : _enabled_choice.at (tid)
@@ -482,7 +482,7 @@ namespace we
            == _adj_pt_read.end()
            )
         {
-          tokens_to_be_deleted.emplace_back (pid, token);
+          tokens_to_be_deleted.emplace_front (pid, token);
         }
       }
 
@@ -490,7 +490,7 @@ namespace we
     }
 
     void net_type::do_delete
-      (std::list<token_to_be_deleted_type> const& tokens_to_be_deleted)
+      (std::forward_list<token_to_be_deleted_type> const& tokens_to_be_deleted)
     {
       for ( token_to_be_deleted_type const& token_to_be_deleted
           : tokens_to_be_deleted
@@ -566,7 +566,7 @@ namespace we
     {
       expr::eval::context context;
 
-      std::list<token_to_be_deleted_type> const tokens_to_be_deleted
+      std::forward_list<token_to_be_deleted_type> const tokens_to_be_deleted
         (do_extract (tid, context_bind (context, transition)));
 
       transition.expression()->ast().eval_all (context);

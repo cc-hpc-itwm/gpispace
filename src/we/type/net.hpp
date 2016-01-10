@@ -22,6 +22,7 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/unordered_map.hpp>
 
+#include <forward_list>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -216,12 +217,12 @@ namespace we
                        , std::list<pnet::type::value::value_type>::iterator
                        > token_to_be_deleted_type;
 
-      std::list<token_to_be_deleted_type> do_extract
+      std::forward_list<token_to_be_deleted_type> do_extract
         ( transition_id_type
         , std::function
             <void (port_id_type, pnet::type::value::value_type const&)>
         ) const;
-      void do_delete (std::list<token_to_be_deleted_type> const&);
+      void do_delete (std::forward_list<token_to_be_deleted_type> const&);
 
       to_be_updated_type do_put_value
         (place_id_type, pnet::type::value::value_type const&);
