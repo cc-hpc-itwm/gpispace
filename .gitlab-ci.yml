@@ -35,6 +35,9 @@ tests (centos 5.7):
   tags:
     - centos-5.7
 
+#! \todo add virtual memory tests on centos 5.7: needs infiniband or
+#        gpi2+eth (requires higher kernel version)
+
 virtual memory tests (centos 6.5):
   stage: test
   script:
