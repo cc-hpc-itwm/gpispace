@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/net.fwd.hpp>
@@ -99,7 +97,8 @@ namespace we
 
       void put_value (place_id_type, const pnet::type::value::value_type&);
       //! \note place must be marked with atribute put_token="true"
-      void put_token (std::string place_name, pnet::type::value::value_type const&);
+      void put_token
+        (std::string place_name, pnet::type::value::value_type const&);
 
       token_by_id_type const& get_token (place_id_type) const;
 

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value/show.hpp>
@@ -69,8 +67,9 @@ namespace we
       {
         //! \todo more specific exception
         throw std::invalid_argument
-          ((boost::format ("duplicate place with name '%1%'") % place.name()
-           ).str()
+          ( ( boost::format ("duplicate place with name '%1%'")
+            % place.name()
+            ).str()
           );
       }
 
@@ -88,29 +87,36 @@ namespace we
     }
 
     void net_type::add_connection ( edge::type type
-                             , transition_id_type transition_id
-                             , place_id_type place_id
-                             , port_id_type port_id
-                             , we::type::property::type const& property
-                             )
+                                  , transition_id_type transition_id
+                                  , place_id_type place_id
+                                  , port_id_type port_id
+                                  , we::type::property::type const& property
+                                  )
     {
       switch (type)
       {
       case edge::TP:
         _adj_tp.emplace (place_id, transition_id);
         _port_to_place[transition_id].insert
-          (port_to_place_with_info_type::value_type (port_id, place_id, property));
+          ( port_to_place_with_info_type::value_type
+              (port_id, place_id, property)
+          );
         break;
       case edge::PT:
-        _adj_pt_consume.insert (adj_pt_type::value_type (place_id, transition_id));
+        _adj_pt_consume.insert
+          (adj_pt_type::value_type (place_id, transition_id));
         _place_to_port[transition_id].insert
-          (place_to_port_with_info_type::value_type (place_id, port_id, property));
+          ( place_to_port_with_info_type::value_type
+              (place_id, port_id, property)
+          );
         update_enabled (transition_id);
         break;
       case edge::PT_READ:
         _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
         _place_to_port[transition_id].insert
-          (place_to_port_with_info_type::value_type (place_id, port_id, property));
+          ( place_to_port_with_info_type::value_type
+              (place_id, port_id, property)
+          );
         update_enabled (transition_id);
         break;
       }
@@ -126,13 +132,14 @@ namespace we
         (port_to_response_with_info_type::value_type (port_id, to, property));
     }
 
-    const std::unordered_map<place_id_type,place::type>& net_type::places() const
+    const std::unordered_map<place_id_type, place::type>&
+      net_type::places() const
     {
       return _pmap;
     }
 
-    const std::unordered_map<transition_id_type,we::type::transition_t>&
-    net_type::transitions() const
+    const std::unordered_map<transition_id_type, we::type::transition_t>&
+      net_type::transitions() const
     {
       return _tmap;
     }
@@ -163,8 +170,8 @@ namespace we
     }
 
     void net_type::put_value ( place_id_type pid
-                        , const pnet::type::value::value_type& value
-                        )
+                             , const pnet::type::value::value_type& value
+                             )
     {
       do_update (do_put_value (pid, value));
     }
@@ -191,7 +198,10 @@ namespace we
       if (!place.is_marked_for_put_token())
       {
         throw std::invalid_argument
-          ( ( boost::format (R"EOS(put_token ("%1%", %2%): place not marked with attribute put_token="true")EOS")
+          ( ( boost::format
+              ("put_token (\"%1%\", %2%): place not marked with attribute"
+              " put_token=\"true\""
+              )
             % place_name
             % pnet::type::value::show (value)
             ).str()
@@ -296,7 +306,9 @@ namespace we
         enabled_type::const_iterator const pos
           (_enabled.find (_tmap.at (tid).priority()));
 
-        if (pos != _enabled.end() && pos->second.find (tid) != pos->second.end())
+        if (  pos != _enabled.end()
+           && pos->second.find (tid) != pos->second.end()
+           )
         {
           return;
         }
@@ -463,7 +475,8 @@ namespace we
                         , pnet::type::value::value_type const& value
                         )
         {
-          _context.bind_ref (_transition.ports_input().at (port_id).name(), value);
+          _context.bind_ref
+            (_transition.ports_input().at (port_id).name(), value);
         }
 
       private:
@@ -586,18 +599,18 @@ namespace we
 
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
-      : _begin (tokens.begin())
-      , _end (tokens.end())
-      , _pos (_begin)
-      , _is_read_connection (is_read_connection)
+        : _begin (tokens.begin())
+        , _end (tokens.end())
+        , _pos (_begin)
+        , _is_read_connection (is_read_connection)
     {}
     cross_type::iterators_type::iterators_type
       ( net_type::token_by_id_type::const_iterator token
       , bool is_read_connection
       )
         : _begin (std::move (token))
-      , _end (std::next (_begin))
-      , _pos (_begin)
+        , _end (std::next (_begin))
+        , _pos (_begin)
         , _is_read_connection (is_read_connection)
     {}
     bool cross_type::iterators_type::end() const
@@ -623,7 +636,7 @@ namespace we
     }
 
     bool cross_type::do_step
-    (map_type::iterator slot, map_type::iterator const& end)
+      (map_type::iterator slot, map_type::iterator const& end)
     {
       while (slot != end)
       {
@@ -665,7 +678,8 @@ namespace we
         {
           context.bind_ref
             ( transition.ports_input()
-            .at (n->place_to_port().at (transition_id).left.find (pits.first)->get_right()).name()
+            . at (n->place_to_port().at (transition_id).left
+            . find (pits.first)->get_right()).name()
             , pits.second.pos()->second
             );
         }
