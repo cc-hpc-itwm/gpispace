@@ -6,6 +6,13 @@ fhg_add_test (layer.cpp
   LINK_LIBRARIES pnet
 )
 
+fhg_add_test (layer.ping_pong.cpp
+  BOOST_UNIT_TEST
+  PROJECT we
+  LINK_LIBRARIES pnet Boost::program_options test-utilities
+  ARGS --source-directory ${CMAKE_SOURCE_DIR}
+)
+
 fhg_add_test (layer.performance.cpp
   BOOST_UNIT_TEST
   PERFORMANCE_TEST
