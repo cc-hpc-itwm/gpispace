@@ -7,6 +7,7 @@
 #include <gpi-space/pc/global/itopology.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
 
+#include <util-generic/filesystem_lock_directory.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 namespace gpi
@@ -83,14 +84,12 @@ namespace gpi
                                   ) const override;
 
         fhg::thread::queue<int> _fds;
-        struct lock_file_helper
+        struct lock_file_helper : fhg::util::filesystem_lock_directory
         {
-          lock_file_helper (beegfs_area_t*);
-          ~lock_file_helper();
-          beegfs_area_t* _area;
-          int _fd;
+          lock_file_helper (beegfs_area_t&);
         };
-        boost::optional<lock_file_helper> _lock_file;
+        //! \todo boost::optional with move-assignment support
+        std::unique_ptr<lock_file_helper> _lock_file;
         path_t m_path;
         int    m_version;
 

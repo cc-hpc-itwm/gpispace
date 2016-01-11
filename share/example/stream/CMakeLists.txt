@@ -6,7 +6,6 @@ math (EXPR num_slots "20")
 fhg_add_test (stream.two_module_calls.cpp
   PROJECT share_example_stream_two_module_calls
   BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
@@ -26,7 +25,6 @@ fhg_add_test (stream.two_module_calls.cpp
 fhg_add_test (stream.one_module_call.cpp
   PROJECT share_example_stream_one_module_call
   BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
