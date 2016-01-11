@@ -32,7 +32,8 @@ namespace fhg
           visible_range_length_role,
           automatically_move_role,
           elapsed_time_role,
-          column_type_role
+          column_type_role,
+          merge_groups_role,
         };
 
         struct visible_range_type
@@ -99,6 +100,7 @@ namespace fhg
         QMap<util::qt::mvc::section_index, visible_range_type> _visible_ranges;
         QSet<util::qt::mvc::section_index> _auto_moving;
         QMap<util::qt::mvc::section_index, column_type> _column_types;
+        QSet<util::qt::mvc::section_index> _merge_groups;
 
         int _column_count;
       };
@@ -174,6 +176,7 @@ namespace fhg
         QScrollBar* _scrollbar;
         QSpinBox* _visible_range_length;
         QCheckBox* _automove;
+        QCheckBox* _merge_groups;
 
         util::qt::mvc::section_index _index;
       };

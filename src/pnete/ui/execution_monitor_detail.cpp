@@ -249,6 +249,10 @@ namespace fhg
           fhg_assert (_column_types[index] == gantt_column, "automatically moving only defined for gantt columns");
           return _auto_moving.contains (index);
 
+        case merge_groups_role:
+          fhg_assert (_column_types[index] == gantt_column, "merge_groups only defined for gantt columns");
+          return _merge_groups.contains (index);
+
         case elapsed_time_role:
           return QVariant::fromValue<long>
             ( QDateTime::currentDateTime().toMSecsSinceEpoch()
@@ -308,6 +312,18 @@ namespace fhg
             _auto_moving.remove (index);
           }
         }
+        else if (role == merge_groups_role)
+        {
+          fhg_assert (_column_types[index] == gantt_column, "merge_groups only defined for gantt columns");
+          if (util::qt::value<bool> (variant))
+          {
+            _merge_groups.insert (index);
+          }
+          else
+          {
+            _merge_groups.remove (index);
+          }
+        }
         else if (role == column_type_role)
         {
           const column_type value (util::qt::value<column_type> (variant));
@@ -322,6 +338,7 @@ namespace fhg
             case gantt_column:
               _visible_ranges.remove (index);
               _auto_moving.remove (index);
+              _merge_groups.remove (index);
               break;
             }
             _column_types[index] = value;
@@ -334,6 +351,7 @@ namespace fhg
             case gantt_column:
               _visible_ranges.insert (index, visible_range_type (0, 1000 * 60));
               _auto_moving.insert (index);
+              _merge_groups.insert (index);
               break;
             }
           }
@@ -574,6 +592,16 @@ namespace fhg
 
         case execution_monitor_proxy::gantt_column:
           {
+            if ( !util::qt::value<bool>
+                   ( section_index.data
+                       (execution_monitor_proxy::merge_groups_role)
+                   )
+               && index.model()->rowCount (index) != 0
+               )
+            {
+              break;
+            }
+
             const util::qt::painter_state_saver state_saver (painter);
             painter->setClipRect (option.rect);
 
@@ -782,6 +810,7 @@ namespace fhg
           , _scrollbar (new QScrollBar (Qt::Horizontal, this))
           , _visible_range_length (new QSpinBox (this))
           , _automove (new QCheckBox (tr ("end = now()"), this))
+          , _merge_groups (new QCheckBox (tr ("merge_groups"), this))
           , _index (index)
       {
         const QDateTime base_time
@@ -826,6 +855,15 @@ namespace fhg
           }
           );
 
+        util::qt::connect<void (bool)>
+          ( _merge_groups, SIGNAL (toggled (bool))
+          , delegate
+          , [this] (bool value)
+            {
+              _index.data (value, execution_monitor_proxy::merge_groups_role);
+            }
+          );
+
 
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (update_maximum()));
@@ -835,6 +873,7 @@ namespace fhg
         new QHBoxLayout (this);
         layout()->addWidget (_scrollbar);
         layout()->addWidget (_automove);
+        layout()->addWidget (_merge_groups);
         layout()->addWidget (_visible_range_length);
       }
 
@@ -867,6 +906,12 @@ namespace fhg
           util::qt::scoped_signal_block block (_automove);
           _automove->setChecked
             (_index.data (execution_monitor_proxy::automatically_move_role).toBool());
+        }
+
+        {
+          util::qt::scoped_signal_block block (_merge_groups);
+          _merge_groups->setChecked
+            (_index.data (execution_monitor_proxy::merge_groups_role).toBool());
         }
       }
 
