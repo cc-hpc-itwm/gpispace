@@ -16,6 +16,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/syscall.hpp>
+#include <util-generic/unused.hpp>
 #include <util-generic/write_file.hpp>
 
 #include <vmem/segment/beegfs.hpp>
@@ -350,11 +351,11 @@ namespace gpi
         }
       }
 
-      Arena_t
+      gspc::vmem::dtmmgr::Arena_t
       beegfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         // we do not support multiple arenas in this memory type
-        return ARENA_UP;
+        return gspc::vmem::dtmmgr::ARENA_UP;
       }
 
       void *
@@ -407,9 +408,14 @@ namespace gpi
         return size;
       }
 
-      double beegfs_area_t::get_transfer_costs ( const gpi::pc::type::memory_region_t& transfer
-                                            , const gpi::rank_t rank
-                                            ) const
+      double beegfs_area_t::get_transfer_costs
+        ( const gpi::pc::type::memory_region_t& transfer
+        , const gpi::rank_t FHG_UTIL_UNUSED
+                            ( rank
+                            , "NYI: use BeeGFS::beegfs_getStripeTarget"
+                              "to get locality information"
+                            )
+        ) const
       {
         return transfer.size;
       }

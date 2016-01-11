@@ -38,21 +38,15 @@ namespace gpi
                        , size
                        , flags
                        )
-        , m_mmgr (nullptr)
+        , m_mmgr (m_descriptor.local_size, 1)
         , _handle_generator (handle_generator)
       {
         reinit ();
       }
 
-      area_t::~area_t ()
-      {
-        dtmmgr_finalize (&m_mmgr);
-      }
-
       void area_t::reinit ()
       {
-        dtmmgr_finalize (&m_mmgr);
-        dtmmgr_init (&m_mmgr, m_descriptor.local_size, 1);
+        m_mmgr = gspc::vmem::dtmmgr (m_descriptor.local_size, 1);
 
         update_descriptor_from_mmgr ();
       }
@@ -233,10 +227,7 @@ namespace gpi
 
         if (hdl.offset != offset)
         {
-          dtmmgr_free ( &m_mmgr
-                      , hdl.id
-                      , grow_direction (hdl.flags)
-                      );
+          m_mmgr.free (hdl.id, grow_direction (hdl.flags));
 
           throw std::runtime_error
             ( "remote_alloc failed: offset mismatch: expected = "
@@ -287,10 +278,10 @@ namespace gpi
 
       void area_t::update_descriptor_from_mmgr()
       {
-        m_descriptor.avail = dtmmgr_memfree (m_mmgr);
+        m_descriptor.avail = m_mmgr.memfree();
         m_descriptor.allocs =
-            dtmmgr_numhandle (m_mmgr, ARENA_UP)
-          + dtmmgr_numhandle (m_mmgr, ARENA_DOWN);
+            m_mmgr.numhandle (gspc::vmem::dtmmgr::ARENA_UP)
+          + m_mmgr.numhandle (gspc::vmem::dtmmgr::ARENA_DOWN);
         // dtmmgr_numalloc -> total allocs
         // dtmmgr_numfree -> total frees
         m_descriptor.ts.touch();
@@ -308,76 +299,46 @@ namespace gpi
             );
         }
 
-        Arena_t arena = grow_direction(hdl.flags);
+        gspc::vmem::dtmmgr::Arena_t arena = grow_direction(hdl.flags);
 
-        AllocReturn_t alloc_return
-            (dtmmgr_alloc (&m_mmgr, hdl.id, arena, hdl.local_size));
-
-        switch (alloc_return)
+        try
         {
-        case ALLOC_SUCCESS:
-          {
-            Offset_t offset (0);
-            dtmmgr_offset_size ( m_mmgr
-                               , hdl.id
-                               , arena
-                               , &offset
-                               , nullptr
-                               );
-            hdl.offset = offset;
-            try
-            {
-              alloc_hook (hdl);
-            }
-            catch (std::exception const & ex)
-            {
-              dtmmgr_free (&m_mmgr, hdl.id, arena);
-              std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
-            }
-          }
-          break;
-        case ALLOC_INSUFFICIENT_CONTIGUOUS_MEMORY:
-          // TODO:
-          //    defrag (local_size);
-          //        release locks (? how)
-          //          block all accesses to this area
-          //              // memcpy/allocs should return EAGAIN
-          //          wait for transactions to finish
-          //          real_defrag
-          //        reacquire locks
+          hdl.offset = m_mmgr.alloc (hdl.id, arena, hdl.local_size).first;
+        }
+        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory)
+        {
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-        case ALLOC_INSUFFICIENT_MEMORY:
+        }
+        catch (gspc::vmem::error::alloc::insufficient_memory)
+        {
           throw std::runtime_error
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
             + " avail = " + std::to_string (m_descriptor.avail)
             );
-        case ALLOC_DUPLICATE_HANDLE:
+        }
+        catch (gspc::vmem::error::alloc::duplicate_handle)
+        {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
             + " segment " + std::to_string (m_descriptor.id)
             );
-        case ALLOC_FAILURE:
-          throw std::runtime_error
-            ( "internal error during allocation: requested_size = "
-            + std::to_string (hdl.local_size)
-            + " handle = " + std::to_string (hdl.id)
-            + " segment = " + std::to_string (m_descriptor.id)
-            );
-        default:
-          throw std::runtime_error
-            ( "unexpected error during allocation: requested_size = "
-            + std::to_string (hdl.local_size)
-            + " handle = " + std::to_string (hdl.id)
-            + " segment = " + std::to_string (m_descriptor.id)
-            + " error = " + std::to_string (alloc_return)
-            );
+        }
+
+        try
+        {
+          alloc_hook (hdl);
+        }
+        catch (std::exception const & ex)
+        {
+          m_mmgr.free (hdl.id, arena);
+          std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
         }
       }
 
@@ -402,30 +363,18 @@ namespace gpi
             );
         }
 
-        Arena_t arena (grow_direction(desc.flags));
-        HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
-                                                  , hdl
-                                                  , arena
-                                                  )
-                                     );
-        switch (handle_return)
+        gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+
+        m_mmgr.free (hdl, arena);
+        m_handles.erase (hdl);
+        update_descriptor_from_mmgr ();
+        try
         {
-        case RET_SUCCESS:
-          m_handles.erase (hdl);
-          update_descriptor_from_mmgr ();
-          try
-          {
-            free_hook (desc);
-          }
-          catch (std::exception const & ex)
-          {
-            std::throw_with_nested (std::runtime_error ("free_hook failed"));
-          }
-          break;
-        case RET_HANDLE_UNKNOWN:
-          throw std::runtime_error ("inconsistent state: no such handle");
-        case RET_FAILURE:
-          throw std::runtime_error ("no such handle");
+          free_hook (desc);
+        }
+        catch (std::exception const & ex)
+        {
+          std::throw_with_nested (std::runtime_error ("free_hook failed"));
         }
       }
 
@@ -452,23 +401,11 @@ namespace gpi
              );
         }
 
-        Arena_t arena (grow_direction(desc.flags));
-        HandleReturn_t handle_return (dtmmgr_free ( &m_mmgr
-                                                  , hdl
-                                                  , arena
-                                                  )
-                                     );
-        switch (handle_return)
-        {
-        case RET_SUCCESS:
-          m_handles.erase (hdl);
-          update_descriptor_from_mmgr ();
-          break;
-        case RET_HANDLE_UNKNOWN:
-          throw std::runtime_error ("inconsistent state: no such handle");
-        case RET_FAILURE:
-          throw std::runtime_error ("no such handle");
-        }
+        gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+
+        m_mmgr.free (hdl, arena);
+        m_handles.erase (hdl);
+        update_descriptor_from_mmgr ();
       }
 
       gpi::pc::type::segment::descriptor_t const &

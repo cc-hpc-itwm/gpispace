@@ -1,6 +1,6 @@
 #pragma once
 
-#include <mmgr/dtmmgr.h>
+#include <mmgr/dtmmgr.hpp>
 
 #include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>
@@ -36,7 +36,7 @@ namespace gpi
       public:
         typedef fhg::thread::ptr_queue<buffer_t> memory_pool_t;
 
-        virtual ~area_t ();
+        virtual ~area_t () = default;
 
         /* public interface the basic implementation is the same
            for all kinds of segments.
@@ -158,7 +158,7 @@ namespace gpi
 
         /* hook functions that need to be overridded by specific segments */
         virtual
-        Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
+        gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
 
         virtual
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
@@ -229,7 +229,7 @@ namespace gpi
       private:
         mutable mutex_type m_mutex;
         gpi::pc::type::segment::descriptor_t m_descriptor;
-        DTmmgr_t m_mmgr;
+        gspc::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
         process_ids_t m_attached_processes;
 

@@ -27,6 +27,7 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/program_options.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -155,7 +156,8 @@ int main (int argc, char** argv)
 
     if (log_host || log_port)
     {
-      std::string const server_url (*log_host + ":" + std::to_string (*log_port));
+      std::string const server_url
+        ((boost::format ("%1%:%2%") % *log_host % *log_port).str());
       setenv ("FHGLOG_to_server", server_url.c_str(), true);
     }
     setenv ("FHGLOG_level", log_level.c_str(), true);

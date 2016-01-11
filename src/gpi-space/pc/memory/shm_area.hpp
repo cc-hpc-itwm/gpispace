@@ -23,7 +23,7 @@ namespace gpi
 
         ~shm_area_t ();
       protected:
-        virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
+        virtual gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
         int get_type_id () const;
 
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override{}

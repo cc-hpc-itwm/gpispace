@@ -45,7 +45,7 @@ namespace gpi
         int get_type_id () const;
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
-        virtual Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
+        virtual gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
 
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;

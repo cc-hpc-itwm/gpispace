@@ -189,10 +189,10 @@ namespace gpi
           : nullptr;
       }
 
-      Arena_t
+      gspc::vmem::dtmmgr::Arena_t
       shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
-        return ARENA_UP;
+        return gspc::vmem::dtmmgr::ARENA_UP;
       }
 
       bool
