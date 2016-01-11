@@ -108,8 +108,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
   for (std::size_t reactions (0); reactions < 2 * N; ++reactions)
   {
     std::unique_lock<std::mutex> lock (current_state_guard);
-    current_activity_changed.wait
-      (lock, [&] { return current_activity != boost::none; });
+    current_activity_changed.wait (lock, [&] { return !!current_activity; });
 
     we::type::activity_t activity (std::move (current_activity->second));
 
