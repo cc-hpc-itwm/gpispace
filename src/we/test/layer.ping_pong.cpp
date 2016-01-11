@@ -11,6 +11,7 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
+#include <array>
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -101,7 +102,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     layer.submit (we::layer::id_type(), activity);
   }
 
-  char const* names[] = {"ping", "pong"};
+  std::array<std::string, 2> const names {{"ping", "pong"}};
   std::size_t current (0);
 
   for (std::size_t reactions (0); reactions < 2 * N; ++reactions)
