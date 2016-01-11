@@ -13,11 +13,7 @@
 
 #include <boost/format.hpp>
 
-#include <functional>
-#include <iterator>
 #include <stdexcept>
-#include <stack>
-#include <unordered_map>
 
 namespace we
 {

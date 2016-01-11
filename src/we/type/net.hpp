@@ -10,23 +10,18 @@
 #include <we/type/place.hpp>
 #include <we/type/transition.fwd.hpp>
 #include <we/type/value.hpp>
-#include <we/type/value/read.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/random.hpp>
-#include <boost/range/adaptor/map.hpp>
-#include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
 
 #include <forward_list>
 #include <functional>
-#include <iterator>
-#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 
