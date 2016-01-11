@@ -32,11 +32,8 @@ namespace we
     class net_type
     {
     public:
-      typedef boost::bimaps::bimap
-        < boost::bimaps::unordered_multiset_of<transition_id_type>
-        , boost::bimaps::unordered_multiset_of<place_id_type>
-        , boost::bimaps::set_of_relation<>
-        > adj_tp_type;
+      using adj_tp_type
+        = std::unordered_multimap<place_id_type, transition_id_type>;
       typedef boost::bimaps::bimap
         < boost::bimaps::unordered_multiset_of<place_id_type>
         , boost::bimaps::unordered_multiset_of<transition_id_type>

@@ -107,10 +107,10 @@ class TransitionVisitor: public boost::static_visitor<void> {
             : net.transition_to_place()
             )
         {
-          Transition *transition = transitions_.at (tp.left);
+          Transition *transition = transitions_.at (tp.second);
 
           /* Executing the transition puts a token on output place. */
-          transition->addOutputPlace (tp.right);
+          transition->addOutputPlace (tp.first);
         }
 
         for ( std::pair<we::transition_id_type, we::type::transition_t> const

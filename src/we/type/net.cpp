@@ -91,7 +91,7 @@ namespace we
       switch (type)
       {
       case edge::TP:
-        _adj_tp.insert (adj_tp_type::value_type (transition_id, place_id));
+        _adj_tp.emplace (place_id, transition_id);
         _port_to_place[transition_id].insert
           (port_to_place_with_info_type::value_type (port_id, place_id, property));
         break;
