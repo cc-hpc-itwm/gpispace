@@ -12,6 +12,7 @@
 #include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/format.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <fstream>
 #include <memory>
