@@ -21,11 +21,11 @@
 #include <boost/range/any_range.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/unordered_set.hpp>
 
 #include <forward_list>
 #include <functional>
 #include <iterator>
-#include <list>
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
@@ -74,11 +74,9 @@ namespace we
       typedef std::unordered_map< transition_id_type
                                 , place_to_port_with_info_type
                                 > place_to_port_type;
+      using token_by_id_type =
+        std::unordered_map<token_id_type, pnet::type::value::value_type>;
 
-      //! \todo eliminate these, just do not copy or assign nets!
-      net_type();
-      net_type (const net_type&);
-      net_type& operator= (const net_type&);
 
       place_id_type add_place (const place::type&);
       transition_id_type add_transition (const we::type::transition_t&);
@@ -111,8 +109,7 @@ namespace we
       //! \note place must be marked with atribute put_token="true"
       void put_token (std::string place_name, pnet::type::value::value_type const&);
 
-      const std::list<pnet::type::value::value_type>&
-        get_token (place_id_type) const;
+      token_by_id_type const& get_token (place_id_type) const;
 
       template<typename Engine>
       boost::optional<we::type::activity_t>
@@ -167,9 +164,10 @@ namespace we
       place_to_port_type _place_to_port;
 
       typedef std::unordered_map< place_id_type
-                                , std::list<pnet::type::value::value_type>
+                                , token_by_id_type
                                 > token_by_place_id_type;
 
+      token_id_type _token_id;
       token_by_place_id_type _token_by_place_id;
 
       typedef std::map< we::priority_type
@@ -179,23 +177,12 @@ namespace we
 
       enabled_type _enabled;
 
-      typedef std::pair
-        < std::list<pnet::type::value::value_type>::iterator
-        , std::list<pnet::type::value::value_type>::iterator::difference_type
-        > pos_and_distance_type;
-
       std::unordered_map
         < transition_id_type
-        , std::unordered_map<place_id_type, pos_and_distance_type>
+        , std::unordered_map<place_id_type, token_id_type>
         > _enabled_choice;
 
-      void get_enabled_choice (const net_type&);
-
-      typedef std::tuple
-        < place_id_type
-        , std::list<pnet::type::value::value_type>::iterator
-        , std::list<pnet::type::value::value_type>::iterator::difference_type
-        > to_be_updated_type;
+      typedef std::pair<place_id_type, token_id_type> to_be_updated_type;
 
       void update_enabled (transition_id_type);
       void update_enabled_put_token
@@ -213,9 +200,7 @@ namespace we
         , we::workflow_response_callback const&
         );
 
-      typedef std::pair< place_id_type
-                       , std::list<pnet::type::value::value_type>::iterator
-                       > token_to_be_deleted_type;
+      typedef std::pair<place_id_type, token_id_type> token_to_be_deleted_type;
 
       std::forward_list<token_to_be_deleted_type> do_extract
         ( transition_id_type
@@ -230,7 +215,7 @@ namespace we
 
       friend class boost::serialization::access;
       template<typename Archive>
-      void save (Archive& ar, const unsigned int) const
+      void serialize (Archive& ar, const unsigned int)
       {
         ar & BOOST_SERIALIZATION_NVP (_place_id);
         ar & BOOST_SERIALIZATION_NVP (_pmap);
@@ -243,59 +228,11 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
+        ar & BOOST_SERIALIZATION_NVP (_token_id);
         ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
-
-        std::size_t const number_of_enabled_transitions
-          ( std::accumulate
-            ( _enabled.begin(), _enabled.end()
-            , 0
-            , [](std::size_t n, enabled_type::value_type const& ps)
-            {
-              return n + ps.second.size();
-            }
-            )
-          );
-
-        ar & BOOST_SERIALIZATION_NVP (number_of_enabled_transitions);
-
-        for ( std::unordered_set<transition_id_type> const& s
-            : _enabled | boost::adaptors::map_values
-            )
-        {
-          for (transition_id_type transition_id : s)
-          {
-            ar & transition_id;
-          }
-        }
+        ar & BOOST_SERIALIZATION_NVP (_enabled);
+        ar & BOOST_SERIALIZATION_NVP (_enabled_choice);
       }
-      template<typename Archive>
-      void load (Archive& ar, const unsigned int)
-      {
-        ar & BOOST_SERIALIZATION_NVP (_place_id);
-        ar & BOOST_SERIALIZATION_NVP (_pmap);
-        ar & BOOST_SERIALIZATION_NVP (_place_id_by_name);
-        ar & BOOST_SERIALIZATION_NVP (_transition_id);
-        ar & BOOST_SERIALIZATION_NVP (_tmap);
-        ar & BOOST_SERIALIZATION_NVP (_adj_pt_consume);
-        ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
-        ar & BOOST_SERIALIZATION_NVP (_adj_tp);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_place);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_response);
-        ar & BOOST_SERIALIZATION_NVP (_place_to_port);
-        ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);
-
-        std::size_t number_of_enabled_transitions;
-
-        ar & number_of_enabled_transitions;
-
-        while (number_of_enabled_transitions --> 0)
-        {
-          transition_id_type transition_id;
-          ar & transition_id;
-          update_enabled (transition_id);
-        }
-      }
-      BOOST_SERIALIZATION_SPLIT_MEMBER()
     };
   }
 }

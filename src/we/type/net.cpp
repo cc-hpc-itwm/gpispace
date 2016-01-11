@@ -27,38 +27,26 @@ namespace we
     {
       class cross_type
       {
-        typedef std::pair< std::list<pnet::type::value::value_type>::iterator
-                         , std::list<pnet::type::value::value_type>::iterator::difference_type
-                         > pos_and_distance_type;
       public:
         bool enables (net_type* const, transition_id_type);
-        void write_to ( std::unordered_map< place_id_type
-                                          , pos_and_distance_type
-                                          >&
-                      ) const;
-        void push (place_id_type, std::list<pnet::type::value::value_type>&);
-        void push ( place_id_type
-                  , const std::list<pnet::type::value::value_type>::iterator&
-                  , const std::list<pnet::type::value::value_type>::iterator::difference_type&
-                  );
+        void write_to (std::unordered_map<place_id_type, token_id_type>&) const;
+        void push (place_id_type, net_type::token_by_id_type const&);
+        void push (place_id_type, net_type::token_by_id_type::const_iterator);
+
       private:
         class iterators_type
         {
         public:
-          iterators_type (std::list<pnet::type::value::value_type>&);
-          iterators_type
-            ( const std::list<pnet::type::value::value_type>::iterator&
-            , const std::list<pnet::type::value::value_type>::iterator::difference_type&
-            );
+          iterators_type (net_type::token_by_id_type const&);
+          iterators_type (net_type::token_by_id_type::const_iterator);
           bool end() const;
-          const pos_and_distance_type& pos_and_distance() const;
+          net_type::token_by_id_type::const_iterator const& pos() const;
           void operator++();
           void rewind();
         private:
-          std::list<pnet::type::value::value_type>::iterator _begin;
-          std::list<pnet::type::value::value_type>::iterator _end;
-          std::list<pnet::type::value::value_type>::iterator::difference_type _distance_from_zero;
-          pos_and_distance_type _pos_and_distance;
+          net_type::token_by_id_type::const_iterator const _begin;
+          net_type::token_by_id_type::const_iterator const _end;
+          net_type::token_by_id_type::const_iterator _pos;
         };
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
@@ -67,84 +55,6 @@ namespace we
 
         bool do_step (map_type::iterator, map_type::iterator const&);
       };
-    }
-
-    net_type::net_type()
-      : _place_id()
-      , _pmap()
-      , _place_id_by_name()
-      , _transition_id()
-      , _tmap()
-      , _adj_pt_consume()
-      , _adj_pt_read()
-      , _adj_tp()
-      , _port_to_place()
-      , _port_to_response()
-      , _place_to_port()
-      , _token_by_place_id()
-      , _enabled()
-      , _enabled_choice()
-    {}
-    net_type::net_type (const net_type& other)
-      : _place_id (other._place_id)
-      , _pmap (other._pmap)
-      , _place_id_by_name (other._place_id_by_name)
-      , _transition_id (other._transition_id)
-      , _tmap (other._tmap)
-      , _adj_pt_consume (other._adj_pt_consume)
-      , _adj_pt_read (other._adj_pt_read)
-      , _adj_tp (other._adj_tp)
-      , _port_to_place (other._port_to_place)
-      , _port_to_response (other._port_to_response)
-      , _place_to_port (other._place_to_port)
-      , _token_by_place_id (other._token_by_place_id)
-      , _enabled (other._enabled)
-      , _enabled_choice()
-    {
-      get_enabled_choice (other);
-    }
-    net_type& net_type::operator= (const net_type& other)
-    {
-      _place_id = other._place_id;
-      _pmap = other._pmap;
-      _place_id_by_name = other._place_id_by_name;
-      _transition_id = other._transition_id;
-      _tmap = other._tmap;
-      _adj_pt_consume = other._adj_pt_consume;
-      _adj_pt_read = other._adj_pt_read;
-      _adj_tp = other._adj_tp;
-      _port_to_place = other._port_to_place;
-      _port_to_response = other._port_to_response;
-      _place_to_port = other._place_to_port;
-      _token_by_place_id = other._token_by_place_id;
-      _enabled = other._enabled;
-
-      get_enabled_choice (other);
-
-      return *this;
-    }
-    void net_type::get_enabled_choice (const net_type& other)
-    {
-      typedef std::unordered_map< place_id_type
-                                , pos_and_distance_type
-                                > enabled_by_place_id_type;
-
-      for ( std::pair<transition_id_type const, enabled_by_place_id_type> const& tm
-          : other._enabled_choice
-          )
-      {
-        enabled_by_place_id_type& enabled_by_place_id (_enabled_choice[tm.first]);
-
-        for (const enabled_by_place_id_type::value_type& pd : tm.second)
-        {
-          enabled_by_place_id[pd.first] = std::make_pair
-            ( std::next ( _token_by_place_id.at (pd.first).begin()
-                        , pd.second.second
-                        )
-            , pd.second.second
-            );
-        }
-      }
     }
 
     place_id_type net_type::add_place (const place::type& place)
@@ -293,25 +203,20 @@ namespace we
       (place_id_type pid, const pnet::type::value::value_type& value)
     {
       const place::type& place (_pmap.at (pid));
+      token_id_type const token_id (_token_id++);
 
-      std::list<pnet::type::value::value_type>& tokens (_token_by_place_id[pid]);
-      std::list<pnet::type::value::value_type>::iterator const tokenpos
-        ( tokens.emplace
-          ( tokens.end()
-          , pnet::require_type (value, place.signature(), place.name())
-          )
-        );
+      _token_by_place_id[pid].emplace
+        (token_id, pnet::require_type (value, place.signature(), place.name()));
 
-      return std::make_tuple
-        (pid, tokenpos, std::distance (tokens.begin(), tokenpos));
+      return {pid, token_id};
     }
 
     void net_type::do_update (to_be_updated_type const& to_be_updated)
     {
       for ( transition_id_type tid
           : boost::join
-              ( _adj_pt_consume.left.equal_range (std::get<0> (to_be_updated))
-              , _adj_pt_read.left.equal_range (std::get<0> (to_be_updated))
+              ( _adj_pt_consume.left.equal_range (to_be_updated.first)
+              , _adj_pt_read.left.equal_range (to_be_updated.first)
               )
           | boost::adaptors::map_values
           )
@@ -322,22 +227,19 @@ namespace we
 
     namespace
     {
-      const std::list<pnet::type::value::value_type>& no_tokens()
+      const net_type::token_by_id_type& no_tokens()
       {
-        static const std::list<pnet::type::value::value_type> x;
+        static const net_type::token_by_id_type x;
 
         return x;
       }
     }
 
-    const std::list<pnet::type::value::value_type>&
-    net_type::get_token (place_id_type pid) const
+    const net_type::token_by_id_type&
+      net_type::get_token (place_id_type pid) const
     {
-      typedef std::unordered_map< place_id_type
-                                , std::list<pnet::type::value::value_type>
-                                > token_by_place_id_t;
-
-      token_by_place_id_t::const_iterator pos (_token_by_place_id.find (pid));
+      token_by_place_id_type::const_iterator const pos
+        (_token_by_place_id.find (pid));
 
       return (pos != _token_by_place_id.end()) ? pos->second : no_tokens();
     }
@@ -354,8 +256,7 @@ namespace we
           | boost::adaptors::map_values
           )
       {
-        std::list<pnet::type::value::value_type>&
-          tokens (_token_by_place_id[place_id]);
+        token_by_id_type const& tokens (_token_by_place_id[place_id]);
 
         if (tokens.empty())
         {
@@ -403,17 +304,16 @@ namespace we
           | boost::adaptors::map_values
           )
       {
-        if (place_id == std::get<0> (to_be_updated))
+        if (place_id == to_be_updated.first)
         {
-          cross.push ( place_id
-                     , std::get<1> (to_be_updated)
-                     , std::get<2> (to_be_updated)
-                     );
+          cross.push
+            ( place_id
+            , _token_by_place_id.at (place_id).find (to_be_updated.second)
+            );
         }
         else
         {
-          std::list<pnet::type::value::value_type>&
-            tokens (_token_by_place_id[place_id]);
+          token_by_id_type const& tokens (_token_by_place_id[place_id]);
 
           if (tokens.empty())
           {
@@ -465,16 +365,16 @@ namespace we
     {
       std::forward_list<token_to_be_deleted_type> tokens_to_be_deleted;
 
-      for ( std::pair<place_id_type const, pos_and_distance_type> const& pt
+      for ( std::pair<place_id_type const, token_id_type> const& pt
           : _enabled_choice.at (tid)
           )
       {
-        place_id_type pid (pt.first);
-        const pos_and_distance_type& pos_and_distance (pt.second);
-        const std::list<pnet::type::value::value_type>::iterator&
-          token (pos_and_distance.first);
+        place_id_type const pid (pt.first);
+        token_id_type const token_id (pt.second);
 
-        fun (_place_to_port.at (tid).left.find (pid)->get_right(), *token);
+        fun ( _place_to_port.at (tid).left.find (pid)->get_right()
+            , _token_by_place_id.at (pid).at (token_id)
+            );
 
         //! \todo save the information whether or not it is a read
         //! connection in _enabled_choice and omit that conditional
@@ -482,7 +382,7 @@ namespace we
            == _adj_pt_read.end()
            )
         {
-          tokens_to_be_deleted.emplace_front (pid, token);
+          tokens_to_be_deleted.emplace_front (pid, token_id);
         }
       }
 
@@ -670,38 +570,34 @@ namespace we
 
     // cross_type
 
-    cross_type::iterators_type::iterators_type (std::list<pnet::type::value::value_type>& tokens)
+    cross_type::iterators_type::iterators_type
+      (net_type::token_by_id_type const& tokens)
       : _begin (tokens.begin())
       , _end (tokens.end())
-      , _distance_from_zero (0)
-      , _pos_and_distance (tokens.begin(), _distance_from_zero)
+      , _pos (_begin)
     {}
     cross_type::iterators_type::iterators_type
-      ( const std::list<pnet::type::value::value_type>::iterator& token
-      , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
-      )
-      : _begin (token)
-      , _end (std::next (token))
-      , _distance_from_zero (distance_from_zero)
-      , _pos_and_distance (token, distance_from_zero)
+      (net_type::token_by_id_type::const_iterator token)
+        : _begin (std::move (token))
+      , _end (std::next (_begin))
+      , _pos (_begin)
     {}
     bool cross_type::iterators_type::end() const
     {
-      return _end == _pos_and_distance.first;
+      return _end == _pos;
     }
-    const cross_type::pos_and_distance_type& cross_type::iterators_type::pos_and_distance() const
+    net_type::token_by_id_type::const_iterator const&
+      cross_type::iterators_type::pos() const
     {
-      return _pos_and_distance;
+      return _pos;
     }
     void cross_type::iterators_type::operator++()
     {
-      ++_pos_and_distance.first;
-      ++_pos_and_distance.second;
+      ++_pos;
     }
     void cross_type::iterators_type::rewind()
     {
-      _pos_and_distance.first = _begin;
-      _pos_and_distance.second = _distance_from_zero;
+      _pos = _begin;
     }
 
     bool cross_type::do_step
@@ -748,7 +644,7 @@ namespace we
           context.bind_ref
             ( transition.ports_input()
             .at (n->place_to_port().at (transition_id).left.find (pits.first)->get_right()).name()
-            , *pits.second.pos_and_distance().first
+            , pits.second.pos()->second
             );
         }
 
@@ -762,28 +658,26 @@ namespace we
       return false;
     }
     void cross_type::write_to (std::unordered_map< place_id_type
-                                                 , pos_and_distance_type
+                                                 , token_id_type
                                                  >& choice
                               ) const
     {
       for (std::pair<place_id_type const, iterators_type> const& pits : _m)
       {
-        choice[pits.first] = pits.second.pos_and_distance();
+        choice[pits.first] = pits.second.pos()->first;
       }
     }
     void cross_type::push ( place_id_type place_id
-                          , std::list<pnet::type::value::value_type>& tokens
+                          , net_type::token_by_id_type const& tokens
                           )
     {
       _m.emplace (place_id, iterators_type (tokens));
     }
-    void cross_type::push
-      ( place_id_type place_id
-      , const std::list<pnet::type::value::value_type>::iterator& token
-      , const std::list<pnet::type::value::value_type>::iterator::difference_type& distance_from_zero
-      )
+    void cross_type::push ( place_id_type place_id
+                          , net_type::token_by_id_type::const_iterator token
+                          )
     {
-      _m.emplace (place_id, iterators_type (token, distance_from_zero));
+      _m.emplace (place_id, iterators_type (std::move (token)));
     }
   }
 }
