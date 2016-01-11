@@ -23,6 +23,7 @@
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <algorithm>
 #include <map>
 #include <vector>
 
@@ -104,7 +105,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   std::multimap<std::string, pnet::type::value::value_type> const result
     (gspc::client (drts).put_and_run (gspc::workflow (make.pnet()), input));
 
-  std::vector<long> const expected_output
+  std::vector<long> expected_output
     (vm.at (option_expected_output).as<std::vector<long>>());
 
   BOOST_REQUIRE_EQUAL (result.size(), expected_output.size());
@@ -113,14 +114,18 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
 
   BOOST_REQUIRE_EQUAL (result.count (port_out), expected_output.size());
 
-  std::vector<long>::const_iterator expected (expected_output.begin());
+  std::vector<long> got;
 
   for ( pnet::type::value::value_type i
       : result.equal_range (port_out) | boost::adaptors::map_values
       )
   {
-    BOOST_REQUIRE_EQUAL (i, pnet::type::value::value_type (*expected));
-
-    ++expected;
+    got.emplace_back (boost::get<long> (i));
   }
+
+  std::sort (expected_output.begin(), expected_output.end());
+  std::sort (got.begin(), got.end());
+
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    (expected_output.begin(), expected_output.end(), got.begin(), got.end());
 }
