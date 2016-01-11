@@ -7,42 +7,42 @@ before_script:
 
   - source "${ci_scripts_dir}/jobs/before"
 
-build-centos-6.5:
+build (centos 6.5):
   stage: build
   script:
     - source "${ci_scripts_dir}/jobs/build"
   tags:
     - centos-6.5
 
-build-centos-5.7:
+build (centos 5.7):
   stage: build
   script:
     - source "${ci_scripts_dir}/jobs/build"
   tags:
     - centos-5.7
 
-test-centos-6.5:
+tests (centos 6.5):
   stage: test
   script:
     - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-6.5
 
-test-centos-5.7:
+tests (centos 5.7):
   stage: test
   script:
     - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-5.7
 
-virtual_memory_test-centos-6.5:
+virtual memory tests (centos 6.5):
   stage: test
   script:
     - source "${ci_scripts_dir}/jobs/virtual_memory_test"
   tags:
     - centos-6.5
 
-performance_test-centos-6.5:
+performance tests (centos 6.5):
   stage: test
   script:
     - source "${ci_scripts_dir}/jobs/performance_test"
@@ -50,7 +50,7 @@ performance_test-centos-6.5:
   tags:
     - centos-6.5
 
-performance_test-centos-5.7:
+performance tests (centos 5.7):
   stage: test
   script:
     - source "${ci_scripts_dir}/jobs/performance_test"
