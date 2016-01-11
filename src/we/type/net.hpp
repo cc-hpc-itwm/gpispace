@@ -171,7 +171,7 @@ namespace we
 
       std::unordered_map
         < transition_id_type
-        , std::unordered_map<place_id_type, token_id_type>
+        , std::unordered_map<place_id_type, std::pair<token_id_type, bool>>
         > _enabled_choice;
 
       typedef std::pair<place_id_type, token_id_type> to_be_updated_type;

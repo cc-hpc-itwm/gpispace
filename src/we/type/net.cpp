@@ -25,24 +25,30 @@ namespace we
       {
       public:
         bool enables (net_type* const, transition_id_type);
-        void write_to (std::unordered_map<place_id_type, token_id_type>&) const;
-        void push (place_id_type, net_type::token_by_id_type const&);
-        void push (place_id_type, net_type::token_by_id_type::const_iterator);
+        void write_to ( std::unordered_map< place_id_type
+                                          , std::pair<token_id_type, bool>
+                                          >&
+                      ) const;
+        void push (place_id_type, net_type::token_by_id_type const&, bool);
+        void push
+          (place_id_type, net_type::token_by_id_type::const_iterator, bool);
 
       private:
         class iterators_type
         {
         public:
-          iterators_type (net_type::token_by_id_type const&);
-          iterators_type (net_type::token_by_id_type::const_iterator);
+          iterators_type (net_type::token_by_id_type const&, bool);
+          iterators_type (net_type::token_by_id_type::const_iterator, bool);
           bool end() const;
           net_type::token_by_id_type::const_iterator const& pos() const;
+          bool is_read_connection() const;
           void operator++();
           void rewind();
         private:
           net_type::token_by_id_type::const_iterator const _begin;
           net_type::token_by_id_type::const_iterator const _end;
           net_type::token_by_id_type::const_iterator _pos;
+          bool const _is_read_connection;
         };
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
@@ -244,34 +250,40 @@ namespace we
     {
       cross_type cross;
 
-      for ( place_id_type place_id
-          : boost::join
-              ( _adj_pt_consume.right.equal_range (tid)
-              , _adj_pt_read.right.equal_range (tid)
-              )
-          | boost::adaptors::map_values
-          )
-      {
-        token_by_id_type const& tokens (_token_by_place_id[place_id]);
+      auto&& push
+        ([&] (adj_pt_type& adj, bool is_read_connection)
+         {
+           for ( place_id_type place_id
+               : adj.right.equal_range (tid) | boost::adaptors::map_values
+               )
+           {
+             token_by_id_type const& tokens (_token_by_place_id[place_id]);
 
-        if (tokens.empty())
+             if (tokens.empty())
+             {
+               disable (tid);
+
+               return false;
+             }
+
+             cross.push (place_id, tokens, is_read_connection);
+           }
+
+           return true;
+         }
+        );
+
+      if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
+      {
+        if (cross.enables (this, tid))
+        {
+          _enabled[_tmap.at (tid).priority()].insert (tid);
+          cross.write_to (_enabled_choice[tid]);
+        }
+        else
         {
           disable (tid);
-
-          return;
         }
-
-        cross.push (place_id, tokens);
-      }
-
-      if (cross.enables (this, tid))
-      {
-        _enabled[_tmap.at (tid).priority()].insert (tid);
-        cross.write_to (_enabled_choice[tid]);
-      }
-      else
-      {
-        disable (tid);
       }
     }
 
@@ -292,44 +304,51 @@ namespace we
 
       cross_type cross;
 
-      for ( place_id_type place_id
-          : boost::join
-              ( _adj_pt_consume.right.equal_range (tid)
-              , _adj_pt_read.right.equal_range (tid)
-              )
-          | boost::adaptors::map_values
-          )
+      auto&& push
+        ( [&] (adj_pt_type& adj, bool is_read_connection)
+          {
+            for ( place_id_type place_id
+                : adj.right.equal_range (tid) | boost::adaptors::map_values
+                )
+            {
+              if (place_id == to_be_updated.first)
+              {
+                cross.push
+                  ( place_id
+                  , _token_by_place_id.at (place_id).find (to_be_updated.second)
+                  , is_read_connection
+                  );
+              }
+              else
+              {
+                token_by_id_type const& tokens (_token_by_place_id[place_id]);
+
+                if (tokens.empty())
+                {
+                  disable (tid);
+
+                  return false;
+                }
+
+                cross.push (place_id, tokens, is_read_connection);
+              }
+            }
+
+            return true;
+          }
+        );
+
+      if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (place_id == to_be_updated.first)
+        if (cross.enables (this, tid))
         {
-          cross.push
-            ( place_id
-            , _token_by_place_id.at (place_id).find (to_be_updated.second)
-            );
+          _enabled[_tmap.at (tid).priority()].insert (tid);
+          cross.write_to (_enabled_choice[tid]);
         }
         else
         {
-          token_by_id_type const& tokens (_token_by_place_id[place_id]);
-
-          if (tokens.empty())
-          {
-            disable (tid);
-
-            return;
-          }
-
-          cross.push (place_id, tokens);
+          disable (tid);
         }
-      }
-
-      if (cross.enables (this, tid))
-      {
-        _enabled[_tmap.at (tid).priority()].insert (tid);
-        cross.write_to (_enabled_choice[tid]);
-      }
-      else
-      {
-        disable (tid);
       }
     }
 
@@ -361,22 +380,21 @@ namespace we
     {
       std::forward_list<token_to_be_deleted_type> tokens_to_be_deleted;
 
-      for ( std::pair<place_id_type const, token_id_type> const& pt
+      for ( std::pair< place_id_type const
+                     , std::pair<token_id_type, bool>
+                     > const& pt
           : _enabled_choice.at (tid)
           )
       {
         place_id_type const pid (pt.first);
-        token_id_type const token_id (pt.second);
+        token_id_type const token_id (pt.second.first);
+        bool const is_read_connection (pt.second.second);
 
         fun ( _place_to_port.at (tid).left.find (pid)->get_right()
             , _token_by_place_id.at (pid).at (token_id)
             );
 
-        //! \todo save the information whether or not it is a read
-        //! connection in _enabled_choice and omit that conditional
-        if (  _adj_pt_read.find (adj_pt_type::value_type (pid, tid))
-           == _adj_pt_read.end()
-           )
+        if (!is_read_connection)
         {
           tokens_to_be_deleted.emplace_front (pid, token_id);
         }
@@ -567,16 +585,20 @@ namespace we
     // cross_type
 
     cross_type::iterators_type::iterators_type
-      (net_type::token_by_id_type const& tokens)
+      (net_type::token_by_id_type const& tokens, bool is_read_connection)
       : _begin (tokens.begin())
       , _end (tokens.end())
       , _pos (_begin)
+      , _is_read_connection (is_read_connection)
     {}
     cross_type::iterators_type::iterators_type
-      (net_type::token_by_id_type::const_iterator token)
+      ( net_type::token_by_id_type::const_iterator token
+      , bool is_read_connection
+      )
         : _begin (std::move (token))
       , _end (std::next (_begin))
       , _pos (_begin)
+        , _is_read_connection (is_read_connection)
     {}
     bool cross_type::iterators_type::end() const
     {
@@ -586,6 +608,10 @@ namespace we
       cross_type::iterators_type::pos() const
     {
       return _pos;
+    }
+    bool cross_type::iterators_type::is_read_connection() const
+    {
+      return _is_read_connection;
     }
     void cross_type::iterators_type::operator++()
     {
@@ -653,27 +679,33 @@ namespace we
 
       return false;
     }
-    void cross_type::write_to (std::unordered_map< place_id_type
-                                                 , token_id_type
-                                                 >& choice
-                              ) const
+    void cross_type::write_to
+      ( std::unordered_map< place_id_type
+                          , std::pair<token_id_type, bool>
+                          >& choice
+      ) const
     {
       for (std::pair<place_id_type const, iterators_type> const& pits : _m)
       {
-        choice[pits.first] = pits.second.pos()->first;
+        choice[pits.first] = std::make_pair ( pits.second.pos()->first
+                                            , pits.second.is_read_connection()
+                                            );
       }
     }
     void cross_type::push ( place_id_type place_id
                           , net_type::token_by_id_type const& tokens
+                          , bool is_read_connection
                           )
     {
-      _m.emplace (place_id, iterators_type (tokens));
+      _m.emplace (place_id, iterators_type (tokens, is_read_connection));
     }
     void cross_type::push ( place_id_type place_id
                           , net_type::token_by_id_type::const_iterator token
+                          , bool is_read_connection
                           )
     {
-      _m.emplace (place_id, iterators_type (std::move (token)));
+      _m.emplace
+        (place_id, iterators_type (std::move (token), is_read_connection));
     }
   }
 }
