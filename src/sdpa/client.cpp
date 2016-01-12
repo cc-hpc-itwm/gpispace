@@ -24,7 +24,9 @@
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
+#include <chrono>
 #include <functional>
+#include <thread>
 
 namespace sdpa
 {
@@ -188,8 +190,7 @@ namespace sdpa
       sdpa::status::code state (queryJob (id, job_info));
       for (; !sdpa::status::is_terminal (state); state = queryJob (id, job_info))
       {
-        static const boost::posix_time::milliseconds sleep_duration (100);
-        boost::this_thread::sleep (sleep_duration);
+        std::this_thread::sleep_for (std::chrono::milliseconds (100));
       }
       return state;
     }
