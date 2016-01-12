@@ -63,6 +63,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <forward_list>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -83,7 +84,7 @@ namespace sdpa {
         fhg::com::port_t port;
         boost::optional<fhg::com::p2p::address_t> address;
       };
-      using master_info_t = std::map<std::string, master_network_info>;
+      using master_info_t = std::forward_list<master_network_info>;
 
     public:
       GenericDaemon( const std::string name

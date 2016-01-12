@@ -131,12 +131,9 @@ namespace
         InfoMap ret;
         for (name_host_port_tuple const& name_host_port : masters)
         {
-          ret.emplace ( std::get<0> (name_host_port)
-                      , typename InfoMap::mapped_type
-                          ( std::get<1> (name_host_port)
-                          , std::get<2> (name_host_port)
-                          )
-                      );
+          ret.emplace_front ( std::get<1> (name_host_port)
+                            , std::get<2> (name_host_port)
+                            );
         }
         return ret;
       }
@@ -215,9 +212,7 @@ GenericDaemon::GenericDaemon( const std::string name
     : nullptr
     )
 {
-  for ( master_network_info& master
-      : _master_info | boost::adaptors::map_values
-      )
+  for (master_network_info& master : _master_info)
   {
     requestRegistration (master);
   }
@@ -458,9 +453,7 @@ try
   request_rescheduling (event->name());
 
   // send to the masters my new set of capabilities
-  for ( master_network_info const& info
-      : _master_info | boost::adaptors::map_values
-      )
+  for (master_network_info const& info : _master_info)
   {
     if (info.address)
     {
@@ -544,9 +537,7 @@ void GenericDaemon::handleErrorEvent
 
       if (as_worker)
       {
-        for ( master_network_info const& info
-            : _master_info | boost::adaptors::map_values
-            )
+        for (master_network_info const& info : _master_info)
         {
           if (info.address)
           {
@@ -591,8 +582,8 @@ void GenericDaemon::handleErrorEvent
       {
         if (as_master)
         {
-          as_master.get()->second.address = boost::none;
-          request_registration_soon (as_master.get()->second);
+          as_master.get()->address = boost::none;
+          request_registration_soon (*as_master.get());
         }
       }
 
@@ -674,7 +665,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
+  if(!isSubscriber(pJob->owner()->_actual.get()->address.get()))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result);
   }
@@ -706,7 +697,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
+  if(!isSubscriber(pJob->owner()->_actual.get()->address.get()))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -754,7 +745,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
                        , _master_info.end()
                        , [&address] (master_info_t::value_type const& info)
                          {
-                           return info.second.address == address;
+                           return info.address == address;
                          }
                        )
         );
@@ -815,9 +806,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
       if( !newWorkerCpbSet.empty() )
       {
-        for ( master_network_info const& info
-            : _master_info | boost::adaptors::map_values
-            )
+        for (master_network_info const& info : _master_info)
         {
           if (info.address)
           {
@@ -845,9 +834,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
                                                               )
      )
   {
-    for ( master_network_info const& info
-        : _master_info | boost::adaptors::map_values
-        )
+    for (master_network_info const& info : _master_info)
     {
       if (info.address)
       {
@@ -1537,7 +1524,7 @@ namespace sdpa
     {}
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, opaque_job_master_t const& job_master)
-      : parent_proxy (that, job_master->_actual.get()->second)
+      : parent_proxy (that, *job_master->_actual.get())
     {}
 
     void GenericDaemon::parent_proxy::worker_registration
