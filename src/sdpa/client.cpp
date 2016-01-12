@@ -188,9 +188,11 @@ namespace sdpa
       (job_id_t id, job_info_t& job_info)
     {
       sdpa::status::code state (queryJob (id, job_info));
-      for (; !sdpa::status::is_terminal (state); state = queryJob (id, job_info))
+      while (!sdpa::status::is_terminal (state))
       {
         std::this_thread::sleep_for (std::chrono::milliseconds (100));
+
+        state = queryJob (id, job_info);
       }
       return state;
     }
