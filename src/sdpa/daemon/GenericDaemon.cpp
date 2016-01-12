@@ -864,14 +864,8 @@ void GenericDaemon::addCapability(const capability_t& cpb)
 void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-  _subscriptions.erase(id);
-}
 
-bool GenericDaemon::subscribedFor(const fhg::com::p2p::address_t& agId, const sdpa::job_id_t& jobId)
-{
-  return std::find
-    (_subscriptions[agId].begin(), _subscriptions[agId].end(), jobId)
-    != _subscriptions[agId].end();
+  _subscriptions.left.erase (id);
 }
 
 void GenericDaemon::handleSubscribeEvent
@@ -889,11 +883,7 @@ void GenericDaemon::handleSubscribeEvent
                              );
   }
 
-  // allow to subscribe multiple times with different lists of job ids
-  if (!subscribedFor (source, jobId))
-  {
-    _subscriptions[source].push_back (jobId);
-  }
+  _subscriptions.insert ({source, jobId});
 
   sendEventToOther<events::SubscribeAckEvent> (source, jobId);
 
@@ -934,26 +924,9 @@ void GenericDaemon::handleSubscribeEvent
 bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-  return _subscriptions.find (agentId) != _subscriptions.end();
+
+  return !boost::empty (_subscriptions.left.equal_range (agentId));
 }
-    std::list<fhg::com::p2p::address_t> GenericDaemon::subscribers (job_id_t job_id) const
-    {
-      std::list<fhg::com::p2p::address_t> ret;
-
-      for (subscriber_map_t::value_type const& subscription : _subscriptions)
-      {
-        for (job_id_t const& id : subscription.second)
-        {
-          if (id == job_id)
-          {
-            ret.push_back (subscription.first);
-            break;
-          }
-        }
-      }
-
-      return ret;
-    }
 
 /**
  * Event SubmitJobAckEvent

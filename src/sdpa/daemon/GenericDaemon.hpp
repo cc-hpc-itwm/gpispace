@@ -24,6 +24,8 @@
 #include <we/layer.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
@@ -101,20 +103,19 @@ namespace sdpa {
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
     protected:
       bool isSubscriber(const fhg::com::p2p::address_t&);
-    private:
-      std::list<fhg::com::p2p::address_t> subscribers (job_id_t) const;
     protected:
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
       {
-        for (fhg::com::p2p::address_t const& subscriber : subscribers (job_id))
+        for  ( fhg::com::p2p::address_t const& subscriber
+             : _subscriptions.right.equal_range (job_id)
+             | boost::adaptors::map_values
+             )
         {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
       }
     private:
-      bool subscribedFor(const fhg::com::p2p::address_t&, const sdpa::job_id_t&);
-
       // agent info and properties
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
@@ -220,8 +221,14 @@ namespace sdpa {
       boost::optional<master_info_t::iterator> master_by_address
         (fhg::com::p2p::address_t const&);
 
-      typedef std::unordered_map<fhg::com::p2p::address_t, job_id_list_t> subscriber_map_t;
-      subscriber_map_t _subscriptions;
+      using subscriber_relation_type =
+        boost::bimap
+        < boost::bimaps::unordered_multiset_of<fhg::com::p2p::address_t>
+        , boost::bimaps::unordered_multiset_of<job_id_t>
+        , boost::bimaps::set_of_relation<>
+        >;
+
+      subscriber_relation_type _subscriptions;
 
     private:
       std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>
