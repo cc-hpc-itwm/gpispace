@@ -1,5 +1,3 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #pragma once
 
 #include <sdpa/daemon/GenericDaemon.hpp>

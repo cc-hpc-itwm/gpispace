@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de, bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <fhglog/remote/appender.hpp>

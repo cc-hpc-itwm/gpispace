@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  GenericDaemon.hpp
- *
- *    Description:  Generic daemon header file
- *
- *        Version:  1.0
- *        Created:  2009
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #pragma once
 
 #include <sdpa/capability.hpp>

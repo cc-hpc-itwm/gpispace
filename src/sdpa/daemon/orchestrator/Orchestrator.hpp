@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  Orchestrator.hpp
- *
- *    Description:  Contains the Orchestrator class
- *
- *        Version:  1.0
- *        Created:
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #pragma once
 
 #include <sdpa/daemon/GenericDaemon.hpp>

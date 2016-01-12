@@ -1,5 +1,3 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/requirement.hpp>

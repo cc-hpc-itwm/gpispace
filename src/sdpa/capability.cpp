@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <sdpa/capability.hpp>
 #include <sdpa/id_generator.hpp>
 

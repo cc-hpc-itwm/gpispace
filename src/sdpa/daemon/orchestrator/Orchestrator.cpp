@@ -1,5 +1,3 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
 #include <sdpa/daemon/Job.hpp>
