@@ -280,7 +280,7 @@ namespace sdpa
         list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
       }
 
-      for (worker_id_t const worker_id : list_not_terminated_workers)
+      for (worker_id_t const& worker_id : list_not_terminated_workers)
       {
         func (worker_id);
       }
@@ -321,7 +321,7 @@ namespace sdpa
       if (it != allocation_table_.end())
       {
         Reservation const* const ptr_reservation(it->second);
-        for (std::string const worker : ptr_reservation->workers())
+        for (std::string const& worker : ptr_reservation->workers())
         {
           _worker_manager.delete_job_from_worker (job_id, worker);
         }

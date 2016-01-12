@@ -558,7 +558,7 @@ void GenericDaemon::handleErrorEvent
         const std::set<job_id_t> jobs_to_reschedule
           (_worker_manager.get_worker_jobs_and_clean_queues (as_worker.get()->second));
 
-        for (sdpa::job_id_t const jobId : jobs_to_reschedule)
+        for (sdpa::job_id_t const& jobId : jobs_to_reschedule)
         {
           Job* const pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
@@ -1000,7 +1000,7 @@ bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
 
       for (subscriber_map_t::value_type const& subscription : _subscriptions)
       {
-        for (job_id_t const id : subscription.second)
+        for (job_id_t const& id : subscription.second)
         {
           if (id == job_id)
           {
