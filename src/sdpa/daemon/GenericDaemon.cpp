@@ -307,9 +307,6 @@ void GenericDaemon::handleSubmitJobEvent
 {
   const events::SubmitJobEvent& e (*evt);
 
-  boost::optional<master_info_t::iterator> const itMaster
-    (master_by_address (source));
-
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
   {
@@ -321,7 +318,7 @@ void GenericDaemon::handleSubmitJobEvent
 
   Job* const pJob (addJob ( job_id
                           , e.activity()
-                          , itMaster
+                          , master_by_address (source)
                           , {{}, {}, null_transfer_cost, 1.0, 0}
                           )
                   );
