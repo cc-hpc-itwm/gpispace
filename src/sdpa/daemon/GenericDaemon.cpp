@@ -421,8 +421,6 @@ void GenericDaemon::handleErrorEvent
 {
   const sdpa::events::ErrorEvent& error (*evt);
 
-  boost::optional<master_info_t::iterator> const as_master
-    (master_by_address (source));
   boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
     (_worker_manager.worker_by_address (source));
 
@@ -526,6 +524,9 @@ void GenericDaemon::handleErrorEvent
       }
       else
       {
+        boost::optional<master_info_t::iterator> const as_master
+          (master_by_address (source));
+
         if (as_master)
         {
           as_master.get()->address = boost::none;
