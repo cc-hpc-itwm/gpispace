@@ -193,8 +193,8 @@ namespace sdpa {
 
     public:
       // registration
-      void requestRegistration (master_info_t::iterator const&);
-      void request_registration_soon (master_info_t::iterator const&);
+      void requestRegistration (master_network_info&);
+      void request_registration_soon (master_network_info&);
 
       // workflow engine
     public:
@@ -312,7 +312,7 @@ namespace sdpa {
     private:
       boost::posix_time::time_duration _registration_timeout;
 
-      void do_registration_after_sleep (master_info_t::iterator const&);
+      void do_registration_after_sleep (master_network_info&);
 
       fhg::thread::queue< std::pair< fhg::com::p2p::address_t
                                    , boost::shared_ptr<events::SDPAEvent>
@@ -385,7 +385,7 @@ namespace sdpa {
       struct parent_proxy
       {
         parent_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
-        parent_proxy (GenericDaemon*, master_info_t::iterator const&);
+        parent_proxy (GenericDaemon*, master_network_info const&);
         parent_proxy (GenericDaemon*, opaque_job_master_t const&);
 
         void worker_registration (capabilities_set_t) const;

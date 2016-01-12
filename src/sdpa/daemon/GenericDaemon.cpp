@@ -215,13 +215,12 @@ GenericDaemon::GenericDaemon( const std::string name
     : nullptr
     )
 {
-    for ( master_info_t::iterator it (_master_info.begin())
-        ; it != _master_info.end()
-        ; ++it
-        )
-    {
-      requestRegistration (it);
-    }
+  for ( master_network_info& master
+      : _master_info | boost::adaptors::map_values
+      )
+  {
+    requestRegistration (master);
+  }
 }
 
 GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
@@ -459,12 +458,13 @@ try
   request_rescheduling (event->name());
 
   // send to the masters my new set of capabilities
-  for (master_info_t::value_type const& info : _master_info)
+  for ( master_network_info const& info
+      : _master_info | boost::adaptors::map_values
+      )
   {
-    if (info.second.address)
+    if (info.address)
     {
-      parent_proxy (this, *info.second.address)
-        .capabilities_gained (workerCpbSet);
+      parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
     }
   }
 
@@ -544,11 +544,13 @@ void GenericDaemon::handleErrorEvent
 
       if (as_worker)
       {
-        for (master_info_t::value_type const& info : _master_info)
+        for ( master_network_info const& info
+            : _master_info | boost::adaptors::map_values
+            )
         {
-          if (info.second.address)
+          if (info.address)
           {
-            parent_proxy (this, *info.second.address).capabilities_lost
+            parent_proxy (this, *info.address).capabilities_lost
               (_worker_manager.worker_capabilities (as_worker.get()->second));
           }
         }
@@ -590,7 +592,7 @@ void GenericDaemon::handleErrorEvent
         if (as_master)
         {
           as_master.get()->second.address = boost::none;
-          request_registration_soon (as_master.get());
+          request_registration_soon (as_master.get()->second);
         }
       }
 
@@ -813,11 +815,13 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
       if( !newWorkerCpbSet.empty() )
       {
-        for (master_info_t::value_type const& info : _master_info)
+        for ( master_network_info const& info
+            : _master_info | boost::adaptors::map_values
+            )
         {
-          if (info.second.address)
+          if (info.address)
           {
-            parent_proxy (this, *info.second.address).capabilities_gained
+            parent_proxy (this, *info.address).capabilities_gained
               (newWorkerCpbSet);
           }
         }
@@ -841,11 +845,13 @@ void GenericDaemon::handleCapabilitiesLostEvent
                                                               )
      )
   {
-    for (master_info_t::value_type const& info : _master_info)
+    for ( master_network_info const& info
+        : _master_info | boost::adaptors::map_values
+        )
     {
-      if (info.second.address)
+      if (info.address)
       {
-        parent_proxy (this, *info.second.address).capabilities_lost
+        parent_proxy (this, *info.address).capabilities_lost
           (pCpbLostEvt->capabilities());
       }
     }
@@ -881,28 +887,30 @@ void GenericDaemon::delay (std::function<void()> fun)
     );
 }
 
-void GenericDaemon::request_registration_soon (master_info_t::iterator const& it)
+void GenericDaemon::request_registration_soon
+  (master_network_info& master)
 {
   _registration_threads.start
-    (std::bind (&GenericDaemon::do_registration_after_sleep, this, it));
+    (std::bind (&GenericDaemon::do_registration_after_sleep, this, master));
 }
 
-void GenericDaemon::do_registration_after_sleep (master_info_t::iterator const& it)
+void GenericDaemon::do_registration_after_sleep
+  (master_network_info& master)
 {
   boost::this_thread::sleep (_registration_timeout);
-  requestRegistration (it);
+
+  requestRegistration (master);
 }
 
-void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
+void GenericDaemon::requestRegistration (master_network_info& master)
 {
   try
   {
-    it->second.address
-      = _network_strategy.connect_to (it->second.host, it->second.port);
+    master.address = _network_strategy.connect_to (master.host, master.port);
   }
-  catch (std::exception const& ex)
+  catch (std::exception const&)
   {
-    request_registration_soon (it);
+    request_registration_soon (master);
   }
 
   std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
@@ -910,7 +918,7 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 
   _worker_manager.getCapabilities (cpbSet);
 
-  parent_proxy (this, it).worker_registration (cpbSet);
+  parent_proxy (this, master).worker_registration (cpbSet);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
@@ -1524,12 +1532,12 @@ namespace sdpa
       , _address (address)
     {}
     GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, master_info_t::iterator const& master)
-      : parent_proxy (that, master->second.address.get())
+        (GenericDaemon* that, master_network_info const& master)
+      : parent_proxy (that, master.address.get())
     {}
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, opaque_job_master_t const& job_master)
-      : parent_proxy (that, job_master->_actual.get())
+      : parent_proxy (that, job_master->_actual.get()->second)
     {}
 
     void GenericDaemon::parent_proxy::worker_registration
