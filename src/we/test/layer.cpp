@@ -25,8 +25,10 @@
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <condition_variable>
 #include <functional>
 #include <list>
+#include <mutex>
 #include <tuple>
 
 namespace
@@ -72,11 +74,8 @@ namespace
     }                                                                   \
     ~expect_ ## NAME()                                                  \
     {                                                                   \
-      boost::mutex::scoped_lock lock (_happened_mutex);                 \
-      while (!_happened)                                                \
-      {                                                                 \
-        _happened_condition.wait (lock);                                \
-      }                                                                 \
+      std::unique_lock<std::mutex> lock (_happened_mutex);              \
+      _happened_condition.wait (lock, [this]() { return _happened; });  \
     }                                                                   \
     void happened()                                                     \
     {                                                                   \
@@ -88,8 +87,8 @@ namespace
       return EQ_IMPL;                                                   \
     }                                                                   \
     bool _happened;                                                     \
-    mutable boost::mutex _happened_mutex;                               \
-    boost::condition_variable_any _happened_condition;                  \
+    mutable std::mutex _happened_mutex;                                 \
+    std::condition_variable _happened_condition;                        \
                                                                         \
     MEMBER_VARIABLES;                                                   \
   };                                                                    \
@@ -118,17 +117,20 @@ struct daemon
   {}
   ~daemon()
   {
-    boost::mutex::scoped_lock lock (_in_progress_mutex);
+    std::unique_lock<std::mutex> lock (_in_progress_mutex);
 
-    while ( _in_progress_jobs_rts
-          + _in_progress_jobs_layer
-          + _in_progress_replies
-          + _in_progress_cancels.size()
-          > 0
-          )
-    {
-      _in_progress_condition.wait (lock);
-    }
+    _in_progress_condition.wait
+      ( lock
+      , [this]()
+        {
+          return _in_progress_jobs_rts
+               + _in_progress_jobs_layer
+               + _in_progress_replies
+               + _in_progress_cancels.size()
+               == 0
+            ;
+        }
+      );
 
     BOOST_REQUIRE (_to_submit.empty());
     BOOST_REQUIRE (_to_cancel.empty());
@@ -143,13 +145,13 @@ struct daemon
 
 #define INC_IN_PROGRESS(COUNTER)                                \
   {                                                             \
-    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     ++_in_progress_ ## COUNTER;                                 \
   }
 
 #define DEC_IN_PROGRESS(COUNTER)                                \
   {                                                             \
-    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     --_in_progress_ ## COUNTER;                                 \
   }                                                             \
   _in_progress_condition.notify_one()
@@ -158,13 +160,13 @@ struct daemon
 
 #define ADD_CANCEL_IN_PROGRESS(ID)                              \
   {                                                             \
-    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     _in_progress_cancels.emplace (ID);                          \
   }
 
 #define REMOVE_CANCEL_IN_PROGRESS(ID)                           \
   {                                                             \
-    boost::mutex::scoped_lock const _ (_in_progress_mutex);     \
+    std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     _in_progress_cancels.erase (ID);                            \
   }
 
@@ -488,18 +490,18 @@ struct daemon
       (id, workflow_response_id, place_name, value);
   }
 
-  boost::mutex _generate_id_mutex;
+  std::mutex _generate_id_mutex;
   unsigned long _cnt;
   we::layer::id_type generate_id()
   {
-    boost::mutex::scoped_lock const _ (_generate_id_mutex);
+    std::lock_guard<std::mutex> const _ (_generate_id_mutex);
     return boost::lexical_cast<we::layer::id_type> (++_cnt);
   }
 
   std::mt19937 _random_engine;
-  mutable boost::mutex _in_progress_mutex;
+  mutable std::mutex _in_progress_mutex;
   we::layer layer;
-  boost::condition_variable_any _in_progress_condition;
+  std::condition_variable _in_progress_condition;
   unsigned long _in_progress_jobs_rts;
   unsigned long _in_progress_jobs_layer;
   unsigned long _in_progress_replies;
@@ -1695,24 +1697,21 @@ namespace
 
       BOOST_REQUIRE_EQUAL (list_req.size(), 1);
 
-      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
+      std::lock_guard<std::mutex> const _ (_mtx_submitted);
       ++_received_requirements[list_req.front()];
-
-      if (--_expected_activities == 0)
-      {
-        _cond_all_submitted.notify_one();
-      }
+      --_expected_activities;
+      _cond_submitted.notify_one();
     }
 
     void wait_all_submitted()
     {
-      boost::unique_lock<boost::mutex> const _ (_mtx_all_submitted);
-      _cond_all_submitted.wait (_mtx_all_submitted);
+      std::unique_lock<std::mutex> lock (_mtx_submitted);
+      _cond_submitted.wait (lock, [this]() { return !_expected_activities; });
     }
 
   private:
-    boost::mutex _mtx_all_submitted;
-    boost::condition_variable_any _cond_all_submitted;
+    std::mutex _mtx_submitted;
+    std::condition_variable _cond_submitted;
     unsigned int _expected_activities;
 
   public:
@@ -1722,11 +1721,11 @@ namespace
   private:
     std::mt19937 _random_extraction_engine;
 
-    boost::mutex _generate_id_mutex;
+    std::mutex _generate_id_mutex;
     unsigned long _cnt;
     we::layer::id_type generate_id()
     {
-      boost::mutex::scoped_lock const _ (_generate_id_mutex);
+      std::lock_guard<std::mutex> const _ (_generate_id_mutex);
       return boost::lexical_cast<we::layer::id_type> (++_cnt);
     }
 
