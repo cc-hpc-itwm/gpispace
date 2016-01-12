@@ -74,8 +74,10 @@ namespace sdpa {
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
 
+    protected:
       bool isTop() { return _master_info.empty(); }
 
+    public:
       // WE interface
       OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
@@ -93,12 +95,15 @@ namespace sdpa {
 
       void addCapability(const capability_t& cpb);
 
-    protected:
+    private:
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
+    protected:
       bool isSubscriber(const fhg::com::p2p::address_t&);
+    private:
       std::list<fhg::com::p2p::address_t> subscribers (job_id_t) const;
+    protected:
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
       {
@@ -107,6 +112,7 @@ namespace sdpa {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
       }
+    private:
       bool subscribedFor(const fhg::com::p2p::address_t&, const sdpa::job_id_t&);
 
       // agent info and properties
@@ -165,20 +171,21 @@ namespace sdpa {
       }
       void delay (std::function<void()>);
 
-    public:
+    private:
       // registration
       void requestRegistration (master_network_info&);
       void request_registration_soon (master_network_info&);
 
       // workflow engine
-    public:
+    protected:
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
+    private:
       // workers
       void serveJob(std::set<worker_id_t> const&, const job_id_t&);
 
-    protected:
+    private:
       // jobs
       std::string gen_id();
 
@@ -193,7 +200,7 @@ namespace sdpa {
                   , job_requirements_t
                   );
 
-    public:
+    protected:
       Job* findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& job_id);
 
@@ -205,6 +212,7 @@ namespace sdpa {
     protected:
       fhg::log::Logger& _logger;
 
+    private:
       std::string _name;
 
       master_info_t _master_info;
@@ -240,6 +248,7 @@ namespace sdpa {
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
+    private:
       template <typename T>
       class concurrent_list_t
       {
@@ -264,11 +273,14 @@ namespace sdpa {
       };
       concurrent_list_t<worker_id_t> _new_workers_added;
 
+    protected:
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
       void request_scheduling();
+    private:
       void request_rescheduling (worker_id_t const&);
 
+    private:
       boost::optional<std::mt19937> _random_extraction_engine;
 
     private:
@@ -278,7 +290,7 @@ namespace sdpa {
 
       sdpa::capabilities_set_t m_capabilities;
 
-    protected:
+    private:
       std::unique_ptr<NotificationService> m_guiService;
 
     private:
