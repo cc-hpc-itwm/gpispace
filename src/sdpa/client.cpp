@@ -263,8 +263,8 @@ namespace sdpa
 
     sdpa::status::code Client::queryJob(const job_id_t &jid)
     {
-      job_info_t info;
-      return queryJob (jid, info);
+      job_info_t UNUSED_info;
+      return queryJob (jid, UNUSED_info);
     }
 
     sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
