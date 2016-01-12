@@ -476,8 +476,7 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
     case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
-      if( isSubscriber(source) )
-        unsubscribe(source);
+      unsubscribe(source);
 
       if (as_worker)
       {
