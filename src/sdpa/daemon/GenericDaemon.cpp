@@ -34,32 +34,6 @@
 
 namespace sdpa
 {
-  struct opaque_job_master_t::implementation
-  {
-    using actual_implementation =
-      boost::optional<daemon::GenericDaemon::master_info_t::iterator>;
-
-    implementation (actual_implementation actual)
-      : _actual (std::move (actual))
-    {}
-    actual_implementation const _actual;
-  };
-  opaque_job_master_t::opaque_job_master_t (opaque_job_master_t&& rhs)
-    : _ (rhs._)
-  {
-    rhs._ = nullptr;
-  }
-  opaque_job_master_t::~opaque_job_master_t()
-  {
-    delete _;
-    _ = nullptr;
-  }
-  opaque_job_master_t::opaque_job_master_t (const void* data)
-    : _ ( new implementation
-          (*static_cast<const implementation::actual_implementation*> (data))
-        )
-  {}
-
   namespace daemon {
 namespace
 {
@@ -94,13 +68,6 @@ namespace
         , boost::filesystem::path const& socket
         )
       : _ (logger, socket.string())
-    {}
-
-    GenericDaemon::master_network_info::master_network_info
-        (std::string const& host_, std::string const& port_)
-      : host (host_)
-      , port (port_)
-      , address (boost::none)
     {}
 
     namespace
@@ -299,7 +266,7 @@ std::string GenericDaemon::gen_id()
       Job* pJob = new Job
         ( job_id
         , std::move (activity)
-        , opaque_job_master_t (static_cast<const void*> (&owner))
+        , std::move (owner)
         , std::move (requirements)
         );
 
@@ -647,7 +614,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->address.get()))
+  if(!isSubscriber(pJob->owner().get()->address.get()))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result);
   }
@@ -679,7 +646,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->address.get()))
+  if(!isSubscriber(pJob->owner().get()->address.get()))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -719,7 +686,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   }
 }
 
-    boost::optional<GenericDaemon::master_info_t::iterator>
+    boost::optional<master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
     {
       master_info_t::iterator const it
@@ -1505,8 +1472,8 @@ namespace sdpa
       : parent_proxy (that, master.address.get())
     {}
     GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, opaque_job_master_t const& job_master)
-      : parent_proxy (that, *job_master->_actual.get())
+        (GenericDaemon* that, boost::optional<master_info_t::iterator> const& job_master)
+      : parent_proxy (that, *job_master.get())
     {}
 
     void GenericDaemon::parent_proxy::worker_registration

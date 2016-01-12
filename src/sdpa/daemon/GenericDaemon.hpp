@@ -59,16 +59,6 @@ namespace sdpa {
     class GenericDaemon : public sdpa::events::EventHandler,
                           boost::noncopyable
     {
-    protected:
-      struct master_network_info
-      {
-        master_network_info (std::string const& host, std::string const& port);
-        fhg::com::host_t host;
-        fhg::com::port_t port;
-        boost::optional<fhg::com::p2p::address_t> address;
-      };
-      using master_info_t = std::forward_list<master_network_info>;
-
     public:
       GenericDaemon( const std::string name
                    , const std::string url
@@ -216,8 +206,6 @@ namespace sdpa {
       fhg::log::Logger& _logger;
 
       std::string _name;
-
-      friend struct sdpa::opaque_job_master_t::implementation;
 
       master_info_t _master_info;
 
@@ -370,7 +358,7 @@ namespace sdpa {
       {
         parent_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
         parent_proxy (GenericDaemon*, master_network_info const&);
-        parent_proxy (GenericDaemon*, opaque_job_master_t const&);
+        parent_proxy (GenericDaemon*, boost::optional<master_info_t::iterator> const&);
 
         void worker_registration (capabilities_set_t) const;
         void notify_shutdown() const;

@@ -6,7 +6,7 @@ namespace sdpa
   {
     Job::Job ( const job_id_t id
              , we::type::activity_t activity
-             , opaque_job_master_t owner
+             , boost::optional<master_info_t::iterator> owner
              , job_requirements_t requirements
              )
       : _activity (std::move (activity))
@@ -23,7 +23,7 @@ namespace sdpa
     {
       return id_;
     }
-    opaque_job_master_t const& Job::owner() const
+    boost::optional<master_info_t::iterator> const& Job::owner() const
     {
       return m_owner;
     }
