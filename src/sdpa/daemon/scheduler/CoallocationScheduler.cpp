@@ -98,12 +98,11 @@ namespace sdpa
 
        bounded_priority_queue_t bpq (n_req_workers);
 
-       for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
-           ; it != mmap_matching_workers.end()
-           ; ++it
+       for ( std::pair<double const, worker_id_host_info_t> const& it
+           : mmap_matching_workers
            )
        {
-         const worker_id_host_info_t& worker_info = it->second;
+         const worker_id_host_info_t& worker_info = it.second;
 
          double const cost_preassigned_jobs
            ( _worker_manager.cost_assigned_jobs
@@ -122,7 +121,7 @@ namespace sdpa
            );
 
          bpq.emplace ( total_cost
-                     , -1.0*it->first
+                     , -1.0*it.first
                      , worker_info.shared_memory_size()
                      , worker_info.last_time_served()
                      , worker_info.worker_id()
