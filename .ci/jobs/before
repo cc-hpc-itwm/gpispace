@@ -1,0 +1,12 @@
+source_directory="$(pwd)"
+base_directory="${source_directory}"
+build_directory="${base_directory}/build"
+install_directory="${base_directory}/install"
+shared_directory_for_tests="${base_directory}/shared_for_tests"
+mkdir -p "${build_directory}"
+cd "${build_directory}"
+cmake -DSHARED_DIRECTORY_FOR_TESTS="${shared_directory_for_tests}" \
+  -DTESTING_RIF_STRATEGY="${gspc_testing_rif_strategy}" \
+  -DCMAKE_INSTALL_PREFIX="${install_directory}" \
+  "${source_directory}"
+export CCACHE_SLOPPINESS=file_macro
