@@ -51,7 +51,7 @@ namespace sdpa
       if (! ec)
       {
         // convert m_message to event
-        sdpa::events::SDPAEvent::Ptr evt
+        sdpa::events::SDPAEvent::Ptr const evt
           (_codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         _event_handler (source.get(), evt);
 
@@ -68,7 +68,7 @@ namespace sdpa
       {
         if (m_message.header.src != _peer.address())
         {
-          sdpa::events::ErrorEvent::Ptr
+          sdpa::events::ErrorEvent::Ptr const
             error(new sdpa::events::ErrorEvent ( (ec == boost::asio::error::eof) // Connection closed cleanly by peer
                                                 ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                                                 : sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE

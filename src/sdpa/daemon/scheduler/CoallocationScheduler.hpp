@@ -120,7 +120,7 @@ namespace sdpa
 
         bool allGroupTasksFinishedSuccessfully()
         {
-          for ( result_type result
+          for ( result_type const result
               : m_map_worker_result | boost::adaptors::map_values
               )
           {

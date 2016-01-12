@@ -60,11 +60,11 @@ namespace sdpa
                              , boost::optional<fhg::com::p2p::address_t>
                              )
     {
-      static sdpa::events::Codec codec;
+      static sdpa::events::Codec const codec;
 
       if (! ec)
       {
-        sdpa::events::SDPAEvent::Ptr evt
+        sdpa::events::SDPAEvent::Ptr const evt
           (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
         m_incoming_events.put (evt);
       }
@@ -78,7 +78,7 @@ namespace sdpa
       {
         if (m_message.header.src != m_peer.address())
         {
-          sdpa::events::ErrorEvent::Ptr
+          sdpa::events::ErrorEvent::Ptr const
             error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
                                                , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
                                                )
@@ -104,7 +104,7 @@ namespace sdpa
       [[noreturn]] void handle_error_and_unexpected_event
         (sdpa::events::SDPAEvent::Ptr reply)
       {
-        if ( sdpa::events::ErrorEvent *err
+        if ( sdpa::events::ErrorEvent* const err
            = dynamic_cast<sdpa::events::ErrorEvent*> (reply.get())
            )
         {
@@ -128,11 +128,11 @@ namespace sdpa
 
       m_incoming_events.INDICATES_A_RACE_clear();
 
-      static sdpa::events::Codec codec;
+      static sdpa::events::Codec const codec;
       m_peer.send (_drts_entrypoint_address, codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
-      if (Expected* e = dynamic_cast<Expected*> (reply.get()))
+      if (Expected* const e = dynamic_cast<Expected*> (reply.get()))
       {
         return *e;
       }
@@ -145,9 +145,9 @@ namespace sdpa
     {
       send_and_wait_for_reply<sdpa::events::SubscribeAckEvent>
         (sdpa::events::SubscribeEvent (id));
-     sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
+     sdpa::events::SDPAEvent::Ptr const reply (m_incoming_events.get());
 
-      if ( sdpa::events::JobFinishedEvent* job_finished
+      if ( sdpa::events::JobFinishedEvent* const job_finished
          = dynamic_cast<sdpa::events::JobFinishedEvent*> (reply.get())
          )
       {
@@ -157,7 +157,7 @@ namespace sdpa
         }
         return sdpa::status::FINISHED;
       }
-      else if ( sdpa::events::JobFailedEvent* job_failed
+      else if ( sdpa::events::JobFailedEvent* const job_failed
               = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
               )
       {
@@ -168,7 +168,7 @@ namespace sdpa
         job_info.error_message = job_failed->error_message();
         return sdpa::status::FAILED;
       }
-      else if ( sdpa::events::CancelJobAckEvent* cancel_ack
+      else if ( sdpa::events::CancelJobAckEvent* const cancel_ack
               = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
               )
       {

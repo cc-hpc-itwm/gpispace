@@ -81,7 +81,7 @@ namespace sdpa
 
       for (Worker const& worker : worker_map_ | boost::adaptors::map_values)
       {
-        for (sdpa::capability_t capability : worker._capabilities)
+        for (sdpa::capability_t const capability : worker._capabilities)
         {
           const sdpa::capabilities_set_t::iterator itag_cpbs
             (agentCpbSet.find (capability));
@@ -108,7 +108,7 @@ namespace sdpa
       {
         return boost::none;
       }
-      for (we::type::requirement_t req : job_req_set.getReqList())
+      for (we::type::requirement_t const req : job_req_set.getReqList())
       {
         if (worker.hasCapability (req.value()))
         {

@@ -274,7 +274,7 @@ const std::string& GenericDaemon::name() const
 void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
-  Job* ptrJob = findJob(jobId);
+  Job const* const ptrJob = findJob(jobId);
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
@@ -376,12 +376,12 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  Job* pJob (addJob ( job_id
-                    , e.activity()
-                    , itMaster
-                    , {{}, {}, null_transfer_cost, 1.0, 0}
-                    )
-            );
+  Job* const pJob (addJob ( job_id
+                          , e.activity()
+                          , itMaster
+                          , {{}, {}, null_transfer_cost, 1.0, 0}
+                          )
+                  );
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -496,8 +496,8 @@ void GenericDaemon::handleErrorEvent
     // 'reason' should not be reused for important information
     case events::ErrorEvent::SDPA_EBACKLOGFULL:
     {
-      sdpa::job_id_t jobId(*error.job_id());
-      Job* pJob (findJob (jobId));
+      sdpa::job_id_t const jobId(*error.job_id());
+      Job* const pJob (findJob (jobId));
       if (!pJob)
       {
         throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
@@ -558,9 +558,9 @@ void GenericDaemon::handleErrorEvent
         const std::set<job_id_t> jobs_to_reschedule
           (_worker_manager.get_worker_jobs_and_clean_queues (as_worker.get()->second));
 
-        for (sdpa::job_id_t jobId : jobs_to_reschedule)
+        for (sdpa::job_id_t const jobId : jobs_to_reschedule)
         {
-          Job* pJob = findJob (jobId);
+          Job* const pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
             _scheduler.workerCanceled (as_worker.get()->second, jobId);
@@ -629,7 +629,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 {
   boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
-  Job* pJob (findJob (job_id));
+  Job* const pJob (findJob (job_id));
   if (!pJob)
   {
     //! \note Job may have been removed between wfe requesting cancel
@@ -664,7 +664,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
 void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
 {
-  Job* pJob = findJob(id);
+  Job* const pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
@@ -696,7 +696,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
                           , std::string const & reason
                           )
 {
-  Job* pJob = findJob(id);
+  Job* const pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
@@ -727,7 +727,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)
 {
-  Job* pJob (findJob (job_id));
+  Job* const pJob (findJob (job_id));
   if (!pJob)
   {
     throw std::runtime_error ("rts_canceled (unknown job)");
@@ -747,7 +747,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
     boost::optional<GenericDaemon::master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
     {
-      master_info_t::iterator it
+      master_info_t::iterator const it
         ( std::find_if ( _master_info.begin()
                        , _master_info.end()
                        , [&address] (master_info_t::value_type const& info)
@@ -799,7 +799,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
     }
   }
 
-  bool bModified (_worker_manager.add_worker_capabilities
+  bool const bModified (_worker_manager.add_worker_capabilities
     (worker->second, workerCpbSet));
 
   if(bModified)
@@ -939,7 +939,7 @@ void GenericDaemon::handleSubscribeEvent
 
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
-  Job* pJob (findJob (jobId));
+  Job const* const pJob (findJob (jobId));
   if (!pJob)
   {
     throw std::runtime_error ( "Could not subscribe for the job" + jobId
@@ -1000,7 +1000,7 @@ bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
 
       for (subscriber_map_t::value_type const& subscription : _subscriptions)
       {
-        for (job_id_t id : subscription.second)
+        for (job_id_t const id : subscription.second)
         {
           if (id == job_id)
           {
@@ -1029,7 +1029,7 @@ void GenericDaemon::handleSubmitJobAckEvent
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
-  Job* ptrJob = findJob(pEvent->job_id());
+  Job* const ptrJob = findJob(pEvent->job_id());
   if(!ptrJob)
   {
     LLOG (ERROR, _logger,  "job " << pEvent->job_id()
@@ -1095,9 +1095,9 @@ void GenericDaemon::handleJobFailedAckEvent
     void GenericDaemon::delayed_discover
       (we::layer::id_type discover_id, we::layer::id_type job_id)
     {
-      Job* pJob (findJob (job_id));
+      Job const* const pJob (findJob (job_id));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (job_id));
 
       if (pJob && !workers.empty())
@@ -1127,9 +1127,9 @@ void GenericDaemon::handleJobFailedAckEvent
     void GenericDaemon::handleDiscoverJobStatesEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent *pEvt)
     {
-      Job* pJob (findJob (pEvt->job_id()));
+      Job const* const pJob (findJob (pEvt->job_id()));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (pEvt->job_id()));
 
       if (pJob && !workers.empty())
@@ -1228,7 +1228,7 @@ void GenericDaemon::handleJobFailedAckEvent
           throw std::runtime_error ("take: key " + key + " not found");
         }
 
-        typename Map::mapped_type v (std::move (it->second));
+        typename Map::mapped_type const v (std::move (it->second));
         map.erase (it);
         return v;
       }
@@ -1238,9 +1238,9 @@ void GenericDaemon::handleJobFailedAckEvent
       (fhg::com::p2p::address_t const& source, const events::put_token* event)
     try
     {
-      Job* job (findJob (event->job_id()));
+      Job const* const job (findJob (event->job_id()));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
       if (!job || (workers.empty() && !workflowEngine()))
@@ -1308,9 +1308,9 @@ void GenericDaemon::handleJobFailedAckEvent
       (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
     try
     {
-      Job* job (findJob (event->job_id()));
+      Job const* const job (findJob (event->job_id()));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
       if (!job || (workers.empty() && !workflowEngine()))
@@ -1380,7 +1380,7 @@ void GenericDaemon::handleJobFailedAckEvent
 void GenericDaemon::handleRetrieveJobResultsEvent
   (fhg::com::p2p::address_t const& source, const events::RetrieveJobResultsEvent* pEvt )
 {
-  Job* pJob = findJob(pEvt->job_id());
+  Job const* const pJob = findJob(pEvt->job_id());
   if (!pJob)
   {
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
@@ -1401,9 +1401,9 @@ void GenericDaemon::handleRetrieveJobResultsEvent
 void GenericDaemon::handleQueryJobStatusEvent
   (fhg::com::p2p::address_t const& source, const events::QueryJobStatusEvent* pEvt )
 {
-  sdpa::job_id_t jobId = pEvt->job_id();
+  sdpa::job_id_t const jobId = pEvt->job_id();
 
-  Job* pJob (findJob(jobId));
+  Job const* const pJob (findJob(jobId));
   if (!pJob)
   {
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
