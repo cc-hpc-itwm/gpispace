@@ -120,7 +120,7 @@ namespace fhg
                 )
               {
                 {
-                  std::unique_lock<std::mutex> const _ (entry_points_guard);
+                  std::lock_guard<std::mutex> const _ (entry_points_guard);
                   entry_points.emplace (key, entry_point);
                 }
                 entry_point_added.notify_one();

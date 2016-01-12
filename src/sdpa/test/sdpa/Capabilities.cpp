@@ -25,7 +25,7 @@ namespace
     virtual void handleCapabilitiesGainedEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent* event) override
     {
-      std::unique_lock<std::mutex> const _ (_mutex);
+      std::lock_guard<std::mutex> const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
       {
         _capabilities.emplace_back (source, cpb);
@@ -36,7 +36,7 @@ namespace
     virtual void handleCapabilitiesLostEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent* event) override
     {
-      std::unique_lock<std::mutex> const _ (_mutex);
+      std::lock_guard<std::mutex> const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
       {
         _capabilities.erase
@@ -58,7 +58,7 @@ namespace
       {
         //! \note hack? isn't this part of what this test is supposed
         //! to test?
-        std::unique_lock<std::mutex> const _ (_mutex);
+        std::lock_guard<std::mutex> const _ (_mutex);
         _capabilities.remove_if
           ( [&] (decltype (_capabilities)::value_type const& elem)
             {

@@ -56,7 +56,7 @@ namespace gpi
           LLOG(ERROR, _logger, "error within ~manager_t: " << ex.what());
         }
 
-        std::unique_lock<std::mutex> const _ (_mutex_processes);
+        std::lock_guard<std::mutex> const _ (_mutex_processes);
         for ( std::pair<gpi::pc::type::process_id_t const, std::thread>& process
             : m_processes
             )
@@ -130,7 +130,7 @@ namespace gpi
             gpi::pc::type::process_id_t const id (++m_process_counter);
 
             {
-              std::unique_lock<std::mutex> const _ (_mutex_processes);
+              std::lock_guard<std::mutex> const _ (_mutex_processes);
 
               m_processes.emplace
                 ( id
@@ -449,7 +449,7 @@ namespace gpi
 
         if (!m_stopping)
         {
-          std::unique_lock<std::mutex> const _ (_mutex_processes);
+          std::lock_guard<std::mutex> const _ (_mutex_processes);
           m_processes.at (process_id).detach();
           m_processes.erase (process_id);
         }

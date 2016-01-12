@@ -368,7 +368,7 @@ namespace we
     )
   {
     {
-      std::unique_lock<std::mutex> const _ (_outstanding_responses_guard);
+      std::lock_guard<std::mutex> const _ (_outstanding_responses_guard);
       _outstanding_responses[id].emplace (workflow_response_id);
     }
     _nets_to_extract_from.apply
@@ -397,7 +397,7 @@ namespace we
     )
   {
     _rts_workflow_response (response_id, response);
-    std::unique_lock<std::mutex> const _ (_outstanding_responses_guard);
+    std::lock_guard<std::mutex> const _ (_outstanding_responses_guard);
     _outstanding_responses.at (id).erase (response_id);
     if (_outstanding_responses.at (id).empty())
     {
@@ -526,7 +526,7 @@ namespace we
   void layer::cancel_outstanding_responses
     (id_type id, std::string const& reason)
   {
-    std::unique_lock<std::mutex> const _ (_outstanding_responses_guard);
+    std::lock_guard<std::mutex> const _ (_outstanding_responses_guard);
     auto responses (_outstanding_responses.find (id));
     if (responses != _outstanding_responses.end())
     {

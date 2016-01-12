@@ -47,7 +47,7 @@ namespace fhg
                                   , pid_t pid
                                   )
     {
-      std::unique_lock<std::mutex> const guard (_guard);
+      std::lock_guard<std::mutex> const guard (_guard);
 
       if (!_[entry_point].emplace (name, pid).second)
       {
@@ -62,7 +62,7 @@ namespace fhg
     boost::optional<pid_t> processes_storage::pidof
       (fhg::rif::entry_point const& entry_point, std::string const& name)
     {
-      std::unique_lock<std::mutex> const guard (_guard);
+      std::lock_guard<std::mutex> const guard (_guard);
 
       auto pos_entry_point (_.find (entry_point));
 
@@ -596,7 +596,7 @@ namespace fhg
                     {
                       rif::client* client (nullptr);
                       {
-                        std::unique_lock<std::mutex> const _ (clients_guard);
+                        std::lock_guard<std::mutex> const _ (clients_guard);
                         clients.emplace_back (entry_point);
                         client = &clients.back();
                       }
@@ -748,7 +748,7 @@ namespace fhg
 
                   if (!failures_kill.empty())
                   {
-                    std::unique_lock<std::mutex> const _ (guard_failures);
+                    std::lock_guard<std::mutex> const _ (guard_failures);
 
                     failures.emplace
                       ( entry_point_processes->first
@@ -765,7 +765,7 @@ namespace fhg
                     fails.emplace (pid, std::current_exception());
                   }
 
-                  std::unique_lock<std::mutex> const _ (guard_failures);
+                  std::lock_guard<std::mutex> const _ (guard_failures);
 
                   failures.emplace ( entry_point_processes->first
                                    , std::make_pair (kind, fails)

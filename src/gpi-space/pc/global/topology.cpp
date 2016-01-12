@@ -141,7 +141,7 @@ namespace gpi
                              )
       {
         // lock, so that no other process can make a global alloc
-        std::unique_lock<std::mutex> const _ (m_global_alloc_mutex);
+        std::lock_guard<std::mutex> const _ (m_global_alloc_mutex);
 
         try
         {

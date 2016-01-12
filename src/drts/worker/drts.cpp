@@ -143,9 +143,9 @@ namespace
 
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
-  std::unique_lock<std::mutex> const currently_executed_tasks_lock
+  std::lock_guard<std::mutex> const currently_executed_tasks_lock
     (_currently_executed_tasks_mutex);
-  std::unique_lock<std::mutex> const jobs_lock (_jobs_guard);
+  std::lock_guard<std::mutex> const jobs_lock (_jobs_guard);
 
   for (auto& task : _currently_executed_tasks | boost::adaptors::map_values)
   {
@@ -245,7 +245,7 @@ DRTSImpl::~DRTSImpl()
   //! \note remove them all to avoid a legit backlogfull triggering
   //! another job: we will reply to all submitjobs with a backlogfull
   //! that should never be followed up with a no-longer-full
-  std::unique_lock<std::mutex> const _
+  std::lock_guard<std::mutex> const _
     (_guard_backlogfull_notified_masters);
   _masters_backlogfull_notified.clear();
 }
@@ -318,7 +318,7 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  std::unique_lock<std::mutex> job_map_lock(m_job_map_mutex);
+  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
 
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
@@ -347,7 +347,7 @@ void DRTSImpl::handleSubmitJobEvent
       , *e->job_id()
       );
 
-    std::unique_lock<std::mutex> _ (_guard_backlogfull_notified_masters);
+    std::lock_guard<std::mutex> _ (_guard_backlogfull_notified_masters);
     _masters_backlogfull_notified.emplace (source);
 
     return;
@@ -360,7 +360,7 @@ void DRTSImpl::handleSubmitJobEvent
 void DRTSImpl::handleCancelJobEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e)
 {
-  std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
+  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
   LLOG (TRACE, _logger, "got cancelation request for job: " << e->job_id());
@@ -384,7 +384,7 @@ void DRTSImpl::handleCancelJobEvent
   else if (job_state == DRTSImpl::Job::RUNNING)
   {
     LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
-    std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
+    std::lock_guard<std::mutex> const _ (_currently_executed_tasks_mutex);
     std::map<std::string, wfe_task_t *>::iterator task_it
       (_currently_executed_tasks.find(e->job_id()));
     if (task_it != _currently_executed_tasks.end())
@@ -410,7 +410,7 @@ void DRTSImpl::handleCancelJobEvent
 void DRTSImpl::handleJobFailedAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e)
 {
-  std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
+  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
   if (job_it == m_jobs.end())
@@ -428,7 +428,7 @@ void DRTSImpl::handleJobFailedAckEvent
 void DRTSImpl::handleJobFinishedAckEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e)
 {
-  std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
+  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
   if (job_it == m_jobs.end())
@@ -446,7 +446,7 @@ void DRTSImpl::handleJobFinishedAckEvent
 void DRTSImpl::handleDiscoverJobStatesEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent* event)
 {
-  std::unique_lock<std::mutex> const _ (m_job_map_mutex);
+  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
 
   const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
   send_event<sdpa::events::DiscoverJobStatesReplyEvent>
@@ -501,7 +501,7 @@ void DRTSImpl::job_execution_thread()
 
     if (notify_can_take_jobs)
     {
-      std::unique_lock<std::mutex> const _ (_guard_backlogfull_notified_masters);
+      std::lock_guard<std::mutex> const _ (_guard_backlogfull_notified_masters);
       for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
       {
         send_event<sdpa::events::BacklogNoLongerFullEvent> (master);
@@ -515,7 +515,7 @@ void DRTSImpl::job_execution_thread()
     {
       //! \note Can only be CANCELED, thus already sent a CancelJobAck
       //! in handleCancelJob, and can just be removed.
-      std::unique_lock<std::mutex> job_map_lock (m_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (m_job_map_mutex);
       m_jobs.erase (job->id);
 
       continue;
@@ -549,7 +549,7 @@ void DRTSImpl::job_execution_thread()
         //! between the two means to call on_cancel() on a module call
         //! not yet or no longer executed.
         {
-          std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
+          std::lock_guard<std::mutex> const _ (_currently_executed_tasks_mutex);
           _currently_executed_tasks.emplace (job->id, &task);
         }
 
@@ -571,7 +571,7 @@ void DRTSImpl::job_execution_thread()
       }
 
       {
-        std::unique_lock<std::mutex> const _ (_currently_executed_tasks_mutex);
+        std::lock_guard<std::mutex> const _ (_currently_executed_tasks_mutex);
         _currently_executed_tasks.erase (job->id);
       }
 

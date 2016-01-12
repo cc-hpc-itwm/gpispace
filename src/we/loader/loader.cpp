@@ -17,7 +17,7 @@ namespace we
 
     Module const& loader::operator[] (const std::string& module)
     {
-      std::unique_lock<std::mutex> const _ (_table_mutex);
+      std::lock_guard<std::mutex> const _ (_table_mutex);
 
       std::unordered_map<std::string, std::unique_ptr<Module>>::const_iterator
         const mod (_module_table.find (module));
