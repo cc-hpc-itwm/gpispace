@@ -266,23 +266,16 @@ namespace sdpa
                                                               , const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      sdpa::worker_id_list_t list_not_terminated_workers;
 
       const allocation_table_t::const_iterator it
         (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
-        Reservation const* const ptr_reservation(it->second);
-        list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
+        return it->second->apply_to_workers_without_result (std::move (func));
       }
 
-      for (worker_id_t const& worker_id : list_not_terminated_workers)
-      {
-        func (worker_id);
-      }
-
-      return !list_not_terminated_workers.empty();
+      return false;
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
