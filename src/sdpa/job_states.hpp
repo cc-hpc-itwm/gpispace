@@ -3,7 +3,6 @@
 #include <fhg/util/macros.hpp>
 
 #include <string>
-#include <map>
 
 namespace sdpa
 {

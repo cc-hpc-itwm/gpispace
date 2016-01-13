@@ -6,7 +6,6 @@
 #include <util-generic/print_exception.hpp>
 
 #include <boost/make_shared.hpp>
-#include <boost/thread.hpp>
 
 #include <fhgcom/peer.hpp>
 
