@@ -12,7 +12,6 @@
 
 #include <xml/parse/type/dumps.hpp>
 
-#include <we/type/place.hpp>
 #include <we/type/expression.hpp>
 #include <we/workflow_response.hpp>
 
