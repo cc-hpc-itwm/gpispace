@@ -107,13 +107,6 @@ namespace
   }
 }
 
-    GenericDaemon::virtual_memory_api::virtual_memory_api
-        ( fhg::log::Logger& logger
-        , boost::filesystem::path const& socket
-        )
-      : _ (logger, socket.string())
-    {}
-
     GenericDaemon::master_network_info::master_network_info
         (std::string const& host_, std::string const& port_)
       : host (host_)
@@ -210,8 +203,8 @@ GenericDaemon::GenericDaemon( const std::string name
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
   , _virtual_memory_api
     ( vmem_socket
-    ? fhg::util::cxx14::make_unique<virtual_memory_api>
-        (_logger, *vmem_socket)
+    ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
+        (_logger, vmem_socket->string())
     : nullptr
     )
 {
@@ -234,31 +227,6 @@ GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
   {
     delete pJob;
   }
-}
-
-//! \todo Move to gpi::pc::client::api_t
-std::function<double (std::string const&)>
-  GenericDaemon::virtual_memory_api::transfer_costs (const we::type::activity_t& activity)
-{
-  if (!activity.transition().module_call())
-    return null_transfer_cost;
-
-  expr::eval::context const context {activity.evaluation_context()};
-
-  std::list<std::pair<we::local::range, we::global::range>>
-    vm_transfers (activity.transition().module_call()->gets (context));
-
-  std::list<std::pair<we::local::range, we::global::range>>
-    puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
-
-  vm_transfers.splice (vm_transfers.end(), puts_before);
-
-  if (vm_transfers.empty())
-  {
-    return null_transfer_cost;
-  }
-
-  return _.transfer_costs (vm_transfers);
 }
 
 const std::string& GenericDaemon::name() const
@@ -304,7 +272,36 @@ std::string GenericDaemon::gen_id()
       job_requirements_t requirements
         { activity.transition().requirements()
         , activity.get_schedule_data()
-        , _virtual_memory_api->transfer_costs (activity)
+        , [&]
+          {
+            //! \todo Move to gpi::pc::client::api_t
+            if (!activity.transition().module_call())
+            {
+              return null_transfer_cost;
+            }
+
+            expr::eval::context const context {activity.evaluation_context()};
+
+            std::list<std::pair<we::local::range, we::global::range>>
+              vm_transfers (activity.transition().module_call()->gets (context));
+
+            std::list<std::pair<we::local::range, we::global::range>>
+              puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
+
+            vm_transfers.splice (vm_transfers.end(), puts_before);
+
+            if (vm_transfers.empty())
+            {
+              return null_transfer_cost;
+            }
+
+            if (!_virtual_memory_api)
+            {
+              throw std::logic_error
+                ("vmem transfers without vmem knowledge in agent");
+            }
+            return _virtual_memory_api->transfer_costs (vm_transfers);
+          }()
         , computational_cost
         , activity.memory_buffer_size_total()
         };

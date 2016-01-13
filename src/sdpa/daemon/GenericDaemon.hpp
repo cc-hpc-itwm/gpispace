@@ -337,16 +337,8 @@ namespace sdpa {
       void handle_events();
 
     private:
-      struct virtual_memory_api
-      {
-        virtual_memory_api
-          (fhg::log::Logger&, boost::filesystem::path const& socket);
-        std::function<double (std::string const&)>
-          transfer_costs (const we::type::activity_t& activity);
-      private:
-        gpi::pc::client::api_t _;
-      };
-      std::unique_ptr<virtual_memory_api> _virtual_memory_api;
+      std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
     protected:
       struct child_proxy
       {
