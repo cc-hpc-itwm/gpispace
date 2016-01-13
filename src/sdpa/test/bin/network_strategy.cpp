@@ -42,10 +42,7 @@ namespace
     {
       boost::mutex::scoped_lock _ (_counter_mutex);
 
-      while (_counter < _expected)
-      {
-        _expected_count_reached.wait (_);
-      }
+      _expected_count_reached.wait (_, [&] { return _counter >= _expected; });
 
       BOOST_REQUIRE_EQUAL (_counter, _expected);
     }
