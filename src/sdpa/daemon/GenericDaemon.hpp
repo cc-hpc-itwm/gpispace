@@ -22,6 +22,8 @@
 #include <sdpa/types.hpp>
 
 #include <we/layer.hpp>
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
 #include <boost/bimap.hpp>

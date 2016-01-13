@@ -5,9 +5,6 @@
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
 
-#include <we/type/activity.hpp>
-#include <we/type/net.hpp>
-
 #include <boost/optional.hpp>
 
 #include <forward_list>

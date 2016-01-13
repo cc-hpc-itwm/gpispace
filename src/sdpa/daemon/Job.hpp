@@ -4,6 +4,9 @@
 #include <sdpa/types.hpp>
 #include <sdpa/job_requirements.hpp>
 
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+
 #include <fhg/assert.hpp>
 
 #include <boost/msm/back/state_machine.hpp>

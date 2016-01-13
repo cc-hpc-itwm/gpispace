@@ -4,6 +4,9 @@
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/types.hpp>
 
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+
 namespace sdpa
 {
   namespace events

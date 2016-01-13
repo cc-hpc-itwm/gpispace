@@ -5,6 +5,9 @@
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+
 namespace sdpa
 {
   namespace daemon
