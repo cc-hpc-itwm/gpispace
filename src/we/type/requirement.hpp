@@ -10,16 +10,13 @@ namespace we
   {
     struct requirement_t
     {
-      typedef std::string value_type;
-      typedef value_type argument_type;
-
       requirement_t ()
         : value_()
         , mandatory_(false)
       {}
 
       explicit
-      requirement_t (value_type arg, const bool _mandatory = false)
+      requirement_t (std::string arg, const bool _mandatory = false)
         : value_(arg)
         , mandatory_(_mandatory)
       {}
@@ -29,12 +26,12 @@ namespace we
         return mandatory_;
       }
 
-      const value_type & value(void) const
+      const std::string & value(void) const
       {
         return value_;
       }
 
-      void value(const value_type & val)
+      void value(const std::string & val)
       {
         value_ = val;
       }
@@ -47,7 +44,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP(mandatory_);
       }
 
-      value_type value_;
+      std::string value_;
       bool mandatory_;
     };
 
