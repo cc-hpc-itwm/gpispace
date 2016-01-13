@@ -62,7 +62,7 @@ namespace sdpa
                              , boost::optional<fhg::com::p2p::address_t>
                              )
     {
-      static sdpa::events::Codec const codec;
+      static sdpa::events::Codec const codec {};
 
       if (! ec)
       {
@@ -130,7 +130,7 @@ namespace sdpa
 
       m_incoming_events.INDICATES_A_RACE_clear();
 
-      static sdpa::events::Codec const codec;
+      static sdpa::events::Codec const codec {};
       m_peer.send (_drts_entrypoint_address, codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
