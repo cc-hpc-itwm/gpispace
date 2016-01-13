@@ -1,8 +1,9 @@
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
+
+#include <string>
 
 namespace we
 {
