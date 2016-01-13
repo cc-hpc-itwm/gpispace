@@ -32,10 +32,6 @@ namespace we
         return value_;
       }
 
-      void value(const std::string & val)
-      {
-        value_ = val;
-      }
     private:
       friend class boost::serialization::access;
       template <typename Archive>
@@ -48,15 +44,5 @@ namespace we
       std::string value_;
       bool mandatory_;
     };
-
-    inline requirement_t make_mandatory (const std::string& val)
-    {
-      return requirement_t (val, true);
-    }
-
-    inline requirement_t make_optional (const std::string& val)
-    {
-      return requirement_t (val, false);
-    }
   }
 }
