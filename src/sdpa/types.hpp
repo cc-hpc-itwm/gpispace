@@ -11,14 +11,12 @@
 #include <boost/optional.hpp>
 
 #include <forward_list>
-#include <list>
 #include <map>
 #include <set>
 #include <string>
 
 namespace sdpa {
 	typedef std::string job_id_t;
-	typedef std::list<job_id_t> job_id_list_t;
 	typedef std::string worker_id_t;
 
   using name_host_port_tuple
