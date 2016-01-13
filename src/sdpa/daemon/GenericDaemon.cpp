@@ -1449,7 +1449,8 @@ namespace sdpa
     void GenericDaemon::request_rescheduling (worker_id_t const& w)
     {
       _new_workers_added.push (w);
-      _scheduling_thread_notifier.notify_one();
+
+      request_scheduling();
     }
 
     GenericDaemon::child_proxy::child_proxy
