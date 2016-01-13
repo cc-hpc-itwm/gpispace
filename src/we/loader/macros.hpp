@@ -25,7 +25,7 @@
   #endif
 #endif
 
-#define WE_MOD_INITIALIZE_START(modname)\
+#define WE_MOD_INITIALIZE_START()\
   extern "C" \
   {\
      void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *);   \
@@ -37,6 +37,6 @@
 #define WE_REGISTER_FUN_AS(fun,as)             \
         mod->add_function(as, &fun)
 
-#define WE_MOD_INITIALIZE_END(modname)\
+#define WE_MOD_INITIALIZE_END()\
     }\
   }
