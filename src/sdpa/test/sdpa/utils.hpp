@@ -434,8 +434,8 @@ namespace utils
     void wait_for_workers_to_shutdown()
     {
       boost::mutex::scoped_lock lock (_mutex_workers_shutdown);
-      while(!_accepted_workers.empty())
-        _cond_workers_shutdown.wait(lock);
+      _cond_workers_shutdown.wait
+        (lock, [&] { return _accepted_workers.empty(); });
     }
 
     std::string name() const { return _name; }
