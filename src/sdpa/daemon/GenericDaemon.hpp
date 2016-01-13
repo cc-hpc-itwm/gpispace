@@ -293,7 +293,9 @@ namespace sdpa {
       concurrent_list_t<worker_id_t> _new_workers_added;
 
       boost::mutex _scheduling_thread_mutex;
-      boost::condition_variable _scheduling_thread_notifier;
+      boost::mutex _scheduling_requested_guard;
+      boost::condition_variable _scheduling_requested_condition;
+      bool _scheduling_requested;
       void request_scheduling();
       void request_rescheduling (worker_id_t const&);
 
