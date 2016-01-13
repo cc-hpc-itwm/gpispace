@@ -11,38 +11,39 @@ namespace we
   {
     struct requirement_t
     {
-      requirement_t ()
-        : value_()
-        , mandatory_(false)
+      requirement_t()
+        : _value()
+        , _mandatory (false)
       {}
 
       explicit
-      requirement_t (std::string arg, const bool _mandatory = false)
-        : value_(arg)
-        , mandatory_(_mandatory)
+      requirement_t (std::string value, const bool mandatory = false)
+        : _value (std::move (value))
+        , _mandatory (mandatory)
       {}
 
-      bool is_mandatory (void) const
+      bool is_mandatory() const
       {
-        return mandatory_;
+        return _mandatory;
       }
 
-      const std::string & value(void) const
+      std::string const& value() const
       {
-        return value_;
+        return _value;
       }
 
     private:
       friend class boost::serialization::access;
+
       template <typename Archive>
-      void serialize(Archive & ar, const unsigned int)
+      void serialize (Archive& ar, const unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP(value_);
-        ar & BOOST_SERIALIZATION_NVP(mandatory_);
+        ar & BOOST_SERIALIZATION_NVP (_value);
+        ar & BOOST_SERIALIZATION_NVP (_mandatory);
       }
 
-      std::string value_;
-      bool mandatory_;
+      std::string _value;
+      bool _mandatory;
     };
   }
 }
