@@ -1,5 +1,3 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
 #include <sdpa/daemon/GenericDaemon.hpp>
@@ -98,12 +96,11 @@ namespace sdpa
 
        bounded_priority_queue_t bpq (n_req_workers);
 
-       for ( mmap_match_deg_worker_id_t::const_iterator it = mmap_matching_workers.begin()
-           ; it != mmap_matching_workers.end()
-           ; ++it
+       for ( std::pair<double const, worker_id_host_info_t> const& it
+           : mmap_matching_workers
            )
        {
-         const worker_id_host_info_t& worker_info = it->second;
+         const worker_id_host_info_t& worker_info = it.second;
 
          double const cost_preassigned_jobs
            ( _worker_manager.cost_assigned_jobs
@@ -122,7 +119,7 @@ namespace sdpa
            );
 
          bpq.emplace ( total_cost
-                     , -1.0*it->first
+                     , -1.0*it.first
                      , worker_info.shared_memory_size()
                      , worker_info.last_time_served()
                      , worker_info.worker_id()
@@ -173,7 +170,7 @@ namespace sdpa
 
       while (!jobs_to_schedule.empty())
       {
-        sdpa::job_id_t jobId (jobs_to_schedule.front());
+        sdpa::job_id_t const jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
         const job_requirements_t& requirements (_job_requirements (jobId));
@@ -188,7 +185,7 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          allocation_table_t::iterator it (allocation_table_.find (jobId));
+          allocation_table_t::iterator const it (allocation_table_.find (jobId));
           if (it != allocation_table_.end())
           {
             throw std::runtime_error ("already have reservation for job " + jobId);
@@ -201,7 +198,7 @@ namespace sdpa
               _worker_manager.assign_job_to_worker (jobId, worker);
             }
 
-            Reservation* pReservation
+            Reservation* const pReservation
               (new Reservation ( matching_workers
                                , compute_reservation_cost ( jobId
                                                           , matching_workers
@@ -269,23 +266,16 @@ namespace sdpa
                                                               , const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      sdpa::worker_id_list_t list_not_terminated_workers;
 
       const allocation_table_t::const_iterator it
         (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
-        Reservation* ptr_reservation(it->second);
-        list_not_terminated_workers = ptr_reservation->getListNotTerminatedWorkers();
+        return it->second->apply_to_workers_without_result (std::move (func));
       }
 
-      for (worker_id_t worker_id : list_not_terminated_workers)
-      {
-        func (worker_id);
-      }
-
-      return !list_not_terminated_workers.empty();
+      return false;
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
@@ -293,7 +283,7 @@ namespace sdpa
     {
       std::set<job_id_t> jobs_started;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      std::list<job_id_t> pending_jobs (_list_pending_jobs.get_and_clear());
+      std::list<job_id_t> const pending_jobs (_list_pending_jobs.get_and_clear());
       for (const job_id_t& job_id: pending_jobs)
       {
         std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
@@ -320,8 +310,8 @@ namespace sdpa
 
       if (it != allocation_table_.end())
       {
-        Reservation* ptr_reservation(it->second);
-        for (std::string worker : ptr_reservation->workers())
+        Reservation const* const ptr_reservation(it->second);
+        for (std::string const& worker : ptr_reservation->workers())
         {
           _worker_manager.delete_job_from_worker (job_id, worker);
         }
@@ -336,7 +326,7 @@ namespace sdpa
       (const worker_id_t& wid, const job_id_t& jid)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator it = allocation_table_.find (jid);
+      allocation_table_t::iterator const it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
         it->second->storeWorkerResult (wid, Reservation::FINISHED);
@@ -352,7 +342,7 @@ namespace sdpa
       (const worker_id_t& wid, const job_id_t& jid)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator it = allocation_table_.find (jid);
+      allocation_table_t::iterator const it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
         it->second->storeWorkerResult (wid, Reservation::FAILED);
@@ -368,7 +358,7 @@ namespace sdpa
       (const worker_id_t& wid, const job_id_t& jid)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator it = allocation_table_.find (jid);
+      allocation_table_t::iterator const it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
         it->second->storeWorkerResult (wid, Reservation::CANCELED);
@@ -383,7 +373,7 @@ namespace sdpa
     bool CoallocationScheduler::allPartialResultsCollected (const job_id_t& jid)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator it = allocation_table_.find (jid);
+      allocation_table_t::iterator const it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
         return it->second->allWorkersTerminated();
@@ -398,7 +388,7 @@ namespace sdpa
     bool CoallocationScheduler::groupFinished (const sdpa::job_id_t& jid)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator it = allocation_table_.find (jid);
+      allocation_table_t::iterator const it = allocation_table_.find (jid);
       if (it != allocation_table_.end())
       {
         return it->second->allGroupTasksFinishedSuccessfully();

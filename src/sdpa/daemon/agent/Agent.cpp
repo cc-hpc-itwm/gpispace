@@ -1,11 +1,12 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #include <sdpa/daemon/agent/Agent.hpp>
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
+
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
 
 namespace sdpa
 {
@@ -36,7 +37,7 @@ namespace sdpa
     {
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
       {
         pJob->JobFinished (pEvt->result());
@@ -96,7 +97,7 @@ namespace sdpa
     {
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!hasWorkflowEngine())
       {
         pJob->JobFailed (pEvt->error_message());
@@ -107,7 +108,7 @@ namespace sdpa
       {
         _scheduler.workerFailed
           (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
-        bool bAllPartResCollected (_scheduler.allPartialResultsCollected (pEvt->job_id()));
+        bool const bAllPartResCollected (_scheduler.allPartialResultsCollected (pEvt->job_id()));
 
         if (bAllPartResCollected)
         {
@@ -143,7 +144,7 @@ namespace sdpa
     void Agent::handleCancelJobEvent
       (fhg::com::p2p::address_t const&, const events::CancelJobEvent* pEvt)
     {
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
         throw std::runtime_error ("CancelJobEvent for unknown job");
@@ -178,7 +179,7 @@ namespace sdpa
     void Agent::handleCancelJobAckEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobAckEvent* pEvt)
     {
-      Job* pJob (findJob(pEvt->job_id()));
+      Job* const pJob (findJob(pEvt->job_id()));
 
       if (!hasWorkflowEngine())
       {

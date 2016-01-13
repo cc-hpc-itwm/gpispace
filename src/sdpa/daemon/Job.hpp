@@ -4,6 +4,9 @@
 #include <sdpa/types.hpp>
 #include <sdpa/job_requirements.hpp>
 
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+
 #include <fhg/assert.hpp>
 
 #include <boost/msm/back/state_machine.hpp>
@@ -101,7 +104,7 @@ namespace sdpa
     public:
       Job ( const job_id_t id
           , we::type::activity_t
-          , opaque_job_master_t owner
+          , boost::optional<master_info_t::iterator>
           , job_requirements_t
           );
 
@@ -110,7 +113,7 @@ namespace sdpa
         return _activity;
       }
       const job_id_t& id() const;
-      opaque_job_master_t const& owner() const;
+      boost::optional<master_info_t::iterator> const& owner() const;
       job_requirements_t requirements() const;
 
       std::string error_message () const;
@@ -129,7 +132,7 @@ namespace sdpa
       mutable boost::mutex mtx_;
       we::type::activity_t _activity;
       job_id_t id_;
-      opaque_job_master_t m_owner;
+      boost::optional<master_info_t::iterator> m_owner;
       job_requirements_t _requirements;
 
       std::string m_error_message;

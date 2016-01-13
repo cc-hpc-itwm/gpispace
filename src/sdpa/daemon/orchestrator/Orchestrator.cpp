@@ -1,5 +1,3 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 
 #include <sdpa/daemon/Job.hpp>
@@ -42,7 +40,7 @@ namespace sdpa
 
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
         //! \todo Explain why we can ignore this
@@ -63,7 +61,7 @@ namespace sdpa
     {
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
         //! \todo Explain why we can ignore this
@@ -84,7 +82,7 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
         throw std::runtime_error ("CancelJobEvent for unknown job");
@@ -111,7 +109,7 @@ namespace sdpa
         parent_proxy (this, source).cancel_job_ack (pEvt->job_id());
       }
 
-      sdpa::job_id_t job_id (pEvt->job_id());
+      sdpa::job_id_t const job_id (pEvt->job_id());
       pJob->CancelJob();
 
       const std::unordered_set<worker_id_t>
@@ -140,7 +138,7 @@ namespace sdpa
     void Orchestrator::handleCancelJobAckEvent
       (fhg::com::p2p::address_t const&, const events::CancelJobAckEvent* pEvt)
     {
-      Job* pJob (findJob (pEvt->job_id()));
+      Job* const pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
         //! \todo Explain why we can ignore this
@@ -156,7 +154,7 @@ namespace sdpa
     void Orchestrator::handleDeleteJobEvent
       (fhg::com::p2p::address_t const& source, const events::DeleteJobEvent* evt)
     {
-      Job* pJob (findJob (evt->job_id()));
+      Job* const pJob (findJob (evt->job_id()));
       if (!pJob)
       {
         throw std::runtime_error ("DeleteJobEvent for unknown job");

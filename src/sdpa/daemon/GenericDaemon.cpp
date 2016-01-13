@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  GenericDaemon.cpp
- *
- *    Description:  Generic daemon implementation file
- *
- *        Version:  1.0
- *        Created:  2009
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 
@@ -52,32 +34,6 @@
 
 namespace sdpa
 {
-  struct opaque_job_master_t::implementation
-  {
-    using actual_implementation =
-      boost::optional<daemon::GenericDaemon::master_info_t::iterator>;
-
-    implementation (actual_implementation actual)
-      : _actual (std::move (actual))
-    {}
-    actual_implementation const _actual;
-  };
-  opaque_job_master_t::opaque_job_master_t (opaque_job_master_t&& rhs)
-    : _ (rhs._)
-  {
-    rhs._ = nullptr;
-  }
-  opaque_job_master_t::~opaque_job_master_t()
-  {
-    delete _;
-    _ = nullptr;
-  }
-  opaque_job_master_t::opaque_job_master_t (const void* data)
-    : _ ( new implementation
-          (*static_cast<const implementation::actual_implementation*> (data))
-        )
-  {}
-
   namespace daemon {
 namespace
 {
@@ -114,13 +70,6 @@ namespace
       : _ (logger, socket.string())
     {}
 
-    GenericDaemon::master_network_info::master_network_info
-        (std::string const& host_, std::string const& port_)
-      : host (host_)
-      , port (port_)
-      , address (boost::none)
-    {}
-
     namespace
     {
       //! \note templated for convenience of not needing public access
@@ -131,12 +80,9 @@ namespace
         InfoMap ret;
         for (name_host_port_tuple const& name_host_port : masters)
         {
-          ret.emplace ( std::get<0> (name_host_port)
-                      , typename InfoMap::mapped_type
-                          ( std::get<1> (name_host_port)
-                          , std::get<2> (name_host_port)
-                          )
-                      );
+          ret.emplace_front ( std::get<1> (name_host_port)
+                            , std::get<2> (name_host_port)
+                            );
         }
         return ret;
       }
@@ -215,13 +161,10 @@ GenericDaemon::GenericDaemon( const std::string name
     : nullptr
     )
 {
-    for ( master_info_t::iterator it (_master_info.begin())
-        ; it != _master_info.end()
-        ; ++it
-        )
-    {
-      requestRegistration (it);
-    }
+  for (master_network_info& master : _master_info)
+  {
+    requestRegistration (master);
+  }
 }
 
 GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
@@ -274,7 +217,7 @@ const std::string& GenericDaemon::name() const
 void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
-  Job* ptrJob = findJob(jobId);
+  Job const* const ptrJob = findJob(jobId);
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
@@ -323,7 +266,7 @@ std::string GenericDaemon::gen_id()
       Job* pJob = new Job
         ( job_id
         , std::move (activity)
-        , opaque_job_master_t (static_cast<const void*> (&owner))
+        , std::move (owner)
         , std::move (requirements)
         );
 
@@ -364,9 +307,6 @@ void GenericDaemon::handleSubmitJobEvent
 {
   const events::SubmitJobEvent& e (*evt);
 
-  boost::optional<master_info_t::iterator> const itMaster
-    (master_by_address (source));
-
   // First, check if the job 'job_id' wasn't already submitted!
   if(e.job_id() && findJob(*e.job_id()))
   {
@@ -376,12 +316,12 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  Job* pJob (addJob ( job_id
-                    , e.activity()
-                    , itMaster
-                    , {{}, {}, null_transfer_cost, 1.0, 0}
-                    )
-            );
+  Job* const pJob (addJob ( job_id
+                          , e.activity()
+                          , master_by_address (source)
+                          , {{}, {}, null_transfer_cost, 1.0, 0}
+                          )
+                  );
 
   //! \todo Don't ack before we know that we can: may fail 20 lines
   //! below. add Nack event of some sorts to not need
@@ -459,12 +399,11 @@ try
   request_rescheduling (event->name());
 
   // send to the masters my new set of capabilities
-  for (master_info_t::value_type const& info : _master_info)
+  for (master_network_info const& info : _master_info)
   {
-    if (info.second.address)
+    if (info.address)
     {
-      parent_proxy (this, *info.second.address)
-        .capabilities_gained (workerCpbSet);
+      parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
     }
   }
 
@@ -482,8 +421,6 @@ void GenericDaemon::handleErrorEvent
 {
   const sdpa::events::ErrorEvent& error (*evt);
 
-  boost::optional<master_info_t::iterator> const as_master
-    (master_by_address (source));
   boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
     (_worker_manager.worker_by_address (source));
 
@@ -496,8 +433,8 @@ void GenericDaemon::handleErrorEvent
     // 'reason' should not be reused for important information
     case events::ErrorEvent::SDPA_EBACKLOGFULL:
     {
-      sdpa::job_id_t jobId(*error.job_id());
-      Job* pJob (findJob (jobId));
+      sdpa::job_id_t const jobId(*error.job_id());
+      Job* const pJob (findJob (jobId));
       if (!pJob)
       {
         throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
@@ -539,16 +476,15 @@ void GenericDaemon::handleErrorEvent
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
     case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
-      if( isSubscriber(source) )
-        unsubscribe(source);
+      unsubscribe(source);
 
       if (as_worker)
       {
-        for (master_info_t::value_type const& info : _master_info)
+        for (master_network_info const& info : _master_info)
         {
-          if (info.second.address)
+          if (info.address)
           {
-            parent_proxy (this, *info.second.address).capabilities_lost
+            parent_proxy (this, *info.address).capabilities_lost
               (_worker_manager.worker_capabilities (as_worker.get()->second));
           }
         }
@@ -558,9 +494,9 @@ void GenericDaemon::handleErrorEvent
         const std::set<job_id_t> jobs_to_reschedule
           (_worker_manager.get_worker_jobs_and_clean_queues (as_worker.get()->second));
 
-        for (sdpa::job_id_t jobId : jobs_to_reschedule)
+        for (sdpa::job_id_t const& jobId : jobs_to_reschedule)
         {
-          Job* pJob = findJob (jobId);
+          Job* const pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
             _scheduler.workerCanceled (as_worker.get()->second, jobId);
@@ -587,10 +523,13 @@ void GenericDaemon::handleErrorEvent
       }
       else
       {
+        boost::optional<master_info_t::iterator> const as_master
+          (master_by_address (source));
+
         if (as_master)
         {
-          as_master.get()->second.address = boost::none;
-          request_registration_soon (as_master.get());
+          as_master.get()->address = boost::none;
+          request_registration_soon (*as_master.get());
         }
       }
 
@@ -629,7 +568,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 {
   boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
-  Job* pJob (findJob (job_id));
+  Job* const pJob (findJob (job_id));
   if (!pJob)
   {
     //! \note Job may have been removed between wfe requesting cancel
@@ -664,7 +603,7 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
 void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
 {
-  Job* pJob = findJob(id);
+  Job* const pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got finished message for old/unknown Job " + id);
@@ -672,7 +611,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   pJob->JobFinished (result);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
+  if(!isSubscriber(pJob->owner().get()->address.get()))
   {
     parent_proxy (this, pJob->owner()).job_finished (id, result);
   }
@@ -696,7 +635,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
                           , std::string const & reason
                           )
 {
-  Job* pJob = findJob(id);
+  Job* const pJob = findJob(id);
   if(!pJob)
   {
     throw std::runtime_error ("got failed message for old/unknown Job " + id);
@@ -704,7 +643,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   pJob->JobFailed (reason);
 
-  if(!isSubscriber(pJob->owner()->_actual.get()->second.address.get()))
+  if(!isSubscriber(pJob->owner().get()->address.get()))
   {
     parent_proxy (this, pJob->owner()).job_failed (id, reason);
   }
@@ -727,7 +666,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)
 {
-  Job* pJob (findJob (job_id));
+  Job* const pJob (findJob (job_id));
   if (!pJob)
   {
     throw std::runtime_error ("rts_canceled (unknown job)");
@@ -744,15 +683,15 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   }
 }
 
-    boost::optional<GenericDaemon::master_info_t::iterator>
+    boost::optional<master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
     {
-      master_info_t::iterator it
+      master_info_t::iterator const it
         ( std::find_if ( _master_info.begin()
                        , _master_info.end()
                        , [&address] (master_info_t::value_type const& info)
                          {
-                           return info.second.address == address;
+                           return info.address == address;
                          }
                        )
         );
@@ -799,7 +738,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
     }
   }
 
-  bool bModified (_worker_manager.add_worker_capabilities
+  bool const bModified (_worker_manager.add_worker_capabilities
     (worker->second, workerCpbSet));
 
   if(bModified)
@@ -813,11 +752,11 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
       if( !newWorkerCpbSet.empty() )
       {
-        for (master_info_t::value_type const& info : _master_info)
+        for (master_network_info const& info : _master_info)
         {
-          if (info.second.address)
+          if (info.address)
           {
-            parent_proxy (this, *info.second.address).capabilities_gained
+            parent_proxy (this, *info.address).capabilities_gained
               (newWorkerCpbSet);
           }
         }
@@ -841,11 +780,11 @@ void GenericDaemon::handleCapabilitiesLostEvent
                                                               )
      )
   {
-    for (master_info_t::value_type const& info : _master_info)
+    for (master_network_info const& info : _master_info)
     {
-      if (info.second.address)
+      if (info.address)
       {
-        parent_proxy (this, *info.second.address).capabilities_lost
+        parent_proxy (this, *info.address).capabilities_lost
           (pCpbLostEvt->capabilities());
       }
     }
@@ -881,28 +820,30 @@ void GenericDaemon::delay (std::function<void()> fun)
     );
 }
 
-void GenericDaemon::request_registration_soon (master_info_t::iterator const& it)
+void GenericDaemon::request_registration_soon
+  (master_network_info& master)
 {
   _registration_threads.start
-    (std::bind (&GenericDaemon::do_registration_after_sleep, this, it));
+    (std::bind (&GenericDaemon::do_registration_after_sleep, this, master));
 }
 
-void GenericDaemon::do_registration_after_sleep (master_info_t::iterator const& it)
+void GenericDaemon::do_registration_after_sleep
+  (master_network_info& master)
 {
   boost::this_thread::sleep (_registration_timeout);
-  requestRegistration (it);
+
+  requestRegistration (master);
 }
 
-void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
+void GenericDaemon::requestRegistration (master_network_info& master)
 {
   try
   {
-    it->second.address
-      = _network_strategy.connect_to (it->second.host, it->second.port);
+    master.address = _network_strategy.connect_to (master.host, master.port);
   }
-  catch (std::exception const& ex)
+  catch (std::exception const&)
   {
-    request_registration_soon (it);
+    request_registration_soon (master);
   }
 
   std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
@@ -910,7 +851,7 @@ void GenericDaemon::requestRegistration (master_info_t::iterator const& it)
 
   _worker_manager.getCapabilities (cpbSet);
 
-  parent_proxy (this, it).worker_registration (cpbSet);
+  parent_proxy (this, master).worker_registration (cpbSet);
 }
 
 void GenericDaemon::addCapability(const capability_t& cpb)
@@ -922,14 +863,8 @@ void GenericDaemon::addCapability(const capability_t& cpb)
 void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-  _subscriptions.erase(id);
-}
 
-bool GenericDaemon::subscribedFor(const fhg::com::p2p::address_t& agId, const sdpa::job_id_t& jobId)
-{
-  return std::find
-    (_subscriptions[agId].begin(), _subscriptions[agId].end(), jobId)
-    != _subscriptions[agId].end();
+  _subscriptions.left.erase (id);
 }
 
 void GenericDaemon::handleSubscribeEvent
@@ -939,7 +874,7 @@ void GenericDaemon::handleSubscribeEvent
 
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
-  Job* pJob (findJob (jobId));
+  Job const* const pJob (findJob (jobId));
   if (!pJob)
   {
     throw std::runtime_error ( "Could not subscribe for the job" + jobId
@@ -947,11 +882,7 @@ void GenericDaemon::handleSubscribeEvent
                              );
   }
 
-  // allow to subscribe multiple times with different lists of job ids
-  if (!subscribedFor (source, jobId))
-  {
-    _subscriptions[source].push_back (jobId);
-  }
+  _subscriptions.insert ({source, jobId});
 
   sendEventToOther<events::SubscribeAckEvent> (source, jobId);
 
@@ -992,26 +923,9 @@ void GenericDaemon::handleSubscribeEvent
 bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-  return _subscriptions.find (agentId) != _subscriptions.end();
+
+  return !boost::empty (_subscriptions.left.equal_range (agentId));
 }
-    std::list<fhg::com::p2p::address_t> GenericDaemon::subscribers (job_id_t job_id) const
-    {
-      std::list<fhg::com::p2p::address_t> ret;
-
-      for (subscriber_map_t::value_type const& subscription : _subscriptions)
-      {
-        for (job_id_t id : subscription.second)
-        {
-          if (id == job_id)
-          {
-            ret.push_back (subscription.first);
-            break;
-          }
-        }
-      }
-
-      return ret;
-    }
 
 /**
  * Event SubmitJobAckEvent
@@ -1029,7 +943,7 @@ void GenericDaemon::handleSubmitJobAckEvent
   // Only, now should be state of the job updated to RUNNING
   // since it was not rejected, no error occurred etc ....
   //find the job ptrJob and call
-  Job* ptrJob = findJob(pEvent->job_id());
+  Job* const ptrJob = findJob(pEvent->job_id());
   if(!ptrJob)
   {
     LLOG (ERROR, _logger,  "job " << pEvent->job_id()
@@ -1095,9 +1009,9 @@ void GenericDaemon::handleJobFailedAckEvent
     void GenericDaemon::delayed_discover
       (we::layer::id_type discover_id, we::layer::id_type job_id)
     {
-      Job* pJob (findJob (job_id));
+      Job const* const pJob (findJob (job_id));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (job_id));
 
       if (pJob && !workers.empty())
@@ -1127,9 +1041,9 @@ void GenericDaemon::handleJobFailedAckEvent
     void GenericDaemon::handleDiscoverJobStatesEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent *pEvt)
     {
-      Job* pJob (findJob (pEvt->job_id()));
+      Job const* const pJob (findJob (pEvt->job_id()));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (pEvt->job_id()));
 
       if (pJob && !workers.empty())
@@ -1228,7 +1142,7 @@ void GenericDaemon::handleJobFailedAckEvent
           throw std::runtime_error ("take: key " + key + " not found");
         }
 
-        typename Map::mapped_type v (std::move (it->second));
+        typename Map::mapped_type const v (std::move (it->second));
         map.erase (it);
         return v;
       }
@@ -1238,9 +1152,9 @@ void GenericDaemon::handleJobFailedAckEvent
       (fhg::com::p2p::address_t const& source, const events::put_token* event)
     try
     {
-      Job* job (findJob (event->job_id()));
+      Job const* const job (findJob (event->job_id()));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
       if (!job || (workers.empty() && !workflowEngine()))
@@ -1308,9 +1222,9 @@ void GenericDaemon::handleJobFailedAckEvent
       (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
     try
     {
-      Job* job (findJob (event->job_id()));
+      Job const* const job (findJob (event->job_id()));
 
-      std::unordered_set<worker_id_t> workers
+      std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
       if (!job || (workers.empty() && !workflowEngine()))
@@ -1380,7 +1294,7 @@ void GenericDaemon::handleJobFailedAckEvent
 void GenericDaemon::handleRetrieveJobResultsEvent
   (fhg::com::p2p::address_t const& source, const events::RetrieveJobResultsEvent* pEvt )
 {
-  Job* pJob = findJob(pEvt->job_id());
+  Job const* const pJob = findJob(pEvt->job_id());
   if (!pJob)
   {
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
@@ -1401,9 +1315,9 @@ void GenericDaemon::handleRetrieveJobResultsEvent
 void GenericDaemon::handleQueryJobStatusEvent
   (fhg::com::p2p::address_t const& source, const events::QueryJobStatusEvent* pEvt )
 {
-  sdpa::job_id_t jobId = pEvt->job_id();
+  sdpa::job_id_t const jobId = pEvt->job_id();
 
-  Job* pJob (findJob(jobId));
+  Job const* const pJob (findJob(jobId));
   if (!pJob)
   {
     throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
@@ -1524,12 +1438,12 @@ namespace sdpa
       , _address (address)
     {}
     GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, master_info_t::iterator const& master)
-      : parent_proxy (that, master->second.address.get())
+        (GenericDaemon* that, master_network_info const& master)
+      : parent_proxy (that, master.address.get())
     {}
     GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, opaque_job_master_t const& job_master)
-      : parent_proxy (that, job_master->_actual.get())
+        (GenericDaemon* that, boost::optional<master_info_t::iterator> const& job_master)
+      : parent_proxy (that, *job_master.get())
     {}
 
     void GenericDaemon::parent_proxy::worker_registration

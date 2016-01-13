@@ -3,6 +3,8 @@
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/types.hpp>
 #include <we/layer.hpp>
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 

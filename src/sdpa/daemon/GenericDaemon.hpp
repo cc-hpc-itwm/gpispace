@@ -1,20 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  GenericDaemon.hpp
- *
- *    Description:  Generic daemon header file
- *
- *        Version:  1.0
- *        Created:  2009
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Dr. Tiberiu Rotaru, tiberiu.rotaru@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
 #pragma once
 
 #include <sdpa/capability.hpp>
@@ -39,8 +22,12 @@
 #include <sdpa/types.hpp>
 
 #include <we/layer.hpp>
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
@@ -63,6 +50,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <forward_list>
 #include <memory>
 #include <mutex>
 #include <queue>
@@ -75,16 +63,6 @@ namespace sdpa {
     class GenericDaemon : public sdpa::events::EventHandler,
                           boost::noncopyable
     {
-    protected:
-      struct master_network_info
-      {
-        master_network_info (std::string const& host, std::string const& port);
-        fhg::com::host_t host;
-        fhg::com::port_t port;
-        boost::optional<fhg::com::p2p::address_t> address;
-      };
-      using master_info_t = std::map<std::string, master_network_info>;
-
     public:
       GenericDaemon( const std::string name
                    , const std::string url
@@ -100,8 +78,10 @@ namespace sdpa {
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
 
+    protected:
       bool isTop() { return _master_info.empty(); }
 
+    public:
       // WE interface
       OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
@@ -119,22 +99,25 @@ namespace sdpa {
 
       void addCapability(const capability_t& cpb);
 
-    protected:
+    private:
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
+    protected:
       bool isSubscriber(const fhg::com::p2p::address_t&);
-      std::list<fhg::com::p2p::address_t> subscribers (job_id_t) const;
+    protected:
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
       {
-        for (fhg::com::p2p::address_t const& subscriber : subscribers (job_id))
+        for  ( fhg::com::p2p::address_t const& subscriber
+             : _subscriptions.right.equal_range (job_id)
+             | boost::adaptors::map_values
+             )
         {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
       }
-      bool subscribedFor(const fhg::com::p2p::address_t&, const sdpa::job_id_t&);
-
+    private:
       // agent info and properties
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
@@ -191,20 +174,21 @@ namespace sdpa {
       }
       void delay (std::function<void()>);
 
-    public:
+    private:
       // registration
-      void requestRegistration (master_info_t::iterator const&);
-      void request_registration_soon (master_info_t::iterator const&);
+      void requestRegistration (master_network_info&);
+      void request_registration_soon (master_network_info&);
 
       // workflow engine
-    public:
+    protected:
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
+    private:
       // workers
       void serveJob(std::set<worker_id_t> const&, const job_id_t&);
 
-    protected:
+    private:
       // jobs
       std::string gen_id();
 
@@ -219,7 +203,7 @@ namespace sdpa {
                   , job_requirements_t
                   );
 
-    public:
+    protected:
       Job* findJob(const sdpa::job_id_t& job_id ) const;
       void deleteJob(const sdpa::job_id_t& job_id);
 
@@ -231,17 +215,22 @@ namespace sdpa {
     protected:
       fhg::log::Logger& _logger;
 
+    private:
       std::string _name;
-
-      friend struct sdpa::opaque_job_master_t::implementation;
 
       master_info_t _master_info;
 
       boost::optional<master_info_t::iterator> master_by_address
         (fhg::com::p2p::address_t const&);
 
-      typedef std::unordered_map<fhg::com::p2p::address_t, job_id_list_t> subscriber_map_t;
-      subscriber_map_t _subscriptions;
+      using subscriber_relation_type =
+        boost::bimap
+        < boost::bimaps::unordered_multiset_of<fhg::com::p2p::address_t>
+        , boost::bimaps::unordered_multiset_of<job_id_t>
+        , boost::bimaps::set_of_relation<>
+        >;
+
+      subscriber_relation_type _subscriptions;
 
     private:
       std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>
@@ -268,6 +257,7 @@ namespace sdpa {
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
+    private:
       template <typename T>
       class concurrent_list_t
       {
@@ -292,11 +282,14 @@ namespace sdpa {
       };
       concurrent_list_t<worker_id_t> _new_workers_added;
 
+    protected:
       boost::mutex _scheduling_thread_mutex;
       boost::condition_variable _scheduling_thread_notifier;
       void request_scheduling();
+    private:
       void request_rescheduling (worker_id_t const&);
 
+    private:
       boost::optional<std::mt19937> _random_extraction_engine;
 
     private:
@@ -306,13 +299,13 @@ namespace sdpa {
 
       sdpa::capabilities_set_t m_capabilities;
 
-    protected:
+    private:
       std::unique_ptr<NotificationService> m_guiService;
 
     private:
       boost::posix_time::time_duration _registration_timeout;
 
-      void do_registration_after_sleep (master_info_t::iterator const&);
+      void do_registration_after_sleep (master_network_info&);
 
       fhg::thread::queue< std::pair< fhg::com::p2p::address_t
                                    , boost::shared_ptr<events::SDPAEvent>
@@ -385,8 +378,8 @@ namespace sdpa {
       struct parent_proxy
       {
         parent_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
-        parent_proxy (GenericDaemon*, master_info_t::iterator const&);
-        parent_proxy (GenericDaemon*, opaque_job_master_t const&);
+        parent_proxy (GenericDaemon*, master_network_info const&);
+        parent_proxy (GenericDaemon*, boost::optional<master_info_t::iterator> const&);
 
         void worker_registration (capabilities_set_t) const;
         void notify_shutdown() const;

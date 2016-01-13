@@ -3,6 +3,9 @@
 #include <sdpa/events/JobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+
 namespace sdpa
 {
   namespace events

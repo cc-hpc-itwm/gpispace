@@ -1,5 +1,3 @@
-// tiberiu.rotaru@itwm.fraunhofer.de
-
 #pragma once
 
 #include <sdpa/daemon/Job.hpp>
@@ -120,7 +118,7 @@ namespace sdpa
 
         bool allGroupTasksFinishedSuccessfully()
         {
-          for ( result_type result
+          for ( result_type const& result
               : m_map_worker_result | boost::adaptors::map_values
               )
           {
@@ -137,20 +135,25 @@ namespace sdpa
           return _workers;
         }
 
-        sdpa::worker_id_list_t getListNotTerminatedWorkers() const
+        double cost() const {return _cost;}
+
+        bool apply_to_workers_without_result
+          (std::function <void (worker_id_t const&)> fun) const
         {
-          sdpa::worker_id_list_t list_not_terminated_workers (_workers.begin(), _workers.end());
-          for ( const worker_id_t& wid
-              : m_map_worker_result | boost::adaptors::map_keys
-              )
+          bool applied {false};
+
+          for (worker_id_t const& worker_id : _workers)
           {
-            list_not_terminated_workers.remove(wid);
+            if (!m_map_worker_result.count (worker_id))
+            {
+              fun (worker_id);
+
+              applied = true;
+            }
           }
 
-          return list_not_terminated_workers;
+          return applied;
         }
-
-        double cost() const {return _cost;}
       private:
         std::set<worker_id_t> _workers;
         std::map<sdpa::worker_id_t, result_type> m_map_worker_result;

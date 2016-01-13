@@ -75,7 +75,7 @@ namespace sdpa
       bool bModified = false;
       for (Capability const& capability : recvCpbSet)
       {
-	capabilities_set_t::iterator itwcpb (_capabilities.find (capability));
+	capabilities_set_t::iterator const itwcpb (_capabilities.find (capability));
 	if (itwcpb == _capabilities.end())
 	{
 	  _capabilities.insert (capability);

@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de, bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.

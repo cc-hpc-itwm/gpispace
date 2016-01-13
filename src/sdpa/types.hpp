@@ -1,21 +1,20 @@
 #pragma once
 
-#include <fhgcom/peer_info.hpp>
-
-#include <string>
-#include <list>
-#include <map>
-#include <set>
 #include <sdpa/job_states.hpp>
 
-#include <we/type/net.hpp>
-#include <we/type/activity.hpp>
+#include <fhgcom/peer.hpp>
+#include <fhgcom/peer_info.hpp>
+
+#include <boost/optional.hpp>
+
+#include <forward_list>
+#include <map>
+#include <set>
+#include <string>
 
 namespace sdpa {
 	typedef std::string job_id_t;
-	typedef std::list<job_id_t> job_id_list_t;
 	typedef std::string worker_id_t;
-	typedef std::list<sdpa::worker_id_t> worker_id_list_t;
 
   using name_host_port_tuple
     = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
@@ -25,23 +24,19 @@ namespace sdpa {
     class GenericDaemon;
   }
 
-  //! \note Defined in GenericDaemon.cpp
-  struct opaque_job_master_t
+  struct master_network_info
   {
-    opaque_job_master_t() = delete;
-    opaque_job_master_t (opaque_job_master_t const&) = delete;
-    opaque_job_master_t& operator= (opaque_job_master_t const&) = delete;
-    opaque_job_master_t (opaque_job_master_t&&);
-    opaque_job_master_t& operator= (opaque_job_master_t&&) = delete;
-    ~opaque_job_master_t();
+    master_network_info (std::string const& host_, std::string const& port_)
+      : host (host_)
+      , port (port_)
+      , address (boost::none)
+    {}
 
-  private:
-    opaque_job_master_t (const void*);
-    struct implementation;
-    friend class sdpa::daemon::GenericDaemon;
-    implementation* _;
-    implementation* operator->() const { return _; }
+    fhg::com::host_t host;
+    fhg::com::port_t port;
+    boost::optional<fhg::com::p2p::address_t> address;
   };
+  using master_info_t = std::forward_list<master_network_info>;
 
   class worker_id_host_info_t
   {

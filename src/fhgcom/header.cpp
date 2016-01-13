@@ -62,6 +62,11 @@ namespace fhg
         return ! (lhs == rhs);
       }
 
+      bool operator< (address_t const& lhs, address_t const& rhs)
+      {
+        return lhs.data < rhs.data;
+      }
+
       std::string to_string (address_t const & a)
       {
         boost::uuids::uuid u;

@@ -2,7 +2,6 @@
 
 #include <string>
 #include <set>
-#include <iostream>
 
 namespace sdpa
 {
@@ -43,7 +42,7 @@ namespace sdpa
 
     private:
     std::string name_;
-    mutable size_t depth_;
+    size_t depth_;
     std::string owner_;
     std::string uuid_;
   };
