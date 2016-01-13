@@ -1,20 +1,10 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/place.hpp>
-
-#include <boost/functional/hash.hpp>
-
-#include <ostream>
 
 namespace place
 {
   const std::string& type::name() const
   {
     return _name;
-  }
-  const std::string& type::name (const std::string& name_)
-  {
-    return _name = name_;
   }
 
   const pnet::type::signature::signature_type& type::signature() const
@@ -23,10 +13,6 @@ namespace place
   }
 
   const we::type::property::type& type::property() const
-  {
-    return _prop;
-  }
-  we::type::property::type& type::property()
   {
     return _prop;
   }

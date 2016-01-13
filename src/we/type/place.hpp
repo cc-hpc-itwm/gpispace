@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/signature.hpp>
@@ -9,7 +7,6 @@
 #include <boost/serialization/nvp.hpp>
 
 #include <string>
-#include <iosfwd>
 
 namespace place
 {
@@ -18,11 +15,9 @@ namespace place
   {
   public:
     const std::string& name() const;
-    const std::string& name (const std::string&);
 
     const pnet::type::signature::signature_type& signature() const;
     const we::type::property::type& property() const;
-    we::type::property::type& property();
 
     //! \todo eliminate the need for the default constructor
     type () = default;
