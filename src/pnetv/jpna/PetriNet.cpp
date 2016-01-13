@@ -25,7 +25,7 @@ PetriNet::~PetriNet() {
                       , priority
                       )
       );
-    transitions_.push_back(result.get());
+    transitions_.emplace_back(result.get());
     return result.release();
   }
 
