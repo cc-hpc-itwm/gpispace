@@ -41,7 +41,8 @@ namespace
     void wait_for_cancel()
     {
       boost::mutex::scoped_lock lock (_mtx_cancel);
-      _cond_cancel.wait (lock);
+      _cond_cancel.wait
+        (lock, [&] { return _pending_cancel_requests == 1; });
       --_pending_cancel_requests;
     }
 
