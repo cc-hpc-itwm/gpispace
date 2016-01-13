@@ -917,7 +917,7 @@ namespace fhg
                 (QFileDialog::Directory, item._default.get_value_or (""))
                 );
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, std::bind (&fhg::util::qt::widget::file_line_edit::text, edit));
+                (edit, [edit] { return edit->text(); });
             }
 
           case monitor_client::action_argument_data::duration:
@@ -938,7 +938,7 @@ namespace fhg
                 (QFileDialog::AnyFile, item._default.get_value_or (""))
                 );
               return std::pair<QWidget*, std::function<QString()>>
-                (edit, std::bind (&fhg::util::qt::widget::file_line_edit::text, edit));
+                (edit, [edit] { return edit->text(); });
             }
 
           case monitor_client::action_argument_data::integer:
