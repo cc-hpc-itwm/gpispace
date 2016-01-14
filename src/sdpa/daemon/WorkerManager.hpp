@@ -22,6 +22,37 @@ namespace sdpa
   {
     class WorkerManager : boost::noncopyable
     {
+    private:
+      class WorkerEquivalenceClass
+      {
+      public:
+        WorkerEquivalenceClass();
+        WorkerEquivalenceClass (const WorkerEquivalenceClass&) = delete;
+        WorkerEquivalenceClass (WorkerEquivalenceClass&&) = delete;
+        WorkerEquivalenceClass& operator= (const WorkerEquivalenceClass&) = delete;
+        WorkerEquivalenceClass& operator= (const WorkerEquivalenceClass&&) = delete;
+        ~WorkerEquivalenceClass() = default;
+
+        void inc_pending_jobs (unsigned int);
+        void dec_pending_jobs (unsigned int);
+        void inc_running_jobs (unsigned int);
+        void dec_running_jobs (unsigned int);
+
+        unsigned int n_pending_jobs() const;
+        unsigned int n_running_jobs() const;
+        unsigned int n_idle_workers() const;
+        unsigned int n_workers() const;
+
+        void add_worker_entry (worker_id_t const&);
+        void remove_worker_entry (worker_id_t const&);
+
+      private:
+        unsigned int _n_pending_jobs;
+        unsigned int _n_running_jobs;
+        unsigned int _n_idle_workers;
+        std::unordered_set<worker_id_t> _workers;
+      };
+
     public:
       std::unordered_set<worker_id_t> findSubmOrAckWorkers
         (const sdpa::job_id_t& job_id) const;

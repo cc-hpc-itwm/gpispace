@@ -351,5 +351,69 @@ namespace sdpa
         (worker_connections_.left.find (worker));
       return boost::make_optional (it != worker_connections_.left.end(), it);
     }
+
+    WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()
+      : _n_pending_jobs (0)
+      , _n_running_jobs (0)
+      , _n_idle_workers (0)
+    {}
+
+    void WorkerManager::WorkerEquivalenceClass::inc_pending_jobs (unsigned int k)
+    {
+      _n_pending_jobs += k;
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::dec_pending_jobs (unsigned int k)
+    {
+      if (_n_pending_jobs < k)
+        throw std::runtime_error
+          ("The number of pending jobs of a group of workers cannot be a negative number");
+
+      _n_pending_jobs -= k;
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::inc_running_jobs (unsigned int k)
+    {
+      _n_running_jobs += k;
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::dec_running_jobs (unsigned int k)
+    {
+      if (_n_running_jobs < k)
+        throw std::runtime_error
+          ("The number of running jobs of a group of workers cannot be a negative number");
+
+      _n_running_jobs -= k;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_pending_jobs() const
+    {
+      return _n_pending_jobs;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_running_jobs() const
+    {
+      return _n_running_jobs;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_idle_workers() const
+    {
+      return _n_idle_workers;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_workers() const
+    {
+      return _workers.size();
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::add_worker_entry (worker_id_t const& w)
+    {
+      _workers.insert (w);
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::remove_worker_entry (worker_id_t const& w)
+    {
+      _workers.erase (w);
+    }
   }
 }
