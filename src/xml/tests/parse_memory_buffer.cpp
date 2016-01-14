@@ -111,11 +111,11 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_buffers().ids().size(), 1);
-    BOOST_REQUIRE_EQUAL ( function.get().memory_buffers().values().begin()->name()
+    BOOST_REQUIRE_EQUAL (function.get().memory_buffers().size(), 1);
+    BOOST_REQUIRE_EQUAL ( function.get().memory_buffers().begin()->name()
                         , name
                         );
-    BOOST_REQUIRE_EQUAL ( function.get().memory_buffers().values().begin()->size()
+    BOOST_REQUIRE_EQUAL ( function.get().memory_buffers().begin()->size()
                         , size
                         );
 }
@@ -146,13 +146,13 @@ BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_buffers().ids().size(), 2);
+    BOOST_REQUIRE_EQUAL (function.get().memory_buffers().size(), 2);
     BOOST_REQUIRE (function.get().memory_buffers().has (name_1));
     BOOST_REQUIRE (function.get().memory_buffers().has (name_2));
     BOOST_REQUIRE_EQUAL
-      (function.get().memory_buffers().get (name_1)->get().size(), size_1);
+      (function.get().memory_buffers().get (name_1)->size(), size_1);
     BOOST_REQUIRE_EQUAL
-      (function.get().memory_buffers().get (name_2)->get().size(), size_2);
+      (function.get().memory_buffers().get (name_2)->size(), size_2);
 }
 
 namespace
@@ -215,22 +215,33 @@ namespace
 
     xml::parse::state::type state;
 
-    fhg::util::testing::require_exception_with_message
+    fhg::util::testing::require_exception_with_message_in
       <xml::parse::error::memory_buffer_for_non_module>
       ( [&state, &input]()
       { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: non module call function 'Just %1%'"
-                      " with %2% memory buffer%3%"
-                      ", function defined at %4%"
-                      ", memory buffer%3% defined at %5%"
-                      )
-      %  name_function
-      % "2"
-      % "s"
-      % "[<stdin>:2:1]"
-      % "{[<stdin>:4:3], [<stdin>:3:3]}"
+      , { boost::format ("ERROR: non module call function 'Just %1%'"
+                        " with %2% memory buffer%3%"
+                        ", function defined at %4%"
+                        ", memory buffer%3% defined at %5%"
+                        )
+        %  name_function
+        % "2"
+        % "s"
+        % "[<stdin>:2:1]"
+        % "{[<stdin>:3:3], [<stdin>:4:3]}"
+        , boost::format ("ERROR: non module call function 'Just %1%'"
+                        " with %2% memory buffer%3%"
+                        ", function defined at %4%"
+                        ", memory buffer%3% defined at %5%"
+                        )
+        %  name_function
+        % "2"
+        % "s"
+        % "[<stdin>:2:1]"
+        % "{[<stdin>:4:3], [<stdin>:3:3]}"
+        }
       );
   }
 }

@@ -8,7 +8,6 @@
 
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
-#include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/place.fwd.hpp>

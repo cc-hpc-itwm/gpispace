@@ -88,7 +88,7 @@ namespace xml
                       , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const ports_type& ports
-                      , xml::util::unique<memory_buffer_type, id::ref::memory_buffer> const&
+                      , fhg::pnet::util::unique<memory_buffer_type> const&
                       , std::list<memory_get> const&
                       , std::list<memory_put> const&
                       , std::list<memory_getput> const&
@@ -153,8 +153,8 @@ namespace xml
         std::list<memory_put> const& memory_puts() const;
         std::list<memory_getput> const& memory_getputs() const;
 
-        void push_memory_buffer (const id::ref::memory_buffer&);
-        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+        void push_memory_buffer (const memory_buffer_type&);
+        fhg::pnet::util::unique<memory_buffer_type>
           const& memory_buffers() const;
         bool is_known_memory_buffer (std::string const&) const;
 
@@ -239,8 +239,7 @@ namespace xml
         boost::optional<std::string> _name;
 
         ports_type _ports;
-        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
-          _memory_buffers;
+        fhg::pnet::util::unique<memory_buffer_type> _memory_buffers;
 
         std::list<memory_get> _memory_gets;
         std::list<memory_put> _memory_puts;

@@ -114,7 +114,7 @@ namespace xml
         , const util::position_type& pod
         , const boost::optional<std::string>& name
         , const ports_type& ports
-        , xml::util::unique<memory_buffer_type, id::ref::memory_buffer> const& memory_buffers
+        , fhg::pnet::util::unique<memory_buffer_type> const& memory_buffers
         , std::list<memory_get> const& memory_gets
         , std::list<memory_put> const& memory_puts
         , std::list<memory_getput> const& memory_getputs
@@ -131,7 +131,7 @@ namespace xml
         , _parent (parent)
         , _name (name)
         , _ports (ports, _id)
-        , _memory_buffers (memory_buffers, _id)
+        , _memory_buffers (memory_buffers)
         , _memory_gets (memory_gets)
         , _memory_puts (memory_puts)
         , _memory_getputs (memory_getputs)
@@ -355,41 +355,35 @@ namespace xml
         return _memory_getputs;
       }
 
-      void function_type::push_memory_buffer
-        (id::ref::memory_buffer const& id)
+      void function_type::push_memory_buffer (memory_buffer_type const& buffer)
       {
-        id::ref::memory_buffer const& id_old (_memory_buffers.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_memory_buffer (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
+        _memory_buffers.push<error::duplicate_memory_buffer> (buffer);
 
         {
           boost::optional<id::ref::port const&> port_in
-            (get_port_in (id.get().name()));
+            (get_port_in (buffer.name()));
 
           if (port_in)
           {
-            throw error::memory_buffer_with_same_name_as_port (id, *port_in);
+            throw error::memory_buffer_with_same_name_as_port
+              (buffer, *port_in);
           }
         }
 
         {
           boost::optional<id::ref::port const&> port_out
-            (get_port_out (id.get().name()));
+            (get_port_out (buffer.name()));
 
           if (port_out)
           {
-            throw error::memory_buffer_with_same_name_as_port (id, *port_out);
+            throw error::memory_buffer_with_same_name_as_port
+              (buffer, *port_out);
           }
         }
       }
 
-      xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
-        const& function_type::memory_buffers() const
+      fhg::pnet::util::unique<memory_buffer_type> const&
+        function_type::memory_buffers() const
       {
         return _memory_buffers;
       }
@@ -423,7 +417,7 @@ namespace xml
           }
         }
 
-        boost::optional<id::ref::memory_buffer const&>
+        boost::optional<memory_buffer_type const&>
           memory_buffer (memory_buffers().get (id.get().name()));
 
         if (memory_buffer)
@@ -843,11 +837,11 @@ namespace xml
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
-            id::ref::memory_buffer const& id_memory_buffer
+            memory_buffer_type const& memory_buffer
               (*fun.memory_buffers().get (memory_buffer_name));
 
-            memory_buffers.emplace ( id_memory_buffer.get().name()
-                                   , id_memory_buffer.get().size()
+            memory_buffers.emplace ( memory_buffer.name()
+                                   , memory_buffer.size()
                                    );
           }
 
@@ -1098,7 +1092,7 @@ namespace xml
           , _position_of_definition
           , _name
           , _ports.clone (new_id, new_mapper)
-          , _memory_buffers.clone (new_id, new_mapper)
+          , _memory_buffers
           , _memory_gets
           , _memory_puts
           , _memory_getputs
@@ -1871,17 +1865,17 @@ namespace xml
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
-            id::ref::memory_buffer const& id_memory_buffer
+            memory_buffer_type const& memory_buffer
               (*id_function.get().memory_buffers().get (memory_buffer_name));
 
             s << sep << "void";
 
-            if (id_memory_buffer.get().read_only())
+            if (memory_buffer.read_only())
             {
               s << " const";
             }
 
-            s << "* " << id_memory_buffer.get().name() << deeper (indent);
+            s << "* " << memory_buffer.name() << deeper (indent);
           }
 
           s << ")";
@@ -1984,10 +1978,10 @@ namespace xml
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
-            id::ref::memory_buffer const& id_memory_buffer
+            memory_buffer_type const& memory_buffer
               (*id_function.get().memory_buffers().get (memory_buffer_name));
 
-            s << sep << "_pnetc_memory_buffer.at (\"" << id_memory_buffer.get().name() << "\")";
+            s << sep << "_pnetc_memory_buffer.at (\"" << memory_buffer.name() << "\")";
           }
 
           s << ")";
@@ -2610,7 +2604,7 @@ namespace xml
           xml::parse::type::dump::dump (s, f.requirements);
 
           dumps (s, f.ports().values());
-          dumps (s, f.memory_buffers().values());
+          dumps (s, f.memory_buffers());
           dumps (s, f.memory_gets());
           dumps (s, f.memory_puts());
           dumps (s, f.memory_getputs());

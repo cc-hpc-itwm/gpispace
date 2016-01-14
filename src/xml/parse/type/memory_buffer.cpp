@@ -3,7 +3,6 @@
 #include <xml/parse/type/memory_buffer.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/mapper.hpp>
 
 #include <fhg/util/xml.hpp>
 
@@ -14,24 +13,18 @@ namespace xml
     namespace type
     {
       memory_buffer_type::memory_buffer_type
-        ( ID_CONS_PARAM (memory_buffer)
-        , PARENT_CONS_PARAM (function)
-        , const util::position_type& position_of_definition
+        ( const util::position_type& position_of_definition
         , const std::string& name
         , const std::string& size
         , const boost::optional<bool>& read_only
         , const we::type::property::type& properties
         )
         : with_position_of_definition (position_of_definition)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _name (name)
         , _size (size)
         , _read_only (read_only)
         , _properties (properties)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const std::string& memory_buffer_type::name() const
       {
@@ -55,25 +48,6 @@ namespace xml
         memory_buffer_type::unique_key() const
       {
         return _name;
-      }
-
-      id::ref::memory_buffer memory_buffer_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return memory_buffer_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _name
-          , _size
-          , _read_only
-          , _properties
-          ).make_reference_id();
       }
 
       namespace dump

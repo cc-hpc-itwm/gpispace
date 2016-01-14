@@ -574,9 +574,9 @@ namespace xml
           );
       }
 
-      id::ref::memory_buffer memory_buffer_type ( const xml_node_type* node
-                                                , state::type& state
-                                                )
+      type::memory_buffer_type memory_buffer_type ( const xml_node_type* node
+                                                  , state::type& state
+                                                  )
       {
         std::string const name
           ( validate_name
@@ -641,16 +641,13 @@ namespace xml
         }
 
         return type::memory_buffer_type
-          ( state.id_mapper()->next_id()
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , name
           , *size
           , fhg::util::boost::fmap<std::string, bool>
             (fhg::util::read_bool, optional (node, "read-only"))
           , properties
-          ).make_reference_id();
+          );
       }
 
       id::ref::port port_type ( const xml_node_type* node
@@ -1767,7 +1764,7 @@ namespace xml
             }
             else if (child_name == "expression")
             {
-              if (!function.get_ref().memory_buffers().ids().empty())
+              if (!function.get_ref().memory_buffers().empty())
               {
                 throw error::memory_buffer_for_non_module (function);
               }
@@ -1789,7 +1786,7 @@ namespace xml
             }
             else if (child_name == "net")
             {
-              if (!function.get_ref().memory_buffers().ids().empty())
+              if (!function.get_ref().memory_buffers().empty())
               {
                 throw error::memory_buffer_for_non_module (function);
               }

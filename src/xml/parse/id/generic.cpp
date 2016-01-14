@@ -6,7 +6,6 @@
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.hpp>
-#include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/mod.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -66,7 +65,6 @@ namespace xml
     {
       ID_IMPL(connect)
       ID_IMPL(function)
-      ID_IMPL(memory_buffer)
       ID_IMPL(module)
       ID_IMPL(net)
       ID_IMPL(place)
@@ -82,7 +80,6 @@ namespace xml
       PARENT_IMPL(function,module)
       PARENT_IMPL(function,net)
       PARENT_IMPL(function,port)
-      PARENT_IMPL(function,memory_buffer)
       PARENT_IMPL(function,structure)
       PARENT_IMPL(net,place)
       PARENT_IMPL(net,specialize)

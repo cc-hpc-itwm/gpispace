@@ -12,6 +12,75 @@
 #include <functional>
 #include <unordered_map>
 #include <unordered_set>
+#include <set>
+
+namespace fhg
+{
+  namespace pnet
+  {
+    namespace util
+    {
+      template<typename T>
+        struct unique
+      {
+        using key_type = typename T::unique_key_type;
+
+      private:
+        struct
+        {
+          bool operator() (T const& lhs, T const& rhs)
+          {
+            return lhs.unique_key() < rhs.unique_key();
+          }
+        } _comparator;
+
+        std::set<T, decltype (_comparator)> _values;
+
+      public:
+        using value_type = T;
+        using const_iterator = typename decltype (_values)::const_iterator;
+
+        template<typename DuplicateException>
+          void push (value_type const& value)
+        {
+          auto const result (_values.emplace (value));
+          if (!result.second)
+          {
+            throw DuplicateException (*result.first, value);
+          }
+        }
+
+        boost::optional<T const&> get (key_type const& key) const
+        {
+          auto const it ( std::find_if ( _values.begin()
+                                       , _values.end()
+                                       , [&] (T const& value)
+                                         {
+                                           return value.unique_key() == key;
+                                         }
+                                       )
+                        );
+
+          if (it == _values.end())
+          {
+            return boost::none;
+          }
+          return *it;
+        }
+
+        bool has (key_type const& key) const
+        {
+          return !!get (key);
+        }
+
+        auto size() const -> decltype (_values.size()) { return _values.size(); }
+        auto empty() const -> decltype (_values.empty()) { return _values.empty(); }
+        auto begin() const -> decltype (_values.begin()) { return _values.begin(); }
+        auto end() const -> decltype (_values.end()) { return _values.end(); }
+      };
+    }
+  }
+}
 
 namespace xml
 {

@@ -245,7 +245,11 @@ namespace gpi
         {
           boost::optional<std::string> const found_version
             ( fhg::util::boost::exception_is_none
-                (&fhg::util::read_file, detail::version_path (m_path))
+                ( [&]
+                  {
+                    return fhg::util::read_file (detail::version_path (m_path));
+                  }
+                )
             );
 
           if (!!found_version && found_version.get() != version_string())

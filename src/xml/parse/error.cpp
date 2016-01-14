@@ -3,6 +3,7 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
@@ -322,17 +323,18 @@ namespace xml
 
       namespace
       {
+        template<typename MemoryBuffers>
         std::string print_memory_buffer_positions_of_definition
-          (std::unordered_set<id::ref::memory_buffer> const& ids)
+          (MemoryBuffers const& memory_buffers)
         {
           return fhg::util::print_container
-            ( "{", ", ", "}", ids
-            , fhg::util::ostream::callback::generic< id::ref::memory_buffer
+            ( "{", ", ", "}", memory_buffers
+            , fhg::util::ostream::callback::generic< type::memory_buffer_type
                                                    , util::position_type
                                                    >
-              ([] (id::ref::memory_buffer const& id)
+              ([] (type::memory_buffer_type const& memory_buffer)
                {
-                 return id.get().position_of_definition();
+                 return memory_buffer.position_of_definition();
                }
               )
             ).string();
@@ -348,13 +350,13 @@ namespace xml
                       ", memory buffer%3% defined at %5%"
                       )
                     % function.get().name()
-                    % function.get().memory_buffers().ids().size()
-                    % ((function.get().memory_buffers().ids().size() > 1)
+                    % function.get().memory_buffers().size()
+                    % ((function.get().memory_buffers().size() > 1)
                        ? "s" : ""
                       )
                     % function.get().position_of_definition()
                     % print_memory_buffer_positions_of_definition
-                      (function.get().memory_buffers().ids())
+                      (function.get().memory_buffers())
                     )
           , _function (function)
       {}
@@ -431,19 +433,18 @@ namespace xml
 
       memory_buffer_with_same_name_as_port
         ::memory_buffer_with_same_name_as_port
-        ( id::ref::memory_buffer const& memory_buffer
+        ( type::memory_buffer_type const& memory_buffer
         , id::ref::port const& port
         )
           : generic ( boost::format
                       ("memory buffer '%1%' defined at %2%"
                       " with the same name as the %3%-port defined at %4%"
                       )
-                    % memory_buffer.get().name()
-                    % memory_buffer.get().position_of_definition()
+                    % memory_buffer.name()
+                    % memory_buffer.position_of_definition()
                     % we::type::enum_to_string (port.get().direction())
                     % port.get().position_of_definition()
                     )
-          , _memory_buffer (memory_buffer)
           , _port (port)
       {}
 
@@ -490,14 +491,14 @@ namespace xml
         ( const id::ref::specialize& early
         , const id::ref::specialize& late
         )
-          : generic_duplicate<id::ref::specialize>
+          : generic_id_duplicate<id::ref::specialize>
             (early, late, boost::format ("specialize %1%") % early.get().name())
       {}
 
       duplicate_place::duplicate_place ( const id::ref::place& early
                                        , const id::ref::place& late
                                        )
-        : generic_duplicate<id::ref::place>
+        : generic_id_duplicate<id::ref::place>
           (early, late, boost::format ("place %1%") % early.get().name())
       {}
 
@@ -505,14 +506,14 @@ namespace xml
         ( const id::ref::transition& early
         , const id::ref::transition& late
         )
-          : generic_duplicate<id::ref::transition>
+          : generic_id_duplicate<id::ref::transition>
             (early, late, boost::format ("transition %1%") % early.get().name())
       {}
 
       duplicate_port::duplicate_port ( const id::ref::port& early
                                      , const id::ref::port& late
                                      )
-        : generic_duplicate<id::ref::port>
+        : generic_id_duplicate<id::ref::port>
                             ( early
                             , late
                             , boost::format ("%1%-port %2%")
@@ -525,7 +526,7 @@ namespace xml
         ( const id::ref::tmpl& early
         , const id::ref::tmpl& late
         )
-          : generic_duplicate<id::ref::tmpl>
+          : generic_id_duplicate<id::ref::tmpl>
             (early, late, boost::format ("template %1%") % early.get().name())
       {}
 
@@ -533,7 +534,7 @@ namespace xml
         ( const id::ref::place_map& early
         , const id::ref::place_map& late
         )
-          : generic_duplicate<id::ref::place_map>
+          : generic_id_duplicate<id::ref::place_map>
                               ( early
                               , late
                               , boost::format ("place-map %1% <-> %2%")
@@ -546,7 +547,7 @@ namespace xml
          ( const id::ref::module& early
          , const id::ref::module& late
          )
-          : generic_duplicate<id::ref::module>
+          : generic_id_duplicate<id::ref::module>
             ( early
             , late
             , boost::format ( "external function %1% in module %2%"
@@ -561,7 +562,7 @@ namespace xml
         ( const id::ref::connect& early
         , const id::ref::connect& late
         )
-          : generic_duplicate<id::ref::connect>
+          : generic_id_duplicate<id::ref::connect>
             ( early
             , late
             , boost::format ( "connect-%1% %2% <-> %3%"
@@ -578,7 +579,7 @@ namespace xml
         ( const id::ref::response& early
         , const id::ref::response& late
         )
-          : generic_duplicate<id::ref::response>
+          : generic_id_duplicate<id::ref::response>
             ( early
             , late
             , boost::format ( "connect-response %1% -> %2%"
@@ -591,13 +592,13 @@ namespace xml
       {}
 
       duplicate_memory_buffer::duplicate_memory_buffer
-        ( id::ref::memory_buffer const& early
-        , id::ref::memory_buffer const& late
+        ( type::memory_buffer_type const& early
+        , type::memory_buffer_type const& late
         )
-          : generic_duplicate<id::ref::memory_buffer>
+          : generic_duplicate<type::memory_buffer_type>
             ( early
             , late
-            , boost::format ("memory-buffer '%1%'") % late.get().name()
+            , boost::format ("memory-buffer '%1%'") % late.name()
             )
       {}
 

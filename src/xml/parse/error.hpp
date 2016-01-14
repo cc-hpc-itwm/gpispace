@@ -6,6 +6,7 @@
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/util/position.hpp>
+#include <xml/parse/type/memory_buffer.fwd.hpp>
 
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
@@ -262,13 +263,13 @@ namespace xml
       // ******************************************************************* //
 
       template<typename Id>
-      class generic_duplicate : public generic
+      class generic_id_duplicate : public generic
       {
       public:
-        generic_duplicate ( const Id& early
-                          , const Id& late
-                          , const boost::format& fmt
-                          )
+        generic_id_duplicate ( const Id& early
+                             , const Id& late
+                             , const boost::format& fmt
+                             )
           : generic ( boost::format ( "duplicate %1% at %2%"
                                       ", earlier definition is at %3%"
                                     )
@@ -294,7 +295,7 @@ namespace xml
       };
 
 #define DUPLICATE_WITH_ID(_type,_id)                                    \
-      class duplicate_ ##_type : public generic_duplicate<id::ref::_id> \
+      class duplicate_ ##_type : public generic_id_duplicate<id::ref::_id> \
       {                                                                 \
       public:                                                           \
         duplicate_ ##_type ( const id::ref::_id& early                  \
@@ -313,10 +314,38 @@ namespace xml
       DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
       DUPLICATE (response);
-      DUPLICATE (memory_buffer);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
+
+      template<typename T>
+      class generic_duplicate : public generic
+      {
+      public:
+        generic_duplicate ( const T& early
+                          , const T& late
+                          , const boost::format& fmt
+                          )
+          : generic ( boost::format ( "duplicate %1% at %2%"
+                                      ", earlier definition is at %3%"
+                                    )
+                    % fmt
+                    % late.position_of_definition()
+                    % early.position_of_definition()
+                    )
+        {}
+      };
+
+#define DUPLICATE(_name, _type)                                         \
+      class duplicate_ ## _name : public generic_duplicate<_type>       \
+      {                                                                 \
+      public:                                                           \
+        duplicate_ ## _name (const _type& early, const _type& late);    \
+      }
+
+      DUPLICATE (memory_buffer, type::memory_buffer_type);
+
+#undef DUPLICATE
 
       // ******************************************************************* //
 
@@ -588,11 +617,10 @@ namespace xml
       {
       public:
         memory_buffer_with_same_name_as_port
-          (id::ref::memory_buffer const&, id::ref::port const&);
+          (type::memory_buffer_type const&, id::ref::port const&);
         virtual ~memory_buffer_with_same_name_as_port() throw() = default;
 
       private:
-        id::ref::memory_buffer const _memory_buffer;
         id::ref::port const _port;
       };
 
