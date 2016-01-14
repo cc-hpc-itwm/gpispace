@@ -139,6 +139,7 @@ extended_add_library (NAME pnet
             Boost::date_time
             RPC
             ${CMAKE_DL_LIBS}
+            rapidxml
 )
 
 add_subdirectory (xml/tests)

@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
-#include <xml/parse/rapidxml/1.13/rapidxml_utils.hpp>
+#include <rapidxml.hpp>
+#include <rapidxml_utils.hpp>
 
 typedef char Ch;
 typedef rapidxml::xml_node<Ch> xml_node_type;
