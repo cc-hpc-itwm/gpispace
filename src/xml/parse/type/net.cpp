@@ -203,64 +203,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      bool net_type::has_function (const std::string& name) const
-      {
-        return _functions.has (name);
-      }
-      bool net_type::has_place (const std::string& name) const
-      {
-        return _places.has (name);
-      }
-      bool net_type::has_specialize (const std::string& name) const
-      {
-        return _specializes.has (name);
-      }
-      bool net_type::has_template (const std::string& name) const
-      {
-        return _templates.has (name);
-      }
-      bool net_type::has_transition (const std::string& name) const
-      {
-        return _transitions.has (name);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::erase_function (const id::ref::function& id)
-      {
-        _functions.erase (id);
-      }
-      void net_type::erase_place (const id::ref::place& id)
-      {
-        _places.erase (id);
-      }
-      void net_type::erase_specialize (const id::ref::specialize& id)
-      {
-        _specializes.erase (id);
-      }
-      void net_type::erase_template (const id::ref::tmpl& id)
-      {
-        _templates.erase (id);
-      }
-      void net_type::erase_transition (const id::ref::transition& id)
-      {
-        _transitions.erase (id);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::clear_places (void)
-      {
-        _places.clear();
-      }
-
-      void net_type::clear_transitions (void)
-      {
-        _transitions.clear();
-      }
-
-      // ***************************************************************** //
-
       void net_type::rename ( const id::ref::function& function
                             , const std::string& name
                             )
@@ -270,7 +212,7 @@ namespace xml
           return;
         }
 
-        if (has_function (name))
+        if (_functions.has (name))
         {
           throw std::runtime_error
             ("tried renaming function, but function with given name exists");
@@ -290,7 +232,7 @@ namespace xml
           return;
         }
 
-        if (has_place (name))
+        if (_places.has (name))
         {
           throw std::runtime_error
             ("tried renaming place, but place with given name exists");
@@ -299,46 +241,6 @@ namespace xml
         _places.erase (place);
         place.get_ref().name_impl (name);
         _places.push (place);
-      }
-
-      void net_type::rename ( const id::ref::specialize& specialize
-                            , const std::string& name
-                            )
-      {
-        if (specialize.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_specialize (name))
-        {
-          throw std::runtime_error
-            ("tried renaming specialize, but specialize with given name exists");
-        }
-
-        _specializes.erase (specialize);
-        specialize.get_ref().name_impl (name);
-        _specializes.push (specialize);
-      }
-
-      void net_type::rename ( const id::ref::tmpl& tmpl
-                            , const std::string& name
-                            )
-      {
-        if (tmpl.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_template (name))
-        {
-          throw std::runtime_error
-            ("tried renaming template, but template with given name exists");
-        }
-
-        _templates.erase (tmpl);
-        tmpl.get_ref().name_impl (name);
-        _templates.push (tmpl);
       }
 
       void net_type::rename ( const id::ref::transition& transition
@@ -350,7 +252,7 @@ namespace xml
           return;
         }
 
-        if (has_transition (name))
+        if (_transitions.has (name))
         {
           throw std::runtime_error
             ("tried renaming transition, but transition with given name exists");

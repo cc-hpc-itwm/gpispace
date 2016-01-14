@@ -95,20 +95,6 @@ namespace xml
       function_type::function_type ( ID_CONS_PARAM(function)
                                    , const boost::optional<parent_id_type>& parent
                                    , const util::position_type& pod
-                                   , const content_type& content
-                                   )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , _parent (parent)
-        , contains_a_module_call (false)
-        , _content (reparent (content, _id))
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      function_type::function_type ( ID_CONS_PARAM(function)
-                                   , const boost::optional<parent_id_type>& parent
-                                   , const util::position_type& pod
                                    , const boost::optional<std::string>& name
                                    , const content_type& content
                                    )
@@ -498,43 +484,6 @@ namespace xml
       bool function_type::is_known_tunnel (const std::string& name) const
       {
         return ports().has (std::make_pair (name, we::type::PORT_TUNNEL));
-      }
-
-      void function_type::rename (const id::ref::port& id, const std::string& n)
-      {
-        if (id.get().name() == n)
-        {
-          return;
-        }
-
-        if (_ports.has (std::make_pair (n, id.get().direction())))
-        {
-          throw std::runtime_error
-            ("tried renaming port, but port with given name exists");
-        }
-
-        _ports.erase (id);
-        id.get_ref().name_impl (n);
-        _ports.push (id);
-      }
-
-      void function_type::port_direction
-          (const id::ref::port& id, const we::type::PortDirection& direction)
-      {
-        if (id.get().direction() == direction)
-        {
-          return;
-        }
-
-        if (_ports.has (std::make_pair (id.get().name(), direction)))
-        {
-          throw std::runtime_error
-            ("tried changing port direction, but port with combination exists");
-        }
-
-        _ports.erase (id);
-        id.get_ref().direction_impl (direction);
-        _ports.push (id);
       }
 
       // ***************************************************************** //

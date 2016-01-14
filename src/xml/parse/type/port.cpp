@@ -44,29 +44,9 @@ namespace xml
         return _name;
       }
 
-      const std::string& port_type::name_impl (const std::string& name)
-      {
-        return _name = name;
-      }
-
-      const std::string& port_type::name (const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return _name;
-        }
-
-        return name_impl (name);
-      }
-
       const std::string& port_type::type() const
       {
         return _type;
-      }
-      const std::string& port_type::type (const std::string& type_)
-      {
-        return _type = type_;
       }
 
       boost::optional<pnet::type::signature::signature_type> port_type::signature() const
@@ -109,7 +89,7 @@ namespace xml
 
         if (mapped != map_in.end())
         {
-          type (mapped->second);
+          _type = mapped->second;
         }
       }
 
@@ -208,21 +188,6 @@ namespace xml
       {
         return _direction;
       }
-      const we::type::PortDirection& port_type::direction_impl
-        (const we::type::PortDirection& direction_)
-      {
-        return _direction = direction_;
-      }
-      const we::type::PortDirection& port_type::direction
-        (const we::type::PortDirection& direction_)
-      {
-        if (has_parent())
-        {
-          parent()->port_direction (make_reference_id(), direction_);
-          return _direction;
-        }
-        return direction_impl (direction_);
-      }
 
       boost::optional<const id::ref::place&> port_type::resolved_place() const
       {
@@ -238,10 +203,6 @@ namespace xml
       {
         return _properties;
       }
-      we::type::property::type& port_type::properties()
-      {
-        return _properties;
-      }
 
       port_type::unique_key_type port_type::unique_key() const
       {
@@ -251,6 +212,7 @@ namespace xml
       id::ref::port port_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper
+        , boost::optional<we::type::PortDirection> direction
         ) const
       {
         id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
@@ -263,7 +225,7 @@ namespace xml
           , _name
           , _type
           , place
-          , _direction
+          , direction.get_value_or (_direction)
           , _properties
           ).make_reference_id();
       }

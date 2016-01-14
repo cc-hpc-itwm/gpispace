@@ -42,40 +42,9 @@ namespace xml
         return _port;
       }
 
-      boost::optional<const id::ref::place&> connect_type::resolved_place() const
-      {
-        return parent()->parent()->places().get (place());
-      }
-      boost::optional<const id::ref::port&> connect_type::resolved_port() const
-      {
-        return parent()->resolved_function().get().ports().get
-          ( std::make_pair ( port()
-                           , we::edge::is_PT (direction())
-                           ? we::type::PORT_IN
-                           : we::type::PORT_OUT
-                           )
-          );
-      }
-
       const ::we::edge::type& connect_type::direction() const
       {
         return _direction;
-      }
-      const ::we::edge::type& connect_type::direction_impl
-        (const ::we::edge::type& direction_)
-      {
-        return _direction = direction_;
-      }
-      const ::we::edge::type& connect_type::direction
-        (const ::we::edge::type& direction_)
-      {
-        if (has_parent())
-        {
-          parent()->connection_direction (make_reference_id(), direction_);
-          return _direction;
-        }
-
-        return direction_impl (direction_);
       }
 
       const std::string& connect_type::place_impl (const std::string& place)
@@ -97,10 +66,6 @@ namespace xml
       {
         return _properties;
       }
-      we::type::property::type& connect_type::properties()
-      {
-        return _properties;
-      }
 
       connect_type::unique_key_type connect_type::unique_key() const
       {
@@ -112,6 +77,7 @@ namespace xml
       id::ref::connect connect_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper
+        , boost::optional<we::edge::type> direction
         ) const
       {
         id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
@@ -123,7 +89,7 @@ namespace xml
           , _position_of_definition
           , _place
           , _port
-          , _direction
+          , direction.get_value_or (_direction)
           , _properties
           ).make_reference_id();
       }

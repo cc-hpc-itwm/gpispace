@@ -60,7 +60,6 @@ namespace xml
         const std::string& name (const std::string& name);
 
         const std::string& type() const;
-        const std::string& type (const std::string&);
 
         boost::optional<pnet::type::signature::signature_type> signature() const;
         pnet::type::signature::signature_type signature_or_throw() const;
@@ -78,7 +77,6 @@ namespace xml
 
         const boost::optional<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
-        void set_virtual (bool);
         boost::optional<bool> const& put_token() const
         {
           return _put_token;

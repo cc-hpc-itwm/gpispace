@@ -47,31 +47,25 @@ namespace xml
 
         const std::string& place() const;
         const std::string& port() const;
-        boost::optional<const id::ref::place&> resolved_place() const;
-        boost::optional<const id::ref::port&> resolved_port() const;
 
         const ::we::edge::type& direction() const;
-        const ::we::edge::type& direction
-          (const ::we::edge::type&);
 
         const std::string& place (const std::string&);
 
       private:
         friend struct transition_type;
-        const ::we::edge::type& direction_impl
-          (const ::we::edge::type&);
 
         const std::string& place_impl (const std::string&);
 
       public:
         const we::type::property::type& properties() const;
-        we::type::property::type& properties();
 
         unique_key_type unique_key() const;
 
         id::ref::connect clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none
+          , boost::optional<we::edge::type> direction = boost::none
           ) const;
 
       private:

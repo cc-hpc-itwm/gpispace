@@ -81,10 +81,6 @@ namespace xml
       {
         return _type;
       }
-      const std::string& place_type::type (const std::string& type_)
-      {
-        return _type = type_;
-      }
 
       boost::optional<pnet::type::signature::signature_type>
         place_type::signature() const
@@ -127,7 +123,7 @@ namespace xml
 
         if (mapped != map_in.end())
         {
-          type (mapped->second);
+          _type = mapped->second;
         }
       }
 
@@ -138,10 +134,6 @@ namespace xml
       bool place_type::is_virtual (void) const
       {
         return _is_virtual.get_value_or (false);
-      }
-      void place_type::set_virtual (bool is)
-      {
-        _is_virtual = boost::make_optional (is, true);
       }
 
       const we::type::property::type& place_type::properties() const

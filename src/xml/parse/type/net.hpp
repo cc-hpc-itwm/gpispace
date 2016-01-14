@@ -79,7 +79,6 @@ namespace xml
 
         // ***************************************************************** //
 
-      public:
         const id::ref::place& push_place (const id::ref::place&);
         const id::ref::specialize& push_specialize (const id::ref::specialize&);
         const id::ref::tmpl& push_template (const id::ref::tmpl&);
@@ -87,31 +86,8 @@ namespace xml
 
         // ***************************************************************** //
 
-        bool has_function (const std::string& name) const;
-        bool has_place (const std::string& name) const;
-        bool has_specialize (const std::string& name) const;
-        bool has_template (const std::string& name) const;
-        bool has_transition (const std::string& name) const;
-
-        // ***************************************************************** //
-
-        void erase_function (const id::ref::function&);
-        void erase_place (const id::ref::place&);
-        void erase_specialize (const id::ref::specialize&);
-        void erase_template (const id::ref::tmpl&);
-        void erase_transition (const id::ref::transition&);
-
-        // ***************************************************************** //
-
-        void clear_places (void);
-        void clear_transitions (void);
-
-        // ***************************************************************** //
-
         void rename (const id::ref::function&, const std::string&);
         void rename (const id::ref::place&, const std::string&);
-        void rename (const id::ref::specialize&, const std::string&);
-        void rename (const id::ref::tmpl&, const std::string&);
         void rename (const id::ref::transition&, const std::string&);
 
         // ***************************************************************** //

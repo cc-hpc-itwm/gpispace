@@ -40,13 +40,6 @@ namespace xml
                         );
 
         const std::string& name () const;
-        const std::string& name (const std::string& name);
-
-      private:
-        friend struct net_type;
-        const std::string& name_impl (const std::string& name);
-
-      public:
         const unique_key_type& unique_key() const;
 
         id::ref::specialize clone

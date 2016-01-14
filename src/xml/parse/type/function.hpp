@@ -79,12 +79,6 @@ namespace xml
         function_type ( ID_CONS_PARAM(function)
                       , const boost::optional<parent_id_type>& parent
                       , const util::position_type&
-                      , const content_type& content
-                      );
-
-        function_type ( ID_CONS_PARAM(function)
-                      , const boost::optional<parent_id_type>& parent
-                      , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const content_type& content
                       );
@@ -177,10 +171,6 @@ namespace xml
         bool is_known_port (const std::string & name) const;
         bool is_known_port_inout (const std::string & name) const;
         bool is_known_tunnel (const std::string& name) const;
-
-        void rename (const id::ref::port&, const std::string&);
-        void port_direction
-          (const id::ref::port&, const we::type::PortDirection&);
 
         // ***************************************************************** //
 

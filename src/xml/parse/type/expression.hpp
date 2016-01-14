@@ -27,12 +27,7 @@ namespace xml
                         = expressions_type()
                         );
 
-        void set (const std::string& exps);
-
         std::string expression (const std::string& sep = " ") const;
-
-        const expressions_type& expressions (void) const;
-        expressions_type& expressions (void);
 
         void append (const expressions_type& other);
 

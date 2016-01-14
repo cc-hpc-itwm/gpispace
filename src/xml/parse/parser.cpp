@@ -798,8 +798,7 @@ namespace xml
               const id::ref::connect connection_in
                 (connect_type (child, state, we::edge::PT));
               const id::ref::connect connection_out
-                (connection_in.get().clone());
-              connection_out.get_ref().direction (we::edge::TP);
+                (connection_in.get().clone (boost::none, boost::none, we::edge::TP));
 
               transition.get_ref().push_connection (connection_in);
               transition.get_ref().push_connection (connection_out);
@@ -1722,8 +1721,7 @@ namespace xml
               const id::ref::port port_in
                 (port_type (child, state, we::type::PORT_IN));
 
-              const id::ref::port port_out (port_in.get().clone());
-              port_out.get_ref().direction (we::type::PORT_OUT);
+              const id::ref::port port_out (port_in.get().clone (boost::none, boost::none, we::type::PORT_OUT));
 
               function.get_ref().push_port (port_in);
               function.get_ref().push_port (port_out);

@@ -53,12 +53,6 @@ namespace xml
         transition_type ( ID_CONS_PARAM(transition)
                         , PARENT_CONS_PARAM(net)
                         , const util::position_type&
-                        , const function_or_use_type&
-                        );
-
-        transition_type ( ID_CONS_PARAM(transition)
-                        , PARENT_CONS_PARAM(net)
-                        , const util::position_type&
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
                         , const connections_type& connections
@@ -73,7 +67,6 @@ namespace xml
                         );
 
         const function_or_use_type& function_or_use() const;
-        function_or_use_type& function_or_use();
         const function_or_use_type& function_or_use
           (const function_or_use_type& function_or_use_);
 
@@ -98,23 +91,13 @@ namespace xml
         responses_type const& responses() const;
         const place_maps_type& place_map() const;
 
-        void remove_connection (const id::ref::connect&);
-        void remove_place_map (const id::ref::place_map&);
-
         void push_connection (const id::ref::connect&);
         void push_response (const id::ref::response&);
         void push_place_map (const id::ref::place_map&);
 
         void connection_place (const id::ref::connect&, const std::string&);
-        void connection_direction
-          (const id::ref::connect&, const we::edge::type&);
 
         void place_map_real (const id::ref::place_map&, const std::string&);
-
-        // ***************************************************************** //
-
-        void clear_connections ();
-        void clear_place_map ();
 
         // ***************************************************************** //
 

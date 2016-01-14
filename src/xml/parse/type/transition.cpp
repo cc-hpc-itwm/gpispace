@@ -85,20 +85,6 @@ namespace xml
         ( ID_CONS_PARAM(transition)
         , PARENT_CONS_PARAM(net)
         , const util::position_type& pod
-        , const function_or_use_type& function_or_use
-        )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _function_or_use (reparent (function_or_use, _id))
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      transition_type::transition_type
-        ( ID_CONS_PARAM(transition)
-        , PARENT_CONS_PARAM(net)
-        , const util::position_type& pod
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
         , const connections_type& connections
@@ -134,16 +120,6 @@ namespace xml
 
       const transition_type::function_or_use_type&
         transition_type::function_or_use() const
-      {
-        if (!_function_or_use)
-        {
-          throw std::runtime_error
-            ("requested function or use with no function set!");
-        }
-        return *_function_or_use;
-      }
-      transition_type::function_or_use_type&
-        transition_type::function_or_use()
       {
         if (!_function_or_use)
         {
@@ -277,14 +253,6 @@ namespace xml
       }
 
       // ***************************************************************** //
-      void transition_type::remove_connection (const id::ref::connect& id)
-      {
-        _connections.erase (id);
-      }
-      void transition_type::remove_place_map (const id::ref::place_map& id)
-      {
-        _place_map.erase (id);
-      }
 
       void transition_type::push_connection (const id::ref::connect& connect_id)
       {
@@ -321,16 +289,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::clear_connections ()
-      {
-        _connections.clear();
-      }
-
-      void transition_type::clear_place_map ()
-      {
-        _place_map.clear();
-      }
-
       void transition_type::connection_place
         (const id::ref::connect& connection, const std::string& place)
       {
@@ -356,36 +314,6 @@ namespace xml
 
         _connections.erase (connection);
         connection.get_ref().place_impl (place);
-        _connections.push (connection);
-      }
-
-      void transition_type::connection_direction
-        (const id::ref::connect& connection, const we::edge::type& dir)
-      {
-        if (connection.get().direction() == dir)
-        {
-          return;
-        }
-
-        if ( ( we::edge::is_PT (connection.get().direction())
-             != we::edge::is_PT (dir)
-             )
-           && _connections.has
-             ( std::make_tuple ( connection.get().place()
-                               , connection.get().port()
-                               , we::edge::is_PT (dir)
-                               )
-             )
-           )
-        {
-          throw std::runtime_error ( "tried setting direction of connection, "
-                                     "but connection between between that place "
-                                     "and port already exists in that direction"
-                                   );
-        }
-
-        _connections.erase (connection);
-        connection.get_ref().direction_impl (dir);
         _connections.push (connection);
       }
 
@@ -530,7 +458,7 @@ namespace xml
           (we::edge::enum_to_string (connect.direction()));
 
         const boost::optional<const id::ref::place&> id_place
-          (connect.resolved_place());
+          (connect.parent()->parent()->places().get (connect.place()));
 
         if (not id_place)
         {
@@ -539,7 +467,14 @@ namespace xml
         }
 
         const boost::optional<const id::ref::port&> id_port
-          (connect.resolved_port());
+          ( connect.parent()->resolved_function().get().ports().get
+              ( std::make_pair ( connect.port()
+                               , we::edge::is_PT (connect.direction())
+                               ? we::type::PORT_IN
+                               : we::type::PORT_OUT
+                               )
+              )
+          );
 
         if (not id_port)
         {

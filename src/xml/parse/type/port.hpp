@@ -58,34 +58,24 @@ namespace xml
           (const boost::filesystem::path&, const state::type&) const;
 
         const std::string& name() const;
-        const std::string& name (const std::string& name);
 
         const std::string& type() const;
-        const std::string& type (const std::string&);
 
         boost::optional<pnet::type::signature::signature_type> signature() const;
         pnet::type::signature::signature_type signature_or_throw() const;
 
         const we::type::PortDirection& direction() const;
-        const we::type::PortDirection& direction (const we::type::PortDirection&);
 
-      private:
-        friend struct function_type;
-        const std::string& name_impl (const std::string& name);
-        const we::type::PortDirection& direction_impl
-          (const we::type::PortDirection&);
-
-      public:
         boost::optional<const id::ref::place&> resolved_place() const;
 
         const we::type::property::type& properties() const;
-        we::type::property::type& properties();
 
         unique_key_type unique_key() const;
 
         id::ref::port clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none
+          , boost::optional<we::type::PortDirection> direction = boost::none
           ) const;
 
       private:

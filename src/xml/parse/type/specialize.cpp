@@ -36,19 +36,6 @@ namespace xml
       {
         return _name;
       }
-      const std::string& specialize_type::name_impl (const std::string& name)
-      {
-        return _name = name;
-      }
-      const std::string& specialize_type::name (const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return _name;
-        }
-        return name_impl (name);
-      }
 
       const specialize_type::unique_key_type&
         specialize_type::unique_key() const
