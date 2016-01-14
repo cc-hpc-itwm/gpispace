@@ -326,9 +326,9 @@ namespace xml
 
       // **************************************************************** //
 
-      id::ref::response response_type ( const xml_node_type* node
-                                      , state::type& state
-                                      )
+      type::response_type response_type ( const xml_node_type* node
+                                        , state::type& state
+                                        )
       {
         we::type::property::type properties;
 
@@ -367,14 +367,11 @@ namespace xml
         }
 
         return type::response_type
-          ( state.id_mapper()->next_id()
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , required ("response_type", node, "port", state)
           , required ("response_type", node, "to", state)
           , properties
-          ).make_reference_id();
+          );
       }
 
       // **************************************************************** //

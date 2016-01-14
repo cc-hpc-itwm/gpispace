@@ -34,8 +34,7 @@ namespace xml
 
         typedef xml::util::unique<connect_type,id::ref::connect>
           connections_type;
-        using responses_type
-          = xml::util::unique<response_type,id::ref::response>;
+        using responses_type = fhg::pnet::util::unique<response_type>;
         typedef xml::util::unique<place_map_type,id::ref::place_map>
           place_maps_type;
 
@@ -92,7 +91,7 @@ namespace xml
         const place_maps_type& place_map() const;
 
         void push_connection (const id::ref::connect&);
-        void push_response (const id::ref::response&);
+        void push_response (response_type const&);
         void push_place_map (const id::ref::place_map&);
 
         void connection_place (const id::ref::connect&, const std::string&);

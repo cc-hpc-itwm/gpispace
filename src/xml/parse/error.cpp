@@ -199,26 +199,26 @@ namespace xml
       {}
 
       unknown_port_in_connect_response::unknown_port_in_connect_response
-        (id::ref::response const& response)
+        (type::response_type const& response)
           : generic
             ( boost::format ("connect-response from unknown output port '%1%'")
-            % response.get().port()
-            , response.get().position_of_definition()
+            % response.port()
+            , response.position_of_definition()
             )
       {}
 
       unknown_to_in_connect_response::unknown_to_in_connect_response
-        (id::ref::response const& response)
+        (type::response_type const& response)
           : generic
             ( boost::format
               ("unknown input port '%1%' in attribute 'to' of connect-response")
-            % response.get().to()
-            , response.get().position_of_definition()
+            % response.to()
+            , response.position_of_definition()
             )
       {}
 
       invalid_signature_in_connect_response::invalid_signature_in_connect_response
-        ( id::ref::response const& response
+        ( type::response_type const& response
         , id::ref::port const& port
         )
           : generic
@@ -230,7 +230,7 @@ namespace xml
             % port.get().type()
             % pnet::type::signature::show (port.get().signature_or_throw())
             % we::response_description_requirements()
-            , response.get().position_of_definition()
+            , response.position_of_definition()
             )
       {}
 
@@ -576,18 +576,18 @@ namespace xml
       {}
 
       duplicate_response::duplicate_response
-        ( const id::ref::response& early
-        , const id::ref::response& late
+        ( const type::response_type& early
+        , const type::response_type& late
         )
-          : generic_id_duplicate<id::ref::response>
+          : generic_duplicate<type::response_type>
             ( early
             , late
             , boost::format ( "connect-response %1% -> %2%"
                               " (existing response connects to %3%)"
                             )
-            % late.get().port()
-            % late.get().to()
-            % early.get().to()
+            % late.port()
+            % late.to()
+            % early.to()
             )
       {}
 

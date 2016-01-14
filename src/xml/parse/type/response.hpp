@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/response.fwd.hpp>
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
@@ -23,16 +22,11 @@ namespace xml
     {
       struct response_type : with_position_of_definition
       {
-        ID_SIGNATURES (response);
-        PARENT_SIGNATURES (transition);
-
       public:
         //! \note port
-        typedef std::string unique_key_type;
+        using unique_key_type = std::string;
 
-        response_type ( ID_CONS_PARAM (response)
-                      , PARENT_CONS_PARAM (transition)
-                      , util::position_type const&
+        response_type ( util::position_type const&
                       , std::string const& port
                       , std::string const& to
                       , we::type::property::type const& = {}
@@ -50,11 +44,6 @@ namespace xml
         {
           return _port;
         }
-
-        id::ref::response clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         std::string _port;

@@ -106,7 +106,7 @@ namespace xml
                            )
         , _name (name)
         , _connections (connections, _id)
-        , _responses (responses, _id)
+        , _responses (responses)
         , _place_map (place_map, _id)
         , structs (structs_)
         , _conditions (conditions)
@@ -230,8 +230,7 @@ namespace xml
       {
         return _connections;
       }
-      transition_type::responses_type const&
-        transition_type::responses() const
+      transition_type::responses_type const& transition_type::responses() const
       {
         return _responses;
       }
@@ -265,15 +264,9 @@ namespace xml
         connect_id.get_ref().parent (id());
       }
 
-      void transition_type::push_response (id::ref::response const& response_id)
+      void transition_type::push_response (response_type const& response)
       {
-        const id::ref::response& id_old (_responses.push (response_id));
-
-        if (not (id_old == response_id))
-        {
-          throw error::duplicate_response (id_old, response_id);
-        }
-        response_id.get_ref().parent (id());
+        _responses.push<error::duplicate_response> (response);
       }
 
       void transition_type::push_place_map (const id::ref::place_map& pm_id)
@@ -418,8 +411,7 @@ namespace xml
            == std::end (ports)
            )
         {
-          throw error::unknown_port_in_connect_response
-            (response.make_reference_id());
+          throw error::unknown_port_in_connect_response (response);
         }
 
         auto const& to
@@ -436,14 +428,13 @@ namespace xml
 
         if (to == std::end (ports))
         {
-          throw error::unknown_to_in_connect_response
-            (response.make_reference_id());
+          throw error::unknown_to_in_connect_response (response);
         }
 
         if (!we::is_response_description (to->signature_or_throw()))
         {
           throw error::invalid_signature_in_connect_response
-            (response.make_reference_id(), to->make_reference_id());
+            (response, to->make_reference_id());
         }
       }
 
@@ -518,7 +509,7 @@ namespace xml
         {
           type_check (connect, state);
         }
-        for (response_type const& response : responses().values())
+        for (response_type const& response : responses())
         {
           type_check (response, state);
         }
@@ -609,7 +600,7 @@ namespace xml
           : boost::none
           , _name
           , _connections.clone (new_id, new_mapper)
-          , _responses.clone (new_id, new_mapper)
+          , _responses
           , _place_map.clone (new_id, new_mapper)
           , structs
           , _conditions
@@ -986,7 +977,7 @@ namespace xml
               }
             }
 
-            for (response_type const& response : trans.responses().values())
+            for (response_type const& response : trans.responses())
             {
               we_net.add_response
                 ( tid
@@ -1060,7 +1051,7 @@ namespace xml
 
           dumps (s, t.place_map().values());
           dumps (s, t.connections().values());
-          dumps (s, t.responses().values());
+          dumps (s, t.responses());
 
           for (const std::string& cond : t.conditions())
           {

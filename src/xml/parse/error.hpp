@@ -5,8 +5,9 @@
 #include <string>
 
 #include <xml/parse/id/types.hpp>
-#include <xml/parse/util/position.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
+#include <xml/parse/type/response.fwd.hpp>
+#include <xml/parse/util/position.hpp>
 
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
@@ -313,7 +314,6 @@ namespace xml
       DUPLICATE (place_map);
       DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
-      DUPLICATE (response);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -344,6 +344,7 @@ namespace xml
       }
 
       DUPLICATE (memory_buffer, type::memory_buffer_type);
+      DUPLICATE (response, type::response_type);
 
 #undef DUPLICATE
 
@@ -533,19 +534,19 @@ namespace xml
       class unknown_port_in_connect_response : public generic
       {
       public:
-        unknown_port_in_connect_response (id::ref::response const&);
+        unknown_port_in_connect_response (type::response_type const&);
       };
 
       class unknown_to_in_connect_response : public generic
       {
       public:
-        unknown_to_in_connect_response (id::ref::response const&);
+        unknown_to_in_connect_response (type::response_type const&);
       };
 
       class invalid_signature_in_connect_response : public generic
       {
       public:
-        invalid_signature_in_connect_response ( id::ref::response const&
+        invalid_signature_in_connect_response ( type::response_type const&
                                               , id::ref::port const&
                                               );
       };
