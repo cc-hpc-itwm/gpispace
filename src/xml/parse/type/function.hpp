@@ -140,9 +140,6 @@ namespace xml
         //! \todo This should be removed soon (i.e. when specialization is lazy).
         boost::optional<id::ref::net> parent_net() const;
 
-        boost::optional<const id::ref::function&>
-        get_function (const std::string& name) const;
-
         // ***************************************************************** //
 
         void push_memory_get (memory_get const&);
@@ -196,6 +193,8 @@ namespace xml
         // ***************************************************************** //
 
         void type_check (const state::type & state) const;
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
 
         // ***************************************************************** //
 

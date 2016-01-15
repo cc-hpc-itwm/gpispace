@@ -132,74 +132,10 @@ namespace xml
         return *(_function_or_use = reparent (function_or_use_, id()));
       }
 
-      namespace
-      {
-        class transition_get_function
-          : public boost::static_visitor <const id::ref::function&>
-        {
-        private:
-          const net_type & net;
-          const transition_type & trans;
-
-        public:
-          transition_get_function ( const net_type & _net
-                                  , const transition_type & _trans
-                                  )
-            : net (_net)
-            , trans (_trans)
-          {}
-
-          const id::ref::function&
-          operator () (const id::ref::function& id_function) const
-          {
-            return id_function;
-          }
-
-          const id::ref::function&
-            operator() (use_type const& use) const
-          {
-            boost::optional<const id::ref::function&>
-              id_function (net.get_function (use.name()));
-
-            if (not id_function)
-            {
-              throw error::unknown_function
-                (use.name(), trans.make_reference_id());
-            }
-
-            return *id_function;
-          }
-        };
-      }
-
       id::ref::function transition_type::resolved_function() const
       {
-        return boost::apply_visitor
-          (transition_get_function (*parent(), *this), function_or_use());
-      }
-
-      namespace
-      {
-        template<typename T>
-          class is_of_type_visitor : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator() (const T&) const
-          {
-            return true;
-          }
-          template<typename U>
-            bool operator() (const U&) const
-          {
-            return false;
-          }
-        };
-
-        template<typename T, typename V>
-          bool is_of_type (const V& variant)
-        {
-          return boost::apply_visitor (is_of_type_visitor<T>(), variant);
-        }
+        //! \note assume post processing pass (resolve_function_use_recursive)
+        return boost::get<id::ref::function> (function_or_use());
       }
 
       const std::string& transition_type::name() const
@@ -235,17 +171,6 @@ namespace xml
         transition_type::place_map() const
       {
         return _place_map;
-      }
-
-      boost::optional<const id::ref::function&>
-      transition_type::get_function (const std::string& name) const
-      {
-        if (has_parent())
-          {
-            return parent()->get_function (name);
-          }
-
-        return boost::none;
       }
 
       // ***************************************************************** //
@@ -452,6 +377,28 @@ namespace xml
         }
 
         boost::apply_visitor (transition_type_check (state), function_or_use());
+      }
+
+      void transition_type::resolve_function_use_recursive
+        (std::unordered_map<std::string, function_type const&> known)
+      {
+        if (!!boost::get<use_type> (&_function_or_use.get()))
+        {
+          std::string const name
+            (boost::get<use_type> (_function_or_use.get()).name());
+          auto const it (known.find (name));
+          if (it == known.end())
+          {
+            throw error::unknown_function (name, make_reference_id());
+          }
+          function_or_use
+            (it->second.clone (function_type::make_parent (id()), id_mapper()));
+        }
+        else
+        {
+          boost::get<id::ref::function> (_function_or_use.get()).get_ref()
+            .resolve_function_use_recursive (known);
+        }
       }
 
       const we::type::property::type& transition_type::properties() const

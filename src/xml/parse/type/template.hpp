@@ -44,10 +44,10 @@ namespace xml
 
         const id::ref::function& function() const;
 
-        boost::optional<const id::ref::function&>
-        get_function (const std::string&) const;
-
         boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
+
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
 
         const unique_key_type& unique_key() const;
 

@@ -1,3 +1,4 @@
+
 #include <installation_path.hpp>
 
 #include <xml/parse/type/function.hpp>
@@ -286,43 +287,6 @@ namespace xml
           ( visitor_get_parent<id::net, id::ref::net> (id_mapper())
           , *_parent
           );
-      }
-
-      namespace
-      {
-        class visitor_get_function
-          : public boost::static_visitor<boost::optional<const id::ref::function&>>
-        {
-        private:
-          const std::string& _name;
-          const id::mapper* _id_mapper;
-
-        public:
-          visitor_get_function ( const std::string& name
-                               , const id::mapper* id_mapper
-                               )
-            : _name (name)
-            , _id_mapper (id_mapper)
-          {}
-
-          template<typename ID>
-          boost::optional<const id::ref::function&> operator () (ID id) const
-          {
-            return _id_mapper->get(id)->get_function (_name);
-          }
-        };
-      }
-
-      boost::optional<const id::ref::function&>
-      function_type::get_function (const std::string& name) const
-      {
-        if (has_parent())
-          {
-            return boost::apply_visitor
-              (visitor_get_function (name, id_mapper()), *parent());
-          }
-
-        return boost::none;
       }
 
       // ***************************************************************** //
@@ -623,6 +587,16 @@ namespace xml
         }
 
         boost::apply_visitor (function_type_check (state), content());
+      }
+
+      void function_type::resolve_function_use_recursive
+        (std::unordered_map<std::string, function_type const&> known)
+      {
+        if (!!boost::get<id::ref::net> (&_content))
+        {
+          boost::get<id::ref::net> (_content).get_ref()
+            .resolve_function_use_recursive (known);
+        }
       }
 
       // ***************************************************************** //
@@ -1570,20 +1544,17 @@ namespace xml
         {
         private:
           const state::type & state;
-          const id::ref::net & _id_net;
           const transition_type & trans;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
           transition_find_module_calls_visitor ( const state::type & _state
-                                               , const id::ref::net& id_net
                                                , const transition_type & _trans
                                                , fun_info_map & _m
                                                , mcs_type& _mcs
                                        )
             : state (_state)
-            , _id_net (id_net)
             , trans (_trans)
             , m (_m)
             , mcs (_mcs)
@@ -1596,16 +1567,9 @@ namespace xml
 
           bool operator () (use_type const& use) const
           {
-            boost::optional<const id::ref::function&> id_function
-              (_id_net.get_ref().get_function (use.name()));
-
-            if (not id_function)
-              {
-                throw error::unknown_function
-                  (use.name(), trans.make_reference_id());
-              }
-
-            return find_module_calls (state, *id_function, m, mcs);
+            //! \note assume post processing pass (resolve_function_use_recursive)
+            throw error::unknown_function
+              (use.name(), trans.make_reference_id());
           }
         };
       }
@@ -1625,7 +1589,7 @@ namespace xml
             n.contains_a_module_call
               |= boost::apply_visitor
               ( transition_find_module_calls_visitor
-                (state, id_net, transition, m, mcs)
+                (state, transition, m, mcs)
               , transition.function_or_use()
               );
           }

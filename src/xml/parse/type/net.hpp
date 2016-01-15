@@ -71,9 +71,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<const id::ref::function&>
-        get_function (const std::string& name) const;
-
         boost::optional<const id::ref::tmpl&>
         get_template (const std::string& name) const;
 
@@ -108,6 +105,9 @@ namespace xml
         // ***************************************************************** //
 
         void type_check (const state::type & state) const;
+
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
 
         void set_prefix (const std::string & prefix);
         void remove_prefix (const std::string & prefix);

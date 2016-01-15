@@ -94,24 +94,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<const id::ref::function&>
-      net_type::get_function (const std::string& name) const
-      {
-        boost::optional<const id::ref::function&>
-          id_function (functions().get (name));
-
-        if (id_function)
-          {
-            return id_function;
-          }
-        else if (has_parent())
-          {
-            return parent()->get_function (name);
-          }
-
-        return boost::none;
-      }
-
       //! \todo The logic should be like this: Just when a function is
       //! requested by some transition it is lookup up recursively up
       //! the tree and on each level, it is checked
@@ -388,6 +370,32 @@ namespace xml
           function.type_check (state);
         }
       }
+
+      void net_type::resolve_function_use_recursive
+        (std::unordered_map<std::string, function_type const&> known)
+      {
+        for (function_type const& function : functions().values())
+        {
+          if (!!function.name())
+          {
+            known.emplace (*function.name(), function);
+          }
+        }
+
+        for (transition_type& transition : _transitions.values())
+        {
+          transition.resolve_function_use_recursive (known);
+        }
+        for (tmpl_type& templat : _templates.values())
+        {
+          templat.resolve_function_use_recursive (known);
+        }
+        for (function_type& function : _functions.values())
+        {
+          function.resolve_function_use_recursive (known);
+        }
+      }
+
 
       // ******************************************************************* //
 
