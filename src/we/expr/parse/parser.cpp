@@ -320,15 +320,5 @@ namespace expr
           while (token.token() != token::eof);
         }
     }
-
-    std::ostream & operator << (std::ostream & s, const parser & p)
-    {
-      std::copy ( p.begin()
-                , p.end()
-                , std::ostream_iterator<parser::nd_t> (s, ";\n")
-                );
-
-      return s;
-    }
   }
 }

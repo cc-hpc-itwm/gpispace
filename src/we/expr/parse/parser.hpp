@@ -98,7 +98,5 @@ namespace expr
 
       std::string string (void) const;
     };
-
-    std::ostream& operator << (std::ostream&, const parser&);
   }
 }

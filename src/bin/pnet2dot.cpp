@@ -417,7 +417,13 @@ namespace
     if (t.condition())
     {
       std::ostringstream oss;
-      oss << t.condition()->ast();
+      expr::parse::parser const& p (t.condition()->ast());
+
+      std::copy
+        ( p.begin()
+        , p.end()
+        , std::ostream_iterator<expr::parse::parser::nd_t> (oss, ";\n")
+        );
 
       cond << "|" << lines ('&', quote (oss.str()));
     }
