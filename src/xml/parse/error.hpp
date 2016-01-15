@@ -12,6 +12,7 @@
 #include <xml/parse/type/place_map.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
+#include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
 #include <we/type/port.hpp>
@@ -308,7 +309,6 @@ namespace xml
 
 #define DUPLICATE(_type) DUPLICATE_WITH_ID(_type,_type)
 
-      DUPLICATE (specialize);
       DUPLICATE (transition);
       DUPLICATE_WITH_ID (template,tmpl);
 
@@ -347,6 +347,7 @@ namespace xml
       DUPLICATE (place_map, type::place_map_type);
       DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
+      DUPLICATE (specialize, type::specialize_type);
 
 #undef DUPLICATE
 
@@ -550,10 +551,9 @@ namespace xml
       class unknown_template : public generic
       {
       public:
-        unknown_template (const id::ref::specialize&, const id::ref::net&);
+        unknown_template (type::specialize_type const&, const id::ref::net&);
 
       private:
-        const id::ref::specialize _specialize;
         const id::ref::net _net;
       };
 

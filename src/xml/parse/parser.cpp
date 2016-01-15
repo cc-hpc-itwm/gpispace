@@ -840,7 +840,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::specialize
+      type::specialize_type
         specialize_type (const xml_node_type* node, state::type& state)
       {
         type::type_map_type type_map;
@@ -876,15 +876,12 @@ namespace xml
         }
 
         return type::specialize_type
-          ( state.id_mapper()->next_id()
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , required ("specialize_type", node, "name", state)
           , required ("specialize_type", node, "use", state)
           , type_map
           , type_get
-          ).make_reference_id();
+          );
       }
 
       // ******************************************************************* //

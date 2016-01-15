@@ -6,7 +6,6 @@
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
-#include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
@@ -59,7 +58,6 @@ namespace xml
     {
       ID_IMPL(function)
       ID_IMPL(net)
-      ID_IMPL(specialize)
       ID_IMPL(structure)
       ID_IMPL(tmpl)
       ID_IMPL(transition)
@@ -67,7 +65,6 @@ namespace xml
 
       PARENT_IMPL(function,net)
       PARENT_IMPL(function,structure)
-      PARENT_IMPL(net,specialize)
       PARENT_IMPL(net,tmpl)
       PARENT_IMPL(net,transition)
       PARENT_IMPL(transition,use)

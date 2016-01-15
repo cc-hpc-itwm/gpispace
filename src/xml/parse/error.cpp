@@ -226,17 +226,16 @@ namespace xml
             )
       {}
 
-      unknown_template::unknown_template ( const id::ref::specialize& spec
+      unknown_template::unknown_template ( type::specialize_type const& spec
                                          , const id::ref::net& net
                                          )
         : generic ( boost::format ( "unknown template %1% in specialize at %2%"
                                     " in net at %3%"
                                   )
-                  % spec.get().use
-                  % spec.get().position_of_definition()
+                  % spec.use
+                  % spec.position_of_definition()
                   % net.get().position_of_definition()
                   )
-        , _specialize (spec)
         , _net (net)
       {}
 
@@ -476,11 +475,11 @@ namespace xml
       {}
 
       duplicate_specialize::duplicate_specialize
-        ( const id::ref::specialize& early
-        , const id::ref::specialize& late
+        ( type::specialize_type const& early
+        , type::specialize_type const& late
         )
-          : generic_id_duplicate<id::ref::specialize>
-            (early, late, boost::format ("specialize %1%") % early.get().name())
+          : generic_duplicate<type::specialize_type>
+            (early, late, boost::format ("specialize %1%") % early.name())
       {}
 
       duplicate_place::duplicate_place ( const type::place_type& early

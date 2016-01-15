@@ -50,7 +50,7 @@ namespace xml
         , PARENT_INITIALIZE()
         , _functions (functions, _id)
         , _places (places)
-        , _specializes (specializes, _id)
+        , _specializes (specializes)
         , _templates (templates, _id)
         , _transitions (transitions, _id)
         , structs (structs_)
@@ -146,19 +146,9 @@ namespace xml
         _places.push<error::duplicate_place> (place);
       }
 
-      const id::ref::specialize&
-      net_type::push_specialize (const id::ref::specialize& id)
+      void net_type::push_specialize (specialize_type const& specialize)
       {
-        const id::ref::specialize& id_old (_specializes.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_specialize (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
-
-        return id;
+        _specializes.push<error::duplicate_specialize> (specialize);
       }
 
       const id::ref::tmpl&
@@ -293,7 +283,7 @@ namespace xml
       {
         namespace st = xml::parse::structure_type_util;
 
-        for (specialize_type& specialize : _specializes.values())
+        for (specialize_type const& specialize : _specializes)
         {
           boost::optional<const id::ref::tmpl&> id_tmpl
             (get_template (specialize.use));
@@ -301,20 +291,21 @@ namespace xml
           if (not id_tmpl)
           {
             throw error::unknown_template
-              (specialize.make_reference_id(), make_reference_id());
+              (specialize, make_reference_id());
           }
 
           //! \todo generate a new function, with a state.next_id and
           //! the parent that is the transition that requires the
           //! specialization -> needs lazy specialization
 
-          type_map_apply (map, specialize.type_map);
+          auto type_map (specialize.type_map);
+          type_map_apply (map, type_map);
 
           const id::ref::function specialized_function
             (id_tmpl->get().function().get().clone (boost::none));
 
           specialized_function.get_ref().specialize
-            ( specialize.type_map
+            ( type_map
             , specialize.type_get
             , st::join (known_structs, st::make (structs, state), state)
             , state
@@ -335,8 +326,6 @@ namespace xml
 
           specialized_function.get_ref().parent (_id);
         }
-
-        _specializes.clear();
 
 
         for (function_type& function : _functions.values())
@@ -489,7 +478,7 @@ namespace xml
           , _position_of_definition
           , _functions.clone (function_type::make_parent (new_id), new_mapper)
           , _places
-          , _specializes.clone (new_id, new_mapper)
+          , _specializes
           , _templates.clone (new_id, new_mapper)
           , _transitions.clone (new_id, new_mapper)
           , structs
@@ -610,7 +599,7 @@ namespace xml
 
           dumps (s, net.structs.begin(), net.structs.end());
           dumps (s, net.templates().values());
-          dumps (s, net.specializes().values());
+          dumps (s, net.specializes());
           dumps (s, net.functions().values());
           dumps (s, net.places());
           dumps (s, net.transitions().values());
