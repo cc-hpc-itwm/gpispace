@@ -1,17 +1,13 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
-#include <we/expr/parse/node.hpp>
-
 #include <we/expr/exception.hpp>
+#include <we/expr/parse/node.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <string>
-#include <stack>
 #include <list>
-
 #include <ostream>
+#include <stack>
+#include <string>
 
 namespace expr
 {
@@ -53,12 +49,12 @@ namespace expr
       nd_stack_t nd_stack;
       nd_stack_t tmp_stack;
 
-      nd_it_t begin () { return nd_stack.begin(); }
-      nd_it_t end () { return nd_stack.end(); }
+      nd_it_t begin() { return nd_stack.begin(); }
+      nd_it_t end() { return nd_stack.end(); }
 
     public:
-      nd_const_it_t begin () const { return nd_stack.begin(); }
-      nd_const_it_t end () const { return nd_stack.end(); }
+      nd_const_it_t begin() const { return nd_stack.begin(); }
+      nd_const_it_t end() const { return nd_stack.end(); }
 
     private:
       void unary (const token::type & token, const std::size_t k);
@@ -80,7 +76,7 @@ namespace expr
 
       void rename (const std::string& from, const std::string& to);
 
-      std::string string (void) const;
+      std::string string() const;
     };
   }
 }
