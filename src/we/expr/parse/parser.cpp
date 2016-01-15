@@ -16,6 +16,7 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <algorithm>
 #include <sstream>
 #include <iterator>
 
@@ -40,14 +41,16 @@ namespace expr
     pnet::type::value::value_type
       parser::eval_all (eval::context & context) const
     {
-      pnet::type::value::value_type v;
-
-      for (nd_const_it_t it (begin()); it != end(); ++it)
-        {
-          v = eval::eval (context, *it);
-        }
-
-      return v;
+      return std::accumulate
+        ( nd_stack.begin(), nd_stack.end()
+        , pnet::type::value::value_type()
+        , [&context] ( pnet::type::value::value_type&
+                     , node::type const& node
+                     )
+          {
+            return eval::eval (context, node);
+          }
+        );
     }
 
     pnet::type::value::value_type parser::eval_all() const
