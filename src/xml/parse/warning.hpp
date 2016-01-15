@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
