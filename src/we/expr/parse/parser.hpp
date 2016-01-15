@@ -72,8 +72,6 @@ namespace expr
       parser (const std::string & input);
       parser (const nd_stack_t & seq);
 
-      void add (const parser & other);
-
       // evaluate the whole stack in order, return the last value
       pnet::type::value::value_type eval_all (eval::context& context) const;
       pnet::type::value::value_type eval_all() const;

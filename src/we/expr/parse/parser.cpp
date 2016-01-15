@@ -36,11 +36,6 @@ namespace expr
       , tmp_stack ()
     {}
 
-    void parser::add (const parser & other)
-    {
-      std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
-    }
-
     // evaluate the whole stack in order, return the last value
     pnet::type::value::value_type
       parser::eval_all (eval::context & context) const
