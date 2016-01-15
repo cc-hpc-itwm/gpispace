@@ -66,6 +66,10 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
     {
       context.bind ("a", i++);
     }
-    while (boost::get<bool> (expr::parse::parser (input, context).get_front()));
+    while (boost::get<bool>
+            (expr::parse::node::get
+              (expr::parse::parser (input, context).front())
+            )
+          );
   }
 }

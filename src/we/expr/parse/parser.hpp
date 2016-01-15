@@ -91,9 +91,6 @@ namespace expr
 
       void add (const parser & other);
 
-      // get the already evaluated value, throws if entry is not an value
-      pnet::type::value::value_type get_front () const;
-
       // evaluate the whole stack in order, return the last value
       pnet::type::value::value_type eval_all (eval::context& context) const;
       pnet::type::value::value_type eval_all() const;

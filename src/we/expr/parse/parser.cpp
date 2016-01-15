@@ -64,12 +64,6 @@ namespace expr
       std::copy (other.begin(), other.end(), std::back_inserter(nd_stack));
     }
 
-    // get the already evaluated value, throws if entry is not an value
-    pnet::type::value::value_type parser::get_front() const
-    {
-      return node::get (front());
-    }
-
     // evaluate the whole stack in order, return the last value
     pnet::type::value::value_type
       parser::eval_all (eval::context & context) const
