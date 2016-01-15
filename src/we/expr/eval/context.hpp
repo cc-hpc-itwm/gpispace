@@ -7,8 +7,6 @@
 #include <list>
 #include <string>
 
-#include <iosfwd>
-
 namespace expr
 {
   namespace eval
@@ -36,10 +34,6 @@ namespace expr
                                 );
 
       const pnet::type::value::value_type& value (const std::list<std::string>&) const;
-
-      friend std::ostream& operator<< (std::ostream&, const context&);
     };
-
-    std::ostream& operator<< (std::ostream&, const context&);
   }
 }

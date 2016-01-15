@@ -12,8 +12,6 @@
 
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <sstream>
-
 BOOST_AUTO_TEST_CASE (basic)
 {
   typedef expr::eval::context context_t;
@@ -121,37 +119,4 @@ BOOST_AUTO_TEST_CASE (reference)
   BOOST_REQUIRE_EQUAL (c.value (key_c_x), value_type (1L));
   BOOST_REQUIRE_EQUAL (c.value (key_c_y_a), value_type (2L));
   BOOST_REQUIRE_EQUAL (c.value (key_c_y_b), value_type (3L));
-}
-
-BOOST_AUTO_TEST_CASE (show_and_bind_and_discard_ref)
-{
-  expr::eval::context c;
-
-  using pnet::type::value::read;
-
-  pnet::type::value::value_type v (read ("Struct [x:=0.0,y:=\"s\"]"));
-
-  c.bind_ref ({"s"}, v);
-
-  {
-    std::ostringstream oss;
-
-    oss << c;
-
-    BOOST_CHECK_EQUAL (oss.str(), std::string ("s -> Struct [x := 0.00000, y := \"s\"]\n"));
-  }
-
-  std::list<std::string> path;
-  path.push_back ("s");
-  path.push_back ("x");
-
-  c.bind_and_discard_ref (path, 1.0);
-
-  {
-    std::ostringstream oss;
-
-    oss << c;
-
-    BOOST_REQUIRE_EQUAL (oss.str(), std::string ("s := Struct [x := 1.00000, y := \"s\"]\n"));
-  }
 }

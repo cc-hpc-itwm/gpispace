@@ -91,32 +91,5 @@ namespace expr
 
       throw pnet::exception::missing_binding (key);
     }
-
-    std::ostream& operator<< (std::ostream& s, const context& cntx)
-    {
-      {
-        for ( const std::pair<std::string, pnet::type::value::value_type>& kv
-            : cntx._container
-            )
-        {
-          s << kv.first
-            << " := " << pnet::type::value::show (kv.second)
-            << std::endl;
-        }
-      }
-
-      {
-        for ( const std::pair<std::string, const pnet::type::value::value_type*>& kv
-            : cntx._ref_container
-            )
-        {
-          s << kv.first
-            << " -> " << pnet::type::value::show (*kv.second)
-            << std::endl;
-        }
-      }
-
-      return s;
-    }
   }
 }
