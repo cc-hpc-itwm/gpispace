@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 
   expr::eval::context context;
 
-  context.bind ("b", max);
+  context.bind_ref ("b", max);
 
   expr::parse::parser parser (input);
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 
     do
     {
-      context.bind ("a", i++);
+      context.bind_and_discard_ref ({"a"}, i++);
     }
     while (boost::get<bool> (parser.eval_all (context)));
   }
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 
   expr::eval::context context;
 
-  context.bind ("b", max);
+  context.bind_ref ("b", max);
 
   for (int r (0); r < round; ++r)
   {
@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 
     do
     {
-      context.bind ("a", i++);
+      context.bind_and_discard_ref ({"a"}, i++);
     }
     while (boost::get<bool> (expr::parse::parser (input).eval_all (context)));
   }

@@ -10,57 +10,15 @@
 
 #include <iostream>
 
-#include <util-generic/split.hpp>
-
 namespace expr
 {
   namespace eval
   {
-    namespace
-    {
-      std::list<std::string> split (const std::string& s)
-      {
-        return fhg::util::split<std::string, std::string> (s, '.');
-      }
-    }
-
-    void context::bind ( const std::list<std::string>& path
-                       , const pnet::type::value::value_type& value
-                       )
-    {
-      if (path.empty())
-      {
-        throw std::runtime_error ("context::bind []");
-      }
-
-      std::list<std::string>::const_iterator key_pos (path.begin());
-      const std::string& key (*key_pos); ++key_pos;
-
-      pnet::type::value::poke ( key_pos
-                              , path.end()
-                              , _container[key]
-                              , value
-                              );
-    }
-    void context::bind ( const std::string& path
-                       , const pnet::type::value::value_type& value
-                       )
-    {
-      bind (split (path), value);
-    }
-
     void context::bind_ref ( const std::string& key
                            , const pnet::type::value::value_type& value
                            )
     {
       _ref_container[key] = &value;
-    }
-
-    void context::bind_and_discard_ref ( const std::string& path
-                                       , const pnet::type::value::value_type& value
-                                       )
-    {
-      bind_and_discard_ref (split (path), value);
     }
 
     void context::bind_and_discard_ref ( const std::list<std::string>& key_vec
@@ -88,12 +46,6 @@ namespace expr
                               , _container[key]
                               , value
                               );
-    }
-
-    const pnet::type::value::value_type&
-      context::value (const std::string& key) const
-    {
-      return value (split (key));
     }
 
     const pnet::type::value::value_type&

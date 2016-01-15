@@ -1826,12 +1826,12 @@ namespace xml
 
               os << complete (_port.type) << " " << _amper << _port.name << " ("
                  << "boost::get< " << complete (_port.type) << " >"
-                 << " (_pnetc_input.value (\"" << _port.name << "\")));";
+                 << " (_pnetc_input.value (std::list<std::string> (1, \"" << _port.name << "\"))));";
             }
             else
             {
               os << "::pnetc::type::" << _port.type <<  "::" << _port.type <<  " " << _port.name
-                 << " (::pnetc::type::" << _port.type << "::from_value (_pnetc_input.value (\"" << _port.name << "\")));";
+                 << " (::pnetc::type::" << _port.type << "::from_value (_pnetc_input.value (std::list<std::string> (1, \"" << _port.name << "\"))));";
             }
 
             return os;
@@ -1995,7 +1995,7 @@ namespace xml
           if (port_return)
           {
             s << indent << "_pnetc_output.bind_and_discard_ref ("
-              << "\"" << (*port_return).name << "\""
+              << "std::list<std::string> (1, \"" << (*port_return).name << "\")"
               << ", "
               ;
 
@@ -2059,7 +2059,7 @@ namespace xml
           {
             s << indent
               << "_pnetc_output.bind_and_discard_ref ("
-              << "\"" << port.name << "\""
+              << "std::list<std::string> (1, \"" << port.name << "\")"
               << ", " << mk_value (port)
               << ")"
               << ";"
@@ -2070,7 +2070,7 @@ namespace xml
           {
             s << indent
               << "_pnetc_output.bind_and_discard_ref ("
-              << "\"" << port.name << "\""
+              << "std::list<std::string> (1, \"" << port.name << "\")"
               << ", " << mk_value (port)
               << ")"
               << ";"

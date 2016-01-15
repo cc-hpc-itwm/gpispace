@@ -45,13 +45,13 @@ BOOST_AUTO_TEST_CASE (basic)
   key_a_b.push_back ("a");
   key_a_b.push_back ("b");
 
-  c.bind ("x", x);
-  c.bind ("y", y);
-  c.bind ("z", z);
+  c.bind_and_discard_ref ({"x"}, x);
+  c.bind_and_discard_ref ({"y"}, y);
+  c.bind_and_discard_ref ({"z"}, z);
 
-  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
-  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
-  BOOST_REQUIRE_EQUAL (c.value ("z"), z);
+  BOOST_REQUIRE_EQUAL (c.value ({"x"}), x);
+  BOOST_REQUIRE_EQUAL (c.value ({"y"}), y);
+  BOOST_REQUIRE_EQUAL (c.value ({"z"}), z);
   BOOST_REQUIRE_EQUAL (c.value (key_z_x), z_x);
   BOOST_REQUIRE_EQUAL (c.value (key_z_y), z_y);
 
@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE (basic)
   {
     const double z_x_new (1.0);
 
-    c.bind ("z.x", pnet::type::value::value_type (z_x_new));
+    c.bind_and_discard_ref ({"z","x"}, pnet::type::value::value_type (z_x_new));
 
     BOOST_REQUIRE_EQUAL (c.value (key_z_x), value_type (z_x_new));
   }
@@ -69,13 +69,13 @@ BOOST_AUTO_TEST_CASE (basic)
   {
     const std::string z_new ("z");
 
-    c.bind ("z", pnet::type::value::value_type (z_new));
+    c.bind_and_discard_ref ({"z"}, pnet::type::value::value_type (z_new));
 
-    BOOST_REQUIRE_EQUAL (c.value ("z"), value_type (z_new));
+    BOOST_REQUIRE_EQUAL (c.value ({"z"}), value_type (z_new));
   }
 
-  BOOST_REQUIRE_EQUAL (c.value ("x"), x);
-  BOOST_REQUIRE_EQUAL (c.value ("y"), y);
+  BOOST_REQUIRE_EQUAL (c.value ({"x"}), x);
+  BOOST_REQUIRE_EQUAL (c.value ({"y"}), y);
 
   BOOST_REQUIRE_THROW (c.value (key_z_a), std::runtime_error);
   BOOST_REQUIRE_THROW (c.value (key_a_b), std::runtime_error);
@@ -102,9 +102,9 @@ BOOST_AUTO_TEST_CASE (reference)
   c.bind_ref (key_b, value_b);
   c.bind_ref (key_c, value_c);
 
-  BOOST_REQUIRE_EQUAL (c.value (key_a), value_a);
-  BOOST_REQUIRE_EQUAL (c.value (key_b), value_b);
-  BOOST_REQUIRE_EQUAL (c.value (key_c), value_c);
+  BOOST_REQUIRE_EQUAL (c.value ({key_a}), value_a);
+  BOOST_REQUIRE_EQUAL (c.value ({key_b}), value_b);
+  BOOST_REQUIRE_EQUAL (c.value ({key_c}), value_c);
 
   std::list<std::string> key_c_x;
   key_c_x.push_back ("c");
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (show_and_bind_and_discard_ref)
 
   pnet::type::value::value_type v (read ("Struct [x:=0.0,y:=\"s\"]"));
 
-  c.bind_ref ("s", v);
+  c.bind_ref ({"s"}, v);
 
   {
     std::ostringstream oss;

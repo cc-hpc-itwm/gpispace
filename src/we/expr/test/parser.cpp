@@ -202,12 +202,12 @@ BOOST_AUTO_TEST_CASE (token_or_integral)
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 {
   fhg::util::testing::require_exception
-    ( [] { require_evaluating_to ("true || (${a} := true)", true).value ("a"); }
+    ( [] { require_evaluating_to ("true || (${a} := true)", true).value ({"a"}); }
     , pnet::exception::missing_binding ("a")
     );
 
   BOOST_REQUIRE_EQUAL
-    ( require_evaluating_to ("false || (${a} := true)", true).value ("a")
+    ( require_evaluating_to ("false || (${a} := true)", true).value ({"a"})
     , pnet::type::value::value_type (true)
     );
 }
@@ -263,12 +263,12 @@ BOOST_AUTO_TEST_CASE (token_and_integral)
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 {
   fhg::util::testing::require_exception
-    ( [] { require_evaluating_to ("false && (${a} := false)", false).value ("a"); }
+    ( [] { require_evaluating_to ("false && (${a} := false)", false).value ({"a"}); }
     , pnet::exception::missing_binding ("a")
     );
 
   BOOST_REQUIRE_EQUAL
-    ( require_evaluating_to ("true && (${a} := false)", false).value ("a")
+    ( require_evaluating_to ("true && (${a} := false)", false).value ({"a"})
     , pnet::type::value::value_type (false)
     );
 }

@@ -584,7 +584,7 @@ namespace we
           pending_updates.emplace_back
             ( do_put_value
               ( _port_to_place.at (tid).left.find (p.first)->get_right()
-              , context.value (p.second.name())
+              , context.value ({p.second.name()})
               )
             );
         }
@@ -599,8 +599,8 @@ namespace we
                                      . left.find (p.first)->get_right()
                                      );
 
-                workflow_response ( context.value (to)
-                                  , context.value (p.second.name())
+                workflow_response ( context.value ({to})
+                                  , context.value ({p.second.name()})
                                   );
               }
               , "fire_expression: sending workflow response failed"

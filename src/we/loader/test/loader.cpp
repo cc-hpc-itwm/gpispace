@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE (answer_question)
                           );
 
     BOOST_REQUIRE_EQUAL
-      (out.value ("out"), pnet::type::value::value_type (42L));
+      (out.value ({"out"}), pnet::type::value::value_type (42L));
   }
 
   {
@@ -36,9 +36,9 @@ BOOST_AUTO_TEST_CASE (answer_question)
                             );
 
     BOOST_REQUIRE_EQUAL
-      (out.value ("out"), pnet::type::value::value_type (44L));
+      (out.value ({"out"}), pnet::type::value::value_type (44L));
     BOOST_REQUIRE_EQUAL
-      (out.value ("ans"), pnet::type::value::value_type (42L));
+      (out.value ({"ans"}), pnet::type::value::value_type (42L));
   }
 
   {
@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE (answer_question)
                           );
 
     BOOST_REQUIRE_EQUAL
-      (out.value ("out"), pnet::type::value::value_type (42L));
+      (out.value ({"out"}), pnet::type::value::value_type (42L));
   }
 }
 

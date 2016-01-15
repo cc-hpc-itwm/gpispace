@@ -15,7 +15,7 @@ static void answer ( drts::worker::context*
                    , std::map<std::string, void*> const&
                    )
 {
-  output.bind_and_discard_ref ("out", 42L);
+  output.bind_and_discard_ref ({"out"}, 42L);
 }
 
 WE_MOD_INITIALIZE_START (answer);
