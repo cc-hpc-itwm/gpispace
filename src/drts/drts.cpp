@@ -10,7 +10,6 @@
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
 
-#include <we/expr/parse/parser.hpp>
 #include <we/type/activity.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
