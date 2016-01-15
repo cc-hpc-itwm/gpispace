@@ -93,9 +93,6 @@ namespace expr
 
       void add (const parser & other);
 
-      // eval the first entry in the stack
-      pnet::type::value::value_type eval_front (eval::context & context) const;
-
       // get the already evaluated value, throws if entry is not an value
       pnet::type::value::value_type get_front () const;
 

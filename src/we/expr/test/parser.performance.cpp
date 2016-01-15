@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
     {
       context.bind ("a", i++);
     }
-    while (pnet::type::value::is_true (parser.eval_front (context)));
+    while (pnet::type::value::is_true (parser.eval_all (context)));
   }
 }
 
