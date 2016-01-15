@@ -73,7 +73,6 @@ namespace expr
             );
 
     public:
-      parser (const std::string & input, eval::context & context);
       parser (const std::string & input);
       parser (const nd_stack_t & seq);
 

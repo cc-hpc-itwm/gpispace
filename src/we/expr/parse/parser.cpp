@@ -25,17 +25,6 @@ namespace expr
 {
   namespace parse
   {
-    parser::parser (const std::string & input, eval::context & context)
-      : op_stack ()
-      , nd_stack ()
-      , tmp_stack ()
-    {
-      parse (input, std::bind ( eval::refnode_value
-                              , std::ref (context)
-                              , std::placeholders::_1
-                              )
-            );
-    }
     parser::parser (const std::string & input)
       : op_stack ()
       , nd_stack ()
