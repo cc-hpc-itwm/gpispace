@@ -87,8 +87,6 @@ namespace expr
              );
 
       // the parsed expressions in the correct order
-      bool empty (void) const { return nd_stack.empty(); }
-      void pop_front (void) { nd_stack.pop_front(); }
       const nd_t & front (void) const { return nd_stack.front(); }
 
       void add (const parser & other);
@@ -105,13 +103,8 @@ namespace expr
       void rename (const std::string& from, const std::string& to);
 
       std::string string (void) const;
-
-      friend std::ostream & operator << (std::ostream &, const parser &);
     };
 
     std::ostream& operator << (std::ostream&, const parser&);
-    std::string parse_result ( const std::string&
-                             , const bool& constant_folding = false
-                             );
   }
 }
