@@ -32,7 +32,6 @@ extended_add_library (NAME pnet
   SOURCES "we/exception.cpp"
           "we/expr/eval/context.cpp"
           "we/expr/eval/eval.cpp"
-          "we/expr/eval/refnode.cpp"
           "we/expr/exception.cpp"
           "we/expr/parse/action.cpp"
           "we/expr/parse/node.cpp"

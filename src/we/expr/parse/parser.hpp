@@ -7,7 +7,6 @@
 #include <we/expr/exception.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <functional>
 #include <string>
 #include <stack>
 #include <list>
@@ -67,10 +66,7 @@ namespace expr
       void ternary (const token::type & token, const std::size_t k);
       void ite (const std::size_t k);
       void reduce (const std::size_t k);
-      void
-      parse ( const std::string& input
-            , const std::function<nd_t (const std::list<std::string>&)>&
-            );
+      void parse (const std::string& input);
 
     public:
       parser (const std::string & input);

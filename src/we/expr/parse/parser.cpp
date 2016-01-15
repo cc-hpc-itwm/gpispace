@@ -12,12 +12,10 @@
 #include <we/type/value/function.hpp>
 
 #include <we/expr/eval/context.hpp>
-#include <we/expr/eval/refnode.hpp>
 #include <we/expr/eval/eval.hpp>
 
 #include <boost/lexical_cast.hpp>
 
-#include <functional>
 #include <sstream>
 #include <iterator>
 
@@ -30,7 +28,7 @@ namespace expr
       , nd_stack ()
       , tmp_stack ()
     {
-      parse (input, eval::refnode_name);
+      parse (input);
     }
     parser::parser (const nd_stack_t & seq)
       : op_stack ()
@@ -243,11 +241,7 @@ namespace expr
       op_stack.pop();
     }
 
-    void
-    parser::parse
-      ( const std::string& input
-      , const std::function<nd_t (const std::list<std::string>&)> & refnode
-      )
+    void parser::parse (const std::string& input)
     {
       op_stack.push (token::eof);
 
@@ -266,7 +260,7 @@ namespace expr
                   tmp_stack.push_back (token.value());
                   break;
                 case token::ref:
-                  tmp_stack.push_back (refnode(token.get_ref()));
+                  tmp_stack.push_back (node::type (token.get_ref()));
                   break;
                 default:
                   {
