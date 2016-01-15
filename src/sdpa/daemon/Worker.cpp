@@ -15,6 +15,7 @@ namespace sdpa
                    , const std::string& hostname
                    )
       : _capabilities (capabilities)
+      , capability_names_ (get_set_of_capability_names (capabilities))
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , _hostname (hostname)
@@ -89,6 +90,9 @@ namespace sdpa
 	}
       }
 
+      if (bModified)
+        capability_names_ = get_set_of_capability_names (_capabilities);
+
       return bModified;
     }
 
@@ -99,6 +103,10 @@ namespace sdpa
       {
         removed += _capabilities.erase (capability);
       }
+
+      if (removed)
+        capability_names_ = get_set_of_capability_names (_capabilities);
+
       return removed != 0;
     }
 

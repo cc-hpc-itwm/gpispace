@@ -52,6 +52,7 @@ namespace sdpa
       std::set<job_id_t> getJobListAndCleanQueues();
 
       capabilities_set_t _capabilities;
+      std::set<std::string> capability_names_;
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
       std::string const _hostname;
