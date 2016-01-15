@@ -2024,3 +2024,17 @@ BOOST_AUTO_TEST_CASE (token_set_is_subset)
   require_evaluating_to
     ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
 }
+
+//! \todo add more tests
+
+BOOST_AUTO_TEST_CASE (is_const_true)
+{
+  BOOST_REQUIRE_EQUAL (true, expr::parse::parser ("true").is_const_true());
+  BOOST_REQUIRE_EQUAL (false, expr::parse::parser ("false").is_const_true());
+
+  //! \todo make this evaluate to "true"
+  BOOST_REQUIRE_EQUAL
+    (false, expr::parse::parser ("${a} :eq: ${a}").is_const_true());
+
+  BOOST_REQUIRE_EQUAL (false, expr::parse::parser ("${a}").is_const_true());
+}
