@@ -17,7 +17,6 @@ namespace pnet
                         , const value_type&
                         , const value_type&
                         );
-      bool is_true (const value_type&);
     }
   }
 }

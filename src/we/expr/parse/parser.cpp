@@ -84,13 +84,6 @@ namespace expr
       return v;
     }
 
-    bool parser::eval_all_bool (eval::context & context) const
-    {
-      const pnet::type::value::value_type v (eval_all (context));
-
-      return pnet::type::value::is_true(v);
-    }
-
     pnet::type::value::value_type parser::eval_all() const
     {
       eval::context c;
@@ -98,19 +91,12 @@ namespace expr
       return eval_all (c);
     }
 
-    bool parser::eval_all_bool() const
-    {
-      eval::context c;
-
-      return eval_all_bool (c);
-    }
-
     bool parser::is_const_true() const
     {
       //! \todo more intelligent check, e.g. identify ${a} == ${a}
       try
       {
-        return eval_all_bool();
+        return boost::get<bool> (eval_all());
       }
       catch (pnet::exception::missing_binding const&)
       {

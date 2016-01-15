@@ -752,7 +752,9 @@ namespace we
             );
         }
 
-        if (transition.condition()->ast().eval_all_bool (context))
+        if (boost::get<bool>
+            (transition.condition()->ast().eval_all (context))
+           )
         {
           return true;
         }

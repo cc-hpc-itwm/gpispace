@@ -62,7 +62,7 @@ namespace expr
             {
               pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 
-              if (!pnet::type::value::is_true (c0))
+              if (!boost::get<bool> (c0))
                 {
                   pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
 
@@ -77,7 +77,7 @@ namespace expr
             {
               pnet::type::value::value_type c0 (boost::apply_visitor (*this, b.l));
 
-              if (pnet::type::value::is_true (c0))
+              if (boost::get<bool> (c0))
                 {
                   pnet::type::value::value_type c1 (boost::apply_visitor (*this, b.r));
 
