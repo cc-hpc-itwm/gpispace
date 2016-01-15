@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <string>
 #include <set>
 
@@ -50,4 +51,20 @@ namespace sdpa
   typedef Capability capability_t;
 
   typedef std::set<capability_t> capabilities_set_t;
+
+  inline std::set<std::string> get_set_of_capability_names
+    (capabilities_set_t const& cpb_set)
+  {
+    std::set<std::string> capability_names;
+    std::transform ( cpb_set.begin()
+                   , cpb_set.end()
+                   , std::inserter ( capability_names
+                                   , capability_names.begin()
+                                   )
+                   , [] (capability_t const& cpb)
+                     {return cpb.name();}
+                   );
+
+    return capability_names;
+  }
 }
