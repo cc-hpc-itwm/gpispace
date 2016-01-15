@@ -64,6 +64,8 @@ namespace sdpa
                                    , hostname
                                    )
                           );
+
+      worker_equiv_classes_[worker_map_.at (workerId).capability_names_].add_worker_entry (workerId);
     }
 
 
