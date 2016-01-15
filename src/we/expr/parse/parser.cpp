@@ -25,14 +25,10 @@ namespace expr
 {
   namespace parse
   {
-    parser::parser ( const std::string & input
-                   , eval::context & context
-                   , const bool& constant_folding
-                   )
+    parser::parser (const std::string & input, eval::context & context)
       : op_stack ()
       , nd_stack ()
       , tmp_stack ()
-      , _constant_folding (constant_folding)
     {
       parse (input, std::bind ( eval::refnode_value
                               , std::ref (context)
@@ -40,23 +36,17 @@ namespace expr
                               )
             );
     }
-    parser::parser ( const std::string & input
-                   , const bool& constant_folding
-                   )
+    parser::parser (const std::string & input)
       : op_stack ()
       , nd_stack ()
       , tmp_stack ()
-      , _constant_folding (constant_folding)
     {
       parse (input, eval::refnode_name);
     }
-    parser::parser ( const nd_stack_t & seq
-                   , const bool& constant_folding
-                   )
+    parser::parser (const nd_stack_t & seq)
       : op_stack ()
       , nd_stack (seq)
       , tmp_stack ()
-      , _constant_folding (constant_folding)
     {}
 
     void parser::add (const parser & other)
@@ -122,7 +112,7 @@ namespace expr
 
       nd_t c (tmp_stack.back()); tmp_stack.pop_back();
 
-      if (constant_folding() && node::is_value (c))
+      if (node::is_value (c))
         {
           tmp_stack.push_back (pnet::type::value::unary (token, node::get (c)));
         }
@@ -153,7 +143,7 @@ namespace expr
                                             );
         }
 
-      if (constant_folding() && node::is_value(l) && node::is_value(r))
+      if (node::is_value(l) && node::is_value(r))
         {
           tmp_stack.push_back ( pnet::type::value::binary
                                 ( token
