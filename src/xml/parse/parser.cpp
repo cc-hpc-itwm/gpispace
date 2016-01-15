@@ -271,10 +271,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::connect connect_type ( const xml_node_type* node
-                                    , state::type& state
-                                    , const we::edge::type& direction
-                                    )
+      type::connect_type connect_type ( const xml_node_type* node
+                                      , state::type& state
+                                      , const we::edge::type& direction
+                                      )
       {
         we::type::property::type properties;
 
@@ -313,15 +313,12 @@ namespace xml
         }
 
         return type::connect_type
-          ( state.id_mapper()->next_id()
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , required ("connect_type", node, "place", state)
           , required ("connect_type", node, "port", state)
           , direction
           , properties
-          ).make_reference_id();
+          );
       }
 
       // **************************************************************** //
@@ -786,13 +783,10 @@ namespace xml
             }
             else if (child_name == "connect-inout")
             {
-              const id::ref::connect connection_in
+              transition.get_ref().push_connection
                 (connect_type (child, state, we::edge::PT));
-              const id::ref::connect connection_out
-                (connection_in.get().clone (boost::none, boost::none, we::edge::TP));
-
-              transition.get_ref().push_connection (connection_in);
-              transition.get_ref().push_connection (connection_out);
+              transition.get_ref().push_connection
+                (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-read")
             {

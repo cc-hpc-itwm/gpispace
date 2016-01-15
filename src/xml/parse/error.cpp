@@ -245,39 +245,37 @@ namespace xml
 
       connect_to_nonexistent_place::connect_to_nonexistent_place
        ( const id::ref::transition& transition
-       , const id::ref::connect& connection
+       , const type::connect_type& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent place %2%"
                                      " in transition %3% at %4%"
                                    )
-                   % connection.get().direction()
-                   % connection.get().place()
+                   % connection.direction()
+                   % connection.place()
                    % transition.get().name()
-                   % connection.get().position_of_definition()
+                   % connection.position_of_definition()
                    )
          , _transition (transition)
-         , _connection (connection)
         {}
 
       connect_to_nonexistent_port::connect_to_nonexistent_port
        ( const id::ref::transition& transition
-       , const id::ref::connect& connection
+       , const type::connect_type& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent port %2%"
                                      " in transition %3% at %4%"
                                    )
-                   % connection.get().direction()
-                   % connection.get().port()
+                   % connection.direction()
+                   % connection.port()
                    % transition.get().name()
-                   % connection.get().position_of_definition()
+                   % connection.position_of_definition()
                    )
          , _transition (transition)
-         , _connection (connection)
         {}
 
       connect_type_error::connect_type_error
         ( const id::ref::transition& transition
-        , const id::ref::connect& connection
+        , const type::connect_type& connection
         , const type::port_type& port
         , const id::ref::place& place
         )
@@ -286,7 +284,7 @@ namespace xml
                                      " to port %6%::%7% (%8%) at %9%"
                                      " in transition %10% at %11%"
                                    )
-                   % connection.get().direction()
+                   % connection.direction()
                    % place.get().name()
                    % place.get().type()
                    % pnet::type::signature::show (place.get().signature_or_throw())
@@ -297,11 +295,10 @@ namespace xml
                        (port.signature_or_throw (transition.get().resolved_function().get()))
                    % port.position_of_definition()
                    % transition.get().name()
-                   % connection.get().position_of_definition()
+                   % connection.position_of_definition()
                    )
           , _transition (transition)
-          , _connection (connection)
-            , _place (place)
+          , _place (place)
         {}
 
       memory_buffer_without_size::memory_buffer_without_size
@@ -553,19 +550,19 @@ namespace xml
       {}
 
       duplicate_connect::duplicate_connect
-        ( const id::ref::connect& early
-        , const id::ref::connect& late
+        ( const type::connect_type& early
+        , const type::connect_type& late
         )
-          : generic_id_duplicate<id::ref::connect>
+          : generic_duplicate<type::connect_type>
             ( early
             , late
             , boost::format ( "connect-%1% %2% <-> %3%"
                               " (existing connection is connect-%4%)"
                             )
-            % we::edge::enum_to_string (late.get().direction())
-            % late.get().place()
-            % late.get().port()
-            % we::edge::enum_to_string (early.get().direction())
+            % we::edge::enum_to_string (late.direction())
+            % late.place()
+            % late.port()
+            % we::edge::enum_to_string (early.direction())
             )
       {}
 

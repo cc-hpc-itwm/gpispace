@@ -5,6 +5,7 @@
 #include <string>
 
 #include <xml/parse/id/types.hpp>
+#include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
@@ -313,7 +314,6 @@ namespace xml
       DUPLICATE (transition);
       DUPLICATE_WITH_ID (template,tmpl);
       DUPLICATE (place_map);
-      DUPLICATE (connect);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -343,6 +343,7 @@ namespace xml
         duplicate_ ## _name (const _type& early, const _type& late);    \
       }
 
+      DUPLICATE (connect, type::connect_type);
       DUPLICATE (external_function, type::module_type);
       DUPLICATE (memory_buffer, type::memory_buffer_type);
       DUPLICATE (port, type::port_type);
@@ -494,24 +495,22 @@ namespace xml
       {
       public:
         connect_to_nonexistent_place ( const id::ref::transition&
-                                     , const id::ref::connect&
+                                     , const type::connect_type&
                                      );
 
       private:
         const id::ref::transition _transition;
-        const id::ref::connect _connection;
       };
 
       class connect_to_nonexistent_port : public generic
       {
       public:
         connect_to_nonexistent_port ( const id::ref::transition&
-                                    , const id::ref::connect&
+                                    , const type::connect_type&
                                     );
 
       private:
         const id::ref::transition _transition;
-        const id::ref::connect _connection;
       };
 
       // ******************************************************************* //
@@ -568,14 +567,13 @@ namespace xml
       {
       public:
         connect_type_error ( const id::ref::transition&
-                           , const id::ref::connect&
+                           , const type::connect_type&
                            , const type::port_type&
                            , const id::ref::place&
                            );
 
       private:
         const id::ref::transition _transition;
-        const id::ref::connect _connection;
         const id::ref::place _place;
       };
 

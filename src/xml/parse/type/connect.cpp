@@ -4,8 +4,6 @@
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/net.hpp>
 
-#include <xml/parse/id/mapper.hpp>
-
 #include <fhg/util/xml.hpp>
 
 namespace xml
@@ -14,24 +12,18 @@ namespace xml
   {
     namespace type
     {
-      connect_type::connect_type ( ID_CONS_PARAM(connect)
-                                 , PARENT_CONS_PARAM(transition)
-                                 , const util::position_type& pod
+      connect_type::connect_type ( const util::position_type& pod
                                  , const std::string& place
                                  , const std::string& port
                                  , const ::we::edge::type& direction
                                  , const we::type::property::type& properties
                                  )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _place (place)
         , _port (port)
         , _direction (direction)
         , _properties (properties)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const std::string& connect_type::place() const
       {
@@ -47,19 +39,14 @@ namespace xml
         return _direction;
       }
 
-      const std::string& connect_type::place_impl (const std::string& place)
+      connect_type connect_type::with_place (const std::string& place) const
       {
-        return _place = place;
-      }
-      const std::string& connect_type::place (const std::string& place)
-      {
-        if (has_parent())
-        {
-          parent()->connection_place (make_reference_id(), place);
-          return _place;
-        }
-
-        return place_impl (place);
+        return connect_type ( position_of_definition()
+                            , place
+                            , _port
+                            , _direction
+                            , _properties
+                            );
       }
 
       const we::type::property::type& connect_type::properties() const
@@ -71,27 +58,6 @@ namespace xml
       {
         return std::make_tuple
           (_place, _port, we::edge::is_PT (_direction));
-      }
-
-
-      id::ref::connect connect_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        , boost::optional<we::edge::type> direction
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return connect_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _place
-          , _port
-          , direction.get_value_or (_direction)
-          , _properties
-          ).make_reference_id();
       }
 
       namespace dump

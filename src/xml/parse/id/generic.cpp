@@ -4,7 +4,6 @@
 
 #include <xml/parse/id/mapper.hpp>
 
-#include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -60,7 +59,6 @@ namespace xml
   {
     namespace type
     {
-      ID_IMPL(connect)
       ID_IMPL(function)
       ID_IMPL(net)
       ID_IMPL(place)
@@ -77,7 +75,6 @@ namespace xml
       PARENT_IMPL(net,specialize)
       PARENT_IMPL(net,tmpl)
       PARENT_IMPL(net,transition)
-      PARENT_IMPL(transition,connect)
       PARENT_IMPL(transition,place_map)
       PARENT_IMPL(transition,use)
     }

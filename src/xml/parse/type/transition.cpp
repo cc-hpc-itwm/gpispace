@@ -105,7 +105,7 @@ namespace xml
                            : boost::none
                            )
         , _name (name)
-        , _connections (connections, _id)
+        , _connections (connections)
         , _responses (responses)
         , _place_map (place_map, _id)
         , structs (structs_)
@@ -253,15 +253,9 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::push_connection (const id::ref::connect& connect_id)
+      void transition_type::push_connection (const connect_type& connect)
       {
-        const id::ref::connect& id_old (_connections.push (connect_id));
-
-        if (not (id_old == connect_id))
-        {
-          throw error::duplicate_connect (id_old, connect_id);
-        }
-        connect_id.get_ref().parent (id());
+        _connections.push<error::duplicate_connect> (connect);
       }
 
       void transition_type::push_response (response_type const& response)
@@ -281,34 +275,6 @@ namespace xml
       }
 
       // ***************************************************************** //
-
-      void transition_type::connection_place
-        (const id::ref::connect& connection, const std::string& place)
-      {
-        if (connection.get().place() == place)
-        {
-          return;
-        }
-
-        if ( _connections.has
-             ( std::make_tuple ( place
-                               , connection.get().port()
-                               , we::edge::is_PT
-                                 (connection.get().direction())
-                               )
-             )
-           )
-        {
-          throw std::runtime_error ( "tried reconnecting connection to place, "
-                                     "but connection between between that place "
-                                     "and port already exists in that direction"
-                                   );
-        }
-
-        _connections.erase (connection);
-        connection.get_ref().place_impl (place);
-        _connections.push (connection);
-      }
 
       void transition_type::place_map_real
         (const id::ref::place_map& id, const std::string& real)
@@ -449,16 +415,16 @@ namespace xml
           (we::edge::enum_to_string (connect.direction()));
 
         const boost::optional<const id::ref::place&> id_place
-          (connect.parent()->parent()->places().get (connect.place()));
+          (parent()->places().get (connect.place()));
 
         if (not id_place)
         {
           throw error::connect_to_nonexistent_place
-            (make_reference_id(), connect.make_reference_id());
+            (make_reference_id(), connect);
         }
 
         const boost::optional<const port_type&> port
-          ( connect.parent()->resolved_function().get().ports().get
+          ( resolved_function().get().ports().get
               ( std::make_pair ( connect.port()
                                , we::edge::is_PT (connect.direction())
                                ? we::type::PORT_IN
@@ -470,13 +436,13 @@ namespace xml
         if (not port)
         {
           throw error::connect_to_nonexistent_port
-            (make_reference_id(), connect.make_reference_id());
+            (make_reference_id(), connect);
         }
 
         if (id_place->get().signature() != port->signature (resolved_function().get()))
         {
           throw error::connect_type_error ( make_reference_id()
-                                          , connect.make_reference_id()
+                                          , connect
                                           , *port
                                           , *id_place
                                           );
@@ -505,7 +471,7 @@ namespace xml
 
       void transition_type::type_check (const state::type & state) const
       {
-        for (const connect_type& connect : connections().values())
+        for (const connect_type& connect : connections())
         {
           type_check (connect, state);
         }
@@ -599,7 +565,7 @@ namespace xml
             )
           : boost::none
           , _name
-          , _connections.clone (new_id, new_mapper)
+          , _connections
           , _responses
           , _place_map.clone (new_id, new_mapper)
           , structs
@@ -808,7 +774,7 @@ namespace xml
                 }
               }
 
-              for (const connect_type& connect : trans.connections().values())
+              for (const connect_type& connect : trans.connections())
               {
                 if (we::edge::is_PT (connect.direction()))
                 {
@@ -885,7 +851,7 @@ namespace xml
                 }
               }
 
-              for (const connect_type& connect : trans.connections().values())
+              for (const connect_type& connect : trans.connections())
               {
                 if (!we::edge::is_PT (connect.direction()))
                 {
@@ -953,7 +919,7 @@ namespace xml
             const we::transition_id_type tid
               (we_net.add_transition (we_trans));
 
-            for (const connect_type& connect : trans.connections().values())
+            for (const connect_type& connect : trans.connections())
             {
               if (we::edge::is_PT (connect.direction()))
               {
@@ -1050,7 +1016,7 @@ namespace xml
           boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
           dumps (s, t.place_map().values());
-          dumps (s, t.connections().values());
+          dumps (s, t.connections());
           dumps (s, t.responses());
 
           for (const std::string& cond : t.conditions())

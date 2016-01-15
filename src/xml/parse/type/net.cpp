@@ -447,16 +447,16 @@ namespace xml
         for (const id::ref::transition& id : transition_ids)
         {
           transition_type& transition (id.get_ref());
-          const std::unordered_set<id::ref::connect> connect_ids
-            (transition.connections().ids());
+          auto const connects (std::move (transition._connections));
           const std::unordered_set<id::ref::place_map> place_map_ids
             (transition.place_map().ids());
 
           transition.name (prefix + transition.name());
 
-          for (const id::ref::connect& conn : connect_ids)
+          for (connect_type const& conn : connects)
           {
-            conn.get_ref().place (prefix + conn.get().place());
+            transition.push_connection
+              (conn.with_place (prefix + conn.place()));
           }
 
           for (const id::ref::place_map& pm : place_map_ids)
@@ -483,18 +483,17 @@ namespace xml
         for (const id::ref::transition& id : transition_ids)
         {
           transition_type& transition (id.get_ref());
-          const std::unordered_set<id::ref::connect> connect_ids
-            (transition.connections().ids());
+          auto const connects (std::move (transition._connections));
           const std::unordered_set<id::ref::place_map> place_map_ids
             (transition.place_map().ids());
 
           transition.name
             (fhg::util::remove_prefix (prefix, transition.name()));
 
-          for (const id::ref::connect& conn : connect_ids)
+          for (connect_type const& conn : connects)
           {
-            conn.get_ref().place
-              (fhg::util::remove_prefix (prefix, conn.get().place()));
+            transition.push_connection
+              (conn.with_place (fhg::util::remove_prefix (prefix, conn.place())));
           }
 
           for (const id::ref::place_map& pm : place_map_ids)
