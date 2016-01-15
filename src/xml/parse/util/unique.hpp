@@ -5,6 +5,8 @@
 #include <string>
 #include <stdexcept>
 
+#include <xml/parse/id/mapper.fwd.hpp>
+
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/any_range.hpp>
