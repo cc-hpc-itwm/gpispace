@@ -294,6 +294,8 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _(mtx_);
       worker_map_.at (worker_id).assign (job_id);
+      worker_equiv_classes_.at
+        (worker_map_.at (worker_id).capability_names_).inc_pending_jobs (1);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
