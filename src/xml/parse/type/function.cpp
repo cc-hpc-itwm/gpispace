@@ -1594,15 +1594,15 @@ namespace xml
             return find_module_calls (state, id_function, m, mcs);
           }
 
-          bool operator () (const id::ref::use& u) const
+          bool operator () (use_type const& use) const
           {
             boost::optional<const id::ref::function&> id_function
-              (_id_net.get_ref().get_function (u.get().name()));
+              (_id_net.get_ref().get_function (use.name()));
 
             if (not id_function)
               {
                 throw error::unknown_function
-                  (u.get().name(), trans.make_reference_id());
+                  (use.name(), trans.make_reference_id());
               }
 
             return find_module_calls (state, *id_function, m, mcs);
@@ -2496,7 +2496,7 @@ namespace xml
             struct_to_cpp (state, f, _structnames);
           }
 
-          void operator() (const id::ref::use&) const { }
+          void operator() (use_type const&) const { }
           void operator() (const module_type&) const { }
           void operator() (expression_type const&) const { }
 

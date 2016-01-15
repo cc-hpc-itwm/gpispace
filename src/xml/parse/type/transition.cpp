@@ -63,10 +63,7 @@ namespace xml
           {
             id.get_ref().parent (_parent);
           }
-          void operator() (const id::ref::use& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
+          void operator() (use_type const&) const {}
 
         private:
           const id::transition& _parent;
@@ -159,15 +156,15 @@ namespace xml
           }
 
           const id::ref::function&
-            operator() (const id::ref::use& use) const
+            operator() (use_type const& use) const
           {
             boost::optional<const id::ref::function&>
-              id_function (net.get_function (use.get().name()));
+              id_function (net.get_function (use.name()));
 
             if (not id_function)
             {
               throw error::unknown_function
-                (use.get().name(), trans.make_reference_id());
+                (use.name(), trans.make_reference_id());
             }
 
             return *id_function;
@@ -304,7 +301,7 @@ namespace xml
               , state (_state)
           {}
 
-          void operator () (const id::ref::use&) const { return; }
+          void operator () (use_type const&) const { return; }
           void operator () (const id::ref::function& id_function) const
           {
             id_function.get_ref().specialize (map, get, known_structs, state);
@@ -435,7 +432,7 @@ namespace xml
             : state (_state)
           { }
 
-          void operator () (const id::ref::use&) const { return; }
+          void operator () (use_type const&) const { return; }
           void operator () (const id::ref::function & id_function) const
           {
             id_function.get().type_check (state);
@@ -508,9 +505,9 @@ namespace xml
             return id.get().clone
               (function_type::make_parent (_new_id), _mapper);
           }
-          function_or_use_type operator() (const id::ref::use& use) const
+          function_or_use_type operator() (use_type const& use) const
           {
-            return use.get().clone (_new_id, _mapper);
+            return use;
           }
 
         private:
@@ -964,9 +961,9 @@ namespace xml
               : s (_s)
             {}
 
-            void operator () (const id::ref::use& use) const
+            void operator () (use_type const& use) const
             {
-              ::xml::parse::type::dump::dump (s, use.get());
+              ::xml::parse::type::dump::dump (s, use);
             }
             void operator () (const id::ref::function& id_function) const
             {

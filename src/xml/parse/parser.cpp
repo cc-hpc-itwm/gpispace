@@ -751,13 +751,10 @@ namespace xml
             else if (child_name == "use")
             {
               transition.get_ref().function_or_use
-                ( type::use_type ( id::use (state.id_mapper()->next_id())
-                                 , state.id_mapper()
-                                 , id
-                                 , state.position (child)
+                ( type::use_type ( state.position (child)
                                  , required
                                    ("transition_type", child, "name", state)
-                                 ).make_reference_id()
+                                 )
                 );
             }
             else if (child_name == "defun")

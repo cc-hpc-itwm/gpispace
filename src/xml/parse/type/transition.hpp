@@ -36,7 +36,7 @@ namespace xml
         using responses_type = fhg::pnet::util::unique<response_type>;
         using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
-        typedef boost::variant <id::ref::function, id::ref::use>
+        typedef boost::variant <id::ref::function, use_type>
           function_or_use_type;
 
         transition_type ( ID_CONS_PARAM(transition)

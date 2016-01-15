@@ -9,7 +9,6 @@
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
-#include <xml/parse/type/use.fwd.hpp>
 
 #include <functional>
 #include <iosfwd>
