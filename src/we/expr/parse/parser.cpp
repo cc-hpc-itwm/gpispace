@@ -99,11 +99,11 @@ namespace expr
 
       if (node::is_value (c))
         {
-          tmp_stack.push_back (pnet::type::value::unary (token, node::get (c)));
+          tmp_stack.emplace_back (pnet::type::value::unary (token, node::get (c)));
         }
       else
         {
-          tmp_stack.push_back (node::unary_t (token, c));
+          tmp_stack.emplace_back (node::unary_t (token, c));
         }
     }
 
@@ -130,16 +130,16 @@ namespace expr
 
       if (node::is_value(l) && node::is_value(r))
         {
-          tmp_stack.push_back ( pnet::type::value::binary
-                                ( token
-                                , node::get (l)
-                                , node::get (r)
-                                )
-                              );
+          tmp_stack.emplace_back ( pnet::type::value::binary
+                                   ( token
+                                   , node::get (l)
+                                   , node::get (r)
+                                   )
+                                 );
         }
       else
         {
-          tmp_stack.push_back (node::binary_t (token, l, r));
+          tmp_stack.emplace_back (node::binary_t (token, l, r));
         }
     }
 
@@ -160,7 +160,7 @@ namespace expr
 
       nd_t f (tmp_stack.back()); tmp_stack.pop_back();
 
-      tmp_stack.push_back (node::ternary_t (token, f, s, t));
+      tmp_stack.emplace_back (node::ternary_t (token, f, s, t));
     }
 
     void parser::reduce (const std::size_t k)
@@ -255,10 +255,10 @@ namespace expr
               switch (token.token())
                 {
                 case token::val:
-                  tmp_stack.push_back (token.value());
+                  tmp_stack.emplace_back (token.value());
                   break;
                 case token::ref:
-                  tmp_stack.push_back (node::type (token.get_ref()));
+                  tmp_stack.emplace_back (token.get_ref());
                   break;
                 default:
                   {
