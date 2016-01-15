@@ -351,7 +351,31 @@ namespace sdpa
                                                 )
     {
       boost::mutex::scoped_lock const _(mtx_);
-      return worker_map_.at (worker_id).addCapabilities (cpb_set);
+
+      Worker const& worker (worker_map_.at (worker_id));
+      const std::set<std::string> old_cpbs (worker.capability_names_);
+
+      const unsigned int n_pending_jobs (worker.pending_.size());
+      const unsigned int n_running_jobs ( worker.submitted_.size()
+                                        + worker.acknowledged_.size()
+                                        );
+
+      bool rv (worker_map_.at (worker_id).addCapabilities (cpb_set));
+      if (rv)
+      {
+        auto& weqc_src (worker_equiv_classes_.at (old_cpbs));
+        weqc_src.remove_worker_entry (worker_id);
+        weqc_src.dec_pending_jobs (n_pending_jobs);
+        weqc_src.dec_running_jobs (n_running_jobs);
+
+        std::set<std::string> cpbs (worker.capability_names_);
+        worker_equiv_classes_[cpbs].add_worker_entry (worker_id);
+        auto& weqc_dst (worker_equiv_classes_.at (cpbs));
+        weqc_dst.inc_pending_jobs (n_pending_jobs);
+        weqc_dst.inc_running_jobs (n_running_jobs);
+      }
+
+      return rv;
     }
 
     bool WorkerManager::remove_worker_capabilities ( const worker_id_t& worker_id
