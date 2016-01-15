@@ -647,10 +647,10 @@ namespace xml
           );
       }
 
-      id::ref::port port_type ( const xml_node_type* node
-                              , state::type& state
-                              , const we::type::PortDirection& direction
-                              )
+      type::port_type port_type ( const xml_node_type* node
+                                , state::type& state
+                                , const we::type::PortDirection& direction
+                                )
       {
         we::type::property::type properties;
 
@@ -688,10 +688,7 @@ namespace xml
         }
 
         return type::port_type
-          ( state.id_mapper()->next_id()
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , validate_name
             ( validate_prefix ( required ("port_type", node, "name", state)
                               , "port"
@@ -704,7 +701,7 @@ namespace xml
           , optional (node, "place")
           , direction
           , properties
-          ).make_reference_id();
+          );
       }
 
       // ******************************************************************* //
@@ -1708,13 +1705,10 @@ namespace xml
             }
             else if (child_name == "inout")
             {
-              const id::ref::port port_in
+              function.get_ref().push_port
                 (port_type (child, state, we::type::PORT_IN));
-
-              const id::ref::port port_out (port_in.get().clone (boost::none, boost::none, we::type::PORT_OUT));
-
-              function.get_ref().push_port (port_in);
-              function.get_ref().push_port (port_out);
+              function.get_ref().push_port
+                (port_type (child, state, we::type::PORT_OUT));
             }
             else if (child_name == "tunnel")
             {

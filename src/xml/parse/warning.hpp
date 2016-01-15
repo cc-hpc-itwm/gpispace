@@ -7,6 +7,7 @@
 #include <sstream>
 
 #include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
 
 #include <we/type/property.hpp>
@@ -287,10 +288,9 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (const id::ref::port&, const boost::filesystem::path&);
+        port_not_connected (const type::port_type&, const boost::filesystem::path&);
 
       private:
-        const id::ref::port _port;
         const boost::filesystem::path _path;
       };
 
@@ -503,15 +503,13 @@ namespace xml
       {
       public:
         conflicting_port_types ( const id::ref::transition&
-                               , const id::ref::port& in
-                               , const id::ref::port& out
+                               , const type::port_type& in
+                               , const type::port_type& out
                                , const boost::filesystem::path&
                                );
 
       private:
         const id::ref::transition _transition;
-        const id::ref::port _in;
-        const id::ref::port _out;
         const boost::filesystem::path _path;
       };
 

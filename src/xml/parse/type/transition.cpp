@@ -397,7 +397,7 @@ namespace xml
                                        , state::type const&
                                        ) const
       {
-        auto const& ports (resolved_function().get_ref().ports().values());
+        auto const& ports (resolved_function().get_ref().ports());
 
         if ( std::find_if
              ( std::begin (ports), std::end (ports)
@@ -431,10 +431,10 @@ namespace xml
           throw error::unknown_to_in_connect_response (response);
         }
 
-        if (!we::is_response_description (to->signature_or_throw()))
+        if (!we::is_response_description (to->signature_or_throw (resolved_function().get())))
         {
           throw error::invalid_signature_in_connect_response
-            (response, to->make_reference_id());
+            (response, *to, resolved_function().get());
         }
       }
 
@@ -457,7 +457,7 @@ namespace xml
             (make_reference_id(), connect.make_reference_id());
         }
 
-        const boost::optional<const id::ref::port&> id_port
+        const boost::optional<const port_type&> port
           ( connect.parent()->resolved_function().get().ports().get
               ( std::make_pair ( connect.port()
                                , we::edge::is_PT (connect.direction())
@@ -467,17 +467,17 @@ namespace xml
               )
           );
 
-        if (not id_port)
+        if (not port)
         {
           throw error::connect_to_nonexistent_port
             (make_reference_id(), connect.make_reference_id());
         }
 
-        if (id_place->get().signature() != id_port->get().signature())
+        if (id_place->get().signature() != port->signature (resolved_function().get()))
         {
           throw error::connect_type_error ( make_reference_id()
                                           , connect.make_reference_id()
-                                          , *id_port
+                                          , *port
                                           , *id_place
                                           );
         }
@@ -653,21 +653,21 @@ namespace xml
         const id::ref::function id_function (trans.resolved_function());
         const function_type& fun (id_function.get());
 
-        for (const port_type& port_in : fun.ports().values())
+        for (const port_type& port_in : fun.ports())
         {
           if (port_in.direction() == we::type::PORT_IN)
           {
-            const boost::optional<const id::ref::port&> id_port_out
+            const boost::optional<const port_type&> port_out
               (fun.get_port_out (port_in.name()));
 
-            if (  id_port_out
-               && id_port_out->get().signature() != port_in.signature()
+            if (  port_out
+               && port_out->signature (fun) != port_in.signature (fun)
                )
             {
               state.warn
                 ( warning::conflicting_port_types ( id_transition
-                                                  , port_in.make_reference_id()
-                                                  , *id_port_out
+                                                  , port_in
+                                                  , *port_out
                                                   , state.file_in_progress()
                                                   )
                 );
@@ -763,7 +763,7 @@ namespace xml
               std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_IN)
                 {
@@ -772,7 +772,7 @@ namespace xml
                     , trans_in.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_IN
-                                         , port.signature_or_throw()
+                                         , port.signature_or_throw (fun)
                                          , port.properties()
                                          )
                       )
@@ -783,7 +783,7 @@ namespace xml
                     , trans_in.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_OUT
-                                         , port.signature_or_throw()
+                                         , port.signature_or_throw (fun)
                                          , port.properties()
                                          )
                       )
@@ -794,7 +794,7 @@ namespace xml
               const we::transition_id_type tid_in
                 (we_net.add_transition (trans_in));
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_IN && port.place)
                 {
@@ -838,7 +838,7 @@ namespace xml
               std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_OUT)
                 {
@@ -847,7 +847,7 @@ namespace xml
                     , trans_out.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_IN
-                                         , port.signature_or_throw()
+                                         , port.signature_or_throw (fun)
                                          , port.properties()
                                          )
                       )
@@ -858,7 +858,7 @@ namespace xml
                     , trans_out.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_OUT
-                                         , port.signature_or_throw()
+                                         , port.signature_or_throw (fun)
                                          , port.properties()
                                          )
                       )
@@ -871,7 +871,7 @@ namespace xml
               const we::transition_id_type tid_out
                 (we_net.add_transition (trans_out));
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_OUT && port.place)
                 {

@@ -20,35 +20,32 @@ namespace xml
     namespace warning
     {
       port_not_connected::port_not_connected
-        (const id::ref::port& port, const boost::filesystem::path& path)
+        (const type::port_type& port, const boost::filesystem::path& path)
           : generic ( boost::format ("%1%-port %2% not connected in %3%")
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
                     % path
                     )
-          , _port (port)
           , _path (path)
       { }
 
       conflicting_port_types::conflicting_port_types
         ( const id::ref::transition& transition
-        , const id::ref::port& in
-        , const id::ref::port& out
+        , const type::port_type& in
+        , const type::port_type& out
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "port %1% of transition %2% has differing "
                                       "types for input (%3%) and output (%4%) "
                                       "in %5%"
                                     )
-                    % in.get().name()
+                    % in.name()
                     % transition.get().name()
-                    % in.get().type()
-                    % out.get().type()
+                    % in.type()
+                    % out.type()
                     % path
                     )
           , _transition (transition)
-          , _in (in)
-          , _out (out)
           , _path (path)
       { }
 

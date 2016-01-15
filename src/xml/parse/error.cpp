@@ -85,102 +85,95 @@ namespace xml
       { }
 
       port_type_mismatch::port_type_mismatch
-        ( const id::ref::port& port
-        , const id::ref::port& other_port
+        ( const type::port_type& port
+        , const type::port_type& other_port
         )
           : generic ( boost::format ( "in-/out-port %1% has different types: "
                                     "%2% (%3%) from %4% and %5% (%6%) from %7%"
                                     )
-                    % port.get().name()
-                    % port.get().type()
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().position_of_definition()
-                    % other_port.get().type()
-                    % we::type::enum_to_string (other_port.get().direction())
-                    % other_port.get().position_of_definition()
+                    % port.name()
+                    % port.type()
+                    % we::type::enum_to_string (port.direction())
+                    % port.position_of_definition()
+                    % other_port.type()
+                    % we::type::enum_to_string (other_port.direction())
+                    % other_port.position_of_definition()
                     )
-        , _port (port)
-        , _other_port (other_port)
       { }
 
       port_not_connected::port_not_connected
-        (const id::ref::port& port, const boost::filesystem::path& path)
+        (const type::port_type& port, const boost::filesystem::path& path)
           : generic ( boost::format ("%1%-port %2% not connected in %3%")
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
                     % path
                     )
-          , _port (port)
           , _path (path)
       { }
 
       port_connected_type_error::port_connected_type_error
-        ( const id::ref::port& port
+        ( const type::port_type& port
         , const id::ref::place& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "type error: %1%-port %2% of type %3% "
                                       "connected to place %4% of type %5% in %6%"
                                     )
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
-                    % port.get().type()
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
+                    % port.type()
                     % place.get().name()
                     % place.get().type()
                     % path
                     )
-        , _port (port)
         , _place (place)
         , _path (path)
       { }
 
       port_connected_place_nonexistent::port_connected_place_nonexistent
-        ( const id::ref::port& port
+        ( const type::port_type& port
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "%1%-port %2% connected to "
                                       "non-existing place %3% in %4%"
                                     )
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
-                    % *port.get().place
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
+                    % *port.place
                     % path
                     )
-          , _port (port)
-          , _path (path)
+            , _path (path)
       { }
 
       tunnel_connected_non_virtual::tunnel_connected_non_virtual
-        ( const id::ref::port& port
+        ( const type::port_type& port
         , const id::ref::place& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "tunnel %1% connected to non-virtual "
                                       "place %2% in %3%"
                                     )
-                    % port.get().name()
+                    % port.name()
                     % place.get().name()
                     % path
                     )
-          , _port (port)
-          , _place (place)
+            , _place (place)
           , _path (path)
       { }
 
       tunnel_name_mismatch::tunnel_name_mismatch
-        ( const id::ref::port& port
+        ( const type::port_type& port
         , const id::ref::place& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "tunnel %1% is connected to place with "
                                       "different name  %2% in %3%"
                                     )
-                    % port.get().name()
+                    % port.name()
                     % place.get().name()
                     % path
                     )
-          , _port (port)
-          , _place (place)
+            , _place (place)
           , _path (path)
       { }
 
@@ -219,16 +212,18 @@ namespace xml
 
       invalid_signature_in_connect_response::invalid_signature_in_connect_response
         ( type::response_type const& response
-        , id::ref::port const& port
+        , type::port_type const& port
+        , type::function_type const& parent_function
         )
           : generic
             ( boost::format
               ("invalid signature for response to port '%1%'."
               " The type '%2%' with the signature '%3%' does not provide %4%"
               )
-            % port.get().name()
-            % port.get().type()
-            % pnet::type::signature::show (port.get().signature_or_throw())
+            % port.name()
+            % port.type()
+            % pnet::type::signature::show
+                (port.signature_or_throw (parent_function))
             % we::response_description_requirements()
             , response.position_of_definition()
             )
@@ -283,7 +278,7 @@ namespace xml
       connect_type_error::connect_type_error
         ( const id::ref::transition& transition
         , const id::ref::connect& connection
-        , const id::ref::port& port
+        , const type::port_type& port
         , const id::ref::place& place
         )
          : generic ( boost::format ( "type-error: connect-%1%"
@@ -296,17 +291,17 @@ namespace xml
                    % place.get().type()
                    % pnet::type::signature::show (place.get().signature_or_throw())
                    % place.get().position_of_definition()
-                   % port.get().name()
-                   % port.get().type()
-                   % pnet::type::signature::show (port.get().signature_or_throw())
-                   % port.get().position_of_definition()
+                   % port.name()
+                   % port.type()
+                   % pnet::type::signature::show
+                       (port.signature_or_throw (transition.get().resolved_function().get()))
+                   % port.position_of_definition()
                    % transition.get().name()
                    % connection.get().position_of_definition()
                    )
           , _transition (transition)
           , _connection (connection)
-          , _port (port)
-          , _place (place)
+            , _place (place)
         {}
 
       memory_buffer_without_size::memory_buffer_without_size
@@ -434,7 +429,7 @@ namespace xml
       memory_buffer_with_same_name_as_port
         ::memory_buffer_with_same_name_as_port
         ( type::memory_buffer_type const& memory_buffer
-        , id::ref::port const& port
+        , type::port_type const& port
         )
           : generic ( boost::format
                       ("memory buffer '%1%' defined at %2%"
@@ -442,11 +437,10 @@ namespace xml
                       )
                     % memory_buffer.name()
                     % memory_buffer.position_of_definition()
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().position_of_definition()
+                    % we::type::enum_to_string (port.direction())
+                    % port.position_of_definition()
                     )
-          , _port (port)
-      {}
+        {}
 
       cannot_resolve::cannot_resolve ( const std::string& field
                                      , const std::string& type
@@ -510,16 +504,16 @@ namespace xml
             (early, late, boost::format ("transition %1%") % early.get().name())
       {}
 
-      duplicate_port::duplicate_port ( const id::ref::port& early
-                                     , const id::ref::port& late
+      duplicate_port::duplicate_port ( const type::port_type& early
+                                     , const type::port_type& late
                                      )
-        : generic_id_duplicate<id::ref::port>
-                            ( early
-                            , late
-                            , boost::format ("%1%-port %2%")
-                            % we::type::enum_to_string (early.get().direction())
-                            % early.get().name()
-                            )
+        : generic_duplicate<type::port_type>
+            ( early
+            , late
+            , boost::format ("%1%-port %2%")
+            % we::type::enum_to_string (early.direction())
+            % early.name()
+            )
       {}
 
       duplicate_template::duplicate_template

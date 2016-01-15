@@ -50,7 +50,7 @@ namespace xml
       public:
         typedef std::string unique_key_type;
 
-        typedef xml::util::unique<port_type,id::ref::port> ports_type;
+        typedef fhg::pnet::util::unique<port_type> ports_type;
 
         //! \todo net is only in this list as specialize not yet
         //! reparents the function to the transition requesting it, as
@@ -158,13 +158,12 @@ namespace xml
           const& memory_buffers() const;
         bool is_known_memory_buffer (std::string const&) const;
 
-        void push_port (const id::ref::port&);
-        void remove_port (const id::ref::port&);
+        void push_port (const port_type&);
 
         const ports_type& ports() const;
 
-        boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
-        boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
+        boost::optional<const port_type&> get_port_in (const std::string & name) const;
+        boost::optional<const port_type&> get_port_out (const std::string & name) const;
 
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;

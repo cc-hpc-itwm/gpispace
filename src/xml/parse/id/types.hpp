@@ -10,7 +10,6 @@
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/place.fwd.hpp>
 #include <xml/parse/type/place_map.fwd.hpp>
-#include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>

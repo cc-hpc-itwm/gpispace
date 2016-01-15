@@ -128,7 +128,7 @@ namespace xml
         , ID_INITIALIZE()
         , _parent (parent)
         , _name (name)
-        , _ports (ports, _id)
+        , _ports (ports)
         , _memory_buffers (memory_buffers)
         , _memory_gets (memory_gets)
         , _memory_puts (memory_puts)
@@ -358,7 +358,7 @@ namespace xml
         _memory_buffers.push<error::duplicate_memory_buffer> (buffer);
 
         {
-          boost::optional<id::ref::port const&> port_in
+          boost::optional<port_type const&> port_in
             (get_port_in (buffer.name()));
 
           if (port_in)
@@ -369,7 +369,7 @@ namespace xml
         }
 
         {
-          boost::optional<id::ref::port const&> port_out
+          boost::optional<port_type const&> port_out
             (get_port_out (buffer.name()));
 
           if (port_out)
@@ -386,22 +386,15 @@ namespace xml
         return _memory_buffers;
       }
 
-      void function_type::push_port (const id::ref::port& id)
+      void function_type::push_port (const port_type& port)
       {
-        const id::ref::port& id_old (_ports.push (id));
+        _ports.push<error::duplicate_port> (port);
 
-        if (id_old != id)
+        if (port.direction() != we::type::PORT_TUNNEL)
         {
-          throw error::duplicate_port (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
-
-        if (id.get().direction() != we::type::PORT_TUNNEL)
-        {
-          boost::optional<const id::ref::port&> id_other
-            ( _ports.get ( std::make_pair ( id.get().name()
-                                          , id.get().direction()
+          boost::optional<const port_type&> other
+            ( _ports.get ( std::make_pair ( port.name()
+                                          , port.direction()
                                           == we::type::PORT_IN
                                           ? we::type::PORT_OUT
                                           : we::type::PORT_IN
@@ -409,19 +402,19 @@ namespace xml
                          )
             );
 
-          if (id_other && id.get().signature() != id_other->get().signature())
+          if (other && port.signature (*this) != other->signature (*this))
           {
-            throw error::port_type_mismatch (id, *id_other);
+            throw error::port_type_mismatch (port, *other);
           }
         }
 
         boost::optional<memory_buffer_type const&>
-          memory_buffer (memory_buffers().get (id.get().name()));
+          memory_buffer (memory_buffers().get (port.name()));
 
         if (memory_buffer)
         {
           throw error::memory_buffer_with_same_name_as_port
-            (*memory_buffer, id);
+            (*memory_buffer, port);
         }
       }
 
@@ -431,23 +424,18 @@ namespace xml
         return _memory_buffers.has (name);
       }
 
-      void function_type::remove_port (const id::ref::port& id)
-      {
-        _ports.erase (id);
-      }
-
       const function_type::ports_type& function_type::ports() const
       {
         return _ports;
       }
 
-      boost::optional<const id::ref::port&>
+      boost::optional<const port_type&>
       function_type::get_port_in (const std::string & name) const
       {
         return ports().get (std::make_pair (name, we::type::PORT_IN));
       }
 
-      boost::optional<const id::ref::port&>
+      boost::optional<const port_type&>
       function_type::get_port_out (const std::string & name) const
       {
         return ports().get (std::make_pair (name, we::type::PORT_OUT));
@@ -553,7 +541,7 @@ namespace xml
       {
         xml::parse::structure_type_util::forbidden_type forbidden;
 
-        for (const port_type& port : ports().values())
+        for (const port_type& port : ports())
         {
           forbidden.emplace (port.type(), port.name());
         }
@@ -629,9 +617,9 @@ namespace xml
 
       void function_type::type_check (const state::type & state) const
       {
-        for (const port_type& port : ports().values())
+        for (const port_type& port : ports())
         {
-          port.type_check (position_of_definition().path(), state);
+          port.type_check (position_of_definition().path(), state, *this);
         }
 
         boost::apply_visitor (function_type_check (state), content());
@@ -686,11 +674,11 @@ namespace xml
                        , const function_type::ports_type& ports
                        ) const
         {
-          for (const port_type& port : ports.values())
+          for (const port_type& port : ports)
           {
             add_port (trans, we::type::port_t ( port.name()
                                               , port.direction()
-                                              , port.signature_or_throw()
+                                              , port.signature_or_throw (fun)
                                               , port.properties()
                                               )
                      );
@@ -701,15 +689,16 @@ namespace xml
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
                        , const Map & pid_of_place
+                       , id::ref::net const& net
                        ) const
         {
-          for (const port_type& port : ports.values())
+          for (const port_type& port : ports)
           {
             if (not port.place)
             {
               add_port (trans, we::type::port_t ( port.name()
                                                 , port.direction()
-                                                , port.signature_or_throw()
+                                                , port.signature_or_throw (fun)
                                                 , port.properties()
                                                 )
                        );
@@ -724,7 +713,7 @@ namespace xml
                 ( add_port ( trans
                            , we::type::port_t ( port.name()
                                               , port.direction()
-                                              , port.signature_or_throw()
+                                              , port.signature_or_throw (fun)
                                               , pid_of_place.at (*port.place)
                                               , port.properties()
                                               )
@@ -736,7 +725,7 @@ namespace xml
                 for (place_map_type const& place_map : _place_map)
                 {
                   if (  place_map.place_virtual()
-                     == port.resolved_place()->get().name()
+                     == port.resolved_place (net)->get().name()
                      )
                   {
                     _real_place_names.emplace (port_id, place_map.place_real());
@@ -906,7 +895,7 @@ namespace xml
             , _priority
             );
 
-          add_ports (trans, fun.ports(), pid_of_place);
+          add_ports (trans, fun.ports(), pid_of_place, id_net);
           add_requirements (trans);
 
           return trans;
@@ -1006,9 +995,10 @@ namespace xml
                                      , state::type & state
                                      )
       {
-        for (port_type& port : _ports.values())
+        auto const ports (std::move (_ports));
+        for (port_type const& port : ports)
         {
-          port.specialize (map, state);
+          _ports.push<error::duplicate_port> (port.specialized (map, state));
         }
 
         for (structure_type& s : structs)
@@ -1091,7 +1081,7 @@ namespace xml
           , parent
           , _position_of_definition
           , _name
-          , _ports.clone (new_id, new_mapper)
+          , _ports
           , _memory_buffers
           , _memory_gets
           , _memory_puts
@@ -2096,10 +2086,8 @@ namespace xml
 
             if (mod.port_return())
             {
-              boost::optional<const id::ref::port&> id_port
-                (_id_function.get().get_port_out (*mod.port_return()));
-
-              const port_type& port (id_port->get());
+              port_type const& port
+                (_id_function.get().get_port_out (*mod.port_return()).get());
 
               port_return = port_with_type (*mod.port_return(), port.type());
               types.insert (port.type());
@@ -2109,12 +2097,10 @@ namespace xml
             {
               if (_id_function.get().is_known_port_inout (name))
               {
-                boost::optional<const id::ref::port&> id_port_in
-                  (_id_function.get().get_port_in (name));
-                boost::optional<const id::ref::port&> id_port_out
+                port_type const& port_in
+                  (_id_function.get().get_port_in (name).get());
+                boost::optional<const port_type&> port_out
                   (_id_function.get().get_port_out (name));
-
-                const port_type& port_in (id_port_in->get());
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_in.name())
@@ -2131,20 +2117,16 @@ namespace xml
               }
               else if (_id_function.get().is_known_port_in (name))
               {
-                boost::optional<const id::ref::port&> id_port_in
-                  (_id_function.get().get_port_in (name));
-
-                const port_type& port_in (id_port_in->get());
+                port_type const& port_in
+                  (_id_function.get().get_port_in (name).get());
 
                 ports_const.push_back (port_with_type (name, port_in.type()));
                 types.insert (port_in.type());
               }
               else if (_id_function.get().is_known_port_out (name))
               {
-                boost::optional<const id::ref::port&> id_port_out
-                  (_id_function.get().get_port_out (name));
-
-                const port_type& port_out (id_port_out->get());
+                port_type const& port_out
+                  (_id_function.get().get_port_out (name).get());
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_out.name())
@@ -2605,7 +2587,7 @@ namespace xml
 
           xml::parse::type::dump::dump (s, f.requirements);
 
-          dumps (s, f.ports().values());
+          dumps (s, f.ports());
           dumps (s, f.memory_buffers());
           dumps (s, f.memory_gets());
           dumps (s, f.memory_puts());

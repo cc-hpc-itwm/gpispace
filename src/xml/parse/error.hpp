@@ -7,6 +7,7 @@
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
@@ -310,7 +311,6 @@ namespace xml
       DUPLICATE (specialize);
       DUPLICATE (place);
       DUPLICATE (transition);
-      DUPLICATE (port);
       DUPLICATE_WITH_ID (template,tmpl);
       DUPLICATE (place_map);
       DUPLICATE (connect);
@@ -345,6 +345,7 @@ namespace xml
 
       DUPLICATE (external_function, type::module_type);
       DUPLICATE (memory_buffer, type::memory_buffer_type);
+      DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
 
 #undef DUPLICATE
@@ -398,12 +399,11 @@ namespace xml
       class port_connected_place_nonexistent : public generic
       {
       public:
-        port_connected_place_nonexistent ( const id::ref::port&
+        port_connected_place_nonexistent ( const type::port_type&
                                          , const boost::filesystem::path&
                                          );
 
       private:
-        const id::ref::port _port;
         const boost::filesystem::path _path;
       };
 
@@ -412,13 +412,12 @@ namespace xml
       class tunnel_connected_non_virtual : public generic
       {
       public:
-        tunnel_connected_non_virtual ( const id::ref::port&
+        tunnel_connected_non_virtual ( const type::port_type&
                                      , const id::ref::place&
                                      , const boost::filesystem::path&
                                      );
 
       private:
-        const id::ref::port _port;
         const id::ref::place _place;
         const boost::filesystem::path _path;
       };
@@ -428,13 +427,12 @@ namespace xml
       class tunnel_name_mismatch : public generic
       {
       public:
-        tunnel_name_mismatch ( const id::ref::port&
+        tunnel_name_mismatch ( const type::port_type&
                              , const id::ref::place&
                              , const boost::filesystem::path&
                              );
 
       private:
-        const id::ref::port _port;
         const id::ref::place _place;
         const boost::filesystem::path _path;
       };
@@ -444,10 +442,9 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (const id::ref::port&, const boost::filesystem::path&);
+        port_not_connected (const type::port_type&, const boost::filesystem::path&);
 
       private:
-        const id::ref::port _port;
         const boost::filesystem::path _path;
       };
 
@@ -456,13 +453,12 @@ namespace xml
       class port_connected_type_error : public generic
       {
       public:
-        port_connected_type_error ( const id::ref::port&
+        port_connected_type_error ( const type::port_type&
                                   , const id::ref::place&
                                   , const boost::filesystem::path&
                                   );
 
       private:
-        const id::ref::port _port;
         const id::ref::place _place;
         const boost::filesystem::path _path;
       };
@@ -547,9 +543,11 @@ namespace xml
       class invalid_signature_in_connect_response : public generic
       {
       public:
-        invalid_signature_in_connect_response ( type::response_type const&
-                                              , id::ref::port const&
-                                              );
+        invalid_signature_in_connect_response
+          ( type::response_type const&
+          , type::port_type const&
+          , type::function_type const& parent_function
+          );
       };
 
       // ******************************************************************* //
@@ -571,14 +569,13 @@ namespace xml
       public:
         connect_type_error ( const id::ref::transition&
                            , const id::ref::connect&
-                           , const id::ref::port&
+                           , const type::port_type&
                            , const id::ref::place&
                            );
 
       private:
         const id::ref::transition _transition;
         const id::ref::connect _connection;
-        const id::ref::port _port;
         const id::ref::place _place;
       };
 
@@ -619,11 +616,8 @@ namespace xml
       {
       public:
         memory_buffer_with_same_name_as_port
-          (type::memory_buffer_type const&, id::ref::port const&);
+          (type::memory_buffer_type const&, type::port_type const&);
         virtual ~memory_buffer_with_same_name_as_port() throw() = default;
-
-      private:
-        id::ref::port const _port;
       };
 
       // ******************************************************************* //
@@ -753,13 +747,9 @@ namespace xml
       class port_type_mismatch : public generic
       {
       public:
-        port_type_mismatch ( const id::ref::port& port
-                           , const id::ref::port& other_port
+        port_type_mismatch ( const type::port_type& port
+                           , const type::port_type& other_port
                            );
-
-      private:
-        const id::ref::port _port;
-        const id::ref::port _other_port;
       };
 
       // ******************************************************************* //
