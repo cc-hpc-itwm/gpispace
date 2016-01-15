@@ -55,9 +55,9 @@ namespace expr
 
     pnet::type::value::value_type parser::eval_all() const
     {
-      eval::context c;
+      eval::context UNUSED_context;
 
-      return eval_all (c);
+      return eval_all (UNUSED_context);
     }
 
     bool parser::is_const_true() const
