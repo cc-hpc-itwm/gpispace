@@ -223,7 +223,7 @@ namespace sdpa
       {
         for (worker_id_t const& worker_id : workers)
         {
-          worker_map_.at (worker_id).submit (job_id);
+          submit_job_to_worker (job_id, worker_id);
         }
 
         serve_job (workers, job_id);
@@ -296,6 +296,16 @@ namespace sdpa
       worker_map_.at (worker_id).assign (job_id);
       worker_equiv_classes_.at
         (worker_map_.at (worker_id).capability_names_).inc_pending_jobs (1);
+    }
+
+    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    {
+      worker_map_.at (worker_id).submit (job_id);
+      decltype (worker_equiv_classes_)::mapped_type&
+        weqc (worker_equiv_classes_.at (worker_map_.at (worker_id).capability_names_));
+
+      weqc.dec_pending_jobs (1);
+      weqc.inc_running_jobs (1);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id

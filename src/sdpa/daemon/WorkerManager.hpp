@@ -119,6 +119,8 @@ namespace sdpa
       std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
     private:
+      void submit_job_to_worker (const job_id_t&, const worker_id_t&);
+
       boost::optional<double> matchRequirements
         ( Worker const&
         , const job_requirements_t& job_req_set
