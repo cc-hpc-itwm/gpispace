@@ -324,6 +324,12 @@ namespace sdpa
       auto worker (worker_map_.find (worker_id));
       if (worker != worker_map_.end())
       {
+        decltype (worker_equiv_classes_)::mapped_type&
+          weqc (worker_equiv_classes_.at (worker_map_.at (worker_id).capability_names_));
+
+        worker->second.pending_.count (job_id) ? weqc.dec_pending_jobs (1)
+                                               : weqc.dec_running_jobs (1);
+
         worker->second.deleteJob (job_id);
       }
     }
