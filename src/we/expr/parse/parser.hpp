@@ -86,9 +86,6 @@ namespace expr
              , const bool& constant_folding = true
              );
 
-      // the parsed expressions in the correct order
-      const nd_t & front (void) const { return nd_stack.front(); }
-
       void add (const parser & other);
 
       // evaluate the whole stack in order, return the last value
