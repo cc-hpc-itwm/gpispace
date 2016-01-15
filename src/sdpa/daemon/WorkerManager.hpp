@@ -127,6 +127,7 @@ namespace sdpa
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
+      std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
 
       mutable boost::mutex mtx_;
     };
