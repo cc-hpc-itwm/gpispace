@@ -1471,43 +1471,36 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::place place_type ( const xml_node_type* node
-                                , state::type& state
-                                , id::ref::function const& outer_function
-                                )
+      type::place_type place_type ( const xml_node_type* node
+                                  , state::type& state
+                                  , id::ref::function const& outer_function
+                                  )
       {
-        const id::place id (state.id_mapper()->next_id());
-
         const std::string name (required ("place_type", node, "name", state));
 
-        const id::ref::place place
-          ( type::place_type
-            ( id
-            , state.id_mapper()
-            , boost::none
-            , state.position (node)
-            , validate_name ( validate_prefix ( name
-                                              , "place"
-                                              , state.file_in_progress()
-                                              )
-                            , "place"
-                            , state.file_in_progress()
-                            )
-            , required ("place_type", node, "type", state)
-            , fhg::util::boost::fmap<std::string, bool>
+        type::place_type place
+          ( state.position (node)
+          , validate_name ( validate_prefix ( name
+                                            , "place"
+                                            , state.file_in_progress()
+                                            )
+                          , "place"
+                          , state.file_in_progress()
+                          )
+          , required ("place_type", node, "type", state)
+          , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "virtual"))
-            , fhg::util::boost::fmap<std::string, bool>
+          , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "put_token"))
-            ).make_reference_id()
           );
 
-        if (  place.get().is_virtual()
-           && !outer_function.get().is_known_tunnel (place.get().name())
+        if (  place.is_virtual()
+           && !outer_function.get().is_known_tunnel (place.name())
            )
         {
           state.warn
             ( warning::virtual_place_not_tunneled
-              ( place.get().name()
+              ( place.name()
               , outer_function.get().position_of_definition().path()
               )
             );
@@ -1524,11 +1517,11 @@ namespace xml
           {
             if (child_name == "token")
             {
-              parse_token (child, state, place.get_ref());
+              parse_token (child, state, place);
             }
             else if (child_name == "properties")
             {
-              property_map_type (place.get_ref().properties(), child, state);
+              property_map_type (place.properties(), child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -1537,7 +1530,7 @@ namespace xml
                   (required ("place_type", child, "href", state), state)
                 );
 
-              util::property::join (state, place.get_ref().properties(), deeper);
+              util::property::join (state, place.properties(), deeper);
             }
             else
             {

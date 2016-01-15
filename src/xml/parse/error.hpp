@@ -8,6 +8,7 @@
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/place.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
 #include <xml/parse/util/position.hpp>
@@ -214,10 +215,7 @@ namespace xml
       class place_type_unknown : public generic
       {
       public:
-        place_type_unknown (const id::ref::place&);
-
-      private:
-        const id::ref::place _place;
+        place_type_unknown (const type::place_type&);
       };
 
       // ******************************************************************* //
@@ -310,7 +308,6 @@ namespace xml
 #define DUPLICATE(_type) DUPLICATE_WITH_ID(_type,_type)
 
       DUPLICATE (specialize);
-      DUPLICATE (place);
       DUPLICATE (transition);
       DUPLICATE_WITH_ID (template,tmpl);
       DUPLICATE (place_map);
@@ -346,6 +343,7 @@ namespace xml
       DUPLICATE (connect, type::connect_type);
       DUPLICATE (external_function, type::module_type);
       DUPLICATE (memory_buffer, type::memory_buffer_type);
+      DUPLICATE (place, type::place_type);
       DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
 
@@ -414,12 +412,11 @@ namespace xml
       {
       public:
         tunnel_connected_non_virtual ( const type::port_type&
-                                     , const id::ref::place&
+                                     , const type::place_type&
                                      , const boost::filesystem::path&
                                      );
 
       private:
-        const id::ref::place _place;
         const boost::filesystem::path _path;
       };
 
@@ -429,12 +426,11 @@ namespace xml
       {
       public:
         tunnel_name_mismatch ( const type::port_type&
-                             , const id::ref::place&
+                             , const type::place_type&
                              , const boost::filesystem::path&
                              );
 
       private:
-        const id::ref::place _place;
         const boost::filesystem::path _path;
       };
 
@@ -455,12 +451,11 @@ namespace xml
       {
       public:
         port_connected_type_error ( const type::port_type&
-                                  , const id::ref::place&
+                                  , const type::place_type&
                                   , const boost::filesystem::path&
                                   );
 
       private:
-        const id::ref::place _place;
         const boost::filesystem::path _path;
       };
 
@@ -569,12 +564,11 @@ namespace xml
         connect_type_error ( const id::ref::transition&
                            , const type::connect_type&
                            , const type::port_type&
-                           , const id::ref::place&
+                           , const type::place_type&
                            );
 
       private:
         const id::ref::transition _transition;
-        const id::ref::place _place;
       };
 
       class memory_buffer_without_size : public generic

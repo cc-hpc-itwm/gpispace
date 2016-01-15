@@ -123,7 +123,7 @@ namespace xml
             }
             else
             {
-              boost::optional<const id::ref::place&>
+              boost::optional<place_type const&>
                 place (_port.resolved_place (net));
 
               if (not place)
@@ -131,20 +131,20 @@ namespace xml
                 throw error::port_connected_place_nonexistent (_port, _path);
               }
 
-              if (place->get().signature() != _port.signature (_parent))
+              if (place->signature (net.get()) != _port.signature (_parent))
               {
                 throw error::port_connected_type_error (_port, *place, _path);
               }
 
               if (_port.direction() == we::type::PORT_TUNNEL)
               {
-                if (not place->get().is_virtual())
+                if (not place->is_virtual())
                 {
                   throw
                     error::tunnel_connected_non_virtual (_port, *place, _path);
                 }
 
-                if (_port.name() != place->get().name())
+                if (_port.name() != place->name())
                 {
                   throw error::tunnel_name_mismatch (_port, *place, _path);
                 }
@@ -184,7 +184,7 @@ namespace xml
         return _direction;
       }
 
-      boost::optional<const id::ref::place&> port_type::resolved_place
+      boost::optional<place_type const&> port_type::resolved_place
         (id::ref::net const& parent) const
       {
         if (!place)

@@ -414,10 +414,10 @@ namespace xml
         const std::string direction
           (we::edge::enum_to_string (connect.direction()));
 
-        const boost::optional<const id::ref::place&> id_place
+        const boost::optional<const place_type&> place
           (parent()->places().get (connect.place()));
 
-        if (not id_place)
+        if (not place)
         {
           throw error::connect_to_nonexistent_place
             (make_reference_id(), connect);
@@ -439,12 +439,14 @@ namespace xml
             (make_reference_id(), connect);
         }
 
-        if (id_place->get().signature() != port->signature (resolved_function().get()))
+        if ( place->signature (*parent())
+           != port->signature (resolved_function().get())
+           )
         {
           throw error::connect_type_error ( make_reference_id()
                                           , connect
                                           , *port
-                                          , *id_place
+                                          , *place
                                           );
         }
       }

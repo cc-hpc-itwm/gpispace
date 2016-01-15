@@ -725,7 +725,7 @@ namespace xml
                 for (place_map_type const& place_map : _place_map)
                 {
                   if (  place_map.place_virtual()
-                     == port.resolved_place (net)->get().name()
+                     == port.resolved_place (net)->name()
                      )
                   {
                     _real_place_names.emplace (port_id, place_map.place_real());

@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE xml_parse_type_place
 #include <boost/test/unit_test.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/util/position.hpp>
 
@@ -20,18 +19,13 @@ BOOST_AUTO_TEST_CASE (dump_no_virtual)
   std::string const name (fhg::util::testing::random_identifier());
   std::string const type (fhg::util::testing::random_identifier());
 
-  xml::parse::id::mapper mapper;
-
   std::ostringstream oss;
   fhg::util::xml::xmlstream os (oss);
 
   xml::parse::type::dump::dump
     ( os
     , xml::parse::type::place_type
-      ( mapper.next_id()
-      , &mapper
-      , boost::none
-      , xml::parse::util::position_type
+      ( xml::parse::util::position_type
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , type
@@ -55,18 +49,13 @@ BOOST_AUTO_TEST_CASE (dump_virtual)
   std::string const name (fhg::util::testing::random_identifier());
   std::string const type (fhg::util::testing::random_identifier());
 
-  xml::parse::id::mapper mapper;
-
   std::ostringstream oss;
   fhg::util::xml::xmlstream os (oss);
 
   xml::parse::type::dump::dump
     ( os
     , xml::parse::type::place_type
-      ( mapper.next_id()
-      , &mapper
-      , boost::none
-      , xml::parse::util::position_type
+      ( xml::parse::util::position_type
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , type
@@ -90,16 +79,11 @@ BOOST_AUTO_TEST_CASE (dump_token)
   std::string const name (fhg::util::testing::random_identifier());
   std::string const type (fhg::util::testing::random_identifier());
 
-  xml::parse::id::mapper mapper;
-
   std::ostringstream oss;
   fhg::util::xml::xmlstream os (oss);
 
   xml::parse::type::place_type place
-    ( mapper.next_id()
-    , &mapper
-    , boost::none
-    , xml::parse::util::position_type
+    ( xml::parse::util::position_type
       (nullptr, nullptr, fhg::util::testing::random_string())
     , name
     , type
@@ -133,16 +117,11 @@ BOOST_AUTO_TEST_CASE (dump_tokens)
   std::string const name (fhg::util::testing::random_identifier());
   std::string const type (fhg::util::testing::random_identifier());
 
-  xml::parse::id::mapper mapper;
-
   std::ostringstream oss;
   fhg::util::xml::xmlstream os (oss);
 
   xml::parse::type::place_type place
-    ( mapper.next_id()
-    , &mapper
-    , boost::none
-    , xml::parse::util::position_type
+    ( xml::parse::util::position_type
       (nullptr, nullptr, fhg::util::testing::random_string())
     , name
     , type

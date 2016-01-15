@@ -49,7 +49,7 @@ namespace xml
         , ID_INITIALIZE()
         , PARENT_INITIALIZE()
         , _functions (functions, _id)
-        , _places (places, _id)
+        , _places (places)
         , _specializes (specializes, _id)
         , _templates (templates, _id)
         , _transitions (transitions, _id)
@@ -141,19 +141,9 @@ namespace xml
 
       // ***************************************************************** //
 
-      const id::ref::place&
-      net_type::push_place (const id::ref::place& id)
+      void net_type::push_place (place_type const& place)
       {
-        const id::ref::place& id_old (_places.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_place (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
-
-        return id;
+        _places.push<error::duplicate_place> (place);
       }
 
       const id::ref::specialize&
@@ -221,26 +211,6 @@ namespace xml
         _functions.erase (function);
         function.get_ref().name_impl (name);
         _functions.push (function);
-      }
-
-      void net_type::rename ( const id::ref::place& place
-                            , const std::string& name
-                            )
-      {
-        if (place.get().name() == name)
-        {
-          return;
-        }
-
-        if (_places.has (name))
-        {
-          throw std::runtime_error
-            ("tried renaming place, but place with given name exists");
-        }
-
-        _places.erase (place);
-        place.get_ref().name_impl (name);
-        _places.push (place);
       }
 
       void net_type::rename ( const id::ref::transition& transition
@@ -403,9 +373,10 @@ namespace xml
                         );
         }
 
-        for (place_type& place : _places.values())
+        auto const places (std::move (_places));
+        for (place_type const& place : places)
         {
-          place.specialize (map, state);
+          push_place (place.specialized (map, state));
         }
 
         for (structure_type& s : structs)
@@ -435,13 +406,13 @@ namespace xml
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
-        const std::unordered_set<id::ref::place> place_ids (places().ids());
+        auto const places (std::move (_places));
         const std::unordered_set<id::ref::transition> transition_ids
           (transitions().ids());
 
-        for (const id::ref::place& place : place_ids)
+        for (place_type const& place : places)
         {
-          place.get_ref().name (prefix + place.get().name());
+          push_place (place.with_name (prefix + place.name()));
         }
 
         for (const id::ref::transition& id : transition_ids)
@@ -470,14 +441,15 @@ namespace xml
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
-        const std::unordered_set<id::ref::place> place_ids (places().ids());
+        auto const places (std::move (_places));
         const std::unordered_set<id::ref::transition> transition_ids
           (transitions().ids());
 
-        for (const id::ref::place& place : place_ids)
+        for (place_type const& place : places)
         {
-          place.get_ref().name
-            (fhg::util::remove_prefix (prefix, place.get().name()));
+          push_place ( place.with_name
+                         (fhg::util::remove_prefix (prefix, place.name()))
+                     );
         }
 
         for (const id::ref::transition& id : transition_ids)
@@ -517,7 +489,7 @@ namespace xml
           , parent
           , _position_of_definition
           , _functions.clone (function_type::make_parent (new_id), new_mapper)
-          , _places.clone (new_id, new_mapper)
+          , _places
           , _specializes.clone (new_id, new_mapper)
           , _templates.clone (new_id, new_mapper)
           , _transitions.clone (new_id, new_mapper)
@@ -542,7 +514,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for (const place_type& place : net.places().values())
+        for (const place_type& place : net.places())
         {
           if (!state.synthesize_virtual_places() && place.is_virtual())
           {
@@ -559,11 +531,11 @@ namespace xml
 
             const place::type place_real (we_net.places().at (pid->second));
 
-            if (!(place_real.signature() == place.signature_or_throw()))
+            if (!(place_real.signature() == place.signature_or_throw (net)))
             {
               throw error::port_tunneled_type_error
                 ( place.name()
-                , place.signature_or_throw()
+                , place.signature_or_throw (net)
                 , place_real.name()
                 , place_real.signature()
                 , state.file_in_progress()
@@ -582,7 +554,7 @@ namespace xml
             const we::place_id_type pid
               ( we_net.add_place ( place::type
                                    ( place.name()
-                                   , place.signature_or_throw()
+                                   , place.signature_or_throw (net)
                                    , place.put_token()
                                    , prop
                                    )
@@ -603,7 +575,7 @@ namespace xml
               );
           }
 
-        for (const place_type& place : net.places().values())
+        for (const place_type& place : net.places())
         {
           const we::place_id_type pid (pid_of_place.at (place.name()));
 
@@ -641,7 +613,7 @@ namespace xml
           dumps (s, net.templates().values());
           dumps (s, net.specializes().values());
           dumps (s, net.functions().values());
-          dumps (s, net.places().values());
+          dumps (s, net.places());
           dumps (s, net.transitions().values());
 
           s.close ();

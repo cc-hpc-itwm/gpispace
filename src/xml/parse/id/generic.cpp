@@ -6,7 +6,6 @@
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
-#include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
@@ -61,7 +60,6 @@ namespace xml
     {
       ID_IMPL(function)
       ID_IMPL(net)
-      ID_IMPL(place)
       ID_IMPL(place_map)
       ID_IMPL(specialize)
       ID_IMPL(structure)
@@ -71,7 +69,6 @@ namespace xml
 
       PARENT_IMPL(function,net)
       PARENT_IMPL(function,structure)
-      PARENT_IMPL(net,place)
       PARENT_IMPL(net,specialize)
       PARENT_IMPL(net,tmpl)
       PARENT_IMPL(net,transition)

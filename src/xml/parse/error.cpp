@@ -113,7 +113,7 @@ namespace xml
 
       port_connected_type_error::port_connected_type_error
         ( const type::port_type& port
-        , const id::ref::place& place
+        , const type::place_type& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "type error: %1%-port %2% of type %3% "
@@ -122,11 +122,10 @@ namespace xml
                     % we::type::enum_to_string (port.direction())
                     % port.name()
                     % port.type()
-                    % place.get().name()
-                    % place.get().type()
+                    % place.name()
+                    % place.type()
                     % path
                     )
-        , _place (place)
         , _path (path)
       { }
 
@@ -147,34 +146,32 @@ namespace xml
 
       tunnel_connected_non_virtual::tunnel_connected_non_virtual
         ( const type::port_type& port
-        , const id::ref::place& place
+        , const type::place_type& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "tunnel %1% connected to non-virtual "
                                       "place %2% in %3%"
                                     )
                     % port.name()
-                    % place.get().name()
+                    % place.name()
                     % path
                     )
-            , _place (place)
           , _path (path)
       { }
 
       tunnel_name_mismatch::tunnel_name_mismatch
         ( const type::port_type& port
-        , const id::ref::place& place
+        , const type::place_type& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "tunnel %1% is connected to place with "
                                       "different name  %2% in %3%"
                                     )
                     % port.name()
-                    % place.get().name()
+                    % place.name()
                     % path
                     )
-            , _place (place)
-          , _path (path)
+              , _path (path)
       { }
 
       unknown_function::unknown_function ( const std::string& fun
@@ -277,7 +274,7 @@ namespace xml
         ( const id::ref::transition& transition
         , const type::connect_type& connection
         , const type::port_type& port
-        , const id::ref::place& place
+        , const type::place_type& place
         )
          : generic ( boost::format ( "type-error: connect-%1%"
                                      " from place %2%::%3% (%4%) at %5%"
@@ -285,10 +282,11 @@ namespace xml
                                      " in transition %10% at %11%"
                                    )
                    % connection.direction()
-                   % place.get().name()
-                   % place.get().type()
-                   % pnet::type::signature::show (place.get().signature_or_throw())
-                   % place.get().position_of_definition()
+                   % place.name()
+                   % place.type()
+                   % pnet::type::signature::show
+                       (place.signature_or_throw (transition.get().resolved_function().get().get_net()->get()))
+                   % place.position_of_definition()
                    % port.name()
                    % port.type()
                    % pnet::type::signature::show
@@ -298,8 +296,7 @@ namespace xml
                    % connection.position_of_definition()
                    )
           , _transition (transition)
-          , _place (place)
-        {}
+          {}
 
       memory_buffer_without_size::memory_buffer_without_size
         ( std::string const& name
@@ -486,11 +483,11 @@ namespace xml
             (early, late, boost::format ("specialize %1%") % early.get().name())
       {}
 
-      duplicate_place::duplicate_place ( const id::ref::place& early
-                                       , const id::ref::place& late
+      duplicate_place::duplicate_place ( const type::place_type& early
+                                       , const type::place_type& late
                                        )
-        : generic_id_duplicate<id::ref::place>
-          (early, late, boost::format ("place %1%") % early.get().name())
+        : generic_duplicate<type::place_type>
+          (early, late, boost::format ("place %1%") % early.name())
       {}
 
       duplicate_transition::duplicate_transition
@@ -593,13 +590,12 @@ namespace xml
             )
       {}
 
-      place_type_unknown::place_type_unknown (const id::ref::place& place)
+      place_type_unknown::place_type_unknown (const type::place_type& place)
         : generic ( boost::format ("unknown type %1% for place %2% at %3%")
-                  % place.get().type()
-                  % place.get().name()
-                  % place.get().position_of_definition()
+                  % place.type()
+                  % place.name()
+                  % place.position_of_definition()
                   )
-        , _place (place)
       {}
     }
   }
