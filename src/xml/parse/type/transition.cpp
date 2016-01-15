@@ -107,7 +107,7 @@ namespace xml
         , _name (name)
         , _connections (connections)
         , _responses (responses)
-        , _place_map (place_map, _id)
+        , _place_map (place_map)
         , structs (structs_)
         , _conditions (conditions)
         , requirements (requirements_)
@@ -263,37 +263,9 @@ namespace xml
         _responses.push<error::duplicate_response> (response);
       }
 
-      void transition_type::push_place_map (const id::ref::place_map& pm_id)
+      void transition_type::push_place_map (place_map_type const& place_map)
       {
-        const id::ref::place_map& id_old (_place_map.push (pm_id));
-
-        if (not (id_old == pm_id))
-        {
-          throw error::duplicate_place_map (id_old, pm_id);
-        }
-        pm_id.get_ref().parent (id());
-      }
-
-      // ***************************************************************** //
-
-      void transition_type::place_map_real
-        (const id::ref::place_map& id, const std::string& real)
-      {
-        if (id.get().place_real() == real)
-        {
-          return;
-        }
-
-        if (_place_map.has (std::make_pair (id.get().place_virtual(), real)))
-        {
-          throw std::runtime_error ( "tried setting place_map's virtual place, "
-                                     "but already having such a mapping."
-                                   );
-        }
-
-        _place_map.erase (id);
-        id.get_ref().place_real_impl (real);
-        _place_map.push (id);
+        _place_map.push<error::duplicate_place_map> (place_map);
       }
 
       // ***************************************************************** //
@@ -569,7 +541,7 @@ namespace xml
           , _name
           , _connections
           , _responses
-          , _place_map.clone (new_id, new_mapper)
+          , _place_map
           , structs
           , _conditions
           , requirements
@@ -671,7 +643,7 @@ namespace xml
 
             place_map_map_type place_map_map;
 
-            for ( const place_map_type& place_map : trans.place_map().values())
+            for ( const place_map_type& place_map : trans.place_map())
               {
                 const place_map_map_type::const_iterator pid
                   (pids.find (place_map.place_real()));
@@ -913,7 +885,7 @@ namespace xml
                                , trans.requirements
                                , trans.priority
                                ? *trans.priority : we::priority_type()
-                               , trans.place_map().values()
+                               , trans.place_map()
                                , real_place_names
                                )
               );
@@ -1017,7 +989,7 @@ namespace xml
 
           boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
-          dumps (s, t.place_map().values());
+          dumps (s, t.place_map());
           dumps (s, t.connections());
           dumps (s, t.responses());
 

@@ -373,7 +373,7 @@ namespace xml
 
       // **************************************************************** //
 
-      id::ref::place_map
+      type::place_map_type
         place_map_type (const xml_node_type* node, state::type& state)
       {
         we::type::property::type properties;
@@ -413,14 +413,11 @@ namespace xml
         }
 
         return type::place_map_type
-          ( state.id_mapper()->next_id()
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , required ("place_map_type", node, "virtual", state)
           , required ("place_map_type", node, "real", state)
           , properties
-          ).make_reference_id();
+          );
       }
 
       // **************************************************************** //

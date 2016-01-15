@@ -9,6 +9,7 @@
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/place.fwd.hpp>
+#include <xml/parse/type/place_map.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
 #include <xml/parse/util/position.hpp>
@@ -310,7 +311,6 @@ namespace xml
       DUPLICATE (specialize);
       DUPLICATE (transition);
       DUPLICATE_WITH_ID (template,tmpl);
-      DUPLICATE (place_map);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -344,6 +344,7 @@ namespace xml
       DUPLICATE (external_function, type::module_type);
       DUPLICATE (memory_buffer, type::memory_buffer_type);
       DUPLICATE (place, type::place_type);
+      DUPLICATE (place_map, type::place_map_type);
       DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
 

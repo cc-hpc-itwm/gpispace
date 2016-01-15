@@ -519,16 +519,16 @@ namespace xml
       {}
 
       duplicate_place_map::duplicate_place_map
-        ( const id::ref::place_map& early
-        , const id::ref::place_map& late
+        ( const type::place_map_type& early
+        , const type::place_map_type& late
         )
-          : generic_id_duplicate<id::ref::place_map>
-                              ( early
-                              , late
-                              , boost::format ("place-map %1% <-> %2%")
-                              % early.get().place_virtual()
-                              % early.get().place_real()
-                              )
+          : generic_duplicate<type::place_map_type>
+              ( early
+              , late
+              , boost::format ("place-map %1% <-> %2%")
+              % early.place_virtual()
+              % early.place_real()
+              )
       {}
 
       duplicate_external_function::duplicate_external_function

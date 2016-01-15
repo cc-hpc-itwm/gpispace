@@ -34,8 +34,7 @@ namespace xml
 
         typedef fhg::pnet::util::unique<connect_type> connections_type;
         using responses_type = fhg::pnet::util::unique<response_type>;
-        typedef xml::util::unique<place_map_type,id::ref::place_map>
-          place_maps_type;
+        using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
         typedef boost::variant <id::ref::function, id::ref::use>
           function_or_use_type;
@@ -91,9 +90,7 @@ namespace xml
 
         void push_connection (const connect_type&);
         void push_response (response_type const&);
-        void push_place_map (const id::ref::place_map&);
-
-        void place_map_real (const id::ref::place_map&, const std::string&);
+        void push_place_map (place_map_type const&);
 
         // ***************************************************************** //
 

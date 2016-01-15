@@ -4,7 +4,6 @@
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
-#include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/response.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>

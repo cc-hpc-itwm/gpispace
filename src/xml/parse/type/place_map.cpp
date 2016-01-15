@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/place_map.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/transition.hpp>
 
@@ -14,22 +13,16 @@ namespace xml
   {
     namespace type
     {
-      place_map_type::place_map_type ( ID_CONS_PARAM(place_map)
-                                     , PARENT_CONS_PARAM(transition)
-                                     , const util::position_type& pod
+      place_map_type::place_map_type ( const util::position_type& pod
                                      , const std::string & place_virtual
                                      , const std::string & place_real
                                      , const we::type::property::type& prop
                                      )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _place_virtual (place_virtual)
         , _place_real (place_real)
         , _properties (prop)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const std::string& place_map_type::place_virtual() const
       {
@@ -39,18 +32,14 @@ namespace xml
       {
         return _place_real;
       }
-      const std::string& place_map_type::place_real_impl (const std::string& v)
+
+      place_map_type place_map_type::with_place_real (std::string const& place_real) const
       {
-        return _place_real = v;
-      }
-      const std::string& place_map_type::place_real (const std::string& v)
-      {
-        if (has_parent())
-        {
-          parent()->place_map_real (make_reference_id(), v);
-          return _place_real;
-        }
-        return place_real_impl (v);
+        return place_map_type ( position_of_definition()
+                              , _place_virtual
+                              , place_real
+                              , _properties
+                              );
       }
 
       const we::type::property::type& place_map_type::properties() const
@@ -61,24 +50,6 @@ namespace xml
       place_map_type::unique_key_type place_map_type::unique_key() const
       {
         return std::make_pair (place_virtual(), place_real());
-      }
-
-      id::ref::place_map place_map_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return place_map_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _place_virtual
-          , _place_real
-          , _properties
-          ).make_reference_id();
       }
 
       namespace dump
