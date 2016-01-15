@@ -2,7 +2,6 @@
 //    id_name      , map_member_name, type_name         , number
 ITEM (function     , _functions     , function_type     ,  0)
 ITEM (net          , _nets          , net_type          ,  1)
-ITEM (structure    , _structures    , structure_type    ,  2)
-ITEM (tmpl         , _templates     , tmpl_type         ,  3)
-ITEM (transition   , _transitions   , transition_type   ,  4)
-ITEM (use          , _uses          , use_type          ,  5)
+ITEM (tmpl         , _templates     , tmpl_type         ,  2)
+ITEM (transition   , _transitions   , transition_type   ,  3)
+ITEM (use          , _uses          , use_type          ,  4)

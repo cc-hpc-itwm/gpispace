@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/function.fwd.hpp>
@@ -29,13 +28,8 @@ namespace xml
     {
       struct structure_type : with_position_of_definition
       {
-        ID_SIGNATURES(structure);
-        PARENT_SIGNATURES(function);
-
       public:
-        structure_type ( ID_CONS_PARAM(structure)
-                       , PARENT_CONS_PARAM(function)
-                       , const util::position_type&
+        structure_type ( const util::position_type&
                        , const pnet::type::signature::structured_type& sig
                        );
 
@@ -44,11 +38,6 @@ namespace xml
 
         void specialize (const std::unordered_map<std::string, std::string>&);
         void resolve (const std::unordered_map<std::string, structure_type>&);
-
-        id::ref::structure clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         pnet::type::signature::structured_type _sig;

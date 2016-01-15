@@ -13,6 +13,7 @@
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
 #include <xml/parse/type/specialize.fwd.hpp>
+#include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
 #include <we/type/port.hpp>

@@ -1866,10 +1866,7 @@ namespace xml
         struct_type (const xml_node_type* node, state::type& state)
       {
         return type::structure_type
-          ( id::structure (state.id_mapper()->next_id())
-          , state.id_mapper()
-          , boost::none
-          , state.position (node)
+          ( state.position (node)
           , structured_type (node, state)
           );
       }
