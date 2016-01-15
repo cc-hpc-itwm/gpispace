@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
-
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 
@@ -24,17 +22,8 @@ namespace xml
     {
       struct module_type : with_position_of_definition
       {
-        ID_SIGNATURES (module);
-        PARENT_SIGNATURES (function);
-
       public:
-        module_type ( ID_CONS_PARAM (module)
-                    , PARENT_CONS_PARAM (function)
-                    , const util::position_type&
-                    );
-        module_type ( ID_CONS_PARAM (module)
-                    , PARENT_CONS_PARAM (function)
-                    , const util::position_type&
+        module_type ( const util::position_type&
                     , const std::string& name
                     , const std::string& function
                     , const boost::optional<std::string>& port_return
@@ -64,11 +53,6 @@ namespace xml
         bool pass_context () const;
 
         bool operator== (const module_type&) const;
-
-        id::ref::module clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
         friend std::size_t hash_value (const module_type&);
 

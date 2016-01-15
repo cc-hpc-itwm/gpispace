@@ -544,17 +544,17 @@ namespace xml
       {}
 
       duplicate_external_function::duplicate_external_function
-         ( const id::ref::module& early
-         , const id::ref::module& late
+         ( const type::module_type& early
+         , const type::module_type& late
          )
-          : generic_id_duplicate<id::ref::module>
+          : generic_duplicate<type::module_type>
             ( early
             , late
             , boost::format ( "external function %1% in module %2%"
                               " has conflicting definition"
                             )
-            % early.get().function()
-            % early.get().name()
+            % early.function()
+            % early.name()
             )
       {}
 

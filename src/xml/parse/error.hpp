@@ -6,6 +6,7 @@
 
 #include <xml/parse/id/types.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
+#include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
@@ -312,7 +313,6 @@ namespace xml
       DUPLICATE (port);
       DUPLICATE_WITH_ID (template,tmpl);
       DUPLICATE (place_map);
-      DUPLICATE_WITH_ID (external_function,module);
       DUPLICATE (connect);
 
 #undef DUPLICATE
@@ -343,6 +343,7 @@ namespace xml
         duplicate_ ## _name (const _type& early, const _type& late);    \
       }
 
+      DUPLICATE (external_function, type::module_type);
       DUPLICATE (memory_buffer, type::memory_buffer_type);
       DUPLICATE (response, type::response_type);
 

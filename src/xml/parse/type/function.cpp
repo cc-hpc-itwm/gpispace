@@ -69,10 +69,8 @@ namespace xml
 
           void operator() (const expression_type&) const
           {}
-          void operator() (const id::ref::module& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
+          void operator() (const module_type&) const
+          {}
           void operator() (const id::ref::net& id) const
           {
             id.get_ref().parent (_parent);
@@ -616,7 +614,7 @@ namespace xml
           void operator() (expression_type const&) const
           {
           }
-          void operator() (const id::ref::module&) const
+          void operator() (const module_type&) const
           {
           }
           void operator() (const id::ref::net& id) const
@@ -829,10 +827,8 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const id::ref::module& id_mod) const
+        we_transition_type operator () (const module_type& mod) const
         {
-          const module_type& mod (id_mod.get());
-
           std::unordered_map<std::string, std::string> memory_buffers;
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
@@ -989,7 +985,7 @@ namespace xml
           {}
 
           void operator () (expression_type&) const { return; }
-          void operator () (id::ref::module &) const { return; }
+          void operator () (module_type &) const { return; }
           void operator () (id::ref::net & id) const
           {
             id.get_ref().specialize (map, get, known_structs, state);
@@ -1066,6 +1062,10 @@ namespace xml
             function_type::content_type operator() (const ID_TYPE& id) const
           {
             return id.get().clone (_new_id, _mapper);
+          }
+          function_type::content_type operator() (module_type const& m) const
+          {
+            return m;
           }
           function_type::content_type operator() (expression_type const& e) const
           {
@@ -2059,11 +2059,9 @@ namespace xml
             return find_module_calls (state, id, m, mcs);
           }
 
-          bool operator () (id::ref::module & id) const
+          bool operator () (module_type const& mod) const
           {
             namespace cpp_util = ::fhg::util::cpp;
-
-            const module_type& mod (id.get());
 
             const mcs_type::const_iterator old_map (mcs.find (mod.name()));
 
@@ -2077,13 +2075,13 @@ namespace xml
                 if (old_mc->second == mod)
                 {
                   state.warn ( warning::duplicate_external_function
-                               (id, old_mc->second.make_reference_id())
+                                 (mod, old_mc->second)
                              );
                 }
                 else
                 {
                   throw error::duplicate_external_function
-                    (old_mc->second.make_reference_id(), id);
+                    (old_mc->second, mod);
                 }
               }
             }
@@ -2517,7 +2515,7 @@ namespace xml
           }
 
           void operator() (const id::ref::use&) const { }
-          void operator() (const id::ref::module&) const { }
+          void operator() (const module_type&) const { }
           void operator() (expression_type const&) const { }
 
         private:
@@ -2575,6 +2573,10 @@ namespace xml
             void operator () (const ID& id) const
             {
               ::xml::parse::type::dump::dump (s, id.get());
+            }
+            void operator() (module_type const& m) const
+            {
+              ::xml::parse::type::dump::dump (s, m);
             }
             void operator() (expression_type const& e) const
             {

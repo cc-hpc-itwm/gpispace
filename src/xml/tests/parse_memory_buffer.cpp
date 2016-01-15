@@ -372,17 +372,17 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::id::ref::module>
+    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
                     (function.get().content())
                   );
 
-    xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module>
+    xml::parse::type::module_type const& module_call
+      ( boost::get<xml::parse::type::module_type>
         (function.get().content())
       );
 
-    BOOST_REQUIRE_EQUAL (module_call.get().memory_buffer_arg().size(), 1);
-    BOOST_REQUIRE_EQUAL ( *(module_call.get().memory_buffer_arg().begin())
+    BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
+    BOOST_REQUIRE_EQUAL ( *(module_call.memory_buffer_arg().begin())
                         , name_memory_buffer
                         );
 }
@@ -413,21 +413,21 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::id::ref::module>
+    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
                     (function.get().content())
                   );
 
-    xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module>
+    xml::parse::type::module_type const& module_call
+      ( boost::get<xml::parse::type::module_type>
         (function.get().content())
       );
 
-    BOOST_REQUIRE_EQUAL (module_call.get().memory_buffer_arg().size(), 2);
-    BOOST_REQUIRE_EQUAL ( *(module_call.get().memory_buffer_arg().begin())
+    BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 2);
+    BOOST_REQUIRE_EQUAL ( *(module_call.memory_buffer_arg().begin())
                         , name_memory_buffer_A
                         );
     BOOST_REQUIRE_EQUAL
-      ( *(std::next (module_call.get().memory_buffer_arg().begin()))
+      ( *(std::next (module_call.memory_buffer_arg().begin()))
       , name_memory_buffer_B
       );
 }
@@ -457,21 +457,21 @@ BOOST_AUTO_TEST_CASE
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::id::ref::module>
+    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
                     (function.get().content())
                   );
 
-    xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module>
+    xml::parse::type::module_type const& module_call
+      ( boost::get<xml::parse::type::module_type>
         (function.get().content())
       );
 
-    BOOST_REQUIRE_EQUAL (module_call.get().memory_buffer_arg().size(), 1);
-    BOOST_REQUIRE_EQUAL ( *(module_call.get().memory_buffer_arg().begin())
+    BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
+    BOOST_REQUIRE_EQUAL ( *(module_call.memory_buffer_arg().begin())
                         , name_memory_buffer
                         );
-    BOOST_REQUIRE_EQUAL (module_call.get().port_arg().size(), 1);
-    BOOST_REQUIRE_EQUAL (*(module_call.get().port_arg().begin()), name_port);
+    BOOST_REQUIRE_EQUAL (module_call.port_arg().size(), 1);
+    BOOST_REQUIRE_EQUAL (*(module_call.port_arg().begin()), name_port);
 }
 
 BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
@@ -495,17 +495,17 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::id::ref::module>
+    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
                     (function.get().content())
                   );
 
-    xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module>
+    xml::parse::type::module_type const& module_call
+      ( boost::get<xml::parse::type::module_type>
         (function.get().content())
       );
 
     BOOST_REQUIRE_EQUAL
-      (module_call.get().memory_buffer_return(), name_memory_buffer);
+      (module_call.memory_buffer_return(), name_memory_buffer);
 }
 
 BOOST_AUTO_TEST_CASE
@@ -530,20 +530,20 @@ BOOST_AUTO_TEST_CASE
     xml::parse::id::ref::function const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::id::ref::module>
+    BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
                     (function.get().content())
                   );
 
-    xml::parse::id::ref::module const& module_call
-      ( boost::get<xml::parse::id::ref::module>
+    xml::parse::type::module_type const& module_call
+      ( boost::get<xml::parse::type::module_type>
         (function.get().content())
       );
 
     BOOST_REQUIRE_EQUAL
-      (module_call.get().memory_buffer_return(), name_memory_buffer);
+      (module_call.memory_buffer_return(), name_memory_buffer);
 
-    BOOST_REQUIRE_EQUAL (module_call.get().memory_buffer_arg().size(), 1);
-    BOOST_REQUIRE_EQUAL ( *(module_call.get().memory_buffer_arg().begin())
+    BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
+    BOOST_REQUIRE_EQUAL ( *(module_call.memory_buffer_arg().begin())
                         , name_memory_buffer
                         );
 }

@@ -7,7 +7,6 @@
 #include <xml/parse/id/mapper.fwd.hpp>
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
-#include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/place.fwd.hpp>
 #include <xml/parse/type/place_map.fwd.hpp>

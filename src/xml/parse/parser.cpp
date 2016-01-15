@@ -1341,12 +1341,11 @@ namespace xml
         }
       }
 
-      id::ref::module module_type ( const xml_node_type* node
-                                  , state::type& state
-                                  , id::ref::function const& outer_function
-                                  )
+      type::module_type module_type ( const xml_node_type* node
+                                    , state::type& state
+                                    , id::ref::function const& outer_function
+                                    )
       {
-        const id::module id (state.id_mapper()->next_id());
         const std::string name
           (validate_name ( required ("module_type", node, "name", state)
                          , "module_type"
@@ -1427,10 +1426,7 @@ namespace xml
         }
 
         return type::module_type
-          ( id
-          , state.id_mapper()
-          , boost::none
-          , pod
+          ( pod
           , name
           , function
           , port_return
@@ -1443,7 +1439,7 @@ namespace xml
           , ldflags
           , cxxflags
           , pass_context
-          ).make_reference_id();
+          );
       }
 
       // ******************************************************************* //

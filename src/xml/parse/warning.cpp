@@ -68,17 +68,15 @@ namespace xml
       { }
 
       duplicate_external_function::duplicate_external_function
-        (const id::ref::module& mod, const id::ref::module& old)
+        (const type::module_type& mod, const type::module_type& old)
           : generic ( boost::format ( "the external function %1% in module %2%"
                                       " has multiple occurences in %3% and %4%"
                                     )
-                    % mod.get().function()
-                    % mod.get().name()
-                    % old.get().position_of_definition()
-                    % mod.get().position_of_definition()
+                    % mod.function()
+                    % mod.name()
+                    % old.position_of_definition()
+                    % mod.position_of_definition()
                     )
-          , _mod (mod)
-          , _old (old)
       {}
 
       struct_shadowed::struct_shadowed ( const type::structure_type& early

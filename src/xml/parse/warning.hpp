@@ -6,6 +6,7 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
 
 #include <we/type/property.hpp>
@@ -563,13 +564,9 @@ namespace xml
       class duplicate_external_function : public generic
       {
       public:
-        duplicate_external_function ( const id::ref::module& mod
-                                    , const id::ref::module& old
+        duplicate_external_function ( const type::module_type& mod
+                                    , const type::module_type& old
                                     );
-
-      private:
-        const id::ref::module _mod;
-        const id::ref::module _old;
       };
 
       // ******************************************************************* //

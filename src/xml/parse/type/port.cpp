@@ -165,7 +165,7 @@ namespace xml
             }
           }
 
-          void operator() (const id::ref::module&) const
+          void operator() (const module_type&) const
           {
             if (_port.get().place)
             {
