@@ -6,6 +6,7 @@
 #include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
+#include <we/type/value/function.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -40,7 +41,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
     {
       context.bind ("a", i++);
     }
-    while (parser.eval_front_bool (context));
+    while (pnet::type::value::is_true (parser.eval_front (context)));
   }
 }
 
@@ -65,6 +66,6 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
     {
       context.bind ("a", i++);
     }
-    while (expr::parse::parser (input, context).get_front_bool());
+    while (pnet::type::value::is_true (expr::parse::parser (input, context).get_front()));
   }
 }

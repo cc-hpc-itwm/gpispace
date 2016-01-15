@@ -69,20 +69,10 @@ namespace expr
       return eval::eval (context, front());
     }
 
-    bool parser::eval_front_bool (eval::context & context) const
-    {
-      return pnet::type::value::is_true(eval_front (context));
-    }
-
     // get the already evaluated value, throws if entry is not an value
     pnet::type::value::value_type parser::get_front() const
     {
       return node::get (front());
-    }
-
-    bool parser::get_front_bool () const
-    {
-      return pnet::type::value::is_true(get_front());
     }
 
     // evaluate the whole stack in order, return the last value

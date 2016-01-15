@@ -95,11 +95,9 @@ namespace expr
 
       // eval the first entry in the stack
       pnet::type::value::value_type eval_front (eval::context & context) const;
-      bool eval_front_bool (eval::context & context) const;
 
       // get the already evaluated value, throws if entry is not an value
       pnet::type::value::value_type get_front () const;
-      bool get_front_bool () const;
 
       // evaluate the whole stack in order, return the last value
       pnet::type::value::value_type eval_all (eval::context& context) const;
