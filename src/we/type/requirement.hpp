@@ -1,8 +1,9 @@
 #pragma once
 
-#include <boost/functional/hash.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
+
+#include <string>
 
 namespace we
 {
@@ -10,55 +11,39 @@ namespace we
   {
     struct requirement_t
     {
-      typedef std::string value_type;
-      typedef value_type argument_type;
-
-      requirement_t ()
-        : value_()
-        , mandatory_(false)
+      requirement_t()
+        : _value()
+        , _mandatory (false)
       {}
 
       explicit
-      requirement_t (value_type arg, const bool _mandatory = false)
-        : value_(arg)
-        , mandatory_(_mandatory)
+      requirement_t (std::string value, const bool mandatory = false)
+        : _value (std::move (value))
+        , _mandatory (mandatory)
       {}
 
-      bool is_mandatory (void) const
+      bool is_mandatory() const
       {
-        return mandatory_;
+        return _mandatory;
       }
 
-      const value_type & value(void) const
+      std::string const& value() const
       {
-        return value_;
+        return _value;
       }
 
-      void value(const value_type & val)
-      {
-        value_ = val;
-      }
     private:
       friend class boost::serialization::access;
+
       template <typename Archive>
-      void serialize(Archive & ar, const unsigned int)
+      void serialize (Archive& ar, const unsigned int)
       {
-        ar & BOOST_SERIALIZATION_NVP(value_);
-        ar & BOOST_SERIALIZATION_NVP(mandatory_);
+        ar & BOOST_SERIALIZATION_NVP (_value);
+        ar & BOOST_SERIALIZATION_NVP (_mandatory);
       }
 
-      value_type value_;
-      bool mandatory_;
+      std::string _value;
+      bool _mandatory;
     };
-
-    inline requirement_t make_mandatory (const std::string& val)
-    {
-      return requirement_t (val, true);
-    }
-
-    inline requirement_t make_optional (const std::string& val)
-    {
-      return requirement_t (val, false);
-    }
   }
 }

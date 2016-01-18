@@ -63,7 +63,6 @@ extended_add_library (NAME pnet
           "we/type/expression.cpp"
           "we/type/literal/control.cpp"
           "we/type/net.cpp"
-          "we/type/place.cpp"
           "we/type/port.cpp"
           "we/type/property.cpp"
           "we/type/schedule_data.cpp"

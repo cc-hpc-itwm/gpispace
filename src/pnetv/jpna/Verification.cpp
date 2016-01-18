@@ -16,10 +16,9 @@ inline jpn::Marking makeInitialMarking
         : token_count
         )
     {
-      placeMarkings.push_back ( jpn::PlaceMarking ( token_count_on_place.first
-                                                  , token_count_on_place.second
-                                                  )
-                              );
+      placeMarkings.emplace_back ( token_count_on_place.first
+                                 , token_count_on_place.second
+                                 );
     }
     return jpn::Marking(placeMarkings);
 }
@@ -27,7 +26,7 @@ inline jpn::Marking makeInitialMarking
 inline jpn::Marking makeMarking(const std::vector<we::place_id_type> &places) {
     std::vector<jpn::PlaceMarking> placeMarkings;
     for (we::place_id_type place_id : places) {
-        placeMarkings.push_back(jpn::PlaceMarking(place_id, 1));
+        placeMarkings.emplace_back (place_id, 1);
     }
     return jpn::Marking(placeMarkings);
 }
@@ -43,7 +42,7 @@ jpn::Transition makeTransition(const Transition *transition) {
 std::vector<const Transition *> makeTrace(const std::vector<we::transition_id_type> &trace, const PetriNet &petriNet) {
     std::vector<const Transition *> result;
     for (we::transition_id_type transitionId : trace) {
-        result.push_back(petriNet.getTransition(transitionId));
+        result.emplace_back (petriNet.getTransition (transitionId));
     }
     return result;
 }
@@ -57,7 +56,7 @@ VerificationResult verify(const PetriNet &petriNet) {
 
     for (const Transition *transition : petriNet.transitions()) {
         if (transition->conditionAlwaysTrue()) {
-            transitions.push_back(makeTransition(transition));
+            transitions.emplace_back (makeTransition(transition));
         }
     }
 
@@ -69,7 +68,7 @@ VerificationResult verify(const PetriNet &petriNet) {
 
     for (const Transition *transition : petriNet.transitions()) {
         if (!transition->conditionAlwaysTrue()) {
-            transitions.push_back(makeTransition(transition));
+            transitions.emplace_back (makeTransition(transition));
         }
     }
 

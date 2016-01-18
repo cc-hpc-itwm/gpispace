@@ -16,7 +16,7 @@ std::vector<we::transition_id_type> backtrack(const State *state, const State *l
     std::vector<we::transition_id_type> result;
 
     while (state != lastState) {
-        result.push_back(state->lastTransition()->id());
+        result.emplace_back (state->lastTransition()->id());
         state = state->previous();
     }
 
