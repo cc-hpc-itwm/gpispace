@@ -1962,8 +1962,6 @@ namespace xml
       if (not function.get().name())
       {
         state.warn (warning::synthesize_anonymous_function (function));
-
-        function.get_ref().name (boost::optional<std::string>("anonymous"));
       }
 
       std::unordered_map<std::string, we::port_id_type> port_id_in;
@@ -1972,7 +1970,7 @@ namespace xml
 
       we::type::transition_t trans
         ( function.get_ref().synthesize
-          ( *function.get().name()
+          ( function.get().name().get_value_or ("anonymous")
           , state
           , port_id_in
           , port_id_out
