@@ -138,6 +138,7 @@ namespace we
 
                 for ( const pnet::type::value::value_type& token
                     : _transition.net()->get_token (pid)
+                    | boost::adaptors::map_values
                     )
                 {
                   output.emplace_back (token, port_id);

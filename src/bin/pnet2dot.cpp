@@ -292,7 +292,9 @@ namespace
 
         if (opts.show_token)
         {
-          for (const pnet::type::value::value_type& t : net.get_token (place_id))
+          for ( const pnet::type::value::value_type& t
+              : net.get_token (place_id) | boost::adaptors::map_values
+              )
           {
             token << endl << pnet::type::value::show (t);
           }

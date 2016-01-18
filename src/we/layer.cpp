@@ -9,6 +9,8 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 #include <functional>
 #include <sstream>
 
@@ -148,7 +150,7 @@ namespace we
               );
 
             for ( const pnet::type::value::value_type& token
-                : net.get_token (place_id)
+                : net.get_token (place_id) | boost::adaptors::map_values
                 )
             {
               activity_inner.add_output (p.first, token);

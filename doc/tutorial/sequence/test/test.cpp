@@ -21,8 +21,10 @@
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <algorithm>
 #include <list>
 #include <map>
+#include <vector>
 
 BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 {
@@ -79,12 +81,21 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 
   BOOST_REQUIRE_EQUAL (result.count (port_i), n);
 
-  long expected (n);
+  std::vector<pnet::type::value::value_type> expected (5);
+
+  std::iota (expected.begin(), expected.end(), 0L);
+
+  std::vector<pnet::type::value::value_type> got;
 
   for ( pnet::type::value::value_type i
       : result.equal_range (port_i) | boost::adaptors::map_values
       )
   {
-    BOOST_REQUIRE_EQUAL (i, pnet::type::value::value_type (--expected));
+    got.emplace_back (i);
   }
+
+  std::sort (got.begin(), got.end());
+
+  BOOST_REQUIRE_EQUAL_COLLECTIONS
+    (expected.begin(), expected.end(), got.begin(), got.end());
 }
