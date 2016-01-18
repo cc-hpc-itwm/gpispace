@@ -59,57 +59,22 @@ namespace xml
     {
       // ******************************************************************* //
 
-      namespace
-      {
-        class visitor_reparent : public boost::static_visitor<void>
-        {
-        public:
-          visitor_reparent (const id::function& parent)
-            : _parent (parent)
-          { }
-
-          void operator() (const expression_type&) const
-          {}
-          void operator() (const module_type&) const
-          {}
-          void operator() (const id::ref::net& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
-
-        private:
-          const id::function& _parent;
-        };
-
-        const function_type::content_type& reparent
-          ( const function_type::content_type& content
-          , const id::function& parent
-          )
-        {
-          boost::apply_visitor (visitor_reparent (parent), content);
-          return content;
-        }
-      }
-
       function_type::function_type ( ID_CONS_PARAM(function)
-                                   , const boost::optional<parent_id_type>& parent
                                    , const util::position_type& pod
                                    , const boost::optional<std::string>& name
                                    , const content_type& content
                                    )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
-        , _parent (parent)
         , _name (name)
         , contains_a_module_call (false)
-        , _content (reparent (content, _id))
+        , _content (content)
       {
         _id_mapper->put (_id, *this);
       }
 
       function_type::function_type
         ( ID_CONS_PARAM(function)
-        , const boost::optional<parent_id_type>& parent
         , const util::position_type& pod
         , const boost::optional<std::string>& name
         , const ports_type& ports
@@ -127,7 +92,6 @@ namespace xml
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
-        , _parent (parent)
         , _name (name)
         , _ports (ports)
         , _memory_buffers (memory_buffers)
@@ -139,7 +103,7 @@ namespace xml
         , structs (structs_)
         , _conditions (conditions)
         , requirements (requirements_)
-        , _content (reparent (content, _id))
+        , _content (content)
         , _properties (properties)
       {
         _id_mapper->put (_id, *this);
@@ -156,7 +120,7 @@ namespace xml
       const function_type::content_type&
         function_type::content (const content_type& content_)
       {
-        return _content = reparent (content_, id());
+        return _content = content_;
       }
 
       // ******************************************************************* //
@@ -176,94 +140,6 @@ namespace xml
       const boost::optional<std::string>& function_type::name() const
       {
         return _name;
-      }
-
-      const boost::optional<function_type::parent_id_type>& function_type::parent() const
-      {
-        return _parent;
-      }
-
-      bool function_type::has_parent() const
-      {
-        return !!_parent;
-      }
-
-      void function_type::unparent()
-      {
-        _parent = boost::none;
-      }
-      void function_type::parent (const parent_id_type& parent)
-      {
-        _parent = boost::make_optional (parent);
-      }
-
-      namespace
-      {
-        template<typename id_type, typename id_ref_type>
-        class visitor_get_parent
-          : public boost::static_visitor<boost::optional<id_ref_type>>
-        {
-        public:
-          visitor_get_parent (id::mapper* id_mapper)
-            : _id_mapper (id_mapper)
-          { }
-
-          boost::optional<id_ref_type> operator() (const id_type& id) const
-          {
-            return _id_mapper->get (id)->make_reference_id();
-          }
-
-          template<typename other_types>
-            boost::optional<id_ref_type> operator() (const other_types&) const
-          {
-            return boost::none;
-          }
-
-        private:
-          id::mapper* _id_mapper;
-        };
-      }
-
-      boost::optional<id::ref::transition>
-        function_type::parent_transition() const
-      {
-        if (!_parent)
-        {
-          return boost::none;
-        }
-
-        return boost::apply_visitor
-          ( visitor_get_parent<id::transition, id::ref::transition> (id_mapper())
-          , *_parent
-          );
-      }
-
-      boost::optional<id::ref::tmpl>
-        function_type::parent_tmpl() const
-      {
-        if (!_parent)
-        {
-          return boost::none;
-        }
-
-        return boost::apply_visitor
-          ( visitor_get_parent<id::tmpl, id::ref::tmpl> (id_mapper())
-          , *_parent
-          );
-      }
-
-      boost::optional<id::ref::net>
-        function_type::parent_net() const
-      {
-        if (!_parent)
-        {
-          return boost::none;
-        }
-
-        return boost::apply_visitor
-          ( visitor_get_parent<id::net, id::ref::net> (id_mapper())
-          , *_parent
-          );
       }
 
       // ***************************************************************** //
@@ -1005,16 +881,13 @@ namespace xml
           : public boost::static_visitor<function_type::content_type>
         {
         public:
-          visitor_clone ( const id::function& new_id
-                        , id::mapper* const mapper
-                        )
-            : _new_id (new_id)
-            , _mapper (mapper)
+          visitor_clone (id::mapper* const mapper)
+            : _mapper (mapper)
           { }
           template<typename ID_TYPE>
             function_type::content_type operator() (const ID_TYPE& id) const
           {
-            return id.get().clone (_new_id, _mapper);
+            return id.get().clone (_mapper);
           }
           function_type::content_type operator() (module_type const& m) const
           {
@@ -1026,14 +899,12 @@ namespace xml
           }
 
         private:
-          const id::function& _new_id;
           id::mapper* const _mapper;
         };
       }
 
       id::ref::function function_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
+        ( const boost::optional<id::mapper*>& mapper
         , boost::optional<std::string> name
         ) const
       {
@@ -1042,7 +913,6 @@ namespace xml
         return function_type
           ( new_id
           , new_mapper
-          , parent
           , _position_of_definition
           , !!name ? name : _name
           , _ports
@@ -1055,7 +925,7 @@ namespace xml
           , structs
           , _conditions
           , requirements
-          , boost::apply_visitor (visitor_clone (new_id, new_mapper), content())
+          , boost::apply_visitor (visitor_clone (new_mapper), content())
           , _properties
           ).make_reference_id();
       }

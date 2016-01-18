@@ -23,18 +23,15 @@ namespace xml
     namespace type
     {
       net_type::net_type ( ID_CONS_PARAM(net)
-                         , PARENT_CONS_PARAM(function)
                          , const util::position_type& pod
                          )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
       {
         _id_mapper->put (_id, *this);
       }
 
       net_type::net_type ( ID_CONS_PARAM(net)
-                         , PARENT_CONS_PARAM(function)
                          , const util::position_type& pod
                          , const functions_type& functions
                          , const places_type& places
@@ -47,12 +44,11 @@ namespace xml
                          )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _functions (functions, _id)
+        , _functions (functions)
         , _places (places)
         , _specializes (specializes)
-        , _templates (templates, _id)
-        , _transitions (transitions, _id)
+        , _templates (templates)
+        , _transitions (transitions)
         , structs (structs_)
         , contains_a_module_call (contains_a_module_call_)
         , _properties (properties)
@@ -112,11 +108,8 @@ namespace xml
           {
             return id_tmpl;
           }
-        else if (has_parent())
-          {
-            std::cerr << "IMPLEMENT THE LOOKUP FOR TEMPLATES IN FUNCTION" << std::endl;
-            // return parent()->get_template (name);
-          }
+
+        //! \todo IMPLEMENT THE LOOKUP FOR TEMPLATES IN parent FUNCTION
 
         return boost::none;
       }
@@ -143,8 +136,6 @@ namespace xml
             throw error::duplicate_template (id_old, id);
           }
 
-        id.get_ref().parent (_id);
-
         return id;
       }
 
@@ -157,8 +148,6 @@ namespace xml
         {
           throw error::duplicate_transition (id_old, id);
         }
-
-        id.get_ref().parent (_id);
 
         return id;
       }
@@ -203,15 +192,14 @@ namespace xml
               (specialize, make_reference_id());
           }
 
-          //! \todo generate a new function, with a state.next_id and
-          //! the parent that is the transition that requires the
-          //! specialization -> needs lazy specialization
+          //! \todo generate a new function, with a state.next_id ->
+          //! needs lazy specialization
 
           auto type_map (specialize.type_map);
           type_map_apply (map, type_map);
 
           const id::ref::function specialized_function
-            (id_tmpl->get().function().get().clone (boost::none, boost::none, specialize.name()));
+            (id_tmpl->get().function().get().clone (boost::none, specialize.name()));
 
           specialized_function.get_ref().specialize
             ( type_map
@@ -230,8 +218,6 @@ namespace xml
           //! \todo remove this, for now it is safe to not check for
           //! duplicates since we check for duplicate specializes
           _functions.push (specialized_function);
-
-          specialized_function.get_ref().parent (_id);
         }
 
 
@@ -287,7 +273,7 @@ namespace xml
       {
         for (const transition_type& trans : transitions().values())
         {
-          trans.type_check (state);
+          trans.type_check (state, *this);
         }
 
         for (const function_type& function : functions().values())
@@ -392,12 +378,7 @@ namespace xml
         for (transition_type const& old : transitions.values())
         {
           id::ref::transition new_id
-            ( push_transition ( old.clone ( boost::none
-                                          , boost::none
-                                          , prefix + old.name()
-                                          )
-                              )
-            );
+            (push_transition (old.clone (boost::none, prefix + old.name())));
           transition_type& transition (new_id.get_ref());
 
           auto const connects (std::move (transition._connections));
@@ -435,7 +416,6 @@ namespace xml
         {
           id::ref::transition new_id
             ( push_transition ( old.clone ( boost::none
-                                          , boost::none
                                           , fhg::util::remove_prefix
                                               (prefix, old.name())
                                           )
@@ -461,8 +441,7 @@ namespace xml
       }
 
       id::ref::net net_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
+        ( const boost::optional<id::mapper*>& mapper
         ) const
       {
         id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
@@ -470,13 +449,12 @@ namespace xml
         return net_type
           ( new_id
           , new_mapper
-          , parent
           , _position_of_definition
-          , _functions.clone (function_type::make_parent (new_id), new_mapper)
+          , _functions.clone (new_mapper)
           , _places
           , _specializes
-          , _templates.clone (new_id, new_mapper)
-          , _transitions.clone (new_id, new_mapper)
+          , _templates.clone (new_mapper)
+          , _transitions.clone (new_mapper)
           , structs
           , contains_a_module_call
           , _properties

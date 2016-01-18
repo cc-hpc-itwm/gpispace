@@ -27,7 +27,6 @@ namespace xml
       struct transition_type : with_position_of_definition
       {
         ID_SIGNATURES(transition);
-        PARENT_SIGNATURES(net);
 
       public:
         typedef std::string unique_key_type;
@@ -40,7 +39,6 @@ namespace xml
           function_or_use_type;
 
         transition_type ( ID_CONS_PARAM(transition)
-                        , PARENT_CONS_PARAM(net)
                         , const util::position_type&
                         , const std::string& name
                         , const boost::optional<we::priority_type>& priority
@@ -48,7 +46,6 @@ namespace xml
                         );
 
         transition_type ( ID_CONS_PARAM(transition)
-                        , PARENT_CONS_PARAM(net)
                         , const util::position_type&
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
@@ -105,8 +102,8 @@ namespace xml
         // ***************************************************************** //
 
         void type_check (response_type const&, state::type const&) const;
-        void type_check (const connect_type&, const state::type&) const;
-        void type_check (const state::type & state) const;
+        void type_check (const connect_type&, const state::type&, net_type const& parent) const;
+        void type_check (const state::type & state, net_type const& parent) const;
 
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
@@ -119,8 +116,7 @@ namespace xml
         const unique_key_type& unique_key() const;
 
         id::ref::transition clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
+          ( const boost::optional<id::mapper*>& mapper = boost::none
           , boost::optional<std::string> name = boost::none
           ) const;
 

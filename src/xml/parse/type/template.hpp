@@ -25,14 +25,12 @@ namespace xml
       struct tmpl_type : with_position_of_definition
       {
         ID_SIGNATURES(tmpl);
-        PARENT_SIGNATURES(net);
 
       public:
         typedef std::string unique_key_type;
         typedef std::unordered_set<std::string> names_type;
 
         tmpl_type ( ID_CONS_PARAM(tmpl)
-                  , PARENT_CONS_PARAM(net)
                   , const util::position_type&
                   , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
@@ -52,8 +50,7 @@ namespace xml
         const unique_key_type& unique_key() const;
 
         id::ref::tmpl clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
+          ( const boost::optional<id::mapper*>& mapper = boost::none
           ) const;
 
       private:

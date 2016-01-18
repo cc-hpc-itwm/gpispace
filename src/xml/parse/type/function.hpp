@@ -52,15 +52,6 @@ namespace xml
 
         typedef fhg::pnet::util::unique<port_type> ports_type;
 
-        //! \todo net is only in this list as specialize not yet
-        //! reparents the function to the transition requesting it, as
-        //! specialization is not yet lazy. If it is, also remove
-        //! function_type::name().
-        typedef boost::variant< id::transition
-                              , id::tmpl
-                              , id::net
-                              > parent_id_type;
-
         typedef boost::variant < expression_type
                                , type::module_type
                                , id::ref::net
@@ -68,23 +59,13 @@ namespace xml
 
         // ***************************************************************** //
 
-        template<typename T>
-          static boost::optional<parent_id_type> make_parent (const T& id)
-        {
-          return boost::make_optional (parent_id_type (id));
-        }
-
-        // ***************************************************************** //
-
         function_type ( ID_CONS_PARAM(function)
-                      , const boost::optional<parent_id_type>& parent
                       , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const content_type& content
                       );
 
         function_type ( ID_CONS_PARAM(function)
-                      , const boost::optional<parent_id_type>& parent
                       , const util::position_type&
                       , const boost::optional<std::string>& name
                       , const ports_type& ports
@@ -113,16 +94,6 @@ namespace xml
         // ***************************************************************** //
 
         const boost::optional<std::string>& name() const;
-        const boost::optional<parent_id_type>& parent() const;
-
-        bool has_parent() const;
-        void unparent();
-        void parent (const parent_id_type& parent);
-
-        boost::optional<id::ref::transition> parent_transition() const;
-        boost::optional<id::ref::tmpl> parent_tmpl() const;
-        //! \todo This should be removed soon (i.e. when specialization is lazy).
-        boost::optional<id::ref::net> parent_net() const;
 
         // ***************************************************************** //
 
@@ -209,14 +180,11 @@ namespace xml
         const unique_key_type& unique_key() const;
 
         id::ref::function clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
+          ( const boost::optional<id::mapper*>& mapper = boost::none
           , boost::optional<std::string> name = boost::none
           ) const;
 
       private:
-        boost::optional<parent_id_type> _parent;
-
         boost::optional<std::string> const _name;
 
         ports_type _ports;

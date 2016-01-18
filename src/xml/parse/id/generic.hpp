@@ -25,22 +25,3 @@
 #define ID_INITIALIZE()                         \
     _id (id)                                    \
   , _id_mapper (id_mapper)
-
-
-#define PARENT_SIGNATURES(PARENT)                           \
-  public:                                                   \
-    typedef id::PARENT parent_id_type;                      \
-    bool has_parent() const;                                \
-    boost::optional<const PARENT ## _type&> parent() const; \
-    boost::optional<PARENT ## _type&> parent();             \
-    void unparent();                                        \
-    void parent (const id::PARENT& parent);                 \
-                                                            \
-  private:                                                  \
-    boost::optional<id::PARENT> _parent
-
-#define PARENT_CONS_PARAM(PARENT)               \
-  const boost::optional<id::PARENT>& parent
-
-#define PARENT_INITIALIZE()                     \
-  _parent (parent)

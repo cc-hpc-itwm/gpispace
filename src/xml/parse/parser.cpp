@@ -709,7 +709,6 @@ namespace xml
           ( type::transition_type
             ( id
             , state.id_mapper()
-            , boost::none
             , state.position (node)
             , validate_name ( validate_prefix ( required ( "transition_type"
                                                          , node
@@ -1156,7 +1155,6 @@ namespace xml
         return type::tmpl_type
           ( id
           , state.id_mapper()
-          , boost::none
           , state.position (node)
           , name
           , template_parameter
@@ -1551,7 +1549,6 @@ namespace xml
           ( type::net_type
             ( id
             , state.id_mapper()
-            , boost::none
             , state.position (node)
             ).make_reference_id()
           );
@@ -1654,7 +1651,6 @@ namespace xml
           ( type::function_type
             ( id
             , state.id_mapper()
-            , boost::none
             , state.position (node)
             , optional (node, "name")
             //! \todo see Issue #118 and forbid more than one expression

@@ -30,7 +30,6 @@ namespace xml
       struct net_type : with_position_of_definition
       {
         ID_SIGNATURES(net);
-        PARENT_SIGNATURES(function);
 
       public:
         typedef xml::util::unique<function_type,id::ref::function> functions_type;
@@ -41,12 +40,10 @@ namespace xml
 
 
         net_type ( ID_CONS_PARAM(net)
-                 , PARENT_CONS_PARAM(function)
                  , const util::position_type&
                  );
 
         net_type ( ID_CONS_PARAM(net)
-                 , PARENT_CONS_PARAM(function)
                  , const util::position_type&
                  , const functions_type& functions
                  , const places_type& places
@@ -106,8 +103,7 @@ namespace xml
         void remove_prefix (const std::string & prefix);
 
         id::ref::net clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
+          ( const boost::optional<id::mapper*>& mapper = boost::none
           ) const;
 
       private:

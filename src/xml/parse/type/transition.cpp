@@ -32,7 +32,6 @@ namespace xml
     {
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
-        , PARENT_CONS_PARAM(net)
         , const util::position_type& pod
         , const std::string& name
         , const boost::optional<we::priority_type>& priority_
@@ -40,7 +39,6 @@ namespace xml
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _name (name)
         , priority (priority_)
         , finline (finline_)
@@ -48,39 +46,8 @@ namespace xml
         _id_mapper->put (_id, *this);
       }
 
-      namespace
-      {
-        typedef transition_type::function_or_use_type function_or_use_type;
-
-        class visitor_reparent : public boost::static_visitor<void>
-        {
-        public:
-          visitor_reparent (const id::transition& parent)
-            : _parent (parent)
-          { }
-
-          void operator() (const id::ref::function& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
-          void operator() (use_type const&) const {}
-
-        private:
-          const id::transition& _parent;
-        };
-
-        const function_or_use_type& reparent ( const function_or_use_type& fun
-                                             , const id::transition& parent
-                                             )
-        {
-          boost::apply_visitor (visitor_reparent (parent), fun);
-          return fun;
-        }
-      }
-
       transition_type::transition_type
         ( ID_CONS_PARAM(transition)
-        , PARENT_CONS_PARAM(net)
         , const util::position_type& pod
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
@@ -96,11 +63,7 @@ namespace xml
         )
         : with_position_of_definition (pod)
         , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _function_or_use ( fun_or_use
-                           ? boost::make_optional (reparent (*fun_or_use, _id))
-                           : boost::none
-                           )
+        , _function_or_use (fun_or_use)
         , _name (name)
         , _connections (connections)
         , _responses (responses)
@@ -129,7 +92,7 @@ namespace xml
         transition_type::function_or_use
         (const function_or_use_type& function_or_use_)
       {
-        return *(_function_or_use = reparent (function_or_use_, id()));
+        return *(_function_or_use = function_or_use_);
       }
 
       id::ref::function transition_type::resolved_function() const
@@ -285,15 +248,14 @@ namespace xml
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type &
+                                       , net_type const& parent_net
                                        ) const
       {
-        fhg_assert (has_parent());
-
         const std::string direction
           (we::edge::enum_to_string (connect.direction()));
 
         const boost::optional<const place_type&> place
-          (parent()->places().get (connect.place()));
+          (parent_net.places().get (connect.place()));
 
         if (not place)
         {
@@ -347,11 +309,12 @@ namespace xml
         };
       }
 
-      void transition_type::type_check (const state::type & state) const
+      void transition_type::type_check
+        (const state::type & state, net_type const& parent_net) const
       {
         for (const connect_type& connect : connections())
         {
-          type_check (connect, state);
+          type_check (connect, state, parent_net);
         }
         for (response_type const& response : responses())
         {
@@ -373,8 +336,7 @@ namespace xml
           {
             throw error::unknown_function (name, make_reference_id());
           }
-          function_or_use
-            (it->second.clone (function_type::make_parent (id()), id_mapper()));
+          function_or_use (it->second.clone (id_mapper()));
         }
         else
         {
@@ -420,17 +382,13 @@ namespace xml
           : public boost::static_visitor<function_or_use_type>
         {
         public:
-          visitor_clone ( const id::transition& new_id
-                        , id::mapper* const mapper
-                        )
-            : _new_id (new_id)
-            , _mapper (mapper)
+          visitor_clone (id::mapper* const mapper)
+            : _mapper (mapper)
           { }
 
           function_or_use_type operator() (const id::ref::function& id) const
           {
-            return id.get().clone
-              (function_type::make_parent (_new_id), _mapper);
+            return id.get().clone (_mapper);
           }
           function_or_use_type operator() (use_type const& use) const
           {
@@ -438,14 +396,12 @@ namespace xml
           }
 
         private:
-          const id::transition& _new_id;
           id::mapper* const _mapper;
         };
       }
 
       id::ref::transition transition_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
+        ( const boost::optional<id::mapper*>& mapper
         , boost::optional<std::string> name
         ) const
       {
@@ -454,11 +410,10 @@ namespace xml
         return transition_type
           ( new_id
           , new_mapper
-          , parent
           , _position_of_definition
           , _function_or_use
           ? boost::make_optional
-            ( boost::apply_visitor ( visitor_clone (new_id, new_mapper)
+            ( boost::apply_visitor ( visitor_clone (new_mapper)
                                    , *_function_or_use
                                    )
             )

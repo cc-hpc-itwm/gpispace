@@ -24,30 +24,6 @@
   }
 
 
-#define PARENT_IMPL(PARENT,TYPE)                                        \
-  bool TYPE ## _type::has_parent() const                                \
-  {                                                                     \
-    return !!_parent;                                                   \
-  }                                                                     \
-  boost::optional<const PARENT ## _type&>                               \
-  TYPE ## _type::parent() const                                         \
-  {                                                                     \
-    return id_mapper()->get (_parent);                                  \
-  }                                                                     \
-  boost::optional<PARENT ## _type&>                                     \
-  TYPE ## _type::parent()                                               \
-  {                                                                     \
-    return id_mapper()->get_ref (_parent);                              \
-  }                                                                     \
-  void TYPE ## _type::unparent()                                        \
-  {                                                                     \
-    _parent = boost::none;                                              \
-  }                                                                     \
-  void TYPE ## _type::parent (const id::PARENT& parent)                 \
-  {                                                                     \
-    _parent = boost::make_optional (parent);                            \
-  }
-
 namespace xml
 {
   namespace parse
@@ -58,13 +34,8 @@ namespace xml
       ID_IMPL(net)
       ID_IMPL(tmpl)
       ID_IMPL(transition)
-
-      PARENT_IMPL(function,net)
-      PARENT_IMPL(net,tmpl)
-      PARENT_IMPL(net,transition)
     }
   }
 }
 
 #undef ID_IMPL
-#undef PARENT_IMPL

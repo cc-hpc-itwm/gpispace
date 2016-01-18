@@ -154,15 +154,6 @@ namespace xml
     public:
       unique() = default;
 
-      unique ( const unique<value_type, id_type>& other
-             , const typename value_type::parent_id_type& parent
-             )
-        : _values (other._values)
-        , _by_key (other._by_key)
-      {
-        reparent (parent);
-      }
-
       boost::optional<const id_type&> get (const key_type& key) const
       {
         const typename by_key_type::const_iterator pos (_by_key.find (key));
@@ -227,28 +218,16 @@ namespace xml
       bool empty() const { return _by_key.empty(); }
 
       unique<value_type, id_type> clone
-        ( const boost::optional<typename value_type::parent_id_type>& parent
-        = boost::none
-        , const boost::optional<parse::id::mapper*>& mapper = boost::none
+        ( const boost::optional<parse::id::mapper*>& mapper = boost::none
         ) const
       {
         //! \todo Reserve?
         unique<value_type, id_type> copy;
         for (const value_type& value : values())
         {
-          copy.push (value.clone (parent, mapper));
+          copy.push (value.clone (mapper));
         }
         return copy;
-      }
-
-      unique<value_type, id_type>& reparent
-        (const typename value_type::parent_id_type& parent)
-      {
-        for (value_type& value : values())
-        {
-         value.parent (parent);
-        }
-        return *this;
       }
 
     private:
