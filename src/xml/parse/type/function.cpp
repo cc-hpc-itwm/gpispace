@@ -177,29 +177,6 @@ namespace xml
       {
         return _name;
       }
-      const boost::optional<std::string>&
-        function_type::name_impl (const boost::optional<std::string>& name)
-      {
-        return _name = name;
-      }
-      const boost::optional<std::string>&
-        function_type::name (const boost::optional<std::string>& name)
-      {
-        if (parent_net())
-        {
-          if (!name)
-          {
-            throw std::runtime_error ( "Tried setting function to anonymous "
-                                       "while being in a net. This should never "
-                                       "happen as function's unique key is name."
-                                     );
-          }
-
-          parent_net()->get_ref().rename (make_reference_id(), *name);
-          return _name;
-        }
-        return name_impl (name);
-      }
 
       const boost::optional<function_type::parent_id_type>& function_type::parent() const
       {
@@ -1057,6 +1034,7 @@ namespace xml
       id::ref::function function_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper
+        , boost::optional<std::string> name
         ) const
       {
         id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
@@ -1066,7 +1044,7 @@ namespace xml
           , new_mapper
           , parent
           , _position_of_definition
-          , _name
+          , !!name ? name : _name
           , _ports
           , _memory_buffers
           , _memory_gets

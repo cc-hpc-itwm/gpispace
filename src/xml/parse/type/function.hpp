@@ -55,7 +55,7 @@ namespace xml
         //! \todo net is only in this list as specialize not yet
         //! reparents the function to the transition requesting it, as
         //! specialization is not yet lazy. If it is, also remove
-        //! name_impl. See net_type::specialize() and function_type::name().
+        //! function_type::name().
         typedef boost::variant< id::transition
                               , id::tmpl
                               , id::net
@@ -112,23 +112,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        //! \note function should not be something that can be in a
-        //! unique. It only is in an unique, as net does not lazily
-        //! specialize templates. It then stores them in a
-        //! unique. Other parents (transition, tmpl) never have a
-        //! unique, thus don't need to get notified on name
-        //! change. This name() + name_impl() pattern can thus be
-        //! removed as soon as net no longer can be a parent.
         const boost::optional<std::string>& name() const;
-        const boost::optional<std::string>&
-          name (const boost::optional<std::string>& name);
-
-      private:
-        friend struct net_type;
-        const boost::optional<std::string>&
-          name_impl (const boost::optional<std::string>& name);
-
-      public:
         const boost::optional<parent_id_type>& parent() const;
 
         bool has_parent() const;
@@ -227,12 +211,13 @@ namespace xml
         id::ref::function clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none
+          , boost::optional<std::string> name = boost::none
           ) const;
 
       private:
         boost::optional<parent_id_type> _parent;
 
-        boost::optional<std::string> _name;
+        boost::optional<std::string> const _name;
 
         ports_type _ports;
         fhg::pnet::util::unique<memory_buffer_type> _memory_buffers;

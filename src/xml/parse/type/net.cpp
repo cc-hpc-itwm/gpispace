@@ -165,26 +165,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::rename ( const id::ref::function& function
-                            , const std::string& name
-                            )
-      {
-        if (function.get().name() == name)
-        {
-          return;
-        }
-
-        if (_functions.has (name))
-        {
-          throw std::runtime_error
-            ("tried renaming function, but function with given name exists");
-        }
-
-        _functions.erase (function);
-        function.get_ref().name_impl (name);
-        _functions.push (function);
-      }
-
       void net_type::rename ( const id::ref::transition& transition
                             , const std::string& name
                             )
@@ -253,7 +233,7 @@ namespace xml
           type_map_apply (map, type_map);
 
           const id::ref::function specialized_function
-            (id_tmpl->get().function().get().clone (boost::none));
+            (id_tmpl->get().function().get().clone (boost::none, boost::none, specialize.name()));
 
           specialized_function.get_ref().specialize
             ( type_map
@@ -268,8 +248,6 @@ namespace xml
                         , specialize.type_get
                         , state
                         );
-
-          specialized_function.get_ref().name (specialize.name());
 
           //! \todo remove this, for now it is safe to not check for
           //! duplicates since we check for duplicate specializes
