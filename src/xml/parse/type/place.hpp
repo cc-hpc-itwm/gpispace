@@ -73,7 +73,7 @@ namespace xml
         boost::optional<bool> _is_virtual;
         boost::optional<bool> _put_token;
 
-        std::string _name;
+        std::string const _name;
         std::string _type;
         boost::optional<pnet::type::signature::signature_type> _signature;
 

@@ -37,7 +37,7 @@ namespace xml
         const unique_key_type& unique_key() const;
 
       private:
-        std::string _name;
+        std::string const _name;
 
         //! \todo All these should be private wth accessors.
       public:

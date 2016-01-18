@@ -51,10 +51,10 @@ namespace xml
         unique_key_type unique_key() const;
 
       private:
-        std::string _place;
-        std::string _port;
+        std::string const _place;
+        std::string const _port;
 
-        ::we::edge::type _direction;
+        ::we::edge::type const _direction;
 
         we::type::property::type _properties;
       };

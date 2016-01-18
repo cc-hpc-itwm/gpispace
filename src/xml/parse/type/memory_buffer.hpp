@@ -45,7 +45,7 @@ namespace xml
         unique_key_type unique_key() const;
 
       private:
-        std::string _name;
+        std::string const _name;
         std::string _size;
         boost::optional<bool> _read_only;
         we::type::property::type _properties;

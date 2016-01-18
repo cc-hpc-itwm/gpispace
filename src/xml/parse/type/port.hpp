@@ -72,7 +72,7 @@ namespace xml
         unique_key_type unique_key() const;
 
       private:
-        std::string _name;
+        std::string const _name;
         std::string _type;
         boost::optional<pnet::type::signature::signature_type> _signature;
 
@@ -81,7 +81,7 @@ namespace xml
         boost::optional<std::string> place;
 
       private:
-        we::type::PortDirection _direction;
+        we::type::PortDirection const _direction;
         we::type::property::type _properties;
       };
 

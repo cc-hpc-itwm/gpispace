@@ -57,7 +57,7 @@ namespace xml
           ) const;
 
       private:
-        boost::optional<std::string> _name;
+        boost::optional<std::string> const _name;
         names_type _tmpl_parameter;
         id::ref::function _function;
       };

@@ -46,7 +46,7 @@ namespace xml
         }
 
       private:
-        std::string _port;
+        std::string const _port;
         std::string _to;
         we::type::property::type _properties;
       };

@@ -43,8 +43,8 @@ namespace xml
         unique_key_type unique_key() const;
 
       private:
-        std::string _place_virtual;
-        std::string _place_real;
+        std::string const _place_virtual;
+        std::string const _place_real;
 
         we::type::property::type _properties;
       };
