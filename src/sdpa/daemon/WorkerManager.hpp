@@ -13,6 +13,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
+#include <queue>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -22,6 +23,8 @@ namespace sdpa
   {
     class WorkerManager : boost::noncopyable
     {
+      typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
+
     private:
       class WorkerEquivalenceClass
       {
@@ -45,6 +48,12 @@ namespace sdpa
 
         void add_worker_entry (worker_id_t const&);
         void remove_worker_entry (worker_id_t const&);
+
+        template <typename Reservation>
+        void steal_work
+          ( std::function<Reservation* (job_id_t const&)>
+          , worker_map_t&
+          );
 
       private:
         unsigned int _n_pending_jobs;
@@ -126,7 +135,6 @@ namespace sdpa
         , const job_requirements_t& job_req_set
         ) const;
 
-      typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
@@ -221,6 +229,93 @@ namespace sdpa
         if (idle_workers.empty())
           break;
       }
+    }
+
+    template <typename Reservation>
+    void WorkerManager::WorkerEquivalenceClass::steal_work
+      ( std::function<Reservation* (job_id_t const&)> reservation
+      , worker_map_t& worker_map
+      )
+    {
+      if (n_running_jobs() == n_workers())
+      {
+        return;
+      }
+
+      if (n_pending_jobs() == 0)
+      {
+        return;
+      }
+
+      std::function<double (job_id_t const& job_id)> cost
+        { [&reservation] (job_id_t const& job_id)
+          {return reservation (job_id)->cost();}
+        };
+
+      std::function<bool(worker_id_t const&, worker_id_t const&)>
+        comp {[&worker_map, &cost] ( worker_id_t const& lhs
+                                   , worker_id_t const& rhs
+                                   )
+              {return worker_map.at (lhs).cost_assigned_jobs (cost)
+                < worker_map.at (rhs).cost_assigned_jobs (cost);
+              }
+             };
+
+      std::priority_queue < worker_id_t
+                          , std::vector<worker_id_t>
+                          , decltype (comp)
+                          > to_steal_from (comp);
+
+     std::forward_list<worker_id_t> idles;
+
+     for (worker_id_t const& w : _workers)
+     {
+       Worker const& worker (worker_map.at (w));
+       auto const job_count ( worker.pending_.size()
+                            + worker.submitted_.size()
+                            + worker.acknowledged_.size()
+                            );
+
+       if (job_count > 1)
+       {
+         to_steal_from.push (w);
+       }
+       else if (job_count == 0)
+       {
+         idles.emplace_front (w);
+       }
+     }
+
+     while (!(idles.empty() || to_steal_from.empty()))
+     {
+       worker_id_t richest (to_steal_from.top());
+       to_steal_from.pop();
+       worker_id_t thief (idles.front());
+
+       auto it_job (std::max_element ( worker_map.at (richest).pending_.begin()
+                                     , worker_map.at (richest).pending_.end()
+                                     , [&reservation] ( worker_id_t const& r
+                                                      , worker_id_t const& l
+                                                      )
+                                       {
+                                         return reservation(r)->cost()
+                                           < reservation(l)->cost();
+                                       }
+                                     )
+                   );
+
+       reservation (*it_job)->replace_worker (richest, thief);
+
+       worker_map.at (thief).assign (*it_job);
+       worker_map.at (richest).pending_.erase (*it_job);
+
+       idles.pop_front();
+
+       if (worker_map.at (richest).pending_.size())
+       {
+         to_steal_from.push (richest);
+       }
+     }
     }
   }
 }
