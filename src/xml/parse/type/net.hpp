@@ -29,7 +29,7 @@ namespace xml
       struct net_type : with_position_of_definition
       {
       public:
-        typedef xml::util::unique<function_type,id::ref::function> functions_type;
+        using functions_type = fhg::pnet::util::unique<function_type>;
         typedef fhg::pnet::util::unique<place_type> places_type;
         using specializes_type = fhg::pnet::util::unique<specialize_type>;
         using templates_type = fhg::pnet::util::unique<tmpl_type>;
@@ -48,6 +48,8 @@ namespace xml
         const specializes_type& specializes() const;
         const templates_type& templates() const;
         const transitions_type& transitions() const;
+        //! \note find_module_calls needs to modify transitions when diving
+        transitions_type& transitions();
 
         // ***************************************************************** //
 

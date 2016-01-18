@@ -94,9 +94,6 @@ extended_add_library (NAME pnet
           "we/workflow_response.cpp"
 
           "xml/parse/error.cpp"
-          "xml/parse/id/generic.cpp"
-          "xml/parse/id/mapper.cpp"
-          "xml/parse/id/types.cpp"
           "xml/parse/parser.cpp"
           "xml/parse/state.cpp"
           "xml/parse/type/connect.cpp"

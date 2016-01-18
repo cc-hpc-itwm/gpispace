@@ -108,14 +108,14 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_buffers().size(), 1);
-    BOOST_REQUIRE_EQUAL ( function.get().memory_buffers().begin()->name()
+    BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 1);
+    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->name()
                         , name
                         );
-    BOOST_REQUIRE_EQUAL ( function.get().memory_buffers().begin()->size()
+    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->size()
                         , size
                         );
 }
@@ -143,16 +143,16 @@ BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_buffers().size(), 2);
-    BOOST_REQUIRE (function.get().memory_buffers().has (name_1));
-    BOOST_REQUIRE (function.get().memory_buffers().has (name_2));
+    BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 2);
+    BOOST_REQUIRE (function.memory_buffers().has (name_1));
+    BOOST_REQUIRE (function.memory_buffers().has (name_2));
     BOOST_REQUIRE_EQUAL
-      (function.get().memory_buffers().get (name_1)->size(), size_1);
+      (function.memory_buffers().get (name_1)->size(), size_1);
     BOOST_REQUIRE_EQUAL
-      (function.get().memory_buffers().get (name_2)->size(), size_2);
+      (function.memory_buffers().get (name_2)->size(), size_2);
 }
 
 namespace
@@ -369,16 +369,16 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.get().content())
+                    (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
       ( boost::get<xml::parse::type::module_type>
-        (function.get().content())
+        (function.content())
       );
 
     BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
@@ -410,16 +410,16 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.get().content())
+                    (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
       ( boost::get<xml::parse::type::module_type>
-        (function.get().content())
+        (function.content())
       );
 
     BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 2);
@@ -454,16 +454,16 @@ BOOST_AUTO_TEST_CASE
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.get().content())
+                    (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
       ( boost::get<xml::parse::type::module_type>
-        (function.get().content())
+        (function.content())
       );
 
     BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
@@ -492,16 +492,16 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.get().content())
+                    (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
       ( boost::get<xml::parse::type::module_type>
-        (function.get().content())
+        (function.content())
       );
 
     BOOST_REQUIRE_EQUAL
@@ -527,16 +527,16 @@ BOOST_AUTO_TEST_CASE
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.get().content())
+                    (function.content())
                   );
 
     xml::parse::type::module_type const& module_call
       ( boost::get<xml::parse::type::module_type>
-        (function.get().content())
+        (function.content())
       );
 
     BOOST_REQUIRE_EQUAL

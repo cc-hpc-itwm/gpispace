@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.hpp>
-#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/require.hpp>
@@ -33,7 +32,7 @@ namespace xml
         using responses_type = fhg::pnet::util::unique<response_type>;
         using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
-        typedef boost::variant <id::ref::function, use_type>
+        typedef boost::variant <function_type, use_type>
           function_or_use_type;
 
         transition_type ( const util::position_type&
@@ -58,10 +57,11 @@ namespace xml
         transition_type with_name (std::string) const;
 
         const function_or_use_type& function_or_use() const;
+        function_or_use_type& function_or_use();
         const function_or_use_type& function_or_use
           (const function_or_use_type& function_or_use_);
 
-        id::ref::function resolved_function() const;
+        function_type const& resolved_function() const;
 
         const std::string& name() const;
 

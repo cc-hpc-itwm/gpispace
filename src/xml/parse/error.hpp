@@ -4,8 +4,8 @@
 
 #include <string>
 
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -531,21 +531,15 @@ namespace xml
       class memory_buffer_for_non_module : public generic
       {
       public:
-        memory_buffer_for_non_module (id::ref::function const&);
+        memory_buffer_for_non_module (type::function_type const&);
         ~memory_buffer_for_non_module() throw() = default;
-
-      private:
-        id::ref::function const _function;
       };
 
       class memory_transfer_for_non_module : public generic
       {
       public:
-        memory_transfer_for_non_module (id::ref::function const&);
+        memory_transfer_for_non_module (type::function_type const&);
         ~memory_transfer_for_non_module() throw() = default;
-
-      private:
-        id::ref::function const _function;
       };
 
       class memory_buffer_with_same_name_as_port : public generic

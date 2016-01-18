@@ -3,6 +3,7 @@
 #include <xml/parse/warning.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
@@ -49,17 +50,16 @@ namespace xml
       { }
 
       overwrite_function_name_trans::overwrite_function_name_trans
-        (type::transition_type const& trans, const id::ref::function& function)
+        (type::transition_type const& trans, type::function_type const& function)
           : generic ( boost::format ( "name of function %1% defined at %2% "
                                       "overwritten with name of transition %3% "
                                       "at %4%"
                                     )
-                    % function.get().name().get_value_or ("<<anonymous>>")
-                    % function.get().position_of_definition()
+                    % function.name().get_value_or ("<<anonymous>>")
+                    % function.position_of_definition()
                     % trans.name()
                     % trans.position_of_definition()
                     )
-          , _function (function)
       { }
 
       duplicate_external_function::duplicate_external_function
@@ -85,13 +85,12 @@ namespace xml
       {}
 
       synthesize_anonymous_function::synthesize_anonymous_function
-        (const id::ref::function& function)
+        (type::function_type const& function)
           : generic ( boost::format ( "synthesize anonymous top level function"
                                       " at %1%"
                                     )
-                    % function.get().position_of_definition()
+                    % function.position_of_definition()
                     )
-          , _function (function)
       {}
 
       struct_redefined::struct_redefined ( const type::structure_type& early

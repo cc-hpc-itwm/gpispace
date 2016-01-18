@@ -3,7 +3,6 @@
 
 #include <xml/parse/type/function.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
@@ -59,23 +58,18 @@ namespace xml
     {
       // ******************************************************************* //
 
-      function_type::function_type ( ID_CONS_PARAM(function)
-                                   , const util::position_type& pod
+      function_type::function_type ( const util::position_type& pod
                                    , const boost::optional<std::string>& name
                                    , const content_type& content
                                    )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
         , _name (name)
         , contains_a_module_call (false)
         , _content (content)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       function_type::function_type
-        ( ID_CONS_PARAM(function)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const boost::optional<std::string>& name
         , const ports_type& ports
         , fhg::pnet::util::unique<memory_buffer_type> const& memory_buffers
@@ -91,7 +85,6 @@ namespace xml
         , const we::type::property::type& properties
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
         , _name (name)
         , _ports (ports)
         , _memory_buffers (memory_buffers)
@@ -105,8 +98,31 @@ namespace xml
         , requirements (requirements_)
         , _content (content)
         , _properties (properties)
+      {}
+
+      function_type::function_type (function_type const&) = default;
+      function_type::function_type (function_type&&) = default;
+      function_type& function_type::operator= (function_type const&) = default;
+      function_type& function_type::operator= (function_type&&) = default;
+      function_type::~function_type() = default;
+
+      function_type function_type::with_name (std::string name) const
       {
-        _id_mapper->put (_id, *this);
+        return { position_of_definition()
+               , name
+               , _ports
+               , _memory_buffers
+               , _memory_gets
+               , _memory_puts
+               , _memory_getputs
+               , _typenames
+               , contains_a_module_call
+               , structs
+               , _conditions
+               , requirements
+               , _content
+               , _properties
+               };
       }
 
       const function_type::content_type& function_type::content() const
@@ -460,7 +476,7 @@ namespace xml
         std::unordered_map<std::string, we::port_id_type>& _port_id_in;
         std::unordered_map<std::string, we::port_id_type>& _port_id_out;
         we::priority_type _priority;
-        xml::util::range_type<place_map_type const> _place_map;
+        fhg::pnet::util::unique<place_map_type> const& _place_map;
         std::unordered_map<we::port_id_type, std::string>& _real_place_names;
 
         typedef we::type::transition_t we_transition_type;
@@ -597,7 +613,7 @@ namespace xml
           , std::unordered_map<std::string, we::port_id_type>& port_id_in
           , std::unordered_map<std::string, we::port_id_type>& port_id_out
           , we::priority_type priority
-          , xml::util::range_type<place_map_type const> place_map
+          , fhg::pnet::util::unique<place_map_type> const& place_map
           , std::unordered_map<we::port_id_type, std::string>& real_place_names
           )
           : _name (name)
@@ -731,7 +747,7 @@ namespace xml
         , const we::type::property::type& trans_properties
         , const requirements_type& trans_requirements
         , we::priority_type priority
-        , xml::util::range_type<place_map_type const> place_map
+        , fhg::pnet::util::unique<place_map_type> const& place_map
         , std::unordered_map<we::port_id_type, std::string>& real_place_names
         ) const
       {
@@ -854,33 +870,6 @@ namespace xml
         //! \note anonymous functions can't be stored in unqiue, thus
         //! just indirect.
         return *name();
-      }
-
-      id::ref::function function_type::clone
-        ( const boost::optional<id::mapper*>& mapper
-        , boost::optional<std::string> name
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return function_type
-          ( new_id
-          , new_mapper
-          , _position_of_definition
-          , !!name ? name : _name
-          , _ports
-          , _memory_buffers
-          , _memory_gets
-          , _memory_puts
-          , _memory_getputs
-          , _typenames
-          , contains_a_module_call
-          , structs
-          , _conditions
-          , requirements
-          , content()
-          , _properties
-          ).make_reference_id();
       }
 
       // ***************************************************************** //
@@ -1345,7 +1334,7 @@ namespace xml
         mcs_type;
 
       bool find_module_calls ( const state::type &
-                             , const id::ref::function &
+                             , function_type&
                              , fun_info_map &
                              , mcs_type &
                              );
@@ -1366,16 +1355,16 @@ namespace xml
                                                , const transition_type & _trans
                                                , fun_info_map & _m
                                                , mcs_type& _mcs
-                                       )
+                                               )
             : state (_state)
             , trans (_trans)
             , m (_m)
             , mcs (_mcs)
           {}
 
-          bool operator () (const id::ref::function & id_function) const
+          bool operator () (type::function_type& function) const
           {
-            return find_module_calls (state, id_function, m, mcs);
+            return find_module_calls (state, function, m, mcs);
           }
 
           bool operator () (use_type const& use) const
@@ -1394,7 +1383,7 @@ namespace xml
       {
         n.contains_a_module_call = false;
 
-        for (const transition_type& transition : n.transitions())
+        for (transition_type& transition : n.transitions())
           {
             n.contains_a_module_call
               |= boost::apply_visitor
@@ -1580,7 +1569,7 @@ namespace xml
                       , const ports_with_type_type & ports_mutable
                       , const ports_with_type_type & ports_out
                       , const module_type & mod
-                      , id::ref::function const& id_function
+                      , function_type const& function
                       )
         {
           using fhg::util::deeper;
@@ -1630,7 +1619,7 @@ namespace xml
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
             memory_buffer_type const& memory_buffer
-              (*id_function.get().memory_buffers().get (memory_buffer_name));
+              (*function.memory_buffers().get (memory_buffer_name));
 
             s << sep << "void";
 
@@ -1655,7 +1644,7 @@ namespace xml
                     , const ports_with_type_type & ports_out
                     , const boost::optional<port_with_type> & port_return
                     , std::unordered_set<std::string> const& types
-                    , id::ref::function const& id_function
+                    , function_type const& function
                     )
         {
           namespace block = fhg::util::cpp::block;
@@ -1743,7 +1732,7 @@ namespace xml
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
             memory_buffer_type const& memory_buffer
-              (*id_function.get().memory_buffers().get (memory_buffer_name));
+              (*function.memory_buffers().get (memory_buffer_name));
 
             s << sep << "_pnetc_memory_buffer.at (\"" << memory_buffer.name() << "\")";
           }
@@ -1797,18 +1786,18 @@ namespace xml
         {
         private:
           const state::type & state;
-          const id::ref::function & _id_function;
+          type::function_type const& _function;
           fun_info_map & m;
           mcs_type& mcs;
 
         public:
           find_module_calls_visitor ( const state::type & _state
-                                    , const id::ref::function & id_function
+                                    , type::function_type& function
                                     , fun_info_map & _m
                                     , mcs_type& _mcs
                                     )
             : state (_state)
-            , _id_function (id_function)
+            , _function (function)
             , m (_m)
             , mcs (_mcs)
           {}
@@ -1861,7 +1850,7 @@ namespace xml
             if (mod.port_return())
             {
               port_type const& port
-                (_id_function.get().get_port_out (*mod.port_return()).get());
+                (_function.get_port_out (*mod.port_return()).get());
 
               port_return = port_with_type (*mod.port_return(), port.type());
               types.insert (port.type());
@@ -1869,12 +1858,12 @@ namespace xml
 
             for (const std::string& name : mod.port_arg())
             {
-              if (_id_function.get().is_known_port_inout (name))
+              if (_function.is_known_port_inout (name))
               {
                 port_type const& port_in
-                  (_id_function.get().get_port_in (name).get());
+                  (_function.get_port_in (name).get());
                 boost::optional<const port_type&> port_out
-                  (_id_function.get().get_port_out (name));
+                  (_function.get_port_out (name));
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_in.name())
@@ -1889,18 +1878,18 @@ namespace xml
                   types.insert (port_in.type());
                 }
               }
-              else if (_id_function.get().is_known_port_in (name))
+              else if (_function.is_known_port_in (name))
               {
                 port_type const& port_in
-                  (_id_function.get().get_port_in (name).get());
+                  (_function.get_port_in (name).get());
 
                 ports_const.push_back (port_with_type (name, port_in.type()));
                 types.insert (port_in.type());
               }
-              else if (_id_function.get().is_known_port_out (name))
+              else if (_function.is_known_port_out (name))
               {
                 port_type const& port_out
-                  (_id_function.get().get_port_out (name).get());
+                  (_function.get_port_out (name).get());
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_out.name())
@@ -1933,7 +1922,7 @@ namespace xml
                           , ports_out
                           , port_return
                           , types
-                          , _id_function
+                          , _function
                           );
 
               const fun_info_type fun_info ( mod.function()
@@ -1975,7 +1964,7 @@ namespace xml
                             , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
-                            , _id_function
+                            , _function
                             );
 
               stream << ";";
@@ -2061,7 +2050,7 @@ namespace xml
                             , indent
                             , port_return
                             , ports_const, ports_mutable, ports_out, mod
-                            , _id_function
+                            , _function
                             );
 
               stream << block::open (indent);
@@ -2103,28 +2092,28 @@ namespace xml
       }
 
       bool find_module_calls ( const state::type & state
-                             , const id::ref::function& id_function
+                             , function_type& function
                              , fun_info_map & m
                              )
       {
         mcs_type mcs;
 
-        return find_module_calls (state, id_function, m, mcs);
+        return find_module_calls (state, function, m, mcs);
       }
 
       bool find_module_calls ( const state::type & state
-                             , const id::ref::function & id_function
+                             , function_type& function
                              , fun_info_map & m
                              , mcs_type& mcs
                              )
       {
-        id_function.get_ref().contains_a_module_call
+        function.contains_a_module_call
           = boost::apply_visitor
-          ( find_module_calls_visitor (state, id_function, m, mcs)
-          , id_function.get_ref().content()
+          ( find_module_calls_visitor (state, function, m, mcs)
+          , function.content()
           );
 
-        return id_function.get().contains_a_module_call;
+        return function.contains_a_module_call;
       }
 
       // **************************************************************** //
@@ -2251,9 +2240,9 @@ namespace xml
             {
               to_cpp (n.structs, state, _structnames);
 
-              for (const id::ref::function& id_function : n.functions().ids())
+              for (function_type const& function : n.functions())
               {
-                struct_to_cpp (state, id_function, _structnames);
+                struct_to_cpp (state, function, _structnames);
               }
 
               for (const transition_type& transition : n.transitions())
@@ -2263,7 +2252,7 @@ namespace xml
             }
           }
 
-          void operator() (const id::ref::function& f) const
+          void operator() (function_type const& f) const
           {
             struct_to_cpp (state, f, _structnames);
           }
@@ -2279,12 +2268,10 @@ namespace xml
       }
 
       void struct_to_cpp ( const state::type& state
-                         , const id::ref::function& function_id
+                         , function_type const& function
                          , std::unordered_set<std::string>& structnames
                          )
       {
-        const function_type& function (function_id.get());
-
         if (function.contains_a_module_call)
         {
           to_cpp (function.structs, state, structnames);

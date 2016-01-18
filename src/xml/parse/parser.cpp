@@ -3,7 +3,6 @@
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/state.hpp>
 #include <xml/parse/util/cdata.hpp>
 #include <xml/parse/util/expect.hpp>
@@ -134,7 +133,7 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::function function_type (const xml_node_type*, state::type&);
+      type::function_type function_type (const xml_node_type*, state::type&);
       type::tmpl_type tmpl_type (const xml_node_type*, state::type&);
 
       void property_map_type ( we::type::property::type&
@@ -164,10 +163,10 @@ namespace xml
           );
       }
 
-      id::ref::function function_include
+      type::function_type function_include
         (const std::string& file, state::type& state)
       {
-        return generic_include<id::ref::function>
+        return generic_include<type::function_type>
           (file, state, function_type, "defun", "parse_function");
       }
 
@@ -1095,7 +1094,7 @@ namespace xml
 
       type::tmpl_type tmpl_type (const xml_node_type* node, state::type& state)
       {
-        boost::optional<id::ref::function> fun;
+        boost::optional<type::function_type> fun;
         type::tmpl_type::names_type template_parameter;
         boost::optional<std::string> name (optional (node, "name"));
 
@@ -1165,7 +1164,7 @@ namespace xml
         parse_function_signature ( const std::string& input
                                  , const std::string& _name
                                  , const util::position_type& pod
-                                 , id::ref::function const& outer_function
+                                 , type::function_type const& outer_function
                                  , std::string const& module_name
                                  )
         {
@@ -1194,11 +1193,11 @@ namespace xml
               std::string const port_or_memory_buffer (function);
               function = parse_name (pos);
 
-              if (outer_function.get().is_known_port (port_or_memory_buffer))
+              if (outer_function.is_known_port (port_or_memory_buffer))
               {
                 port_return = port_or_memory_buffer;
               }
-              else if ( outer_function.get()
+              else if ( outer_function
                       . is_known_memory_buffer (port_or_memory_buffer)
                       )
               {
@@ -1211,7 +1210,7 @@ namespace xml
                   , port_or_memory_buffer
                   , module_name
                   , function
-                  , outer_function.get().position_of_definition().path()
+                  , outer_function.position_of_definition().path()
                   );
               }
             }
@@ -1234,13 +1233,13 @@ namespace xml
               {
                 std::string const port_or_memory_buffer (parse_name (pos));
 
-                if ( outer_function.get()
+                if ( outer_function
                    . is_known_port (port_or_memory_buffer)
                    )
                 {
                   port_arg.push_back (port_or_memory_buffer);
                 }
-                else if ( outer_function.get()
+                else if ( outer_function
                         . is_known_memory_buffer (port_or_memory_buffer)
                         )
                 {
@@ -1253,7 +1252,7 @@ namespace xml
                     , port_or_memory_buffer
                     , module_name
                     , function
-                    , outer_function.get().position_of_definition().path()
+                    , outer_function.position_of_definition().path()
                     );
                 }
 
@@ -1313,7 +1312,7 @@ namespace xml
 
       type::module_type module_type ( const xml_node_type* node
                                     , state::type& state
-                                    , id::ref::function const& outer_function
+                                    , type::function_type const& outer_function
                                     )
       {
         const std::string name
@@ -1452,7 +1451,7 @@ namespace xml
 
       type::place_type place_type ( const xml_node_type* node
                                   , state::type& state
-                                  , id::ref::function const& outer_function
+                                  , type::function_type const& outer_function
                                   )
       {
         const std::string name (required ("place_type", node, "name", state));
@@ -1474,13 +1473,13 @@ namespace xml
           );
 
         if (  place.is_virtual()
-           && !outer_function.get().is_known_tunnel (place.name())
+           && !outer_function.is_known_tunnel (place.name())
            )
         {
           state.warn
             ( warning::virtual_place_not_tunneled
               ( place.name()
-              , outer_function.get().position_of_definition().path()
+              , outer_function.position_of_definition().path()
               )
             );
         }
@@ -1529,9 +1528,9 @@ namespace xml
       // ******************************************************************* //
 
       type::net_type net_type ( const xml_node_type* node
-                            , state::type& state
-                            , id::ref::function const& outer_function
-                            )
+                              , state::type& state
+                              , type::function_type const& outer_function
+                              )
       {
         type::net_type net (state.position (node));
 
@@ -1622,20 +1621,14 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::function
+      type::function_type
         function_type (const xml_node_type* node, state::type& state)
       {
-        const id::function id (state.id_mapper()->next_id());
-
-        const id::ref::function function
-          ( type::function_type
-            ( id
-            , state.id_mapper()
-            , state.position (node)
-            , optional (node, "name")
-            //! \todo see Issue #118 and forbid more than one expression
-            , type::expression_type (state.position (node))
-            ).make_reference_id()
+        type::function_type function
+          ( state.position (node)
+          , optional (node, "name")
+          //! \todo see Issue #118 and forbid more than one expression
+          , type::expression_type (state.position (node))
           );
 
         for ( xml_node_type* child (node->first_node())
@@ -1649,47 +1642,47 @@ namespace xml
           {
             if (child_name == "in")
             {
-              function.get_ref().push_port
+              function.push_port
                 (port_type (child, state, we::type::PORT_IN));
             }
             else if (child_name == "out")
             {
-              function.get_ref().push_port
+              function.push_port
                 (port_type (child, state, we::type::PORT_OUT));
             }
             else if (child_name == "inout")
             {
-              function.get_ref().push_port
+              function.push_port
                 (port_type (child, state, we::type::PORT_IN));
-              function.get_ref().push_port
+              function.push_port
                 (port_type (child, state, we::type::PORT_OUT));
             }
             else if (child_name == "tunnel")
             {
-              function.get_ref().push_port
+              function.push_port
                 (port_type (child, state, we::type::PORT_TUNNEL));
             }
             else if (child_name == "memory-buffer")
             {
-              function.get_ref().push_memory_buffer
+              function.push_memory_buffer
                 (memory_buffer_type (child, state));
             }
             else if (child_name == "memory-get")
             {
-              function.get_ref().push_memory_get (memory_get (child, state));
+              function.push_memory_get (memory_get (child, state));
             }
             else if (child_name == "memory-put")
             {
-              function.get_ref().push_memory_put (memory_put (child, state));
+              function.push_memory_put (memory_put (child, state));
             }
             else if (child_name == "memory-getput")
             {
-              function.get_ref().push_memory_getput
+              function.push_memory_getput
                 (memory_getput (child, state));
             }
             else if (child_name == "struct")
             {
-              function.get_ref().structs.push_back (struct_type (child, state));
+              function.structs.push_back (struct_type (child, state));
             }
             else if (child_name == "include-structs")
             {
@@ -1698,57 +1691,56 @@ namespace xml
                   (required ("function_type", child, "href", state), state)
                 );
 
-              function.get_ref().structs.insert ( function.get_ref().structs.end()
-                                                , structs.begin()
-                                                , structs.end()
-                                                );
+              function.structs.insert ( function.structs.end()
+                                      , structs.begin()
+                                      , structs.end()
+                                      );
             }
             else if (child_name == "expression")
             {
-              if (!function.get_ref().memory_buffers().empty())
+              if (!function.memory_buffers().empty())
               {
                 throw error::memory_buffer_for_non_module (function);
               }
 
-              if (  !function.get_ref().memory_gets().empty()
-                 || !function.get_ref().memory_puts().empty()
-                 || !function.get_ref().memory_getputs().empty()
+              if (  !function.memory_gets().empty()
+                 || !function.memory_puts().empty()
+                 || !function.memory_getputs().empty()
                  )
               {
                 throw error::memory_transfer_for_non_module (function);
               }
 
-              function.get_ref().add_expression (parse_cdata (child, state));
+              function.add_expression (parse_cdata (child, state));
             }
             else if (child_name == "module")
             {
-              function.get_ref()
-                .content (module_type (child, state, function));
+              function.content (module_type (child, state, function));
             }
             else if (child_name == "net")
             {
-              if (!function.get_ref().memory_buffers().empty())
+              if (!function.memory_buffers().empty())
               {
                 throw error::memory_buffer_for_non_module (function);
               }
 
-              if (  !function.get_ref().memory_gets().empty()
-                 || !function.get_ref().memory_puts().empty()
-                 || !function.get_ref().memory_getputs().empty()
+              if (  !function.memory_gets().empty()
+                 || !function.memory_puts().empty()
+                 || !function.memory_getputs().empty()
                  )
               {
                 throw error::memory_transfer_for_non_module (function);
               }
 
-              function.get_ref().content (net_type (child, state, function));
+              function.content (net_type (child, state, function));
             }
             else if (child_name == "condition")
             {
-              function.get_ref().add_conditions (parse_cdata (child, state));
+              function.add_conditions (parse_cdata (child, state));
             }
             else if (child_name == "properties")
             {
-              property_map_type (function.get_ref().properties(), child, state);
+              property_map_type (function.properties(), child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -1757,11 +1749,11 @@ namespace xml
                   (required ("function_type", child, "href", state), state)
                 );
 
-              util::property::join (state, function.get_ref().properties(), deeper);
+              util::property::join (state, function.properties(), deeper);
             }
             else if (child_name == "require")
             {
-              require_type (function.get_ref().requirements, child, state);
+              require_type (function.requirements, child, state);
             }
             else
             {
@@ -1847,10 +1839,10 @@ namespace xml
 
     // ********************************************************************* //
 
-    id::ref::function just_parse (state::type& state, std::istream& stream)
+    type::function_type just_parse (state::type& state, std::istream& stream)
     {
-      return state.generic_parse<id::ref::function>
-        ( std::bind ( generic_parse<id::ref::function>
+      return state.generic_parse<type::function_type>
+        ( std::bind ( generic_parse<type::function_type>
                     , function_type, std::placeholders::_1, std::placeholders::_2
                     , "defun", "parse_function"
                     )
@@ -1858,13 +1850,13 @@ namespace xml
         );
     }
 
-    id::ref::function just_parse
+    type::function_type just_parse
       (state::type& state, const boost::filesystem::path& input)
     {
       state.set_input (input);
 
-      return state.generic_parse<id::ref::function>
-        ( std::bind ( generic_parse<id::ref::function>
+      return state.generic_parse<type::function_type>
+        ( std::bind ( generic_parse<type::function_type>
                     , function_type, std::placeholders::_1, std::placeholders::_2
                     , "defun", "parse_function"
                     )
@@ -1872,36 +1864,37 @@ namespace xml
         );
     }
 
-    void post_processing_passes ( const id::ref::function& function
+    void post_processing_passes ( type::function_type& function
                                 , state::type* state
                                 )
     {
       // set all the collected requirements to the top level function
-      function.get_ref().requirements = state->requirements();
+      function.requirements = state->requirements();
 
-      function.get_ref().specialize (*state);
+      function.specialize (*state);
 
       {
         //! \note type check needs resolved functions to detect type of
         //! port types in function inside using-transition
         std::unordered_map<std::string, type::function_type const&> known;
-        function.get_ref().resolve_function_use_recursive (known);
+        function.resolve_function_use_recursive (known);
       }
 
       {
         std::unordered_map<std::string, pnet::type::signature::signature_type> known;
-        function.get_ref().resolve_types_recursive (known);
+        function.resolve_types_recursive (known);
       }
 
-      function.get_ref().type_check (*state);
+      function.type_check (*state);
     }
 
-    void generate_cpp ( const id::ref::function& function
+    void generate_cpp ( const type::function_type& function_in
                       , const state::type& state
                       )
     {
       type::fun_info_map m;
 
+      type::function_type function (function_in);
       type::find_module_calls (state, function, m);
 
       type::mk_wrapper (state, m);
@@ -1913,7 +1906,7 @@ namespace xml
       type::mk_makefile (state, m, structnames);
     }
 
-    void dump_xml ( const id::ref::function& function
+    void dump_xml ( const type::function_type& function
                   , const state::type& state
                   )
     {
@@ -1927,15 +1920,15 @@ namespace xml
 
       fhg::util::xml::xmlstream s (stream);
 
-      type::dump::dump (s, function.get());
+      type::dump::dump (s, function);
     }
 
     we::type::activity_t xml_to_we
-      ( const xml::parse::id::ref::function& function
+      ( const xml::parse::type::function_type& function
       , const xml::parse::state::type& state
       )
     {
-      if (not function.get().name())
+      if (not function.name())
       {
         state.warn (warning::synthesize_anonymous_function (function));
       }
@@ -1945,8 +1938,8 @@ namespace xml
       std::unordered_map<we::port_id_type, std::string> real_place_names;
 
       we::type::transition_t trans
-        ( function.get_ref().synthesize
-          ( function.get().name().get_value_or ("anonymous")
+        ( function.synthesize
+          ( function.name().get_value_or ("anonymous")
           , state
           , port_id_in
           , port_id_out
@@ -1954,7 +1947,7 @@ namespace xml
           , we::type::property::type()
           , type::requirements_type()
           , we::priority_type()
-          , xml::util::range_type<type::place_map_type const>()
+          , {}
           , real_place_names
           )
         );

@@ -1,3 +1,0 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-//    id_name      , map_member_name, type_name         , number
-ITEM (function     , _functions     , function_type     ,  0)

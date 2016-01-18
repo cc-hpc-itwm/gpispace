@@ -56,6 +56,10 @@ namespace xml
       {
         return _transitions;
       }
+      net_type::transitions_type& net_type::transitions()
+      {
+        return _transitions;
+      }
 
       // ***************************************************************** //
 
@@ -141,10 +145,10 @@ namespace xml
           auto type_map (specialize.type_map);
           type_map_apply (map, type_map);
 
-          const id::ref::function specialized_function
-            (tmpl->function().get().clone (boost::none, specialize.name()));
+          function_type specialized_function
+            (tmpl->function().with_name (specialize.name()));
 
-          specialized_function.get_ref().specialize
+          specialized_function.specialize
             ( type_map
             , specialize.type_get
             , st::join (known_structs, st::make (structs, state), state)
@@ -152,7 +156,7 @@ namespace xml
             );
 
           split_structs ( known_structs
-                        , specialized_function.get_ref().structs
+                        , specialized_function.structs
                         , structs
                         , specialize.type_get
                         , state
@@ -160,11 +164,15 @@ namespace xml
 
           //! \todo remove this, for now it is safe to not check for
           //! duplicates since we check for duplicate specializes
-          _functions.push (specialized_function);
+          struct ignore_exception
+          {
+            ignore_exception (function_type const&, function_type const&) {}
+          };
+          _functions.push<ignore_exception> (specialized_function);
         }
 
 
-        for (function_type& function : _functions.values())
+        for (function_type& function : _functions)
         {
           function.specialize
             ( map
@@ -219,7 +227,7 @@ namespace xml
           trans.type_check (state, *this);
         }
 
-        for (const function_type& function : functions().values())
+        for (const function_type& function : functions())
         {
           function.type_check (state);
         }
@@ -228,7 +236,7 @@ namespace xml
       void net_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
-        for (function_type const& function : functions().values())
+        for (function_type const& function : functions())
         {
           if (!!function.name())
           {
@@ -244,7 +252,7 @@ namespace xml
         {
           templat.resolve_function_use_recursive (known);
         }
-        for (function_type& function : _functions.values())
+        for (function_type& function : _functions)
         {
           function.resolve_function_use_recursive (known);
         }
@@ -293,7 +301,7 @@ namespace xml
         {
           transition.resolve_types_recursive (known);
         }
-        for (function_type& function : _functions.values())
+        for (function_type& function : _functions)
         {
           function.resolve_types_recursive (known);
         }
@@ -492,7 +500,7 @@ namespace xml
           dumps (s, net.structs.begin(), net.structs.end());
           dumps (s, net.templates());
           dumps (s, net.specializes());
-          dumps (s, net.functions().values());
+          dumps (s, net.functions());
           dumps (s, net.places());
           dumps (s, net.transitions());
 

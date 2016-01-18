@@ -6,7 +6,7 @@
 #include <string>
 #include <sstream>
 
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
@@ -302,11 +302,8 @@ namespace xml
       {
       public:
         overwrite_function_name_trans ( type::transition_type const&
-                                      , const id::ref::function&
+                                      , type::function_type const&
                                       );
-
-      private:
-        const id::ref::function _function;
       };
 
       // ******************************************************************* //
@@ -606,10 +603,7 @@ namespace xml
       class synthesize_anonymous_function : public generic
       {
       public:
-        synthesize_anonymous_function (const id::ref::function&);
-
-      private:
-        const id::ref::function _function;
+        synthesize_anonymous_function (type::function_type const&);
       };
 
       class struct_redefined : public generic

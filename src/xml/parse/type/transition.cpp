@@ -3,6 +3,7 @@
 #include <xml/parse/type/transition.hpp>
 
 #include <xml/parse/state.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
@@ -96,6 +97,16 @@ namespace xml
         }
         return *_function_or_use;
       }
+      transition_type::function_or_use_type&
+        transition_type::function_or_use()
+      {
+        if (!_function_or_use)
+        {
+          throw std::runtime_error
+            ("requested function or use with no function set!");
+        }
+        return *_function_or_use;
+      }
       const transition_type::function_or_use_type&
         transition_type::function_or_use
         (const function_or_use_type& function_or_use_)
@@ -103,10 +114,10 @@ namespace xml
         return *(_function_or_use = function_or_use_);
       }
 
-      id::ref::function transition_type::resolved_function() const
+      function_type const& transition_type::resolved_function() const
       {
         //! \note assume post processing pass (resolve_function_use_recursive)
-        return boost::get<id::ref::function> (function_or_use());
+        return boost::get<function_type> (function_or_use());
       }
 
       const std::string& transition_type::name() const
@@ -183,9 +194,9 @@ namespace xml
           {}
 
           void operator () (use_type const&) const { return; }
-          void operator () (const id::ref::function& id_function) const
+          void operator () (function_type& function) const
           {
-            id_function.get_ref().specialize (map, get, known_structs, state);
+            function.specialize (map, get, known_structs, state);
           }
         };
       }
@@ -213,7 +224,7 @@ namespace xml
                                        , state::type const&
                                        ) const
       {
-        auto const& ports (resolved_function().get_ref().ports());
+        auto const& ports (resolved_function().ports());
 
         if ( std::find_if
              ( std::begin (ports), std::end (ports)
@@ -272,7 +283,7 @@ namespace xml
         }
 
         const boost::optional<const port_type&> port
-          ( resolved_function().get().ports().get
+          ( resolved_function().ports().get
               ( std::make_pair ( connect.port()
                                , we::edge::is_PT (connect.direction())
                                ? we::type::PORT_IN
@@ -310,9 +321,9 @@ namespace xml
           { }
 
           void operator () (use_type const&) const { return; }
-          void operator () (const id::ref::function & id_function) const
+          void operator () (function_type const& function) const
           {
-            id_function.get().type_check (state);
+            function.type_check (state);
           }
         };
       }
@@ -344,11 +355,11 @@ namespace xml
           {
             throw error::unknown_function (name, *this);
           }
-          function_or_use (it->second.clone (it->second.id_mapper()));
+          function_or_use (it->second);
         }
         else
         {
-          boost::get<id::ref::function> (_function_or_use.get()).get_ref()
+          boost::get<function_type> (_function_or_use.get())
             .resolve_function_use_recursive (known);
         }
       }
@@ -356,9 +367,9 @@ namespace xml
       void transition_type::resolve_types_recursive
         (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        if (!!boost::get<id::ref::function> (&_function_or_use.get()))
+        if (!!boost::get<function_type> (&_function_or_use.get()))
         {
-          boost::get<id::ref::function> (_function_or_use.get()).get_ref()
+          boost::get<function_type> (_function_or_use.get())
             .resolve_types_recursive (known);
         }
       }
@@ -417,8 +428,7 @@ namespace xml
               );
           }
 
-        const id::ref::function id_function (trans.resolved_function());
-        function_type& fun (id_function.get_ref());
+        function_type const& fun (trans.resolved_function());
 
         for (const port_type& port_in : fun.ports())
         {
@@ -447,9 +457,7 @@ namespace xml
            && (!rewrite::has_magic_prefix (trans.name()))
            )
         {
-          state.warn ( warning::overwrite_function_name_trans
-                       (trans, id_function)
-                     );
+          state.warn (warning::overwrite_function_name_trans (trans, fun));
         }
 
         if (  not trans.priority // WORK HERE: make it work with prio
@@ -488,7 +496,8 @@ namespace xml
                 place_map_map[prefix + place_map.place_virtual()] = pid->second;
               }
 
-            net_type& net (fun.get_net());
+            //! \todo avoid copy by not modifying
+            net_type net (fun.get_net().get());
             net.set_prefix (prefix);
 
             // synthesize into this level
@@ -791,13 +800,10 @@ namespace xml
               : s (_s)
             {}
 
-            void operator () (use_type const& use) const
+            template<typename T>
+              void operator () (T const& x) const
             {
-              ::xml::parse::type::dump::dump (s, use);
-            }
-            void operator () (const id::ref::function& id_function) const
-            {
-              ::xml::parse::type::dump::dump (s, id_function.get());
+              ::xml::parse::type::dump::dump (s, x);
             }
           };
         }

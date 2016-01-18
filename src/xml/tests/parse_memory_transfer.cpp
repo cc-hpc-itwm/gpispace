@@ -36,14 +36,12 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_gets().size(), 1);
-    BOOST_REQUIRE_EQUAL
-      (function.get().memory_gets().begin()->global(), global);
-    BOOST_REQUIRE_EQUAL
-      (function.get().memory_gets().begin()->local(), local);
+    BOOST_REQUIRE_EQUAL (function.memory_gets().size(), 1);
+    BOOST_REQUIRE_EQUAL (function.memory_gets().begin()->global(), global);
+    BOOST_REQUIRE_EQUAL (function.memory_gets().begin()->local(), local);
 }
 
 namespace
@@ -79,16 +77,14 @@ namespace
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_puts().size(), 1);
+    BOOST_REQUIRE_EQUAL (function.memory_puts().size(), 1);
+    BOOST_REQUIRE_EQUAL (function.memory_puts().begin()->global(), global);
+    BOOST_REQUIRE_EQUAL (function.memory_puts().begin()->local(), local);
     BOOST_REQUIRE_EQUAL
-      (function.get().memory_puts().begin()->global(), global);
-    BOOST_REQUIRE_EQUAL
-      (function.get().memory_puts().begin()->local(), local);
-    BOOST_REQUIRE_EQUAL
-      ( function.get().memory_puts().begin()->not_modified_in_module_call()
+      ( function.memory_puts().begin()->not_modified_in_module_call()
       , not_modified_in_module_call
       );
   }
@@ -123,16 +119,14 @@ namespace
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_getputs().size(), 1);
+    BOOST_REQUIRE_EQUAL (function.memory_getputs().size(), 1);
+    BOOST_REQUIRE_EQUAL (function.memory_getputs().begin()->global(), global);
+    BOOST_REQUIRE_EQUAL (function.memory_getputs().begin()->local(), local);
     BOOST_REQUIRE_EQUAL
-      (function.get().memory_getputs().begin()->global(), global);
-    BOOST_REQUIRE_EQUAL
-      (function.get().memory_getputs().begin()->local(), local);
-    BOOST_REQUIRE_EQUAL
-      ( function.get().memory_getputs().begin()->not_modified_in_module_call()
+      ( function.memory_getputs().begin()->not_modified_in_module_call()
       , not_modified_in_module_call
       );
   }
@@ -175,12 +169,12 @@ namespace
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
-    xml::parse::id::ref::function const function
+    xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.get().memory_gets().size(), num_get);
-    BOOST_REQUIRE_EQUAL (function.get().memory_puts().size(), num_put);
-    BOOST_REQUIRE_EQUAL (function.get().memory_getputs().size(), num_getput);
+    BOOST_REQUIRE_EQUAL (function.memory_gets().size(), num_get);
+    BOOST_REQUIRE_EQUAL (function.memory_puts().size(), num_put);
+    BOOST_REQUIRE_EQUAL (function.memory_getputs().size(), num_getput);
   }
 }
 

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/memory_transfer.hpp>
@@ -36,8 +35,6 @@ namespace xml
     {
       struct function_type : with_position_of_definition
       {
-        ID_SIGNATURES(function);
-
       private:
         typedef std::unordered_set<std::string> typenames_type;
 
@@ -53,14 +50,12 @@ namespace xml
 
         // ***************************************************************** //
 
-        function_type ( ID_CONS_PARAM(function)
-                      , const util::position_type&
+        function_type ( const util::position_type&
                       , const boost::optional<std::string>& name
                       , const content_type& content
                       );
 
-        function_type ( ID_CONS_PARAM(function)
-                      , const util::position_type&
+        function_type ( const util::position_type&
                       , const boost::optional<std::string>& name
                       , const ports_type& ports
                       , fhg::pnet::util::unique<memory_buffer_type> const&
@@ -75,6 +70,16 @@ namespace xml
                       , const content_type& content
                       , const we::type::property::type& properties
                       );
+
+        //! \note explicitly defaulted in compilation unit to be able
+        //! to forward declare content_type only
+        function_type (function_type const&);
+        function_type (function_type&&);
+        function_type& operator= (function_type const&);
+        function_type& operator= (function_type&&);
+        ~function_type();
+
+        function_type with_name (std::string) const;
 
         const content_type& content() const;
         content_type& content();
@@ -155,7 +160,7 @@ namespace xml
           , const we::type::property::type&
           , const requirements_type&
           , we::priority_type
-          , xml::util::range_type<place_map_type const>
+          , fhg::pnet::util::unique<place_map_type> const&
           , std::unordered_map<we::port_id_type, std::string>& real_place_names
           ) const;
 
@@ -174,13 +179,14 @@ namespace xml
 
         const unique_key_type& unique_key() const;
 
-        id::ref::function clone
-          ( const boost::optional<id::mapper*>& mapper = boost::none
-          , boost::optional<std::string> name = boost::none
-          ) const;
-
       private:
-        boost::optional<std::string> const _name;
+        //! \note should be const but can't be due to a massive amount
+        //! of copy-assignments which should be copy-constructions but
+        //! happen in optionals/variants and thus aren't. note that
+        //! this can destroy the unique_key() when stored in a unique
+        //! and directly modifying it (there is no setter, use
+        //! with_name() instead)
+        boost::optional<std::string> _name;
 
         ports_type _ports;
         fhg::pnet::util::unique<memory_buffer_type> _memory_buffers;
@@ -243,14 +249,14 @@ namespace xml
                        );
 
       bool find_module_calls ( const state::type & state
-                             , const id::ref::function&
+                             , function_type&
                              , fun_info_map & m
                              );
 
       // ***************************************************************** //
 
       void struct_to_cpp ( const state::type &
-                         , const id::ref::function &
+                         , function_type const&
                          , std::unordered_set<std::string>&
                          );
 

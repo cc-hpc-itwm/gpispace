@@ -30,13 +30,13 @@ namespace xml
         tmpl_type ( const util::position_type&
                   , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
-                  , const id::ref::function& function
+                  , function_type const& function
                   );
 
         const boost::optional<std::string>& name() const;
         const names_type& tmpl_parameter () const;
 
-        const id::ref::function& function() const;
+        function_type const& function() const;
 
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
@@ -48,7 +48,7 @@ namespace xml
       private:
         boost::optional<std::string> const _name;
         names_type _tmpl_parameter;
-        id::ref::function _function;
+        function_type _function;
       };
 
       namespace dump

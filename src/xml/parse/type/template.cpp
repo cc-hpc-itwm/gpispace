@@ -16,7 +16,7 @@ namespace xml
         ( const util::position_type& pod
         , const boost::optional<std::string>& name
         , const names_type& tmpl_parameter
-        , const id::ref::function& function
+        , function_type const& function
         )
           : with_position_of_definition (pod)
           , _name (name)
@@ -35,7 +35,7 @@ namespace xml
         return _tmpl_parameter;
       }
 
-      const id::ref::function& tmpl_type::function() const
+      function_type const& tmpl_type::function() const
       {
         return _function;
       }
@@ -43,13 +43,13 @@ namespace xml
       void tmpl_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
-        _function.get_ref().resolve_function_use_recursive (known);
+        _function.resolve_function_use_recursive (known);
       }
 
       void tmpl_type::resolve_types_recursive
         (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        _function.get_ref().resolve_types_recursive (known);
+        _function.resolve_types_recursive (known);
       }
 
       const tmpl_type::unique_key_type& tmpl_type::unique_key() const
@@ -73,7 +73,7 @@ namespace xml
               s.close ();
             }
 
-          ::xml::parse::type::dump::dump (s, t.function().get());
+          ::xml::parse::type::dump::dump (s, t.function());
 
           s.close ();
         }
