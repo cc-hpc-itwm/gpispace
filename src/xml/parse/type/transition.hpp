@@ -70,14 +70,6 @@ namespace xml
         id::ref::function resolved_function() const;
 
         const std::string& name() const;
-        const std::string& name (const std::string& name);
-
-      private:
-        friend struct net_type;
-        const std::string& name_impl (const std::string& name);
-
-      public:
-        // ***************************************************************** //
 
         const connections_type& connections() const;
         responses_type const& responses() const;
@@ -129,13 +121,16 @@ namespace xml
         id::ref::transition clone
           ( const boost::optional<parent_id_type>& parent = boost::none
           , const boost::optional<id::mapper*>& mapper = boost::none
+          , boost::optional<std::string> name = boost::none
           ) const;
 
       private:
         boost::optional<function_or_use_type> _function_or_use;
 
-        std::string _name;
+        std::string const _name;
 
+        //! \note renaming for prefix
+        friend struct net_type;
         connections_type _connections;
         responses_type _responses;
         place_maps_type _place_map;

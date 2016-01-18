@@ -165,28 +165,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void net_type::rename ( const id::ref::transition& transition
-                            , const std::string& name
-                            )
-      {
-        if (transition.get().name() == name)
-        {
-          return;
-        }
-
-        if (_transitions.has (name))
-        {
-          throw std::runtime_error
-            ("tried renaming transition, but transition with given name exists");
-        }
-
-        _transitions.erase (transition);
-        transition.get_ref().name_impl (name);
-        _transitions.push (transition);
-      }
-
-      // ***************************************************************** //
-
       void net_type::type_map_apply ( const type::type_map_type & outer_map
                                     , type::type_map_type & inner_map
                                     )
@@ -404,21 +382,26 @@ namespace xml
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
         auto const places (std::move (_places));
-        const std::unordered_set<id::ref::transition> transition_ids
-          (transitions().ids());
+        auto const transitions (std::move (_transitions));
 
         for (place_type const& place : places)
         {
           push_place (place.with_name (prefix + place.name()));
         }
 
-        for (const id::ref::transition& id : transition_ids)
+        for (transition_type const& old : transitions.values())
         {
-          transition_type& transition (id.get_ref());
+          id::ref::transition new_id
+            ( push_transition ( old.clone ( boost::none
+                                          , boost::none
+                                          , prefix + old.name()
+                                          )
+                              )
+            );
+          transition_type& transition (new_id.get_ref());
+
           auto const connects (std::move (transition._connections));
           auto const place_maps (std::move (transition._place_map));
-
-          transition.name (prefix + transition.name());
 
           for (connect_type const& conn : connects)
           {
@@ -439,8 +422,7 @@ namespace xml
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
         auto const places (std::move (_places));
-        const std::unordered_set<id::ref::transition> transition_ids
-          (transitions().ids());
+        auto const transitions (std::move (_transitions));
 
         for (place_type const& place : places)
         {
@@ -449,14 +431,20 @@ namespace xml
                      );
         }
 
-        for (const id::ref::transition& id : transition_ids)
+        for (transition_type const& old : transitions.values())
         {
-          transition_type& transition (id.get_ref());
+          id::ref::transition new_id
+            ( push_transition ( old.clone ( boost::none
+                                          , boost::none
+                                          , fhg::util::remove_prefix
+                                              (prefix, old.name())
+                                          )
+                              )
+            );
+          transition_type& transition (new_id.get_ref());
+
           auto const connects (std::move (transition._connections));
           auto const place_maps (std::move (transition._place_map));
-
-          transition.name
-            (fhg::util::remove_prefix (prefix, transition.name()));
 
           for (connect_type const& conn : connects)
           {

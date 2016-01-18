@@ -142,21 +142,6 @@ namespace xml
       {
         return _name;
       }
-      const std::string& transition_type::name_impl (const std::string& name)
-      {
-        return _name = name;
-      }
-
-      const std::string& transition_type::name (const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return _name;
-        }
-
-        return name_impl (name);
-      }
 
       const transition_type::connections_type&
         transition_type::connections() const
@@ -461,6 +446,7 @@ namespace xml
       id::ref::transition transition_type::clone
         ( const boost::optional<parent_id_type>& parent
         , const boost::optional<id::mapper*>& mapper
+        , boost::optional<std::string> name
         ) const
       {
         id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
@@ -477,7 +463,7 @@ namespace xml
                                    )
             )
           : boost::none
-          , _name
+          , name.get_value_or (_name)
           , _connections
           , _responses
           , _place_map

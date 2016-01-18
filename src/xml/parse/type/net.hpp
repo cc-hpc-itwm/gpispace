@@ -83,10 +83,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        void rename (const id::ref::transition&, const std::string&);
-
-        // ***************************************************************** //
-
         void type_map_apply ( const type::type_map_type & outer_map
                             , type::type_map_type & inner_map
                             );
