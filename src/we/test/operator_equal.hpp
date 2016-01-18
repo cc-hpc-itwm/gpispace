@@ -9,6 +9,10 @@
 
 #include <sdpa/types.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
+#include <set>
+
 namespace we
 {
   namespace type
@@ -40,19 +44,23 @@ namespace we
     namespace
     {
       std::map< we::place_id_type
-              , std::list<pnet::type::value::value_type>
+              , std::multiset<pnet::type::value::value_type>
               > tokens (net_type const& n)
       {
         std::map< we::place_id_type
-                , std::list<pnet::type::value::value_type>
+                , std::multiset<pnet::type::value::value_type>
                 > tokens_on_place;
 
         for ( we::place_id_type const& place_id
             : n.places() | boost::adaptors::map_keys
             )
         {
-          tokens_on_place.insert
-            (std::make_pair (place_id, n.get_token (place_id)));
+          for ( pnet::type::value::value_type const& token
+              : n.get_token (place_id) | boost::adaptors::map_values
+              )
+          {
+            tokens_on_place[place_id].emplace (token);
+          }
         }
 
         return tokens_on_place;

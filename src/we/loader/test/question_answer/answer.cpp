@@ -18,9 +18,9 @@ static void answer ( drts::worker::context*
   output.bind_and_discard_ref ("out", 42L);
 }
 
-WE_MOD_INITIALIZE_START (answer);
+WE_MOD_INITIALIZE_START()
 {
   the_answer = 42L;
   WE_REGISTER_FUN_AS (answer,  "answer");
 }
-WE_MOD_INITIALIZE_END (answer);
+WE_MOD_INITIALIZE_END()

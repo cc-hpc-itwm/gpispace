@@ -8,6 +8,8 @@
 
 #include <fhg/util/boost/variant.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 #include <iostream>
 #include <list>
 #include <set>
@@ -66,6 +68,7 @@ namespace we
 
         for ( pnet::type::value::value_type const& value
             : input_net.get_token (pid_input_net)
+            | boost::adaptors::map_values
             )
         {
           new_net.put_value (pid_new_net, value);
@@ -454,6 +457,7 @@ namespace we
 
           for ( pnet::type::value::value_type const& value
               : input_net.get_token (pid_input_net)
+              | boost::adaptors::map_values
               )
           {
             new_net.put_value (pid_new_net, value);

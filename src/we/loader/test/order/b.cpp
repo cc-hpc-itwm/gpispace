@@ -2,8 +2,8 @@
 
 #include <we/loader/macros.hpp>
 
-WE_MOD_INITIALIZE_START (b);
+WE_MOD_INITIALIZE_START()
 {
   start().push ("b");
 }
-WE_MOD_INITIALIZE_END (b);
+WE_MOD_INITIALIZE_END()

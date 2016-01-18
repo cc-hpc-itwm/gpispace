@@ -113,32 +113,31 @@ namespace
     {
       if (i->placeId() < j->placeId())
       {
-        result.push_back (*i++);
+        result.emplace_back (*i++);
       }
       else if (i->placeId() > j->placeId())
       {
-        result.push_back (PlaceMarking (j->placeId(), op (0, j->count())));
+        result.emplace_back (j->placeId(), op (0, j->count()));
         ++j;
       }
       else
       {
-          result.push_back
-            (PlaceMarking (i->placeId(), op (i->count(), j->count())));
+        result.emplace_back (i->placeId(), op (i->count(), j->count()));
         ++i;
         ++j;
       }
     }
     while (i != iend)
     {
-      result.push_back (*i++);
+      result.emplace_back (*i++);
     }
     while (j != jend)
     {
-      result.push_back (PlaceMarking (j->placeId(), op (0, j->count())));
+      result.emplace_back (j->placeId(), op (0, j->count()));
       ++j;
     }
 
-    return Marking (result);
+    return {result};
   }
 }
 

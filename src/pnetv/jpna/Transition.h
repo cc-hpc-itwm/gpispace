@@ -61,7 +61,7 @@ class Transition {
 
     void addInputPlace (we::place_id_type place_id)
     {
-      inputPlaces_.push_back (place_id);
+      inputPlaces_.emplace_back (place_id);
     }
 
     /**
@@ -71,7 +71,7 @@ class Transition {
 
     void addOutputPlace (we::place_id_type place_id)
     {
-      outputPlaces_.push_back (place_id);
+      outputPlaces_.emplace_back (place_id);
     }
 
     /**

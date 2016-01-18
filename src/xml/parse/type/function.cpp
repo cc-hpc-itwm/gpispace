@@ -922,7 +922,7 @@ namespace xml
           }
 
           stream << std::endl;
-          stream << "WE_MOD_INITIALIZE_START (" << modname << ");";
+          stream << "WE_MOD_INITIALIZE_START()";
           stream << fhg::util::cpp::block::open (indent);
           for (const fun_info_type& fun : funs)
           {
@@ -936,7 +936,7 @@ namespace xml
                    << ");";
           }
           stream << fhg::util::cpp::block::close (indent) << std::endl;
-          stream << "WE_MOD_INITIALIZE_END (" << modname << ");" << std::endl;
+          stream << "WE_MOD_INITIALIZE_END()" << std::endl;
         }
       }
 

@@ -27,7 +27,7 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
                         continue;
                     }
                 }
-                enabledTransitions.push_back(&transition);
+                enabledTransitions.emplace_back(&transition);
             }
         }
 
@@ -49,7 +49,7 @@ bool findLoop(const std::vector<Transition> &transitions, const Marking &initial
                     /* We are done. */
                     init = backtrack(state, &states[0]);
                     loop = backtrack(currentState, state);
-                    loop.push_back(transition->id());
+                    loop.emplace_back(transition->id());
 
                     return true;
                 }

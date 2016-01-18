@@ -473,7 +473,7 @@ namespace xml
               (pid, util::generic_we_parse (token, "parse token").eval_all());
           }
 
-          if (  boost::empty (we_net.transition_to_place().right.equal_range (pid))
+          if (  boost::empty (we_net.transition_to_place().equal_range (pid))
              && boost::empty (we_net.place_to_transition_consume().left.equal_range (pid))
              && boost::empty (we_net.place_to_transition_read().left.equal_range (pid))
              && (!place.is_virtual())

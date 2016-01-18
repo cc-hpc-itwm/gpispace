@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/signature.hpp>
@@ -9,7 +7,6 @@
 #include <boost/serialization/nvp.hpp>
 
 #include <string>
-#include <iosfwd>
 
 namespace place
 {
@@ -17,12 +14,19 @@ namespace place
   struct type
   {
   public:
-    const std::string& name() const;
-    const std::string& name (const std::string&);
+    const std::string& name() const
+    {
+      return _name;
+    }
 
-    const pnet::type::signature::signature_type& signature() const;
-    const we::type::property::type& property() const;
-    we::type::property::type& property();
+    const pnet::type::signature::signature_type& signature() const
+    {
+      return _signature;
+    }
+    const we::type::property::type& property() const
+    {
+      return _prop;
+    }
 
     //! \todo eliminate the need for the default constructor
     type () = default;
@@ -30,9 +34,17 @@ namespace place
          , const pnet::type::signature::signature_type& signature
          , boost::optional<bool> put_token
          , const we::type::property::type& prop = we::type::property::type ()
-	 );
+	 )
+      : _name (name)
+      , _signature (signature)
+      , _put_token (put_token)
+      , _prop (prop)
+    {}
 
-    bool is_marked_for_put_token() const;
+    bool is_marked_for_put_token() const
+    {
+      return !!_put_token && _put_token.get();
+    }
 
   private:
     //! \todo maybe one should factor out the (name, sig, prop)-pattern
