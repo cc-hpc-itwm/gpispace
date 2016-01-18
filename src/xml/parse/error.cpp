@@ -225,16 +225,15 @@ namespace xml
       {}
 
       unknown_template::unknown_template ( type::specialize_type const& spec
-                                         , const id::ref::net& net
+                                         , type::net_type const& net
                                          )
         : generic ( boost::format ( "unknown template %1% in specialize at %2%"
                                     " in net at %3%"
                                   )
                   % spec.use
                   % spec.position_of_definition()
-                  % net.get().position_of_definition()
+                  % net.position_of_definition()
                   )
-        , _net (net)
       {}
 
       connect_to_nonexistent_place::connect_to_nonexistent_place

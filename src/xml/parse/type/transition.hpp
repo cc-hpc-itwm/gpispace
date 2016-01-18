@@ -3,11 +3,13 @@
 #pragma once
 
 #include <xml/parse/type/connect.hpp>
-#include <xml/parse/type/function.hpp>
-#include <xml/parse/type/place_map.hpp>
-#include <xml/parse/type/use.hpp>
+#include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/require.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/use.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 

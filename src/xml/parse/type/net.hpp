@@ -4,20 +4,19 @@
 
 #include <xml/parse/type/net.fwd.hpp>
 
-#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
-#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <xml/parse/util/unique.hpp>
 
 #include <xml/parse/type/dumps.hpp>
-
-#include <xml/parse/id/generic.hpp>
 
 #include <we/type/id.hpp>
 
@@ -29,8 +28,6 @@ namespace xml
     {
       struct net_type : with_position_of_definition
       {
-        ID_SIGNATURES(net);
-
       public:
         typedef xml::util::unique<function_type,id::ref::function> functions_type;
         typedef fhg::pnet::util::unique<place_type> places_type;
@@ -39,21 +36,7 @@ namespace xml
         typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
 
 
-        net_type ( ID_CONS_PARAM(net)
-                 , const util::position_type&
-                 );
-
-        net_type ( ID_CONS_PARAM(net)
-                 , const util::position_type&
-                 , const functions_type& functions
-                 , const places_type& places
-                 , const specializes_type& specializes
-                 , const templates_type& templates
-                 , const transitions_type& transitions
-                 , const structs_type& structs
-                 , const bool& contains_a_module_call
-                 , const we::type::property::type& properties
-                 );
+        net_type (const util::position_type&);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
@@ -101,10 +84,6 @@ namespace xml
 
         void set_prefix (const std::string & prefix);
         void remove_prefix (const std::string & prefix);
-
-        id::ref::net clone
-          ( const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         functions_type _functions;

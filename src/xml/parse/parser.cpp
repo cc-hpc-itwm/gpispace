@@ -1534,20 +1534,12 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::net net_type ( const xml_node_type* node
+      type::net_type net_type ( const xml_node_type* node
                             , state::type& state
                             , id::ref::function const& outer_function
                             )
       {
-        const id::net id (state.id_mapper()->next_id());
-
-        const id::ref::net net
-          ( type::net_type
-            ( id
-            , state.id_mapper()
-            , state.position (node)
-            ).make_reference_id()
-          );
+        type::net_type net (state.position (node));
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1560,24 +1552,24 @@ namespace xml
           {
             if (child_name == "template")
             {
-              net.get_ref().push_template (tmpl_type (child, state));
+              net.push_template (tmpl_type (child, state));
             }
             else if (child_name == "specialize")
             {
-              net.get_ref().push_specialize (specialize_type (child, state));
+              net.push_specialize (specialize_type (child, state));
             }
             else if (child_name == "place")
             {
-              net.get_ref()
+              net
                 .push_place (place_type (child, state, outer_function));
             }
             else if (child_name == "transition")
             {
-              net.get_ref().push_transition (transition_type (child, state));
+              net.push_transition (transition_type (child, state));
             }
             else if (child_name == "struct")
             {
-              net.get_ref().structs.push_back (struct_type (child, state));
+              net.structs.push_back (struct_type (child, state));
             }
             else if (child_name == "include-structs")
             {
@@ -1589,10 +1581,8 @@ namespace xml
                                   )
                 );
 
-              net.get_ref().structs.insert ( net.get_ref().structs.end()
-                                           , structs.begin()
-                                           , structs.end()
-                                           );
+              net.structs.insert
+                (net.structs.end(), structs.begin(), structs.end());
             }
             else if (child_name == "include-template")
             {
@@ -1606,11 +1596,11 @@ namespace xml
                 throw error::top_level_anonymous_template (file, "net_type");
               }
 
-              net.get_ref().push_template (tmpl);
+              net.push_template (tmpl);
             }
             else if (child_name == "properties")
             {
-              property_map_type (net.get_ref().properties(), child, state);
+              property_map_type (net.properties(), child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -1619,7 +1609,7 @@ namespace xml
                   (required ("net_type", child, "href", state), state)
                 );
 
-              util::property::join (state, net.get_ref().properties(), deeper);
+              util::property::join (state, net.properties(), deeper);
             }
             else
             {
@@ -1650,7 +1640,7 @@ namespace xml
             , state.position (node)
             , optional (node, "name")
             //! \todo see Issue #118 and forbid more than one expression
-            , {state.position (node)}
+            , type::expression_type (state.position (node))
             ).make_reference_id()
           );
 

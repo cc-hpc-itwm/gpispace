@@ -4,7 +4,6 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/type/specialize.hpp>
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/util/weparse.hpp>
 
 #include <we/type/net.fwd.hpp>
@@ -22,39 +21,9 @@ namespace xml
   {
     namespace type
     {
-      net_type::net_type ( ID_CONS_PARAM(net)
-                         , const util::position_type& pod
-                         )
+      net_type::net_type (const util::position_type& pod)
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      net_type::net_type ( ID_CONS_PARAM(net)
-                         , const util::position_type& pod
-                         , const functions_type& functions
-                         , const places_type& places
-                         , const specializes_type& specializes
-                         , const templates_type& templates
-                         , const transitions_type& transitions
-                         , const structs_type& structs_
-                         , const bool& contains_a_module_call_
-                         , const we::type::property::type& properties
-                         )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , _functions (functions)
-        , _places (places)
-        , _specializes (specializes)
-        , _templates (templates)
-        , _transitions (transitions)
-        , structs (structs_)
-        , contains_a_module_call (contains_a_module_call_)
-        , _properties (properties)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const we::type::property::type& net_type::properties() const
       {
@@ -171,8 +140,7 @@ namespace xml
 
           if (not tmpl)
           {
-            throw error::unknown_template
-              (specialize, make_reference_id());
+            throw error::unknown_template (specialize, *this);
           }
 
           //! \todo generate a new function, with a state.next_id ->
@@ -421,27 +389,6 @@ namespace xml
               (pm.with_place_real (fhg::util::remove_prefix (prefix, pm.place_real())));
           }
         }
-      }
-
-      id::ref::net net_type::clone
-        ( const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return net_type
-          ( new_id
-          , new_mapper
-          , _position_of_definition
-          , _functions.clone (new_mapper)
-          , _places
-          , _specializes
-          , _templates
-          , _transitions.clone (new_mapper)
-          , structs
-          , contains_a_module_call
-          , _properties
-          ).make_reference_id();
       }
 
       // ******************************************************************* //

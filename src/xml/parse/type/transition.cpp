@@ -471,7 +471,7 @@ namespace xml
           }
 
         const id::ref::function id_function (trans.resolved_function());
-        const function_type& fun (id_function.get());
+        function_type& fun (id_function.get_ref());
 
         for (const port_type& port_in : fun.ports())
         {
@@ -541,7 +541,7 @@ namespace xml
                 place_map_map[prefix + place_map.place_virtual()] = pid->second;
               }
 
-            net_type& net (fun.get_net()->get_ref());
+            net_type& net (fun.get_net());
             net.set_prefix (prefix);
 
             // synthesize into this level

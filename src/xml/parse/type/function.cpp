@@ -127,12 +127,16 @@ namespace xml
 
       bool function_type::is_net() const
       {
-        return fhg::util::boost::is_of_type<id::ref::net> (content());
+        return fhg::util::boost::is_of_type<net_type> (content());
       }
 
-      boost::optional<const id::ref::net&> function_type::get_net() const
+      boost::optional<net_type const&> function_type::get_net() const
       {
-        return fhg::util::boost::get_or_none<id::ref::net> (content());
+        return fhg::util::boost::get_or_none<net_type> (content());
+      }
+      net_type& function_type::get_net()
+      {
+        return boost::get<net_type> (_content);
       }
 
       // ******************************************************************* //
@@ -368,31 +372,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      namespace
-      {
-        class function_type_check : public boost::static_visitor<void>
-        {
-        public:
-          function_type_check (const state::type& state)
-            : _state (state)
-          { }
-
-          void operator() (expression_type const&) const
-          {
-          }
-          void operator() (const module_type&) const
-          {
-          }
-          void operator() (const id::ref::net& id) const
-          {
-            id.get().type_check (_state);
-          }
-
-        private:
-          const state::type& _state;
-        };
-      }
-
       void function_type::type_check (const state::type & state) const
       {
         for (const port_type& port : ports())
@@ -400,15 +379,18 @@ namespace xml
           port.type_check (position_of_definition().path(), state, *this);
         }
 
-        boost::apply_visitor (function_type_check (state), content());
+        if (is_net())
+        {
+          boost::get<net_type> (_content).type_check (state);
+        }
       }
 
       void function_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
-        if (!!boost::get<id::ref::net> (&_content))
+        if (is_net())
         {
-          boost::get<id::ref::net> (_content).get_ref()
+          boost::get<net_type> (_content)
             .resolve_function_use_recursive (known);
         }
       }
@@ -452,10 +434,9 @@ namespace xml
             );
         }
 
-        if (!!boost::get<id::ref::net> (&_content))
+        if (is_net())
         {
-          boost::get<id::ref::net> (_content).get_ref()
-            .resolve_types_recursive (known);
+          boost::get<net_type> (_content).resolve_types_recursive (known);
         }
 
         for (port_type& port : _ports)
@@ -528,7 +509,7 @@ namespace xml
         void add_ports ( we_transition_type & trans
                        , const function_type::ports_type& ports
                        , const Map & pid_of_place
-                       , id::ref::net const& net
+                       , net_type const& net
                        ) const
         {
           for (const port_type& port : ports)
@@ -707,14 +688,14 @@ namespace xml
           return trans;
         }
 
-        we_transition_type operator () (const id::ref::net & id_net) const
+        we_transition_type operator () (net_type const& net) const
         {
           we_net_type we_net;
 
           pid_of_place_type pid_of_place
             ( net_synthesize ( we_net
                              , place_map_map_type()
-                             , id_net.get()
+                             , net
                              , state
                              )
             );
@@ -723,7 +704,7 @@ namespace xml
 
           util::property::join ( state
                                , properties
-                               , id_net.get().properties()
+                               , net.properties()
                                );
 
           we_transition_type trans
@@ -734,7 +715,7 @@ namespace xml
             , _priority
             );
 
-          add_ports (trans, fun.ports(), pid_of_place, id_net);
+          add_ports (trans, fun.ports(), pid_of_place, net);
           add_requirements (trans);
 
           return trans;
@@ -814,12 +795,12 @@ namespace xml
 
           void operator () (expression_type&) const { return; }
           void operator () (module_type &) const { return; }
-          void operator () (id::ref::net & id) const
+          void operator () (net_type & net) const
           {
-            id.get_ref().specialize (map, get, known_structs, state);
+            net.specialize (map, get, known_structs, state);
 
             split_structs ( known_structs
-                          , id.get_ref().structs
+                          , net.structs
                           , fun.structs
                           , get
                           , state
@@ -875,34 +856,6 @@ namespace xml
         return *name();
       }
 
-      namespace
-      {
-        class visitor_clone
-          : public boost::static_visitor<function_type::content_type>
-        {
-        public:
-          visitor_clone (id::mapper* const mapper)
-            : _mapper (mapper)
-          { }
-          template<typename ID_TYPE>
-            function_type::content_type operator() (const ID_TYPE& id) const
-          {
-            return id.get().clone (_mapper);
-          }
-          function_type::content_type operator() (module_type const& m) const
-          {
-            return m;
-          }
-          function_type::content_type operator() (expression_type const& e) const
-          {
-            return e;
-          }
-
-        private:
-          id::mapper* const _mapper;
-        };
-      }
-
       id::ref::function function_type::clone
         ( const boost::optional<id::mapper*>& mapper
         , boost::optional<std::string> name
@@ -925,7 +878,7 @@ namespace xml
           , structs
           , _conditions
           , requirements
-          , boost::apply_visitor (visitor_clone (new_mapper), content())
+          , content()
           , _properties
           ).make_reference_id();
       }
@@ -1435,13 +1388,11 @@ namespace xml
       }
 
       bool find_module_calls ( const state::type & state
-                             , id::ref::net & id_net
+                             , net_type & n
                              , fun_info_map & m
                              , mcs_type& mcs
                              )
       {
-        net_type& n (id_net.get_ref());
-
         n.contains_a_module_call = false;
 
         for (const transition_type& transition : n.transitions().values())
@@ -1868,9 +1819,9 @@ namespace xml
             return false;
           }
 
-          bool operator () (id::ref::net & id) const
+          bool operator () (net_type & net) const
           {
-            return find_module_calls (state, id, m, mcs);
+            return find_module_calls (state, net, m, mcs);
           }
 
           bool operator () (module_type const& mod) const
@@ -2295,10 +2246,8 @@ namespace xml
             , _structnames (structnames)
           {}
 
-          void operator() (const id::ref::net& id) const
+          void operator() (net_type const& n) const
           {
-            const net_type& n (id.get());
-
             if (n.contains_a_module_call)
             {
               to_cpp (n.structs, state, _structnames);
@@ -2375,18 +2324,10 @@ namespace xml
               : s (_s)
             {}
 
-            template<typename ID>
-            void operator () (const ID& id) const
+            template<typename T>
+            void operator () (const T& x) const
             {
-              ::xml::parse::type::dump::dump (s, id.get());
-            }
-            void operator() (module_type const& m) const
-            {
-              ::xml::parse::type::dump::dump (s, m);
-            }
-            void operator() (expression_type const& e) const
-            {
-              ::xml::parse::type::dump::dump (s, e);
+              ::xml::parse::type::dump::dump (s, x);
             }
           };
         }

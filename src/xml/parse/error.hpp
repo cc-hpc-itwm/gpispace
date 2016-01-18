@@ -8,6 +8,7 @@
 #include <xml/parse/type/connect.fwd.hpp>
 #include <xml/parse/type/memory_buffer.fwd.hpp>
 #include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/place.fwd.hpp>
 #include <xml/parse/type/place_map.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
@@ -552,10 +553,7 @@ namespace xml
       class unknown_template : public generic
       {
       public:
-        unknown_template (type::specialize_type const&, const id::ref::net&);
-
-      private:
-        const id::ref::net _net;
+        unknown_template (type::specialize_type const&, type::net_type const&);
       };
 
       // ******************************************************************* //

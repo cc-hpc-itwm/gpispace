@@ -104,7 +104,7 @@ namespace xml
             , _state (state)
           { }
 
-          void operator() (id::ref::net const& net) const
+          void operator() (net_type const& net) const
           {
             if (not _port.place)
             {
@@ -181,14 +181,14 @@ namespace xml
       }
 
       boost::optional<place_type const&> port_type::resolved_place
-        (id::ref::net const& parent) const
+        (net_type const& parent) const
       {
         if (!place)
         {
           return boost::none;
         }
 
-        return parent.get().places().get (*place);
+        return parent.places().get (*place);
       }
 
       const we::type::property::type& port_type::properties() const

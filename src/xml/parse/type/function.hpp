@@ -7,6 +7,7 @@
 #include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/memory_transfer.hpp>
 #include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/specialize.hpp>
@@ -33,13 +34,6 @@ namespace xml
   {
     namespace type
     {
-      struct conditions_type : public std::list<std::string>
-      {
-        std::string flatten() const;
-      };
-
-      conditions_type operator+ (conditions_type, const conditions_type&);
-
       struct function_type : with_position_of_definition
       {
         ID_SIGNATURES(function);
@@ -53,8 +47,8 @@ namespace xml
         typedef fhg::pnet::util::unique<port_type> ports_type;
 
         typedef boost::variant < expression_type
-                               , type::module_type
-                               , id::ref::net
+                               , module_type
+                               , boost::recursive_wrapper<net_type>
                                > content_type;
 
         // ***************************************************************** //
@@ -89,7 +83,8 @@ namespace xml
         // ***************************************************************** //
 
         bool is_net() const;
-        boost::optional<const id::ref::net&> get_net() const;
+        boost::optional<net_type const&> get_net() const;
+        net_type& get_net();
 
         // ***************************************************************** //
 
