@@ -41,18 +41,7 @@ namespace we { namespace type {
                        > port_id_with_prop_t;
       typedef std::unordered_map<we::port_id_type, port_t> port_map_t;
 
-      transition_t ()
-        : name_ ("<<transition unknown>>")
-        , data_ (expression_t())
-        , condition_ (boost::none)
-        , _ports_input()
-        , _ports_output()
-        , _ports_tunnel()
-        , port_id_counter_ (0)
-        , prop_()
-        , _requirements()
-        , _priority()
-      {}
+      transition_t();
 
       template <typename Type>
       transition_t ( const std::string& name

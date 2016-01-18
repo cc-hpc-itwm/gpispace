@@ -175,17 +175,16 @@ namespace xml
       { }
 
       unknown_function::unknown_function ( const std::string& fun
-                                         , const id::ref::transition& trans
+                                         , type::transition_type const& trans
                                          )
         : generic ( boost::format ( "unknown function %1% in transition %2%"
                                     " in %3%"
                                   )
                   % fun
-                  % trans.get().name()
-                  % trans.get().position_of_definition()
+                  % trans.name()
+                  % trans.position_of_definition()
                   )
         , _function_name (fun)
-        , _transition (trans)
       {}
 
       unknown_port_in_connect_response::unknown_port_in_connect_response
@@ -237,7 +236,7 @@ namespace xml
       {}
 
       connect_to_nonexistent_place::connect_to_nonexistent_place
-       ( const id::ref::transition& transition
+       ( type::transition_type const& transition
        , const type::connect_type& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent place %2%"
@@ -245,14 +244,13 @@ namespace xml
                                    )
                    % connection.direction()
                    % connection.place()
-                   % transition.get().name()
+                   % transition.name()
                    % connection.position_of_definition()
                    )
-         , _transition (transition)
         {}
 
       connect_to_nonexistent_port::connect_to_nonexistent_port
-       ( const id::ref::transition& transition
+       ( type::transition_type const& transition
        , const type::connect_type& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent port %2%"
@@ -260,14 +258,13 @@ namespace xml
                                    )
                    % connection.direction()
                    % connection.port()
-                   % transition.get().name()
+                   % transition.name()
                    % connection.position_of_definition()
                    )
-         , _transition (transition)
         {}
 
       connect_type_error::connect_type_error
-        ( const id::ref::transition& transition
+        ( type::transition_type const& transition
         , const type::connect_type& connection
         , const type::port_type& port
         , const type::place_type& place
@@ -286,10 +283,9 @@ namespace xml
                    % port.type()
                    % pnet::type::signature::show (port.signature())
                    % port.position_of_definition()
-                   % transition.get().name()
+                   % transition.name()
                    % connection.position_of_definition()
                    )
-          , _transition (transition)
           {}
 
       memory_buffer_without_size::memory_buffer_without_size
@@ -485,11 +481,11 @@ namespace xml
       {}
 
       duplicate_transition::duplicate_transition
-        ( const id::ref::transition& early
-        , const id::ref::transition& late
+        ( type::transition_type const& early
+        , type::transition_type const& late
         )
-          : generic_id_duplicate<id::ref::transition>
-            (early, late, boost::format ("transition %1%") % early.get().name())
+          : generic_duplicate<type::transition_type>
+            (early, late, boost::format ("transition %1%") % early.name())
       {}
 
       duplicate_port::duplicate_port ( const type::port_type& early

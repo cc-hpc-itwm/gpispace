@@ -16,6 +16,7 @@
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
+#include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
 #include <we/type/port.hpp>
@@ -269,54 +270,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename Id>
-      class generic_id_duplicate : public generic
-      {
-      public:
-        generic_id_duplicate ( const Id& early
-                             , const Id& late
-                             , const boost::format& fmt
-                             )
-          : generic ( boost::format ( "duplicate %1% at %2%"
-                                      ", earlier definition is at %3%"
-                                    )
-                    % fmt
-                    % late.get().position_of_definition()
-                    % early.get().position_of_definition()
-                    )
-          , _early (early)
-          , _late (late)
-        {}
-
-        const Id& early() const
-        {
-          return _early;
-        }
-        const Id& late() const
-        {
-          return _late;
-        }
-      private:
-        const Id _early;
-        const Id _late;
-      };
-
-#define DUPLICATE_WITH_ID(_type,_id)                                    \
-      class duplicate_ ##_type : public generic_id_duplicate<id::ref::_id> \
-      {                                                                 \
-      public:                                                           \
-        duplicate_ ##_type ( const id::ref::_id& early                  \
-                           , const id::ref::_id& late                   \
-                           );                                           \
-      }
-
-#define DUPLICATE(_type) DUPLICATE_WITH_ID(_type,_type)
-
-      DUPLICATE (transition);
-
-#undef DUPLICATE
-#undef DUPLICATE_WITH_ID
-
       template<typename T>
       class generic_duplicate : public generic
       {
@@ -351,6 +304,7 @@ namespace xml
       DUPLICATE (response, type::response_type);
       DUPLICATE (specialize, type::specialize_type);
       DUPLICATE (template, type::tmpl_type);
+      DUPLICATE (transition, type::transition_type);
 
 #undef DUPLICATE
 
@@ -494,23 +448,17 @@ namespace xml
       class connect_to_nonexistent_place : public generic
       {
       public:
-        connect_to_nonexistent_place ( const id::ref::transition&
+        connect_to_nonexistent_place ( type::transition_type const&
                                      , const type::connect_type&
                                      );
-
-      private:
-        const id::ref::transition _transition;
       };
 
       class connect_to_nonexistent_port : public generic
       {
       public:
-        connect_to_nonexistent_port ( const id::ref::transition&
+        connect_to_nonexistent_port ( type::transition_type const&
                                     , const type::connect_type&
                                     );
-
-      private:
-        const id::ref::transition _transition;
       };
 
       // ******************************************************************* //
@@ -518,11 +466,10 @@ namespace xml
       class unknown_function : public generic
       {
       public:
-        unknown_function (const std::string&, const id::ref::transition&);
+        unknown_function (const std::string&, type::transition_type const&);
 
       private:
         const std::string _function_name;
-        const id::ref::transition _transition;
       };
 
       // ******************************************************************* //
@@ -561,14 +508,11 @@ namespace xml
       class connect_type_error : public generic
       {
       public:
-        connect_type_error ( const id::ref::transition&
+        connect_type_error ( type::transition_type const&
                            , const type::connect_type&
                            , const type::port_type&
                            , const type::place_type&
                            );
-
-      private:
-        const id::ref::transition _transition;
       };
 
       class memory_buffer_without_size : public generic

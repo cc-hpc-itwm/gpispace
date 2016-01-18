@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -12,9 +13,6 @@
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
-
-#include <xml/parse/id/generic.hpp>
-#include <xml/parse/id/types.hpp>
 
 #include <we/type/net.fwd.hpp>
 
@@ -28,8 +26,6 @@ namespace xml
     {
       struct transition_type : with_position_of_definition
       {
-        ID_SIGNATURES(transition);
-
       public:
         typedef std::string unique_key_type;
 
@@ -40,15 +36,13 @@ namespace xml
         typedef boost::variant <id::ref::function, use_type>
           function_or_use_type;
 
-        transition_type ( ID_CONS_PARAM(transition)
-                        , const util::position_type&
+        transition_type ( const util::position_type&
                         , const std::string& name
                         , const boost::optional<we::priority_type>& priority
                         , const boost::optional<bool>& finline
                         );
 
-        transition_type ( ID_CONS_PARAM(transition)
-                        , const util::position_type&
+        transition_type ( const util::position_type&
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
                         , const connections_type& connections
@@ -61,6 +55,7 @@ namespace xml
                         , const boost::optional<bool>& finline
                         , const we::type::property::type& properties
                         );
+        transition_type with_name (std::string) const;
 
         const function_or_use_type& function_or_use() const;
         const function_or_use_type& function_or_use
@@ -117,11 +112,6 @@ namespace xml
 
         const unique_key_type& unique_key() const;
 
-        id::ref::transition clone
-          ( const boost::optional<id::mapper*>& mapper = boost::none
-          , boost::optional<std::string> name = boost::none
-          ) const;
-
       private:
         boost::optional<function_or_use_type> _function_or_use;
 
@@ -153,7 +143,7 @@ namespace xml
       // ******************************************************************* //
 
       void transition_synthesize
-        ( const id::ref::transition & id_transition
+        ( transition_type const&
         , const state::type & state
         , we::type::net_type& we_net
         , const place_map_map_type & pids

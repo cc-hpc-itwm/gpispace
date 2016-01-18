@@ -1381,8 +1381,7 @@ namespace xml
           bool operator () (use_type const& use) const
           {
             //! \note assume post processing pass (resolve_function_use_recursive)
-            throw error::unknown_function
-              (use.name(), trans.make_reference_id());
+            throw error::unknown_function (use.name(), trans);
           }
         };
       }
@@ -1395,7 +1394,7 @@ namespace xml
       {
         n.contains_a_module_call = false;
 
-        for (const transition_type& transition : n.transitions().values())
+        for (const transition_type& transition : n.transitions())
           {
             n.contains_a_module_call
               |= boost::apply_visitor
@@ -2257,7 +2256,7 @@ namespace xml
                 struct_to_cpp (state, id_function, _structnames);
               }
 
-              for (const transition_type& transition : n.transitions().values())
+              for (const transition_type& transition : n.transitions())
               {
                 boost::apply_visitor (*this, transition.function_or_use());
               }

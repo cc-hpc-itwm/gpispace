@@ -33,7 +33,7 @@ namespace xml
         typedef fhg::pnet::util::unique<place_type> places_type;
         using specializes_type = fhg::pnet::util::unique<specialize_type>;
         using templates_type = fhg::pnet::util::unique<tmpl_type>;
-        typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
+        using transitions_type = fhg::pnet::util::unique<transition_type>;
 
 
         net_type (const util::position_type&);
@@ -59,7 +59,7 @@ namespace xml
         void push_place (place_type const&);
         void push_specialize (specialize_type const&);
         void push_template (tmpl_type const&);
-        const id::ref::transition& push_transition (const id::ref::transition&);
+        void push_transition (transition_type const&);
 
         // ***************************************************************** //
 

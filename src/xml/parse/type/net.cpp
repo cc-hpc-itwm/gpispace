@@ -91,17 +91,9 @@ namespace xml
         _templates.push<error::duplicate_template> (tmpl);
       }
 
-      const id::ref::transition&
-      net_type::push_transition (const id::ref::transition& id)
+      void net_type::push_transition (transition_type const& transition)
       {
-        const id::ref::transition& id_old (_transitions.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_transition (id_old, id);
-        }
-
-        return id;
+        _transitions.push<error::duplicate_transition> (transition);
       }
 
       // ***************************************************************** //
@@ -189,7 +181,7 @@ namespace xml
                         );
         }
 
-        for (transition_type& transition : _transitions.values())
+        for (transition_type& transition : _transitions)
         {
           transition.specialize
             ( map
@@ -222,7 +214,7 @@ namespace xml
 
       void net_type::type_check (const state::type & state) const
       {
-        for (const transition_type& trans : transitions().values())
+        for (const transition_type& trans : transitions())
         {
           trans.type_check (state, *this);
         }
@@ -244,7 +236,7 @@ namespace xml
           }
         }
 
-        for (transition_type& transition : _transitions.values())
+        for (transition_type& transition : _transitions)
         {
           transition.resolve_function_use_recursive (known);
         }
@@ -297,7 +289,7 @@ namespace xml
             );
         }
 
-        for (transition_type& transition : _transitions.values())
+        for (transition_type& transition : _transitions)
         {
           transition.resolve_types_recursive (known);
         }
@@ -326,12 +318,12 @@ namespace xml
           push_place (place.with_name (prefix + place.name()));
         }
 
-        for (transition_type const& old : transitions.values())
+        for (transition_type const& old : transitions)
         {
-          id::ref::transition new_id
-            (push_transition (old.clone (boost::none, prefix + old.name())));
-          transition_type& transition (new_id.get_ref());
-
+          push_transition (old.with_name (prefix + old.name()));
+        }
+        for (transition_type& transition : _transitions)
+        {
           auto const connects (std::move (transition._connections));
           auto const place_maps (std::move (transition._place_map));
 
@@ -363,17 +355,13 @@ namespace xml
                      );
         }
 
-        for (transition_type const& old : transitions.values())
+        for (transition_type const& old : transitions)
         {
-          id::ref::transition new_id
-            ( push_transition ( old.clone ( boost::none
-                                          , fhg::util::remove_prefix
-                                              (prefix, old.name())
-                                          )
-                              )
-            );
-          transition_type& transition (new_id.get_ref());
-
+          push_transition
+            (old.with_name (fhg::util::remove_prefix (prefix, old.name())));
+        }
+        for (transition_type& transition : _transitions)
+        {
           auto const connects (std::move (transition._connections));
           auto const place_maps (std::move (transition._place_map));
 
@@ -457,10 +445,10 @@ namespace xml
           }
         }
 
-        for (const id::ref::transition& id_transition : net.transitions().ids())
+        for (transition_type const& transition : net.transitions())
           {
             transition_synthesize
-              ( id_transition
+              ( transition
               , state
               , we_net
               , pid_of_place
@@ -506,7 +494,7 @@ namespace xml
           dumps (s, net.specializes());
           dumps (s, net.functions().values());
           dumps (s, net.places());
-          dumps (s, net.transitions().values());
+          dumps (s, net.transitions());
 
           s.close ();
         }

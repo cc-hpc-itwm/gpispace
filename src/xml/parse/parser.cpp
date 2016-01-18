@@ -700,34 +700,28 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::transition
+      type::transition_type
         transition_type (const xml_node_type* node, state::type& state)
       {
-        const id::transition id (state.id_mapper()->next_id());
-
-        const id::ref::transition transition
-          ( type::transition_type
-            ( id
-            , state.id_mapper()
-            , state.position (node)
-            , validate_name ( validate_prefix ( required ( "transition_type"
-                                                         , node
-                                                         , "name"
-                                                         , state
-                                                         )
-                                              , "transition"
-                                              , state.file_in_progress()
-                                              )
-                            , "transition"
-                            , state.file_in_progress()
-                            )
-            , fhg::util::boost::fmap<std::string, we::priority_type>
+        type::transition_type transition
+          ( state.position (node)
+          , validate_name ( validate_prefix ( required ( "transition_type"
+                                                       , node
+                                                       , "name"
+                                                       , state
+                                                       )
+                                            , "transition"
+                                            , state.file_in_progress()
+                                            )
+                          , "transition"
+                          , state.file_in_progress()
+                          )
+          , fhg::util::boost::fmap<std::string, we::priority_type>
               ( boost::lexical_cast<we::priority_type>
               , optional (node, "priority")
               )
-            , fhg::util::boost::fmap<std::string, bool>
+          , fhg::util::boost::fmap<std::string, bool>
               (fhg::util::read_bool, optional (node, "inline"))
-            ).make_reference_id()
           );
 
         for ( xml_node_type* child (node->first_node())
@@ -744,12 +738,12 @@ namespace xml
               const std::string file
                 (required ("transition_type", child, "href", state));
 
-              transition.get_ref().function_or_use
+              transition.function_or_use
                 (function_include (file, state));
             }
             else if (child_name == "use")
             {
-              transition.get_ref().function_or_use
+              transition.function_or_use
                 ( type::use_type ( state.position (child)
                                  , required
                                    ("transition_type", child, "name", state)
@@ -758,49 +752,49 @@ namespace xml
             }
             else if (child_name == "defun")
             {
-              transition.get_ref().function_or_use (function_type (child, state));
+              transition.function_or_use (function_type (child, state));
             }
             else if (child_name == "place-map")
             {
-              transition.get_ref().push_place_map (place_map_type (child, state));
+              transition.push_place_map (place_map_type (child, state));
             }
             else if (child_name == "connect-in")
             {
-              transition.get_ref().push_connection
+              transition.push_connection
                 (connect_type (child, state, we::edge::PT));
             }
             else if (child_name == "connect-out")
             {
-              transition.get_ref().push_connection
+              transition.push_connection
                 (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-inout")
             {
-              transition.get_ref().push_connection
+              transition.push_connection
                 (connect_type (child, state, we::edge::PT));
-              transition.get_ref().push_connection
+              transition.push_connection
                 (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-read")
             {
-              transition.get_ref().push_connection
+              transition.push_connection
                 (connect_type (child, state, we::edge::PT_READ));
             }
             else if (child_name == "connect-response")
             {
-              transition.get_ref().push_response (response_type (child, state));
+              transition.push_response (response_type (child, state));
             }
             else if (child_name == "condition")
             {
-              transition.get_ref().add_conditions (parse_cdata (child, state));
+              transition.add_conditions (parse_cdata (child, state));
             }
             else if (child_name == "require")
             {
-              require_type (transition.get_ref().requirements, child, state);
+              require_type (transition.requirements, child, state);
             }
             else if (child_name == "properties")
             {
-              property_map_type (transition.get_ref().properties(), child, state);
+              property_map_type (transition.properties(), child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -815,7 +809,7 @@ namespace xml
                 );
 
               util::property::join ( state
-                                   , transition.get_ref().properties()
+                                   , transition.properties()
                                    , deeper
                                    );
             }

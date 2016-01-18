@@ -30,7 +30,7 @@ namespace xml
       { }
 
       conflicting_port_types::conflicting_port_types
-        ( const id::ref::transition& transition
+        ( type::transition_type const& transition
         , const type::port_type& in
         , const type::port_type& out
         , const boost::filesystem::path& path
@@ -40,27 +40,25 @@ namespace xml
                                       "in %5%"
                                     )
                     % in.name()
-                    % transition.get().name()
+                    % transition.name()
                     % in.type()
                     % out.type()
                     % path
                     )
-          , _transition (transition)
           , _path (path)
       { }
 
       overwrite_function_name_trans::overwrite_function_name_trans
-        (const id::ref::transition& trans, const id::ref::function& function)
+        (type::transition_type const& trans, const id::ref::function& function)
           : generic ( boost::format ( "name of function %1% defined at %2% "
                                       "overwritten with name of transition %3% "
                                       "at %4%"
                                     )
                     % function.get().name().get_value_or ("<<anonymous>>")
                     % function.get().position_of_definition()
-                    % trans.get().name()
-                    % trans.get().position_of_definition()
+                    % trans.name()
+                    % trans.position_of_definition()
                     )
-          , _transition (trans)
           , _function (function)
       { }
 

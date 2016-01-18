@@ -5,7 +5,6 @@
 #include <xml/parse/id/mapper.hpp>
 
 #include <xml/parse/type/function.hpp>
-#include <xml/parse/type/transition.hpp>
 
 #define ID_IMPL(TYPE)                                       \
   const id::TYPE& TYPE ## _type::id() const                 \
@@ -29,7 +28,6 @@ namespace xml
     namespace type
     {
       ID_IMPL(function)
-      ID_IMPL(transition)
     }
   }
 }

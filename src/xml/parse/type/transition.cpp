@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/transition.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/struct.hpp>
@@ -31,24 +30,19 @@ namespace xml
     namespace type
     {
       transition_type::transition_type
-        ( ID_CONS_PARAM(transition)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const std::string& name
         , const boost::optional<we::priority_type>& priority_
         , const boost::optional<bool>& finline_
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
         , _name (name)
         , priority (priority_)
         , finline (finline_)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       transition_type::transition_type
-        ( ID_CONS_PARAM(transition)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
         , const connections_type& connections
@@ -62,7 +56,6 @@ namespace xml
         , const we::type::property::type& properties
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
         , _function_or_use (fun_or_use)
         , _name (name)
         , _connections (connections)
@@ -74,8 +67,23 @@ namespace xml
         , priority (priority_)
         , finline (finline_)
         , _properties (properties)
+      {}
+
+      transition_type transition_type::with_name (std::string name) const
       {
-        _id_mapper->put (_id, *this);
+        return { position_of_definition()
+               , _function_or_use
+               , std::move (name)
+               , _connections
+               , _responses
+               , _place_map
+               , structs
+               , _conditions
+               , requirements
+               , priority
+               , finline
+               , _properties
+               };
       }
 
       const transition_type::function_or_use_type&
@@ -260,7 +268,7 @@ namespace xml
         if (not place)
         {
           throw error::connect_to_nonexistent_place
-            (make_reference_id(), connect);
+            (*this, connect);
         }
 
         const boost::optional<const port_type&> port
@@ -276,12 +284,12 @@ namespace xml
         if (not port)
         {
           throw error::connect_to_nonexistent_port
-            (make_reference_id(), connect);
+            (*this, connect);
         }
 
         if (place->signature() != port->signature())
         {
-          throw error::connect_type_error ( make_reference_id()
+          throw error::connect_type_error ( *this
                                           , connect
                                           , *port
                                           , *place
@@ -334,9 +342,9 @@ namespace xml
           auto const it (known.find (name));
           if (it == known.end())
           {
-            throw error::unknown_function (name, make_reference_id());
+            throw error::unknown_function (name, *this);
           }
-          function_or_use (it->second.clone (id_mapper()));
+          function_or_use (it->second.clone (it->second.id_mapper()));
         }
         else
         {
@@ -376,65 +384,6 @@ namespace xml
 
       namespace
       {
-        typedef transition_type::function_or_use_type function_or_use_type;
-
-        class visitor_clone
-          : public boost::static_visitor<function_or_use_type>
-        {
-        public:
-          visitor_clone (id::mapper* const mapper)
-            : _mapper (mapper)
-          { }
-
-          function_or_use_type operator() (const id::ref::function& id) const
-          {
-            return id.get().clone (_mapper);
-          }
-          function_or_use_type operator() (use_type const& use) const
-          {
-            return use;
-          }
-
-        private:
-          id::mapper* const _mapper;
-        };
-      }
-
-      id::ref::transition transition_type::clone
-        ( const boost::optional<id::mapper*>& mapper
-        , boost::optional<std::string> name
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return transition_type
-          ( new_id
-          , new_mapper
-          , _position_of_definition
-          , _function_or_use
-          ? boost::make_optional
-            ( boost::apply_visitor ( visitor_clone (new_mapper)
-                                   , *_function_or_use
-                                   )
-            )
-          : boost::none
-          , name.get_value_or (_name)
-          , _connections
-          , _responses
-          , _place_map
-          , structs
-          , _conditions
-          , requirements
-          , priority
-          , finline
-          , _properties
-          ).make_reference_id();
-      }
-
-      // ******************************************************************* //
-
-      namespace
-      {
         place_map_map_type::mapped_type
         get_pid (const place_map_map_type & pid_of_place, const std::string name)
         {
@@ -453,14 +402,12 @@ namespace xml
       }
 
       void transition_synthesize
-        ( const id::ref::transition & id_transition
+        ( transition_type const& trans
         , const state::type & state
         , we::type::net_type & we_net
         , const place_map_map_type & pids
         )
       {
-        const transition_type& trans (id_transition.get());
-
         if (trans.connections().empty())
           {
             state.warn
@@ -485,7 +432,7 @@ namespace xml
                )
             {
               state.warn
-                ( warning::conflicting_port_types ( id_transition
+                ( warning::conflicting_port_types ( trans
                                                   , port_in
                                                   , *port_out
                                                   , state.file_in_progress()
@@ -501,7 +448,7 @@ namespace xml
            )
         {
           state.warn ( warning::overwrite_function_name_trans
-                       (id_transition, id_function)
+                       (trans, id_function)
                      );
         }
 

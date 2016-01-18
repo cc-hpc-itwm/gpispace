@@ -10,6 +10,7 @@
 #include <xml/parse/type/mod.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/transition.fwd.hpp>
 
 #include <we/type/property.hpp>
 #include <we/type/value/show.hpp>
@@ -300,12 +301,11 @@ namespace xml
       class overwrite_function_name_trans : public generic
       {
       public:
-        overwrite_function_name_trans ( const id::ref::transition&
+        overwrite_function_name_trans ( type::transition_type const&
                                       , const id::ref::function&
                                       );
 
       private:
-        const id::ref::transition _transition;
         const id::ref::function _function;
       };
 
@@ -503,14 +503,13 @@ namespace xml
       class conflicting_port_types : public generic
       {
       public:
-        conflicting_port_types ( const id::ref::transition&
+        conflicting_port_types ( type::transition_type const&
                                , const type::port_type& in
                                , const type::port_type& out
                                , const boost::filesystem::path&
                                );
 
       private:
-        const id::ref::transition _transition;
         const boost::filesystem::path _path;
       };
 
