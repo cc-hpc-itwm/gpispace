@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -24,14 +23,11 @@ namespace xml
     {
       struct tmpl_type : with_position_of_definition
       {
-        ID_SIGNATURES(tmpl);
-
       public:
         typedef std::string unique_key_type;
         typedef std::unordered_set<std::string> names_type;
 
-        tmpl_type ( ID_CONS_PARAM(tmpl)
-                  , const util::position_type&
+        tmpl_type ( const util::position_type&
                   , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
                   , const id::ref::function& function
@@ -48,10 +44,6 @@ namespace xml
           (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         const unique_key_type& unique_key() const;
-
-        id::ref::tmpl clone
-          ( const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         boost::optional<std::string> const _name;

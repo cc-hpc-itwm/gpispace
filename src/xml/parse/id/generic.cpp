@@ -6,7 +6,6 @@
 
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
-#include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #define ID_IMPL(TYPE)                                       \
@@ -32,7 +31,6 @@ namespace xml
     {
       ID_IMPL(function)
       ID_IMPL(net)
-      ID_IMPL(tmpl)
       ID_IMPL(transition)
     }
   }

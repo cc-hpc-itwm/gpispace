@@ -14,6 +14,7 @@
 #include <xml/parse/type/response.fwd.hpp>
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
+#include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
 #include <we/type/port.hpp>
@@ -311,7 +312,6 @@ namespace xml
 #define DUPLICATE(_type) DUPLICATE_WITH_ID(_type,_type)
 
       DUPLICATE (transition);
-      DUPLICATE_WITH_ID (template,tmpl);
 
 #undef DUPLICATE
 #undef DUPLICATE_WITH_ID
@@ -349,6 +349,7 @@ namespace xml
       DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
       DUPLICATE (specialize, type::specialize_type);
+      DUPLICATE (template, type::tmpl_type);
 
 #undef DUPLICATE
 

@@ -35,7 +35,7 @@ namespace xml
         typedef xml::util::unique<function_type,id::ref::function> functions_type;
         typedef fhg::pnet::util::unique<place_type> places_type;
         using specializes_type = fhg::pnet::util::unique<specialize_type>;
-        typedef xml::util::unique<tmpl_type,id::ref::tmpl> templates_type;
+        using templates_type = fhg::pnet::util::unique<tmpl_type>;
         typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
 
 
@@ -68,14 +68,14 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<const id::ref::tmpl&>
-        get_template (const std::string& name) const;
+        boost::optional<tmpl_type const&>
+          get_template (const std::string& name) const;
 
         // ***************************************************************** //
 
         void push_place (place_type const&);
         void push_specialize (specialize_type const&);
-        const id::ref::tmpl& push_template (const id::ref::tmpl&);
+        void push_template (tmpl_type const&);
         const id::ref::transition& push_transition (const id::ref::transition&);
 
         // ***************************************************************** //

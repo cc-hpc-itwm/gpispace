@@ -5,7 +5,6 @@
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/response.hpp>
-#include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
 #include <fhg/util/backtracing_exception.hpp>

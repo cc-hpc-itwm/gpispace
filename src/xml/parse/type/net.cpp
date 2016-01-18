@@ -98,20 +98,11 @@ namespace xml
       //!    2.1 search for the template and do the specialization
       //! So this would be a lazy specialization.
       //! The shadowing could be done by going further up the tree
-      boost::optional<const id::ref::tmpl&>
+      boost::optional<tmpl_type const&>
       net_type::get_template (const std::string & name) const
       {
-        boost::optional<const id::ref::tmpl&>
-          id_tmpl (templates().get (name));
-
-        if (id_tmpl)
-          {
-            return id_tmpl;
-          }
-
         //! \todo IMPLEMENT THE LOOKUP FOR TEMPLATES IN parent FUNCTION
-
-        return boost::none;
+        return templates().get (name);
       }
 
       // ***************************************************************** //
@@ -126,17 +117,9 @@ namespace xml
         _specializes.push<error::duplicate_specialize> (specialize);
       }
 
-      const id::ref::tmpl&
-      net_type::push_template (const id::ref::tmpl& id)
+      void net_type::push_template (tmpl_type const& tmpl)
       {
-        const id::ref::tmpl& id_old (_templates.push (id));
-
-        if (id_old != id)
-          {
-            throw error::duplicate_template (id_old, id);
-          }
-
-        return id;
+        _templates.push<error::duplicate_template> (tmpl);
       }
 
       const id::ref::transition&
@@ -183,10 +166,10 @@ namespace xml
 
         for (specialize_type const& specialize : _specializes)
         {
-          boost::optional<const id::ref::tmpl&> id_tmpl
+          boost::optional<tmpl_type const&> tmpl
             (get_template (specialize.use));
 
-          if (not id_tmpl)
+          if (not tmpl)
           {
             throw error::unknown_template
               (specialize, make_reference_id());
@@ -199,7 +182,7 @@ namespace xml
           type_map_apply (map, type_map);
 
           const id::ref::function specialized_function
-            (id_tmpl->get().function().get().clone (boost::none, specialize.name()));
+            (tmpl->function().get().clone (boost::none, specialize.name()));
 
           specialized_function.get_ref().specialize
             ( type_map
@@ -297,7 +280,7 @@ namespace xml
         {
           transition.resolve_function_use_recursive (known);
         }
-        for (tmpl_type& templat : _templates.values())
+        for (tmpl_type& templat : _templates)
         {
           templat.resolve_function_use_recursive (known);
         }
@@ -453,7 +436,7 @@ namespace xml
           , _functions.clone (new_mapper)
           , _places
           , _specializes
-          , _templates.clone (new_mapper)
+          , _templates
           , _transitions.clone (new_mapper)
           , structs
           , contains_a_module_call
@@ -572,7 +555,7 @@ namespace xml
           ::we::type::property::dump::dump (s, net.properties());
 
           dumps (s, net.structs.begin(), net.structs.end());
-          dumps (s, net.templates().values());
+          dumps (s, net.templates());
           dumps (s, net.specializes());
           dumps (s, net.functions().values());
           dumps (s, net.places());

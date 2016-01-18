@@ -135,7 +135,7 @@ namespace xml
       // ******************************************************************* //
 
       id::ref::function function_type (const xml_node_type*, state::type&);
-      id::ref::tmpl tmpl_type (const xml_node_type*, state::type&);
+      type::tmpl_type tmpl_type (const xml_node_type*, state::type&);
 
       void property_map_type ( we::type::property::type&
                              , const xml_node_type*
@@ -171,10 +171,10 @@ namespace xml
           (file, state, function_type, "defun", "parse_function");
       }
 
-      id::ref::tmpl template_include
+      type::tmpl_type template_include
         (const std::string& file, state::type& state)
       {
-        return generic_include<id::ref::tmpl>
+        return generic_include<type::tmpl_type>
           (file, state, tmpl_type, "template", "parse_template");
       }
 
@@ -1099,13 +1099,11 @@ namespace xml
 
       // ******************************************************************* //
 
-      id::ref::tmpl tmpl_type (const xml_node_type* node, state::type& state)
+      type::tmpl_type tmpl_type (const xml_node_type* node, state::type& state)
       {
         boost::optional<id::ref::function> fun;
         type::tmpl_type::names_type template_parameter;
         boost::optional<std::string> name (optional (node, "name"));
-
-        const id::tmpl id (state.id_mapper()->next_id());
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1138,7 +1136,7 @@ namespace xml
             {
               state.warn
                 ( warning::unexpected_element ( child_name
-                                              , "template_type"
+                                              , "tmpl_type"
                                               , state.file_in_progress()
                                               )
                 );
@@ -1153,13 +1151,11 @@ namespace xml
         }
 
         return type::tmpl_type
-          ( id
-          , state.id_mapper()
-          , state.position (node)
+          ( state.position (node)
           , name
           , template_parameter
           , *fun
-          ).make_reference_id();
+          );
       }
 
       // ******************************************************************* //
@@ -1603,9 +1599,9 @@ namespace xml
               const std::string file
                 (required ("net_type", child, "href", state));
 
-              id::ref::tmpl tmpl (template_include (file, state));
+              type::tmpl_type tmpl (template_include (file, state));
 
-              if (not tmpl.get().name())
+              if (not tmpl.name())
               {
                 throw error::top_level_anonymous_template (file, "net_type");
               }

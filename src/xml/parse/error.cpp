@@ -506,11 +506,11 @@ namespace xml
       {}
 
       duplicate_template::duplicate_template
-        ( const id::ref::tmpl& early
-        , const id::ref::tmpl& late
+        ( const type::tmpl_type& early
+        , const type::tmpl_type& late
         )
-          : generic_id_duplicate<id::ref::tmpl>
-            (early, late, boost::format ("template %1%") % early.get().name())
+          : generic_duplicate<type::tmpl_type>
+            (early, late, boost::format ("template %1%") % early.name())
       {}
 
       duplicate_place_map::duplicate_place_map

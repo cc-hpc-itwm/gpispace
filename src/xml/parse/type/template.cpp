@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/template.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -14,20 +13,16 @@ namespace xml
     namespace type
     {
       tmpl_type::tmpl_type
-        ( ID_CONS_PARAM(tmpl)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const boost::optional<std::string>& name
         , const names_type& tmpl_parameter
         , const id::ref::function& function
         )
           : with_position_of_definition (pod)
-          , ID_INITIALIZE()
           , _name (name)
           , _tmpl_parameter (tmpl_parameter)
           , _function (function)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const boost::optional<std::string>& tmpl_type::name() const
       {
@@ -62,23 +57,6 @@ namespace xml
         //! \note Anonymous templates can't be stored in unique, thus
         //! just indirect.
         return *name();
-      }
-
-
-      id::ref::tmpl tmpl_type::clone
-        ( const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return tmpl_type
-          ( new_id
-          , new_mapper
-          , _position_of_definition
-          , _name
-          , _tmpl_parameter
-          , _function.get().clone (mapper)
-          ).make_reference_id();
       }
 
       namespace dump
