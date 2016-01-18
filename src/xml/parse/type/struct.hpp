@@ -70,8 +70,6 @@ namespace xml
                     , const set_type & below
                     , const state::type & state
                     );
-
-      bool struct_by_name (const std::string&, const type::structure_type&);
     }
   }
 }

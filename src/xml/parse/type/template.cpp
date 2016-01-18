@@ -58,20 +58,16 @@ namespace xml
         return _function;
       }
 
-      boost::optional<pnet::type::signature::signature_type>
-      tmpl_type::signature (const std::string& type) const
-      {
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-        return boost::none;
-      }
-
       void tmpl_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
         _function.get_ref().resolve_function_use_recursive (known);
+      }
+
+      void tmpl_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
+      {
+        _function.get_ref().resolve_types_recursive (known);
       }
 
       const tmpl_type::unique_key_type& tmpl_type::unique_key() const

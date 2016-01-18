@@ -39,6 +39,7 @@ namespace xml
                    , boost::optional<bool> put_token
                    , std::list<token_type> tokens = {}
                    , we::type::property::type properties = {}
+                   , boost::optional<pnet::type::signature::signature_type> = boost::none
                    );
 
         const std::string& name() const;
@@ -46,10 +47,9 @@ namespace xml
 
         place_type with_name (std::string const& new_name) const;
 
-        boost::optional<pnet::type::signature::signature_type> signature
-          (net_type const& parent) const;
-        pnet::type::signature::signature_type signature_or_throw
-          (net_type const& parent) const;
+        pnet::type::signature::signature_type signature() const;
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         void push_token (const token_type & t);
 
@@ -75,6 +75,7 @@ namespace xml
 
         std::string _name;
         std::string _type;
+        boost::optional<pnet::type::signature::signature_type> _signature;
 
         //! \todo All these should be private with accessors.
       public:

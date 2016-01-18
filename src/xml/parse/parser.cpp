@@ -1905,10 +1905,17 @@ namespace xml
 
       function.get_ref().specialize (*state);
 
-      //! \note type check needs resolved functions to detect type of
-      //! port types in function inside using-transition
-      std::unordered_map<std::string, type::function_type const&> known;
-      function.get_ref().resolve_function_use_recursive (known);
+      {
+        //! \note type check needs resolved functions to detect type of
+        //! port types in function inside using-transition
+        std::unordered_map<std::string, type::function_type const&> known;
+        function.get_ref().resolve_function_use_recursive (known);
+      }
+
+      {
+        std::unordered_map<std::string, pnet::type::signature::signature_type> known;
+        function.get_ref().resolve_types_recursive (known);
+      }
 
       function.get_ref().type_check (*state);
     }

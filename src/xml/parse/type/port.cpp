@@ -23,10 +23,12 @@ namespace xml
                            , const boost::optional<std::string> & _place
                            , const we::type::PortDirection& direction
                            , const we::type::property::type& properties
+                           , boost::optional<pnet::type::signature::signature_type> signature
                            )
         : with_position_of_definition (position_of_definition)
         , _name (name)
         , _type (type)
+        , _signature (std::move (signature))
         , place (_place)
         , _direction (direction)
         , _properties (properties)
@@ -42,32 +44,28 @@ namespace xml
         return _type;
       }
 
-      boost::optional<pnet::type::signature::signature_type> port_type::signature
-        (function_type const& parent) const
+      pnet::type::signature::signature_type port_type::signature() const
       {
-        if (pnet::type::signature::is_literal (type()))
-        {
-          return pnet::type::signature::signature_type (type());
-        }
-
-        return parent.signature (type());
+        //! \note assume post processing pass (resolve_types_recursive)
+        return _signature.get();
       }
-      pnet::type::signature::signature_type port_type::signature_or_throw
-        (function_type const& parent) const
+      void port_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        const boost::optional<pnet::type::signature::signature_type> s
-          (signature (parent));
-
-        if (not s)
+        if (pnet::type::signature::is_literal (_type))
         {
-          throw error::port_with_unknown_type ( direction()
-                                              , name()
-                                              , type()
-                                              , position_of_definition().path()
-                                              );
+          _signature = pnet::type::signature::signature_type (_type);
         }
-
-        return *s;
+        else
+        {
+          auto it (known.find (_type));
+          if (it == known.end())
+          {
+            throw error::port_with_unknown_type
+              (direction(), name(), type(), position_of_definition().path());
+          }
+          _signature = it->second;
+        }
       }
 
       port_type port_type::specialized ( const type::type_map_type & map_in
@@ -83,6 +81,7 @@ namespace xml
                          , place
                          , direction()
                          , properties()
+                         , _signature
                          );
       }
 
@@ -94,18 +93,15 @@ namespace xml
           const port_type& _port;
           const boost::filesystem::path& _path;
           const state::type& _state;
-          function_type const& _parent;
 
         public:
           type_checker ( const port_type& port
                        , const boost::filesystem::path& path
                        , const state::type& state
-                       , function_type const& parent
                        )
             : _port (port)
             , _path (path)
             , _state (state)
-            , _parent (parent)
           { }
 
           void operator() (id::ref::net const& net) const
@@ -131,7 +127,7 @@ namespace xml
                 throw error::port_connected_place_nonexistent (_port, _path);
               }
 
-              if (place->signature (net.get()) != _port.signature (_parent))
+              if (place->signature() != _port.signature())
               {
                 throw error::port_connected_type_error (_port, *place, _path);
               }
@@ -176,7 +172,7 @@ namespace xml
                                  ) const
       {
         boost::apply_visitor
-          (type_checker (*this, path, state, parent), parent.content());
+          (type_checker (*this, path, state), parent.content());
       }
 
       const we::type::PortDirection& port_type::direction() const

@@ -10,6 +10,7 @@
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/any_range.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <functional>
 #include <unordered_map>
@@ -28,57 +29,56 @@ namespace fhg
         using key_type = typename T::unique_key_type;
 
       private:
-        struct
-        {
-          bool operator() (T const& lhs, T const& rhs)
-          {
-            return lhs.unique_key() < rhs.unique_key();
-          }
-        } _comparator;
+        std::unordered_map<key_type, T> _values;
 
-        std::set<T, decltype (_comparator)> _values;
+        static T const& select (typename decltype (_values)::value_type const& v)
+        {
+          return v.second;
+        }
+        static T& select_mutable (typename decltype (_values)::value_type& v)
+        {
+          return v.second;
+        }
 
       public:
         using value_type = T;
-        using const_iterator = typename decltype (_values)::const_iterator;
+        using iterator = boost::transform_iterator
+          <decltype (&select_mutable), typename decltype (_values)::iterator>;
+        using const_iterator = boost::transform_iterator
+          <decltype (&select), typename decltype (_values)::const_iterator>;
 
         template<typename DuplicateException>
           void push (value_type const& value)
         {
-          auto const result (_values.emplace (value));
+          auto const result (_values.emplace (value.unique_key(), value));
           if (!result.second)
           {
-            throw DuplicateException (*result.first, value);
+            throw DuplicateException (result.first->second, value);
           }
         }
 
         boost::optional<T const&> get (key_type const& key) const
         {
-          auto const it ( std::find_if ( _values.begin()
-                                       , _values.end()
-                                       , [&] (T const& value)
-                                         {
-                                           return value.unique_key() == key;
-                                         }
-                                       )
-                        );
-
+          auto const it (_values.find (key));
           if (it == _values.end())
           {
             return boost::none;
           }
-          return *it;
+          return it->second;
         }
 
         bool has (key_type const& key) const
         {
-          return !!get (key);
+          return _values.count (key);
         }
 
         auto size() const -> decltype (_values.size()) { return _values.size(); }
         auto empty() const -> decltype (_values.empty()) { return _values.empty(); }
-        auto begin() const -> decltype (_values.begin()) { return _values.begin(); }
-        auto end() const -> decltype (_values.end()) { return _values.end(); }
+
+        const_iterator begin() const { return {_values.begin(), &select}; }
+        const_iterator end() const { return {_values.end(), &select}; }
+        iterator begin() { return {_values.begin(), &select_mutable}; }
+        iterator end() { return {_values.end(), &select_mutable}; }
       };
     }
   }

@@ -366,7 +366,7 @@ namespace xml
                          )
             );
 
-          if (other && port.signature (*this) != other->signature (*this))
+          if (other && port.type() != other->type())
           {
             throw error::port_type_mismatch (port, *other);
           }
@@ -515,45 +515,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<pnet::type::signature::signature_type>
-      function_type::signature (const std::string& type) const
-      {
-        const structs_type::const_iterator pos
-          ( std::find_if ( structs.begin()
-                         , structs.end()
-                         , std::bind ( parse::structure_type_util::struct_by_name
-                                     , type
-                                     , std::placeholders::_1
-                                     )
-                         )
-          );
-
-        if (pos != structs.end())
-        {
-          return pnet::type::signature::resolve
-            ( pos->signature()
-            , std::bind (&function_type::signature, *this, std::placeholders::_1)
-            );
-        }
-
-        if (parent_transition())
-        {
-          return parent_transition()->get().signature (type);
-        }
-        else if (parent_tmpl())
-        {
-          return parent_tmpl()->get().signature (type);
-        }
-        else if (parent_net())
-        {
-          return parent_net()->get().signature (type);
-        }
-
-        return boost::none;
-      }
-
-      // ***************************************************************** //
-
       namespace
       {
         class function_type_check : public boost::static_visitor<void>
@@ -596,6 +557,57 @@ namespace xml
         {
           boost::get<id::ref::net> (_content).get_ref()
             .resolve_function_use_recursive (known);
+        }
+      }
+
+      void function_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
+      {
+        auto&& resolve
+          ( [this, &known] (std::string name)
+          -> boost::optional<pnet::type::signature::signature_type>
+            {
+              auto const known_it (known.find (name));
+              if (known_it != known.end())
+              {
+                return known_it->second;
+              }
+
+              auto const local_it
+                ( std::find_if ( structs.begin(), structs.end()
+                               , [&name] (structure_type const& struc)
+                                 {
+                                   return struc.name() == name;
+                                 }
+                               )
+                );
+              if (local_it != structs.end())
+              {
+                return pnet::type::signature::signature_type
+                  (local_it->signature());
+              }
+
+              return boost::none;
+            }
+          );
+
+        for (structure_type const& struc : structs)
+        {
+          known.emplace
+            ( struc.name()
+            , pnet::type::signature::resolve (struc.signature(), resolve)
+            );
+        }
+
+        if (!!boost::get<id::ref::net> (&_content))
+        {
+          boost::get<id::ref::net> (_content).get_ref()
+            .resolve_types_recursive (known);
+        }
+
+        for (port_type& port : _ports)
+        {
+          port.resolve_types_recursive (known);
         }
       }
 
@@ -652,7 +664,7 @@ namespace xml
           {
             add_port (trans, we::type::port_t ( port.name()
                                               , port.direction()
-                                              , port.signature_or_throw (fun)
+                                              , port.signature()
                                               , port.properties()
                                               )
                      );
@@ -672,7 +684,7 @@ namespace xml
             {
               add_port (trans, we::type::port_t ( port.name()
                                                 , port.direction()
-                                                , port.signature_or_throw (fun)
+                                                , port.signature()
                                                 , port.properties()
                                                 )
                        );
@@ -687,7 +699,7 @@ namespace xml
                 ( add_port ( trans
                            , we::type::port_t ( port.name()
                                               , port.direction()
-                                              , port.signature_or_throw (fun)
+                                              , port.signature()
                                               , pid_of_place.at (*port.place)
                                               , port.properties()
                                               )

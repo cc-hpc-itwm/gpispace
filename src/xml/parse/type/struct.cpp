@@ -204,13 +204,6 @@ namespace xml
       {
         return join (above, below, forbidden_type(), state);
       }
-
-      bool struct_by_name ( const std::string& name
-                          , const type::structure_type& stru
-                          )
-      {
-        return stru.name() == name;
-      }
     }
   }
 }

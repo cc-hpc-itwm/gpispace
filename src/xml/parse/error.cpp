@@ -210,7 +210,6 @@ namespace xml
       invalid_signature_in_connect_response::invalid_signature_in_connect_response
         ( type::response_type const& response
         , type::port_type const& port
-        , type::function_type const& parent_function
         )
           : generic
             ( boost::format
@@ -219,8 +218,7 @@ namespace xml
               )
             % port.name()
             % port.type()
-            % pnet::type::signature::show
-                (port.signature_or_throw (parent_function))
+            % pnet::type::signature::show (port.signature())
             % we::response_description_requirements()
             , response.position_of_definition()
             )
@@ -283,13 +281,11 @@ namespace xml
                    % connection.direction()
                    % place.name()
                    % place.type()
-                   % pnet::type::signature::show
-                       (place.signature_or_throw (transition.get().resolved_function().get().get_net()->get()))
+                   % pnet::type::signature::show (place.signature())
                    % place.position_of_definition()
                    % port.name()
                    % port.type()
-                   % pnet::type::signature::show
-                       (port.signature_or_throw (transition.get().resolved_function().get()))
+                   % pnet::type::signature::show (port.signature())
                    % port.position_of_definition()
                    % transition.get().name()
                    % connection.position_of_definition()

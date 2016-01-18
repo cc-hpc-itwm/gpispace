@@ -543,7 +543,6 @@ namespace xml
         invalid_signature_in_connect_response
           ( type::response_type const&
           , type::port_type const&
-          , type::function_type const& parent_function
           );
       };
 

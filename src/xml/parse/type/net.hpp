@@ -88,10 +88,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
-
-        // ***************************************************************** //
-
         void type_map_apply ( const type::type_map_type & outer_map
                             , type::type_map_type & inner_map
                             );
@@ -108,6 +104,8 @@ namespace xml
 
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         void set_prefix (const std::string & prefix);
         void remove_prefix (const std::string & prefix);

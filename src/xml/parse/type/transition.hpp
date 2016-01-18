@@ -118,11 +118,11 @@ namespace xml
 
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
-
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
 
         const unique_key_type& unique_key() const;
 

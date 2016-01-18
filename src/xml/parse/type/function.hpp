@@ -188,13 +188,11 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
-
-        // ***************************************************************** //
-
         void type_check (const state::type & state) const;
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         // ***************************************************************** //
 

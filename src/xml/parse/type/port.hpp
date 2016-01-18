@@ -42,6 +42,7 @@ namespace xml
                   , const we::type::PortDirection& direction
                   , const we::type::property::type& properties
                   = we::type::property::type()
+                  , boost::optional<pnet::type::signature::signature_type> = boost::none
                   );
 
         port_type specialized ( const type::type_map_type & map_in
@@ -57,10 +58,9 @@ namespace xml
 
         const std::string& type() const;
 
-        boost::optional<pnet::type::signature::signature_type> signature
-          (function_type const& parent) const;
-        pnet::type::signature::signature_type signature_or_throw
-          (function_type const& parent) const;
+        pnet::type::signature::signature_type signature() const;
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         const we::type::PortDirection& direction() const;
 
@@ -74,7 +74,7 @@ namespace xml
       private:
         std::string _name;
         std::string _type;
-        std::function<boost::optional<pnet::type::signature::signature_type> (std::string)> _resolve;
+        boost::optional<pnet::type::signature::signature_type> _signature;
 
         //! \todo All these should be private with accessors.
       public:

@@ -207,37 +207,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      boost::optional<pnet::type::signature::signature_type>
-      net_type::signature (const std::string& type) const
-      {
-        const structs_type::const_iterator pos
-          ( std::find_if ( structs.begin()
-                         , structs.end()
-                         , std::bind ( parse::structure_type_util::struct_by_name
-                                     , type
-                                     , std::placeholders::_1
-                                     )
-                         )
-          );
-
-        if (pos != structs.end())
-        {
-          return pnet::type::signature::resolve
-            ( pos->signature()
-            , std::bind (&net_type::signature, *this, std::placeholders::_1)
-            );
-        }
-
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-
-        return boost::none;
-      }
-
-      // ***************************************************************** //
-
       void net_type::type_map_apply ( const type::type_map_type & outer_map
                                     , type::type_map_type & inner_map
                                     )
@@ -396,6 +365,59 @@ namespace xml
         }
       }
 
+      void net_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
+      {
+        auto&& resolve
+          ( [this, &known] (std::string name)
+          -> boost::optional<pnet::type::signature::signature_type>
+            {
+              auto const known_it (known.find (name));
+              if (known_it != known.end())
+              {
+                return known_it->second;
+              }
+
+              auto const local_it
+                ( std::find_if ( structs.begin(), structs.end()
+                               , [&name] (structure_type const& struc)
+                                 {
+                                   return struc.name() == name;
+                                 }
+                               )
+                );
+              if (local_it != structs.end())
+              {
+                return pnet::type::signature::signature_type
+                  (local_it->signature());
+              }
+
+              return boost::none;
+            }
+          );
+
+        for (structure_type const& struc : structs)
+        {
+          known.emplace
+            ( struc.name()
+            , pnet::type::signature::resolve (struc.signature(), resolve)
+            );
+        }
+
+        for (transition_type& transition : _transitions.values())
+        {
+          transition.resolve_types_recursive (known);
+        }
+        for (function_type& function : _functions.values())
+        {
+          function.resolve_types_recursive (known);
+        }
+
+        for (place_type& place : _places)
+        {
+          place.resolve_types_recursive (known);
+        }
+      }
 
       // ******************************************************************* //
 
@@ -527,11 +549,11 @@ namespace xml
 
             const place::type place_real (we_net.places().at (pid->second));
 
-            if (!(place_real.signature() == place.signature_or_throw (net)))
+            if (!(place_real.signature() == place.signature()))
             {
               throw error::port_tunneled_type_error
                 ( place.name()
-                , place.signature_or_throw (net)
+                , place.signature()
                 , place_real.name()
                 , place_real.signature()
                 , state.file_in_progress()
@@ -550,7 +572,7 @@ namespace xml
             const we::place_id_type pid
               ( we_net.add_place ( place::type
                                    ( place.name()
-                                   , place.signature_or_throw (net)
+                                   , place.signature()
                                    , place.put_token()
                                    , prop
                                    )

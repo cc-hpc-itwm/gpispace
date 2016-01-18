@@ -291,10 +291,9 @@ namespace xml
           throw error::unknown_to_in_connect_response (response);
         }
 
-        if (!we::is_response_description (to->signature_or_throw (resolved_function().get())))
+        if (!we::is_response_description (to->signature()))
         {
-          throw error::invalid_signature_in_connect_response
-            (response, *to, resolved_function().get());
+          throw error::invalid_signature_in_connect_response (response, *to);
         }
       }
 
@@ -333,9 +332,7 @@ namespace xml
             (make_reference_id(), connect);
         }
 
-        if ( place->signature (*parent())
-           != port->signature (resolved_function().get())
-           )
+        if (place->signature() != port->signature())
         {
           throw error::connect_type_error ( make_reference_id()
                                           , connect
@@ -401,6 +398,16 @@ namespace xml
         }
       }
 
+      void transition_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
+      {
+        if (!!boost::get<id::ref::function> (&_function_or_use.get()))
+        {
+          boost::get<id::ref::function> (_function_or_use.get()).get_ref()
+            .resolve_types_recursive (known);
+        }
+      }
+
       const we::type::property::type& transition_type::properties() const
       {
         return _properties;
@@ -408,18 +415,6 @@ namespace xml
       we::type::property::type& transition_type::properties()
       {
         return _properties;
-      }
-
-      // ******************************************************************* //
-
-      boost::optional<pnet::type::signature::signature_type>
-      transition_type::signature (const std::string& type) const
-      {
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-        return boost::none;
       }
 
       // ******************************************************************* //
@@ -545,7 +540,7 @@ namespace xml
               (fun.get_port_out (port_in.name()));
 
             if (  port_out
-               && port_out->signature (fun) != port_in.signature (fun)
+               && port_out->signature() != port_in.signature()
                )
             {
               state.warn
@@ -656,7 +651,7 @@ namespace xml
                     , trans_in.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_IN
-                                         , port.signature_or_throw (fun)
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -667,7 +662,7 @@ namespace xml
                     , trans_in.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_OUT
-                                         , port.signature_or_throw (fun)
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -731,7 +726,7 @@ namespace xml
                     , trans_out.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_IN
-                                         , port.signature_or_throw (fun)
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -742,7 +737,7 @@ namespace xml
                     , trans_out.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_OUT
-                                         , port.signature_or_throw (fun)
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )

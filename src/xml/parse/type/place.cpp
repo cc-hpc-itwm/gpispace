@@ -22,12 +22,14 @@ namespace xml
                              , boost::optional<bool> put_token
                              , std::list<token_type> tokens_
                              , we::type::property::type properties
+                             , boost::optional<pnet::type::signature::signature_type> signature
                              )
         : with_position_of_definition (pod)
         , _is_virtual (is_virtual)
         , _put_token (put_token)
         , _name (name)
         , _type (type)
+        , _signature (std::move (signature))
         , tokens (std::move (tokens_))
         , _properties (std::move (properties))
       {}
@@ -51,31 +53,31 @@ namespace xml
                           , _put_token
                           , tokens
                           , _properties
+                          , _signature
                           );
       }
 
-      boost::optional<pnet::type::signature::signature_type>
-        place_type::signature (net_type const& parent) const
+      pnet::type::signature::signature_type place_type::signature() const
       {
-        if (pnet::type::signature::is_literal (type()))
-        {
-          return pnet::type::signature::signature_type (type());
-        }
-
-        return parent.signature (type());
+        //! \note assume post processing pass (resolve_types_recursive)
+        return _signature.get();
       }
-      pnet::type::signature::signature_type place_type::signature_or_throw
-        (net_type const& parent) const
+      void place_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        const boost::optional<pnet::type::signature::signature_type> s
-          (signature (parent));
-
-        if (not s)
+        if (pnet::type::signature::is_literal (_type))
         {
-          throw error::place_type_unknown (*this);
+          _signature = pnet::type::signature::signature_type (_type);
         }
-
-        return *s;
+        else
+        {
+          auto it (known.find (_type));
+          if (it == known.end())
+          {
+            throw error::place_type_unknown (*this);
+          }
+          _signature = it->second;
+        }
       }
 
       void place_type::push_token (const token_type & t)
@@ -97,6 +99,7 @@ namespace xml
                           , _put_token
                           , tokens
                           , _properties
+                          , _signature
                           );
       }
 
