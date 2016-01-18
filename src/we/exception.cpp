@@ -106,8 +106,8 @@ namespace pnet
                                          )
       : std::runtime_error
         ((boost::format ("could not resolve type '%1%' for field '%2%'")
-         % type::value::path::join (path)
          % type
+         % type::value::path::join (path)
          ).str()
         )
       , _type (type)
