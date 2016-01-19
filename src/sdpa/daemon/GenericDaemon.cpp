@@ -106,7 +106,9 @@ GenericDaemon::GenericDaemon( const std::string name
                , _worker_manager
                )
   , _scheduling_thread_mutex()
-  , _scheduling_thread_notifier()
+  , _scheduling_requested_guard()
+  , _scheduling_requested_condition()
+  , _scheduling_requested (false)
   , _random_extraction_engine
     (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
   , mtx_subscriber_()
@@ -1334,8 +1336,15 @@ namespace sdpa
     {
       for (;;)
       {
-        boost::mutex::scoped_lock lock (_scheduling_thread_mutex);
-        _scheduling_thread_notifier.wait (lock);
+        {
+          boost::mutex::scoped_lock lock (_scheduling_requested_guard);
+          _scheduling_requested_condition.wait
+            (lock, [this] { return _scheduling_requested; });
+
+          _scheduling_requested = false;
+        }
+
+        boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
         std::list<worker_id_t> new_workers
           (_new_workers_added.get_and_clear());
@@ -1353,14 +1362,16 @@ namespace sdpa
 
     void GenericDaemon::request_scheduling()
     {
-      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
-      _scheduling_thread_notifier.notify_one();
+      boost::mutex::scoped_lock const _ (_scheduling_requested_guard);
+      _scheduling_requested = true;
+      _scheduling_requested_condition.notify_one();
     }
 
     void GenericDaemon::request_rescheduling (worker_id_t const& w)
     {
       _new_workers_added.push (w);
-      _scheduling_thread_notifier.notify_one();
+
+      request_scheduling();
     }
 
     GenericDaemon::child_proxy::child_proxy
