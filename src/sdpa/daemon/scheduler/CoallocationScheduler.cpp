@@ -162,7 +162,6 @@ namespace sdpa
         _worker_manager.steal_work<Reservation>
           ( [this] (job_id_t const& job)
             {return allocation_table_.at (job);}
-          , _job_requirements
           );
       }
 
