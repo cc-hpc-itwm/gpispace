@@ -157,14 +157,6 @@ namespace sdpa
       }
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
-      if (jobs_to_schedule.empty())
-      {
-        _worker_manager.steal_work<Reservation>
-          ( [this] (job_id_t const& job)
-            {return allocation_table_.at (job);}
-          );
-      }
-
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
       while (!jobs_to_schedule.empty())
@@ -226,6 +218,27 @@ namespace sdpa
 
       _jobs_to_schedule.push (jobs_to_schedule);
       _jobs_to_schedule.push (nonmatching_jobs_queue);
+
+      assignment_t assignment;
+      std::transform ( allocation_table_.begin()
+                     , allocation_table_.end()
+                     , std::inserter (assignment, assignment.end())
+                     , [](allocation_table_t::value_type const &p)
+                       {
+                         return std::make_pair (p.first, p.second->workers());
+                       }
+                     );
+
+      return assignment;
+    }
+
+    CoallocationScheduler::assignment_t CoallocationScheduler::steal_work()
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      _worker_manager.steal_work<Reservation>
+      ([this] (job_id_t const& job)
+       {return allocation_table_.at (job);}
+      );
 
       assignment_t assignment;
       std::transform ( allocation_table_.begin()

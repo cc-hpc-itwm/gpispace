@@ -1625,6 +1625,7 @@ namespace sdpa
         }
 
         _scheduler.assignJobsToWorkers();
+        _scheduler.steal_work();
         _scheduler.start_pending_jobs
           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
       }

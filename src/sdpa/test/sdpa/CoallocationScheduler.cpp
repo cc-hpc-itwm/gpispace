@@ -1558,9 +1558,15 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
   {
     sdpa::daemon::CoallocationScheduler::assignment_t
     assignment (_scheduler.assignJobsToWorkers());
-
     BOOST_REQUIRE (!assignment.empty());
 
+    BOOST_REQUIRE ( assignment.at (job_0) != std::set<sdpa::worker_id_t>({"worker_2"})
+                 && assignment.at (job_1) != std::set<sdpa::worker_id_t>({"worker_2"})
+                 && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_2"})
+                  );
+
+    assignment = _scheduler.steal_work();
+    BOOST_REQUIRE (!assignment.empty());
     BOOST_REQUIRE (assignment.count (job_0));
     BOOST_REQUIRE (assignment.count (job_1));
     BOOST_REQUIRE (assignment.count (job_2));
@@ -1641,6 +1647,14 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                   || assignment.at (job_1) == std::set<sdpa::worker_id_t>({"worker_0"})
                   || assignment.at (job_2) == std::set<sdpa::worker_id_t>({"worker_0"})
                   );
+
+    BOOST_REQUIRE ( assignment.at (job_0) != std::set<sdpa::worker_id_t>({"worker_1"})
+                 && assignment.at (job_1) != std::set<sdpa::worker_id_t>({"worker_1"})
+                 && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_1"})
+                  );
+
+    assignment = _scheduler.steal_work();
+    BOOST_REQUIRE (!assignment.empty());
 
     // the worker 1 is assigned a job that was stolen from the worker 0
     BOOST_REQUIRE (  assignment.at (job_0) == std::set<sdpa::worker_id_t>({"worker_1"})

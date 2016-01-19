@@ -36,6 +36,7 @@ namespace sdpa
       // used by daemon and self and test
       void releaseReservation (const sdpa::job_id_t&);
       assignment_t assignJobsToWorkers();
+      assignment_t steal_work();
 
       bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
                                          , const sdpa::job_id_t& job_id);
