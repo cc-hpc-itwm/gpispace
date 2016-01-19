@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
     if (memory_buffers.emplace (name, "${" + name + "}").second)
     {
       unsigned long const value {fhg::util::testing::random<unsigned long>()()};
-      context.bind (name, value);
+      context.bind_and_discard_ref ({name}, value);
       expected.emplace (name, value);
       total += value;
     }

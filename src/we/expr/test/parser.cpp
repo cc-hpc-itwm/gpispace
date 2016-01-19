@@ -28,7 +28,7 @@ namespace
   {
     expr::eval::context context;
 
-    BOOST_REQUIRE_EQUAL ( expr::parse::parser (expression).eval_front (context)
+    BOOST_REQUIRE_EQUAL ( expr::parse::parser (expression).eval_all (context)
                         , pnet::type::value::value_type (value)
                         );
 
@@ -202,12 +202,12 @@ BOOST_AUTO_TEST_CASE (token_or_integral)
 BOOST_AUTO_TEST_CASE (token_or_short_circuit)
 {
   fhg::util::testing::require_exception
-    ( [] { require_evaluating_to ("true || (${a} := true)", true).value ("a"); }
+    ( [] { require_evaluating_to ("true || (${a} := true)", true).value ({"a"}); }
     , pnet::exception::missing_binding ("a")
     );
 
   BOOST_REQUIRE_EQUAL
-    ( require_evaluating_to ("false || (${a} := true)", true).value ("a")
+    ( require_evaluating_to ("false || (${a} := true)", true).value ({"a"})
     , pnet::type::value::value_type (true)
     );
 }
@@ -263,12 +263,12 @@ BOOST_AUTO_TEST_CASE (token_and_integral)
 BOOST_AUTO_TEST_CASE (token_and_short_circuit)
 {
   fhg::util::testing::require_exception
-    ( [] { require_evaluating_to ("false && (${a} := false)", false).value ("a"); }
+    ( [] { require_evaluating_to ("false && (${a} := false)", false).value ({"a"}); }
     , pnet::exception::missing_binding ("a")
     );
 
   BOOST_REQUIRE_EQUAL
-    ( require_evaluating_to ("true && (${a} := false)", false).value ("a")
+    ( require_evaluating_to ("true && (${a} := false)", false).value ({"a"})
     , pnet::type::value::value_type (false)
     );
 }
@@ -480,7 +480,7 @@ namespace
     return boost::get<T>
       ( expr::parse::parser
         ((boost::format ("%1%%2%") % x % suffix<T>()()).str())
-      . eval_front (context)
+      . eval_all (context)
       );
   }
 
@@ -975,14 +975,14 @@ namespace
       expr::eval::context context;
 
       T const r_value
-        (boost::get<T> (expr::parse::parser (r).eval_front (context)));
+        (boost::get<T> (expr::parse::parser (r).eval_all (context)));
 
       if (std::abs (r_value) >= std::numeric_limits<T>::min())
       {
         BOOST_REQUIRE_EQUAL
           ( boost::get<T>
-            (expr::parse::parser (expression). eval_front (context))
-          , boost::get<T> (expr::parse::parser (l).eval_front (context))
+            (expr::parse::parser (expression). eval_all (context))
+          , boost::get<T> (expr::parse::parser (l).eval_all (context))
           / r_value
           );
       }
@@ -1038,11 +1038,11 @@ namespace
       BOOST_REQUIRE_EQUAL
         ( boost::get<T>
           ( expr::parse::parser
-            ((boost::format ("%1% ** %2%") % l % r).str()).eval_front (context)
+            ((boost::format ("%1% ** %2%") % l % r).str()).eval_all (context)
           )
         , std::pow
-          ( boost::get<T> (expr::parse::parser (l).eval_front (context))
-          , boost::get<T> (expr::parse::parser (r).eval_front (context))
+          ( boost::get<T> (expr::parse::parser (l).eval_all (context))
+          , boost::get<T> (expr::parse::parser (r).eval_all (context))
           )
         );
     }
@@ -1100,10 +1100,10 @@ namespace
         ( boost::get<R>
           ( expr::parse::parser
             ((boost::format ("%1% (%2%)") % operation_string  % input).str())
-          .eval_front (context)
+          .eval_all (context)
           )
         , operation
-          (boost::get<T> (expr::parse::parser (input).eval_front (context)))
+          (boost::get<T> (expr::parse::parser (input).eval_all (context)))
         );
     }
   }
@@ -1333,7 +1333,7 @@ namespace
         ((boost::format ("sqrt (%1%)") % input).str());
 
       T const value
-        (boost::get<T> (expr::parse::parser (input).eval_front (_)));
+        (boost::get<T> (expr::parse::parser (input).eval_all (_)));
 
       if (value < 0)
       {
@@ -1345,7 +1345,7 @@ namespace
       else
       {
         BOOST_REQUIRE_EQUAL
-          ( boost::get<T> (expr::parse::parser (expression).eval_front (_))
+          ( boost::get<T> (expr::parse::parser (expression).eval_all (_))
           , std::sqrt (value)
           );
       }
@@ -1419,7 +1419,7 @@ namespace
         ((boost::format ("log (%1%)") % input).str());
 
       T const value
-        (boost::get<T> (expr::parse::parser (input).eval_front (_)));
+        (boost::get<T> (expr::parse::parser (input).eval_all (_)));
 
       if (value < 0)
       {
@@ -1431,7 +1431,7 @@ namespace
       else
       {
         BOOST_REQUIRE_EQUAL
-          ( boost::get<T> (expr::parse::parser (expression).eval_front (_))
+          ( boost::get<T> (expr::parse::parser (expression).eval_all (_))
           , std::log (value)
           );
       }
@@ -2023,4 +2023,18 @@ BOOST_AUTO_TEST_CASE (token_set_is_subset)
     ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 1L))", false);
   require_evaluating_to
     ("set_is_subset (set_insert (Set{}, 1), set_insert (Set{}, 2))", false);
+}
+
+//! \todo add more tests
+
+BOOST_AUTO_TEST_CASE (is_const_true)
+{
+  BOOST_REQUIRE_EQUAL (true, expr::parse::parser ("true").is_const_true());
+  BOOST_REQUIRE_EQUAL (false, expr::parse::parser ("false").is_const_true());
+
+  //! \todo make this evaluate to "true"
+  BOOST_REQUIRE_EQUAL
+    (false, expr::parse::parser ("${a} :eq: ${a}").is_const_true());
+
+  BOOST_REQUIRE_EQUAL (false, expr::parse::parser ("${a}").is_const_true());
 }

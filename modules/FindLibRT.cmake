@@ -1,6 +1,6 @@
 # locates the librt library
 # This file defines:
-# * LIBRT_FOUND if libreadline was found
+# * LIBRT_FOUND if librt was found
 # * LIBRT_LIBRARY The lib to link to (currently only a static unix lib)
 # * LIBRT_STATIC_LIBRARY
 # * LIBRT_SHARED_LIBRARY The lib to link to (currently only a static unix lib)

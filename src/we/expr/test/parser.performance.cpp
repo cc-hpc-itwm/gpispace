@@ -6,6 +6,7 @@
 #include <we/exception.hpp>
 #include <we/expr/eval/context.hpp>
 #include <we/expr/parse/parser.hpp>
+#include <we/type/value/function.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -28,7 +29,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 
   expr::eval::context context;
 
-  context.bind ("b", max);
+  context.bind_ref ("b", max);
 
   expr::parse::parser parser (input);
 
@@ -38,9 +39,9 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 
     do
     {
-      context.bind ("a", i++);
+      context.bind_and_discard_ref ({"a"}, i++);
     }
-    while (parser.eval_front_bool (context));
+    while (boost::get<bool> (parser.eval_all (context)));
   }
 }
 
@@ -55,7 +56,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 
   expr::eval::context context;
 
-  context.bind ("b", max);
+  context.bind_ref ("b", max);
 
   for (int r (0); r < round; ++r)
   {
@@ -63,8 +64,8 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 
     do
     {
-      context.bind ("a", i++);
+      context.bind_and_discard_ref ({"a"}, i++);
     }
-    while (expr::parse::parser (input, context).get_front_bool());
+    while (boost::get<bool> (expr::parse::parser (input).eval_all (context)));
   }
 }

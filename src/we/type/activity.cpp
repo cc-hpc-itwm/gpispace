@@ -167,7 +167,7 @@ namespace we
             )
         {
           add_output
-            (port_by_id.first, output.value (port_by_id.second.name()));
+            (port_by_id.first, output.value ({port_by_id.second.name()}));
         }
       }
 

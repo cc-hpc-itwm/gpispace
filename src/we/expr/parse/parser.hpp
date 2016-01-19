@@ -1,18 +1,13 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
-#include <we/expr/parse/node.hpp>
-
 #include <we/expr/exception.hpp>
+#include <we/expr/parse/node.hpp>
 #include <we/expr/token/type.hpp>
 
-#include <functional>
-#include <string>
-#include <stack>
 #include <list>
-
 #include <ostream>
+#include <stack>
+#include <string>
 
 namespace expr
 {
@@ -53,15 +48,13 @@ namespace expr
       op_stack_t op_stack;
       nd_stack_t nd_stack;
       nd_stack_t tmp_stack;
-      bool _constant_folding;
 
-      nd_it_t begin () { return nd_stack.begin(); }
-      nd_it_t end () { return nd_stack.end(); }
-      const bool& constant_folding() { return _constant_folding; }
+      nd_it_t begin() { return nd_stack.begin(); }
+      nd_it_t end() { return nd_stack.end(); }
 
     public:
-      nd_const_it_t begin () const { return nd_stack.begin(); }
-      nd_const_it_t end () const { return nd_stack.end(); }
+      nd_const_it_t begin() const { return nd_stack.begin(); }
+      nd_const_it_t end() const { return nd_stack.end(); }
 
     private:
       void unary (const token::type & token, const std::size_t k);
@@ -69,57 +62,21 @@ namespace expr
       void ternary (const token::type & token, const std::size_t k);
       void ite (const std::size_t k);
       void reduce (const std::size_t k);
-      void
-      parse ( const std::string& input
-            , const std::function<nd_t (const std::list<std::string>&)>&
-            );
+      void parse (const std::string& input);
 
     public:
-      parser ( const std::string & input
-             , eval::context & context
-             , const bool& constant_folding = true
-             );
-      parser ( const std::string & input
-             , const bool& constant_folding = true
-             );
-      parser ( const nd_stack_t & seq
-             , const bool& constant_folding = true
-             );
-
-      // the parsed expressions in the correct order
-      bool empty (void) const { return nd_stack.empty(); }
-      void pop_front (void) { nd_stack.pop_front(); }
-      const nd_t & front (void) const { return nd_stack.front(); }
-
-      void add (const parser & other);
-
-      // eval the first entry in the stack
-      pnet::type::value::value_type eval_front (eval::context & context) const;
-      bool eval_front_bool (eval::context & context) const;
-
-      // get the already evaluated value, throws if entry is not an value
-      pnet::type::value::value_type get_front () const;
-      bool get_front_bool () const;
+      parser (const std::string & input);
+      parser (const nd_stack_t & seq);
 
       // evaluate the whole stack in order, return the last value
       pnet::type::value::value_type eval_all (eval::context& context) const;
-      bool eval_all_bool (eval::context & context) const;
-
       pnet::type::value::value_type eval_all() const;
-      bool eval_all_bool() const;
 
       bool is_const_true() const;
 
       void rename (const std::string& from, const std::string& to);
 
-      std::string string (void) const;
-
-      friend std::ostream & operator << (std::ostream &, const parser &);
+      std::string string() const;
     };
-
-    std::ostream& operator << (std::ostream&, const parser&);
-    std::string parse_result ( const std::string&
-                             , const bool& constant_folding = false
-                             );
   }
 }

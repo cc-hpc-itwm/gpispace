@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE (call_lib)
 
   m.call ("answer", &context, input, output, std::map<std::string, void*>());
 
-  BOOST_REQUIRE_EQUAL ( output.value ("out")
+  BOOST_REQUIRE_EQUAL ( output.value ({"out"})
                       , pnet::type::value::value_type (42L)
                       );
 }

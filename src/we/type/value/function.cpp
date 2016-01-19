@@ -536,20 +536,6 @@ namespace pnet
             }
           }
         };
-
-        class visitor_is_true : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator() (const bool& b) const
-          {
-            return b;
-          }
-          template<typename T>
-            bool operator() (const T&) const
-          {
-            return false;
-          }
-        };
       }
 
       value_type unary (const expr::token::type& t, const value_type& x)
@@ -562,10 +548,6 @@ namespace pnet
                         )
       {
         return boost::apply_visitor (visitor_binary (t), l, r);
-      }
-      bool is_true (const value_type& x)
-      {
-        return boost::apply_visitor (visitor_is_true(), x);
       }
     }
   }

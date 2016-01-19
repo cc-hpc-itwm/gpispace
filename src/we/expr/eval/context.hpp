@@ -7,8 +7,6 @@
 #include <list>
 #include <string>
 
-#include <iosfwd>
-
 namespace expr
 {
   namespace eval
@@ -29,26 +27,13 @@ namespace expr
       ref_container_type _ref_container;
 
     public:
-      void bind (const std::string&, const pnet::type::value::value_type&);
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
 
       void bind_and_discard_ref ( const std::list<std::string>&
                                 , const pnet::type::value::value_type&
                                 );
-      void bind_and_discard_ref ( const std::string&
-                                , const pnet::type::value::value_type&
-                                );
 
-      void bind ( const std::list<std::string>&
-                , const pnet::type::value::value_type&
-                );
-
-      const pnet::type::value::value_type& value (const std::string&) const;
       const pnet::type::value::value_type& value (const std::list<std::string>&) const;
-
-      friend std::ostream& operator<< (std::ostream&, const context&);
     };
-
-    std::ostream& operator<< (std::ostream&, const context&);
   }
 }
