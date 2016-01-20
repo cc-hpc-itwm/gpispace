@@ -100,7 +100,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
+BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared_file)
 {
   gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
 
@@ -110,115 +110,29 @@ BOOST_FIXTURE_TEST_CASE (old_segment_version, setup_and_cleanup_shared_file)
 
   const gpi::pc::type::size_t size = 4096;
 
-  {
-    beegfs_area_t area ( _logger
-                       , fhg::util::syscall::getpid()
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_NONE
-                       , topology
-                       , handle_generator
+  boost::filesystem::create_directories (path_to_shared_file);
+
+  BOOST_REQUIRE_THROW  ( gpi::pc::memory::beegfs_area_t ( _logger
+                                                        , fhg::util::syscall::getpid()
+                                                        , path_to_shared_file
+                                                        , size
+                                                        , gpi::pc::F_NONE
+                                                        , topology
+                                                        , handle_generator
+                                                        )
+                       , std::exception
                        );
-    area.set_id (2);
-  }
 
-  {
-    std::ofstream ofs ((path_to_shared_file / "version").string ().c_str ());
-    ofs << "BEEGFS version 0" << std::endl;
-  }
+  boost::filesystem::remove (path_to_shared_file);
 
-  try
-  {
-    beegfs_area_t area ( _logger
-                       , fhg::util::syscall::getpid()
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_NONE
-                       , topology
-                       , handle_generator
-                       );
-    area.set_id (2);
-  }
-  catch (std::exception const &ex)
-  {
-    // ok
-  }
-}
-
-BOOST_FIXTURE_TEST_CASE (too_new_segment_version, setup_and_cleanup_shared_file)
-{
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
-
-  using namespace gpi::pc::memory;
-
-  gpi::tests::dummy_topology topology;
-
-  const gpi::pc::type::size_t size = 4096;
-
-  {
-    beegfs_area_t area ( _logger
-                       , fhg::util::syscall::getpid()
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_NONE
-                       , topology
-                       , handle_generator
-                       );
-  }
-
-  {
-    std::ofstream ofs ((path_to_shared_file / "version").string ().c_str ());
-    ofs << "BEEGFS segment version " << (beegfs_area_t::BEEGFS_AREA_VERSION + 1) << std::endl;
-  }
-
-  BOOST_REQUIRE_THROW ( beegfs_area_t ( _logger
-                                      , fhg::util::syscall::getpid()
-                                      , path_to_shared_file
-                                      , size
-                                      , gpi::pc::F_NONE
-                                      , topology
-                                      , handle_generator
-                                      )
-                      , std::exception
-                      );
-}
-
-BOOST_FIXTURE_TEST_CASE (garbage_segment_version, setup_and_cleanup_shared_file)
-{
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
-
-  using namespace gpi::pc::memory;
-
-  gpi::tests::dummy_topology topology;
-
-  const gpi::pc::type::size_t size = 4096;
-
-  {
-    beegfs_area_t area ( _logger
-                       , fhg::util::syscall::getpid()
-                       , path_to_shared_file
-                       , size
-                       , gpi::pc::F_NONE
-                       , topology
-                       , handle_generator
-                       );
-  }
-
-  {
-    std::ofstream ofs ((path_to_shared_file / "version").string ().c_str ());
-    ofs << "garbage" << std::endl;
-  }
-
-  BOOST_REQUIRE_THROW ( beegfs_area_t ( _logger
-                                      , fhg::util::syscall::getpid()
-                                      , path_to_shared_file
-                                      , size
-                                      , gpi::pc::F_NONE
-                                      , topology
-                                      , handle_generator
-                                      )
-                      , std::exception
-                      );
+  gpi::pc::memory::beegfs_area_t ( _logger
+                                 , fhg::util::syscall::getpid()
+                                 , path_to_shared_file
+                                 , size
+                                 , gpi::pc::F_NONE
+                                 , topology
+                                 , handle_generator
+                                 );
 }
 
 BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_file)
