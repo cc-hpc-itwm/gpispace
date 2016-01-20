@@ -1698,9 +1698,11 @@ struct fixture_add_new_workers
 
   std::map<sdpa::job_id_t, job_requirements_t> _requirements;
 
-  void add_new_workers ( std::vector<sdpa::worker_id_t>& a
-                       , unsigned int n
-                       )
+  sdpa::daemon::CoallocationScheduler::assignment_t add_new_workers
+    ( std::vector<sdpa::worker_id_t>& a
+    , std::string cpbname
+    , unsigned int n
+    )
   {
     const unsigned int N (a.size());
     unsigned int j (N);
@@ -1713,27 +1715,34 @@ struct fixture_add_new_workers
 
     BOOST_REQUIRE_EQUAL (a.size(), N + n);
 
+    sdpa::daemon::CoallocationScheduler::assignment_t assignment;
     for_each ( a.begin() + N
              , a.end()
-             , [this] (sdpa::worker_id_t worker)
+             , [this, &cpbname, &assignment] (sdpa::worker_id_t worker)
                {
+                 sdpa::capabilities_set_t cpbset;
+                 if (!cpbname.empty())
+                   cpbset.emplace (cpbname, worker);
                  _worker_manager.addWorker ( worker
-                                           , {}
+                                           , cpbset
                                            , random_ulong()
                                            , false
                                            , fhg::util::testing::random_string()
                                            , fhg::util::testing::random_string()
                                            );
 
-                 _scheduler.reschedule_pending_jobs_matching_worker (worker);
-                 request_scheduling ();
+                 assignment = request_scheduling();
                }
              );
+
+    return assignment;
   }
 
-  void add_new_jobs ( std::vector<sdpa::job_id_t>& a
-                    , unsigned int n
-                    )
+  sdpa::daemon::CoallocationScheduler::assignment_t add_new_jobs
+    ( std::vector<sdpa::job_id_t>& a
+    , std::string reqname
+    , unsigned int n
+    )
   {
     const unsigned int N (a.size());
     unsigned int j (N);
@@ -1746,25 +1755,29 @@ struct fixture_add_new_workers
 
     BOOST_REQUIRE_EQUAL (a.size(), N + n);
 
+    sdpa::daemon::CoallocationScheduler::assignment_t assignment;
     for_each ( a.begin() + N
              , a.end()
-             , [this] (sdpa::job_id_t job)
+             , [this, &reqname, &assignment] (sdpa::job_id_t job)
                {
-                 add_job (job, no_requirements());
+                 add_job (job, reqname.empty()?no_requirements():require (reqname));
                  _scheduler.enqueueJob (job);
-                 request_scheduling();
+                 assignment = request_scheduling();
                }
              );
+
+    return assignment;
   }
 
-  void request_scheduling()
+  sdpa::daemon::CoallocationScheduler::assignment_t request_scheduling()
   {
     _scheduler.assignJobsToWorkers();
+    return _scheduler.steal_work();
   }
 };
 
 BOOST_FIXTURE_TEST_CASE
-  ( add_new_workers_and_reschedule
+  ( add_new_workers_and_steal_work
   , fixture_add_new_workers
   )
 {
@@ -1772,15 +1785,13 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int k (10);
 
   std::vector<sdpa::worker_id_t> workers;
-  add_new_workers (workers, n);
+  add_new_workers (workers, "", n);
 
   std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, 2*n);
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (add_new_jobs (jobs, "", 2*n));
 
   {
-    sdpa::daemon::CoallocationScheduler::assignment_t
-      assignment (_scheduler.assignJobsToWorkers());
-
     BOOST_REQUIRE (!assignment.empty());
 
     for (sdpa::job_id_t job : jobs)
@@ -1793,27 +1804,25 @@ BOOST_FIXTURE_TEST_CASE
         : assignment | boost::adaptors::map_values
         )
     {
-      std::set<sdpa::worker_id_t> result;
       std::set_union ( assigned_workers.begin()
                      , assigned_workers.end()
                      , s.begin()
                      , s.end()
-                     , std::inserter (result, result.begin())
+                     , std::inserter (assigned_workers, assigned_workers.begin())
                      );
-      std::swap (assigned_workers, result);
     }
 
     BOOST_REQUIRE_EQUAL (assigned_workers.size(), n);
   }
 
   {
-    add_new_jobs (jobs, 2*k);
-    add_new_workers (workers, k);
+    add_new_jobs (jobs, "", 2*k);
+    add_new_workers (workers, "", k);
 
     for (sdpa::worker_id_t worker : workers)
     {
       BOOST_REQUIRE_GE
-        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 2);
+        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
     }
   }
 }
