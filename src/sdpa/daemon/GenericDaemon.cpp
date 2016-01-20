@@ -503,7 +503,7 @@ try
     , event->hostname(), source
     );
 
-  request_rescheduling (event->name());
+  request_scheduling();
 
   // send to the masters my new set of capabilities
   for (master_network_info const& info : _master_info)
@@ -1616,14 +1616,6 @@ namespace sdpa
 
         boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
-        std::list<worker_id_t> new_workers
-          (_new_workers_added.get_and_clear());
-
-        for (worker_id_t const& w : new_workers)
-        {
-          _scheduler.reschedule_pending_jobs_matching_worker (w);
-        }
-
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
@@ -1636,13 +1628,6 @@ namespace sdpa
       boost::mutex::scoped_lock const _ (_scheduling_requested_guard);
       _scheduling_requested = true;
       _scheduling_requested_condition.notify_one();
-    }
-
-    void GenericDaemon::request_rescheduling (worker_id_t const& w)
-    {
-      _new_workers_added.push (w);
-
-      request_scheduling();
     }
 
     GenericDaemon::child_proxy::child_proxy

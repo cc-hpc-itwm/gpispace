@@ -250,36 +250,11 @@ namespace sdpa {
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
-      template <typename T>
-      class concurrent_list_t
-      {
-      public:
-        void push (T const& v)
-        {
-          boost::mutex::scoped_lock _ (mutex_);
-          items_.push_back (v);
-        }
-
-        std::list<job_id_t> get_and_clear()
-        {
-          boost::mutex::scoped_lock const _ (mutex_);
-          std::list<job_id_t> items;
-          std::swap (items, items_);
-          return items;
-        }
-
-      private:
-        std::list<T> items_;
-        boost::mutex mutex_;
-      };
-      concurrent_list_t<worker_id_t> _new_workers_added;
-
       boost::mutex _scheduling_thread_mutex;
       boost::mutex _scheduling_requested_guard;
       boost::condition_variable _scheduling_requested_condition;
       bool _scheduling_requested;
       void request_scheduling();
-      void request_rescheduling (worker_id_t const&);
 
       boost::optional<std::mt19937> _random_extraction_engine;
 
