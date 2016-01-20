@@ -7,6 +7,8 @@
 
 #include <we/type/value.hpp>
 
+#include <boost/filesystem/path.hpp>
+
 #include <string>
 
 namespace gspc
