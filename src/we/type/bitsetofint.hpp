@@ -1,15 +1,14 @@
 #pragma once
 
-#include <vector>
-
-#include <boost/optional.hpp>
 #include <boost/function.hpp>
+#include <boost/optional.hpp>
 #include <boost/serialization/vector.hpp>
 
 #include <iosfwd>
+#include <set>
+#include <vector>
 
 #include <stdint.h>
-#include <set>
 
 namespace bitsetofint
 {

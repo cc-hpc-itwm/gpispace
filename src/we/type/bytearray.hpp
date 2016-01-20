@@ -1,14 +1,13 @@
 #pragma once
 
+#include <boost/serialization/vector.hpp>
 #include <boost/type_traits/is_pointer.hpp>
 #include <boost/utility/enable_if.hpp>
-#include <boost/serialization/vector.hpp>
 
 #include <algorithm>
-#include <vector>
-
 #include <iosfwd>
 #include <string>
+#include <vector>
 
 namespace we
 {
