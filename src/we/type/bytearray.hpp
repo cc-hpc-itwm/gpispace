@@ -8,7 +8,6 @@
 #include <vector>
 
 #include <iosfwd>
-#include <sstream>
 #include <string>
 
 namespace we

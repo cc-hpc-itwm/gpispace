@@ -1,12 +1,9 @@
 #pragma once
 
-#include <we/type/id.hpp>
 #include <we/type/value.hpp>
 #include <we/type/signature.hpp>
 
 #include <we/expr/token/type.hpp>
-
-#include <boost/format.hpp>
 
 #include <list>
 #include <stdexcept>

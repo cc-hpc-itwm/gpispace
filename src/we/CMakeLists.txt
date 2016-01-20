@@ -46,7 +46,6 @@ install (FILES
   type/bytearray.hpp
   type/value.hpp
   type/signature.hpp
-  type/id.hpp
   DESTINATION include/we/type
 )
 install (FILES

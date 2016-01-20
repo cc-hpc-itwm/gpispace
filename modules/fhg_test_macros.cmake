@@ -54,7 +54,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/signature_of.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/bitsetofint.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/bytearray.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/we/type/id.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/literal/control.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/signature.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value.hpp"

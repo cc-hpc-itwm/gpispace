@@ -3,8 +3,6 @@
 #include <we/type/value.hpp>
 #include <we/type/value/to_value.hpp>
 
-#include <boost/function.hpp>
-
 #include <boost/foreach.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
 
