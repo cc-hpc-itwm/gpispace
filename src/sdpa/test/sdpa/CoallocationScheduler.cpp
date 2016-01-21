@@ -1826,3 +1826,117 @@ BOOST_FIXTURE_TEST_CASE
     }
   }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( add_new_workers_with_capabilities_and_steal_work_repeatedly
+  , fixture_add_new_workers
+  )
+{
+  std::vector<sdpa::worker_id_t> workers;
+  std::vector<sdpa::job_id_t> jobs;
+
+  const unsigned int n_load_jobs (100);
+  const unsigned int n_calc_jobs (2000);
+  const unsigned int n_reduce_jobs (100);
+
+  const unsigned int n_load_workers (n_load_jobs);
+  const unsigned int n_calc_workers (500);
+  const unsigned int n_reduce_workers (n_reduce_jobs);
+
+  add_new_workers (workers, "LOAD", n_load_workers);
+  add_new_workers (workers, "CALC", n_calc_workers);
+  add_new_workers (workers, "REDUCE", n_reduce_workers);
+
+  add_new_jobs (jobs, "LOAD", n_load_jobs);
+  add_new_jobs (jobs, "CALC", n_calc_jobs);
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (add_new_jobs (jobs, "REDUCE", n_reduce_jobs));
+
+  BOOST_REQUIRE (!assignment.empty());
+
+  {
+    // all the jobs were assigned
+    for (sdpa::job_id_t job : jobs)
+    {
+      BOOST_REQUIRE (assignment.count (job));
+    }
+
+    std::set<sdpa::worker_id_t> assigned_workers;
+    for ( std::set<sdpa::worker_id_t> const& s
+        : assignment | boost::adaptors::map_values
+        )
+    {
+      std::set_union ( assigned_workers.begin()
+                     , assigned_workers.end()
+                     , s.begin()
+                     , s.end()
+                     , std::inserter (assigned_workers, assigned_workers.begin())
+                     );
+    }
+
+    // all the workers were assigned at least one job
+    BOOST_REQUIRE_EQUAL ( assigned_workers.size()
+                        , n_load_workers
+                        + n_calc_workers
+                        + n_reduce_workers
+                        );
+  }
+
+  {
+    // add a new LOAD worker
+    const sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (add_new_workers (workers, "LOAD", 1));
+
+    // this last added worker shout get nothing as there is no job new generated,
+    // all the other jobs were already assigned and there is nothing to
+    // steal as all the LOAD workers have exactly one job assigned
+    BOOST_REQUIRE_EQUAL
+      (_worker_manager.get_worker_jobs_and_clean_queues (workers.back()).size(), 0);
+  }
+
+  {
+    // add a new REDUCE worker
+    const sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (add_new_workers (workers, "REDUCE", 1));
+
+    // this last added worker shout get nothing as there is no job new generated,
+    // all the other jobs were already assigned and there is nothing to
+    // steal as all the REDUCE workers have exactly one job assigned
+    BOOST_REQUIRE_EQUAL
+      (_worker_manager.get_worker_jobs_and_clean_queues (workers.back()).size(), 0);
+   }
+
+  {
+    const size_t size_before (workers.size());
+    // add new n_calc_workers CALC workers
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (add_new_workers (workers, "CALC", n_calc_workers));
+
+    BOOST_REQUIRE_EQUAL (workers.size(), size_before + n_calc_workers);
+
+    // all CALC workers should get a job stolen from one of the  n_calc_workers
+    // workers previously added (no new job was generated)
+    for (auto it = workers.begin() + size_before; it != workers.end(); ++it)
+    {
+      BOOST_REQUIRE_EQUAL
+        (_worker_manager.get_worker_jobs_and_clean_queues (*it).size(), 1);
+    }
+  }
+
+  {
+    const size_t size_before (workers.size());
+    // add new n_calc_workers CALC workers
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (add_new_workers (workers, "CALC", n_calc_workers));
+
+    BOOST_REQUIRE_EQUAL (workers.size(), size_before + n_calc_workers);
+
+    // all CALC workers should get a job stolen from one of the  n_calc_workers
+    // workers previously added (no new job was generated)
+    for (auto it = workers.begin() + size_before; it != workers.end(); ++it)
+    {
+      BOOST_REQUIRE_EQUAL
+        (_worker_manager.get_worker_jobs_and_clean_queues (*it).size(), 1);
+    }
+  }
+}
