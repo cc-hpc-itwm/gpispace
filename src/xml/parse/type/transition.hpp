@@ -53,8 +53,6 @@ namespace xml
 
         const function_or_use_type& function_or_use() const;
         function_or_use_type& function_or_use();
-        const function_or_use_type& function_or_use
-          (const function_or_use_type& function_or_use_);
 
         function_type const& resolved_function() const;
 

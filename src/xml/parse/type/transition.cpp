@@ -139,12 +139,6 @@ namespace xml
       {
         return _function_or_use;
       }
-      const transition_type::function_or_use_type&
-        transition_type::function_or_use
-        (const function_or_use_type& function_or_use_)
-      {
-        return _function_or_use = function_or_use_;
-      }
 
       function_type const& transition_type::resolved_function() const
       {
@@ -366,7 +360,7 @@ namespace xml
           {
             throw error::unknown_function (name, *this);
           }
-          function_or_use (it->second);
+          _function_or_use = it->second;
         }
         else
         {
