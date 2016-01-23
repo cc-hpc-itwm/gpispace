@@ -11,74 +11,16 @@ namespace xml
   {
     namespace type
     {
-      namespace
-      {
-        void lines (const std::string& s, expressions_type& v)
-        {
-          char const sep (';');
-
-          std::string::const_iterator pos (s.begin());
-          std::string::const_iterator item_begin (s.begin());
-          std::string::const_iterator item_end (s.begin());
-          const std::string::const_iterator& end (s.end());
-
-          while (pos != end)
-          {
-            if (*pos == sep)
-            {
-              v.push_back (std::string (item_begin, item_end));
-              ++pos;
-              while (pos != end && (*pos == sep || isspace (*pos)))
-              {
-                ++pos;
-              }
-              item_begin = item_end = pos;
-            }
-            else
-            {
-              ++item_end;
-              ++pos;
-            }
-          }
-
-          if (item_begin != item_end)
-          {
-            v.push_back (std::string (item_begin, item_end));
-          }
-        }
-
-        expressions_type split (const expressions_type& exps)
-        {
-          expressions_type list;
-
-          for ( expressions_type::const_iterator exp (exps.begin())
-              ; exp != exps.end()
-              ; ++exp
-              )
-          {
-            lines (*exp, list);
-          }
-
-          return list;
-        }
-      }
-
       expression_type::expression_type ( const util::position_type& pod
-                                       , const expressions_type & exps
+                                       , expressions_type const& expressions
                                        )
         : with_position_of_definition (pod)
-        , _expressions (split (exps))
+        , _expressions (expressions)
       {}
 
-      std::string expression_type::expression (const std::string& sep) const
+      std::string expression_type::expression() const
       {
-        return fhg::util::join (_expressions, ";" + sep).string();
-      }
-
-      void expression_type::append (const expressions_type& other)
-      {
-        _expressions.insert
-          (_expressions.end(), other.begin(), other.end());
+        return fhg::util::join (_expressions, "; ").string();
       }
 
       namespace dump

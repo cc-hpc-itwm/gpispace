@@ -52,11 +52,6 @@ namespace xml
 
         function_type ( const util::position_type&
                       , const boost::optional<std::string>& name
-                      , const content_type& content
-                      );
-
-        function_type ( const util::position_type&
-                      , const boost::optional<std::string>& name
                       , const ports_type& ports
                       , fhg::pnet::util::unique<memory_buffer_type> const&
                       , std::list<memory_get> const&
@@ -83,7 +78,6 @@ namespace xml
 
         const content_type& content() const;
         content_type& content();
-        const content_type& content (const content_type&);
 
         // ***************************************************************** //
 
@@ -97,20 +91,12 @@ namespace xml
 
         // ***************************************************************** //
 
-        void push_memory_get (memory_get const&);
-        void push_memory_put (memory_put const&);
-        void push_memory_getput (memory_getput const&p);
-
         std::list<memory_get> const& memory_gets() const;
         std::list<memory_put> const& memory_puts() const;
         std::list<memory_getput> const& memory_getputs() const;
 
-        void push_memory_buffer (const memory_buffer_type&);
         fhg::pnet::util::unique<memory_buffer_type>
           const& memory_buffers() const;
-        bool is_known_memory_buffer (std::string const&) const;
-
-        void push_port (const port_type&);
 
         const ports_type& ports() const;
 
@@ -130,12 +116,7 @@ namespace xml
 
         // ***************************************************************** //
 
-        void add_expression (const expressions_type & e);
-
-        // ***************************************************************** //
-
         const conditions_type& conditions() const;
-        void add_conditions (const std::list<std::string>&);
 
         // ***************************************************************** //
 
@@ -175,7 +156,6 @@ namespace xml
                         );
 
         const we::type::property::type& properties() const;
-        we::type::property::type& properties();
 
         const unique_key_type& unique_key() const;
 

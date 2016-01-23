@@ -56,18 +56,6 @@ namespace xml
   {
     namespace type
     {
-      // ******************************************************************* //
-
-      function_type::function_type ( const util::position_type& pod
-                                   , const boost::optional<std::string>& name
-                                   , const content_type& content
-                                   )
-        : with_position_of_definition (pod)
-        , _name (name)
-        , contains_a_module_call (false)
-        , _content (content)
-      {}
-
       function_type::function_type
         ( const util::position_type& pod
         , const boost::optional<std::string>& name
@@ -98,7 +86,78 @@ namespace xml
         , requirements (requirements_)
         , _content (content)
         , _properties (properties)
-      {}
+      {
+        for (port_type const& port : _ports)
+        {
+          if (port.direction() != we::type::PORT_TUNNEL)
+          {
+            boost::optional<const port_type&> const other
+              ( _ports.get ( std::make_pair ( port.name()
+                                            , port.direction()
+                                            == we::type::PORT_IN
+                                            ? we::type::PORT_OUT
+                                            : we::type::PORT_IN
+                                            )
+                           )
+              );
+
+            if (!!other && port.type() != other->type())
+            {
+              throw error::port_type_mismatch (port, other.get());
+            }
+          }
+
+          boost::optional<memory_buffer_type const&> const memory_buffer
+            (_memory_buffers.get (port.name()));
+
+          if (!!memory_buffer)
+          {
+            throw error::memory_buffer_with_same_name_as_port
+              (memory_buffer.get(), port);
+          }
+        }
+
+        for (memory_buffer_type const& memory_buffer : _memory_buffers)
+        {
+          {
+            boost::optional<port_type const&> const port_in
+              (get_port_in (memory_buffer.name()));
+
+            if (!!port_in)
+            {
+              throw error::memory_buffer_with_same_name_as_port
+                (memory_buffer, port_in.get());
+            }
+          }
+
+          {
+            boost::optional<port_type const&> const port_out
+              (get_port_out (memory_buffer.name()));
+
+            if (!!port_out)
+            {
+              throw error::memory_buffer_with_same_name_as_port
+                (memory_buffer, port_out.get());
+            }
+          }
+        }
+
+        if (!fhg::util::boost::is_of_type<module_type> (_content))
+        {
+          if (!_memory_buffers.empty())
+          {
+            throw error::memory_buffer_for_non_module (*this);
+          }
+
+          if (  !_memory_gets.empty()
+             || !_memory_puts.empty()
+             || !_memory_getputs.empty()
+             )
+          {
+            throw error::memory_transfer_for_non_module (*this);
+          }
+        }
+      }
 
       function_type::function_type (function_type const&) = default;
       function_type::function_type (function_type&&) = default;
@@ -133,11 +192,6 @@ namespace xml
       {
         return _content;
       }
-      const function_type::content_type&
-        function_type::content (const content_type& content_)
-      {
-        return _content = content_;
-      }
 
       // ******************************************************************* //
 
@@ -164,19 +218,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      void function_type::push_memory_get (memory_get const& mg)
-      {
-        _memory_gets.push_back (mg);
-      }
-      void function_type::push_memory_put (memory_put const& mp)
-      {
-        _memory_puts.push_back (mp);
-      }
-      void function_type::push_memory_getput (memory_getput const& mgp)
-      {
-        _memory_getputs.push_back (mgp);
-      }
-
       std::list<memory_get> const& function_type::memory_gets() const
       {
         return _memory_gets;
@@ -190,75 +231,10 @@ namespace xml
         return _memory_getputs;
       }
 
-      void function_type::push_memory_buffer (memory_buffer_type const& buffer)
-      {
-        _memory_buffers.push<error::duplicate_memory_buffer> (buffer);
-
-        {
-          boost::optional<port_type const&> port_in
-            (get_port_in (buffer.name()));
-
-          if (port_in)
-          {
-            throw error::memory_buffer_with_same_name_as_port
-              (buffer, *port_in);
-          }
-        }
-
-        {
-          boost::optional<port_type const&> port_out
-            (get_port_out (buffer.name()));
-
-          if (port_out)
-          {
-            throw error::memory_buffer_with_same_name_as_port
-              (buffer, *port_out);
-          }
-        }
-      }
-
       fhg::pnet::util::unique<memory_buffer_type> const&
         function_type::memory_buffers() const
       {
         return _memory_buffers;
-      }
-
-      void function_type::push_port (const port_type& port)
-      {
-        _ports.push<error::duplicate_port> (port);
-
-        if (port.direction() != we::type::PORT_TUNNEL)
-        {
-          boost::optional<const port_type&> other
-            ( _ports.get ( std::make_pair ( port.name()
-                                          , port.direction()
-                                          == we::type::PORT_IN
-                                          ? we::type::PORT_OUT
-                                          : we::type::PORT_IN
-                                          )
-                         )
-            );
-
-          if (other && port.type() != other->type())
-          {
-            throw error::port_type_mismatch (port, *other);
-          }
-        }
-
-        boost::optional<memory_buffer_type const&>
-          memory_buffer (memory_buffers().get (port.name()));
-
-        if (memory_buffer)
-        {
-          throw error::memory_buffer_with_same_name_as_port
-            (*memory_buffer, port);
-        }
-      }
-
-      bool function_type::is_known_memory_buffer
-        (std::string const& name) const
-      {
-        return _memory_buffers.has (name);
       }
 
       const function_type::ports_type& function_type::ports() const
@@ -316,48 +292,10 @@ namespace xml
 
       // ***************************************************************** //
 
-      namespace
-      {
-        class visitor_append_expressions
-          : public boost::static_visitor<void>
-        {
-        private:
-          const expressions_type& _expressions;
-
-        public:
-          visitor_append_expressions (const expressions_type& expressions)
-            : _expressions (expressions)
-          { }
-
-          void operator () (expression_type& e) const
-          {
-            e.append (_expressions);
-          }
-
-          template<typename T>
-          void operator () (T &) const
-          {
-            throw std::runtime_error ("BUMMER: join for non expression!");
-          }
-        };
-      }
-
-      void function_type::add_expression (const expressions_type & es)
-      {
-        boost::apply_visitor (visitor_append_expressions (es), content());
-      }
-
-      // ***************************************************************** //
-
       const conditions_type& function_type::conditions() const
       {
         return _conditions;
       }
-      void function_type::add_conditions (const std::list<std::string>& other)
-      {
-        _conditions.insert (_conditions.end(), other.begin(), other.end());
-      }
-
       std::string conditions_type::flatten() const
       {
         return empty()
@@ -857,10 +795,6 @@ namespace xml
       }
 
       const we::type::property::type& function_type::properties() const
-      {
-        return _properties;
-      }
-      we::type::property::type& function_type::properties()
       {
         return _properties;
       }

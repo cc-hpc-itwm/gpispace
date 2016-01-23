@@ -257,7 +257,7 @@
         <xsd:element name="memory-getput" type="memory_transfer_put_type"/>
       </xsd:choice>
       <xsd:choice>
-        <xsd:element minOccurs="1" maxOccurs="unbounded" name="expression" type="xsd:string"/>
+        <xsd:element minOccurs="1" maxOccurs="1" name="expression" type="xsd:string"/>
         <xsd:element minOccurs="1" maxOccurs="1" name="module" type="mod_type"/>
         <xsd:element minOccurs="1" maxOccurs="1" name="net" type="net_type"/>
       </xsd:choice>
