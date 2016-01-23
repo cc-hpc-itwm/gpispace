@@ -35,11 +35,17 @@ namespace xml
         using templates_type = fhg::pnet::util::unique<tmpl_type>;
         using transitions_type = fhg::pnet::util::unique<transition_type>;
 
-
-        net_type (const util::position_type&);
+        net_type ( const util::position_type&
+                 , functions_type
+                 , places_type
+                 , specializes_type
+                 , templates_type
+                 , transitions_type
+                 , structs_type
+                 , we::type::property::type
+                 );
 
         const we::type::property::type& properties() const;
-        we::type::property::type& properties();
 
         // ***************************************************************** //
 
@@ -55,13 +61,6 @@ namespace xml
 
         boost::optional<tmpl_type const&>
           get_template (const std::string& name) const;
-
-        // ***************************************************************** //
-
-        void push_place (place_type const&);
-        void push_specialize (specialize_type const&);
-        void push_template (tmpl_type const&);
-        void push_transition (transition_type const&);
 
         // ***************************************************************** //
 

@@ -1571,7 +1571,13 @@ namespace xml
                               , boost::filesystem::path const& path
                               )
       {
-        type::net_type net (state.position (node));
+        type::net_type::functions_type functions;
+        type::net_type::places_type places;
+        type::net_type::specializes_type specializes;
+        type::net_type::templates_type templates;
+        type::net_type::transitions_type transitions;
+        type::structs_type structs;
+        we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1584,36 +1590,39 @@ namespace xml
           {
             if (child_name == "template")
             {
-              net.push_template (tmpl_type (child, state));
+              templates.push<error::duplicate_template>
+                (tmpl_type (child, state));
             }
             else if (child_name == "specialize")
             {
-              net.push_specialize (specialize_type (child, state));
+              specializes.push<error::duplicate_specialize>
+                (specialize_type (child, state));
             }
             else if (child_name == "place")
             {
-              net.push_place (place_type (child, state, ports, path));
+              places.push<error::duplicate_place>
+                (place_type (child, state, ports, path));
             }
             else if (child_name == "transition")
             {
-              net.push_transition (transition_type (child, state));
+              transitions.push<error::duplicate_transition>
+                (transition_type (child, state));
             }
             else if (child_name == "struct")
             {
-              net.structs.push_back (struct_type (child, state));
+              structs.push_back (struct_type (child, state));
             }
             else if (child_name == "include-structs")
             {
               std::cerr << "TODO: Deprecate and eliminate net::include-structs.\n";
               //! \todo deprecate and eliminate
-              const type::structs_type structs
+              const type::structs_type sts
                 ( structs_include ( required ("net_type", child, "href", state)
                                   , state
                                   )
                 );
 
-              net.structs.insert
-                (net.structs.end(), structs.begin(), structs.end());
+              structs.insert (structs.end(), sts.begin(), sts.end());
             }
             else if (child_name == "include-template")
             {
@@ -1627,20 +1636,20 @@ namespace xml
                 throw error::top_level_anonymous_template (file, "net_type");
               }
 
-              net.push_template (tmpl);
+              templates.push<error::duplicate_template> (tmpl);
             }
             else if (child_name == "properties")
             {
-              property_map_type (net.properties(), child, state);
+              property_map_type (properties, child, state);
             }
             else if (child_name == "include-properties")
             {
               const we::type::property::type deeper
                 ( properties_include
-                  (required ("net_type", child, "href", state), state)
+                    (required ("net_type", child, "href", state), state)
                 );
 
-              util::property::join (state, net.properties(), deeper);
+              util::property::join (state, properties, deeper);
             }
             else
             {
@@ -1654,7 +1663,15 @@ namespace xml
           }
         }
 
-        return net;
+        return { state.position (node)
+               , functions
+               , places
+               , specializes
+               , templates
+               , transitions
+               , structs
+               , properties
+               };
       }
 
       // ******************************************************************* //
