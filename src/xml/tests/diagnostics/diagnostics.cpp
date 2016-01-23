@@ -56,6 +56,7 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
 <defun name="%1%">
   <struct name="%2%"><field name="%3%" type="%4%"/></struct>
   <struct name="%2%"><field name="%3%" type="%4%"/></struct>
+  <expression/>
 </defun>)EOS")
       % fhg::util::testing::random_identifier()
       % name_struct

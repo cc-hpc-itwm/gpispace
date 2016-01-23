@@ -27,9 +27,12 @@ BOOST_AUTO_TEST_CASE (memory_get_is_stored_in_function)
     ( ( boost::format (R"EOS(
 <defun>
   <memory-get><global>%1%</global><local>%2%</local></memory-get>
+  <module name="%3%" function="%4%"/>
 </defun>)EOS")
       % global
       % local
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 
@@ -67,10 +70,13 @@ namespace
       ( ( boost::format (R"EOS(
 <defun>
   <memory-put%3%><global>%1%</global><local>%2%</local></memory-put>
+  <module name="%4%" function="%5%"/>
 </defun>)EOS")
         % global
         % local
         % attr_not_modified_in_module_call (not_modified_in_module_call)
+        % fhg::util::testing::random_identifier()
+        % fhg::util::testing::random_identifier()
         ).str()
       );
 
@@ -109,10 +115,13 @@ namespace
       ( ( boost::format (R"EOS(
 <defun>
   <memory-getput%3%><global>%1%</global><local>%2%</local></memory-getput>
+  <module name="%4%" function="%5%"/>
 </defun>)EOS")
         % global
         % local
         % attr_not_modified_in_module_call (not_modified_in_module_call)
+        % fhg::util::testing::random_identifier()
+        % fhg::util::testing::random_identifier()
         ).str()
       );
 
@@ -163,6 +172,11 @@ namespace
     {
       input += "<memory-getput><global/><local/></memory-getput>";
     }
+
+    input += ( boost::format (R"EOS(<module name="%1%" function="%2%"/>)EOS")
+             % fhg::util::testing::random_identifier()
+             % fhg::util::testing::random_identifier()
+             ).str();
 
     input += "</defun>";
 
