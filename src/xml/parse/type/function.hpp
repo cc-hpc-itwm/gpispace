@@ -206,8 +206,6 @@ namespace xml
 
       typedef std::unordered_map<std::string,fun_infos_type> fun_info_map;
 
-      typedef boost::filesystem::path path_t;
-
       void mk_wrapper ( const state::type & state
                       , const fun_info_map & m
                       );
