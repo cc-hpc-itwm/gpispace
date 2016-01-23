@@ -702,26 +702,15 @@ namespace xml
       type::transition_type
         transition_type (const xml_node_type* node, state::type& state)
       {
-        type::transition_type transition
-          ( state.position (node)
-          , validate_name ( validate_prefix ( required ( "transition_type"
-                                                       , node
-                                                       , "name"
-                                                       , state
-                                                       )
-                                            , "transition"
-                                            , state.file_in_progress()
-                                            )
-                          , "transition"
-                          , state.file_in_progress()
-                          )
-          , fhg::util::boost::fmap<std::string, we::priority_type>
-              ( boost::lexical_cast<we::priority_type>
-              , optional (node, "priority")
-              )
-          , fhg::util::boost::fmap<std::string, bool>
-              (fhg::util::read_bool, optional (node, "inline"))
-          );
+        boost::optional<type::function_type> function;
+        boost::optional<type::use_type> use;
+        type::transition_type::connections_type connections;
+        type::transition_type::responses_type responses;
+        type::transition_type::place_maps_type place_map;
+        std::list<type::structure_type> structs;
+        type::conditions_type conditions;
+        type::requirements_type requirements;
+        we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -737,63 +726,64 @@ namespace xml
               const std::string file
                 (required ("transition_type", child, "href", state));
 
-              transition.function_or_use
-                (function_include (file, state));
+              function = function_include (file, state);
             }
             else if (child_name == "use")
             {
-              transition.function_or_use
-                ( type::use_type ( state.position (child)
-                                 , required
-                                   ("transition_type", child, "name", state)
-                                 )
-                );
+              use = type::use_type ( state.position (child)
+                                   , required
+                                       ("transition_type", child, "name", state)
+                                   );
             }
             else if (child_name == "defun")
             {
-              transition.function_or_use (function_type (child, state));
+              function = function_type (child, state);
             }
             else if (child_name == "place-map")
             {
-              transition.push_place_map (place_map_type (child, state));
+              place_map.push<error::duplicate_place_map>
+                (place_map_type (child, state));
             }
             else if (child_name == "connect-in")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT));
             }
             else if (child_name == "connect-out")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-inout")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT));
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-read")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT_READ));
             }
             else if (child_name == "connect-response")
             {
-              transition.push_response (response_type (child, state));
+              responses.push<error::duplicate_response>
+                (response_type (child, state));
             }
             else if (child_name == "condition")
             {
-              transition.add_conditions (parse_cdata (child, state));
+              auto const cs (parse_cdata (child, state));
+
+              conditions.insert (conditions.end(), cs.begin(), cs.end());
             }
             else if (child_name == "require")
             {
-              require_type (transition.requirements, child, state);
+              require_type (requirements, child, state);
             }
             else if (child_name == "properties")
             {
-              property_map_type (transition.properties(), child, state);
+              property_map_type (properties, child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -807,10 +797,7 @@ namespace xml
                                      )
                 );
 
-              util::property::join ( state
-                                   , transition.properties()
-                                   , deeper
-                                   );
+              util::property::join (state, properties, deeper);
             }
             else
             {
@@ -824,7 +811,41 @@ namespace xml
           }
         }
 
-        return transition;
+#define TRANSITION(_function_or_use) type::transition_type                 \
+          { state.position (node)                                          \
+          , _function_or_use                                               \
+          , validate_name ( validate_prefix ( required ( "transition_type" \
+                                                       , node              \
+                                                       , "name"            \
+                                                       , state             \
+                                                       )                   \
+                                            , "transition"                 \
+                                            , state.file_in_progress()     \
+                                            )                              \
+                          , "transition"                                   \
+                          , state.file_in_progress()                       \
+                          )                                                \
+          , connections                                                    \
+          , responses                                                      \
+          , place_map                                                      \
+          , structs                                                        \
+          , conditions                                                     \
+          , requirements                                                   \
+          , fhg::util::boost::fmap<std::string, we::priority_type>         \
+            ( boost::lexical_cast<we::priority_type>                       \
+            , optional (node, "priority")                                  \
+            )                                                              \
+          , fhg::util::boost::fmap<std::string, bool>                      \
+            (fhg::util::read_bool, optional (node, "inline"))              \
+          , properties                                                     \
+          }
+
+        return !!function ? TRANSITION (function.get())
+          : !!use ? TRANSITION (use.get())
+          : throw std::logic_error ("transition requires function or use")
+          ;
+
+#undef TRANSITION
       }
 
       // ******************************************************************* //

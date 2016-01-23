@@ -328,24 +328,7 @@ namespace xml
 
         for (transition_type const& old : transitions)
         {
-          push_transition (old.with_name (prefix + old.name()));
-        }
-        for (transition_type& transition : _transitions)
-        {
-          auto const connects (std::move (transition._connections));
-          auto const place_maps (std::move (transition._place_map));
-
-          for (connect_type const& conn : connects)
-          {
-            transition.push_connection
-              (conn.with_place (prefix + conn.place()));
-          }
-
-          for (place_map_type const& pm : place_maps)
-          {
-            transition.push_place_map
-              (pm.with_place_real (prefix + pm.place_real()));
-          }
+          push_transition (old.add_prefix (prefix));
         }
       }
 
@@ -365,25 +348,7 @@ namespace xml
 
         for (transition_type const& old : transitions)
         {
-          push_transition
-            (old.with_name (fhg::util::remove_prefix (prefix, old.name())));
-        }
-        for (transition_type& transition : _transitions)
-        {
-          auto const connects (std::move (transition._connections));
-          auto const place_maps (std::move (transition._place_map));
-
-          for (connect_type const& conn : connects)
-          {
-            transition.push_connection
-              (conn.with_place (fhg::util::remove_prefix (prefix, conn.place())));
-          }
-
-          for (place_map_type const& pm : place_maps)
-          {
-            transition.push_place_map
-              (pm.with_place_real (fhg::util::remove_prefix (prefix, pm.place_real())));
-          }
+          push_transition (old.remove_prefix (prefix));
         }
       }
 

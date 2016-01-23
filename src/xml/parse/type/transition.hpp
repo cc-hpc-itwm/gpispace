@@ -36,13 +36,7 @@ namespace xml
           function_or_use_type;
 
         transition_type ( const util::position_type&
-                        , const std::string& name
-                        , const boost::optional<we::priority_type>& priority
-                        , const boost::optional<bool>& finline
-                        );
-
-        transition_type ( const util::position_type&
-                        , const boost::optional<function_or_use_type>&
+                        , const function_or_use_type&
                         , const std::string& name
                         , const connections_type& connections
                         , responses_type const&
@@ -54,7 +48,8 @@ namespace xml
                         , const boost::optional<bool>& finline
                         , const we::type::property::type& properties
                         );
-        transition_type with_name (std::string) const;
+        transition_type add_prefix (std::string const&) const;
+        transition_type remove_prefix (std::string const&) const;
 
         const function_or_use_type& function_or_use() const;
         function_or_use_type& function_or_use();
@@ -69,14 +64,9 @@ namespace xml
         responses_type const& responses() const;
         const place_maps_type& place_map() const;
 
-        void push_connection (const connect_type&);
-        void push_response (response_type const&);
-        void push_place_map (place_map_type const&);
-
         // ***************************************************************** //
 
         const conditions_type& conditions() const;
-        void add_conditions (const std::list<std::string>&);
 
         // ***************************************************************** //
 
@@ -113,7 +103,7 @@ namespace xml
         const unique_key_type& unique_key() const;
 
       private:
-        boost::optional<function_or_use_type> _function_or_use;
+        function_or_use_type _function_or_use;
 
         std::string const _name;
 
