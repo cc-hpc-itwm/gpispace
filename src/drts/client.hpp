@@ -8,7 +8,7 @@
 #include <we/type/value.hpp>
 
 #include <boost/noncopyable.hpp>
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <map>
 #include <string>
