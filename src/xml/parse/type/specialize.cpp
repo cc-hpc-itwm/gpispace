@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/specialize.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -13,66 +12,28 @@ namespace xml
   {
     namespace type
     {
-      specialize_type::specialize_type ( ID_CONS_PARAM(specialize)
-                                       , PARENT_CONS_PARAM(net)
-                                       , const util::position_type& pod
+      specialize_type::specialize_type ( const util::position_type& pod
                                        , const std::string& name
                                        , const std::string& use_
                                        , const type_map_type& type_map_
                                        , const type_get_type& type_get_
                                        )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _name (name)
         , use (use_)
         , type_map (type_map_)
         , type_get (type_get_)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const std::string& specialize_type::name() const
       {
         return _name;
-      }
-      const std::string& specialize_type::name_impl (const std::string& name)
-      {
-        return _name = name;
-      }
-      const std::string& specialize_type::name (const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return _name;
-        }
-        return name_impl (name);
       }
 
       const specialize_type::unique_key_type&
         specialize_type::unique_key() const
       {
         return name();
-      }
-
-      id::ref::specialize specialize_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return specialize_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _name
-          , use
-          , type_map
-          , type_get
-          ).make_reference_id();
       }
 
       void split_structs ( const xml::parse::structure_type_util::set_type & global

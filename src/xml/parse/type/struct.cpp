@@ -3,7 +3,6 @@
 #include <xml/parse/type/struct.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
 
 #include <we/type/signature/is_literal.hpp>
@@ -25,18 +24,12 @@ namespace xml
     namespace type
     {
       structure_type::structure_type
-        ( ID_CONS_PARAM(structure)
-        , PARENT_CONS_PARAM(function)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const pnet::type::signature::structured_type& sig
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _sig (sig)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const pnet::type::signature::structured_type& structure_type::signature() const
       {
@@ -114,22 +107,6 @@ namespace xml
           );
 
         _sig = boost::apply_visitor (get_struct(), sign);
-      }
-
-      id::ref::structure structure_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return structure_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _sig
-          ).make_reference_id();
       }
 
       namespace dump
@@ -226,13 +203,6 @@ namespace xml
                     )
       {
         return join (above, below, forbidden_type(), state);
-      }
-
-      bool struct_by_name ( const std::string& name
-                          , const type::structure_type& stru
-                          )
-      {
-        return stru.name() == name;
       }
     }
   }

@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/expression.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/memory_transfer.hpp>
 #include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/specialize.hpp>
@@ -33,68 +33,32 @@ namespace xml
   {
     namespace type
     {
-      struct conditions_type : public std::list<std::string>
-      {
-        std::string flatten() const;
-      };
-
-      conditions_type operator+ (conditions_type, const conditions_type&);
-
       struct function_type : with_position_of_definition
       {
-        ID_SIGNATURES(function);
-
       private:
         typedef std::unordered_set<std::string> typenames_type;
 
       public:
         typedef std::string unique_key_type;
 
-        typedef xml::util::unique<port_type,id::ref::port> ports_type;
-
-        //! \todo net is only in this list as specialize not yet
-        //! reparents the function to the transition requesting it, as
-        //! specialization is not yet lazy. If it is, also remove
-        //! name_impl. See net_type::specialize() and function_type::name().
-        typedef boost::variant< id::transition
-                              , id::tmpl
-                              , id::net
-                              > parent_id_type;
+        typedef fhg::pnet::util::unique<port_type> ports_type;
 
         typedef boost::variant < expression_type
-                               , id::ref::module
-                               , id::ref::net
+                               , module_type
+                               , boost::recursive_wrapper<net_type>
                                > content_type;
 
         // ***************************************************************** //
 
-        template<typename T>
-          static boost::optional<parent_id_type> make_parent (const T& id)
-        {
-          return boost::make_optional (parent_id_type (id));
-        }
-
-        // ***************************************************************** //
-
-        function_type ( ID_CONS_PARAM(function)
-                      , const boost::optional<parent_id_type>& parent
-                      , const util::position_type&
-                      , const content_type& content
-                      );
-
-        function_type ( ID_CONS_PARAM(function)
-                      , const boost::optional<parent_id_type>& parent
-                      , const util::position_type&
+        function_type ( const util::position_type&
                       , const boost::optional<std::string>& name
                       , const content_type& content
                       );
 
-        function_type ( ID_CONS_PARAM(function)
-                      , const boost::optional<parent_id_type>& parent
-                      , const util::position_type&
+        function_type ( const util::position_type&
                       , const boost::optional<std::string>& name
                       , const ports_type& ports
-                      , xml::util::unique<memory_buffer_type, id::ref::memory_buffer> const&
+                      , fhg::pnet::util::unique<memory_buffer_type> const&
                       , std::list<memory_get> const&
                       , std::list<memory_put> const&
                       , std::list<memory_getput> const&
@@ -107,6 +71,16 @@ namespace xml
                       , const we::type::property::type& properties
                       );
 
+        //! \note explicitly defaulted in compilation unit to be able
+        //! to forward declare content_type only
+        function_type (function_type const&);
+        function_type (function_type&&);
+        function_type& operator= (function_type const&);
+        function_type& operator= (function_type&&);
+        ~function_type();
+
+        function_type with_name (std::string) const;
+
         const content_type& content() const;
         content_type& content();
         const content_type& content (const content_type&);
@@ -114,40 +88,12 @@ namespace xml
         // ***************************************************************** //
 
         bool is_net() const;
-        boost::optional<const id::ref::net&> get_net() const;
+        boost::optional<net_type const&> get_net() const;
+        net_type& get_net();
 
         // ***************************************************************** //
 
-        //! \note function should not be something that can be in a
-        //! unique. It only is in an unique, as net does not lazily
-        //! specialize templates. It then stores them in a
-        //! unique. Other parents (transition, tmpl) never have a
-        //! unique, thus don't need to get notified on name
-        //! change. This name() + name_impl() pattern can thus be
-        //! removed as soon as net no longer can be a parent.
         const boost::optional<std::string>& name() const;
-        const boost::optional<std::string>&
-          name (const boost::optional<std::string>& name);
-
-      private:
-        friend struct net_type;
-        const boost::optional<std::string>&
-          name_impl (const boost::optional<std::string>& name);
-
-      public:
-        const boost::optional<parent_id_type>& parent() const;
-
-        bool has_parent() const;
-        void unparent();
-        void parent (const parent_id_type& parent);
-
-        boost::optional<id::ref::transition> parent_transition() const;
-        boost::optional<id::ref::tmpl> parent_tmpl() const;
-        //! \todo This should be removed soon (i.e. when specialization is lazy).
-        boost::optional<id::ref::net> parent_net() const;
-
-        boost::optional<const id::ref::function&>
-        get_function (const std::string& name) const;
 
         // ***************************************************************** //
 
@@ -159,28 +105,23 @@ namespace xml
         std::list<memory_put> const& memory_puts() const;
         std::list<memory_getput> const& memory_getputs() const;
 
-        void push_memory_buffer (const id::ref::memory_buffer&);
-        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
+        void push_memory_buffer (const memory_buffer_type&);
+        fhg::pnet::util::unique<memory_buffer_type>
           const& memory_buffers() const;
         bool is_known_memory_buffer (std::string const&) const;
 
-        void push_port (const id::ref::port&);
-        void remove_port (const id::ref::port&);
+        void push_port (const port_type&);
 
         const ports_type& ports() const;
 
-        boost::optional<const id::ref::port&> get_port_in (const std::string & name) const;
-        boost::optional<const id::ref::port&> get_port_out (const std::string & name) const;
+        boost::optional<const port_type&> get_port_in (const std::string & name) const;
+        boost::optional<const port_type&> get_port_out (const std::string & name) const;
 
         bool is_known_port_in (const std::string & name) const;
         bool is_known_port_out (const std::string & name) const;
         bool is_known_port (const std::string & name) const;
         bool is_known_port_inout (const std::string & name) const;
         bool is_known_tunnel (const std::string& name) const;
-
-        void rename (const id::ref::port&, const std::string&);
-        void port_direction
-          (const id::ref::port&, const we::type::PortDirection&);
 
         // ***************************************************************** //
 
@@ -202,11 +143,11 @@ namespace xml
 
         // ***************************************************************** //
 
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
-
-        // ***************************************************************** //
-
         void type_check (const state::type & state) const;
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         // ***************************************************************** //
 
@@ -219,7 +160,7 @@ namespace xml
           , const we::type::property::type&
           , const requirements_type&
           , we::priority_type
-          , xml::util::range_type<place_map_type const>
+          , fhg::pnet::util::unique<place_map_type> const&
           , std::unordered_map<we::port_id_type, std::string>& real_place_names
           ) const;
 
@@ -238,19 +179,17 @@ namespace xml
 
         const unique_key_type& unique_key() const;
 
-        id::ref::function clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
-        boost::optional<parent_id_type> _parent;
-
+        //! \note should be const but can't be due to a massive amount
+        //! of copy-assignments which should be copy-constructions but
+        //! happen in optionals/variants and thus aren't. note that
+        //! this can destroy the unique_key() when stored in a unique
+        //! and directly modifying it (there is no setter, use
+        //! with_name() instead)
         boost::optional<std::string> _name;
 
         ports_type _ports;
-        xml::util::unique<memory_buffer_type, id::ref::memory_buffer>
-          _memory_buffers;
+        fhg::pnet::util::unique<memory_buffer_type> _memory_buffers;
 
         std::list<memory_get> _memory_gets;
         std::list<memory_put> _memory_puts;
@@ -310,14 +249,14 @@ namespace xml
                        );
 
       bool find_module_calls ( const state::type & state
-                             , const id::ref::function&
+                             , function_type&
                              , fun_info_map & m
                              );
 
       // ***************************************************************** //
 
       void struct_to_cpp ( const state::type &
-                         , const id::ref::function &
+                         , function_type const&
                          , std::unordered_set<std::string>&
                          );
 

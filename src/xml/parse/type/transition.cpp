@@ -2,8 +2,8 @@
 
 #include <xml/parse/type/transition.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
@@ -30,74 +30,19 @@ namespace xml
     namespace type
     {
       transition_type::transition_type
-        ( ID_CONS_PARAM(transition)
-        , PARENT_CONS_PARAM(net)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const std::string& name
         , const boost::optional<we::priority_type>& priority_
         , const boost::optional<bool>& finline_
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _name (name)
         , priority (priority_)
         , finline (finline_)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      namespace
-      {
-        typedef transition_type::function_or_use_type function_or_use_type;
-
-        class visitor_reparent : public boost::static_visitor<void>
-        {
-        public:
-          visitor_reparent (const id::transition& parent)
-            : _parent (parent)
-          { }
-
-          void operator() (const id::ref::function& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
-          void operator() (const id::ref::use& id) const
-          {
-            id.get_ref().parent (_parent);
-          }
-
-        private:
-          const id::transition& _parent;
-        };
-
-        const function_or_use_type& reparent ( const function_or_use_type& fun
-                                             , const id::transition& parent
-                                             )
-        {
-          boost::apply_visitor (visitor_reparent (parent), fun);
-          return fun;
-        }
-      }
+      {}
 
       transition_type::transition_type
-        ( ID_CONS_PARAM(transition)
-        , PARENT_CONS_PARAM(net)
-        , const util::position_type& pod
-        , const function_or_use_type& function_or_use
-        )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _function_or_use (reparent (function_or_use, _id))
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      transition_type::transition_type
-        ( ID_CONS_PARAM(transition)
-        , PARENT_CONS_PARAM(net)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const boost::optional<function_or_use_type>& fun_or_use
         , const std::string& name
         , const connections_type& connections
@@ -111,24 +56,34 @@ namespace xml
         , const we::type::property::type& properties
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _function_or_use ( fun_or_use
-                           ? boost::make_optional (reparent (*fun_or_use, _id))
-                           : boost::none
-                           )
+        , _function_or_use (fun_or_use)
         , _name (name)
-        , _connections (connections, _id)
-        , _responses (responses, _id)
-        , _place_map (place_map, _id)
+        , _connections (connections)
+        , _responses (responses)
+        , _place_map (place_map)
         , structs (structs_)
         , _conditions (conditions)
         , requirements (requirements_)
         , priority (priority_)
         , finline (finline_)
         , _properties (properties)
+      {}
+
+      transition_type transition_type::with_name (std::string name) const
       {
-        _id_mapper->put (_id, *this);
+        return { position_of_definition()
+               , _function_or_use
+               , std::move (name)
+               , _connections
+               , _responses
+               , _place_map
+               , structs
+               , _conditions
+               , requirements
+               , priority
+               , finline
+               , _properties
+               };
       }
 
       const transition_type::function_or_use_type&
@@ -155,97 +110,18 @@ namespace xml
         transition_type::function_or_use
         (const function_or_use_type& function_or_use_)
       {
-        return *(_function_or_use = reparent (function_or_use_, id()));
+        return *(_function_or_use = function_or_use_);
       }
 
-      namespace
+      function_type const& transition_type::resolved_function() const
       {
-        class transition_get_function
-          : public boost::static_visitor <const id::ref::function&>
-        {
-        private:
-          const net_type & net;
-          const transition_type & trans;
-
-        public:
-          transition_get_function ( const net_type & _net
-                                  , const transition_type & _trans
-                                  )
-            : net (_net)
-            , trans (_trans)
-          {}
-
-          const id::ref::function&
-          operator () (const id::ref::function& id_function) const
-          {
-            return id_function;
-          }
-
-          const id::ref::function&
-            operator() (const id::ref::use& use) const
-          {
-            boost::optional<const id::ref::function&>
-              id_function (net.get_function (use.get().name()));
-
-            if (not id_function)
-            {
-              throw error::unknown_function
-                (use.get().name(), trans.make_reference_id());
-            }
-
-            return *id_function;
-          }
-        };
-      }
-
-      id::ref::function transition_type::resolved_function() const
-      {
-        return boost::apply_visitor
-          (transition_get_function (*parent(), *this), function_or_use());
-      }
-
-      namespace
-      {
-        template<typename T>
-          class is_of_type_visitor : public boost::static_visitor<bool>
-        {
-        public:
-          bool operator() (const T&) const
-          {
-            return true;
-          }
-          template<typename U>
-            bool operator() (const U&) const
-          {
-            return false;
-          }
-        };
-
-        template<typename T, typename V>
-          bool is_of_type (const V& variant)
-        {
-          return boost::apply_visitor (is_of_type_visitor<T>(), variant);
-        }
+        //! \note assume post processing pass (resolve_function_use_recursive)
+        return boost::get<function_type> (function_or_use());
       }
 
       const std::string& transition_type::name() const
       {
         return _name;
-      }
-      const std::string& transition_type::name_impl (const std::string& name)
-      {
-        return _name = name;
-      }
-
-      const std::string& transition_type::name (const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return _name;
-        }
-
-        return name_impl (name);
       }
 
       const transition_type::connections_type&
@@ -253,8 +129,7 @@ namespace xml
       {
         return _connections;
       }
-      transition_type::responses_type const&
-        transition_type::responses() const
+      transition_type::responses_type const& transition_type::responses() const
       {
         return _responses;
       }
@@ -264,148 +139,21 @@ namespace xml
         return _place_map;
       }
 
-      boost::optional<const id::ref::function&>
-      transition_type::get_function (const std::string& name) const
-      {
-        if (has_parent())
-          {
-            return parent()->get_function (name);
-          }
-
-        return boost::none;
-      }
-
-      // ***************************************************************** //
-      void transition_type::remove_connection (const id::ref::connect& id)
-      {
-        _connections.erase (id);
-      }
-      void transition_type::remove_place_map (const id::ref::place_map& id)
-      {
-        _place_map.erase (id);
-      }
-
-      void transition_type::push_connection (const id::ref::connect& connect_id)
-      {
-        const id::ref::connect& id_old (_connections.push (connect_id));
-
-        if (not (id_old == connect_id))
-        {
-          throw error::duplicate_connect (id_old, connect_id);
-        }
-        connect_id.get_ref().parent (id());
-      }
-
-      void transition_type::push_response (id::ref::response const& response_id)
-      {
-        const id::ref::response& id_old (_responses.push (response_id));
-
-        if (not (id_old == response_id))
-        {
-          throw error::duplicate_response (id_old, response_id);
-        }
-        response_id.get_ref().parent (id());
-      }
-
-      void transition_type::push_place_map (const id::ref::place_map& pm_id)
-      {
-        const id::ref::place_map& id_old (_place_map.push (pm_id));
-
-        if (not (id_old == pm_id))
-        {
-          throw error::duplicate_place_map (id_old, pm_id);
-        }
-        pm_id.get_ref().parent (id());
-      }
-
       // ***************************************************************** //
 
-      void transition_type::clear_connections ()
+      void transition_type::push_connection (const connect_type& connect)
       {
-        _connections.clear();
+        _connections.push<error::duplicate_connect> (connect);
       }
 
-      void transition_type::clear_place_map ()
+      void transition_type::push_response (response_type const& response)
       {
-        _place_map.clear();
+        _responses.push<error::duplicate_response> (response);
       }
 
-      void transition_type::connection_place
-        (const id::ref::connect& connection, const std::string& place)
+      void transition_type::push_place_map (place_map_type const& place_map)
       {
-        if (connection.get().place() == place)
-        {
-          return;
-        }
-
-        if ( _connections.has
-             ( std::make_tuple ( place
-                               , connection.get().port()
-                               , we::edge::is_PT
-                                 (connection.get().direction())
-                               )
-             )
-           )
-        {
-          throw std::runtime_error ( "tried reconnecting connection to place, "
-                                     "but connection between between that place "
-                                     "and port already exists in that direction"
-                                   );
-        }
-
-        _connections.erase (connection);
-        connection.get_ref().place_impl (place);
-        _connections.push (connection);
-      }
-
-      void transition_type::connection_direction
-        (const id::ref::connect& connection, const we::edge::type& dir)
-      {
-        if (connection.get().direction() == dir)
-        {
-          return;
-        }
-
-        if ( ( we::edge::is_PT (connection.get().direction())
-             != we::edge::is_PT (dir)
-             )
-           && _connections.has
-             ( std::make_tuple ( connection.get().place()
-                               , connection.get().port()
-                               , we::edge::is_PT (dir)
-                               )
-             )
-           )
-        {
-          throw std::runtime_error ( "tried setting direction of connection, "
-                                     "but connection between between that place "
-                                     "and port already exists in that direction"
-                                   );
-        }
-
-        _connections.erase (connection);
-        connection.get_ref().direction_impl (dir);
-        _connections.push (connection);
-      }
-
-      void transition_type::place_map_real
-        (const id::ref::place_map& id, const std::string& real)
-      {
-        if (id.get().place_real() == real)
-        {
-          return;
-        }
-
-        if (_place_map.has (std::make_pair (id.get().place_virtual(), real)))
-        {
-          throw std::runtime_error ( "tried setting place_map's virtual place, "
-                                     "but already having such a mapping."
-                                   );
-        }
-
-        _place_map.erase (id);
-        id.get_ref().place_real_impl (real);
-        _place_map.push (id);
+        _place_map.push<error::duplicate_place_map> (place_map);
       }
 
       // ***************************************************************** //
@@ -444,10 +192,10 @@ namespace xml
               , state (_state)
           {}
 
-          void operator () (const id::ref::use&) const { return; }
-          void operator () (const id::ref::function& id_function) const
+          void operator () (use_type const&) const { return; }
+          void operator () (function_type& function) const
           {
-            id_function.get_ref().specialize (map, get, known_structs, state);
+            function.specialize (map, get, known_structs, state);
           }
         };
       }
@@ -475,7 +223,7 @@ namespace xml
                                        , state::type const&
                                        ) const
       {
-        auto const& ports (resolved_function().get_ref().ports().values());
+        auto const& ports (resolved_function().ports());
 
         if ( std::find_if
              ( std::begin (ports), std::end (ports)
@@ -489,8 +237,7 @@ namespace xml
            == std::end (ports)
            )
         {
-          throw error::unknown_port_in_connect_response
-            (response.make_reference_id());
+          throw error::unknown_port_in_connect_response (response);
         }
 
         auto const& to
@@ -507,51 +254,55 @@ namespace xml
 
         if (to == std::end (ports))
         {
-          throw error::unknown_to_in_connect_response
-            (response.make_reference_id());
+          throw error::unknown_to_in_connect_response (response);
         }
 
-        if (!we::is_response_description (to->signature_or_throw()))
+        if (!we::is_response_description (to->signature()))
         {
-          throw error::invalid_signature_in_connect_response
-            (response.make_reference_id(), to->make_reference_id());
+          throw error::invalid_signature_in_connect_response (response, *to);
         }
       }
 
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type &
+                                       , net_type const& parent_net
                                        ) const
       {
-        fhg_assert (has_parent());
-
         const std::string direction
           (we::edge::enum_to_string (connect.direction()));
 
-        const boost::optional<const id::ref::place&> id_place
-          (connect.resolved_place());
+        const boost::optional<const place_type&> place
+          (parent_net.places().get (connect.place()));
 
-        if (not id_place)
+        if (not place)
         {
           throw error::connect_to_nonexistent_place
-            (make_reference_id(), connect.make_reference_id());
+            (*this, connect);
         }
 
-        const boost::optional<const id::ref::port&> id_port
-          (connect.resolved_port());
+        const boost::optional<const port_type&> port
+          ( resolved_function().ports().get
+              ( std::make_pair ( connect.port()
+                               , we::edge::is_PT (connect.direction())
+                               ? we::type::PORT_IN
+                               : we::type::PORT_OUT
+                               )
+              )
+          );
 
-        if (not id_port)
+        if (not port)
         {
           throw error::connect_to_nonexistent_port
-            (make_reference_id(), connect.make_reference_id());
+            (*this, connect);
         }
 
-        if (id_place->get().signature() != id_port->get().signature())
+        if (place->signature() != port->signature())
         {
-          throw error::connect_type_error ( make_reference_id()
-                                          , connect.make_reference_id()
-                                          , *id_port
-                                          , *id_place
+          throw error::connect_type_error ( *this
+                                          , connect
+                                          , *port
+                                          , *place
                                           );
         }
       }
@@ -568,26 +319,58 @@ namespace xml
             : state (_state)
           { }
 
-          void operator () (const id::ref::use&) const { return; }
-          void operator () (const id::ref::function & id_function) const
+          void operator () (use_type const&) const { return; }
+          void operator () (function_type const& function) const
           {
-            id_function.get().type_check (state);
+            function.type_check (state);
           }
         };
       }
 
-      void transition_type::type_check (const state::type & state) const
+      void transition_type::type_check
+        (const state::type & state, net_type const& parent_net) const
       {
-        for (const connect_type& connect : connections().values())
+        for (const connect_type& connect : connections())
         {
-          type_check (connect, state);
+          type_check (connect, state, parent_net);
         }
-        for (response_type const& response : responses().values())
+        for (response_type const& response : responses())
         {
           type_check (response, state);
         }
 
         boost::apply_visitor (transition_type_check (state), function_or_use());
+      }
+
+      void transition_type::resolve_function_use_recursive
+        (std::unordered_map<std::string, function_type const&> known)
+      {
+        if (!!boost::get<use_type> (&_function_or_use.get()))
+        {
+          std::string const name
+            (boost::get<use_type> (_function_or_use.get()).name());
+          auto const it (known.find (name));
+          if (it == known.end())
+          {
+            throw error::unknown_function (name, *this);
+          }
+          function_or_use (it->second);
+        }
+        else
+        {
+          boost::get<function_type> (_function_or_use.get())
+            .resolve_function_use_recursive (known);
+        }
+      }
+
+      void transition_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
+      {
+        if (!!boost::get<function_type> (&_function_or_use.get()))
+        {
+          boost::get<function_type> (_function_or_use.get())
+            .resolve_types_recursive (known);
+        }
       }
 
       const we::type::property::type& transition_type::properties() const
@@ -601,87 +384,10 @@ namespace xml
 
       // ******************************************************************* //
 
-      boost::optional<pnet::type::signature::signature_type>
-      transition_type::signature (const std::string& type) const
-      {
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-        return boost::none;
-      }
-
-      // ******************************************************************* //
-
       const transition_type::unique_key_type&
         transition_type::unique_key() const
       {
         return name();
-      }
-
-      // ******************************************************************* //
-
-      namespace
-      {
-        typedef transition_type::function_or_use_type function_or_use_type;
-
-        class visitor_clone
-          : public boost::static_visitor<function_or_use_type>
-        {
-        public:
-          visitor_clone ( const id::transition& new_id
-                        , id::mapper* const mapper
-                        )
-            : _new_id (new_id)
-            , _mapper (mapper)
-          { }
-
-          function_or_use_type operator() (const id::ref::function& id) const
-          {
-            return id.get().clone
-              (function_type::make_parent (_new_id), _mapper);
-          }
-          function_or_use_type operator() (const id::ref::use& use) const
-          {
-            return use.get().clone (_new_id, _mapper);
-          }
-
-        private:
-          const id::transition& _new_id;
-          id::mapper* const _mapper;
-        };
-      }
-
-      id::ref::transition transition_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return transition_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _function_or_use
-          ? boost::make_optional
-            ( boost::apply_visitor ( visitor_clone (new_id, new_mapper)
-                                   , *_function_or_use
-                                   )
-            )
-          : boost::none
-          , _name
-          , _connections.clone (new_id, new_mapper)
-          , _responses.clone (new_id, new_mapper)
-          , _place_map.clone (new_id, new_mapper)
-          , structs
-          , _conditions
-          , requirements
-          , priority
-          , finline
-          , _properties
-          ).make_reference_id();
       }
 
       // ******************************************************************* //
@@ -706,14 +412,12 @@ namespace xml
       }
 
       void transition_synthesize
-        ( const id::ref::transition & id_transition
+        ( transition_type const& trans
         , const state::type & state
         , we::type::net_type & we_net
         , const place_map_map_type & pids
         )
       {
-        const transition_type& trans (id_transition.get());
-
         if (trans.connections().empty())
           {
             state.warn
@@ -723,24 +427,23 @@ namespace xml
               );
           }
 
-        const id::ref::function id_function (trans.resolved_function());
-        const function_type& fun (id_function.get());
+        function_type const& fun (trans.resolved_function());
 
-        for (const port_type& port_in : fun.ports().values())
+        for (const port_type& port_in : fun.ports())
         {
           if (port_in.direction() == we::type::PORT_IN)
           {
-            const boost::optional<const id::ref::port&> id_port_out
+            const boost::optional<const port_type&> port_out
               (fun.get_port_out (port_in.name()));
 
-            if (  id_port_out
-               && id_port_out->get().signature() != port_in.signature()
+            if (  port_out
+               && port_out->signature() != port_in.signature()
                )
             {
               state.warn
-                ( warning::conflicting_port_types ( id_transition
-                                                  , port_in.make_reference_id()
-                                                  , *id_port_out
+                ( warning::conflicting_port_types ( trans
+                                                  , port_in
+                                                  , *port_out
                                                   , state.file_in_progress()
                                                   )
                 );
@@ -753,9 +456,7 @@ namespace xml
            && (!rewrite::has_magic_prefix (trans.name()))
            )
         {
-          state.warn ( warning::overwrite_function_name_trans
-                       (id_transition, id_function)
-                     );
+          state.warn (warning::overwrite_function_name_trans (trans, fun));
         }
 
         if (  not trans.priority // WORK HERE: make it work with prio
@@ -776,7 +477,7 @@ namespace xml
 
             place_map_map_type place_map_map;
 
-            for ( const place_map_type& place_map : trans.place_map().values())
+            for ( const place_map_type& place_map : trans.place_map())
               {
                 const place_map_map_type::const_iterator pid
                   (pids.find (place_map.place_real()));
@@ -794,7 +495,8 @@ namespace xml
                 place_map_map[prefix + place_map.place_virtual()] = pid->second;
               }
 
-            net_type& net (fun.get_net()->get_ref());
+            //! \todo avoid copy by not modifying
+            net_type net (fun.get_net().get());
             net.set_prefix (prefix);
 
             // synthesize into this level
@@ -836,7 +538,7 @@ namespace xml
               std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_IN)
                 {
@@ -845,7 +547,7 @@ namespace xml
                     , trans_in.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_IN
-                                         , port.signature_or_throw()
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -856,7 +558,7 @@ namespace xml
                     , trans_in.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_OUT
-                                         , port.signature_or_throw()
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -867,7 +569,7 @@ namespace xml
               const we::transition_id_type tid_in
                 (we_net.add_transition (trans_in));
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_IN && port.place)
                 {
@@ -881,7 +583,7 @@ namespace xml
                 }
               }
 
-              for (const connect_type& connect : trans.connections().values())
+              for (const connect_type& connect : trans.connections())
               {
                 if (we::edge::is_PT (connect.direction()))
                 {
@@ -911,7 +613,7 @@ namespace xml
               std::unordered_map<std::string, we::port_id_type>
                 port_id_out;
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_OUT)
                 {
@@ -920,7 +622,7 @@ namespace xml
                     , trans_out.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_IN
-                                         , port.signature_or_throw()
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -931,7 +633,7 @@ namespace xml
                     , trans_out.add_port
                       ( we::type::port_t ( port.name()
                                          , we::type::PORT_OUT
-                                         , port.signature_or_throw()
+                                         , port.signature()
                                          , port.properties()
                                          )
                       )
@@ -944,7 +646,7 @@ namespace xml
               const we::transition_id_type tid_out
                 (we_net.add_transition (trans_out));
 
-              for (const port_type& port : fun.ports().values())
+              for (const port_type& port : fun.ports())
               {
                 if (port.direction() == we::type::PORT_OUT && port.place)
                 {
@@ -958,7 +660,7 @@ namespace xml
                 }
               }
 
-              for (const connect_type& connect : trans.connections().values())
+              for (const connect_type& connect : trans.connections())
               {
                 if (!we::edge::is_PT (connect.direction()))
                 {
@@ -1018,7 +720,7 @@ namespace xml
                                , trans.requirements
                                , trans.priority
                                ? *trans.priority : we::priority_type()
-                               , trans.place_map().values()
+                               , trans.place_map()
                                , real_place_names
                                )
               );
@@ -1026,7 +728,7 @@ namespace xml
             const we::transition_id_type tid
               (we_net.add_transition (we_trans));
 
-            for (const connect_type& connect : trans.connections().values())
+            for (const connect_type& connect : trans.connections())
             {
               if (we::edge::is_PT (connect.direction()))
               {
@@ -1050,7 +752,7 @@ namespace xml
               }
             }
 
-            for (response_type const& response : trans.responses().values())
+            for (response_type const& response : trans.responses())
             {
               we_net.add_response
                 ( tid
@@ -1097,13 +799,10 @@ namespace xml
               : s (_s)
             {}
 
-            void operator () (const id::ref::use& use) const
+            template<typename T>
+              void operator () (T const& x) const
             {
-              ::xml::parse::type::dump::dump (s, use.get());
-            }
-            void operator () (const id::ref::function& id_function) const
-            {
-              ::xml::parse::type::dump::dump (s, id_function.get());
+              ::xml::parse::type::dump::dump (s, x);
             }
           };
         }
@@ -1122,9 +821,9 @@ namespace xml
 
           boost::apply_visitor (dump_visitor (s), t.function_or_use());
 
-          dumps (s, t.place_map().values());
-          dumps (s, t.connections().values());
-          dumps (s, t.responses().values());
+          dumps (s, t.place_map());
+          dumps (s, t.connections());
+          dumps (s, t.responses());
 
           for (const std::string& cond : t.conditions())
           {

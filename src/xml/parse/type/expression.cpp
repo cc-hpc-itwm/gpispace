@@ -70,30 +70,15 @@ namespace xml
         , _expressions (split (exps))
       {}
 
-      void expression_type::set (const std::string& exps)
-      {
-        _expressions.clear();
-        lines (exps, _expressions);
-      }
-
       std::string expression_type::expression (const std::string& sep) const
       {
-        return fhg::util::join (expressions(), ";" + sep).string();
-      }
-
-      const expressions_type& expression_type::expressions (void) const
-      {
-        return _expressions;
-      }
-      expressions_type& expression_type::expressions (void)
-      {
-        return _expressions;
+        return fhg::util::join (_expressions, ";" + sep).string();
       }
 
       void expression_type::append (const expressions_type& other)
       {
-        expressions().insert
-          (expressions().end(), other.begin(), other.end());
+        _expressions.insert
+          (_expressions.end(), other.begin(), other.end());
       }
 
       namespace dump

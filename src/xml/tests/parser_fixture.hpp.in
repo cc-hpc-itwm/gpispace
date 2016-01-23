@@ -73,7 +73,7 @@ namespace
     }
 
     ::xml::parse::state::type state;
-    boost::optional< ::xml::parse::id::ref::function> function;
+    boost::optional< ::xml::parse::type::function_type> function;
 
     boost::filesystem::path xpnet;
     boost::filesystem::path path_to_xpnets;

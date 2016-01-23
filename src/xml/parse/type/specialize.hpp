@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -24,15 +23,10 @@ namespace xml
     {
       struct specialize_type : with_position_of_definition
       {
-        ID_SIGNATURES(specialize);
-        PARENT_SIGNATURES(net);
-
       public:
         typedef std::string unique_key_type;
 
-        specialize_type ( ID_CONS_PARAM(specialize)
-                        , PARENT_CONS_PARAM(net)
-                        , const util::position_type&
+        specialize_type ( const util::position_type&
                         , const std::string& name
                         , const std::string& use
                         , const type_map_type& type_map
@@ -40,22 +34,10 @@ namespace xml
                         );
 
         const std::string& name () const;
-        const std::string& name (const std::string& name);
-
-      private:
-        friend struct net_type;
-        const std::string& name_impl (const std::string& name);
-
-      public:
         const unique_key_type& unique_key() const;
 
-        id::ref::specialize clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
-        std::string _name;
+        std::string const _name;
 
         //! \todo All these should be private wth accessors.
       public:

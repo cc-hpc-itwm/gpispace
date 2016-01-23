@@ -2,8 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
-
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
@@ -20,22 +18,12 @@ namespace xml
     {
       struct use_type : with_position_of_definition
       {
-        ID_SIGNATURES(use);
-        PARENT_SIGNATURES(transition);
-
       public:
-        use_type ( ID_CONS_PARAM(use)
-                 , PARENT_CONS_PARAM(transition)
-                 , const util::position_type&
+        use_type ( const util::position_type&
                  , const std::string& name
                  );
 
         const std::string& name() const;
-
-        id::ref::use clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         std::string _name;

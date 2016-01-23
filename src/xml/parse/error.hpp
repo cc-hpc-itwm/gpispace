@@ -4,7 +4,19 @@
 
 #include <string>
 
-#include <xml/parse/id/types.hpp>
+#include <xml/parse/type/connect.fwd.hpp>
+#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/memory_buffer.fwd.hpp>
+#include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/place.fwd.hpp>
+#include <xml/parse/type/place_map.fwd.hpp>
+#include <xml/parse/type/port.fwd.hpp>
+#include <xml/parse/type/response.fwd.hpp>
+#include <xml/parse/type/specialize.fwd.hpp>
+#include <xml/parse/type/struct.fwd.hpp>
+#include <xml/parse/type/template.fwd.hpp>
+#include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/util/position.hpp>
 
 #include <we/type/port.hpp>
@@ -16,7 +28,7 @@
 #include <fhg/util/boost/optional.hpp>
 #include <util-generic/join.hpp>
 
-#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
+#include <rapidxml.hpp>
 
 #include <xml/parse/util/show_node_type.hpp>
 
@@ -209,10 +221,7 @@ namespace xml
       class place_type_unknown : public generic
       {
       public:
-        place_type_unknown (const id::ref::place&);
-
-      private:
-        const id::ref::place _place;
+        place_type_unknown (const type::place_type&);
       };
 
       // ******************************************************************* //
@@ -261,62 +270,43 @@ namespace xml
 
       // ******************************************************************* //
 
-      template<typename Id>
+      template<typename T>
       class generic_duplicate : public generic
       {
       public:
-        generic_duplicate ( const Id& early
-                          , const Id& late
+        generic_duplicate ( const T& early
+                          , const T& late
                           , const boost::format& fmt
                           )
           : generic ( boost::format ( "duplicate %1% at %2%"
                                       ", earlier definition is at %3%"
                                     )
                     % fmt
-                    % late.get().position_of_definition()
-                    % early.get().position_of_definition()
+                    % late.position_of_definition()
+                    % early.position_of_definition()
                     )
-          , _early (early)
-          , _late (late)
         {}
-
-        const Id& early() const
-        {
-          return _early;
-        }
-        const Id& late() const
-        {
-          return _late;
-        }
-      private:
-        const Id _early;
-        const Id _late;
       };
 
-#define DUPLICATE_WITH_ID(_type,_id)                                    \
-      class duplicate_ ##_type : public generic_duplicate<id::ref::_id> \
+#define DUPLICATE(_name, _type)                                         \
+      class duplicate_ ## _name : public generic_duplicate<_type>       \
       {                                                                 \
       public:                                                           \
-        duplicate_ ##_type ( const id::ref::_id& early                  \
-                           , const id::ref::_id& late                   \
-                           );                                           \
+        duplicate_ ## _name (const _type& early, const _type& late);    \
       }
 
-#define DUPLICATE(_type) DUPLICATE_WITH_ID(_type,_type)
-
-      DUPLICATE (specialize);
-      DUPLICATE (place);
-      DUPLICATE (transition);
-      DUPLICATE (port);
-      DUPLICATE_WITH_ID (template,tmpl);
-      DUPLICATE (place_map);
-      DUPLICATE_WITH_ID (external_function,module);
-      DUPLICATE (connect);
-      DUPLICATE (response);
-      DUPLICATE (memory_buffer);
+      DUPLICATE (connect, type::connect_type);
+      DUPLICATE (external_function, type::module_type);
+      DUPLICATE (memory_buffer, type::memory_buffer_type);
+      DUPLICATE (place, type::place_type);
+      DUPLICATE (place_map, type::place_map_type);
+      DUPLICATE (port, type::port_type);
+      DUPLICATE (response, type::response_type);
+      DUPLICATE (specialize, type::specialize_type);
+      DUPLICATE (template, type::tmpl_type);
+      DUPLICATE (transition, type::transition_type);
 
 #undef DUPLICATE
-#undef DUPLICATE_WITH_ID
 
       // ******************************************************************* //
 
@@ -367,12 +357,11 @@ namespace xml
       class port_connected_place_nonexistent : public generic
       {
       public:
-        port_connected_place_nonexistent ( const id::ref::port&
+        port_connected_place_nonexistent ( const type::port_type&
                                          , const boost::filesystem::path&
                                          );
 
       private:
-        const id::ref::port _port;
         const boost::filesystem::path _path;
       };
 
@@ -381,14 +370,12 @@ namespace xml
       class tunnel_connected_non_virtual : public generic
       {
       public:
-        tunnel_connected_non_virtual ( const id::ref::port&
-                                     , const id::ref::place&
+        tunnel_connected_non_virtual ( const type::port_type&
+                                     , const type::place_type&
                                      , const boost::filesystem::path&
                                      );
 
       private:
-        const id::ref::port _port;
-        const id::ref::place _place;
         const boost::filesystem::path _path;
       };
 
@@ -397,14 +384,12 @@ namespace xml
       class tunnel_name_mismatch : public generic
       {
       public:
-        tunnel_name_mismatch ( const id::ref::port&
-                             , const id::ref::place&
+        tunnel_name_mismatch ( const type::port_type&
+                             , const type::place_type&
                              , const boost::filesystem::path&
                              );
 
       private:
-        const id::ref::port _port;
-        const id::ref::place _place;
         const boost::filesystem::path _path;
       };
 
@@ -413,10 +398,9 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (const id::ref::port&, const boost::filesystem::path&);
+        port_not_connected (const type::port_type&, const boost::filesystem::path&);
 
       private:
-        const id::ref::port _port;
         const boost::filesystem::path _path;
       };
 
@@ -425,14 +409,12 @@ namespace xml
       class port_connected_type_error : public generic
       {
       public:
-        port_connected_type_error ( const id::ref::port&
-                                  , const id::ref::place&
+        port_connected_type_error ( const type::port_type&
+                                  , const type::place_type&
                                   , const boost::filesystem::path&
                                   );
 
       private:
-        const id::ref::port _port;
-        const id::ref::place _place;
         const boost::filesystem::path _path;
       };
 
@@ -466,25 +448,17 @@ namespace xml
       class connect_to_nonexistent_place : public generic
       {
       public:
-        connect_to_nonexistent_place ( const id::ref::transition&
-                                     , const id::ref::connect&
+        connect_to_nonexistent_place ( type::transition_type const&
+                                     , const type::connect_type&
                                      );
-
-      private:
-        const id::ref::transition _transition;
-        const id::ref::connect _connection;
       };
 
       class connect_to_nonexistent_port : public generic
       {
       public:
-        connect_to_nonexistent_port ( const id::ref::transition&
-                                    , const id::ref::connect&
+        connect_to_nonexistent_port ( type::transition_type const&
+                                    , const type::connect_type&
                                     );
-
-      private:
-        const id::ref::transition _transition;
-        const id::ref::connect _connection;
       };
 
       // ******************************************************************* //
@@ -492,11 +466,10 @@ namespace xml
       class unknown_function : public generic
       {
       public:
-        unknown_function (const std::string&, const id::ref::transition&);
+        unknown_function (const std::string&, type::transition_type const&);
 
       private:
         const std::string _function_name;
-        const id::ref::transition _transition;
       };
 
       // ******************************************************************* //
@@ -504,21 +477,22 @@ namespace xml
       class unknown_port_in_connect_response : public generic
       {
       public:
-        unknown_port_in_connect_response (id::ref::response const&);
+        unknown_port_in_connect_response (type::response_type const&);
       };
 
       class unknown_to_in_connect_response : public generic
       {
       public:
-        unknown_to_in_connect_response (id::ref::response const&);
+        unknown_to_in_connect_response (type::response_type const&);
       };
 
       class invalid_signature_in_connect_response : public generic
       {
       public:
-        invalid_signature_in_connect_response ( id::ref::response const&
-                                              , id::ref::port const&
-                                              );
+        invalid_signature_in_connect_response
+          ( type::response_type const&
+          , type::port_type const&
+          );
       };
 
       // ******************************************************************* //
@@ -526,11 +500,7 @@ namespace xml
       class unknown_template : public generic
       {
       public:
-        unknown_template (const id::ref::specialize&, const id::ref::net&);
-
-      private:
-        const id::ref::specialize _specialize;
-        const id::ref::net _net;
+        unknown_template (type::specialize_type const&, type::net_type const&);
       };
 
       // ******************************************************************* //
@@ -538,17 +508,11 @@ namespace xml
       class connect_type_error : public generic
       {
       public:
-        connect_type_error ( const id::ref::transition&
-                           , const id::ref::connect&
-                           , const id::ref::port&
-                           , const id::ref::place&
+        connect_type_error ( type::transition_type const&
+                           , const type::connect_type&
+                           , const type::port_type&
+                           , const type::place_type&
                            );
-
-      private:
-        const id::ref::transition _transition;
-        const id::ref::connect _connection;
-        const id::ref::port _port;
-        const id::ref::place _place;
       };
 
       class memory_buffer_without_size : public generic
@@ -567,33 +531,23 @@ namespace xml
       class memory_buffer_for_non_module : public generic
       {
       public:
-        memory_buffer_for_non_module (id::ref::function const&);
+        memory_buffer_for_non_module (type::function_type const&);
         ~memory_buffer_for_non_module() throw() = default;
-
-      private:
-        id::ref::function const _function;
       };
 
       class memory_transfer_for_non_module : public generic
       {
       public:
-        memory_transfer_for_non_module (id::ref::function const&);
+        memory_transfer_for_non_module (type::function_type const&);
         ~memory_transfer_for_non_module() throw() = default;
-
-      private:
-        id::ref::function const _function;
       };
 
       class memory_buffer_with_same_name_as_port : public generic
       {
       public:
         memory_buffer_with_same_name_as_port
-          (id::ref::memory_buffer const&, id::ref::port const&);
+          (type::memory_buffer_type const&, type::port_type const&);
         virtual ~memory_buffer_with_same_name_as_port() throw() = default;
-
-      private:
-        id::ref::memory_buffer const _memory_buffer;
-        id::ref::port const _port;
       };
 
       // ******************************************************************* //
@@ -723,13 +677,9 @@ namespace xml
       class port_type_mismatch : public generic
       {
       public:
-        port_type_mismatch ( const id::ref::port& port
-                           , const id::ref::port& other_port
+        port_type_mismatch ( const type::port_type& port
+                           , const type::port_type& other_port
                            );
-
-      private:
-        const id::ref::port _port;
-        const id::ref::port _other_port;
       };
 
       // ******************************************************************* //

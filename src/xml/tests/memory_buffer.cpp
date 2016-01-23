@@ -3,7 +3,6 @@
 #define BOOST_TEST_MODULE memory_buffer
 #include <boost/test/unit_test.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/memory_buffer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
@@ -17,15 +16,10 @@ BOOST_AUTO_TEST_CASE (name_is_stored)
 {
   std::string const name (fhg::util::testing::random_string());
 
-  xml::parse::id::mapper mapper;
-
   BOOST_REQUIRE_EQUAL
     ( name
     , xml::parse::type::memory_buffer_type
-      ( mapper.next_id()
-      , &mapper
-      , boost::none
-      , xml::parse::util::position_type
+      ( xml::parse::util::position_type
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , fhg::util::testing::random_string()
@@ -39,15 +33,10 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
 {
   std::string const size (fhg::util::testing::random_string());
 
-  xml::parse::id::mapper mapper;
-
   BOOST_REQUIRE_EQUAL
     ( size
     , xml::parse::type::memory_buffer_type
-      ( mapper.next_id()
-      , &mapper
-      , boost::none
-      , xml::parse::util::position_type
+      ( xml::parse::util::position_type
         (nullptr, nullptr, fhg::util::testing::random_string())
       , fhg::util::testing::random_string()
       , size
@@ -61,15 +50,10 @@ namespace
 {
   void check_read_only_is_stored (boost::optional<bool> read_only)
   {
-    xml::parse::id::mapper mapper;
-
-    BOOST_REQUIRE_EQUAL
+      BOOST_REQUIRE_EQUAL
       ( read_only
       , xml::parse::type::memory_buffer_type
-        ( mapper.next_id()
-        , &mapper
-        , boost::none
-        , xml::parse::util::position_type
+        ( xml::parse::util::position_type
           (nullptr, nullptr, fhg::util::testing::random_string())
         , fhg::util::testing::random_string()
         , fhg::util::testing::random_string()
@@ -91,15 +75,10 @@ BOOST_AUTO_TEST_CASE (name_is_unique_key)
 {
   std::string const name (fhg::util::testing::random_string());
 
-  xml::parse::id::mapper mapper;
-
   BOOST_REQUIRE_EQUAL
     ( name
     , xml::parse::type::memory_buffer_type
-      ( mapper.next_id()
-      , &mapper
-      , boost::none
-      , xml::parse::util::position_type
+      ( xml::parse::util::position_type
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , fhg::util::testing::random_string()
@@ -116,13 +95,8 @@ namespace
     std::string const name (fhg::util::testing::random_identifier());
     std::string const size (fhg::util::testing::random_string_without_zero());
 
-    xml::parse::id::mapper mapper;
-
-    xml::parse::type::memory_buffer_type mb
-      ( mapper.next_id()
-      , &mapper
-      , boost::none
-      , xml::parse::util::position_type
+      xml::parse::type::memory_buffer_type mb
+      ( xml::parse::util::position_type
       (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , size

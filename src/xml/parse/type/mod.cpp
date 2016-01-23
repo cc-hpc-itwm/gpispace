@@ -3,7 +3,6 @@
 #include <xml/parse/type/mod.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/util/valid_name.hpp>
 
@@ -20,21 +19,8 @@ namespace xml
   {
     namespace type
     {
-      module_type::module_type ( ID_CONS_PARAM (module)
-                               , PARENT_CONS_PARAM (function)
-                               , const util::position_type& pod
-                               )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-      {
-        _id_mapper->put (_id, *this);
-      }
-
       module_type::module_type
-        ( ID_CONS_PARAM (module)
-        , PARENT_CONS_PARAM (function)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const std::string& name
         , const std::string& function
         , const boost::optional<std::string>& port_return
@@ -49,8 +35,6 @@ namespace xml
         , const boost::optional<bool> &pass_context
         )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _name (name)
         , _function (function)
         , _port_return (port_return)
@@ -65,8 +49,6 @@ namespace xml
         , _pass_context (pass_context)
       {
         fhg_assert (!(_port_return && _memory_buffer_return));
-
-        _id_mapper->put (_id, *this);
       }
 
       const std::string& module_type::name() const
@@ -129,33 +111,6 @@ namespace xml
           && _ldflags == other._ldflags
           && _cxxflags == other._cxxflags
           ;
-      }
-
-      id::ref::module module_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return module_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _name
-          , _function
-          , _port_return
-          , _port_arg
-          , _memory_buffer_return
-          , _memory_buffer_arg
-          , _code
-          , _position_of_definition_of_code
-          , _cincludes
-          , _ldflags
-          , _cxxflags
-          , _pass_context
-          ).make_reference_id();
       }
 
       std::size_t hash_value (const module_type& m)

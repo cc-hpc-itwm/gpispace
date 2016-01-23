@@ -4,7 +4,6 @@
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/type/specialize.hpp>
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/util/weparse.hpp>
 
 #include <we/type/net.fwd.hpp>
@@ -22,43 +21,9 @@ namespace xml
   {
     namespace type
     {
-      net_type::net_type ( ID_CONS_PARAM(net)
-                         , PARENT_CONS_PARAM(function)
-                         , const util::position_type& pod
-                         )
+      net_type::net_type (const util::position_type& pod)
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      net_type::net_type ( ID_CONS_PARAM(net)
-                         , PARENT_CONS_PARAM(function)
-                         , const util::position_type& pod
-                         , const functions_type& functions
-                         , const places_type& places
-                         , const specializes_type& specializes
-                         , const templates_type& templates
-                         , const transitions_type& transitions
-                         , const structs_type& structs_
-                         , const bool& contains_a_module_call_
-                         , const we::type::property::type& properties
-                         )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _functions (functions, _id)
-        , _places (places, _id)
-        , _specializes (specializes, _id)
-        , _templates (templates, _id)
-        , _transitions (transitions, _id)
-        , structs (structs_)
-        , contains_a_module_call (contains_a_module_call_)
-        , _properties (properties)
-      {
-        _id_mapper->put (_id, *this);
-      }
+      {}
 
       const we::type::property::type& net_type::properties() const
       {
@@ -91,26 +56,12 @@ namespace xml
       {
         return _transitions;
       }
+      net_type::transitions_type& net_type::transitions()
+      {
+        return _transitions;
+      }
 
       // ***************************************************************** //
-
-      boost::optional<const id::ref::function&>
-      net_type::get_function (const std::string& name) const
-      {
-        boost::optional<const id::ref::function&>
-          id_function (functions().get (name));
-
-        if (id_function)
-          {
-            return id_function;
-          }
-        else if (has_parent())
-          {
-            return parent()->get_function (name);
-          }
-
-        return boost::none;
-      }
 
       //! \todo The logic should be like this: Just when a function is
       //! requested by some transition it is lookup up recursively up
@@ -120,276 +71,33 @@ namespace xml
       //!    2.1 search for the template and do the specialization
       //! So this would be a lazy specialization.
       //! The shadowing could be done by going further up the tree
-      boost::optional<const id::ref::tmpl&>
+      boost::optional<tmpl_type const&>
       net_type::get_template (const std::string & name) const
       {
-        boost::optional<const id::ref::tmpl&>
-          id_tmpl (templates().get (name));
-
-        if (id_tmpl)
-          {
-            return id_tmpl;
-          }
-        else if (has_parent())
-          {
-            std::cerr << "IMPLEMENT THE LOOKUP FOR TEMPLATES IN FUNCTION" << std::endl;
-            // return parent()->get_template (name);
-          }
-
-        return boost::none;
+        //! \todo IMPLEMENT THE LOOKUP FOR TEMPLATES IN parent FUNCTION
+        return templates().get (name);
       }
 
       // ***************************************************************** //
 
-      const id::ref::place&
-      net_type::push_place (const id::ref::place& id)
+      void net_type::push_place (place_type const& place)
       {
-        const id::ref::place& id_old (_places.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_place (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
-
-        return id;
+        _places.push<error::duplicate_place> (place);
       }
 
-      const id::ref::specialize&
-      net_type::push_specialize (const id::ref::specialize& id)
+      void net_type::push_specialize (specialize_type const& specialize)
       {
-        const id::ref::specialize& id_old (_specializes.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_specialize (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
-
-        return id;
+        _specializes.push<error::duplicate_specialize> (specialize);
       }
 
-      const id::ref::tmpl&
-      net_type::push_template (const id::ref::tmpl& id)
+      void net_type::push_template (tmpl_type const& tmpl)
       {
-        const id::ref::tmpl& id_old (_templates.push (id));
-
-        if (id_old != id)
-          {
-            throw error::duplicate_template (id_old, id);
-          }
-
-        id.get_ref().parent (_id);
-
-        return id;
+        _templates.push<error::duplicate_template> (tmpl);
       }
 
-      const id::ref::transition&
-      net_type::push_transition (const id::ref::transition& id)
+      void net_type::push_transition (transition_type const& transition)
       {
-        const id::ref::transition& id_old (_transitions.push (id));
-
-        if (id_old != id)
-        {
-          throw error::duplicate_transition (id_old, id);
-        }
-
-        id.get_ref().parent (_id);
-
-        return id;
-      }
-
-      // ***************************************************************** //
-
-      bool net_type::has_function (const std::string& name) const
-      {
-        return _functions.has (name);
-      }
-      bool net_type::has_place (const std::string& name) const
-      {
-        return _places.has (name);
-      }
-      bool net_type::has_specialize (const std::string& name) const
-      {
-        return _specializes.has (name);
-      }
-      bool net_type::has_template (const std::string& name) const
-      {
-        return _templates.has (name);
-      }
-      bool net_type::has_transition (const std::string& name) const
-      {
-        return _transitions.has (name);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::erase_function (const id::ref::function& id)
-      {
-        _functions.erase (id);
-      }
-      void net_type::erase_place (const id::ref::place& id)
-      {
-        _places.erase (id);
-      }
-      void net_type::erase_specialize (const id::ref::specialize& id)
-      {
-        _specializes.erase (id);
-      }
-      void net_type::erase_template (const id::ref::tmpl& id)
-      {
-        _templates.erase (id);
-      }
-      void net_type::erase_transition (const id::ref::transition& id)
-      {
-        _transitions.erase (id);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::clear_places (void)
-      {
-        _places.clear();
-      }
-
-      void net_type::clear_transitions (void)
-      {
-        _transitions.clear();
-      }
-
-      // ***************************************************************** //
-
-      void net_type::rename ( const id::ref::function& function
-                            , const std::string& name
-                            )
-      {
-        if (function.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_function (name))
-        {
-          throw std::runtime_error
-            ("tried renaming function, but function with given name exists");
-        }
-
-        _functions.erase (function);
-        function.get_ref().name_impl (name);
-        _functions.push (function);
-      }
-
-      void net_type::rename ( const id::ref::place& place
-                            , const std::string& name
-                            )
-      {
-        if (place.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_place (name))
-        {
-          throw std::runtime_error
-            ("tried renaming place, but place with given name exists");
-        }
-
-        _places.erase (place);
-        place.get_ref().name_impl (name);
-        _places.push (place);
-      }
-
-      void net_type::rename ( const id::ref::specialize& specialize
-                            , const std::string& name
-                            )
-      {
-        if (specialize.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_specialize (name))
-        {
-          throw std::runtime_error
-            ("tried renaming specialize, but specialize with given name exists");
-        }
-
-        _specializes.erase (specialize);
-        specialize.get_ref().name_impl (name);
-        _specializes.push (specialize);
-      }
-
-      void net_type::rename ( const id::ref::tmpl& tmpl
-                            , const std::string& name
-                            )
-      {
-        if (tmpl.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_template (name))
-        {
-          throw std::runtime_error
-            ("tried renaming template, but template with given name exists");
-        }
-
-        _templates.erase (tmpl);
-        tmpl.get_ref().name_impl (name);
-        _templates.push (tmpl);
-      }
-
-      void net_type::rename ( const id::ref::transition& transition
-                            , const std::string& name
-                            )
-      {
-        if (transition.get().name() == name)
-        {
-          return;
-        }
-
-        if (has_transition (name))
-        {
-          throw std::runtime_error
-            ("tried renaming transition, but transition with given name exists");
-        }
-
-        _transitions.erase (transition);
-        transition.get_ref().name_impl (name);
-        _transitions.push (transition);
-      }
-
-      // ***************************************************************** //
-
-      boost::optional<pnet::type::signature::signature_type>
-      net_type::signature (const std::string& type) const
-      {
-        const structs_type::const_iterator pos
-          ( std::find_if ( structs.begin()
-                         , structs.end()
-                         , std::bind ( parse::structure_type_util::struct_by_name
-                                     , type
-                                     , std::placeholders::_1
-                                     )
-                         )
-          );
-
-        if (pos != structs.end())
-        {
-          return pnet::type::signature::resolve
-            ( pos->signature()
-            , std::bind (&net_type::signature, *this, std::placeholders::_1)
-            );
-        }
-
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-
-        return boost::none;
+        _transitions.push<error::duplicate_transition> (transition);
       }
 
       // ***************************************************************** //
@@ -421,53 +129,50 @@ namespace xml
       {
         namespace st = xml::parse::structure_type_util;
 
-        for (specialize_type& specialize : _specializes.values())
+        for (specialize_type const& specialize : _specializes)
         {
-          boost::optional<const id::ref::tmpl&> id_tmpl
+          boost::optional<tmpl_type const&> tmpl
             (get_template (specialize.use));
 
-          if (not id_tmpl)
+          if (not tmpl)
           {
-            throw error::unknown_template
-              (specialize.make_reference_id(), make_reference_id());
+            throw error::unknown_template (specialize, *this);
           }
 
-          //! \todo generate a new function, with a state.next_id and
-          //! the parent that is the transition that requires the
-          //! specialization -> needs lazy specialization
+          //! \todo generate a new function, with a state.next_id ->
+          //! needs lazy specialization
 
-          type_map_apply (map, specialize.type_map);
+          auto type_map (specialize.type_map);
+          type_map_apply (map, type_map);
 
-          const id::ref::function specialized_function
-            (id_tmpl->get().function().get().clone (boost::none));
+          function_type specialized_function
+            (tmpl->function().with_name (specialize.name()));
 
-          specialized_function.get_ref().specialize
-            ( specialize.type_map
+          specialized_function.specialize
+            ( type_map
             , specialize.type_get
             , st::join (known_structs, st::make (structs, state), state)
             , state
             );
 
           split_structs ( known_structs
-                        , specialized_function.get_ref().structs
+                        , specialized_function.structs
                         , structs
                         , specialize.type_get
                         , state
                         );
 
-          specialized_function.get_ref().name (specialize.name());
-
           //! \todo remove this, for now it is safe to not check for
           //! duplicates since we check for duplicate specializes
-          _functions.push (specialized_function);
-
-          specialized_function.get_ref().parent (_id);
+          struct ignore_exception
+          {
+            ignore_exception (function_type const&, function_type const&) {}
+          };
+          _functions.push<ignore_exception> (specialized_function);
         }
 
-        _specializes.clear();
 
-
-        for (function_type& function : _functions.values())
+        for (function_type& function : _functions)
         {
           function.specialize
             ( map
@@ -484,7 +189,7 @@ namespace xml
                         );
         }
 
-        for (transition_type& transition : _transitions.values())
+        for (transition_type& transition : _transitions)
         {
           transition.specialize
             ( map
@@ -501,9 +206,10 @@ namespace xml
                         );
         }
 
-        for (place_type& place : _places.values())
+        auto const places (std::move (_places));
+        for (place_type const& place : places)
         {
-          place.specialize (map, state);
+          push_place (place.specialized (map, state));
         }
 
         for (structure_type& s : structs)
@@ -516,14 +222,93 @@ namespace xml
 
       void net_type::type_check (const state::type & state) const
       {
-        for (const transition_type& trans : transitions().values())
+        for (const transition_type& trans : transitions())
         {
-          trans.type_check (state);
+          trans.type_check (state, *this);
         }
 
-        for (const function_type& function : functions().values())
+        for (const function_type& function : functions())
         {
           function.type_check (state);
+        }
+      }
+
+      void net_type::resolve_function_use_recursive
+        (std::unordered_map<std::string, function_type const&> known)
+      {
+        for (function_type const& function : functions())
+        {
+          if (!!function.name())
+          {
+            known.emplace (*function.name(), function);
+          }
+        }
+
+        for (transition_type& transition : _transitions)
+        {
+          transition.resolve_function_use_recursive (known);
+        }
+        for (tmpl_type& templat : _templates)
+        {
+          templat.resolve_function_use_recursive (known);
+        }
+        for (function_type& function : _functions)
+        {
+          function.resolve_function_use_recursive (known);
+        }
+      }
+
+      void net_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
+      {
+        auto&& resolve
+          ( [this, &known] (std::string name)
+          -> boost::optional<pnet::type::signature::signature_type>
+            {
+              auto const known_it (known.find (name));
+              if (known_it != known.end())
+              {
+                return known_it->second;
+              }
+
+              auto const local_it
+                ( std::find_if ( structs.begin(), structs.end()
+                               , [&name] (structure_type const& struc)
+                                 {
+                                   return struc.name() == name;
+                                 }
+                               )
+                );
+              if (local_it != structs.end())
+              {
+                return pnet::type::signature::signature_type
+                  (local_it->signature());
+              }
+
+              return boost::none;
+            }
+          );
+
+        for (structure_type const& struc : structs)
+        {
+          known.emplace
+            ( struc.name()
+            , pnet::type::signature::resolve (struc.signature(), resolve)
+            );
+        }
+
+        for (transition_type& transition : _transitions)
+        {
+          transition.resolve_types_recursive (known);
+        }
+        for (function_type& function : _functions)
+        {
+          function.resolve_types_recursive (known);
+        }
+
+        for (place_type& place : _places)
+        {
+          place.resolve_types_recursive (known);
         }
       }
 
@@ -533,33 +318,33 @@ namespace xml
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
-        const std::unordered_set<id::ref::place> place_ids (places().ids());
-        const std::unordered_set<id::ref::transition> transition_ids
-          (transitions().ids());
+        auto const places (std::move (_places));
+        auto const transitions (std::move (_transitions));
 
-        for (const id::ref::place& place : place_ids)
+        for (place_type const& place : places)
         {
-          place.get_ref().name (prefix + place.get().name());
+          push_place (place.with_name (prefix + place.name()));
         }
 
-        for (const id::ref::transition& id : transition_ids)
+        for (transition_type const& old : transitions)
         {
-          transition_type& transition (id.get_ref());
-          const std::unordered_set<id::ref::connect> connect_ids
-            (transition.connections().ids());
-          const std::unordered_set<id::ref::place_map> place_map_ids
-            (transition.place_map().ids());
+          push_transition (old.with_name (prefix + old.name()));
+        }
+        for (transition_type& transition : _transitions)
+        {
+          auto const connects (std::move (transition._connections));
+          auto const place_maps (std::move (transition._place_map));
 
-          transition.name (prefix + transition.name());
-
-          for (const id::ref::connect& conn : connect_ids)
+          for (connect_type const& conn : connects)
           {
-            conn.get_ref().place (prefix + conn.get().place());
+            transition.push_connection
+              (conn.with_place (prefix + conn.place()));
           }
 
-          for (const id::ref::place_map& pm : place_map_ids)
+          for (place_map_type const& pm : place_maps)
           {
-            pm.get_ref().place_real (prefix + pm.get().place_real());
+            transition.push_place_map
+              (pm.with_place_real (prefix + pm.place_real()));
           }
         }
       }
@@ -568,62 +353,38 @@ namespace xml
       {
         //! \note We need to copy out the ids from the unique, as we
         //! modify the unique and therefore break iteration.
-        const std::unordered_set<id::ref::place> place_ids (places().ids());
-        const std::unordered_set<id::ref::transition> transition_ids
-          (transitions().ids());
+        auto const places (std::move (_places));
+        auto const transitions (std::move (_transitions));
 
-        for (const id::ref::place& place : place_ids)
+        for (place_type const& place : places)
         {
-          place.get_ref().name
-            (fhg::util::remove_prefix (prefix, place.get().name()));
+          push_place ( place.with_name
+                         (fhg::util::remove_prefix (prefix, place.name()))
+                     );
         }
 
-        for (const id::ref::transition& id : transition_ids)
+        for (transition_type const& old : transitions)
         {
-          transition_type& transition (id.get_ref());
-          const std::unordered_set<id::ref::connect> connect_ids
-            (transition.connections().ids());
-          const std::unordered_set<id::ref::place_map> place_map_ids
-            (transition.place_map().ids());
+          push_transition
+            (old.with_name (fhg::util::remove_prefix (prefix, old.name())));
+        }
+        for (transition_type& transition : _transitions)
+        {
+          auto const connects (std::move (transition._connections));
+          auto const place_maps (std::move (transition._place_map));
 
-          transition.name
-            (fhg::util::remove_prefix (prefix, transition.name()));
-
-          for (const id::ref::connect& conn : connect_ids)
+          for (connect_type const& conn : connects)
           {
-            conn.get_ref().place
-              (fhg::util::remove_prefix (prefix, conn.get().place()));
+            transition.push_connection
+              (conn.with_place (fhg::util::remove_prefix (prefix, conn.place())));
           }
 
-          for (const id::ref::place_map& pm : place_map_ids)
+          for (place_map_type const& pm : place_maps)
           {
-            pm.get_ref().place_real
-              (fhg::util::remove_prefix (prefix, pm.get().place_real()));
+            transition.push_place_map
+              (pm.with_place_real (fhg::util::remove_prefix (prefix, pm.place_real())));
           }
         }
-      }
-
-      id::ref::net net_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return net_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _functions.clone (function_type::make_parent (new_id), new_mapper)
-          , _places.clone (new_id, new_mapper)
-          , _specializes.clone (new_id, new_mapper)
-          , _templates.clone (new_id, new_mapper)
-          , _transitions.clone (new_id, new_mapper)
-          , structs
-          , contains_a_module_call
-          , _properties
-          ).make_reference_id();
       }
 
       // ******************************************************************* //
@@ -641,7 +402,7 @@ namespace xml
 
         pid_of_place_type pid_of_place;
 
-        for (const place_type& place : net.places().values())
+        for (const place_type& place : net.places())
         {
           if (!state.synthesize_virtual_places() && place.is_virtual())
           {
@@ -658,11 +419,11 @@ namespace xml
 
             const place::type place_real (we_net.places().at (pid->second));
 
-            if (!(place_real.signature() == place.signature_or_throw()))
+            if (!(place_real.signature() == place.signature()))
             {
               throw error::port_tunneled_type_error
                 ( place.name()
-                , place.signature_or_throw()
+                , place.signature()
                 , place_real.name()
                 , place_real.signature()
                 , state.file_in_progress()
@@ -681,7 +442,7 @@ namespace xml
             const we::place_id_type pid
               ( we_net.add_place ( place::type
                                    ( place.name()
-                                   , place.signature_or_throw()
+                                   , place.signature()
                                    , place.put_token()
                                    , prop
                                    )
@@ -692,17 +453,17 @@ namespace xml
           }
         }
 
-        for (const id::ref::transition& id_transition : net.transitions().ids())
+        for (transition_type const& transition : net.transitions())
           {
             transition_synthesize
-              ( id_transition
+              ( transition
               , state
               , we_net
               , pid_of_place
               );
           }
 
-        for (const place_type& place : net.places().values())
+        for (const place_type& place : net.places())
         {
           const we::place_id_type pid (pid_of_place.at (place.name()));
 
@@ -737,11 +498,11 @@ namespace xml
           ::we::type::property::dump::dump (s, net.properties());
 
           dumps (s, net.structs.begin(), net.structs.end());
-          dumps (s, net.templates().values());
-          dumps (s, net.specializes().values());
-          dumps (s, net.functions().values());
-          dumps (s, net.places().values());
-          dumps (s, net.transitions().values());
+          dumps (s, net.templates());
+          dumps (s, net.specializes());
+          dumps (s, net.functions());
+          dumps (s, net.places());
+          dumps (s, net.transitions());
 
           s.close ();
         }

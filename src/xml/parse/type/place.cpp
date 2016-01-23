@@ -3,7 +3,6 @@
 #include <xml/parse/type/place.hpp>
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
 #include <we/type/signature/is_literal.hpp>
@@ -16,101 +15,69 @@ namespace xml
   {
     namespace type
     {
-      place_type::place_type ( ID_CONS_PARAM(place)
-                             , PARENT_CONS_PARAM(net)
-                             , const util::position_type& pod
+      place_type::place_type ( const util::position_type& pod
                              , const std::string & name
                              , const std::string & type
                              , const boost::optional<bool> is_virtual
                              , boost::optional<bool> put_token
+                             , std::list<token_type> tokens_
+                             , we::type::property::type properties
+                             , boost::optional<pnet::type::signature::signature_type> signature
                              )
         : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
         , _is_virtual (is_virtual)
         , _put_token (put_token)
         , _name (name)
         , _type (type)
-      {
-        _id_mapper->put (_id, *this);
-      }
-
-      place_type::place_type ( ID_CONS_PARAM(place)
-                             , PARENT_CONS_PARAM(net)
-                             , const util::position_type& pod
-                             , const boost::optional<bool>& is_virtual
-                             , boost::optional<bool> put_token
-                             , const std::string& name
-                             , const std::string& type
-                             , const std::list<token_type>& tokens_
-                             , const we::type::property::type& properties
-                             )
-        : with_position_of_definition (pod)
-        , ID_INITIALIZE()
-        , PARENT_INITIALIZE()
-        , _is_virtual (is_virtual)
-        , _put_token (put_token)
-        , _name (name)
-        , _type (type)
-        , tokens (tokens_)
-        , _properties (properties)
-      {
-        _id_mapper->put (_id, *this);
-      }
+        , _signature (std::move (signature))
+        , tokens (std::move (tokens_))
+        , _properties (std::move (properties))
+      {}
 
       const std::string& place_type::name() const
       {
         return _name;
-      }
-      const std::string& place_type::name_impl (const std::string& name)
-      {
-        return _name = name;
-      }
-      const std::string& place_type::name (const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return _name;
-        }
-
-        return name_impl (name);
       }
 
       const std::string& place_type::type() const
       {
         return _type;
       }
-      const std::string& place_type::type (const std::string& type_)
+
+      place_type place_type::with_name (std::string const& new_name) const
       {
-        return _type = type_;
+        return place_type ( position_of_definition()
+                          , new_name
+                          , _type
+                          , _is_virtual
+                          , _put_token
+                          , tokens
+                          , _properties
+                          , _signature
+                          );
       }
 
-      boost::optional<pnet::type::signature::signature_type>
-        place_type::signature() const
+      pnet::type::signature::signature_type place_type::signature() const
       {
-        if (pnet::type::signature::is_literal (type()))
-        {
-          return pnet::type::signature::signature_type (type());
-        }
-
-        if (not parent())
-        {
-          return boost::none;
-        }
-
-        return parent()->signature (type());
+        //! \note assume post processing pass (resolve_types_recursive)
+        return _signature.get();
       }
-      pnet::type::signature::signature_type place_type::signature_or_throw() const
+      void place_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        const boost::optional<pnet::type::signature::signature_type> s (signature());
-
-        if (not s)
+        if (pnet::type::signature::is_literal (_type))
         {
-          throw error::place_type_unknown (make_reference_id());
+          _signature = pnet::type::signature::signature_type (_type);
         }
-
-        return *s;
+        else
+        {
+          auto it (known.find (_type));
+          if (it == known.end())
+          {
+            throw error::place_type_unknown (*this);
+          }
+          _signature = it->second;
+        }
       }
 
       void place_type::push_token (const token_type & t)
@@ -118,17 +85,22 @@ namespace xml
         tokens.push_back (t);
       }
 
-      void place_type::specialize ( const type::type_map_type & map_in
-                                  , const state::type &
-                                  )
+      place_type place_type::specialized ( const type::type_map_type & map_in
+                                         , const state::type &
+                                         ) const
       {
         const type::type_map_type::const_iterator
           mapped (map_in.find (type()));
 
-        if (mapped != map_in.end())
-        {
-          type (mapped->second);
-        }
+        return place_type ( position_of_definition()
+                          , _name
+                          , mapped != map_in.end() ? mapped->second : type()
+                          , _is_virtual
+                          , _put_token
+                          , tokens
+                          , _properties
+                          , _signature
+                          );
       }
 
       const boost::optional<bool>& place_type::get_is_virtual (void) const
@@ -138,10 +110,6 @@ namespace xml
       bool place_type::is_virtual (void) const
       {
         return _is_virtual.get_value_or (false);
-      }
-      void place_type::set_virtual (bool is)
-      {
-        _is_virtual = boost::make_optional (is, true);
       }
 
       const we::type::property::type& place_type::properties() const
@@ -156,27 +124,6 @@ namespace xml
       const place_type::unique_key_type& place_type::unique_key() const
       {
         return name();
-      }
-
-      id::ref::place place_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return place_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _is_virtual
-          , _put_token
-          , _name
-          , _type
-          , tokens
-          , _properties
-          ).make_reference_id();
       }
 
       namespace dump

@@ -4,8 +4,6 @@
 
 #include <xml/parse/state.fwd.hpp>
 
-#include <xml/parse/id/mapper.hpp>
-#include <xml/parse/id/types.hpp>
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/warning.hpp>
 #include <xml/parse/util/position.hpp>
@@ -226,9 +224,6 @@ namespace xml
 
         void add_options (boost::program_options::options_description& desc);
 
-        const id::mapper* id_mapper() const;
-        id::mapper* id_mapper();
-
         boost::filesystem::path strip_path_prefix
           (boost::filesystem::path const&) const;
 
@@ -336,8 +331,6 @@ namespace xml
 
         std::string _option_path_to_cpp;
         std::string _option_path_prefixes_to_strip;
-
-        id::mapper _id_mapper;
 
         template<typename W>
         void generic_warn ( const W& w

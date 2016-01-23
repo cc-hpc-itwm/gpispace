@@ -176,8 +176,6 @@ namespace xml
 
         , _option_path_to_cpp ("path-to-cpp,g")
         , _option_path_prefixes_to_strip ("path-prefix-to-strip")
-
-        , _id_mapper()
       {}
 
       const gen_param_type& type::gen_ldflags() const
@@ -727,15 +725,6 @@ namespace xml
         desc.add (generate);
         desc.add (file);
         desc.add (warnings);
-      }
-
-      const id::mapper* type::id_mapper() const
-      {
-        return &_id_mapper;
-      }
-      id::mapper* type::id_mapper()
-      {
-        return &_id_mapper;
       }
 
       boost::filesystem::path type::strip_path_prefix

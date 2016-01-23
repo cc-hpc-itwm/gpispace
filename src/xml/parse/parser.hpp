@@ -2,8 +2,8 @@
 
 #pragma once
 
-#include <xml/parse/id/types.fwd.hpp>
 #include <xml/parse/state.fwd.hpp>
+#include <xml/parse/type/function.hpp>
 
 #include <we/type/activity.fwd.hpp>
 
@@ -15,18 +15,18 @@ namespace xml
 {
   namespace parse
   {
-    id::ref::function just_parse (state::type&, std::istream&);
-    id::ref::function just_parse
+    type::function_type just_parse (state::type&, std::istream&);
+    type::function_type just_parse
       (state::type&, const boost::filesystem::path&);
 
-    void post_processing_passes (const id::ref::function&, state::type*);
+    void post_processing_passes (type::function_type&, state::type*);
 
-    void generate_cpp (const id::ref::function&, const state::type&);
-    void dump_xml (const id::ref::function&, const state::type&);
+    void generate_cpp (const type::function_type&, const state::type&);
+    void dump_xml (const type::function_type&, const state::type&);
 
     //! \todo Not in parser, but somewhere else?
     we::type::activity_t xml_to_we
-      ( const xml::parse::id::ref::function& function
+      ( const xml::parse::type::function_type& function
       , const xml::parse::state::type& state
       );
   }

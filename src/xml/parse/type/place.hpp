@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -28,57 +27,38 @@ namespace xml
     {
       struct place_type : with_position_of_definition
       {
-        ID_SIGNATURES(place);
-        PARENT_SIGNATURES(net);
-
       public:
         typedef std::string unique_key_type;
 
         typedef std::string token_type;
 
-        place_type ( ID_CONS_PARAM(place)
-                   , PARENT_CONS_PARAM(net)
-                   , const util::position_type&
+        place_type ( const util::position_type&
                    , const std::string & name
                    , const std::string & type
                    , const boost::optional<bool> is_virtual
                    , boost::optional<bool> put_token
-                   );
-
-        place_type ( ID_CONS_PARAM(place)
-                   , PARENT_CONS_PARAM(net)
-                   , const util::position_type&
-                   , const boost::optional<bool>& _is_virtual
-                   , boost::optional<bool> put_token
-                   , const std::string& name
-                   , const std::string& type
-                   , const std::list<token_type>& tokens
-                   , const we::type::property::type& properties
+                   , std::list<token_type> tokens = {}
+                   , we::type::property::type properties = {}
+                   , boost::optional<pnet::type::signature::signature_type> = boost::none
                    );
 
         const std::string& name() const;
-        const std::string& name (const std::string& name);
-
         const std::string& type() const;
-        const std::string& type (const std::string&);
 
-        boost::optional<pnet::type::signature::signature_type> signature() const;
-        pnet::type::signature::signature_type signature_or_throw() const;
+        place_type with_name (std::string const& new_name) const;
 
-      private:
-        friend struct net_type;
-        const std::string& name_impl (const std::string& name);
+        pnet::type::signature::signature_type signature() const;
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
-      public:
         void push_token (const token_type & t);
 
-        void specialize ( const type::type_map_type & map_in
-                        , const state::type &
-                        );
+        place_type specialized ( const type::type_map_type & map_in
+                               , const state::type &
+                               ) const;
 
         const boost::optional<bool>& get_is_virtual (void) const;
         bool is_virtual (void) const;
-        void set_virtual (bool);
         boost::optional<bool> const& put_token() const
         {
           return _put_token;
@@ -89,17 +69,13 @@ namespace xml
 
         const unique_key_type& unique_key() const;
 
-        id::ref::place clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
         boost::optional<bool> _is_virtual;
         boost::optional<bool> _put_token;
 
-        std::string _name;
+        std::string const _name;
         std::string _type;
+        boost::optional<pnet::type::signature::signature_type> _signature;
 
         //! \todo All these should be private with accessors.
       public:

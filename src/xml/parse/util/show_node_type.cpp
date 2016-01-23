@@ -2,7 +2,7 @@
 
 #include <xml/parse/util/show_node_type.hpp>
 
-#include <xml/parse/rapidxml/1.13/rapidxml.hpp>
+#include <rapidxml.hpp>
 
 #include <stdexcept>
 

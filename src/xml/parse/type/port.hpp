@@ -3,7 +3,6 @@
 #pragma once
 
 #include <xml/parse/error.hpp>
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -33,71 +32,56 @@ namespace xml
     {
       struct port_type : with_position_of_definition
       {
-        ID_SIGNATURES(port);
-        PARENT_SIGNATURES(function);
-
       public:
         typedef std::pair<std::string, we::type::PortDirection> unique_key_type;
 
-        port_type ( ID_CONS_PARAM(port)
-                  , PARENT_CONS_PARAM(function)
-                  , const util::position_type&
+        port_type ( const util::position_type&
                   , const std::string & name
                   , const std::string & _type
                   , const boost::optional<std::string> & _place
                   , const we::type::PortDirection& direction
                   , const we::type::property::type& properties
                   = we::type::property::type()
+                  , boost::optional<pnet::type::signature::signature_type> = boost::none
                   );
 
-        void specialize ( const type::type_map_type & map_in
-                        , const state::type &
-                        );
+        port_type specialized ( const type::type_map_type & map_in
+                              , const state::type &
+                              ) const;
 
-        void type_check
-          (const boost::filesystem::path&, const state::type&) const;
+        void type_check ( const boost::filesystem::path&
+                        , const state::type&
+                        , function_type const& parent
+                        ) const;
 
         const std::string& name() const;
-        const std::string& name (const std::string& name);
 
         const std::string& type() const;
-        const std::string& type (const std::string&);
 
-        boost::optional<pnet::type::signature::signature_type> signature() const;
-        pnet::type::signature::signature_type signature_or_throw() const;
+        pnet::type::signature::signature_type signature() const;
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         const we::type::PortDirection& direction() const;
-        const we::type::PortDirection& direction (const we::type::PortDirection&);
 
-      private:
-        friend struct function_type;
-        const std::string& name_impl (const std::string& name);
-        const we::type::PortDirection& direction_impl
-          (const we::type::PortDirection&);
-
-      public:
-        boost::optional<const id::ref::place&> resolved_place() const;
+        boost::optional<place_type const&> resolved_place
+          (net_type const& parent) const;
 
         const we::type::property::type& properties() const;
-        we::type::property::type& properties();
 
         unique_key_type unique_key() const;
 
-        id::ref::port clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
-        std::string _name;
+        std::string const _name;
         std::string _type;
+        boost::optional<pnet::type::signature::signature_type> _signature;
 
         //! \todo All these should be private with accessors.
       public:
         boost::optional<std::string> place;
 
       private:
-        we::type::PortDirection _direction;
+        we::type::PortDirection const _direction;
         we::type::property::type _properties;
       };
 

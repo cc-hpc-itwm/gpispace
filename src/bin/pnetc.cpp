@@ -281,8 +281,8 @@ try
     state.dump_dependencies() = input + ".d";
   }
 
-    const xml::parse::id::ref::function function
-      (xml::parse::just_parse (state, input));
+  xml::parse::type::function_type function
+    (xml::parse::just_parse (state, input));
 
     if (state.dump_xml_file().size() > 0)
     {

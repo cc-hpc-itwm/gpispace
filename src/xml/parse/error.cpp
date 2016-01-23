@@ -3,6 +3,8 @@
 #include <xml/parse/error.hpp>
 
 #include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/net.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
@@ -84,229 +86,208 @@ namespace xml
       { }
 
       port_type_mismatch::port_type_mismatch
-        ( const id::ref::port& port
-        , const id::ref::port& other_port
+        ( const type::port_type& port
+        , const type::port_type& other_port
         )
           : generic ( boost::format ( "in-/out-port %1% has different types: "
                                     "%2% (%3%) from %4% and %5% (%6%) from %7%"
                                     )
-                    % port.get().name()
-                    % port.get().type()
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().position_of_definition()
-                    % other_port.get().type()
-                    % we::type::enum_to_string (other_port.get().direction())
-                    % other_port.get().position_of_definition()
+                    % port.name()
+                    % port.type()
+                    % we::type::enum_to_string (port.direction())
+                    % port.position_of_definition()
+                    % other_port.type()
+                    % we::type::enum_to_string (other_port.direction())
+                    % other_port.position_of_definition()
                     )
-        , _port (port)
-        , _other_port (other_port)
       { }
 
       port_not_connected::port_not_connected
-        (const id::ref::port& port, const boost::filesystem::path& path)
+        (const type::port_type& port, const boost::filesystem::path& path)
           : generic ( boost::format ("%1%-port %2% not connected in %3%")
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
                     % path
                     )
-          , _port (port)
           , _path (path)
       { }
 
       port_connected_type_error::port_connected_type_error
-        ( const id::ref::port& port
-        , const id::ref::place& place
+        ( const type::port_type& port
+        , const type::place_type& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "type error: %1%-port %2% of type %3% "
                                       "connected to place %4% of type %5% in %6%"
                                     )
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
-                    % port.get().type()
-                    % place.get().name()
-                    % place.get().type()
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
+                    % port.type()
+                    % place.name()
+                    % place.type()
                     % path
                     )
-        , _port (port)
-        , _place (place)
         , _path (path)
       { }
 
       port_connected_place_nonexistent::port_connected_place_nonexistent
-        ( const id::ref::port& port
+        ( const type::port_type& port
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "%1%-port %2% connected to "
                                       "non-existing place %3% in %4%"
                                     )
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().name()
-                    % *port.get().place
+                    % we::type::enum_to_string (port.direction())
+                    % port.name()
+                    % *port.place
                     % path
                     )
-          , _port (port)
-          , _path (path)
+            , _path (path)
       { }
 
       tunnel_connected_non_virtual::tunnel_connected_non_virtual
-        ( const id::ref::port& port
-        , const id::ref::place& place
+        ( const type::port_type& port
+        , const type::place_type& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "tunnel %1% connected to non-virtual "
                                       "place %2% in %3%"
                                     )
-                    % port.get().name()
-                    % place.get().name()
+                    % port.name()
+                    % place.name()
                     % path
                     )
-          , _port (port)
-          , _place (place)
           , _path (path)
       { }
 
       tunnel_name_mismatch::tunnel_name_mismatch
-        ( const id::ref::port& port
-        , const id::ref::place& place
+        ( const type::port_type& port
+        , const type::place_type& place
         , const boost::filesystem::path& path
         )
           : generic ( boost::format ( "tunnel %1% is connected to place with "
                                       "different name  %2% in %3%"
                                     )
-                    % port.get().name()
-                    % place.get().name()
+                    % port.name()
+                    % place.name()
                     % path
                     )
-          , _port (port)
-          , _place (place)
-          , _path (path)
+              , _path (path)
       { }
 
       unknown_function::unknown_function ( const std::string& fun
-                                         , const id::ref::transition& trans
+                                         , type::transition_type const& trans
                                          )
         : generic ( boost::format ( "unknown function %1% in transition %2%"
                                     " in %3%"
                                   )
                   % fun
-                  % trans.get().name()
-                  % trans.get().position_of_definition()
+                  % trans.name()
+                  % trans.position_of_definition()
                   )
         , _function_name (fun)
-        , _transition (trans)
       {}
 
       unknown_port_in_connect_response::unknown_port_in_connect_response
-        (id::ref::response const& response)
+        (type::response_type const& response)
           : generic
             ( boost::format ("connect-response from unknown output port '%1%'")
-            % response.get().port()
-            , response.get().position_of_definition()
+            % response.port()
+            , response.position_of_definition()
             )
       {}
 
       unknown_to_in_connect_response::unknown_to_in_connect_response
-        (id::ref::response const& response)
+        (type::response_type const& response)
           : generic
             ( boost::format
               ("unknown input port '%1%' in attribute 'to' of connect-response")
-            % response.get().to()
-            , response.get().position_of_definition()
+            % response.to()
+            , response.position_of_definition()
             )
       {}
 
       invalid_signature_in_connect_response::invalid_signature_in_connect_response
-        ( id::ref::response const& response
-        , id::ref::port const& port
+        ( type::response_type const& response
+        , type::port_type const& port
         )
           : generic
             ( boost::format
               ("invalid signature for response to port '%1%'."
               " The type '%2%' with the signature '%3%' does not provide %4%"
               )
-            % port.get().name()
-            % port.get().type()
-            % pnet::type::signature::show (port.get().signature_or_throw())
+            % port.name()
+            % port.type()
+            % pnet::type::signature::show (port.signature())
             % we::response_description_requirements()
-            , response.get().position_of_definition()
+            , response.position_of_definition()
             )
       {}
 
-      unknown_template::unknown_template ( const id::ref::specialize& spec
-                                         , const id::ref::net& net
+      unknown_template::unknown_template ( type::specialize_type const& spec
+                                         , type::net_type const& net
                                          )
         : generic ( boost::format ( "unknown template %1% in specialize at %2%"
                                     " in net at %3%"
                                   )
-                  % spec.get().use
-                  % spec.get().position_of_definition()
-                  % net.get().position_of_definition()
+                  % spec.use
+                  % spec.position_of_definition()
+                  % net.position_of_definition()
                   )
-        , _specialize (spec)
-        , _net (net)
       {}
 
       connect_to_nonexistent_place::connect_to_nonexistent_place
-       ( const id::ref::transition& transition
-       , const id::ref::connect& connection
+       ( type::transition_type const& transition
+       , const type::connect_type& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent place %2%"
                                      " in transition %3% at %4%"
                                    )
-                   % connection.get().direction()
-                   % connection.get().place()
-                   % transition.get().name()
-                   % connection.get().position_of_definition()
+                   % connection.direction()
+                   % connection.place()
+                   % transition.name()
+                   % connection.position_of_definition()
                    )
-         , _transition (transition)
-         , _connection (connection)
         {}
 
       connect_to_nonexistent_port::connect_to_nonexistent_port
-       ( const id::ref::transition& transition
-       , const id::ref::connect& connection
+       ( type::transition_type const& transition
+       , const type::connect_type& connection
        )
          : generic ( boost::format ( "connect-%1% to nonexistent port %2%"
                                      " in transition %3% at %4%"
                                    )
-                   % connection.get().direction()
-                   % connection.get().port()
-                   % transition.get().name()
-                   % connection.get().position_of_definition()
+                   % connection.direction()
+                   % connection.port()
+                   % transition.name()
+                   % connection.position_of_definition()
                    )
-         , _transition (transition)
-         , _connection (connection)
         {}
 
       connect_type_error::connect_type_error
-        ( const id::ref::transition& transition
-        , const id::ref::connect& connection
-        , const id::ref::port& port
-        , const id::ref::place& place
+        ( type::transition_type const& transition
+        , const type::connect_type& connection
+        , const type::port_type& port
+        , const type::place_type& place
         )
          : generic ( boost::format ( "type-error: connect-%1%"
                                      " from place %2%::%3% (%4%) at %5%"
                                      " to port %6%::%7% (%8%) at %9%"
                                      " in transition %10% at %11%"
                                    )
-                   % connection.get().direction()
-                   % place.get().name()
-                   % place.get().type()
-                   % pnet::type::signature::show (place.get().signature_or_throw())
-                   % place.get().position_of_definition()
-                   % port.get().name()
-                   % port.get().type()
-                   % pnet::type::signature::show (port.get().signature_or_throw())
-                   % port.get().position_of_definition()
-                   % transition.get().name()
-                   % connection.get().position_of_definition()
+                   % connection.direction()
+                   % place.name()
+                   % place.type()
+                   % pnet::type::signature::show (place.signature())
+                   % place.position_of_definition()
+                   % port.name()
+                   % port.type()
+                   % pnet::type::signature::show (port.signature())
+                   % port.position_of_definition()
+                   % transition.name()
+                   % connection.position_of_definition()
                    )
-          , _transition (transition)
-          , _connection (connection)
-          , _port (port)
-          , _place (place)
-        {}
+          {}
 
       memory_buffer_without_size::memory_buffer_without_size
         ( std::string const& name
@@ -322,17 +303,18 @@ namespace xml
 
       namespace
       {
+        template<typename MemoryBuffers>
         std::string print_memory_buffer_positions_of_definition
-          (std::unordered_set<id::ref::memory_buffer> const& ids)
+          (MemoryBuffers const& memory_buffers)
         {
           return fhg::util::print_container
-            ( "{", ", ", "}", ids
-            , fhg::util::ostream::callback::generic< id::ref::memory_buffer
+            ( "{", ", ", "}", memory_buffers
+            , fhg::util::ostream::callback::generic< type::memory_buffer_type
                                                    , util::position_type
                                                    >
-              ([] (id::ref::memory_buffer const& id)
+              ([] (type::memory_buffer_type const& memory_buffer)
                {
-                 return id.get().position_of_definition();
+                 return memory_buffer.position_of_definition();
                }
               )
             ).string();
@@ -340,23 +322,22 @@ namespace xml
       }
 
       memory_buffer_for_non_module::memory_buffer_for_non_module
-        (id::ref::function const& function)
+        (type::function_type const& function)
           : generic ( boost::format
                       ( "non module call function '%1%'"
                       " with %2% memory buffer%3%"
                       ", function defined at %4%"
                       ", memory buffer%3% defined at %5%"
                       )
-                    % function.get().name()
-                    % function.get().memory_buffers().ids().size()
-                    % ((function.get().memory_buffers().ids().size() > 1)
+                    % function.name()
+                    % function.memory_buffers().size()
+                    % ((function.memory_buffers().size() > 1)
                        ? "s" : ""
                       )
-                    % function.get().position_of_definition()
+                    % function.position_of_definition()
                     % print_memory_buffer_positions_of_definition
-                      (function.get().memory_buffers().ids())
+                      (function.memory_buffers())
                     )
-          , _function (function)
       {}
 
       namespace
@@ -373,30 +354,30 @@ namespace xml
         };
 
         std::string print_memory_transfer_positions_of_definition
-          (id::ref::function const& function)
+          (type::function_type const& function)
         {
           fhg::util::first_then<std::string> sep (" ", ", ");
 
           std::ostringstream oss;
 
-          if (!function.get_ref().memory_gets().empty())
+          if (!function.memory_gets().empty())
           {
             oss << sep << print_positions<xml::parse::type::memory_get>
-                            ("get", function.get_ref().memory_gets())
+                            ("get", function.memory_gets())
               ;
           }
 
-          if (!function.get_ref().memory_puts().empty())
+          if (!function.memory_puts().empty())
           {
             oss << sep << print_positions<xml::parse::type::memory_put>
-                            ("put", function.get_ref().memory_puts())
+                            ("put", function.memory_puts())
               ;
           }
 
-          if (!function.get_ref().memory_getputs().empty())
+          if (!function.memory_getputs().empty())
           {
             oss << sep << print_positions<xml::parse::type::memory_getput>
-                            ("getput", function.get_ref().memory_getputs())
+                            ("getput", function.memory_getputs())
               ;
           }
 
@@ -405,47 +386,44 @@ namespace xml
       }
 
       memory_transfer_for_non_module::memory_transfer_for_non_module
-        (id::ref::function const& function)
+        (type::function_type const& function)
           : generic ( boost::format
                       ( "non module call function '%1%'"
                       " with %2% memory transfer%3%"
                       ", function defined at %4%"
                       ", memory transfer%3% defined at:%5%"
                       )
-                    % function.get().name()
-                    % ( function.get().memory_gets().size()
-                      + function.get().memory_puts().size()
-                      + function.get().memory_getputs().size()
+                    % function.name()
+                    % ( function.memory_gets().size()
+                      + function.memory_puts().size()
+                      + function.memory_getputs().size()
                       )
-                    % ((( function.get().memory_gets().size()
-                        + function.get().memory_puts().size()
-                        + function.get().memory_getputs().size()
+                    % ((( function.memory_gets().size()
+                        + function.memory_puts().size()
+                        + function.memory_getputs().size()
                         ) > 1
                        ) ? "s" : ""
                       )
-                    % function.get().position_of_definition()
+                    % function.position_of_definition()
                     % print_memory_transfer_positions_of_definition (function)
                     )
-        , _function (function)
       {}
 
       memory_buffer_with_same_name_as_port
         ::memory_buffer_with_same_name_as_port
-        ( id::ref::memory_buffer const& memory_buffer
-        , id::ref::port const& port
+        ( type::memory_buffer_type const& memory_buffer
+        , type::port_type const& port
         )
           : generic ( boost::format
                       ("memory buffer '%1%' defined at %2%"
                       " with the same name as the %3%-port defined at %4%"
                       )
-                    % memory_buffer.get().name()
-                    % memory_buffer.get().position_of_definition()
-                    % we::type::enum_to_string (port.get().direction())
-                    % port.get().position_of_definition()
+                    % memory_buffer.name()
+                    % memory_buffer.position_of_definition()
+                    % we::type::enum_to_string (port.direction())
+                    % port.position_of_definition()
                     )
-          , _memory_buffer (memory_buffer)
-          , _port (port)
-      {}
+        {}
 
       cannot_resolve::cannot_resolve ( const std::string& field
                                      , const std::string& type
@@ -487,127 +465,126 @@ namespace xml
       {}
 
       duplicate_specialize::duplicate_specialize
-        ( const id::ref::specialize& early
-        , const id::ref::specialize& late
+        ( type::specialize_type const& early
+        , type::specialize_type const& late
         )
-          : generic_duplicate<id::ref::specialize>
-            (early, late, boost::format ("specialize %1%") % early.get().name())
+          : generic_duplicate<type::specialize_type>
+            (early, late, boost::format ("specialize %1%") % early.name())
       {}
 
-      duplicate_place::duplicate_place ( const id::ref::place& early
-                                       , const id::ref::place& late
+      duplicate_place::duplicate_place ( const type::place_type& early
+                                       , const type::place_type& late
                                        )
-        : generic_duplicate<id::ref::place>
-          (early, late, boost::format ("place %1%") % early.get().name())
+        : generic_duplicate<type::place_type>
+          (early, late, boost::format ("place %1%") % early.name())
       {}
 
       duplicate_transition::duplicate_transition
-        ( const id::ref::transition& early
-        , const id::ref::transition& late
+        ( type::transition_type const& early
+        , type::transition_type const& late
         )
-          : generic_duplicate<id::ref::transition>
-            (early, late, boost::format ("transition %1%") % early.get().name())
+          : generic_duplicate<type::transition_type>
+            (early, late, boost::format ("transition %1%") % early.name())
       {}
 
-      duplicate_port::duplicate_port ( const id::ref::port& early
-                                     , const id::ref::port& late
+      duplicate_port::duplicate_port ( const type::port_type& early
+                                     , const type::port_type& late
                                      )
-        : generic_duplicate<id::ref::port>
-                            ( early
-                            , late
-                            , boost::format ("%1%-port %2%")
-                            % we::type::enum_to_string (early.get().direction())
-                            % early.get().name()
-                            )
+        : generic_duplicate<type::port_type>
+            ( early
+            , late
+            , boost::format ("%1%-port %2%")
+            % we::type::enum_to_string (early.direction())
+            % early.name()
+            )
       {}
 
       duplicate_template::duplicate_template
-        ( const id::ref::tmpl& early
-        , const id::ref::tmpl& late
+        ( const type::tmpl_type& early
+        , const type::tmpl_type& late
         )
-          : generic_duplicate<id::ref::tmpl>
-            (early, late, boost::format ("template %1%") % early.get().name())
+          : generic_duplicate<type::tmpl_type>
+            (early, late, boost::format ("template %1%") % early.name())
       {}
 
       duplicate_place_map::duplicate_place_map
-        ( const id::ref::place_map& early
-        , const id::ref::place_map& late
+        ( const type::place_map_type& early
+        , const type::place_map_type& late
         )
-          : generic_duplicate<id::ref::place_map>
-                              ( early
-                              , late
-                              , boost::format ("place-map %1% <-> %2%")
-                              % early.get().place_virtual()
-                              % early.get().place_real()
-                              )
+          : generic_duplicate<type::place_map_type>
+              ( early
+              , late
+              , boost::format ("place-map %1% <-> %2%")
+              % early.place_virtual()
+              % early.place_real()
+              )
       {}
 
       duplicate_external_function::duplicate_external_function
-         ( const id::ref::module& early
-         , const id::ref::module& late
+         ( const type::module_type& early
+         , const type::module_type& late
          )
-          : generic_duplicate<id::ref::module>
+          : generic_duplicate<type::module_type>
             ( early
             , late
             , boost::format ( "external function %1% in module %2%"
                               " has conflicting definition"
                             )
-            % early.get().function()
-            % early.get().name()
+            % early.function()
+            % early.name()
             )
       {}
 
       duplicate_connect::duplicate_connect
-        ( const id::ref::connect& early
-        , const id::ref::connect& late
+        ( const type::connect_type& early
+        , const type::connect_type& late
         )
-          : generic_duplicate<id::ref::connect>
+          : generic_duplicate<type::connect_type>
             ( early
             , late
             , boost::format ( "connect-%1% %2% <-> %3%"
                               " (existing connection is connect-%4%)"
                             )
-            % we::edge::enum_to_string (late.get().direction())
-            % late.get().place()
-            % late.get().port()
-            % we::edge::enum_to_string (early.get().direction())
+            % we::edge::enum_to_string (late.direction())
+            % late.place()
+            % late.port()
+            % we::edge::enum_to_string (early.direction())
             )
       {}
 
       duplicate_response::duplicate_response
-        ( const id::ref::response& early
-        , const id::ref::response& late
+        ( const type::response_type& early
+        , const type::response_type& late
         )
-          : generic_duplicate<id::ref::response>
+          : generic_duplicate<type::response_type>
             ( early
             , late
             , boost::format ( "connect-response %1% -> %2%"
                               " (existing response connects to %3%)"
                             )
-            % late.get().port()
-            % late.get().to()
-            % early.get().to()
+            % late.port()
+            % late.to()
+            % early.to()
             )
       {}
 
       duplicate_memory_buffer::duplicate_memory_buffer
-        ( id::ref::memory_buffer const& early
-        , id::ref::memory_buffer const& late
+        ( type::memory_buffer_type const& early
+        , type::memory_buffer_type const& late
         )
-          : generic_duplicate<id::ref::memory_buffer>
+          : generic_duplicate<type::memory_buffer_type>
             ( early
             , late
-            , boost::format ("memory-buffer '%1%'") % late.get().name()
+            , boost::format ("memory-buffer '%1%'") % late.name()
             )
       {}
 
-      place_type_unknown::place_type_unknown (const id::ref::place& place)
+      place_type_unknown::place_type_unknown (const type::place_type& place)
         : generic ( boost::format ("unknown type %1% for place %2% at %3%")
-                  % place.get().type()
-                  % place.get().name()
-                  % place.get().position_of_definition()
+                  % place.type()
+                  % place.name()
+                  % place.position_of_definition()
                   )
-        , _place (place)
       {}
     }
   }

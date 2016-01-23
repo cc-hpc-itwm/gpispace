@@ -6,7 +6,11 @@
 #include <string>
 #include <sstream>
 
+#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/mod.fwd.hpp>
+#include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/transition.fwd.hpp>
 
 #include <we/type/property.hpp>
 #include <we/type/value/show.hpp>
@@ -286,10 +290,9 @@ namespace xml
       class port_not_connected : public generic
       {
       public:
-        port_not_connected (const id::ref::port&, const boost::filesystem::path&);
+        port_not_connected (const type::port_type&, const boost::filesystem::path&);
 
       private:
-        const id::ref::port _port;
         const boost::filesystem::path _path;
       };
 
@@ -298,13 +301,9 @@ namespace xml
       class overwrite_function_name_trans : public generic
       {
       public:
-        overwrite_function_name_trans ( const id::ref::transition&
-                                      , const id::ref::function&
+        overwrite_function_name_trans ( type::transition_type const&
+                                      , type::function_type const&
                                       );
-
-      private:
-        const id::ref::transition _transition;
-        const id::ref::function _function;
       };
 
       // ******************************************************************* //
@@ -501,16 +500,13 @@ namespace xml
       class conflicting_port_types : public generic
       {
       public:
-        conflicting_port_types ( const id::ref::transition&
-                               , const id::ref::port& in
-                               , const id::ref::port& out
+        conflicting_port_types ( type::transition_type const&
+                               , const type::port_type& in
+                               , const type::port_type& out
                                , const boost::filesystem::path&
                                );
 
       private:
-        const id::ref::transition _transition;
-        const id::ref::port _in;
-        const id::ref::port _out;
         const boost::filesystem::path _path;
       };
 
@@ -563,13 +559,9 @@ namespace xml
       class duplicate_external_function : public generic
       {
       public:
-        duplicate_external_function ( const id::ref::module& mod
-                                    , const id::ref::module& old
+        duplicate_external_function ( const type::module_type& mod
+                                    , const type::module_type& old
                                     );
-
-      private:
-        const id::ref::module _mod;
-        const id::ref::module _old;
       };
 
       // ******************************************************************* //
@@ -611,10 +603,7 @@ namespace xml
       class synthesize_anonymous_function : public generic
       {
       public:
-        synthesize_anonymous_function (const id::ref::function&);
-
-      private:
-        const id::ref::function _function;
+        synthesize_anonymous_function (type::function_type const&);
       };
 
       class struct_redefined : public generic

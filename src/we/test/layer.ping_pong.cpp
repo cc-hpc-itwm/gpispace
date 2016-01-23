@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
   {
     xml::parse::state::type parser_state;
-    xml::parse::id::ref::function parsed
+    xml::parse::type::function_type parsed
       (xml::parse::just_parse (parser_state, xpnet_path));
     xml::parse::post_processing_passes (parsed, &parser_state);
     we::type::activity_t activity

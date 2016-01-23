@@ -4,20 +4,19 @@
 
 #include <xml/parse/type/net.fwd.hpp>
 
-#include <xml/parse/type/function.fwd.hpp>
+#include <xml/parse/type/function.hpp>
 #include <xml/parse/type/place.hpp>
 #include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
-#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type_map_type.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
 #include <xml/parse/util/unique.hpp>
 
 #include <xml/parse/type/dumps.hpp>
-
-#include <xml/parse/id/generic.hpp>
 
 #include <we/type/id.hpp>
 
@@ -29,34 +28,15 @@ namespace xml
     {
       struct net_type : with_position_of_definition
       {
-        ID_SIGNATURES(net);
-        PARENT_SIGNATURES(function);
-
       public:
-        typedef xml::util::unique<function_type,id::ref::function> functions_type;
-        typedef xml::util::unique<place_type,id::ref::place> places_type;
-        typedef xml::util::unique<specialize_type,id::ref::specialize> specializes_type;
-        typedef xml::util::unique<tmpl_type,id::ref::tmpl> templates_type;
-        typedef xml::util::unique<transition_type,id::ref::transition> transitions_type;
+        using functions_type = fhg::pnet::util::unique<function_type>;
+        typedef fhg::pnet::util::unique<place_type> places_type;
+        using specializes_type = fhg::pnet::util::unique<specialize_type>;
+        using templates_type = fhg::pnet::util::unique<tmpl_type>;
+        using transitions_type = fhg::pnet::util::unique<transition_type>;
 
 
-        net_type ( ID_CONS_PARAM(net)
-                 , PARENT_CONS_PARAM(function)
-                 , const util::position_type&
-                 );
-
-        net_type ( ID_CONS_PARAM(net)
-                 , PARENT_CONS_PARAM(function)
-                 , const util::position_type&
-                 , const functions_type& functions
-                 , const places_type& places
-                 , const specializes_type& specializes
-                 , const templates_type& templates
-                 , const transitions_type& transitions
-                 , const structs_type& structs
-                 , const bool& contains_a_module_call
-                 , const we::type::property::type& properties
-                 );
+        net_type (const util::position_type&);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
@@ -68,55 +48,20 @@ namespace xml
         const specializes_type& specializes() const;
         const templates_type& templates() const;
         const transitions_type& transitions() const;
+        //! \note find_module_calls needs to modify transitions when diving
+        transitions_type& transitions();
 
         // ***************************************************************** //
 
-        boost::optional<const id::ref::function&>
-        get_function (const std::string& name) const;
-
-        boost::optional<const id::ref::tmpl&>
-        get_template (const std::string& name) const;
+        boost::optional<tmpl_type const&>
+          get_template (const std::string& name) const;
 
         // ***************************************************************** //
 
-      public:
-        const id::ref::place& push_place (const id::ref::place&);
-        const id::ref::specialize& push_specialize (const id::ref::specialize&);
-        const id::ref::tmpl& push_template (const id::ref::tmpl&);
-        const id::ref::transition& push_transition (const id::ref::transition&);
-
-        // ***************************************************************** //
-
-        bool has_function (const std::string& name) const;
-        bool has_place (const std::string& name) const;
-        bool has_specialize (const std::string& name) const;
-        bool has_template (const std::string& name) const;
-        bool has_transition (const std::string& name) const;
-
-        // ***************************************************************** //
-
-        void erase_function (const id::ref::function&);
-        void erase_place (const id::ref::place&);
-        void erase_specialize (const id::ref::specialize&);
-        void erase_template (const id::ref::tmpl&);
-        void erase_transition (const id::ref::transition&);
-
-        // ***************************************************************** //
-
-        void clear_places (void);
-        void clear_transitions (void);
-
-        // ***************************************************************** //
-
-        void rename (const id::ref::function&, const std::string&);
-        void rename (const id::ref::place&, const std::string&);
-        void rename (const id::ref::specialize&, const std::string&);
-        void rename (const id::ref::tmpl&, const std::string&);
-        void rename (const id::ref::transition&, const std::string&);
-
-        // ***************************************************************** //
-
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
+        void push_place (place_type const&);
+        void push_specialize (specialize_type const&);
+        void push_template (tmpl_type const&);
+        void push_transition (transition_type const&);
 
         // ***************************************************************** //
 
@@ -134,13 +79,13 @@ namespace xml
 
         void type_check (const state::type & state) const;
 
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
+
         void set_prefix (const std::string & prefix);
         void remove_prefix (const std::string & prefix);
-
-        id::ref::net clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         functions_type _functions;

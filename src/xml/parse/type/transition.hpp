@@ -4,15 +4,14 @@
 
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/function.hpp>
-#include <xml/parse/type/place_map.hpp>
-#include <xml/parse/type/use.hpp>
 #include <xml/parse/type/net.fwd.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/require.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/use.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
-
-#include <xml/parse/id/generic.hpp>
-#include <xml/parse/id/types.hpp>
 
 #include <we/type/net.fwd.hpp>
 
@@ -26,39 +25,23 @@ namespace xml
     {
       struct transition_type : with_position_of_definition
       {
-        ID_SIGNATURES(transition);
-        PARENT_SIGNATURES(net);
-
       public:
         typedef std::string unique_key_type;
 
-        typedef xml::util::unique<connect_type,id::ref::connect>
-          connections_type;
-        using responses_type
-          = xml::util::unique<response_type,id::ref::response>;
-        typedef xml::util::unique<place_map_type,id::ref::place_map>
-          place_maps_type;
+        typedef fhg::pnet::util::unique<connect_type> connections_type;
+        using responses_type = fhg::pnet::util::unique<response_type>;
+        using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
-        typedef boost::variant <id::ref::function, id::ref::use>
+        typedef boost::variant <function_type, use_type>
           function_or_use_type;
 
-        transition_type ( ID_CONS_PARAM(transition)
-                        , PARENT_CONS_PARAM(net)
-                        , const util::position_type&
+        transition_type ( const util::position_type&
                         , const std::string& name
                         , const boost::optional<we::priority_type>& priority
                         , const boost::optional<bool>& finline
                         );
 
-        transition_type ( ID_CONS_PARAM(transition)
-                        , PARENT_CONS_PARAM(net)
-                        , const util::position_type&
-                        , const function_or_use_type&
-                        );
-
-        transition_type ( ID_CONS_PARAM(transition)
-                        , PARENT_CONS_PARAM(net)
-                        , const util::position_type&
+        transition_type ( const util::position_type&
                         , const boost::optional<function_or_use_type>&
                         , const std::string& name
                         , const connections_type& connections
@@ -71,50 +54,24 @@ namespace xml
                         , const boost::optional<bool>& finline
                         , const we::type::property::type& properties
                         );
+        transition_type with_name (std::string) const;
 
         const function_or_use_type& function_or_use() const;
         function_or_use_type& function_or_use();
         const function_or_use_type& function_or_use
           (const function_or_use_type& function_or_use_);
 
-        id::ref::function resolved_function() const;
+        function_type const& resolved_function() const;
 
         const std::string& name() const;
-        const std::string& name (const std::string& name);
-
-      private:
-        friend struct net_type;
-        const std::string& name_impl (const std::string& name);
-
-      public:
-        // ***************************************************************** //
-
-        boost::optional<const id::ref::function&>
-        get_function (const std::string&) const;
-
-        // ***************************************************************** //
 
         const connections_type& connections() const;
         responses_type const& responses() const;
         const place_maps_type& place_map() const;
 
-        void remove_connection (const id::ref::connect&);
-        void remove_place_map (const id::ref::place_map&);
-
-        void push_connection (const id::ref::connect&);
-        void push_response (const id::ref::response&);
-        void push_place_map (const id::ref::place_map&);
-
-        void connection_place (const id::ref::connect&, const std::string&);
-        void connection_direction
-          (const id::ref::connect&, const we::edge::type&);
-
-        void place_map_real (const id::ref::place_map&, const std::string&);
-
-        // ***************************************************************** //
-
-        void clear_connections ();
-        void clear_place_map ();
+        void push_connection (const connect_type&);
+        void push_response (response_type const&);
+        void push_place_map (place_map_type const&);
 
         // ***************************************************************** //
 
@@ -142,26 +99,26 @@ namespace xml
         // ***************************************************************** //
 
         void type_check (response_type const&, state::type const&) const;
-        void type_check (const connect_type&, const state::type&) const;
-        void type_check (const state::type & state) const;
+        void type_check (const connect_type&, const state::type&, net_type const& parent) const;
+        void type_check (const state::type & state, net_type const& parent) const;
+
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         const we::type::property::type& properties() const;
         we::type::property::type& properties();
 
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
-
         const unique_key_type& unique_key() const;
-
-        id::ref::transition clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
 
       private:
         boost::optional<function_or_use_type> _function_or_use;
 
-        std::string _name;
+        std::string const _name;
 
+        //! \note renaming for prefix
+        friend struct net_type;
         connections_type _connections;
         responses_type _responses;
         place_maps_type _place_map;
@@ -186,7 +143,7 @@ namespace xml
       // ******************************************************************* //
 
       void transition_synthesize
-        ( const id::ref::transition & id_transition
+        ( transition_type const&
         , const state::type & state
         , we::type::net_type& we_net
         , const place_map_map_type & pids

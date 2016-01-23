@@ -4,8 +4,6 @@
 
 #include <xml/parse/type/connect.fwd.hpp>
 
-#include <xml/parse/id/generic.hpp>
-#include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -28,16 +26,11 @@ namespace xml
     {
       struct connect_type : with_position_of_definition
       {
-        ID_SIGNATURES(connect);
-        PARENT_SIGNATURES(transition);
-
       public:
         //! \note          place,       port,        PT||PT_READ
         typedef std::tuple<std::string, std::string, bool> unique_key_type;
 
-        connect_type ( ID_CONS_PARAM(connect)
-                     , PARENT_CONS_PARAM(transition)
-                     , const util::position_type&
+        connect_type ( const util::position_type&
                      , const std::string& place
                      , const std::string& port
                      , const ::we::edge::type& direction
@@ -47,41 +40,20 @@ namespace xml
 
         const std::string& place() const;
         const std::string& port() const;
-        boost::optional<const id::ref::place&> resolved_place() const;
-        boost::optional<const id::ref::port&> resolved_port() const;
 
         const ::we::edge::type& direction() const;
-        const ::we::edge::type& direction
-          (const ::we::edge::type&);
 
-        const std::string& place (const std::string&);
+        connect_type with_place (std::string const& new_place) const;
 
-      private:
-        friend struct transition_type;
-        const ::we::edge::type& direction_impl
-          (const ::we::edge::type&);
-
-        const std::string& place_impl (const std::string&);
-
-      public:
         const we::type::property::type& properties() const;
-        we::type::property::type& properties();
 
         unique_key_type unique_key() const;
 
-        id::ref::connect clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
-        //! \todo Should be a id::place and id::port.
-        //! \note In principle yes but we do have connections to
-        //! not yet parsed places
-        std::string _place;
-        std::string _port;
+        std::string const _place;
+        std::string const _port;
 
-        ::we::edge::type _direction;
+        ::we::edge::type const _direction;
 
         we::type::property::type _properties;
       };

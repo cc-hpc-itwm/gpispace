@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 
@@ -22,20 +21,20 @@ namespace xml
     {
       struct memory_buffer_type : with_position_of_definition
       {
-        ID_SIGNATURES (memory_buffer);
-        PARENT_SIGNATURES (function);
-
       public:
         using unique_key_type = std::string;
 
-        memory_buffer_type ( ID_CONS_PARAM (memory_buffer)
-                           , PARENT_CONS_PARAM (function)
-                           , const util::position_type&
+        memory_buffer_type ( const util::position_type&
                            , const std::string& name
                            , const std::string& size
                            , const boost::optional<bool>& read_only
                            , const we::type::property::type& properties
                            );
+        memory_buffer_type (memory_buffer_type const&) = default;
+        memory_buffer_type (memory_buffer_type&&) = default;
+        memory_buffer_type& operator= (memory_buffer_type const&) = delete;
+        memory_buffer_type& operator= (memory_buffer_type&&) = delete;
+        ~memory_buffer_type() = default;
 
         const std::string& name() const;
         const std::string& size() const;
@@ -45,13 +44,8 @@ namespace xml
 
         unique_key_type unique_key() const;
 
-        id::ref::memory_buffer clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
-        std::string _name;
+        std::string const _name;
         std::string _size;
         boost::optional<bool> _read_only;
         we::type::property::type _properties;

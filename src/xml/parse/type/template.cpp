@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/template.hpp>
 
-#include <xml/parse/id/mapper.hpp>
 #include <xml/parse/type/net.hpp>
 
 #include <fhg/util/xml.hpp>
@@ -13,52 +12,21 @@ namespace xml
   {
     namespace type
     {
-      namespace
-      {
-        const id::ref::function& reparent ( const id::ref::function& function
-                                          , const id::tmpl& id
-                                          )
-        {
-          function.get_ref().parent (id);
-          return function;
-        }
-      }
-
       tmpl_type::tmpl_type
-        ( ID_CONS_PARAM(tmpl)
-        , PARENT_CONS_PARAM(net)
-        , const util::position_type& pod
+        ( const util::position_type& pod
         , const boost::optional<std::string>& name
         , const names_type& tmpl_parameter
-        , const id::ref::function& function
+        , function_type const& function
         )
           : with_position_of_definition (pod)
-          , ID_INITIALIZE()
-          , PARENT_INITIALIZE()
           , _name (name)
           , _tmpl_parameter (tmpl_parameter)
-          , _function (reparent (function, _id))
-      {
-        _id_mapper->put (_id, *this);
-      }
+          , _function (function)
+      {}
 
       const boost::optional<std::string>& tmpl_type::name() const
       {
         return _name;
-      }
-      const std::string& tmpl_type::name_impl (const std::string& name)
-      {
-        return *(_name = name);
-      }
-      const std::string& tmpl_type::name(const std::string& name)
-      {
-        if (has_parent())
-        {
-          parent()->rename (make_reference_id(), name);
-          return *_name;
-        }
-
-        return name_impl (name);
       }
 
       const tmpl_type::names_type&
@@ -67,30 +35,21 @@ namespace xml
         return _tmpl_parameter;
       }
 
-      const id::ref::function& tmpl_type::function() const
+      function_type const& tmpl_type::function() const
       {
         return _function;
       }
 
-      boost::optional<const id::ref::function&>
-      tmpl_type::get_function (const std::string& name) const
+      void tmpl_type::resolve_function_use_recursive
+        (std::unordered_map<std::string, function_type const&> known)
       {
-        if (has_parent())
-          {
-            return parent()->get_function (name);
-          }
-
-        return boost::none;
+        _function.resolve_function_use_recursive (known);
       }
 
-      boost::optional<pnet::type::signature::signature_type>
-      tmpl_type::signature (const std::string& type) const
+      void tmpl_type::resolve_types_recursive
+        (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        if (has_parent())
-        {
-          return parent()->signature (type);
-        }
-        return boost::none;
+        _function.resolve_types_recursive (known);
       }
 
       const tmpl_type::unique_key_type& tmpl_type::unique_key() const
@@ -98,25 +57,6 @@ namespace xml
         //! \note Anonymous templates can't be stored in unique, thus
         //! just indirect.
         return *name();
-      }
-
-
-      id::ref::tmpl tmpl_type::clone
-        ( const boost::optional<parent_id_type>& parent
-        , const boost::optional<id::mapper*>& mapper
-        ) const
-      {
-        id::mapper* const new_mapper (mapper.get_value_or (id_mapper()));
-        const id_type new_id (new_mapper->next_id());
-        return tmpl_type
-          ( new_id
-          , new_mapper
-          , parent
-          , _position_of_definition
-          , _name
-          , _tmpl_parameter
-          , _function.get().clone (function_type::make_parent (new_id), mapper)
-          ).make_reference_id();
       }
 
       namespace dump
@@ -133,7 +73,7 @@ namespace xml
               s.close ();
             }
 
-          ::xml::parse::type::dump::dump (s, t.function().get());
+          ::xml::parse::type::dump::dump (s, t.function());
 
           s.close ();
         }

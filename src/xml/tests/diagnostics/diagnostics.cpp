@@ -71,8 +71,8 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
         state.warning_struct_redefined() = true;
         state.warning_error() = true;
         std::istringstream input_stream (input);
-        xml::parse::post_processing_passes
-          (xml::parse::just_parse (state, input_stream), &state);
+        auto function (xml::parse::just_parse (state, input_stream));
+        xml::parse::post_processing_passes (function, &state);
       }
     , boost::format ("WARNING: struct %1% at %2% redefined at %3%")
     % name_struct
@@ -126,8 +126,8 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_port)
     ( [&input]()
       { xml::parse::state::type state;
         std::istringstream input_stream (input);
-        xml::parse::post_processing_passes
-          (xml::parse::just_parse (state, input_stream), &state);
+        auto function (xml::parse::just_parse (state, input_stream));
+        xml::parse::post_processing_passes (function, &state);
       }
     , boost::format
       ("ERROR: connect-response from unknown output port '%1%' in %2%")
@@ -165,8 +165,8 @@ BOOST_AUTO_TEST_CASE (error_connect_response_with_unknown_to)
     ( [&input]()
       { xml::parse::state::type state;
         std::istringstream input_stream (input);
-        xml::parse::post_processing_passes
-          (xml::parse::just_parse (state, input_stream), &state);
+        auto function (xml::parse::just_parse (state, input_stream));
+        xml::parse::post_processing_passes (function, &state);
       }
     , boost::format ("ERROR: unknown input port '%1%' in attribute 'to'"
                     " of connect-response in %2%"
@@ -210,8 +210,8 @@ BOOST_AUTO_TEST_CASE (error_connect_response_invalid_signature)
     ( [&input]()
       { xml::parse::state::type state;
         std::istringstream input_stream (input);
-        xml::parse::post_processing_passes
-          (xml::parse::just_parse (state, input_stream), &state);
+        auto function (xml::parse::just_parse (state, input_stream));
+        xml::parse::post_processing_passes (function, &state);
       }
     , boost::format
       ("ERROR: invalid signature for response to port '%1%'."

@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <xml/parse/id/generic.hpp>
 #include <xml/parse/type/function.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/net.fwd.hpp>
@@ -24,49 +23,32 @@ namespace xml
     {
       struct tmpl_type : with_position_of_definition
       {
-        ID_SIGNATURES(tmpl);
-        PARENT_SIGNATURES(net);
-
       public:
         typedef std::string unique_key_type;
         typedef std::unordered_set<std::string> names_type;
 
-        tmpl_type ( ID_CONS_PARAM(tmpl)
-                  , PARENT_CONS_PARAM(net)
-                  , const util::position_type&
+        tmpl_type ( const util::position_type&
                   , const boost::optional<std::string>& name
                   , const names_type& tmpl_parameter
-                  , const id::ref::function& function
+                  , function_type const& function
                   );
 
         const boost::optional<std::string>& name() const;
-        const std::string& name (const std::string& name);
-
-      private:
-        friend struct net_type;
-        const std::string& name_impl (const std::string& name);
-
-      public:
         const names_type& tmpl_parameter () const;
 
-        const id::ref::function& function() const;
+        function_type const& function() const;
 
-        boost::optional<const id::ref::function&>
-        get_function (const std::string&) const;
-
-        boost::optional<pnet::type::signature::signature_type> signature (const std::string&) const;
+        void resolve_function_use_recursive
+          (std::unordered_map<std::string, function_type const&> known);
+        void resolve_types_recursive
+          (std::unordered_map<std::string, pnet::type::signature::signature_type> known);
 
         const unique_key_type& unique_key() const;
 
-        id::ref::tmpl clone
-          ( const boost::optional<parent_id_type>& parent = boost::none
-          , const boost::optional<id::mapper*>& mapper = boost::none
-          ) const;
-
       private:
-        boost::optional<std::string> _name;
+        boost::optional<std::string> const _name;
         names_type _tmpl_parameter;
-        id::ref::function _function;
+        function_type _function;
       };
 
       namespace dump

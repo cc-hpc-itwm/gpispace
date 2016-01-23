@@ -15,6 +15,19 @@ namespace we
 {
   namespace type
   {
+    transition_t::transition_t()
+      : name_ ("<<transition unknown>>")
+      , data_ (expression_t())
+      , condition_ (boost::none)
+      , _ports_input()
+      , _ports_output()
+      , _ports_tunnel()
+      , port_id_counter_ (0)
+      , prop_()
+      , _requirements()
+      , _priority()
+    {}
+
     boost::optional<const expression_t&> transition_t::expression() const
     {
       return fhg::util::boost::get_or_none<expression_t> (data());
