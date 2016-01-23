@@ -1776,7 +1776,6 @@ namespace xml
           , memory_gets                         \
           , memory_puts                         \
           , memory_getputs                      \
-          , {} /* typenames */                  \
           , false /* contains_a_module_call */  \
           , structs                             \
           , conditions                          \

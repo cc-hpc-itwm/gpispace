@@ -35,9 +35,6 @@ namespace xml
     {
       struct function_type : with_position_of_definition
       {
-      private:
-        typedef std::unordered_set<std::string> typenames_type;
-
       public:
         typedef std::string unique_key_type;
 
@@ -57,7 +54,6 @@ namespace xml
                       , std::list<memory_get> const&
                       , std::list<memory_put> const&
                       , std::list<memory_getput> const&
-                      , const typenames_type& typenames
                       , const bool& contains_a_module_call
                       , const structs_type& structs
                       , const conditions_type&
@@ -108,11 +104,6 @@ namespace xml
         bool is_known_port (const std::string & name) const;
         bool is_known_port_inout (const std::string & name) const;
         bool is_known_tunnel (const std::string& name) const;
-
-        // ***************************************************************** //
-
-        const typenames_type& typenames () const;
-        void insert_typename (const std::string& tn);
 
         // ***************************************************************** //
 
@@ -174,8 +165,6 @@ namespace xml
         std::list<memory_get> _memory_gets;
         std::list<memory_put> _memory_puts;
         std::list<memory_getput> _memory_getputs;
-
-        typenames_type _typenames;
 
       public:
         bool contains_a_module_call;

@@ -64,7 +64,6 @@ namespace xml
         , std::list<memory_get> const& memory_gets
         , std::list<memory_put> const& memory_puts
         , std::list<memory_getput> const& memory_getputs
-        , const typenames_type& typenames
         , const bool& contains_a_module_call_
         , const structs_type& structs_
         , const conditions_type& conditions
@@ -79,7 +78,6 @@ namespace xml
         , _memory_gets (memory_gets)
         , _memory_puts (memory_puts)
         , _memory_getputs (memory_getputs)
-        , _typenames (typenames)
         , contains_a_module_call (contains_a_module_call_)
         , structs (structs_)
         , _conditions (conditions)
@@ -174,7 +172,6 @@ namespace xml
                , _memory_gets
                , _memory_puts
                , _memory_getputs
-               , _typenames
                , contains_a_module_call
                , structs
                , _conditions
@@ -277,17 +274,6 @@ namespace xml
       bool function_type::is_known_tunnel (const std::string& name) const
       {
         return ports().has (std::make_pair (name, we::type::PORT_TUNNEL));
-      }
-
-      // ***************************************************************** //
-
-      const function_type::typenames_type& function_type::typenames () const
-      {
-        return _typenames;
-      }
-      void function_type::insert_typename (const std::string& tn)
-      {
-        _typenames.insert (tn);
       }
 
       // ***************************************************************** //
@@ -2260,13 +2246,6 @@ namespace xml
           s.attr ("name", f.name());
 
           ::we::type::property::dump::dump (s, f.properties());
-
-          for (const std::string& tn : f.typenames())
-          {
-            s.open ("template-parameter");
-            s.attr ("type", tn);
-            s.close();
-          }
 
           dumps (s, f.structs.begin(), f.structs.end());
 
