@@ -57,15 +57,15 @@ namespace sdpa
         throw std::runtime_error ("worker '" + workerId + "' already exists");
       }
       worker_connections_.left.insert ({workerId, address});
-      worker_map_.emplace ( workerId
-                          , Worker ( cpbSet
-                                   , allocated_shared_memory_size
-                                   , children_allowed
-                                   , hostname
-                                   )
-                          );
+      auto result = worker_map_.emplace ( workerId
+                                        , Worker ( cpbSet
+                                                 , allocated_shared_memory_size
+                                                 , children_allowed
+                                                 , hostname
+                                                 )
+                                        );
 
-      worker_equiv_classes_[worker_map_.at (workerId).capability_names_].add_worker_entry (workerId);
+      worker_equiv_classes_[result.first->second.capability_names_].add_worker_entry (workerId);
     }
 
 
