@@ -59,7 +59,7 @@ namespace sdpa
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;
         unsigned int _n_idle_workers;
-        std::unordered_set<worker_id_t> _workers;
+        std::unordered_set<worker_id_t> _worker_ids;
       };
 
     public:
@@ -190,7 +190,7 @@ namespace sdpa
 
      std::forward_list<worker_id_t> idles;
 
-     for (worker_id_t const& w : _workers)
+     for (worker_id_t const& w : _worker_ids)
      {
        Worker const& worker (worker_map.at (w));
        auto const job_count ( worker.pending_.size()

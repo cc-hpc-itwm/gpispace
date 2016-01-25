@@ -481,17 +481,17 @@ namespace sdpa
 
     unsigned int WorkerManager::WorkerEquivalenceClass::n_workers() const
     {
-      return _workers.size();
+      return _worker_ids.size();
     }
 
     void WorkerManager::WorkerEquivalenceClass::add_worker_entry (worker_id_t const& w)
     {
-      _workers.insert (w);
+      _worker_ids.insert (w);
     }
 
     void WorkerManager::WorkerEquivalenceClass::remove_worker_entry (worker_id_t const& w)
     {
-      _workers.erase (w);
+      _worker_ids.erase (w);
     }
   }
 }
