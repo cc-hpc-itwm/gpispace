@@ -11,6 +11,7 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
+#include <chrono>
 #include <random>
 #include <sstream>
 
@@ -20,6 +21,16 @@ namespace
     (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
   {
     throw std::logic_error ("got unexpected workflow_response");
+  }
+
+  std::mt19937& random_engine()
+  {
+    static std::mt19937 _
+      (std::chrono::duration_cast<std::chrono::seconds>
+        (std::chrono::system_clock::now().time_since_epoch()).count()
+      );
+
+    return _;
   }
 }
 
@@ -35,11 +46,9 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
                        )
                      );
 
-  std::random_device random_engine;
-
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        (random_engine, unexpected_workflow_response)
+        (random_engine(), unexpected_workflow_response)
     );
 }
 
@@ -67,10 +76,8 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
   we::type::net_type net;
   iar >> net;
 
-  std::random_device random_engine;
-
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        (random_engine, unexpected_workflow_response)
+        (random_engine(), unexpected_workflow_response)
     );
 }
