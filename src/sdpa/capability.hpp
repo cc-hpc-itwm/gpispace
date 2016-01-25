@@ -53,17 +53,13 @@ namespace sdpa
   typedef std::set<capability_t> capabilities_set_t;
 
   inline std::set<std::string> get_set_of_capability_names
-    (capabilities_set_t const& cpb_set)
+    (capabilities_set_t const& capabilities)
   {
     std::set<std::string> capability_names;
-    std::transform ( cpb_set.begin()
-                   , cpb_set.end()
-                   , std::inserter ( capability_names
-                                   , capability_names.begin()
-                                   )
-                   , [] (capability_t const& cpb)
-                     {return cpb.name();}
-                   );
+    for (capability_t const& capability : capabilities)
+    {
+      capability_names.emplace (capability.name());
+    }
 
     return capability_names;
   }
