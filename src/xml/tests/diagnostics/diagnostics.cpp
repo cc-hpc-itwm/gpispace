@@ -333,3 +333,26 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_place_map, fixture)
 }
 
 #undef GENERIC_DUPLICATE
+
+BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
+{
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <expression>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <std::runtime_error>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
+    , boost::format ("Parse error: %1%: invalid closing tag name")
+    % "[<stdin>:4:7]"
+    );
+}
