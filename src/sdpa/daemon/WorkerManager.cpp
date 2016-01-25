@@ -291,19 +291,20 @@ namespace sdpa
     void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
       boost::mutex::scoped_lock const _(mtx_);
-      worker_map_.at (worker_id).assign (job_id);
+      Worker& worker (worker_map_.at (worker_id));
+      worker.assign (job_id);
       worker_equiv_classes_.at
-        (worker_map_.at (worker_id).capability_names_).inc_pending_jobs (1);
+        (worker.capability_names_).inc_pending_jobs (1);
     }
 
     void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
-      worker_map_.at (worker_id).submit (job_id);
-      decltype (worker_equiv_classes_)::mapped_type&
-        weqc (worker_equiv_classes_.at (worker_map_.at (worker_id).capability_names_));
+      Worker& worker (worker_map_.at (worker_id));
+      worker.submit (job_id);
+      auto& equivalence_class (worker_equiv_classes_.at (worker.capability_names_));
 
-      weqc.dec_pending_jobs (1);
-      weqc.inc_running_jobs (1);
+      equivalence_class.dec_pending_jobs (1);
+      equivalence_class.inc_running_jobs (1);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
@@ -322,11 +323,17 @@ namespace sdpa
       auto worker (worker_map_.find (worker_id));
       if (worker != worker_map_.end())
       {
-        decltype (worker_equiv_classes_)::mapped_type&
-          weqc (worker_equiv_classes_.at (worker_map_.at (worker_id).capability_names_));
+        auto& equivalence_class
+          (worker_equiv_classes_.at (worker->second.capability_names_));
 
-        worker->second.pending_.count (job_id) ? weqc.dec_pending_jobs (1)
-                                               : weqc.dec_running_jobs (1);
+        if (worker->second.pending_.count (job_id))
+        {
+          equivalence_class.dec_pending_jobs (1);
+        }
+        else
+        {
+          equivalence_class.dec_running_jobs (1);
+        }
 
         worker->second.deleteJob (job_id);
       }
