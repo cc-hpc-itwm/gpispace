@@ -14,6 +14,15 @@
 #include <random>
 #include <sstream>
 
+namespace
+{
+  void unexpected_workflow_response
+    (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
+  {
+    throw std::logic_error ("got unexpected workflow_response");
+  }
+}
+
 BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 {
   we::type::net_type net;
@@ -30,12 +39,7 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        ( random_engine
-        , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
-          {
-            throw std::logic_error ("got unexpected workflow_response");
-          }
-        )
+        (random_engine, unexpected_workflow_response)
     );
 }
 
@@ -67,11 +71,6 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
 
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        ( random_engine
-        , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
-          {
-            throw std::logic_error ("got unexpected workflow_response");
-          }
-        )
+        (random_engine, unexpected_workflow_response)
     );
 }
