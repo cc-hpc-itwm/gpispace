@@ -83,6 +83,41 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
     );
 }
 
+BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
+{
+  std::string const name_field {fhg::util::testing::random_identifier()};
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <struct name="%2%">
+    <field name="%3%" type="%4%"/>
+    <field name="%3%" type="%5%"/>
+  </struct>
+  <expression/>
+</defun>
+)EOS")
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      % name_field
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::struct_field_redefined>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
+    , boost::format ("ERROR: struct field '%1%' redefined in %2%")
+    % name_field
+    % boost::filesystem::path ("<stdin>")
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
 {
   parse ("diagnostics/warning_duplicate_external_function.xpnet");
