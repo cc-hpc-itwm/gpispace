@@ -127,6 +127,10 @@ namespace sdpa
 
     private:
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
+      void change_equivalence_class ( worker_id_t const&
+                                    , Worker const&
+                                    , std::set<std::string> const&
+                                    );
 
       boost::optional<double> matchRequirements
         ( Worker const&

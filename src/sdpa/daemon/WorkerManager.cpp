@@ -351,33 +351,45 @@ namespace sdpa
       return worker_map_.at (worker).getJobListAndCleanQueues();
     }
 
+    void WorkerManager::change_equivalence_class ( worker_id_t const& worker_id
+                                                 , Worker const& worker
+                                                 , std::set<std::string> const& old_cpbs
+                                                 )
+    {
+      const unsigned int n_pending_jobs (worker.pending_.size());
+      const unsigned int n_running_jobs ( worker.submitted_.size()
+                                        + worker.acknowledged_.size()
+                                        );
+      {
+        auto& equivalence_class
+          (worker_equiv_classes_.at (old_cpbs));
+        equivalence_class.remove_worker_entry (worker_id);
+        equivalence_class.dec_pending_jobs (n_pending_jobs);
+        equivalence_class.dec_running_jobs (n_running_jobs);
+      }
+
+      {
+        auto& equivalence_class
+          (worker_equiv_classes_[worker.capability_names_]);
+        equivalence_class.add_worker_entry (worker_id);
+        equivalence_class.inc_pending_jobs (n_pending_jobs);
+        equivalence_class.inc_running_jobs (n_running_jobs);
+      }
+    }
+
     bool WorkerManager::add_worker_capabilities ( const worker_id_t& worker_id
                                                 , const capabilities_set_t& cpb_set
                                                 )
     {
       boost::mutex::scoped_lock const _(mtx_);
 
-      Worker const& worker (worker_map_.at (worker_id));
+      Worker& worker (worker_map_.at (worker_id));
       const std::set<std::string> old_cpbs (worker.capability_names_);
 
-      const unsigned int n_pending_jobs (worker.pending_.size());
-      const unsigned int n_running_jobs ( worker.submitted_.size()
-                                        + worker.acknowledged_.size()
-                                        );
-
-      bool rv (worker_map_.at (worker_id).addCapabilities (cpb_set));
+      bool rv (worker.addCapabilities (cpb_set));
       if (rv)
       {
-        auto& weqc_src (worker_equiv_classes_.at (old_cpbs));
-        weqc_src.remove_worker_entry (worker_id);
-        weqc_src.dec_pending_jobs (n_pending_jobs);
-        weqc_src.dec_running_jobs (n_running_jobs);
-
-        std::set<std::string> cpbs (worker.capability_names_);
-        worker_equiv_classes_[cpbs].add_worker_entry (worker_id);
-        auto& weqc_dst (worker_equiv_classes_.at (cpbs));
-        weqc_dst.inc_pending_jobs (n_pending_jobs);
-        weqc_dst.inc_running_jobs (n_running_jobs);
+        change_equivalence_class (worker_id, worker, old_cpbs);
       }
 
       return rv;
@@ -387,27 +399,15 @@ namespace sdpa
                                                    , const capabilities_set_t& cpb_set
                                                    )
     {
-      Worker const& worker (worker_map_.at (worker_id));
+      boost::mutex::scoped_lock const _(mtx_);
+
+      Worker& worker (worker_map_.at (worker_id));
       const std::set<std::string> old_cpbs (worker.capability_names_);
 
-      const unsigned int n_pending_jobs (worker.pending_.size());
-      const unsigned int n_running_jobs ( worker.submitted_.size()
-                                        + worker.acknowledged_.size()
-                                        );
-
-      bool rv (worker_map_.at (worker_id).removeCapabilities (cpb_set));
+      bool rv (worker.removeCapabilities (cpb_set));
       if (rv)
       {
-        auto& weqc_src (worker_equiv_classes_.at (old_cpbs));
-        weqc_src.remove_worker_entry (worker_id);
-        weqc_src.dec_pending_jobs (n_pending_jobs);
-        weqc_src.dec_running_jobs (n_running_jobs);
-
-        std::set<std::string> cpbs (worker.capability_names_);
-        worker_equiv_classes_[cpbs].add_worker_entry (worker_id);
-        auto& weqc_dst (worker_equiv_classes_.at (cpbs));
-        weqc_dst.inc_pending_jobs (n_pending_jobs);
-        weqc_dst.inc_running_jobs (n_running_jobs);
+        change_equivalence_class (worker_id, worker, old_cpbs);
       }
 
       return rv;
