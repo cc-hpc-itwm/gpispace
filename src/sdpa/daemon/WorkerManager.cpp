@@ -73,21 +73,19 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
-      worker_map_t::iterator it (worker_map_.find (workerId));
-      if (it == worker_map_.end())
+      auto const worker (worker_map_.find (workerId));
+      assert (worker != worker_map_.end());
+
+      auto const equivalence_class
+        (worker_equiv_classes_.find (worker->second.capability_names_));
+
+      equivalence_class->second.remove_worker_entry (workerId);
+      if (equivalence_class->second.n_workers() == 0)
       {
-        throw std::runtime_error ("Could not delete the worker " + workerId);
+        worker_equiv_classes_.erase (equivalence_class);
       }
 
-      decltype (worker_equiv_classes_)::mapped_type& w_eq_c
-        (worker_equiv_classes_.at (it->second.capability_names_));
-
-      if (w_eq_c.n_workers() > 1)
-        w_eq_c.remove_worker_entry (workerId);
-      else
-        worker_equiv_classes_.erase (it->second.capability_names_);
-
-      worker_map_.erase (workerId);
+      worker_map_.erase (worker);
       worker_connections_.left.erase (workerId);
     }
 
