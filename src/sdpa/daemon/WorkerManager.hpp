@@ -197,16 +197,15 @@ namespace sdpa
      for (worker_id_t const& w : _worker_ids)
      {
        Worker const& worker (worker_map.at (w));
-       auto const job_count ( worker.pending_.size()
-                            + worker.submitted_.size()
-                            + worker.acknowledged_.size()
-                            );
 
-       if (job_count > 1)
+       bool const has_pending (!worker.pending_.empty());
+       bool const has_running (!worker.submitted_.empty() || !worker.acknowledged_.empty());
+
+       if ((has_pending && has_running) || (worker.pending_.size() > 1))
        {
          to_steal_from.push (w);
        }
-       else if (job_count == 0)
+       else if (!has_running && !has_pending)
        {
          idles.emplace_front (w);
        }
