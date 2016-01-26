@@ -232,14 +232,19 @@ namespace sdpa
       return assignment;
     }
 
-    CoallocationScheduler::assignment_t CoallocationScheduler::steal_work()
+    void CoallocationScheduler::steal_work()
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       _worker_manager.steal_work<Reservation>
-      ([this] (job_id_t const& job)
-       {return allocation_table_.at (job);}
-      );
+        ( [this] (job_id_t const& job)
+          {
+            return allocation_table_.at (job);
+          }
+        );
+    }
 
+    CoallocationScheduler::assignment_t CoallocationScheduler::get_current_assignment_TESTING_ONLY()
+    {
       assignment_t assignment;
       std::transform ( allocation_table_.begin()
                      , allocation_table_.end()
