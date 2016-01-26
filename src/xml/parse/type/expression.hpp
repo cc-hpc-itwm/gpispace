@@ -22,14 +22,9 @@ namespace xml
       struct expression_type : with_position_of_definition
       {
       public:
-        expression_type ( const util::position_type&
-                        , const expressions_type& exps
-                        = expressions_type()
-                        );
+        expression_type (const util::position_type&, const expressions_type&);
 
-        std::string expression (const std::string& sep = " ") const;
-
-        void append (const expressions_type& other);
+        std::string expression() const;
 
       private:
         expressions_type _expressions;

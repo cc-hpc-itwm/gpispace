@@ -16,6 +16,7 @@
 #include <we/workflow_response.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/remove_prefix.hpp>
 
 #include <boost/variant.hpp>
 
@@ -31,19 +32,7 @@ namespace xml
     {
       transition_type::transition_type
         ( const util::position_type& pod
-        , const std::string& name
-        , const boost::optional<we::priority_type>& priority_
-        , const boost::optional<bool>& finline_
-        )
-        : with_position_of_definition (pod)
-        , _name (name)
-        , priority (priority_)
-        , finline (finline_)
-      {}
-
-      transition_type::transition_type
-        ( const util::position_type& pod
-        , const boost::optional<function_or_use_type>& fun_or_use
+        , const function_or_use_type& fun_or_use
         , const std::string& name
         , const connections_type& connections
         , responses_type const& responses
@@ -69,14 +58,68 @@ namespace xml
         , _properties (properties)
       {}
 
-      transition_type transition_type::with_name (std::string name) const
+      transition_type transition_type::add_prefix
+        (std::string const& prefix) const
       {
+        connections_type connections;
+
+        for (connect_type const& connection : _connections)
+        {
+          connections.push<error::duplicate_connect>
+            (connection.with_place (prefix + connection.place()));
+        }
+
+        place_maps_type place_map;
+
+        for (place_map_type const& pm : _place_map)
+        {
+          place_map.push<error::duplicate_place_map>
+            (pm.with_place_real (prefix + pm.place_real()));
+        }
+
         return { position_of_definition()
                , _function_or_use
-               , std::move (name)
-               , _connections
+               , prefix + _name
+               , connections
                , _responses
-               , _place_map
+               , place_map
+               , structs
+               , _conditions
+               , requirements
+               , priority
+               , finline
+               , _properties
+               };
+      }
+      transition_type transition_type::remove_prefix
+        (std::string const& prefix) const
+      {
+        connections_type connections;
+
+        for (connect_type const& connection : _connections)
+        {
+          connections.push<error::duplicate_connect>
+            (connection.with_place
+              (fhg::util::remove_prefix (prefix, connection.place()))
+            );
+        }
+
+        place_maps_type place_map;
+
+        for (place_map_type const& pm : _place_map)
+        {
+          place_map.push<error::duplicate_place_map>
+            (pm.with_place_real
+              (fhg::util::remove_prefix (prefix, pm.place_real()))
+            );
+        }
+
+        return { position_of_definition()
+               , _function_or_use
+               , fhg::util::remove_prefix (prefix, _name)
+               , connections
+               , _responses
+               , place_map
                , structs
                , _conditions
                , requirements
@@ -89,34 +132,18 @@ namespace xml
       const transition_type::function_or_use_type&
         transition_type::function_or_use() const
       {
-        if (!_function_or_use)
-        {
-          throw std::runtime_error
-            ("requested function or use with no function set!");
-        }
-        return *_function_or_use;
+        return _function_or_use;
       }
       transition_type::function_or_use_type&
         transition_type::function_or_use()
       {
-        if (!_function_or_use)
-        {
-          throw std::runtime_error
-            ("requested function or use with no function set!");
-        }
-        return *_function_or_use;
-      }
-      const transition_type::function_or_use_type&
-        transition_type::function_or_use
-        (const function_or_use_type& function_or_use_)
-      {
-        return *(_function_or_use = function_or_use_);
+        return _function_or_use;
       }
 
       function_type const& transition_type::resolved_function() const
       {
         //! \note assume post processing pass (resolve_function_use_recursive)
-        return boost::get<function_type> (function_or_use());
+        return boost::get<function_type> (_function_or_use);
       }
 
       const std::string& transition_type::name() const
@@ -141,30 +168,9 @@ namespace xml
 
       // ***************************************************************** //
 
-      void transition_type::push_connection (const connect_type& connect)
-      {
-        _connections.push<error::duplicate_connect> (connect);
-      }
-
-      void transition_type::push_response (response_type const& response)
-      {
-        _responses.push<error::duplicate_response> (response);
-      }
-
-      void transition_type::push_place_map (place_map_type const& place_map)
-      {
-        _place_map.push<error::duplicate_place_map> (place_map);
-      }
-
-      // ***************************************************************** //
-
       const conditions_type& transition_type::conditions() const
       {
         return _conditions;
-      }
-      void transition_type::add_conditions (const std::list<std::string>& other)
-      {
-        _conditions.insert (_conditions.end(), other.begin(), other.end());
       }
 
       // ***************************************************************** //
@@ -212,7 +218,7 @@ namespace xml
                                   , known_structs
                                   , state
                                   )
-          , function_or_use()
+          , _function_or_use
           );
       }
 
@@ -339,26 +345,26 @@ namespace xml
           type_check (response, state);
         }
 
-        boost::apply_visitor (transition_type_check (state), function_or_use());
+        boost::apply_visitor (transition_type_check (state), _function_or_use);
       }
 
       void transition_type::resolve_function_use_recursive
         (std::unordered_map<std::string, function_type const&> known)
       {
-        if (!!boost::get<use_type> (&_function_or_use.get()))
+        if (!!boost::get<use_type> (&_function_or_use))
         {
           std::string const name
-            (boost::get<use_type> (_function_or_use.get()).name());
+            (boost::get<use_type> (_function_or_use).name());
           auto const it (known.find (name));
           if (it == known.end())
           {
             throw error::unknown_function (name, *this);
           }
-          function_or_use (it->second);
+          _function_or_use = it->second;
         }
         else
         {
-          boost::get<function_type> (_function_or_use.get())
+          boost::get<function_type> (_function_or_use)
             .resolve_function_use_recursive (known);
         }
       }
@@ -366,9 +372,9 @@ namespace xml
       void transition_type::resolve_types_recursive
         (std::unordered_map<std::string, pnet::type::signature::signature_type> known)
       {
-        if (!!boost::get<function_type> (&_function_or_use.get()))
+        if (!!boost::get<function_type> (&_function_or_use))
         {
-          boost::get<function_type> (_function_or_use.get())
+          boost::get<function_type> (_function_or_use)
             .resolve_types_recursive (known);
         }
       }

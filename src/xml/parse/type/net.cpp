@@ -21,15 +21,27 @@ namespace xml
   {
     namespace type
     {
-      net_type::net_type (const util::position_type& pod)
+      net_type::net_type ( const util::position_type& pod
+                         , functions_type functions
+                         , places_type places
+                         , specializes_type specializes
+                         , templates_type templates
+                         , transitions_type transitions
+                         , structs_type structs_
+                         , we::type::property::type properties
+                         )
         : with_position_of_definition (pod)
+        , _functions (std::move (functions))
+        , _places (std::move (places))
+        , _specializes (std::move (specializes))
+        , _templates (std::move (templates))
+        , _transitions (std::move (transitions))
+        , structs (std::move (structs_))
+        , contains_a_module_call()
+        , _properties (std::move (properties))
       {}
 
       const we::type::property::type& net_type::properties() const
-      {
-        return _properties;
-      }
-      we::type::property::type& net_type::properties()
       {
         return _properties;
       }
@@ -76,28 +88,6 @@ namespace xml
       {
         //! \todo IMPLEMENT THE LOOKUP FOR TEMPLATES IN parent FUNCTION
         return templates().get (name);
-      }
-
-      // ***************************************************************** //
-
-      void net_type::push_place (place_type const& place)
-      {
-        _places.push<error::duplicate_place> (place);
-      }
-
-      void net_type::push_specialize (specialize_type const& specialize)
-      {
-        _specializes.push<error::duplicate_specialize> (specialize);
-      }
-
-      void net_type::push_template (tmpl_type const& tmpl)
-      {
-        _templates.push<error::duplicate_template> (tmpl);
-      }
-
-      void net_type::push_transition (transition_type const& transition)
-      {
-        _transitions.push<error::duplicate_transition> (transition);
       }
 
       // ***************************************************************** //
@@ -209,7 +199,7 @@ namespace xml
         auto const places (std::move (_places));
         for (place_type const& place : places)
         {
-          push_place (place.specialized (map, state));
+          _places.push<error::duplicate_place> (place.specialized (map, state));
         }
 
         for (structure_type& s : structs)
@@ -323,29 +313,14 @@ namespace xml
 
         for (place_type const& place : places)
         {
-          push_place (place.with_name (prefix + place.name()));
+          _places.push<error::duplicate_place>
+            (place.with_name (prefix + place.name()));
         }
 
         for (transition_type const& old : transitions)
         {
-          push_transition (old.with_name (prefix + old.name()));
-        }
-        for (transition_type& transition : _transitions)
-        {
-          auto const connects (std::move (transition._connections));
-          auto const place_maps (std::move (transition._place_map));
-
-          for (connect_type const& conn : connects)
-          {
-            transition.push_connection
-              (conn.with_place (prefix + conn.place()));
-          }
-
-          for (place_map_type const& pm : place_maps)
-          {
-            transition.push_place_map
-              (pm.with_place_real (prefix + pm.place_real()));
-          }
+          _transitions.push<error::duplicate_transition>
+            (old.add_prefix (prefix));
         }
       }
 
@@ -358,32 +333,14 @@ namespace xml
 
         for (place_type const& place : places)
         {
-          push_place ( place.with_name
-                         (fhg::util::remove_prefix (prefix, place.name()))
-                     );
+          _places.push<error::duplicate_place>
+            (place.with_name (fhg::util::remove_prefix (prefix, place.name())));
         }
 
         for (transition_type const& old : transitions)
         {
-          push_transition
-            (old.with_name (fhg::util::remove_prefix (prefix, old.name())));
-        }
-        for (transition_type& transition : _transitions)
-        {
-          auto const connects (std::move (transition._connections));
-          auto const place_maps (std::move (transition._place_map));
-
-          for (connect_type const& conn : connects)
-          {
-            transition.push_connection
-              (conn.with_place (fhg::util::remove_prefix (prefix, conn.place())));
-          }
-
-          for (place_map_type const& pm : place_maps)
-          {
-            transition.push_place_map
-              (pm.with_place_real (fhg::util::remove_prefix (prefix, pm.place_real())));
-          }
+          _transitions.push<error::duplicate_transition>
+            (old.remove_prefix (prefix));
         }
       }
 

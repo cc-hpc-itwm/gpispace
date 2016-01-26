@@ -1,7 +1,7 @@
 <defun name="f">
   <net>
     <template name="t">
-      <defun/>
+      <defun><expression/></defun>
     </template>
     <specialize name="s" use="t"/>
     <specialize name="s" use="t"/>

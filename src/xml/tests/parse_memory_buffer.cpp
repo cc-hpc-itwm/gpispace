@@ -40,6 +40,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
     ( ( boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"/>
+  <expression/>
 </defun>)EOS")
       % name
       ).str()
@@ -68,6 +69,7 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
 <defun>
   <memory-buffer name="%1%"><size/></memory-buffer>
   <memory-buffer name="%1%"><size/></memory-buffer>
+  <expression/>
 </defun>)EOS")
       % name
       ).str()
@@ -99,9 +101,12 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
     ( ( boost::format (R"EOS(
 <defun>
   <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
+  <module name="%3%" function="%4%"/>
 </defun>)EOS")
       % name
       % size
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 
@@ -132,11 +137,14 @@ BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
 <defun>
   <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
   <memory-buffer name="%3%"><size>%4%</size></memory-buffer>
+  <module name="%5%" function="%6%"/>
 </defun>)EOS")
       % name_1
       % size_1
       % name_2
       % size_2
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
       ).str()
     );
 
@@ -271,9 +279,12 @@ namespace
 <defun>
   <%2% name="%1%" type=""/>
   <memory-buffer name="%1%"><size/></memory-buffer>
+  <module name="%3%" function="%4%"/>
 </defun>)EOS")
         % name_port_and_memory_buffer
         % port_direction
+        % fhg::util::testing::random_identifier()
+        % fhg::util::testing::random_identifier()
         ).str()
       );
 
@@ -318,10 +329,13 @@ namespace
   <in name="%1%" type=""/>
   <memory-buffer name="%2%"><size/></memory-buffer>
   <%3% name="%2%" type=""/>
+  <module name="%4%" function="%5%"/>
 </defun>)EOS")
         % name_port_added_earlier
         % name_port_and_memory_buffer
         % port_direction
+        % fhg::util::testing::random_identifier()
+        % fhg::util::testing::random_identifier()
         ).str()
       );
 

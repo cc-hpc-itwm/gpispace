@@ -702,26 +702,15 @@ namespace xml
       type::transition_type
         transition_type (const xml_node_type* node, state::type& state)
       {
-        type::transition_type transition
-          ( state.position (node)
-          , validate_name ( validate_prefix ( required ( "transition_type"
-                                                       , node
-                                                       , "name"
-                                                       , state
-                                                       )
-                                            , "transition"
-                                            , state.file_in_progress()
-                                            )
-                          , "transition"
-                          , state.file_in_progress()
-                          )
-          , fhg::util::boost::fmap<std::string, we::priority_type>
-              ( boost::lexical_cast<we::priority_type>
-              , optional (node, "priority")
-              )
-          , fhg::util::boost::fmap<std::string, bool>
-              (fhg::util::read_bool, optional (node, "inline"))
-          );
+        boost::optional<type::function_type> function;
+        boost::optional<type::use_type> use;
+        type::transition_type::connections_type connections;
+        type::transition_type::responses_type responses;
+        type::transition_type::place_maps_type place_map;
+        std::list<type::structure_type> structs;
+        type::conditions_type conditions;
+        type::requirements_type requirements;
+        we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -737,63 +726,64 @@ namespace xml
               const std::string file
                 (required ("transition_type", child, "href", state));
 
-              transition.function_or_use
-                (function_include (file, state));
+              function = function_include (file, state);
             }
             else if (child_name == "use")
             {
-              transition.function_or_use
-                ( type::use_type ( state.position (child)
-                                 , required
-                                   ("transition_type", child, "name", state)
-                                 )
-                );
+              use = type::use_type ( state.position (child)
+                                   , required
+                                       ("transition_type", child, "name", state)
+                                   );
             }
             else if (child_name == "defun")
             {
-              transition.function_or_use (function_type (child, state));
+              function = function_type (child, state);
             }
             else if (child_name == "place-map")
             {
-              transition.push_place_map (place_map_type (child, state));
+              place_map.push<error::duplicate_place_map>
+                (place_map_type (child, state));
             }
             else if (child_name == "connect-in")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT));
             }
             else if (child_name == "connect-out")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-inout")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT));
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::TP));
             }
             else if (child_name == "connect-read")
             {
-              transition.push_connection
+              connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT_READ));
             }
             else if (child_name == "connect-response")
             {
-              transition.push_response (response_type (child, state));
+              responses.push<error::duplicate_response>
+                (response_type (child, state));
             }
             else if (child_name == "condition")
             {
-              transition.add_conditions (parse_cdata (child, state));
+              auto const cs (parse_cdata (child, state));
+
+              conditions.insert (conditions.end(), cs.begin(), cs.end());
             }
             else if (child_name == "require")
             {
-              require_type (transition.requirements, child, state);
+              require_type (requirements, child, state);
             }
             else if (child_name == "properties")
             {
-              property_map_type (transition.properties(), child, state);
+              property_map_type (properties, child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -807,10 +797,7 @@ namespace xml
                                      )
                 );
 
-              util::property::join ( state
-                                   , transition.properties()
-                                   , deeper
-                                   );
+              util::property::join (state, properties, deeper);
             }
             else
             {
@@ -824,7 +811,41 @@ namespace xml
           }
         }
 
-        return transition;
+#define TRANSITION(_function_or_use) type::transition_type                 \
+          { state.position (node)                                          \
+          , _function_or_use                                               \
+          , validate_name ( validate_prefix ( required ( "transition_type" \
+                                                       , node              \
+                                                       , "name"            \
+                                                       , state             \
+                                                       )                   \
+                                            , "transition"                 \
+                                            , state.file_in_progress()     \
+                                            )                              \
+                          , "transition"                                   \
+                          , state.file_in_progress()                       \
+                          )                                                \
+          , connections                                                    \
+          , responses                                                      \
+          , place_map                                                      \
+          , structs                                                        \
+          , conditions                                                     \
+          , requirements                                                   \
+          , fhg::util::boost::fmap<std::string, we::priority_type>         \
+            ( boost::lexical_cast<we::priority_type>                       \
+            , optional (node, "priority")                                  \
+            )                                                              \
+          , fhg::util::boost::fmap<std::string, bool>                      \
+            (fhg::util::read_bool, optional (node, "inline"))              \
+          , properties                                                     \
+          }
+
+        return !!function ? TRANSITION (function.get())
+          : !!use ? TRANSITION (use.get())
+          : throw std::logic_error ("transition requires function or use")
+          ;
+
+#undef TRANSITION
       }
 
       // ******************************************************************* //
@@ -1161,13 +1182,30 @@ namespace xml
                   , boost::optional<std::string>
                   , std::list<std::string>
                   >
-        parse_function_signature ( const std::string& input
-                                 , const std::string& _name
-                                 , const util::position_type& pod
-                                 , type::function_type const& outer_function
-                                 , std::string const& module_name
-                                 )
+        parse_function_signature
+          ( const std::string& input
+          , const std::string& _name
+          , const util::position_type& pod
+          , std::string const& module_name
+          , type::function_type::ports_type const& ports
+          , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
+          , boost::filesystem::path const& path
+          )
         {
+          auto&& is_known_port
+            ( [&ports] (std::string const& name)
+              {
+                return ports.has ({name, we::type::PORT_IN})
+                  || ports.has ({name, we::type::PORT_OUT});
+              }
+            );
+          auto&& is_known_memory_buffer
+            ( [&memory_buffers] (std::string const& name)
+              {
+                return memory_buffers.has (name);
+              }
+            );
+
           // implement the grammar
           // S -> R F A
           // F -> valid_name
@@ -1193,13 +1231,11 @@ namespace xml
               std::string const port_or_memory_buffer (function);
               function = parse_name (pos);
 
-              if (outer_function.is_known_port (port_or_memory_buffer))
+              if (is_known_port (port_or_memory_buffer))
               {
                 port_return = port_or_memory_buffer;
               }
-              else if ( outer_function
-                      . is_known_memory_buffer (port_or_memory_buffer)
-                      )
+              else if (is_known_memory_buffer (port_or_memory_buffer))
               {
                 memory_buffer_return = port_or_memory_buffer;
               }
@@ -1210,7 +1246,7 @@ namespace xml
                   , port_or_memory_buffer
                   , module_name
                   , function
-                  , outer_function.position_of_definition().path()
+                  , path
                   );
               }
             }
@@ -1233,15 +1269,11 @@ namespace xml
               {
                 std::string const port_or_memory_buffer (parse_name (pos));
 
-                if ( outer_function
-                   . is_known_port (port_or_memory_buffer)
-                   )
+                if (is_known_port (port_or_memory_buffer))
                 {
                   port_arg.push_back (port_or_memory_buffer);
                 }
-                else if ( outer_function
-                        . is_known_memory_buffer (port_or_memory_buffer)
-                        )
+                else if (is_known_memory_buffer (port_or_memory_buffer))
                 {
                   memory_buffer_arg.push_back (port_or_memory_buffer);
                 }
@@ -1252,7 +1284,7 @@ namespace xml
                     , port_or_memory_buffer
                     , module_name
                     , function
-                    , outer_function.position_of_definition().path()
+                    , path
                     );
                 }
 
@@ -1310,10 +1342,13 @@ namespace xml
         }
       }
 
-      type::module_type module_type ( const xml_node_type* node
-                                    , state::type& state
-                                    , type::function_type const& outer_function
-                                    )
+      type::module_type module_type
+        ( const xml_node_type* node
+        , state::type& state
+        , type::function_type::ports_type const& ports
+        , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
+        , boost::filesystem::path const& path
+        )
       {
         const std::string name
           (validate_name ( required ("module_type", node, "name", state)
@@ -1333,8 +1368,14 @@ namespace xml
           , std::list<std::string>
           , boost::optional<std::string>
           , std::list<std::string>
-          > sig ( parse_function_signature
-                  (signature, name, pod, outer_function, name)
+          > sig (parse_function_signature ( signature
+                                          , name
+                                          , pod
+                                          , name
+                                          , ports
+                                          , memory_buffers
+                                          , path
+                                          )
                 );
         const std::string function (std::get<0> (sig));
         const boost::optional<std::string> port_return (std::get<1> (sig));
@@ -1451,7 +1492,8 @@ namespace xml
 
       type::place_type place_type ( const xml_node_type* node
                                   , state::type& state
-                                  , type::function_type const& outer_function
+                                  , type::function_type::ports_type const& ports
+                                  , boost::filesystem::path const& path
                                   )
       {
         const std::string name (required ("place_type", node, "name", state));
@@ -1473,15 +1515,11 @@ namespace xml
           );
 
         if (  place.is_virtual()
-           && !outer_function.is_known_tunnel (place.name())
+           && !ports.has ({place.name(), we::type::PORT_TUNNEL})
            )
         {
           state.warn
-            ( warning::virtual_place_not_tunneled
-              ( place.name()
-              , outer_function.position_of_definition().path()
-              )
-            );
+            (warning::virtual_place_not_tunneled (place.name(), path));
         }
 
         for ( xml_node_type* child (node->first_node())
@@ -1529,10 +1567,17 @@ namespace xml
 
       type::net_type net_type ( const xml_node_type* node
                               , state::type& state
-                              , type::function_type const& outer_function
+                              , type::function_type::ports_type const& ports
+                              , boost::filesystem::path const& path
                               )
       {
-        type::net_type net (state.position (node));
+        type::net_type::functions_type functions;
+        type::net_type::places_type places;
+        type::net_type::specializes_type specializes;
+        type::net_type::templates_type templates;
+        type::net_type::transitions_type transitions;
+        type::structs_type structs;
+        we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1545,37 +1590,39 @@ namespace xml
           {
             if (child_name == "template")
             {
-              net.push_template (tmpl_type (child, state));
+              templates.push<error::duplicate_template>
+                (tmpl_type (child, state));
             }
             else if (child_name == "specialize")
             {
-              net.push_specialize (specialize_type (child, state));
+              specializes.push<error::duplicate_specialize>
+                (specialize_type (child, state));
             }
             else if (child_name == "place")
             {
-              net
-                .push_place (place_type (child, state, outer_function));
+              places.push<error::duplicate_place>
+                (place_type (child, state, ports, path));
             }
             else if (child_name == "transition")
             {
-              net.push_transition (transition_type (child, state));
+              transitions.push<error::duplicate_transition>
+                (transition_type (child, state));
             }
             else if (child_name == "struct")
             {
-              net.structs.push_back (struct_type (child, state));
+              structs.push_back (struct_type (child, state));
             }
             else if (child_name == "include-structs")
             {
               std::cerr << "TODO: Deprecate and eliminate net::include-structs.\n";
               //! \todo deprecate and eliminate
-              const type::structs_type structs
+              const type::structs_type sts
                 ( structs_include ( required ("net_type", child, "href", state)
                                   , state
                                   )
                 );
 
-              net.structs.insert
-                (net.structs.end(), structs.begin(), structs.end());
+              structs.insert (structs.end(), sts.begin(), sts.end());
             }
             else if (child_name == "include-template")
             {
@@ -1589,20 +1636,20 @@ namespace xml
                 throw error::top_level_anonymous_template (file, "net_type");
               }
 
-              net.push_template (tmpl);
+              templates.push<error::duplicate_template> (tmpl);
             }
             else if (child_name == "properties")
             {
-              property_map_type (net.properties(), child, state);
+              property_map_type (properties, child, state);
             }
             else if (child_name == "include-properties")
             {
               const we::type::property::type deeper
                 ( properties_include
-                  (required ("net_type", child, "href", state), state)
+                    (required ("net_type", child, "href", state), state)
                 );
 
-              util::property::join (state, net.properties(), deeper);
+              util::property::join (state, properties, deeper);
             }
             else
             {
@@ -1616,7 +1663,15 @@ namespace xml
           }
         }
 
-        return net;
+        return { state.position (node)
+               , functions
+               , places
+               , specializes
+               , templates
+               , transitions
+               , structs
+               , properties
+               };
       }
 
       // ******************************************************************* //
@@ -1624,12 +1679,18 @@ namespace xml
       type::function_type
         function_type (const xml_node_type* node, state::type& state)
       {
-        type::function_type function
-          ( state.position (node)
-          , optional (node, "name")
-          //! \todo see Issue #118 and forbid more than one expression
-          , type::expression_type (state.position (node))
-          );
+        type::function_type::ports_type ports;
+        fhg::pnet::util::unique<type::memory_buffer_type> memory_buffers;
+        std::list<type::memory_get> memory_gets;
+        std::list<type::memory_put> memory_puts;
+        std::list<type::memory_getput> memory_getputs;
+        std::list<type::structure_type> structs;
+        type::conditions_type conditions;
+        type::requirements_type requirements;
+        boost::optional<type::expression_type> expression;
+        boost::optional<type::module_type> module;
+        boost::optional<type::net_type> net;
+        we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -1642,105 +1703,84 @@ namespace xml
           {
             if (child_name == "in")
             {
-              function.push_port
+              ports.push<error::duplicate_port>
                 (port_type (child, state, we::type::PORT_IN));
             }
             else if (child_name == "out")
             {
-              function.push_port
+              ports.push<error::duplicate_port>
                 (port_type (child, state, we::type::PORT_OUT));
             }
             else if (child_name == "inout")
             {
-              function.push_port
+              ports.push<error::duplicate_port>
                 (port_type (child, state, we::type::PORT_IN));
-              function.push_port
+              ports.push<error::duplicate_port>
                 (port_type (child, state, we::type::PORT_OUT));
             }
             else if (child_name == "tunnel")
             {
-              function.push_port
+              ports.push<error::duplicate_port>
                 (port_type (child, state, we::type::PORT_TUNNEL));
             }
             else if (child_name == "memory-buffer")
             {
-              function.push_memory_buffer
+              memory_buffers.push<error::duplicate_memory_buffer>
                 (memory_buffer_type (child, state));
             }
             else if (child_name == "memory-get")
             {
-              function.push_memory_get (memory_get (child, state));
+              memory_gets.emplace_back (memory_get (child, state));
             }
             else if (child_name == "memory-put")
             {
-              function.push_memory_put (memory_put (child, state));
+              memory_puts.emplace_back (memory_put (child, state));
             }
             else if (child_name == "memory-getput")
             {
-              function.push_memory_getput
-                (memory_getput (child, state));
+              memory_getputs.emplace_back (memory_getput (child, state));
             }
             else if (child_name == "struct")
             {
-              function.structs.push_back (struct_type (child, state));
+              structs.push_back (struct_type (child, state));
             }
             else if (child_name == "include-structs")
             {
-              const type::structs_type structs
+              const type::structs_type sts
                 ( structs_include
                   (required ("function_type", child, "href", state), state)
                 );
 
-              function.structs.insert ( function.structs.end()
-                                      , structs.begin()
-                                      , structs.end()
-                                      );
+              structs.insert (structs.end(), sts.begin(), sts.end());
             }
             else if (child_name == "expression")
             {
-              if (!function.memory_buffers().empty())
-              {
-                throw error::memory_buffer_for_non_module (function);
-              }
-
-              if (  !function.memory_gets().empty()
-                 || !function.memory_puts().empty()
-                 || !function.memory_getputs().empty()
-                 )
-              {
-                throw error::memory_transfer_for_non_module (function);
-              }
-
-              function.add_expression (parse_cdata (child, state));
+              expression = type::expression_type
+                (state.position (child), parse_cdata (child, state));
             }
             else if (child_name == "module")
             {
-              function.content (module_type (child, state, function));
+              module = module_type ( child
+                                   , state
+                                   , ports
+                                   , memory_buffers
+                                   , state.position (node).path()
+                                   );
             }
             else if (child_name == "net")
             {
-              if (!function.memory_buffers().empty())
-              {
-                throw error::memory_buffer_for_non_module (function);
-              }
-
-              if (  !function.memory_gets().empty()
-                 || !function.memory_puts().empty()
-                 || !function.memory_getputs().empty()
-                 )
-              {
-                throw error::memory_transfer_for_non_module (function);
-              }
-
-              function.content (net_type (child, state, function));
+              net = net_type
+                (child, state, ports, state.position (node).path());
             }
             else if (child_name == "condition")
             {
-              function.add_conditions (parse_cdata (child, state));
+              auto const cs (parse_cdata (child, state));
+
+              conditions.insert (conditions.end(), cs.begin(), cs.end());
             }
             else if (child_name == "properties")
             {
-              property_map_type (function.properties(), child, state);
+              property_map_type (properties, child, state);
             }
             else if (child_name == "include-properties")
             {
@@ -1749,11 +1789,11 @@ namespace xml
                   (required ("function_type", child, "href", state), state)
                 );
 
-              util::property::join (state, function.properties(), deeper);
+              util::property::join (state, properties, deeper);
             }
             else if (child_name == "require")
             {
-              require_type (function.requirements, child, state);
+              require_type (requirements, child, state);
             }
             else
             {
@@ -1766,7 +1806,28 @@ namespace xml
           }
         }
 
-        return function;
+#define FUNCTION(_content) type::function_type  \
+          { state.position (node)               \
+          , optional (node, "name")             \
+          , ports                               \
+          , memory_buffers                      \
+          , memory_gets                         \
+          , memory_puts                         \
+          , memory_getputs                      \
+          , false /* contains_a_module_call */  \
+          , structs                             \
+          , conditions                          \
+          , requirements                        \
+          , _content                            \
+          , properties                          \
+          }
+
+        return !!expression ? FUNCTION (*expression)
+          : !!module ? FUNCTION (*module)
+          : !!net ? FUNCTION (*net)
+          : throw std::logic_error ("missing function content");
+
+#undef FUNCTION
       }
 
       // ******************************************************************* //
