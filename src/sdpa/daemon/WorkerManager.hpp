@@ -236,7 +236,7 @@ namespace sdpa
 
        idles.pop_front();
 
-       if (worker_map.at (richest).pending_.size())
+       if (worker_map.at (richest).pending_.size() > 1)
        {
          to_steal_from.push (richest);
        }
