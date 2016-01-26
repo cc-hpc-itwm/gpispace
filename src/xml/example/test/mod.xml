@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<defun name="test_mod">
-<in name="trigger" type="control"/>
-<out name="trigger" type="control"/>
-<module name="system" function="reboot"/>
-<condition>${a} &gt; 20L</condition>
-</defun>
