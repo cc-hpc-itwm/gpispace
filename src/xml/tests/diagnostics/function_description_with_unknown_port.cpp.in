@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #define BOOST_TEST_MODULE function_description_with_unknown_port
+#include <boost/test/unit_test.hpp>
 
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>

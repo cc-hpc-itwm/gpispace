@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #define BOOST_TEST_MODULE parser_diagnostics
+#include <boost/test/unit_test.hpp>
 
 #include <xml/parse/error.hpp>
 #include <xml/parse/warning.hpp>
