@@ -76,7 +76,7 @@ namespace sdpa
       boost::mutex::scoped_lock const _ (mtx_);
 
       auto const worker (worker_map_.find (workerId));
-      assert (worker != worker_map_.end());
+      fhg_assert (worker != worker_map_.end(), "Worker not found when deletion was requested!");
 
       auto const equivalence_class
         (worker_equiv_classes_.find (worker->second.capability_names_));
