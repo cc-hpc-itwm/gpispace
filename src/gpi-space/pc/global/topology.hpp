@@ -3,9 +3,11 @@
 #include <gpi-space/pc/global/itopology.hpp>
 #include <gpi-space/pc/memory/manager.hpp>
 
-#include <rpc/client.hpp>
 #include <rpc/function_description.hpp>
-#include <rpc/server_with_multiple_clients.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/service_tcp_provider.hpp>
+#include <rpc/service_dispatcher.hpp>
+#include <rpc/service_handler.hpp>
 
 #include <vmem/gaspi_context.hpp>
 
@@ -27,7 +29,8 @@ namespace gpi
       public:
         topology_t ( memory::manager_t& memory_manager
                    , fhg::vmem::gaspi_context&
-                   , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>
+                   , boost::asio::io_service& io_service
+                   , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
                    );
 
 
@@ -81,9 +84,10 @@ namespace gpi
         fhg::rpc::service_handler<add_memory_desc> _add_memory;
         fhg::rpc::service_handler<del_memory_desc> _del_memory;
 
-        std::list<fhg::rpc::remote_endpoint> _others;
+        boost::asio::io_service& _io_service;
+        std::list<fhg::rpc::remote_tcp_endpoint> _others;
 
-        std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> _server;
+        std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> _server;
 
         template<typename Description, typename... Args>
           void request (Args&&...);

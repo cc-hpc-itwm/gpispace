@@ -175,8 +175,13 @@ int main (int argc, char** argv)
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handler, logger);
 
+    //! \todo more than one thread, parameter
+    fhg::util::scoped_boost_asio_io_service_with_threads topology_io_service (1);
     auto topology_rpc_server
-      (fhg::util::cxx14::make_unique<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher>());
+      ( fhg::util::cxx14::make_unique
+          <fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
+            (topology_io_service)
+      );
 
     fhg::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
     fhg::vmem::gaspi_context gaspi_context
@@ -189,6 +194,7 @@ int main (int argc, char** argv)
       ( logger
       , socket_path.string()
       , gaspi_context
+      , topology_io_service
       , std::move (topology_rpc_server)
       );
 

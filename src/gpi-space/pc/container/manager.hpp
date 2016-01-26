@@ -28,7 +28,8 @@ namespace gpi
         manager_t ( fhg::log::Logger&
                   , std::string const & p
                   , fhg::vmem::gaspi_context&
-                  , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> topology_rpc_server
+                  , boost::asio::io_service& topology_io_service
+                  , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                   );
 
         ~manager_t ();

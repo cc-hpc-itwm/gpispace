@@ -3,7 +3,8 @@
 #include <rif/entry_point.hpp>
 #include <rif/protocol.hpp>
 
-#include <rpc/client.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/remote_function.hpp>
 
 namespace fhg
 {
@@ -21,7 +22,7 @@ namespace fhg
       {}
 
     private:
-      fhg::rpc::remote_endpoint _endpoint;
+      fhg::rpc::remote_tcp_endpoint_with_io_service _endpoint;
 
     public:
       rpc::remote_function<protocol::execute_and_get_startup_messages>

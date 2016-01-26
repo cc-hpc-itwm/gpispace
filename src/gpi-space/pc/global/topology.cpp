@@ -4,6 +4,8 @@
 
 #include <gpi-space/pc/memory/manager.hpp>
 
+#include <rpc/remote_function.hpp>
+
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <future>
@@ -16,7 +18,8 @@ namespace gpi
     {
       topology_t::topology_t ( memory::manager_t& memory_manager
                              , fhg::vmem::gaspi_context& gaspi_context
-                             , std::unique_ptr<fhg::rpc::server_with_multiple_clients_and_deferred_dispatcher> server
+                             , boost::asio::io_service& io_service
+                             , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> server
                              )
         : _gaspi_context (gaspi_context)
         , _service_dispatcher
@@ -55,6 +58,7 @@ namespace gpi
                           memory_manager.remote_del_memory (seg_id, *this);
                         }
                       )
+        , _io_service (io_service)
         , _server (std::move (server))
       {
         _server->set_dispatcher (&_service_dispatcher);
@@ -108,7 +112,8 @@ namespace gpi
             }
 
             _others.emplace_back
-              ( _gaspi_context.hostname_of_rank (rank)
+              ( _io_service
+              , _gaspi_context.hostname_of_rank (rank)
               , _gaspi_context.communication_port_of_rank (rank)
               );
           }
@@ -117,7 +122,7 @@ namespace gpi
         //! \todo use aggregated_* rpc
         std::vector<std::future<void>> results;
         std::vector<fhg::rpc::remote_function<Description>> functions;
-        for (fhg::rpc::remote_endpoint& other : _others)
+        for (fhg::rpc::remote_tcp_endpoint& other : _others)
         {
           functions.emplace_back (other);
           results.emplace_back (functions.back() (args...));

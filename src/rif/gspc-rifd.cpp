@@ -9,20 +9,22 @@
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_file.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
 #include <fhglog/level_io.hpp>
 
-#include <network/server.hpp>
-
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <rpc/client.hpp>
-#include <rpc/server_with_multiple_clients.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/remote_function.hpp>
+#include <rpc/service_tcp_provider.hpp>
+#include <rpc/service_dispatcher.hpp>
+#include <rpc/service_handler.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -141,8 +143,6 @@ try
     ( vm.at (option::register_key)
     . as<fhg::util::boost::program_options::nonempty_string>()
     );
-
-  boost::asio::io_service io_service;
 
   fhg::rpc::service_dispatcher service_dispatcher
     {fhg::util::serialization::exception::serialization_functions()};
@@ -291,14 +291,17 @@ try
         }
       );
 
-  fhg::rpc::server_with_multiple_clients_and_deferred_startup server
-    (service_dispatcher);
+  fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
+    io_service (1);
+  fhg::rpc::service_tcp_provider_with_deferred_start server
+    (io_service, service_dispatcher);
 
   if (pid_t child = fhg::util::syscall::fork())
   {
-    server.post_fork_parent();
+    io_service.post_fork_parent();
 
-    fhg::rpc::remote_endpoint endpoint (register_host, register_port);
+    fhg::rpc::remote_tcp_endpoint_with_io_service endpoint
+      (register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
       (server.local_endpoint());
@@ -320,8 +323,9 @@ try
   fhg::util::syscall::close (1);
   fhg::util::syscall::close (2);
 
-  server.post_fork_child();
-  server.run_sync();
+  server.start();
+  io_service.post_fork_child();
+  io_service.start_in_threads_and_current_thread();
 
   return 0;
 }

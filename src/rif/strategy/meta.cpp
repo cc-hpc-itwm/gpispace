@@ -8,7 +8,9 @@
 
 #include <rif/strategy/ssh.hpp>
 
-#include <rpc/server_with_multiple_clients.hpp>
+#include <rpc/service_tcp_provider.hpp>
+#include <rpc/service_dispatcher.hpp>
+#include <rpc/service_handler.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -127,7 +129,8 @@ namespace fhg
               }
             );
 
-        fhg::rpc::server_with_multiple_clients rpc_server (service_dispatcher);
+        fhg::rpc::service_tcp_provider_with_io_service rpc_server
+          (service_dispatcher);
 
         boost::asio::ip::tcp::endpoint const local_endpoint
           (rpc_server.local_endpoint());

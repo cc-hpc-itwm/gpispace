@@ -2,7 +2,8 @@
 
 #include <sdpa/daemon/GenericDaemon.hpp>
 
-#include <rpc/server_with_multiple_clients.hpp>
+#include <rpc/service_tcp_provider.hpp>
+#include <rpc/service_dispatcher.hpp>
 
 #include <boost/asio/ip/tcp.hpp>
 
@@ -33,7 +34,7 @@ namespace sdpa {
 
     private:
       fhg::rpc::service_dispatcher _rpc_dispatcher;
-      fhg::rpc::server_with_multiple_clients _rpc_server;
+      fhg::rpc::service_tcp_provider_with_io_service _rpc_server;
 
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
         _event_handler_thread;
