@@ -366,6 +366,11 @@ namespace sdpa
         equivalence_class.remove_worker_entry (worker_id);
         equivalence_class.dec_pending_jobs (n_pending_jobs);
         equivalence_class.dec_running_jobs (n_running_jobs);
+
+        if (equivalence_class.n_workers() == 0)
+        {
+          worker_equiv_classes_.erase (old_cpbs);
+        }
       }
 
       {
