@@ -4,6 +4,7 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
 
