@@ -449,9 +449,9 @@ namespace sdpa
 
     void WorkerManager::WorkerEquivalenceClass::dec_pending_jobs (unsigned int k)
     {
-      if (_n_pending_jobs < k)
-        throw std::runtime_error
-          ("The number of pending jobs of a group of workers cannot be a negative number");
+      fhg_assert ( _n_pending_jobs >= k
+                 , "The number of pending jobs of a group of workers cannot be a negative number"
+                 );
 
       _n_pending_jobs -= k;
     }
@@ -463,9 +463,9 @@ namespace sdpa
 
     void WorkerManager::WorkerEquivalenceClass::dec_running_jobs (unsigned int k)
     {
-      if (_n_running_jobs < k)
-        throw std::runtime_error
-          ("The number of running jobs of a group of workers cannot be a negative number");
+      fhg_assert ( _n_running_jobs >= k
+                 , "The number of running jobs of a group of workers cannot be a negative number"
+                 );
 
       _n_running_jobs -= k;
     }
