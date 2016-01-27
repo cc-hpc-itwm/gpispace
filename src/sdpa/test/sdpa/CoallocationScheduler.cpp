@@ -1701,41 +1701,36 @@ struct fixture_add_new_workers
 
   std::map<sdpa::job_id_t, job_requirements_t> _requirements;
 
-  void add_new_workers
-    ( std::vector<sdpa::worker_id_t>& a
-    , std::string cpbname
+  std::vector<sdpa::worker_id_t> add_new_workers
+    ( std::string cpbname
     , unsigned int n
     )
   {
-    const unsigned int N (a.size());
-    unsigned int j (N);
-    a.resize (N + n);
-    std::generate_n ( a.begin() + N
+    std::vector<sdpa::worker_id_t> new_workers (n);
+    static unsigned int j (0);
+    std::generate_n ( new_workers.begin()
                     , n
-                    , [&j]
-                      {return "worker_" + std::to_string (j++);}
+                    , [] {return "worker_" + std::to_string (j++);}
                     );
 
-    BOOST_REQUIRE_EQUAL (a.size(), N + n);
-
     sdpa::daemon::CoallocationScheduler::assignment_t assignment;
-    for_each ( a.begin() + N
-             , a.end()
-             , [this, &cpbname, &assignment] (sdpa::worker_id_t worker)
-               {
-                 sdpa::capabilities_set_t cpbset;
-                 if (!cpbname.empty())
-                   cpbset.emplace (cpbname, worker);
-                 _worker_manager.addWorker ( worker
-                                           , cpbset
-                                           , random_ulong()
-                                           , false
-                                           , fhg::util::testing::random_string()
-                                           , fhg::util::testing::random_string()
-                                           );
-                 request_scheduling();
-               }
-             );
+    for (sdpa::worker_id_t const& worker : new_workers)
+    {
+      sdpa::capabilities_set_t cpbset;
+      if (!cpbname.empty())
+        cpbset.emplace (cpbname, worker);
+
+      _worker_manager.addWorker ( worker
+                                , cpbset
+                                , random_ulong()
+                                , false
+                                , fhg::util::testing::random_string()
+                                , fhg::util::testing::random_string()
+                                );
+      request_scheduling();
+    }
+
+    return new_workers;
   }
 
   void add_new_jobs
@@ -1816,8 +1811,8 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n (20);
   const unsigned int k (10);
 
-  std::vector<sdpa::worker_id_t> workers;
-  add_new_workers (workers, "", n);
+  std::vector<sdpa::worker_id_t> initial_workers
+    (add_new_workers ("", n));
 
   std::vector<sdpa::job_id_t> jobs;
   add_new_jobs (jobs, "", 2*n);
@@ -1825,13 +1820,15 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n);
 
   add_new_jobs (jobs, "", 2*k);
-  add_new_workers (workers, "", k);
+
+  std::vector<sdpa::worker_id_t> new_workers;
+    (add_new_workers ("", k));
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n + k);
 
-  for (sdpa::worker_id_t worker : workers)
+  for (sdpa::worker_id_t worker : new_workers)
   {
-    BOOST_REQUIRE_GE
+    BOOST_REQUIRE_EQUAL
       (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
   }
 }
@@ -1852,9 +1849,9 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n_calc_workers (500);
   const unsigned int n_reduce_workers (n_reduce_jobs);
 
-  add_new_workers (workers, "LOAD", n_load_workers);
-  add_new_workers (workers, "CALC", n_calc_workers);
-  add_new_workers (workers, "REDUCE", n_reduce_workers);
+  add_new_workers ("LOAD", n_load_workers);
+  add_new_workers ("CALC", n_calc_workers);
+  add_new_workers ("REDUCE", n_reduce_workers);
 
   add_new_jobs (jobs, "LOAD", n_load_jobs);
   add_new_jobs (jobs, "CALC", n_calc_jobs);
@@ -1868,55 +1865,57 @@ BOOST_FIXTURE_TEST_CASE
 
   {
     // add a new LOAD worker
-    add_new_workers (workers, "LOAD", 1);
+    std::vector<sdpa::worker_id_t> new_load_workers
+      (add_new_workers ("LOAD", 1));
 
     // this last added worker shout get nothing as there is no job new generated,
     // all the other jobs were already assigned and there is nothing to
     // steal as all the LOAD workers have exactly one job assigned
     BOOST_REQUIRE_EQUAL
-      (_worker_manager.get_worker_jobs_and_clean_queues (workers.back()).size(), 0);
+      (_worker_manager.get_worker_jobs_and_clean_queues (new_load_workers.front()).size(), 0);
   }
 
   {
     // add a new REDUCE worker
-    add_new_workers (workers, "REDUCE", 1);
+    std::vector<sdpa::worker_id_t> new_reduce_workers
+      (add_new_workers ("REDUCE", 1));
 
     // this last added worker shout get nothing as there is no job new generated,
     // all the other jobs were already assigned and there is nothing to
     // steal as all the REDUCE workers have exactly one job assigned
     BOOST_REQUIRE_EQUAL
-      (_worker_manager.get_worker_jobs_and_clean_queues (workers.back()).size(), 0);
+      (_worker_manager.get_worker_jobs_and_clean_queues (new_reduce_workers.front()).size(), 0);
    }
 
   {
-    const size_t size_before (workers.size());
     // add new n_calc_workers CALC workers
-    add_new_workers (workers, "CALC", n_calc_workers);
+    std::vector<sdpa::worker_id_t> new_calc_workers
+      (add_new_workers ("CALC", n_calc_workers));
 
-    BOOST_REQUIRE_EQUAL (workers.size(), size_before + n_calc_workers);
+    BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
     // all CALC workers should get a job stolen from one of the  n_calc_workers
     // workers previously added (no new job was generated)
-    for (auto it = workers.begin() + size_before; it != workers.end(); ++it)
+    for (sdpa::worker_id_t const& worker : new_calc_workers)
     {
       BOOST_REQUIRE_EQUAL
-        (_worker_manager.get_worker_jobs_and_clean_queues (*it).size(), 1);
+        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
     }
   }
 
   {
-    const size_t size_before (workers.size());
     // add new n_calc_workers CALC workers
-    add_new_workers (workers, "CALC", n_calc_workers);
+    std::vector<sdpa::worker_id_t> new_calc_workers
+      (add_new_workers ("CALC", n_calc_workers));
 
-    BOOST_REQUIRE_EQUAL (workers.size(), size_before + n_calc_workers);
+    BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
     // all CALC workers should get a job stolen from one of the  n_calc_workers
     // workers previously added (no new job was generated)
-    for (auto it = workers.begin() + size_before; it != workers.end(); ++it)
+    for (sdpa::worker_id_t const& worker : new_calc_workers)
     {
       BOOST_REQUIRE_EQUAL
-        (_worker_manager.get_worker_jobs_and_clean_queues (*it).size(), 1);
+        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
     }
   }
 }
