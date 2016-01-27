@@ -385,13 +385,13 @@ namespace sdpa
       worker_map_t::iterator worker (worker_map_.find (worker_id));
       const std::set<std::string> old_cpbs (worker->second.capability_names_);
 
-      bool rv (worker->second.addCapabilities (cpb_set));
-      if (rv)
+      if (worker->second.addCapabilities (cpb_set))
       {
         change_equivalence_class (worker, old_cpbs);
+        return true;
       }
 
-      return rv;
+      return false;
     }
 
     bool WorkerManager::remove_worker_capabilities ( const worker_id_t& worker_id
@@ -403,13 +403,13 @@ namespace sdpa
       worker_map_t::iterator worker (worker_map_.find (worker_id));
       const std::set<std::string> old_cpbs (worker->second.capability_names_);
 
-      bool rv (worker->second.removeCapabilities (cpb_set));
-      if (rv)
+      if (worker->second.removeCapabilities (cpb_set))
       {
         change_equivalence_class (worker, old_cpbs);
+        return true;
       }
 
-      return rv;
+      return false;
     }
 
     void WorkerManager::set_worker_backlog_full ( const worker_id_t& worker_id
