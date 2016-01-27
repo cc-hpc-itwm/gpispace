@@ -1801,6 +1801,64 @@ struct fixture_add_new_workers
 
     return assigned_workers;
   }
+
+  unsigned int n_jobs_assigned_to_worker
+    ( sdpa::worker_id_t const& worker
+    , sdpa::daemon::CoallocationScheduler::assignment_t assignment
+    )
+  {
+    unsigned int n_assigned_jobs (0);
+    for ( std::set<sdpa::worker_id_t> const& workers
+        : assignment | boost::adaptors::map_values
+        )
+    {
+      if (workers.count (worker))
+        n_assigned_jobs++;
+    }
+
+    return n_assigned_jobs;
+  }
+
+  void check_work_stealing
+    ( std::vector<sdpa::worker_id_t> const& initial_workers
+    , std::vector<sdpa::worker_id_t> const& new_workers
+    , sdpa::daemon::CoallocationScheduler::assignment_t old_assignment
+    , unsigned int n_total_jobs
+    )
+  {
+    unsigned int n_stolen_jobs (0);
+    unsigned int n_jobs_initial_workers (0);
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      new_assignment (get_current_assignment());
+
+    for (sdpa::worker_id_t worker : new_workers)
+    {
+      BOOST_REQUIRE_EQUAL
+        (n_jobs_assigned_to_worker (worker, new_assignment), 1);
+    }
+
+    for (sdpa::worker_id_t worker : initial_workers)
+    {
+      unsigned int n_new_jobs (n_jobs_assigned_to_worker (worker, new_assignment));
+      BOOST_REQUIRE_GE (n_new_jobs, 1);
+
+      unsigned int n_jobs_diff
+        ( n_jobs_assigned_to_worker (worker, old_assignment)
+        - n_new_jobs
+        );
+
+      BOOST_REQUIRE (n_jobs_diff == 0 || n_jobs_diff == 1);
+
+      n_stolen_jobs += n_jobs_diff;
+      n_jobs_initial_workers += n_new_jobs;
+    }
+
+    // Each of the new workers has stolen exactly one job
+    BOOST_REQUIRE_EQUAL (n_stolen_jobs, new_workers.size());
+
+    // the total number of jobs is conserved
+    BOOST_REQUIRE_EQUAL (n_jobs_initial_workers + n_stolen_jobs, n_total_jobs);
+  }
 };
 
 BOOST_FIXTURE_TEST_CASE
@@ -1821,16 +1879,15 @@ BOOST_FIXTURE_TEST_CASE
 
   add_new_jobs (jobs, "", 2*k);
 
-  std::vector<sdpa::worker_id_t> new_workers;
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    old_assignment (get_current_assignment());
+
+  std::vector<sdpa::worker_id_t> new_workers
     (add_new_workers ("", k));
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n + k);
 
-  for (sdpa::worker_id_t worker : new_workers)
-  {
-    BOOST_REQUIRE_EQUAL
-      (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
-  }
+  check_work_stealing (initial_workers, new_workers, old_assignment, jobs.size());
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -1850,8 +1907,9 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n_reduce_workers (n_reduce_jobs);
 
   add_new_workers ("LOAD", n_load_workers);
-  add_new_workers ("CALC", n_calc_workers);
   add_new_workers ("REDUCE", n_reduce_workers);
+  std::vector<sdpa::worker_id_t> initial_calc_workers
+    (add_new_workers ("CALC", n_calc_workers));
 
   add_new_jobs (jobs, "LOAD", n_load_jobs);
   add_new_jobs (jobs, "CALC", n_calc_jobs);
@@ -1872,7 +1930,7 @@ BOOST_FIXTURE_TEST_CASE
     // all the other jobs were already assigned and there is nothing to
     // steal as all the LOAD workers have exactly one job assigned
     BOOST_REQUIRE_EQUAL
-      (_worker_manager.get_worker_jobs_and_clean_queues (new_load_workers.front()).size(), 0);
+      (n_jobs_assigned_to_worker (new_load_workers.front(), get_current_assignment()), 0);
   }
 
   {
@@ -1884,38 +1942,55 @@ BOOST_FIXTURE_TEST_CASE
     // all the other jobs were already assigned and there is nothing to
     // steal as all the REDUCE workers have exactly one job assigned
     BOOST_REQUIRE_EQUAL
-      (_worker_manager.get_worker_jobs_and_clean_queues (new_reduce_workers.front()).size(), 0);
+      (n_jobs_assigned_to_worker (new_reduce_workers.front(), get_current_assignment()), 0);
    }
 
   {
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      old_assignment (get_current_assignment());
+
     // add new n_calc_workers CALC workers
     std::vector<sdpa::worker_id_t> new_calc_workers
       (add_new_workers ("CALC", n_calc_workers));
 
     BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (get_current_assignment());
+
     // all CALC workers should get a job stolen from one of the  n_calc_workers
     // workers previously added (no new job was generated)
-    for (sdpa::worker_id_t const& worker : new_calc_workers)
-    {
-      BOOST_REQUIRE_EQUAL
-        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
-    }
+    check_work_stealing ( initial_calc_workers
+                        , new_calc_workers
+                        , old_assignment
+                        , n_calc_jobs
+                        );
+
+    initial_calc_workers.insert ( initial_calc_workers.end()
+                                , new_calc_workers.begin()
+                                , new_calc_workers.end()
+                                );
   }
 
   {
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      old_assignment (get_current_assignment());
+
     // add new n_calc_workers CALC workers
     std::vector<sdpa::worker_id_t> new_calc_workers
       (add_new_workers ("CALC", n_calc_workers));
 
     BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
+    sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (get_current_assignment());
+
     // all CALC workers should get a job stolen from one of the  n_calc_workers
     // workers previously added (no new job was generated)
-    for (sdpa::worker_id_t const& worker : new_calc_workers)
-    {
-      BOOST_REQUIRE_EQUAL
-        (_worker_manager.get_worker_jobs_and_clean_queues (worker).size(), 1);
-    }
+    check_work_stealing ( initial_calc_workers
+                        , new_calc_workers
+                        , old_assignment
+                        , n_calc_jobs
+                        );
   }
 }
