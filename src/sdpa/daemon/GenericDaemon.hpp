@@ -103,8 +103,9 @@ namespace sdpa {
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
-    protected:
-      bool isSubscriber(const fhg::com::p2p::address_t&);
+
+      bool isSubscriber (fhg::com::p2p::address_t const&, job_id_t const&);
+
     protected:
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
@@ -127,7 +128,7 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void handleCancelJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override = 0;
+      virtual void handleCancelJobEvent (fhg::com::p2p::address_t const&, sdpa::events::CancelJobEvent const*) override;
       virtual void handleCapabilitiesGainedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
       virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
       virtual void handleDeleteJobEvent (fhg::com::p2p::address_t const&, events::DeleteJobEvent const*) override;
@@ -203,10 +204,12 @@ namespace sdpa {
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
                   , job_source
+                  , job_handler
                   );
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
                   , job_source
+                  , job_handler
                   , job_requirements_t
                   );
 

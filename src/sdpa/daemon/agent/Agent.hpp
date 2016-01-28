@@ -18,10 +18,6 @@ namespace sdpa
             , fhg::log::Logger&
             );
 
-    protected:
-      virtual void handleCancelJobEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override;
-
     private:
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
         _event_handler_thread;

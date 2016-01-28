@@ -33,41 +33,5 @@ namespace sdpa
                       )
       , _event_handler_thread (&Agent::handle_events, this)
     {}
-
-    void Agent::handleCancelJobEvent
-      (fhg::com::p2p::address_t const&, const events::CancelJobEvent* pEvt)
-    {
-      Job* const pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        throw std::runtime_error ("CancelJobEvent for unknown job");
-      }
-
-      if (pJob->getStatus() == sdpa::status::CANCELING)
-      {
-        throw std::runtime_error
-          ("A cancelation request for this job was already posted!");
-      }
-
-      if (sdpa::status::is_terminal (pJob->getStatus()))
-      {
-        throw std::runtime_error
-          ( "Cannot cancel an already terminated job, its current status is: "
-          + sdpa::status::show (pJob->getStatus())
-          );
-      }
-
-      if(pJob->getStatus() == sdpa::status::RUNNING)
-      {
-          pJob->CancelJob();
-          workflowEngine()->cancel (pEvt->job_id());
-      }
-      else
-      {
-        job_canceled (pJob);
-
-        deleteJob (pEvt->job_id());
-      }
-    }
   }
 }

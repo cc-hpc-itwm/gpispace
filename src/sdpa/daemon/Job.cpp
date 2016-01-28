@@ -7,11 +7,13 @@ namespace sdpa
     Job::Job ( const job_id_t id
              , we::type::activity_t activity
              , job_source source
+             , job_handler handler
              , job_requirements_t requirements
              )
       : _activity (std::move (activity))
       , id_ (id)
       , _source (std::move (source))
+      , _handler (std::move (handler))
       , _requirements (std::move (requirements))
       , m_error_message()
       , result_()

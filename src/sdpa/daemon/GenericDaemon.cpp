@@ -210,6 +210,7 @@ std::string GenericDaemon::gen_id()
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
+                               , job_handler handler
                                )
     {
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
@@ -254,6 +255,7 @@ std::string GenericDaemon::gen_id()
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
+                    , std::move (handler)
                     , std::move (requirements)
                     );
     }
@@ -262,6 +264,7 @@ std::string GenericDaemon::gen_id()
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
+                               , job_handler handler
                                , job_requirements_t requirements
                                )
     {
@@ -269,6 +272,7 @@ std::string GenericDaemon::gen_id()
         ( job_id
         , std::move (activity)
         , std::move (source)
+        , std::move (handler)
         , std::move (requirements)
         );
 
@@ -337,6 +341,66 @@ std::string GenericDaemon::gen_id()
       parent_proxy (this, source).delete_job_ack (event->job_id());
     }
 
+    void GenericDaemon::handleCancelJobEvent
+      ( fhg::com::p2p::address_t const& source
+      , events::CancelJobEvent const* event
+      )
+    {
+      Job* const job (require_job (event->job_id(), "cancel_job for unknown job"));
+
+      if (job->getStatus() == sdpa::status::CANCELING)
+      {
+        throw std::runtime_error
+          ("A cancelation request for this job was already posted!");
+      }
+
+      if (sdpa::status::is_terminal (job->getStatus()))
+      {
+        throw std::runtime_error
+          ( "Cannot cancel an already terminated job, its current status is: "
+          + sdpa::status::show (job->getStatus())
+          );
+      }
+
+      if ( boost::get<job_source_master> (&job->source())
+         && boost::get<job_source_master> (job->source())._->address != source
+         )
+      {
+        throw std::logic_error
+          ("trying to cancel job owned by different master");
+      }
+
+      //! \note send immediately an acknowledgment to the component
+      // that requested the cancellation if it does not get a
+      // notification right after
+      if (boost::get<job_source_wfe> (&job->source())
+         || ( boost::get<job_source_client> (&job->source())
+            && !isSubscriber (source, job->id())
+            )
+         )
+      {
+        parent_proxy (this, source).cancel_job_ack (event->job_id());
+      }
+
+      if (boost::get<job_handler_wfe> (&job->handler()))
+      {
+        if (job->getStatus() == sdpa::status::RUNNING)
+        {
+          job->CancelJob();
+          workflowEngine()->cancel (job->id());
+        }
+        else
+        {
+          job_canceled (job);
+
+          deleteJob (job->id());
+        }
+      }
+      else
+      {
+        delayed_cancel (job->id());
+      }
+    }
 
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
@@ -358,6 +422,9 @@ void GenericDaemon::handleSubmitJobEvent
                           , maybe_master
                           ? job_source (job_source_master {*maybe_master})
                           : job_source (job_source_client{})
+                          , hasWorkflowEngine()
+                          ? job_handler (job_handler_wfe())
+                          : job_handler (job_handler_worker())
                           , {{}, {}, null_transfer_cost, 1.0, 0}
                           )
                   );
@@ -370,7 +437,7 @@ void GenericDaemon::handleSubmitJobEvent
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
-  if(hasWorkflowEngine() )
+  if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
     try
     {
@@ -590,7 +657,7 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  addJob (job_id, activity, job_source_wfe());
+  addJob (job_id, activity, job_source_wfe(), job_handler_worker());
 
   _scheduler.enqueueJob (job_id);
   request_scheduling();
@@ -1122,11 +1189,22 @@ void GenericDaemon::handleSubscribeEvent
   INVALID_ENUM_VALUE (sdpa::status::code, status);
 }
 
-bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
+bool GenericDaemon::isSubscriber
+  (fhg::com::p2p::address_t const& agentId, job_id_t const& job)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
-  return !boost::empty (_subscriptions.left.equal_range (agentId));
+  //! \todo do simpler!? would prefer
+  // return _subscriptions.count (std::make_pair (agentId, job));
+  auto const& range (_subscriptions.left.equal_range (agentId));
+  for (auto const& elem : range | boost::adaptors::map_values)
+  {
+    if (elem == job)
+    {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
