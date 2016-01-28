@@ -101,7 +101,6 @@ namespace sdpa {
 
       bool isSubscriber (fhg::com::p2p::address_t const&, job_id_t const&);
 
-    protected:
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
       {
@@ -113,7 +112,7 @@ namespace sdpa {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
       }
-    private:
+
       // agent info and properties
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
@@ -167,13 +166,11 @@ namespace sdpa {
       }
       void delay (std::function<void()>);
 
-    private:
       // registration
       void requestRegistration (master_network_info&);
       void request_registration_soon (master_network_info&);
 
       // workflow engine
-    protected:
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
@@ -187,15 +184,12 @@ namespace sdpa {
       void job_failed (Job*, std::string const& reason);
       void job_canceled (Job*);
 
-    private:
       // workers
       void serveJob(std::set<worker_id_t> const&, const job_id_t&);
 
-    private:
       // jobs
       std::string gen_id();
 
-    private:
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
                   , job_source
@@ -208,20 +202,16 @@ namespace sdpa {
                   , job_requirements_t
                   );
 
-    protected:
       Job* findJob(const sdpa::job_id_t& job_id ) const;
       Job* require_job (job_id_t const&, std::string const& error) const;
       void deleteJob(const sdpa::job_id_t& job_id);
 
-    private:
       void delayed_cancel (const we::layer::id_type&);
       void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
 
       // data members
-    protected:
       fhg::log::Logger& _logger;
 
-    private:
       std::string _name;
 
       master_info_t _master_info;
@@ -238,7 +228,6 @@ namespace sdpa {
 
       subscriber_relation_type _subscriptions;
 
-    private:
       std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>
         _discover_sources;
 
@@ -246,7 +235,6 @@ namespace sdpa {
       std::unordered_map<std::string, fhg::com::p2p::address_t>
         _workflow_response_source;
 
-    private:
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
@@ -259,11 +247,9 @@ namespace sdpa {
         GenericDaemon::job_map_t& _;
       } _cleanup_job_map_on_dtor_helper;
 
-    protected:
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
-    private:
       template <typename T>
       class concurrent_list_t
       {
@@ -288,29 +274,22 @@ namespace sdpa {
       };
       concurrent_list_t<worker_id_t> _new_workers_added;
 
-    protected:
       boost::mutex _scheduling_thread_mutex;
       boost::mutex _scheduling_requested_guard;
       boost::condition_variable _scheduling_requested_condition;
       bool _scheduling_requested;
       void request_scheduling();
-    private:
       void request_rescheduling (worker_id_t const&);
 
-    private:
       boost::optional<std::mt19937> _random_extraction_engine;
-
-    private:
 
       std::mutex mtx_subscriber_;
       std::mutex mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
 
-    private:
       std::unique_ptr<NotificationService> m_guiService;
 
-    private:
       boost::posix_time::time_duration _registration_timeout;
 
       void do_registration_after_sleep (master_network_info&);
@@ -330,20 +309,17 @@ namespace sdpa {
         _scheduling_thread;
       void scheduling_thread();
 
-    protected:
       //! \note In order to call the correct abstract functions, the
       //! event handling thread needs to be in the class that defines
       //! the handlers, while the handling is done the same way for
       //! all classes. (see issue #618)
       void handle_events();
 
-    private:
       std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
         _event_handler_thread;
 
-    protected:
       struct child_proxy
       {
         child_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
