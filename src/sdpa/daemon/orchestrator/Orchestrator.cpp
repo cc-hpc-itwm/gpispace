@@ -28,8 +28,6 @@ namespace sdpa
     void Orchestrator::handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobEvent* pEvt)
     {
-      boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
-
       Job* const pJob (findJob (pEvt->job_id()));
       if (!pJob)
       {
@@ -57,28 +55,7 @@ namespace sdpa
         parent_proxy (this, source).cancel_job_ack (pEvt->job_id());
       }
 
-      sdpa::job_id_t const job_id (pEvt->job_id());
-      pJob->CancelJob();
-
-      const std::unordered_set<worker_id_t>
-        workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
-
-      if (!workers_to_cancel.empty())
-      {
-        for (worker_id_t const& w : workers_to_cancel)
-        {
-          child_proxy ( this
-                      , _worker_manager.address_by_worker (w).get()->second
-                      ).cancel_job (job_id);
-        }
-      }
-      else
-      {
-        job_canceled (pJob);
-
-        _scheduler.delete_job (job_id);
-        _scheduler.releaseReservation (job_id);
-      }
+      delayed_cancel (pEvt->job_id());
     }
   }
 }

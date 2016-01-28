@@ -638,7 +638,11 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
 
     _scheduler.delete_job (job_id);
     _scheduler.releaseReservation (job_id);
-    deleteJob (job_id);
+
+    if (!boost::get<job_source_client> (&pJob->source()))
+    {
+      deleteJob (job_id);
+    }
   }
 }
 
