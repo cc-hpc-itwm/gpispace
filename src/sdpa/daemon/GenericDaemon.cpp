@@ -452,7 +452,8 @@ void GenericDaemon::handleErrorEvent
           ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
       }
 
-      _scheduler.workerCanceled (as_worker.get()->second, jobId);
+      _scheduler.store_result
+        (as_worker.get()->second, jobId, JobFSM_::s_canceled());
       pJob->Reschedule();
 
       if ( !_scheduler.cancelNotTerminatedWorkerJobs
@@ -498,7 +499,8 @@ void GenericDaemon::handleErrorEvent
           Job* const pJob = findJob (jobId);
           if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
           {
-            _scheduler.workerCanceled (as_worker.get()->second, jobId);
+            _scheduler.store_result
+              (as_worker.get()->second, jobId, JobFSM_::s_canceled());
             pJob->Reschedule();
 
             if (!_scheduler.cancelNotTerminatedWorkerJobs

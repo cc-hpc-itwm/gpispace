@@ -35,6 +35,8 @@ namespace sdpa
       }
 
     private:
+      void handle_job_termination (Job* const);
+
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
         _event_handler_thread;
     };

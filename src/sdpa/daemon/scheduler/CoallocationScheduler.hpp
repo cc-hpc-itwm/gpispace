@@ -24,11 +24,10 @@ namespace sdpa
 
       // -- used by daemon
       bool delete_job (const sdpa::job_id_t&);
-      void workerFinished (const worker_id_t&, const job_id_t&);
-      void workerFailed (const worker_id_t&, const job_id_t&);
-      void workerCanceled (const worker_id_t&, const job_id_t&);
-      bool allPartialResultsCollected (const job_id_t& jid);
-      bool groupFinished (const sdpa::job_id_t&);
+
+      void store_result (worker_id_t const&, job_id_t const&, terminal_state);
+      boost::optional<job_result_type>
+        get_aggregated_results_if_all_terminated (job_id_t const&);
 
       // -- used by daemon and self
       void enqueueJob (const sdpa::job_id_t&);
@@ -81,24 +80,10 @@ namespace sdpa
       class Reservation : boost::noncopyable
       {
       public:
-        typedef enum {FINISHED, FAILED, CANCELED} result_type;
-
         Reservation (std::set<worker_id_t> workers, double cost)
           : _workers (workers)
           , _cost (cost)
         {}
-
-        void storeWorkerResult
-          (const sdpa::worker_id_t& wid, const result_type& result)
-        {
-          if (_workers.count (wid) == 0)
-          {
-            throw std::runtime_error
-              ("tried storing the result of a worker that doesn't exist in the job reservation");
-          }
-
-          m_map_worker_result[wid] = result;
-        }
 
         void replace_worker (worker_id_t const& w1, worker_id_t w2)
         {
@@ -111,31 +96,50 @@ namespace sdpa
           _workers.emplace (std::move (w2));
         }
 
-        bool allWorkersTerminated() const
-        {
-          return m_map_worker_result.size() == _workers.size();
-        }
-
-        bool allGroupTasksFinishedSuccessfully()
-        {
-          for ( result_type const& result
-              : m_map_worker_result | boost::adaptors::map_values
-              )
-          {
-            if (result != FINISHED)
-            {
-              return false;
-            }
-          }
-          return true;
-        }
-
         std::set<worker_id_t> workers() const
         {
           return _workers;
         }
 
         double cost() const {return _cost;}
+
+      private:
+        std::set<worker_id_t> _workers;
+        double _cost;
+
+      public:
+        //! \todo move to job statemachine instead: is duplicated
+        //! state and is irrelevant to the scheduler. instances of
+        //! this class should probably be deleted as soon as the
+        //! workers are served, with the knowledge of where a job is
+        //! served to being somewhere else (as it already has to be
+        //! somewhere)
+
+        void store_result
+          (worker_id_t const& worker, terminal_state const& result)
+        {
+          //! \todo assert only? this looks like a programming error otherwise
+          if (_workers.count (worker) == 0)
+          {
+            throw std::runtime_error
+              ("tried storing the result of a worker that doesn't exist in the job reservation");
+          }
+
+          _results.individual_results.emplace (worker, result);
+          if ( JobFSM_::s_finished const* f
+             = boost::get<JobFSM_::s_finished> (&result)
+             )
+          {
+            _results.last_success = *f;
+          }
+        }
+
+        boost::optional<job_result_type>
+          get_aggregated_results_if_all_terminated() const
+        {
+          return boost::make_optional
+            (_results.individual_results.size() == _workers.size(), _results);
+        }
 
         bool apply_to_workers_without_result
           (std::function <void (worker_id_t const&)> fun) const
@@ -144,7 +148,7 @@ namespace sdpa
 
           for (worker_id_t const& worker_id : _workers)
           {
-            if (!m_map_worker_result.count (worker_id))
+            if (!_results.individual_results.count (worker_id))
             {
               fun (worker_id);
 
@@ -154,10 +158,9 @@ namespace sdpa
 
           return applied;
         }
+
       private:
-        std::set<worker_id_t> _workers;
-        std::map<sdpa::worker_id_t, result_type> m_map_worker_result;
-        double _cost;
+        job_result_type _results;
       };
 
       mutable boost::mutex mtx_alloc_table_;
