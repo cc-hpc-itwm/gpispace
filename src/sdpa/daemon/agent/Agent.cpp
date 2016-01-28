@@ -86,7 +86,10 @@ namespace sdpa
       _scheduler.releaseReservation (job->id());
       request_scheduling();
 
-      deleteJob (job->id());
+      if (boost::get<job_source_master> (&pJob->source()))
+      {
+        deleteJob (job_id);
+      }
     }
 
     void Agent::handleJobFinishedEvent
