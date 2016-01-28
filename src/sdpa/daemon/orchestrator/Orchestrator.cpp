@@ -61,6 +61,15 @@ namespace sdpa
       request_scheduling();
     }
 
+    void Orchestrator::handleCancelJobAckEvent
+      (fhg::com::p2p::address_t const&, const events::CancelJobAckEvent* pEvt)
+    {
+      Job* const pJob
+        (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
+
+      job_canceled (pJob);
+    }
+
     void Orchestrator::handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobEvent* pEvt)
     {
@@ -115,15 +124,6 @@ namespace sdpa
         _scheduler.delete_job (job_id);
         _scheduler.releaseReservation (job_id);
       }
-    }
-
-    void Orchestrator::handleCancelJobAckEvent
-      (fhg::com::p2p::address_t const&, const events::CancelJobAckEvent* pEvt)
-    {
-      Job* const pJob
-        (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
-
-      job_canceled (pJob);
     }
 
     void Orchestrator::handleDeleteJobEvent
