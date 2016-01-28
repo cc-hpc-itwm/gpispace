@@ -58,8 +58,7 @@ namespace sdpa
       //! messages, just pass on results to the user
       if (job->getStatus() == sdpa::status::CANCELING)
       {
-        job->CancelJobAck();
-        workflowEngine()->canceled (job->id());
+        job_canceled (job);
       }
       else
       {
@@ -76,14 +75,11 @@ namespace sdpa
 
         if (errors.empty())
         {
-          job->JobFinished (results->last_success.result);
-          workflowEngine()->finished (job->id(), job->result());
+          job_finished (job, results->last_success.result);
         }
         else
         {
-          job->JobFailed
-            (fhg::util::join (errors.begin(), errors.end(), ", ").string());
-          workflowEngine()->failed (job->id(), job->error_message());
+          job_failed (job, fhg::util::join (errors.begin(), errors.end(), ", ").string());
         }
       }
 
@@ -173,8 +169,9 @@ namespace sdpa
       }
       else
       {
-          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
-          deleteJob (pEvt->job_id());
+        job_canceled (pJob);
+
+        deleteJob (pEvt->job_id());
       }
     }
   }

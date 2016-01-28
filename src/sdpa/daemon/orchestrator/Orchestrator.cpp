@@ -41,10 +41,7 @@ namespace sdpa
       Job* const pJob
         (require_job (pEvt->job_id(), "job_finished for unknown job"));
 
-      pJob->JobFinished (pEvt->result());
-
-      notify_subscribers<events::JobFinishedEvent>
-        (pEvt->job_id(), pEvt->job_id(), pEvt->result());
+      job_finished (pJob, pEvt->result());
 
       _scheduler.releaseReservation (pEvt->job_id());
       request_scheduling();
@@ -58,10 +55,7 @@ namespace sdpa
       Job* const pJob
         (require_job (pEvt->job_id(), "job_failed for unknown job"));
 
-      pJob->JobFailed (pEvt->error_message());
-
-      notify_subscribers<events::JobFailedEvent>
-        (pEvt->job_id(), pEvt->job_id(), pEvt->error_message());
+      job_failed (pJob, pEvt->error_message());
 
       _scheduler.releaseReservation (pEvt->job_id());
       request_scheduling();
@@ -116,12 +110,10 @@ namespace sdpa
       }
       else
       {
-        pJob->CancelJobAck();
+        job_canceled (pJob);
+
         _scheduler.delete_job (job_id);
         _scheduler.releaseReservation (job_id);
-
-        notify_subscribers<events::CancelJobAckEvent>
-          (job_id, job_id);
       }
     }
 
@@ -131,10 +123,7 @@ namespace sdpa
       Job* const pJob
         (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
 
-      pJob->CancelJobAck();
-
-      notify_subscribers<events::CancelJobAckEvent>
-        (pEvt->job_id(), pEvt->job_id());
+      job_canceled (pJob);
     }
 
     void Orchestrator::handleDeleteJobEvent

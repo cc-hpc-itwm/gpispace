@@ -184,6 +184,11 @@ namespace sdpa {
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
+      //! \todo aggregated results for coallocation jobs and sub jobs
+      void job_finished (Job*, we::type::activity_t const&);
+      void job_failed (Job*, std::string const& reason);
+      void job_canceled (Job*);
+
     private:
       // workers
       void serveJob(std::set<worker_id_t> const&, const job_id_t&);
@@ -195,11 +200,11 @@ namespace sdpa {
     private:
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
-                  , boost::optional<master_info_t::iterator> owner
+                  , job_source
                   );
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
-                  , boost::optional<master_info_t::iterator> owner
+                  , job_source
                   , job_requirements_t
                   );
 
