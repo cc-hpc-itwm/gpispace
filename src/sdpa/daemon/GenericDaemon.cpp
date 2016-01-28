@@ -316,6 +316,28 @@ std::string GenericDaemon::gen_id()
       job_map_.erase (it);
     }
 
+    void GenericDaemon::handleDeleteJobEvent
+      (fhg::com::p2p::address_t const& source, events::DeleteJobEvent const* event)
+    {
+      Job* const job (require_job (event->job_id(), "delete_job for unknown job"));
+
+      if (!sdpa::status::is_terminal (job->getStatus()))
+      {
+        throw std::runtime_error
+          ("Cannot delete a job which is in a non-terminal state.");
+      }
+
+      if (!boost::get<job_source_client> (&job->source()))
+      {
+        throw std::invalid_argument
+          ("tried deleting a job not submitted by a client");
+      }
+
+      deleteJob (job->id());
+      parent_proxy (this, source).delete_job_ack (event->job_id());
+    }
+
+
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
 {

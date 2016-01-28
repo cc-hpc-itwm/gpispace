@@ -80,26 +80,5 @@ namespace sdpa
         _scheduler.releaseReservation (job_id);
       }
     }
-
-    void Orchestrator::handleDeleteJobEvent
-      (fhg::com::p2p::address_t const& source, const events::DeleteJobEvent* evt)
-    {
-      Job* const pJob (findJob (evt->job_id()));
-      if (!pJob)
-      {
-        throw std::runtime_error ("DeleteJobEvent for unknown job");
-      }
-
-      if(!sdpa::status::is_terminal (pJob->getStatus()))
-      {
-        throw std::runtime_error
-          ( "Cannot delete a job which is in a non-terminal state. "
-            "Please, cancel it first!"
-          );
-      }
-
-      deleteJob (evt->job_id());
-      parent_proxy (this, source).delete_job_ack (evt->job_id());
-    }
   }
 }

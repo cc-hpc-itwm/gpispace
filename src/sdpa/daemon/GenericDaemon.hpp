@@ -130,7 +130,7 @@ namespace sdpa {
       virtual void handleCancelJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override = 0;
       virtual void handleCapabilitiesGainedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
       virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
-      virtual void handleDeleteJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::DeleteJobEvent* ) override =0;
+      virtual void handleDeleteJobEvent (fhg::com::p2p::address_t const&, events::DeleteJobEvent const*) override;
       virtual void handleErrorEvent(fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* ) override;
       virtual void handleJobFailedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent* ) override;
       virtual void handleJobFinishedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent* ) override;

@@ -21,11 +21,6 @@ namespace sdpa
     protected:
       virtual void handleCancelJobEvent
         (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override;
-      virtual void handleDeleteJobEvent
-        (fhg::com::p2p::address_t const&, const sdpa::events::DeleteJobEvent*) override
-      {
-        throw std::runtime_error("The agent should not call handleDeleteJobEvent!");
-      }
 
     private:
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
