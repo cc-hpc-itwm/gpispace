@@ -155,6 +155,7 @@ GenericDaemon::GenericDaemon( const std::string name
         (_logger, vmem_socket->string())
     : nullptr
     )
+  , _event_handler_thread (&GenericDaemon::handle_events, this)
 {
   for (master_network_info& master : _master_info)
   {

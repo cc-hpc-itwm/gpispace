@@ -60,8 +60,8 @@
 
 namespace sdpa {
   namespace daemon {
-    class GenericDaemon : public sdpa::events::EventHandler,
-                          boost::noncopyable
+    class GenericDaemon final : public sdpa::events::EventHandler
+                              , boost::noncopyable
     {
     public:
       GenericDaemon( const std::string name
@@ -70,8 +70,8 @@ namespace sdpa {
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , std::vector<name_host_port_tuple> const& masters
                    , fhg::log::Logger& logger
-                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
-                   , bool create_wfe = false
+                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
+                   , bool create_wfe
                    );
       virtual ~GenericDaemon() = default;
 
@@ -344,6 +344,9 @@ namespace sdpa {
 
     private:
       std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_handler_thread;
 
     protected:
       struct child_proxy
