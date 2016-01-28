@@ -22,16 +22,8 @@ namespace sdpa
                       , {}
                       , logger
                       )
-      , _rpc_dispatcher
-          (fhg::util::serialization::exception::serialization_functions())
-      , _rpc_server (_rpc_dispatcher)
       , _event_handler_thread (&Orchestrator::handle_events, this)
     {}
-
-    boost::asio::ip::tcp::endpoint Orchestrator::rpc_local_endpoint() const
-    {
-      return _rpc_server.local_endpoint();
-    }
 
     void Orchestrator::handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobEvent* pEvt)

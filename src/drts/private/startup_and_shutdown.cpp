@@ -521,10 +521,10 @@ namespace fhg
               )
         );
 
-      if (orchestrator_startup_messages.second.size() != 4)
+      if (orchestrator_startup_messages.second.size() != 2)
       {
         throw std::logic_error
-          ("could not start orchestrator: expected 4 lines of startup messages");
+          ("could not start orchestrator: expected 2 lines of startup messages");
       }
 
       processes.store
@@ -534,11 +534,6 @@ namespace fhg
         ( orchestrator_startup_messages.second[0]
         , boost::lexical_cast<unsigned short>
             (orchestrator_startup_messages.second[1])
-        );
-      hostinfo_type const orchestrator_rpc_hostinfo
-        ( orchestrator_startup_messages.second[2]
-        , boost::lexical_cast<unsigned short>
-            (orchestrator_startup_messages.second[3])
         );
 
       if (gpi_enabled)
