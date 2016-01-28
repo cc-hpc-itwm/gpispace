@@ -287,6 +287,18 @@ std::string GenericDaemon::gen_id()
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       return it != job_map_.end() ? it->second : nullptr;
     }
+
+    Job* GenericDaemon::require_job
+      (job_id_t const& id, std::string const& error) const
+    {
+      Job* job (findJob (id));
+      if (!job)
+      {
+        throw std::logic_error (error);
+      }
+      return job;
+    }
+
     void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (_job_map_mutex);

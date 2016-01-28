@@ -205,6 +205,7 @@ namespace sdpa {
 
     protected:
       Job* findJob(const sdpa::job_id_t& job_id ) const;
+      Job* require_job (job_id_t const&, std::string const& error) const;
       void deleteJob(const sdpa::job_id_t& job_id);
 
     private:

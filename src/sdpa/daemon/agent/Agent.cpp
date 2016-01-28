@@ -98,7 +98,8 @@ namespace sdpa
     {
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
-      Job* const pJob (findJob (pEvt->job_id()));
+      Job* const pJob
+        (require_job (pEvt->job_id(), "job_finished for unknown job"));
 
       _scheduler.store_result
         ( _worker_manager.worker_by_address (source).get()->second
@@ -114,7 +115,8 @@ namespace sdpa
     {
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
-      Job* const pJob (findJob (pEvt->job_id()));
+      Job* const pJob
+        (require_job (pEvt->job_id(), "job_failed for unknown job"));
 
       _scheduler.store_result
         ( _worker_manager.worker_by_address (source).get()->second
@@ -128,7 +130,8 @@ namespace sdpa
     void Agent::handleCancelJobAckEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobAckEvent* pEvt)
     {
-      Job* const pJob (findJob(pEvt->job_id()));
+      Job* const pJob
+        (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
 
       _scheduler.store_result
         ( _worker_manager.worker_by_address (source).get()->second

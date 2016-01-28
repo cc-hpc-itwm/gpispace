@@ -40,12 +40,8 @@ namespace sdpa
 
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
-      Job* const pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        //! \todo Explain why we can ignore this
-        return;
-      }
+      Job* const pJob
+        (require_job (pEvt->job_id(), "job_finished for unknown job"));
 
       pJob->JobFinished (pEvt->result());
 
@@ -61,12 +57,8 @@ namespace sdpa
     {
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
-      Job* const pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        //! \todo Explain why we can ignore this
-        return;
-      }
+      Job* const pJob
+        (require_job (pEvt->job_id(), "job_failed for unknown job"));
 
       pJob->JobFailed (pEvt->error_message());
 
@@ -138,12 +130,8 @@ namespace sdpa
     void Orchestrator::handleCancelJobAckEvent
       (fhg::com::p2p::address_t const&, const events::CancelJobAckEvent* pEvt)
     {
-      Job* const pJob (findJob (pEvt->job_id()));
-      if (!pJob)
-      {
-        //! \todo Explain why we can ignore this
-        return;
-      }
+      Job* const pJob
+        (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
 
       pJob->CancelJobAck();
 
