@@ -68,6 +68,9 @@ namespace sdpa
         (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
 
       job_canceled (pJob);
+
+      _scheduler.releaseReservation (pEvt->job_id());
+      request_scheduling();
     }
 
     void Orchestrator::handleCancelJobEvent
