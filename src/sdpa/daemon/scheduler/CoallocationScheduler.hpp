@@ -118,13 +118,6 @@ namespace sdpa
         void store_result
           (worker_id_t const& worker, terminal_state const& result)
         {
-          //! \todo assert only? this looks like a programming error otherwise
-          if (_workers.count (worker) == 0)
-          {
-            throw std::runtime_error
-              ("tried storing the result of a worker that doesn't exist in the job reservation");
-          }
-
           _results.individual_results.emplace (worker, result);
           if ( JobFSM_::s_finished const* f
              = boost::get<JobFSM_::s_finished> (&result)
