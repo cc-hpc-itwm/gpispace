@@ -99,22 +99,14 @@ namespace sdpa
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
       Job* const pJob (findJob (pEvt->job_id()));
-      if (!hasWorkflowEngine())
-      {
-        pJob->JobFinished (pEvt->result());
-        parent_proxy (this, pJob->owner()).job_finished
-          (pEvt->job_id(), pEvt->result());
-      }
-      else
-      {
-        _scheduler.store_result
-          ( _worker_manager.worker_by_address (source).get()->second
-          , pJob->id()
-          , JobFSM_::s_finished (pEvt->result())
-          );
 
-        handle_job_termination (pJob);
-      }
+      _scheduler.store_result
+        ( _worker_manager.worker_by_address (source).get()->second
+        , pJob->id()
+        , JobFSM_::s_finished (pEvt->result())
+        );
+
+      handle_job_termination (pJob);
     }
 
     void Agent::handleJobFailedEvent
@@ -123,23 +115,30 @@ namespace sdpa
       child_proxy (this, source).job_failed_ack (pEvt->job_id());
 
       Job* const pJob (findJob (pEvt->job_id()));
-      if (!hasWorkflowEngine())
-      {
-        pJob->JobFailed (pEvt->error_message());
-        parent_proxy (this, pJob->owner()).job_failed
-          (pEvt->job_id(), pEvt->error_message());
-      }
-      else
-      {
-        _scheduler.store_result
-          ( _worker_manager.worker_by_address (source).get()->second
-          , pJob->id()
-          , JobFSM_::s_failed (pEvt->error_message())
-          );
 
-        handle_job_termination (pJob);
-      }
+      _scheduler.store_result
+        ( _worker_manager.worker_by_address (source).get()->second
+        , pJob->id()
+        , JobFSM_::s_failed (pEvt->error_message())
+        );
+
+      handle_job_termination (pJob);
     }
+
+    void Agent::handleCancelJobAckEvent
+      (fhg::com::p2p::address_t const& source, const events::CancelJobAckEvent* pEvt)
+    {
+      Job* const pJob (findJob(pEvt->job_id()));
+
+      _scheduler.store_result
+        ( _worker_manager.worker_by_address (source).get()->second
+        , pJob->id()
+        , JobFSM_::s_canceled()
+        );
+
+      handle_job_termination (pJob);
+    }
+
 
     void Agent::handleCancelJobEvent
       (fhg::com::p2p::address_t const&, const events::CancelJobEvent* pEvt)
@@ -173,33 +172,6 @@ namespace sdpa
       {
           parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
           deleteJob (pEvt->job_id());
-      }
-    }
-
-    void Agent::handleCancelJobAckEvent
-      (fhg::com::p2p::address_t const& source, const events::CancelJobAckEvent* pEvt)
-    {
-      Job* const pJob (findJob(pEvt->job_id()));
-
-      if (!hasWorkflowEngine())
-      {
-        pJob->CancelJobAck();
-        if (!isTop())
-        {
-          parent_proxy (this, pJob->owner()).cancel_job_ack (pEvt->job_id());
-
-          deleteJob (pEvt->job_id());
-        }
-      }
-      else
-      {
-        _scheduler.store_result
-          ( _worker_manager.worker_by_address (source).get()->second
-          , pJob->id()
-          , JobFSM_::s_canceled()
-          );
-
-        handle_job_termination (pJob);
       }
     }
   }
