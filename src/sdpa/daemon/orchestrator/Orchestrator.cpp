@@ -36,8 +36,6 @@ namespace sdpa
     void Orchestrator::handleJobFinishedEvent
       (fhg::com::p2p::address_t const& source, const events::JobFinishedEvent* pEvt)
     {
-      LLOG (TRACE, _logger, "The job " << pEvt->job_id() << " has finished!");
-
       child_proxy (this, source).job_finished_ack (pEvt->job_id());
 
       Job* const pJob
