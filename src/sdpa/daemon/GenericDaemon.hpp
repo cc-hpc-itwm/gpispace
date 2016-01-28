@@ -56,8 +56,6 @@
 #include <queue>
 #include <random>
 
-#define OVERWRITTEN_IN_TEST virtual
-
 namespace sdpa {
   namespace daemon {
     class GenericDaemon final : public sdpa::events::EventHandler
@@ -83,7 +81,7 @@ namespace sdpa {
 
     public:
       // WE interface
-      OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
+      void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
       void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       void failed( const we::layer::id_type& wfId, std::string const& reason);
