@@ -127,16 +127,13 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void handleCancelJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent* ) override = 0;
       virtual void handleCancelJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override = 0;
       virtual void handleCapabilitiesGainedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
       virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
       virtual void handleDeleteJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::DeleteJobEvent* ) override =0;
       virtual void handleErrorEvent(fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* ) override;
       virtual void handleJobFailedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent* ) override;
-      virtual void handleJobFailedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent* ) override = 0;
       virtual void handleJobFinishedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent* ) override;
-      virtual void handleJobFinishedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent* ) override = 0;
       //virtual void handleJobResultsReplyEvent (fhg::com::p2p::address_t const& source, const sdpa::events::JobResultsReplyEvent *) ?!
       virtual void handleSubmitJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobAckEvent* ) override;
       virtual void handleSubmitJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* ) override;
@@ -183,6 +180,11 @@ namespace sdpa {
     protected:
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
+
+      void handle_job_termination (Job*);
+      virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, events::JobFailedEvent const*) override;
+      virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, events::JobFinishedEvent const*) override;
+      virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, events::CancelJobAckEvent const*) override;
 
       //! \todo aggregated results for coallocation jobs and sub jobs
       void job_finished (Job*, we::type::activity_t const&);

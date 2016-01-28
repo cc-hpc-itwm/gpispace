@@ -33,46 +33,6 @@ namespace sdpa
       return _rpc_server.local_endpoint();
     }
 
-    void Orchestrator::handleJobFinishedEvent
-      (fhg::com::p2p::address_t const& source, const events::JobFinishedEvent* pEvt)
-    {
-      child_proxy (this, source).job_finished_ack (pEvt->job_id());
-
-      Job* const pJob
-        (require_job (pEvt->job_id(), "job_finished for unknown job"));
-
-      job_finished (pJob, pEvt->result());
-
-      _scheduler.releaseReservation (pEvt->job_id());
-      request_scheduling();
-    }
-
-    void Orchestrator::handleJobFailedEvent
-      (fhg::com::p2p::address_t const& source, const events::JobFailedEvent* pEvt)
-    {
-      child_proxy (this, source).job_failed_ack (pEvt->job_id());
-
-      Job* const pJob
-        (require_job (pEvt->job_id(), "job_failed for unknown job"));
-
-      job_failed (pJob, pEvt->error_message());
-
-      _scheduler.releaseReservation (pEvt->job_id());
-      request_scheduling();
-    }
-
-    void Orchestrator::handleCancelJobAckEvent
-      (fhg::com::p2p::address_t const&, const events::CancelJobAckEvent* pEvt)
-    {
-      Job* const pJob
-        (require_job (pEvt->job_id(), "cancel_job_ack for unknown job"));
-
-      job_canceled (pJob);
-
-      _scheduler.releaseReservation (pEvt->job_id());
-      request_scheduling();
-    }
-
     void Orchestrator::handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const events::CancelJobEvent* pEvt)
     {

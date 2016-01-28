@@ -19,15 +19,8 @@ namespace sdpa
             );
 
     protected:
-      virtual void handleJobFinishedEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent*) override;
-      virtual void handleJobFailedEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent*) override;
-
       virtual void handleCancelJobEvent
         (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override;
-      virtual void handleCancelJobAckEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent*) override;
       virtual void handleDeleteJobEvent
         (fhg::com::p2p::address_t const&, const sdpa::events::DeleteJobEvent*) override
       {
@@ -35,8 +28,6 @@ namespace sdpa
       }
 
     private:
-      void handle_job_termination (Job* const);
-
       boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
         _event_handler_thread;
     };

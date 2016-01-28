@@ -17,15 +17,8 @@ namespace sdpa {
                    , fhg::log::Logger&
                    );
 
-      virtual void handleJobFinishedEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent* ) override;
-      virtual void handleJobFailedEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent* ) override;
-
       virtual void handleCancelJobEvent
         (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt ) override;
-      virtual void handleCancelJobAckEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent* pEvt ) override;
       virtual void handleDeleteJobEvent
         (fhg::com::p2p::address_t const& source, const sdpa::events::DeleteJobEvent* ) override;
 
