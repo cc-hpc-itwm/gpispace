@@ -76,9 +76,6 @@ namespace sdpa {
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
 
-    protected:
-      bool isTop() { return _master_info.empty(); }
-
     public:
       // WE interface
       void submit( const we::layer::id_type & id, const we::type::activity_t&);
