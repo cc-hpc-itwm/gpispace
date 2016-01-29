@@ -206,7 +206,7 @@ namespace sdpa {
       Job* require_job (job_id_t const&, std::string const& error) const;
       void deleteJob(const sdpa::job_id_t& job_id);
 
-      void delayed_cancel (const we::layer::id_type&);
+      void cancel_worker_handled_job (we::layer::id_type const&);
       void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
 
       // data members

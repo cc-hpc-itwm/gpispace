@@ -399,7 +399,7 @@ std::string GenericDaemon::gen_id()
       }
       else
       {
-        delayed_cancel (job->id());
+        cancel_worker_handled_job (job->id());
       }
     }
 
@@ -671,9 +671,9 @@ catch (...)
 
 void GenericDaemon::cancel (const we::layer::id_type& job_id)
 {
-  delay (std::bind (&GenericDaemon::delayed_cancel, this, job_id));
+  delay (std::bind (&GenericDaemon::cancel_worker_handled_job, this, job_id));
 }
-void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
+void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 {
   boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
