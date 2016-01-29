@@ -1192,18 +1192,8 @@ bool GenericDaemon::isSubscriber
   (fhg::com::p2p::address_t const& agentId, job_id_t const& job)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-
-  //! \todo do simpler!? would prefer
-  // return _subscriptions.count (std::make_pair (agentId, job));
-  auto const& range (_subscriptions.left.equal_range (agentId));
-  for (auto const& elem : range | boost::adaptors::map_values)
-  {
-    if (elem == job)
-    {
-      return true;
-    }
-  }
-  return false;
+  return _subscriptions.count
+    (decltype (_subscriptions)::value_type (agentId, job));
 }
 
 /**
