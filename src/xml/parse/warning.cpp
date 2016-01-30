@@ -74,16 +74,6 @@ namespace xml
                     )
       {}
 
-      struct_shadowed::struct_shadowed ( const type::structure_type& early
-                                       , const type::structure_type& late
-                                       )
-        : generic ( boost::format ("struct %1% from %2% shadowed at %3%")
-                  % early.name()
-                  % early.position_of_definition()
-                  % late.position_of_definition()
-                  )
-      {}
-
       synthesize_anonymous_function::synthesize_anonymous_function
         (type::function_type const& function)
           : generic ( boost::format ( "synthesize anonymous top level function"

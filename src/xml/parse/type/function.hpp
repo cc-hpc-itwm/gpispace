@@ -111,10 +111,6 @@ namespace xml
 
         // ***************************************************************** //
 
-        xml::parse::structure_type_util::forbidden_type forbidden_below (void) const;
-
-        // ***************************************************************** //
-
         void type_check (const state::type & state) const;
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);

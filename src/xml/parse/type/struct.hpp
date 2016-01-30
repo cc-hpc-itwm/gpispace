@@ -60,16 +60,7 @@ namespace xml
 
       set_type make (const type::structs_type & structs, state::type const&);
 
-      set_type join ( const set_type & above
-                    , const set_type & below
-                    , const forbidden_type & forbidden
-                    , const state::type & state
-                    );
-
-      set_type join ( const set_type & above
-                    , const set_type & below
-                    , const state::type & state
-                    );
+      set_type join (set_type const& above, set_type const& below);
     }
   }
 }

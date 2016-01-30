@@ -297,21 +297,6 @@ namespace xml
 
       // ***************************************************************** //
 
-      xml::parse::structure_type_util::forbidden_type
-        function_type::forbidden_below (void) const
-      {
-        xml::parse::structure_type_util::forbidden_type forbidden;
-
-        for (const port_type& port : ports())
-        {
-          forbidden.emplace (port.type(), port.name());
-        }
-
-        return forbidden;
-      }
-
-      // ***************************************************************** //
-
       void function_type::type_check (const state::type & state) const
       {
         for (const port_type& port : ports())
@@ -772,7 +757,7 @@ namespace xml
           ( function_specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs, state), state)
+            , st::join (known_structs, st::make (structs, state))
             , state
             , *this
             )

@@ -141,7 +141,7 @@ namespace xml
           specialized_function.specialize
             ( type_map
             , specialize.type_get
-            , st::join (known_structs, st::make (structs, state), state)
+            , st::join (known_structs, st::make (structs, state))
             , state
             );
 
@@ -167,7 +167,7 @@ namespace xml
           function.specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs, state), state)
+            , st::join (known_structs, st::make (structs, state))
             , state
             );
 
@@ -184,7 +184,7 @@ namespace xml
           transition.specialize
             ( map
             , get
-            , st::join (known_structs, st::make (structs, state), state)
+            , st::join (known_structs, st::make (structs, state))
             , state
             );
 

@@ -127,16 +127,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class struct_shadowed : public generic
-      {
-      public:
-        struct_shadowed ( const type::structure_type& early
-                        , const type::structure_type& late
-                        );
-      };
-
-      // ******************************************************************* //
-
       class shadow_function : public generic
       {
       private:

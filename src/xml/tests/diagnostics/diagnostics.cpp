@@ -83,6 +83,38 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
     );
 }
 
+BOOST_AUTO_TEST_CASE (error_struct_redefined)
+{
+  std::string const name_struct (fhg::util::testing::random_identifier());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <struct name="%2%"><field name="a" type="%3%"/></struct>
+  <struct name="%2%"><field name="b" type="%3%"/></struct>
+  <expression/>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      % name_struct
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::struct_redefined>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        auto function (xml::parse::just_parse (state, input_stream));
+        xml::parse::post_processing_passes (function, &state);
+      }
+    , boost::format ("ERROR: struct %1% at %2% redefined at %3%")
+    % name_struct
+    % "[<stdin>:3:3]"
+    % "[<stdin>:4:3]"
+    );
+}
+
 BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
 {
   std::string const name_field {fhg::util::testing::random_identifier()};
