@@ -11,7 +11,6 @@
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include <chrono>
 #include <random>
 #include <sstream>
 
@@ -25,10 +24,7 @@ namespace
 
   std::mt19937& random_engine()
   {
-    static std::mt19937 _
-      (std::chrono::duration_cast<std::chrono::seconds>
-        (std::chrono::system_clock::now().time_since_epoch()).count()
-      );
+    static std::mt19937 _ {std::random_device{}()};
 
     return _;
   }
