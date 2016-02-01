@@ -1994,3 +1994,62 @@ BOOST_FIXTURE_TEST_CASE
                         );
   }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( steal_work_after_finishing_assigned_job
+  , fixture_add_new_workers
+  )
+{
+  const unsigned int n_workers (2);
+  constexpr unsigned int n_jobs (n_workers + 1);
+
+  std string capability (fhg::util::testing::random_string());
+  std::vector<sdpa::worker_id_t> workers
+    (add_new_workers (capability, n_workers));
+
+  std::vector<sdpa::job_id_t> jobs;
+  add_new_jobs (jobs, "", n_jobs);
+
+  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
+
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    old_assignment (get_current_assignment());
+
+  sdpa::worker_id_t worker_with_2_jobs;
+  sdpa::worker_id_t worker_with_1_job;
+
+  for (const sdpa::worker_id_t& worker : workers)
+  {
+    unsigned int n_assigned_jobs (n_jobs_assigned_to_worker (worker, old_assignment));
+    BOOST_REQUIRE (n_assigned_jobs == 1 || n_assigned_jobs == 2);
+
+    if (n_assigned_jobs == 2)
+    {
+      worker_with_2_jobs = worker;
+    }
+    else
+    {
+      worker_with_1_job = worker;
+    }
+  }
+
+  BOOST_REQUIRE (!worker_with_2_jobs.empty());
+  BOOST_REQUIRE (!worker_with_1_job.empty());
+
+  // the worker with 1 job finishes his job
+  std::set<sdpa::job_id_t> worker_jobs
+    (_worker_manager.get_worker_jobs_and_clean_queues (worker_with_1_job));
+
+  BOOST_REQUIRE (!worker_jobs.empty());
+  _scheduler.releaseReservation (*worker_jobs.begin());
+
+  request_scheduling();
+
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (get_current_assignment());
+
+  // the worker which just finished the job should steal from the worker with 2 jobs
+  // in the end, all workers should have exactly one job assigned
+  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 1);
+  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 1);
+}
