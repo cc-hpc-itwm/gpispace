@@ -1850,6 +1850,7 @@ namespace xml
       pnet::type::signature::structure_type
         structure_type (const xml_node_type* node, state::type& state)
       {
+        std::unordered_set<std::string> names;
         pnet::type::signature::structure_type s;
 
         for ( xml_node_type* child (node->first_node())
@@ -1863,8 +1864,17 @@ namespace xml
           {
             if (child_name == "field")
             {
+              std::string const name
+                (required ("struct_field", child, "name", state));
+
+              if (!names.emplace (name).second)
+              {
+                throw error::struct_field_redefined
+                  (name, state.file_in_progress());
+              }
+
               s.push_back ( std::make_pair
-                            ( required ("struct_field", child, "name", state)
+                            ( name
                             , required ("struct_field", child, "type", state)
                             )
                           );

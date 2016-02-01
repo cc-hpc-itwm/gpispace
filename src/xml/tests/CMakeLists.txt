@@ -47,5 +47,11 @@ fhg_add_test (parse_memory_transfer.cpp
                  Boost::program_options
 )
 
+fhg_add_test (conditions_and_expressions_with_cdata.cpp
+  BOOST_UNIT_TEST
+  LINK_LIBRARIES pnet
+                 Boost::program_options
+)
+
 add_subdirectory (bytearray)
 add_subdirectory (diagnostics)

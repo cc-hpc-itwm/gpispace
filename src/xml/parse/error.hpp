@@ -259,17 +259,6 @@ namespace xml
 
       // ******************************************************************* //
 
-      class forbidden_shadowing : public generic
-      {
-      public:
-        forbidden_shadowing ( const type::structure_type& early
-                            , const type::structure_type& late
-                            , const std::string& port_name
-                            );
-      };
-
-      // ******************************************************************* //
-
       template<typename T>
       class generic_duplicate : public generic
       {

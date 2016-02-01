@@ -83,6 +83,73 @@ BOOST_AUTO_TEST_CASE (warning_struct_redefined)
     );
 }
 
+BOOST_AUTO_TEST_CASE (error_struct_redefined)
+{
+  std::string const name_struct (fhg::util::testing::random_identifier());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <struct name="%2%"><field name="a" type="%3%"/></struct>
+  <struct name="%2%"><field name="b" type="%3%"/></struct>
+  <expression/>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      % name_struct
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::struct_redefined>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        auto function (xml::parse::just_parse (state, input_stream));
+        xml::parse::post_processing_passes (function, &state);
+      }
+    , boost::format ("ERROR: struct %1% at %2% redefined at %3%")
+    % name_struct
+    % "[<stdin>:3:3]"
+    % "[<stdin>:4:3]"
+    );
+}
+
+BOOST_AUTO_TEST_CASE (warning_struct_field_redefined)
+{
+  std::string const name_field {fhg::util::testing::random_identifier()};
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <struct name="%2%">
+    <field name="%3%" type="%4%"/>
+    <field name="%3%" type="%5%"/>
+  </struct>
+  <expression/>
+</defun>
+)EOS")
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      % name_field
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::struct_field_redefined>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
+    , boost::format ("ERROR: struct field '%1%' redefined in %2%")
+    % name_field
+    % boost::filesystem::path ("<stdin>")
+    );
+}
+
 BOOST_FIXTURE_TEST_CASE (warning_duplicate_external_function, fixture)
 {
   parse ("diagnostics/warning_duplicate_external_function.xpnet");
@@ -333,3 +400,26 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_place_map, fixture)
 }
 
 #undef GENERIC_DUPLICATE
+
+BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
+{
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="%1%">
+  <expression>
+</defun>)EOS")
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <std::runtime_error>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
+    , boost::format ("Parse error: %1%: invalid closing tag name")
+    % "[<stdin>:4:7]"
+    );
+}

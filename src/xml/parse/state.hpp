@@ -163,7 +163,6 @@ namespace xml
         WARN (shadow_template)
         WARN (shadow_specialize)
         WARN (duplicate_template_parameter)
-        WARN (struct_shadowed)
         WARN (synthesize_anonymous_function)
         WARN (struct_redefined)
 

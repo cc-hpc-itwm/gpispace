@@ -49,11 +49,7 @@ namespace xml
           ( st::join ( global
                      , st::join ( st::make (parent_structs, state)
                                 , st::make (child_structs, state)
-                                , st::forbidden_type()
-                                , state
                                 )
-                     , st::forbidden_type()
-                     , state
                      )
           );
 

@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<defun>
-  <struct name="point">
-    <field name="x0" type="long"/>
-    <field name="x1" type="long"/>
-  </struct>
-  <expression></expression>
-</defun>

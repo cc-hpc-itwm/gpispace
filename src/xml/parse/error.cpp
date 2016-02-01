@@ -448,22 +448,6 @@ namespace xml
                   )
       {}
 
-      forbidden_shadowing::forbidden_shadowing
-        ( const type::structure_type& early
-        , const type::structure_type& late
-        , const std::string& port_name
-        )
-          : generic ( boost::format ( "struct %1% at %2% shadowed at %3%."
-                                      " This is forbidden because it is"
-                                      " the type of the port %4%."
-                                    )
-                    % early.name()
-                    % early.position_of_definition()
-                    % late.position_of_definition()
-                    % port_name
-                    )
-      {}
-
       duplicate_specialize::duplicate_specialize
         ( type::specialize_type const& early
         , type::specialize_type const& late

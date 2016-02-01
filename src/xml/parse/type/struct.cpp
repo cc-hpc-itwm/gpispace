@@ -153,56 +153,27 @@ namespace xml
         return set;
       }
 
-      set_type join ( const set_type & above
-                    , const set_type & below
-                    , const forbidden_type & forbidden
-                    , const state::type & state
-                    )
+      set_type join (set_type const& above, set_type const& below)
       {
-        set_type set (above);
+        set_type joined (above);
 
-        for ( set_type::const_iterator pos (below.begin())
-            ; pos != below.end()
-            ; ++pos
+        for ( xml::parse::type::structure_type const& strct
+            : below | boost::adaptors::map_values
             )
+        {
+          set_type::const_iterator const old (joined.find (strct.name()));
+
+          if (old != joined.end()
+             && !(old->second.signature() == strct.signature())
+             )
           {
-            const xml::parse::type::structure_type& strct (pos->second);
-            const set_type::const_iterator old (set.find (strct.name()));
-
-            if (  old != set.end()
-               && !(strct.signature() == old->second.signature())
-               )
-              {
-                const forbidden_type::const_iterator forbidden_it
-                  (forbidden.find (strct.name()));
-
-                if (forbidden_it != forbidden.end())
-                  {
-                    throw error::forbidden_shadowing ( old->second
-                                                     , strct
-                                                     , forbidden_it->second
-                                                     );
-                  }
-
-                state.warn
-                  (warning::struct_shadowed ( old->second
-                                            , strct
-                                            )
-                  );
-              }
-
-            set.emplace (strct.name(), strct);
+            throw error::struct_redefined (old->second, strct);
           }
 
-        return set;
-      }
+          joined.emplace (strct.name(), strct);
+        }
 
-      set_type join ( const set_type & above
-                    , const set_type & below
-                    , const state::type & state
-                    )
-      {
-        return join (above, below, forbidden_type(), state);
+        return joined;
       }
     }
   }
