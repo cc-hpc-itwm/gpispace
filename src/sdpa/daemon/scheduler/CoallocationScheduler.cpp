@@ -320,84 +320,38 @@ namespace sdpa
         _list_pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }
+      //! \todo why can we ignore this?
     }
 
-    void CoallocationScheduler::workerFinished
-      (const worker_id_t& wid, const job_id_t& jid)
+    void CoallocationScheduler::store_result ( worker_id_t const& worker_id
+                                             , job_id_t const& job_id
+                                             , terminal_state result
+                                             )
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator const it = allocation_table_.find (jid);
-      if (it != allocation_table_.end())
+      auto const it (allocation_table_.find (job_id));
+      //! \todo assert only as this probably is a logical error?
+      if (it == allocation_table_.end())
       {
-        it->second->storeWorkerResult (wid, Reservation::FINISHED);
+        throw std::runtime_error ("store_result: unknown job");
       }
-      else
-      {
-        throw std::runtime_error
-          ("workerFinished: job missing in allocation table");
-      }
+
+      it->second->store_result (worker_id, result);
     }
 
-    void CoallocationScheduler::workerFailed
-      (const worker_id_t& wid, const job_id_t& jid)
+    boost::optional<job_result_type>
+      CoallocationScheduler::get_aggregated_results_if_all_terminated (job_id_t const& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator const it = allocation_table_.find (jid);
-      if (it != allocation_table_.end())
-      {
-        it->second->storeWorkerResult (wid, Reservation::FAILED);
-      }
-      else
+      auto const it (allocation_table_.find (job_id));
+      //! \todo assert only as this probably is a logical error?
+      if (it == allocation_table_.end())
       {
         throw std::runtime_error
-          ("workerFailed: job missing in allocation table");
+          ("get_aggregated_results_if_all_terminated: unknown job");
       }
-    }
 
-    void CoallocationScheduler::workerCanceled
-      (const worker_id_t& wid, const job_id_t& jid)
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator const it = allocation_table_.find (jid);
-      if (it != allocation_table_.end())
-      {
-        it->second->storeWorkerResult (wid, Reservation::CANCELED);
-      }
-      else
-      {
-        throw std::runtime_error
-          ("workerCanceled: job missing in allocation table");
-      }
-    }
-
-    bool CoallocationScheduler::allPartialResultsCollected (const job_id_t& jid)
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator const it = allocation_table_.find (jid);
-      if (it != allocation_table_.end())
-      {
-        return it->second->allWorkersTerminated();
-      }
-      else
-      {
-        throw std::runtime_error
-          ("allPartialResultsCollected: job missing in allocation table");
-      }
-    }
-
-    bool CoallocationScheduler::groupFinished (const sdpa::job_id_t& jid)
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      allocation_table_t::iterator const it = allocation_table_.find (jid);
-      if (it != allocation_table_.end())
-      {
-        return it->second->allGroupTasksFinishedSuccessfully();
-      }
-      else
-      {
-        throw std::runtime_error
-          ("groupFinished: job missing in allocation table");
-      }
+      return it->second->get_aggregated_results_if_all_terminated();
     }
 
     void CoallocationScheduler::locked_job_id_list::push (job_id_t item)

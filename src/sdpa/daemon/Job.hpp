@@ -24,8 +24,22 @@ namespace sdpa
 
       struct s_pending : public boost::msm::front::state<>{};
       struct s_running : public boost::msm::front::state<>{};
-      struct s_finished : public boost::msm::front::state<>{};
-      struct s_failed : public boost::msm::front::state<>{};
+      struct s_finished : public boost::msm::front::state<>
+      {
+        we::type::activity_t result;
+        s_finished() = default;
+        s_finished (we::type::activity_t result_)
+          : result (std::move (result_))
+        {}
+      };
+      struct s_failed : public boost::msm::front::state<>
+      {
+        std::string message;
+        s_failed() = default;
+        s_failed (std::string message_)
+          : message (std::move (message_))
+        {}
+      };
       struct s_canceling : public boost::msm::front::state<>{};
       struct s_canceled : public boost::msm::front::state<>{};
 
@@ -97,6 +111,20 @@ namespace sdpa
                                  + typeid(e).name()
                                  );
       }
+    };
+
+    //! \todo actually use in statemachine, currently used by
+    //! CoallocationScheduler::Reservation only
+    using terminal_state = boost::variant < JobFSM_::s_finished
+                                          , JobFSM_::s_failed
+                                          , JobFSM_::s_canceled
+                                          >;
+    struct job_result_type
+    {
+      std::map<sdpa::worker_id_t, terminal_state> individual_results;
+      //! \todo is is correct to only take the last success as the
+      //! global result? some kind of reduce instead?
+      JobFSM_::s_finished last_success;
     };
 
     class Job : public boost::msm::back::state_machine<JobFSM_>

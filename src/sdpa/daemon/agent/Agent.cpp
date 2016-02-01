@@ -5,6 +5,8 @@
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 
+#include <util-generic/join.hpp>
+
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 
@@ -32,6 +34,65 @@ namespace sdpa
       , _event_handler_thread (&Agent::handle_events, this)
     {}
 
+    void Agent::handle_job_termination (Job* const job)
+    {
+      auto const results
+        (_scheduler.get_aggregated_results_if_all_terminated (job->id()));
+
+      if (!results)
+      {
+        return;
+      }
+
+      //! \note rescheduled: never tell workflow engine or modify state!
+      if (job->getStatus() == sdpa::status::PENDING)
+      {
+        _scheduler.releaseReservation (job->id());
+        _scheduler.enqueueJob (job->id());
+        request_scheduling();
+
+        return;
+      }
+
+      //! \todo instead of ignoring sub-failures and merging error
+      //! messages, just pass on results to the user
+      if (job->getStatus() == sdpa::status::CANCELING)
+      {
+        job->CancelJobAck();
+        workflowEngine()->canceled (job->id());
+      }
+      else
+      {
+        std::vector<std::string> errors;
+        for (auto& result : results->individual_results)
+        {
+          if ( JobFSM_::s_failed const* as_failed
+             = boost::get<JobFSM_::s_failed> (&result.second)
+             )
+          {
+            errors.emplace_back (result.first + ": " + as_failed->message);
+          }
+        }
+
+        if (errors.empty())
+        {
+          job->JobFinished (results->last_success.result);
+          workflowEngine()->finished (job->id(), job->result());
+        }
+        else
+        {
+          job->JobFailed
+            (fhg::util::join (errors.begin(), errors.end(), ", ").string());
+          workflowEngine()->failed (job->id(), job->error_message());
+        }
+      }
+
+      _scheduler.releaseReservation (job->id());
+      request_scheduling();
+
+      deleteJob (job->id());
+    }
+
     void Agent::handleJobFinishedEvent
       (fhg::com::p2p::address_t const& source, const events::JobFinishedEvent* pEvt)
     {
@@ -46,49 +107,13 @@ namespace sdpa
       }
       else
       {
-        _scheduler.workerFinished
-          (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
+        _scheduler.store_result
+          ( _worker_manager.worker_by_address (source).get()->second
+          , pJob->id()
+          , JobFSM_::s_finished (pEvt->result())
+          );
 
-        const bool bAllPartResCollected
-          (_scheduler.allPartialResultsCollected (pEvt->job_id()));
-
-        if (bAllPartResCollected)
-        {
-          if (pJob->getStatus() == sdpa::status::CANCELING)
-          {
-            pJob->CancelJobAck();
-            workflowEngine()->canceled (pEvt->job_id());
-          }
-          else if(_scheduler.groupFinished (pEvt->job_id()))
-          {
-            pJob->JobFinished (pEvt->result());
-            workflowEngine()->finished
-              (pEvt->job_id(), we::type::activity_t (pEvt->result()));
-          }
-          else
-          {
-            pJob->JobFailed
-              ("One of tasks of the group failed with the actual reservation!");
-
-            workflowEngine()->failed
-              (pEvt->job_id(), "One of tasks of the group failed with the actual reservation!");
-          }
-
-          _scheduler.releaseReservation (pJob->id());
-        }
-        request_scheduling();
-
-        if(bAllPartResCollected)
-        {
-          if(pJob->getStatus() != sdpa::status::PENDING)
-          {
-            deleteJob (pEvt->job_id());
-          }
-          else
-          {
-            _scheduler.enqueueJob (pEvt->job_id());
-          }
-        }
+        handle_job_termination (pJob);
       }
     }
 
@@ -106,38 +131,13 @@ namespace sdpa
       }
       else
       {
-        _scheduler.workerFailed
-          (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
-        bool const bAllPartResCollected (_scheduler.allPartialResultsCollected (pEvt->job_id()));
+        _scheduler.store_result
+          ( _worker_manager.worker_by_address (source).get()->second
+          , pJob->id()
+          , JobFSM_::s_failed (pEvt->error_message())
+          );
 
-        if (bAllPartResCollected)
-        {
-          if (pJob->getStatus() == sdpa::status::CANCELING)
-          {
-            pJob->CancelJobAck();
-            workflowEngine()->canceled (pEvt->job_id());
-          }
-          else
-          {
-            pJob->JobFailed (pEvt->error_message());
-            workflowEngine()->failed (pEvt->job_id(), pEvt->error_message());
-          }
-
-          _scheduler.releaseReservation (pJob->id());
-        }
-        request_scheduling();
-
-        if (bAllPartResCollected)
-        {
-          if(pJob->getStatus() != sdpa::status::PENDING)
-          {
-            deleteJob (pEvt->job_id());
-          }
-          else
-          {
-            _scheduler.enqueueJob (pEvt->job_id());
-          }
-        }
+        handle_job_termination (pJob);
       }
     }
 
@@ -193,35 +193,13 @@ namespace sdpa
       }
       else
       {
-        _scheduler.workerCanceled
-          (_worker_manager.worker_by_address (source).get()->second, pEvt->job_id());
-        const bool bTaskGroupComputed
-          (_scheduler.allPartialResultsCollected (pEvt->job_id()));
+        _scheduler.store_result
+          ( _worker_manager.worker_by_address (source).get()->second
+          , pJob->id()
+          , JobFSM_::s_canceled()
+          );
 
-        if (bTaskGroupComputed)
-        {
-          if (pJob->getStatus() == sdpa::status::CANCELING)
-          {
-            pJob->CancelJobAck();
-            workflowEngine()->canceled (pEvt->job_id());
-          }
-
-          _scheduler.releaseReservation (pEvt->job_id());
-        }
-
-        request_scheduling();
-
-        if (bTaskGroupComputed)
-        {
-          if(pJob->getStatus() != sdpa::status::PENDING)
-          {
-            deleteJob(pEvt->job_id());
-          }
-          else
-          {
-            _scheduler.enqueueJob (pEvt->job_id());
-          }
-        }
+        handle_job_termination (pJob);
       }
     }
   }
