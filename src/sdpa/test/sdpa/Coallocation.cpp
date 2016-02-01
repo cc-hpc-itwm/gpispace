@@ -271,3 +271,56 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
+
+BOOST_FIXTURE_TEST_CASE
+  (reschedule_happens_even_though_all_others_were_success, setup_logging)
+{
+  const utils::orchestrator orchestrator (_logger);
+  const utils::agent agent (orchestrator, _logger);
+
+  utils::client client (orchestrator);
+  sdpa::job_id_t const job_id
+    (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
+
+  fhg::util::thread::event<std::string> job_submitted_1;
+  auto worker_1
+    ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_notifying_module_call_submission>
+        ( [&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }
+        , agent
+        )
+    );
+
+  fhg::util::thread::event<std::string> job_submitted_2;
+  fhg::util::thread::event<std::string> cancel_requested_2;
+  utils::fake_drts_worker_notifying_cancel_but_never_replying worker_2
+    ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
+    , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
+    , agent
+    );
+
+  std::string cancel_id;
+  {
+    sdpa::job_id_t const submitted (job_submitted_1.wait());
+    BOOST_REQUIRE_EQUAL (submitted, job_submitted_2.wait());
+    worker_1.reset();
+    cancel_id = cancel_requested_2.wait();
+    worker_2.finish (submitted);
+  }
+
+  fhg::util::thread::event<std::string> job_submitted_3;
+  utils::fake_drts_worker_notifying_module_call_submission worker_3
+    ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
+    , agent
+    );
+
+  {
+    sdpa::job_id_t const submitted (job_submitted_2.wait());
+    BOOST_REQUIRE_EQUAL (submitted, job_submitted_3.wait());
+
+    worker_2.finish (submitted);
+    worker_3.finish (submitted);
+  }
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+}

@@ -735,6 +735,33 @@ namespace utils
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
+  class fake_drts_worker_notifying_cancel_but_never_replying final
+    : public no_thread::fake_drts_worker_waiting_for_finished_ack
+  {
+  public:
+    fake_drts_worker_notifying_cancel_but_never_replying
+      ( std::function<void (std::string)> announce_job
+      , std::function<void (std::string)> announce_cancel
+      , const utils::agent& master_agent
+      )
+      : no_thread::fake_drts_worker_waiting_for_finished_ack
+          (announce_job, master_agent)
+      , _announce_cancel (announce_cancel)
+    {}
+
+    void handleCancelJobEvent
+      ( fhg::com::p2p::address_t const&
+      , const sdpa::events::CancelJobEvent* pEvt
+      ) override
+    {
+      _announce_cancel (pEvt->job_id());
+    }
+
+  private:
+    std::function<void (std::string)> _announce_cancel;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
+  };
+
   struct client : boost::noncopyable
   {
     client (orchestrator const& orch)
