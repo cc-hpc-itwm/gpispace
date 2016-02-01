@@ -37,7 +37,7 @@ namespace sdpa
       void releaseReservation (const sdpa::job_id_t&);
       assignment_t assignJobsToWorkers();
       void steal_work();
-      assignment_t get_current_assignment_TESTING_ONLY();
+      assignment_t get_current_assignment_TESTING_ONLY() const;
 
       bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
                                          , const sdpa::job_id_t& job_id);

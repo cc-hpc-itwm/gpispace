@@ -243,7 +243,8 @@ namespace sdpa
         );
     }
 
-    CoallocationScheduler::assignment_t CoallocationScheduler::get_current_assignment_TESTING_ONLY()
+    CoallocationScheduler::assignment_t
+      CoallocationScheduler::get_current_assignment_TESTING_ONLY() const
     {
       assignment_t assignment;
       std::transform ( allocation_table_.begin()
