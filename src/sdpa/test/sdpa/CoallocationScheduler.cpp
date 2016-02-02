@@ -1831,7 +1831,7 @@ struct fixture_add_new_workers
 
   void add_new_jobs
     ( std::vector<sdpa::job_id_t>& a
-    , std::string reqname
+    , boost::optional<std::string> reqname
     , unsigned int n
     )
   {
@@ -1850,7 +1850,7 @@ struct fixture_add_new_workers
              , a.end()
              , [this, &reqname] (sdpa::job_id_t job)
                {
-                 add_job (job, reqname.empty()?no_requirements():require (reqname));
+                 add_job (job, reqname ? require (reqname.get()) : no_requirements());
                  _scheduler.enqueueJob (job);
                  request_scheduling();
                }
@@ -1986,11 +1986,11 @@ BOOST_FIXTURE_TEST_CASE
     (add_new_workers (capabilities, n));
 
   std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, "", 2*n);
+  add_new_jobs (jobs, boost::none, 2*n);
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n);
 
-  add_new_jobs (jobs, "", 2*k);
+  add_new_jobs (jobs, boost::none, 2*k);
 
   const sdpa::daemon::CoallocationScheduler::assignment_t
     old_assignment (get_current_assignment());
@@ -2024,9 +2024,9 @@ BOOST_FIXTURE_TEST_CASE
   std::vector<sdpa::worker_id_t> initial_calc_workers
     (add_new_workers ({"CALC"}, n_calc_workers));
 
-  add_new_jobs (jobs, "LOAD", n_load_jobs);
-  add_new_jobs (jobs, "CALC", n_calc_jobs);
-  add_new_jobs (jobs, "REDUCE", n_reduce_jobs);
+  add_new_jobs (jobs, std::string ("LOAD"), n_load_jobs);
+  add_new_jobs (jobs, std::string ("CALC"), n_calc_jobs);
+  add_new_jobs (jobs, std::string ("REDUCE"), n_reduce_jobs);
 
   BOOST_REQUIRE_EQUAL ( get_workers_with_assigned_jobs (jobs).size()
                       , n_load_workers
@@ -2127,7 +2127,7 @@ BOOST_FIXTURE_TEST_CASE
     (add_new_workers (capabilities, n_workers));
 
   std::vector<sdpa::job_id_t> jobs;
-  add_new_jobs (jobs, "", n_jobs);
+  add_new_jobs (jobs, boost::none, n_jobs);
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
 
