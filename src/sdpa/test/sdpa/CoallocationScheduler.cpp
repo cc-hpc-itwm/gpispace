@@ -1808,7 +1808,6 @@ struct fixture_add_new_workers
                     , [] {return "worker_" + std::to_string (j++);}
                     );
 
-    sdpa::daemon::CoallocationScheduler::assignment_t assignment;
     for (sdpa::worker_id_t const& worker : new_workers)
     {
       sdpa::capabilities_set_t cpbset;
@@ -1845,10 +1844,9 @@ struct fixture_add_new_workers
 
     BOOST_REQUIRE_EQUAL (a.size(), N + n);
 
-    sdpa::daemon::CoallocationScheduler::assignment_t assignment;
     for_each ( a.begin() + N
              , a.end()
-             , [this, &reqname, &assignment] (sdpa::job_id_t job)
+             , [this, &reqname] (sdpa::job_id_t job)
                {
                  add_job (job, reqname.empty()?no_requirements():require (reqname));
                  _scheduler.enqueueJob (job);
