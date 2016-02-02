@@ -1638,9 +1638,10 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                             , fhg::util::testing::random_string()
                             );
 
+  _scheduler.assignJobsToWorkers();
+
   {
-    _scheduler.assignJobsToWorkers();
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
     BOOST_REQUIRE (!assignment.empty());
@@ -1649,9 +1650,12 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                  && assignment.at (job_1) != std::set<sdpa::worker_id_t>({"worker_2"})
                  && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_2"})
                   );
+  }
+  _scheduler.steal_work();
 
-    _scheduler.steal_work();
-    assignment = _scheduler.get_current_assignment_TESTING_ONLY();
+  {
+    const sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
     BOOST_REQUIRE (!assignment.empty());
     BOOST_REQUIRE (assignment.count (job_0));
@@ -1723,7 +1727,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
 
   {
     _scheduler.assignJobsToWorkers();
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
     BOOST_REQUIRE (!assignment.empty());
@@ -1741,9 +1745,13 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                  && assignment.at (job_1) != std::set<sdpa::worker_id_t>({"worker_1"})
                  && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_1"})
                   );
+  }
 
-    _scheduler.steal_work();
-    assignment = _scheduler.get_current_assignment_TESTING_ONLY();
+  _scheduler.steal_work();
+
+  {
+    const sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (_scheduler.get_current_assignment_TESTING_ONLY());
     BOOST_REQUIRE (!assignment.empty());
 
     // the worker 1 is assigned a job that was stolen from the worker 0
@@ -1925,7 +1933,7 @@ struct fixture_add_new_workers
   {
     unsigned int n_stolen_jobs (0);
     unsigned int n_jobs_initial_workers (0);
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       new_assignment (get_current_assignment());
 
     for (sdpa::worker_id_t worker : new_workers)
@@ -1936,10 +1944,11 @@ struct fixture_add_new_workers
 
     for (sdpa::worker_id_t worker : initial_workers)
     {
-      unsigned int n_new_jobs (n_jobs_assigned_to_worker (worker, new_assignment));
+      const unsigned int n_new_jobs
+        (n_jobs_assigned_to_worker (worker, new_assignment));
       BOOST_REQUIRE_GE (n_new_jobs, 1);
 
-      unsigned int n_jobs_diff
+      const unsigned int n_jobs_diff
         ( n_jobs_assigned_to_worker (worker, old_assignment)
         - n_new_jobs
         );
@@ -1966,7 +1975,7 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n (20);
   const unsigned int k (10);
 
-  std::vector<sdpa::worker_id_t> initial_workers
+  const std::vector<sdpa::worker_id_t> initial_workers
     (add_new_workers ("", n));
 
   std::vector<sdpa::job_id_t> jobs;
@@ -1976,10 +1985,10 @@ BOOST_FIXTURE_TEST_CASE
 
   add_new_jobs (jobs, "", 2*k);
 
-  sdpa::daemon::CoallocationScheduler::assignment_t
+  const sdpa::daemon::CoallocationScheduler::assignment_t
     old_assignment (get_current_assignment());
 
-  std::vector<sdpa::worker_id_t> new_workers
+  const std::vector<sdpa::worker_id_t> new_workers
     (add_new_workers ("", k));
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n + k);
@@ -2020,7 +2029,7 @@ BOOST_FIXTURE_TEST_CASE
 
   {
     // add a new LOAD worker
-    std::vector<sdpa::worker_id_t> new_load_workers
+    const std::vector<sdpa::worker_id_t> new_load_workers
       (add_new_workers ("LOAD", 1));
 
     // this last added worker shout get nothing as there is no job new generated,
@@ -2032,7 +2041,7 @@ BOOST_FIXTURE_TEST_CASE
 
   {
     // add a new REDUCE worker
-    std::vector<sdpa::worker_id_t> new_reduce_workers
+    const std::vector<sdpa::worker_id_t> new_reduce_workers
       (add_new_workers ("REDUCE", 1));
 
     // this last added worker shout get nothing as there is no job new generated,
@@ -2043,16 +2052,16 @@ BOOST_FIXTURE_TEST_CASE
    }
 
   {
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       old_assignment (get_current_assignment());
 
     // add new n_calc_workers CALC workers
-    std::vector<sdpa::worker_id_t> new_calc_workers
+    const std::vector<sdpa::worker_id_t> new_calc_workers
       (add_new_workers ("CALC", n_calc_workers));
 
     BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (get_current_assignment());
 
     // all CALC workers should get a job stolen from one of the  n_calc_workers
@@ -2070,16 +2079,16 @@ BOOST_FIXTURE_TEST_CASE
   }
 
   {
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       old_assignment (get_current_assignment());
 
     // add new n_calc_workers CALC workers
-    std::vector<sdpa::worker_id_t> new_calc_workers
+    const std::vector<sdpa::worker_id_t> new_calc_workers
       (add_new_workers ("CALC", n_calc_workers));
 
     BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
-    sdpa::daemon::CoallocationScheduler::assignment_t
+    const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (get_current_assignment());
 
     // all CALC workers should get a job stolen from one of the  n_calc_workers
@@ -2100,8 +2109,8 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n_workers (2);
   constexpr unsigned int n_jobs (n_workers + 1);
 
-  std::string capability (fhg::util::testing::random_string());
-  std::vector<sdpa::worker_id_t> workers
+  const std::string capability (fhg::util::testing::random_string());
+  const std::vector<sdpa::worker_id_t> workers
     (add_new_workers (capability, n_workers));
 
   std::vector<sdpa::job_id_t> jobs;
@@ -2117,7 +2126,8 @@ BOOST_FIXTURE_TEST_CASE
 
   for (const sdpa::worker_id_t& worker : workers)
   {
-    unsigned int n_assigned_jobs (n_jobs_assigned_to_worker (worker, old_assignment));
+    const unsigned int n_assigned_jobs
+      (n_jobs_assigned_to_worker (worker, old_assignment));
     BOOST_REQUIRE (n_assigned_jobs == 1 || n_assigned_jobs == 2);
 
     if (n_assigned_jobs == 2)
