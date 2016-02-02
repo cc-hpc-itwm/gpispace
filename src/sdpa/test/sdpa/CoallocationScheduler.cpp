@@ -1797,7 +1797,7 @@ struct fixture_add_new_workers
   std::map<sdpa::job_id_t, job_requirements_t> _requirements;
 
   std::vector<sdpa::worker_id_t> add_new_workers
-    ( std::string cpbname
+    ( std::unordered_set<std::string> const& cpbnames
     , unsigned int n
     )
   {
@@ -1811,8 +1811,10 @@ struct fixture_add_new_workers
     for (sdpa::worker_id_t const& worker : new_workers)
     {
       sdpa::capabilities_set_t cpbset;
-      if (!cpbname.empty())
-        cpbset.emplace (cpbname, worker);
+      for (std::string const& capability_name : cpbnames)
+      {
+        cpbset.emplace (capability_name, worker);
+      }
 
       _worker_manager.addWorker ( worker
                                 , cpbset
@@ -1972,9 +1974,16 @@ BOOST_FIXTURE_TEST_CASE
 {
   const unsigned int n (20);
   const unsigned int k (10);
+  const unsigned int n_capabilities (3);
+
+  std::unordered_set<std::string> capabilities;
+  for (unsigned int i (0); i<n_capabilities; i++)
+  {
+    capabilities.emplace (fhg::util::testing::random_string());
+  }
 
   const std::vector<sdpa::worker_id_t> initial_workers
-    (add_new_workers ("", n));
+    (add_new_workers (capabilities, n));
 
   std::vector<sdpa::job_id_t> jobs;
   add_new_jobs (jobs, "", 2*n);
@@ -1987,7 +1996,7 @@ BOOST_FIXTURE_TEST_CASE
     old_assignment (get_current_assignment());
 
   const std::vector<sdpa::worker_id_t> new_workers
-    (add_new_workers ("", k));
+    (add_new_workers (capabilities, k));
 
   BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n + k);
 
@@ -2010,10 +2019,10 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int n_calc_workers (500);
   const unsigned int n_reduce_workers (n_reduce_jobs);
 
-  add_new_workers ("LOAD", n_load_workers);
-  add_new_workers ("REDUCE", n_reduce_workers);
+  add_new_workers ({"LOAD"}, n_load_workers);
+  add_new_workers ({"REDUCE"}, n_reduce_workers);
   std::vector<sdpa::worker_id_t> initial_calc_workers
-    (add_new_workers ("CALC", n_calc_workers));
+    (add_new_workers ({"CALC"}, n_calc_workers));
 
   add_new_jobs (jobs, "LOAD", n_load_jobs);
   add_new_jobs (jobs, "CALC", n_calc_jobs);
@@ -2028,7 +2037,7 @@ BOOST_FIXTURE_TEST_CASE
   {
     // add a new LOAD worker
     const std::vector<sdpa::worker_id_t> new_load_workers
-      (add_new_workers ("LOAD", 1));
+      (add_new_workers ({"LOAD"}, 1));
 
     // this last added worker shout get nothing as there is no job new generated,
     // all the other jobs were already assigned and there is nothing to
@@ -2040,7 +2049,7 @@ BOOST_FIXTURE_TEST_CASE
   {
     // add a new REDUCE worker
     const std::vector<sdpa::worker_id_t> new_reduce_workers
-      (add_new_workers ("REDUCE", 1));
+      (add_new_workers ({"REDUCE"}, 1));
 
     // this last added worker shout get nothing as there is no job new generated,
     // all the other jobs were already assigned and there is nothing to
@@ -2055,7 +2064,7 @@ BOOST_FIXTURE_TEST_CASE
 
     // add new n_calc_workers CALC workers
     const std::vector<sdpa::worker_id_t> new_calc_workers
-      (add_new_workers ("CALC", n_calc_workers));
+      (add_new_workers ({"CALC"}, n_calc_workers));
 
     BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
@@ -2082,7 +2091,7 @@ BOOST_FIXTURE_TEST_CASE
 
     // add new n_calc_workers CALC workers
     const std::vector<sdpa::worker_id_t> new_calc_workers
-      (add_new_workers ("CALC", n_calc_workers));
+      (add_new_workers ({"CALC"}, n_calc_workers));
 
     BOOST_REQUIRE_EQUAL (new_calc_workers.size(), n_calc_workers);
 
@@ -2106,10 +2115,16 @@ BOOST_FIXTURE_TEST_CASE
 {
   const unsigned int n_workers (2);
   constexpr unsigned int n_jobs (n_workers + 1);
+  const unsigned int n_capabilities (3);
 
-  const std::string capability (fhg::util::testing::random_string());
+  std::unordered_set<std::string> capabilities;
+  for (unsigned int i (0); i<n_capabilities; i++)
+  {
+    capabilities.emplace (fhg::util::testing::random_string());
+  }
+
   const std::vector<sdpa::worker_id_t> workers
-    (add_new_workers (capability, n_workers));
+    (add_new_workers (capabilities, n_workers));
 
   std::vector<sdpa::job_id_t> jobs;
   add_new_jobs (jobs, "", n_jobs);
