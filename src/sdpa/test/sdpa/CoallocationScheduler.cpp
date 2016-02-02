@@ -1889,21 +1889,31 @@ struct fixture_add_new_workers
     return assigned_workers;
   }
 
+  std::set<sdpa::job_id_t> get_jobs_assigned_to_worker
+    ( sdpa::worker_id_t const& worker
+    , sdpa::daemon::CoallocationScheduler::assignment_t const& assignment
+    )
+  {
+    BOOST_REQUIRE (!assignment.empty());
+
+    std::set<sdpa::job_id_t> assigned_jobs;
+    for (auto const& job_and_workers : assignment)
+    {
+      if (job_and_workers.second.count (worker))
+      {
+        assigned_jobs.emplace (job_and_workers.first);
+      }
+    }
+
+    return assigned_jobs;
+  }
+
   unsigned int n_jobs_assigned_to_worker
     ( sdpa::worker_id_t const& worker
     , sdpa::daemon::CoallocationScheduler::assignment_t assignment
     )
   {
-    unsigned int n_assigned_jobs (0);
-    for ( std::set<sdpa::worker_id_t> const& workers
-        : assignment | boost::adaptors::map_values
-        )
-    {
-      if (workers.count (worker))
-        n_assigned_jobs++;
-    }
-
-    return n_assigned_jobs;
+    return get_jobs_assigned_to_worker (worker, assignment).size();
   }
 
   void check_work_stealing
@@ -2124,8 +2134,15 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE (!worker_with_1_job.empty());
 
   // the worker with 1 job finishes his job
-  std::set<sdpa::job_id_t> worker_jobs
-    (_worker_manager.get_worker_jobs_and_clean_queues (worker_with_1_job));
+  const std::set<sdpa::job_id_t> worker_jobs
+    (get_jobs_assigned_to_worker (worker_with_1_job, old_assignment));
+  BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
+
+  _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( *worker_jobs.cbegin()
+    , {worker_with_1_job}
+    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+    );
 
   BOOST_REQUIRE (!worker_jobs.empty());
   _scheduler.releaseReservation (*worker_jobs.begin());
