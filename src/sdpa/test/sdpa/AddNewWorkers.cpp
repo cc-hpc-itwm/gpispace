@@ -81,6 +81,9 @@ we::type::activity_t net_with_n_children (unsigned int n)
     );
 }
 
+// This case tests if each worker added after a user workflow submission
+// gets assigned a task, provided sufficient activities are produced by the
+// workflow engine
 BOOST_FIXTURE_TEST_CASE
   (add_new_workers, setup_logging)
 {
@@ -136,6 +139,13 @@ BOOST_FIXTURE_TEST_CASE
       );
   }
 
+  // all new workers are waiting to receive a job
+  std::vector<std::string> new_jobs;
+  for (unsigned int i{0}; i < n_new_workers; i++)
+  {
+    new_jobs.emplace_back (new_submit_events.at (i).wait());
+  }
+
   // finish the jobs sent to the initial set of workers
   for (unsigned int i{0}; i < n_initial_workers; i++)
   {
@@ -145,7 +155,7 @@ BOOST_FIXTURE_TEST_CASE
   // finish the jobs sent to the new set of workers
   for (unsigned int i{0}; i < n_new_workers; i++)
   {
-    new_workers[i]->finish_and_wait_for_ack (new_submit_events[i].wait());
+    new_workers[i]->finish_and_wait_for_ack (new_jobs[i]);
   }
 
   BOOST_REQUIRE_EQUAL
