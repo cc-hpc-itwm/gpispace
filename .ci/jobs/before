@@ -8,5 +8,7 @@ cd "${build_directory}"
 cmake -DSHARED_DIRECTORY_FOR_TESTS="${shared_directory_for_tests}" \
   -DTESTING_RIF_STRATEGY="${gspc_testing_rif_strategy}" \
   -DCMAKE_INSTALL_PREFIX="${install_directory}" \
+  -DCMAKE_BUILD_TYPE=Release \
+  -DFHG_ASSERT_MODE=1 \
   "${source_directory}"
 export CCACHE_SLOPPINESS=file_macro
