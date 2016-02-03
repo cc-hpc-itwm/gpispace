@@ -2180,3 +2180,63 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 1);
   BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 1);
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( cannot_steal_from_a_different_equivalence_class
+  , fixture_add_new_workers
+  )
+{
+  const unsigned int n_workers (2);
+  constexpr unsigned int n_jobs (n_workers + 1);
+
+  const sdpa::worker_id_t worker_0
+    (add_new_workers ({"A", "B"}, 1).at (0));
+
+  const sdpa::worker_id_t worker_1
+    (add_new_workers ({"A", "C"}, 1).at (0));
+
+  std::vector<sdpa::job_id_t> jobs;
+  add_new_jobs (jobs, std::string ("A"), n_jobs);
+
+  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
+
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    old_assignment (get_current_assignment());
+
+  const unsigned int n_assigned_jobs_worker_0
+    (n_jobs_assigned_to_worker (worker_0, old_assignment));
+  BOOST_REQUIRE (n_assigned_jobs_worker_0 == 1 || n_assigned_jobs_worker_0 == 2);
+
+  const unsigned int n_assigned_jobs_worker_1
+    (n_jobs_assigned_to_worker (worker_1, old_assignment));
+  BOOST_REQUIRE (n_assigned_jobs_worker_1 == 1 || n_assigned_jobs_worker_1 == 2);
+
+  const sdpa::worker_id_t worker_with_1_job
+    {(n_assigned_jobs_worker_0 == 1) ? worker_0 : worker_1};
+  const sdpa::worker_id_t worker_with_2_jobs
+    {(n_assigned_jobs_worker_0 == 2) ? worker_0 : worker_1};
+
+  const std::set<sdpa::job_id_t> worker_jobs
+    (get_jobs_assigned_to_worker (worker_with_1_job, old_assignment));
+  BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
+
+  _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( *worker_jobs.cbegin()
+    , {worker_with_1_job}
+    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+    );
+
+  // the worker with 1 job finishes the assigned job
+  BOOST_REQUIRE (!worker_jobs.empty());
+  _scheduler.releaseReservation (*worker_jobs.begin());
+
+  request_scheduling();
+
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (get_current_assignment());
+
+  // the worker with 1 job and which just finished the job should NOT steal from
+  // the worker with 2 jobs, as they are in different equivalence classes
+  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 2);
+  BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 0);
+}
