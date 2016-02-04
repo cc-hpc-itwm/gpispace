@@ -172,16 +172,19 @@ namespace sdpa
 
       std::function<double (job_id_t const& job_id)> cost
         { [&reservation] (job_id_t const& job_id)
-          {return reservation (job_id)->cost();}
+          {
+            return reservation (job_id)->cost();
+          }
         };
 
-      std::function<bool(worker_id_t const&, worker_id_t const&)>
-        comp {[&worker_map, &cost] ( worker_id_t const& lhs
-                                   , worker_id_t const& rhs
-                                   )
-              {return worker_map.at (lhs).cost_assigned_jobs (cost)
-                < worker_map.at (rhs).cost_assigned_jobs (cost);
-              }
+      std::function<bool (worker_id_t const&, worker_id_t const&)>
+        comp { [&worker_map, &cost] ( worker_id_t const& lhs
+                                    , worker_id_t const& rhs
+                                    )
+               {
+                 return worker_map.at (lhs).cost_assigned_jobs (cost)
+                   < worker_map.at (rhs).cost_assigned_jobs (cost);
+               }
              };
 
       std::priority_queue < worker_id_t
@@ -189,7 +192,20 @@ namespace sdpa
                           , decltype (comp)
                           > to_steal_from (comp);
 
-      std::forward_list<worker_id_t> idles;
+      std::function<bool (worker_id_t const&, worker_id_t const&)>
+        comp_idles { [&worker_map, &cost] ( worker_id_t const& lhs
+                                          , worker_id_t const& rhs
+                                          )
+                     {
+                       return worker_map.at (lhs).lastTimeServed()
+                         > worker_map.at (rhs).lastTimeServed();
+                     }
+                   };
+
+      std::priority_queue < worker_id_t
+                          , std::vector<worker_id_t>
+                          , decltype (comp_idles)
+                          > idles (comp_idles);
 
       for (worker_id_t const& w : _worker_ids)
       {
@@ -200,19 +216,19 @@ namespace sdpa
 
         if ((has_pending && has_running) || (worker.pending_.size() > 1))
         {
-          to_steal_from.push (w);
+          to_steal_from.emplace (w);
         }
         else if (!has_running && !has_pending)
         {
-          idles.emplace_front (w);
+          idles.emplace (w);
         }
       }
 
       while (!(idles.empty() || to_steal_from.empty()))
       {
-        worker_id_t richest (to_steal_from.top());
+        worker_id_t const richest (to_steal_from.top());
         to_steal_from.pop();
-        worker_id_t thief (idles.front());
+        worker_id_t const thief (idles.top());
 
         auto it_job (std::max_element ( worker_map.at (richest).pending_.begin()
                                       , worker_map.at (richest).pending_.end()
@@ -231,11 +247,11 @@ namespace sdpa
         worker_map.at (thief).assign (*it_job);
         worker_map.at (richest).pending_.erase (*it_job);
 
-        idles.pop_front();
+        idles.pop();
 
         if (worker_map.at (richest).pending_.size() > 1)
         {
-          to_steal_from.push (richest);
+          to_steal_from.emplace (richest);
         }
       }
     }
