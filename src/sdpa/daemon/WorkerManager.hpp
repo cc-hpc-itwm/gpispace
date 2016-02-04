@@ -189,55 +189,55 @@ namespace sdpa
                           , decltype (comp)
                           > to_steal_from (comp);
 
-     std::forward_list<worker_id_t> idles;
+      std::forward_list<worker_id_t> idles;
 
-     for (worker_id_t const& w : _worker_ids)
-     {
-       Worker const& worker (worker_map.at (w));
+      for (worker_id_t const& w : _worker_ids)
+      {
+        Worker const& worker (worker_map.at (w));
 
-       bool const has_pending (!worker.pending_.empty());
-       bool const has_running (!worker.submitted_.empty() || !worker.acknowledged_.empty());
+        bool const has_pending (!worker.pending_.empty());
+        bool const has_running (!worker.submitted_.empty() || !worker.acknowledged_.empty());
 
-       if ((has_pending && has_running) || (worker.pending_.size() > 1))
-       {
-         to_steal_from.push (w);
-       }
-       else if (!has_running && !has_pending)
-       {
-         idles.emplace_front (w);
-       }
-     }
+        if ((has_pending && has_running) || (worker.pending_.size() > 1))
+        {
+          to_steal_from.push (w);
+        }
+        else if (!has_running && !has_pending)
+        {
+          idles.emplace_front (w);
+        }
+      }
 
-     while (!(idles.empty() || to_steal_from.empty()))
-     {
-       worker_id_t richest (to_steal_from.top());
-       to_steal_from.pop();
-       worker_id_t thief (idles.front());
+      while (!(idles.empty() || to_steal_from.empty()))
+      {
+        worker_id_t richest (to_steal_from.top());
+        to_steal_from.pop();
+        worker_id_t thief (idles.front());
 
-       auto it_job (std::max_element ( worker_map.at (richest).pending_.begin()
-                                     , worker_map.at (richest).pending_.end()
-                                     , [&reservation] ( worker_id_t const& r
-                                                      , worker_id_t const& l
-                                                      )
-                                       {
-                                         return reservation(r)->cost()
-                                           < reservation(l)->cost();
-                                       }
-                                     )
-                   );
+        auto it_job (std::max_element ( worker_map.at (richest).pending_.begin()
+                                      , worker_map.at (richest).pending_.end()
+                                      , [&reservation] ( worker_id_t const& r
+                                                       , worker_id_t const& l
+                                                       )
+                                        {
+                                          return reservation(r)->cost()
+                                            < reservation(l)->cost();
+                                        }
+                                      )
+                    );
 
-       reservation (*it_job)->replace_worker (richest, thief);
+        reservation (*it_job)->replace_worker (richest, thief);
 
-       worker_map.at (thief).assign (*it_job);
-       worker_map.at (richest).pending_.erase (*it_job);
+        worker_map.at (thief).assign (*it_job);
+        worker_map.at (richest).pending_.erase (*it_job);
 
-       idles.pop_front();
+        idles.pop_front();
 
-       if (worker_map.at (richest).pending_.size() > 1)
-       {
-         to_steal_from.push (richest);
-       }
-     }
+        if (worker_map.at (richest).pending_.size() > 1)
+        {
+          to_steal_from.push (richest);
+        }
+      }
     }
   }
 }
