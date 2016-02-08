@@ -228,9 +228,10 @@ namespace sdpa
       {
         worker_id_t const& richest (to_steal_from.top());
         worker_id_t const& thief (idles.top());
+        Worker& richest_worker (worker_map.at (richest));
 
-        auto it_job (std::max_element ( worker_map.at (richest).pending_.begin()
-                                      , worker_map.at (richest).pending_.end()
+        auto it_job (std::max_element ( richest_worker.pending_.begin()
+                                      , richest_worker.pending_.end()
                                       , [&reservation] ( worker_id_t const& r
                                                        , worker_id_t const& l
                                                        )
@@ -244,7 +245,7 @@ namespace sdpa
         reservation (*it_job)->replace_worker (richest, thief);
 
         worker_map.at (thief).assign (*it_job);
-        worker_map.at (richest).pending_.erase (*it_job);
+        richest_worker.pending_.erase (*it_job);
 
         idles.pop();
         to_steal_from.pop();
