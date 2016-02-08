@@ -236,8 +236,8 @@ namespace sdpa
                                                        , worker_id_t const& l
                                                        )
                                         {
-                                          return reservation(r)->cost()
-                                            < reservation(l)->cost();
+                                          return reservation (r)->cost()
+                                            < reservation (l)->cost();
                                         }
                                       )
                     );
