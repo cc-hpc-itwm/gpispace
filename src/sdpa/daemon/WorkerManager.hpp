@@ -226,9 +226,8 @@ namespace sdpa
 
       while (!(idles.empty() || to_steal_from.empty()))
       {
-        worker_id_t const richest (to_steal_from.top());
-        to_steal_from.pop();
-        worker_id_t const thief (idles.top());
+        worker_id_t const& richest (to_steal_from.top());
+        worker_id_t const& thief (idles.top());
 
         auto it_job (std::max_element ( worker_map.at (richest).pending_.begin()
                                       , worker_map.at (richest).pending_.end()
@@ -248,8 +247,9 @@ namespace sdpa
         worker_map.at (richest).pending_.erase (*it_job);
 
         idles.pop();
+        to_steal_from.pop();
 
-        if (worker_map.at (richest).pending_.size() > 1)
+        if (richest_worker.pending_.size() > 1)
         {
           to_steal_from.emplace (richest);
         }
