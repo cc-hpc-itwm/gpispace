@@ -2167,7 +2167,6 @@ BOOST_FIXTURE_TEST_CASE
     , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
     );
 
-  BOOST_REQUIRE (!worker_jobs.empty());
   _scheduler.releaseReservation (*worker_jobs.begin());
 
   request_scheduling();
