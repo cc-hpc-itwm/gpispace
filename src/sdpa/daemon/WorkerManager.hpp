@@ -170,14 +170,14 @@ namespace sdpa
         return;
       }
 
-      std::function<double (job_id_t const& job_id)> cost
+      std::function<double (job_id_t const& job_id)> const cost
         { [&reservation] (job_id_t const& job_id)
           {
             return reservation (job_id)->cost();
           }
         };
 
-      std::function<bool (worker_id_t const&, worker_id_t const&)>
+      std::function<bool (worker_id_t const&, worker_id_t const&)> const
         comp { [&worker_map, &cost] ( worker_id_t const& lhs
                                     , worker_id_t const& rhs
                                     )
@@ -192,7 +192,7 @@ namespace sdpa
                           , decltype (comp)
                           > to_steal_from (comp);
 
-      std::function<bool (worker_id_t const&, worker_id_t const&)>
+      std::function<bool (worker_id_t const&, worker_id_t const&)> const
         comp_idles { [&worker_map, &cost] ( worker_id_t const& lhs
                                           , worker_id_t const& rhs
                                           )
