@@ -232,8 +232,8 @@ namespace sdpa
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()
                                       , richest_worker.pending_.end()
-                                      , [&reservation] ( worker_id_t const& r
-                                                       , worker_id_t const& l
+                                      , [&reservation] ( job_id_t const& r
+                                                       , job_id_t const& l
                                                        )
                                         {
                                           return reservation (r)->cost()
