@@ -118,7 +118,10 @@ namespace sdpa
         void store_result
           (worker_id_t const& worker, terminal_state const& result)
         {
-          _results.individual_results.emplace (worker, result);
+          if (!_results.individual_results.emplace (worker, result).second)
+          {
+            throw std::logic_error ("store_result: second result");
+          }
           if ( JobFSM_::s_finished const* f
              = boost::get<JobFSM_::s_finished> (&result)
              )
