@@ -185,8 +185,7 @@ namespace sdpa
 
         if (!matching_workers.empty())
         {
-          allocation_table_t::iterator const it (allocation_table_.find (jobId));
-          if (it != allocation_table_.end())
+          if (allocation_table_.find (jobId) != allocation_table_.end())
           {
             throw std::runtime_error ("already have reservation for job " + jobId);
           }
