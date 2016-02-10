@@ -65,9 +65,9 @@ namespace sdpa
       class locked_job_id_list
       {
       public:
-        inline void push (job_id_t item);
+        inline void push (job_id_t const& item);
         template <typename Range>
-        inline void push (Range items);
+        inline void push (Range const& items);
         inline size_t erase (const job_id_t& item);
 
         std::list<job_id_t> get_and_clear();

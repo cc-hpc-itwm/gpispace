@@ -353,14 +353,14 @@ namespace sdpa
       return it->second->get_aggregated_results_if_all_terminated();
     }
 
-    void CoallocationScheduler::locked_job_id_list::push (job_id_t item)
+    void CoallocationScheduler::locked_job_id_list::push (job_id_t const& item)
     {
       boost::mutex::scoped_lock const _ (mtx_);
-      container_.push_back (item);
+      container_.emplace_back (item);
     }
 
     template <typename Range>
-    void CoallocationScheduler::locked_job_id_list::push (Range range)
+    void CoallocationScheduler::locked_job_id_list::push (Range const& range)
     {
       boost::mutex::scoped_lock const _ (mtx_);
       container_.insert (container_.end(), std::begin (range), std::end (range));
