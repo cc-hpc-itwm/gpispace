@@ -13,10 +13,10 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
-#include <network/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     ( client.submit
         ( workflow
         , { {"trigger", we::type::literal::control()}
-          , {"address", fhg::network::connectable_to_address_string
+          , {"address", fhg::util::connectable_to_address_string
                           (acceptor.local_endpoint().address())
             }
           , {"port", static_cast<unsigned int>

@@ -2,7 +2,7 @@
 
 #include <rif/strategy/meta.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
@@ -138,7 +138,7 @@ namespace fhg
           ( strategies.at (strategy).first
               ( hostnames
               , port
-              , fhg::network::connectable_to_address_string (local_endpoint.address())
+              , fhg::util::connectable_to_address_string (local_endpoint.address())
               , local_endpoint.port()
               , gspc_home / "bin" / "gspc-rifd"
               , parameters

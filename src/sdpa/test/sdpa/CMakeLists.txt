@@ -4,7 +4,6 @@ fhg_add_test (CancelJob.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (Capabilities.cpp
@@ -13,7 +12,6 @@ fhg_add_test (Capabilities.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (Coallocation.cpp
@@ -22,7 +20,6 @@ fhg_add_test (Coallocation.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (CoallocationScheduler.cpp
@@ -31,7 +28,6 @@ fhg_add_test (CoallocationScheduler.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (daemon_message_flow.cpp
@@ -46,7 +42,6 @@ fhg_add_test (DiscoverJobStates.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (InvalidNbWorkersReq.cpp
@@ -55,7 +50,6 @@ fhg_add_test (InvalidNbWorkersReq.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (RestartWorkersCoalloc.cpp
@@ -64,7 +58,6 @@ fhg_add_test (RestartWorkersCoalloc.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (RestartWorkersDummy.cpp
@@ -73,7 +66,6 @@ fhg_add_test (RestartWorkersDummy.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (Subscriber.cpp
@@ -82,7 +74,6 @@ fhg_add_test (Subscriber.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (Topologies.cpp
@@ -90,7 +81,6 @@ fhg_add_test (Topologies.cpp
   BOOST_UNIT_TEST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
-                 Network
                  fhglog
 )
 
@@ -100,7 +90,6 @@ fhg_add_test (WorkerManager.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )
 
 fhg_add_test (WorkerReportsBacklogFull.cpp
@@ -109,5 +98,4 @@ fhg_add_test (WorkerReportsBacklogFull.cpp
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LINK_LIBRARIES sdpa
                  fhglog
-                 Network
 )

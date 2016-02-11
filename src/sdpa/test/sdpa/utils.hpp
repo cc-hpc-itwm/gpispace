@@ -9,7 +9,7 @@
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/random_string.hpp>
@@ -261,7 +261,7 @@ namespace utils
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const
     {
-      return fhg::com::host_t ( fhg::network::connectable_to_address_string
+      return fhg::com::host_t ( fhg::util::connectable_to_address_string
                                   (_.peer_local_endpoint().address())
                               );
     }
@@ -320,7 +320,7 @@ namespace utils
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const
     {
-      return fhg::com::host_t ( fhg::network::connectable_to_address_string
+      return fhg::com::host_t ( fhg::util::connectable_to_address_string
                                   (_.peer_local_endpoint().address())
                               );
     }
@@ -441,8 +441,8 @@ namespace utils
     std::string name() const { return _name; }
     fhg::com::host_t host() const
     {
-      return fhg::com::host_t ( fhg::network::connectable_to_address_string
-                                 (_network.local_endpoint().address())
+      return fhg::com::host_t ( fhg::util::connectable_to_address_string
+                                  (_network.local_endpoint().address())
                               );
     }
     fhg::com::port_t port() const

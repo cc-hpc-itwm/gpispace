@@ -14,7 +14,6 @@ ADD_LIBRARY(sdpa
 target_link_libraries (sdpa
   gpi-space-pc-client-static
   gpi-space-pc-segment
-  Network
   RPC
   Boost::serialization
   Boost::date_time

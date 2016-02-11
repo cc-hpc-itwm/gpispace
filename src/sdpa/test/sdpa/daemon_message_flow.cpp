@@ -4,7 +4,7 @@
 
 #include <utils.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
@@ -127,8 +127,8 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
   child.send<sdpa::events::JobFinishedAckEvent>
     ( child.connect_to
       ( fhg::com::host_t
-        ( fhg::network::connectable_to_address_string
-          (orchestrator.peer_local_endpoint().address())
+        ( fhg::util::connectable_to_address_string
+            (orchestrator.peer_local_endpoint().address())
         )
       , fhg::com::port_t
         (std::to_string (orchestrator.peer_local_endpoint().port()))

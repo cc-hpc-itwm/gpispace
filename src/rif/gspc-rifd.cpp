@@ -2,8 +2,8 @@
 
 #include <rif/entry_point.hpp>
 
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/syscall.hpp>
-#include <network/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/join.hpp>
@@ -309,7 +309,7 @@ try
       {endpoint}
       ( register_key
       , fhg::rif::entry_point
-          ( fhg::network::connectable_to_address_string (local_endpoint.address())
+          ( fhg::util::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()
           , child
           )

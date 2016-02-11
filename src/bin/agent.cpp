@@ -7,7 +7,7 @@
 #include <fhglog/Configuration.hpp>
 #include <fhglog/LogMacros.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -128,7 +128,7 @@ int main (int argc, char **argv)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handlers, SIGINT, std::bind (request_stop));
 
-    promise.set_result ( { fhg::network::connectable_to_address_string
+    promise.set_result ( { fhg::util::connectable_to_address_string
                              (agent.peer_local_endpoint().address())
                          , std::to_string
                              (agent.peer_local_endpoint().port())

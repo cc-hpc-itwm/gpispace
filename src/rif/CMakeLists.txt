@@ -4,7 +4,6 @@ fhg_add_runtime_executable (NAME gspc-rifd
   SOURCES "gspc-rifd.cpp"
           "execute_and_get_startup_messages.cpp"
   LIBRARIES RPC
-            Network
             fhg-util
             fhglog
             Util::Generic
@@ -43,7 +42,6 @@ extended_add_library (NAME rif-strategies
   SOURCES "strategy/meta.cpp"
           "strategy/ssh.cpp"
   LIBRARIES RPC
-            Network
             fhg-util
             libssh2_wrapper
 )
@@ -63,7 +61,6 @@ fhg_add_runtime_executable (NAME gspc-teardown-rifd
   LIBRARIES rif-strategies
             fhg-util
             Util::Generic
-            Network
             Boost::filesystem
             Boost::program_options
             Boost::system

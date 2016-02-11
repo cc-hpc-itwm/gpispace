@@ -13,7 +13,7 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -131,7 +131,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   gspc::job_id_t const job_id
     ( gspc::client (drts).submit
         ( workflow
-        , { {"address", fhg::network::connectable_to_address_string
+        , { {"address", fhg::util::connectable_to_address_string
                           (acceptor.local_endpoint().address())
             }
           , {"port", static_cast<unsigned int>

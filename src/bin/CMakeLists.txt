@@ -78,7 +78,6 @@ fhg_add_runtime_executable (NAME orchestrator
             fhglog
             pnet
             Util::Generic
-            Network
             rif-started_process_promise
             Boost::program_options
             Boost::system
@@ -92,7 +91,6 @@ fhg_add_runtime_executable (NAME agent
             fhglog
             pnet
             Util::Generic
-            Network
             rif-started_process_promise
             Boost::program_options
             Boost::system
