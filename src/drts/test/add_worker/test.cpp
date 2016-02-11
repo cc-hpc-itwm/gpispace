@@ -155,8 +155,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
       connected.wait();
     }
-
-    BOOST_REQUIRE_EQUAL (connections.size(), n);
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
