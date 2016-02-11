@@ -107,9 +107,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
   gspc::scoped_runtime_system drts
     (vm, installation, "worker:1", boost::none, master.entry_point());
 
-  gspc::workflow workflow (make.pnet());
-  workflow.set_wait_for_output();
-
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
 
@@ -124,7 +121,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   gspc::job_id_t const job_id
     ( client.submit
-        ( workflow
+        ( gspc::workflow (make.pnet())
         , { {"address", fhg::util::connectable_to_address_string
                           (acceptor.local_endpoint().address())
             }

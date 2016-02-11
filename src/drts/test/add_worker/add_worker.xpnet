@@ -1,4 +1,7 @@
 <defun name="test_add_worker">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
   <in name="address" type="string" place="address"/>
   <in name="port" type="unsigned int" place="port"/>
   <in name="wait" type="unsigned int" place="wait"/>
