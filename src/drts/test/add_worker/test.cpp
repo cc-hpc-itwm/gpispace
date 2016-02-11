@@ -74,12 +74,12 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   std::list<gspc::scoped_rifds> rifds;
 
+  std::vector<std::string> const hosts
+    (fhg::util::read_lines (nodefile_from_environment.path()));
+
+  BOOST_REQUIRE_GT (hosts.size(), 0);
+
   {
-    std::vector<std::string> const hosts
-      (fhg::util::read_lines (nodefile_from_environment.path()));
-
-    BOOST_REQUIRE_GT (hosts.size(), 0);
-
     std::vector<std::string>::const_iterator host (hosts.begin());
 
     for (unsigned int i (0); i < n; ++i, ++host)
@@ -97,8 +97,15 @@ BOOST_AUTO_TEST_CASE (add_worker)
     }
   }
 
+  gspc::scoped_rifd const master
+    ( gspc::rifd::strategy {vm}
+    , gspc::rifd::hostname {hosts.front()}
+    , gspc::rifd::port {vm}
+    , installation
+    );
+
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.front().entry_points());
+    (vm, installation, "worker:1", boost::none, master.entry_point());
 
   gspc::workflow workflow (make.pnet());
   workflow.set_wait_for_output();
@@ -132,12 +139,9 @@ BOOST_AUTO_TEST_CASE (add_worker)
         }
       );
 
-    start_accept();
-
     job_id = client.submit
                ( workflow
-               , { {"trigger", we::type::literal::control()}
-                 , {"address", fhg::util::connectable_to_address_string
+               , { {"address", fhg::util::connectable_to_address_string
                                  (acceptor.local_endpoint().address())
                    }
                  , {"port", static_cast<unsigned int>
@@ -147,17 +151,11 @@ BOOST_AUTO_TEST_CASE (add_worker)
                  }
                );
 
-    connected.wait();
-
-    for ( std::list<gspc::scoped_rifds>::const_iterator
-            rifd (std::next (rifds.begin()))
-        ; rifd != rifds.end()
-        ; ++rifd
-        )
+    for (gspc::scoped_rifds const& rifd : rifds)
     {
       start_accept();
 
-      drts.add_worker (rifd->entry_points());
+      drts.add_worker (rifd.entry_points());
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 
