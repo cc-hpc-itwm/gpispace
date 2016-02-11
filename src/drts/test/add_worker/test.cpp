@@ -110,32 +110,33 @@ BOOST_AUTO_TEST_CASE (add_worker)
   gspc::workflow workflow (make.pnet());
   workflow.set_wait_for_output();
 
+  boost::asio::io_service io_service;
+  boost::asio::io_service::work const work (io_service);
+
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+    io_service_thread ([&io_service] { io_service.run(); });
+
+  FHG_UTIL_FINALLY ([&] { io_service.stop(); });
+
+  boost::asio::ip::tcp::acceptor acceptor (io_service, {});
+
   gspc::client client (drts);
-  gspc::job_id_t job_id;
+
+  gspc::job_id_t const job_id
+    ( client.submit
+        ( workflow
+        , { {"address", fhg::util::connectable_to_address_string
+                          (acceptor.local_endpoint().address())
+            }
+          , {"port", static_cast<unsigned int>
+                       (acceptor.local_endpoint().port())
+            }
+          , {"wait", n}
+          }
+        )
+    );
 
   {
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const work (io_service);
-
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread ([&io_service] { io_service.run(); });
-
-    FHG_UTIL_FINALLY ([&] { io_service.stop(); });
-
-    boost::asio::ip::tcp::acceptor acceptor (io_service, {});
-
-    job_id = client.submit
-               ( workflow
-               , { {"address", fhg::util::connectable_to_address_string
-                                 (acceptor.local_endpoint().address())
-                   }
-                 , {"port", static_cast<unsigned int>
-                              (acceptor.local_endpoint().port())
-                   }
-                 , {"wait", n}
-                 }
-               );
-
     std::list<boost::asio::ip::tcp::socket> connections;
     fhg::util::thread::event<> connected;
 
