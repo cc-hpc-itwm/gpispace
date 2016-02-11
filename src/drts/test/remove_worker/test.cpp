@@ -89,7 +89,6 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   boost::asio::ip::tcp::acceptor acceptor (io_service, {});
   boost::asio::ip::tcp::socket connection (io_service);
   fhg::util::thread::event<> connected;
-  fhg::util::thread::event<> disconnected;
 
   acceptor.async_accept ( connection
                         , [&connected] (boost::system::error_code)
