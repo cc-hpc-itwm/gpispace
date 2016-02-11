@@ -5,22 +5,22 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <network/server.hpp>
-
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
+#include <fhg/util/thread/event.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/finally.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <fhg/util/thread/event.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -103,83 +103,75 @@ BOOST_AUTO_TEST_CASE (add_worker)
   gspc::workflow workflow (make.pnet());
   workflow.set_wait_for_output();
 
-  boost::asio::io_service io_service;
-  std::list<std::unique_ptr<fhg::network::connection_type>> connections;
-  fhg::util::thread::event<void> connected;
-
-  fhg::network::continous_acceptor<boost::asio::ip::tcp> acceptor
-    ( boost::asio::ip::tcp::endpoint()
-    , io_service
-    , [] (fhg::network::buffer_type) -> fhg::network::buffer_type
-      {
-        throw std::logic_error ("Unexpected call to encrypt");
-      }
-    , [] (fhg::network::buffer_type) -> fhg::network::buffer_type
-      {
-        throw std::logic_error ("Unexpected call to decrypt");
-      }
-    , [] ( fhg::network::connection_type*
-         , fhg::network::buffer_type
-         )
-      {
-        throw std::logic_error ("Unexpected message");
-      }
-    , [] (fhg::network::connection_type*) {}
-    , [&connections, &connected]
-        (std::unique_ptr<fhg::network::connection_type> connection)
-      {
-        connections.emplace_back (std::move (connection));
-        connected.notify();
-      }
-    );
-
-  const boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    io_service_thread ([&io_service]() { io_service.run(); });
-
-  struct stop_io_service_on_scope_exit
-  {
-    ~stop_io_service_on_scope_exit()
-    {
-      _io_service.stop();
-    }
-    boost::asio::io_service& _io_service;
-  } stop_io_service_on_scope_exit {io_service};
-
   gspc::client client (drts);
+  gspc::job_id_t job_id;
 
-  gspc::job_id_t const job_id
-    ( client.submit
-        ( workflow
-        , { {"trigger", we::type::literal::control()}
-          , {"address", fhg::util::connectable_to_address_string
-                          (acceptor.local_endpoint().address())
-            }
-          , {"port", static_cast<unsigned int>
-                       (acceptor.local_endpoint().port())
-            }
-          , {"wait", n}
-          }
-        )
-    );
-
-  connected.wait();
-
-  for ( std::list<gspc::scoped_rifds>::const_iterator
-          rifd (std::next (rifds.begin()))
-      ; rifd != rifds.end()
-      ; ++rifd
-      )
   {
-    drts.add_worker (rifd->entry_points());
+    boost::asio::io_service io_service;
+    boost::asio::io_service::work const work (io_service);
 
-    client.put_token (job_id, "trigger", we::type::literal::control());
+    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+      io_service_thread ([&io_service] { io_service.run(); });
+
+    FHG_UTIL_FINALLY ([&] { io_service.stop(); });
+
+    boost::asio::ip::tcp::acceptor acceptor (io_service, {});
+    std::list<boost::asio::ip::tcp::socket> connections;
+    fhg::util::thread::event<> connected;
+
+    auto&& start_accept
+      ( [&connections, &io_service, &acceptor, &connected]
+        {
+          connections.emplace_back (io_service);
+          acceptor.async_accept ( connections.back()
+                                , [&connected] (boost::system::error_code)
+                                  {
+                                    connected.notify();
+                                  }
+                                );
+        }
+      );
+
+    start_accept();
+
+    job_id = client.submit
+               ( workflow
+               , { {"trigger", we::type::literal::control()}
+                 , {"address", fhg::util::connectable_to_address_string
+                                 (acceptor.local_endpoint().address())
+                   }
+                 , {"port", static_cast<unsigned int>
+                              (acceptor.local_endpoint().port())
+                   }
+                 , {"wait", n}
+                 }
+               );
 
     connected.wait();
+    start_accept();
+
+    std::list<gspc::scoped_rifds>::const_iterator
+      rifd (std::next (rifds.begin()));
+    while (true)
+    {
+      drts.add_worker (rifd->entry_points());
+
+      client.put_token (job_id, "trigger", we::type::literal::control());
+
+      connected.wait();
+      ++rifd;
+      if (rifd != rifds.end())
+      {
+        start_accept();
+      }
+      else
+      {
+        break;
+      }
+    }
+
+    BOOST_REQUIRE_EQUAL (connections.size(), n);
   }
-
-  BOOST_REQUIRE_EQUAL (connections.size(), n);
-
-  connections.clear();
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     (client.wait_and_extract (job_id));
