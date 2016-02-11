@@ -211,14 +211,13 @@ namespace sdpa
         fhg_assert (worker_ptr != worker_map.end());
         Worker const& worker (worker_ptr->second);
 
-        bool const has_pending (!worker.pending_.empty());
-        bool const has_running (!worker.submitted_.empty() || !worker.acknowledged_.empty());
-
-        if ((has_pending && has_running) || (worker.pending_.size() > 1))
+        if ( (worker.has_pending_jobs() && worker.has_running_jobs())
+          || (worker.pending_.size() > 1)
+           )
         {
           to_steal_from.emplace (worker_ptr);
         }
-        else if (!has_running && !has_pending)
+        else if (!worker.has_running_jobs() && !worker.has_pending_jobs())
         {
           idles.emplace (worker_ptr);
         }
@@ -250,7 +249,9 @@ namespace sdpa
         idles.pop();
         to_steal_from.pop();
 
-        if (richest_worker.pending_.size() > 1)
+        if ( (richest_worker.has_pending_jobs() && richest_worker.has_running_jobs())
+          || (richest_worker.pending_.size() > 1)
+           )
         {
           to_steal_from.emplace (richest);
         }
