@@ -512,7 +512,7 @@ namespace fhg
               {
                 return rif::client (master).execute_and_get_startup_messages
                   ( installation_path.orchestrator()
-                  , {"-u", "0", "-n", "orchestrator"}
+                  , std::vector<std::string> {"-u", "0", "-n", "orchestrator"}
                   , logging_environment
                       (log_host, log_port, log_dir, verbose, "orchestrator")
                   ).get();
