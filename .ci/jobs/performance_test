@@ -6,4 +6,5 @@ hostname > "${GSPC_NODEFILE_FOR_TESTS}"
 
 trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel || true" EXIT
 ctest --output-on-failure --timeout 180 --schedule-random \
-  -L "performance_test"
+  -L "performance_test" \
+  -j "${gspc_parallel_test_and_build_jobs}"
