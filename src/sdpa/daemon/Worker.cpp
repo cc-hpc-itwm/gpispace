@@ -31,6 +31,11 @@ namespace sdpa
       return !pending_.empty();
     }
 
+    bool Worker::has_running_jobs() const
+    {
+      return !submitted_.empty() || !acknowledged_.empty();
+    }
+
     void Worker::assign (const job_id_t& jobId)
     {
       pending_.insert (jobId);

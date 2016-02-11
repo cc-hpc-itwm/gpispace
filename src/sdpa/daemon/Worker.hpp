@@ -36,6 +36,7 @@ namespace sdpa
       bool hasCapability(const std::string& cpbName) const;
 
       bool has_pending_jobs() const;
+      bool has_running_jobs() const;
 
       void deleteJob(const job_id_t &job_id );
 
