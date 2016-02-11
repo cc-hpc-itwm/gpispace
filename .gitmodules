@@ -7,9 +7,6 @@
 [submodule "share/process"]
 	path = share/process
 	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/process.git
-[submodule "src/network"]
-	path = src/network
-	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/network.git
 [submodule "src/rpc"]
 	path = src/rpc
 	url = git@gitlab.hpc.devnet.itwm.fhg.de:shared/rpc.git
