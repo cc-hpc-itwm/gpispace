@@ -123,21 +123,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
     FHG_UTIL_FINALLY ([&] { io_service.stop(); });
 
     boost::asio::ip::tcp::acceptor acceptor (io_service, {});
-    std::list<boost::asio::ip::tcp::socket> connections;
-    fhg::util::thread::event<> connected;
-
-    auto&& start_accept
-      ( [&connections, &io_service, &acceptor, &connected]
-        {
-          connections.emplace_back (io_service);
-          acceptor.async_accept ( connections.back()
-                                , [&connected] (boost::system::error_code)
-                                  {
-                                    connected.notify();
-                                  }
-                                );
-        }
-      );
 
     job_id = client.submit
                ( workflow
@@ -151,9 +136,18 @@ BOOST_AUTO_TEST_CASE (add_worker)
                  }
                );
 
+    std::list<boost::asio::ip::tcp::socket> connections;
+    fhg::util::thread::event<> connected;
+
     for (gspc::scoped_rifds const& rifd : rifds)
     {
-      start_accept();
+      connections.emplace_back (io_service);
+      acceptor.async_accept ( connections.back()
+                            , [&connected] (boost::system::error_code)
+                              {
+                                connected.notify();
+                              }
+                            );
 
       drts.add_worker (rifd.entry_points());
 
