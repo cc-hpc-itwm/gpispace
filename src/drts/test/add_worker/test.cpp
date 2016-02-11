@@ -148,26 +148,20 @@ BOOST_AUTO_TEST_CASE (add_worker)
                );
 
     connected.wait();
-    start_accept();
 
-    std::list<gspc::scoped_rifds>::const_iterator
-      rifd (std::next (rifds.begin()));
-    while (true)
+    for ( std::list<gspc::scoped_rifds>::const_iterator
+            rifd (std::next (rifds.begin()))
+        ; rifd != rifds.end()
+        ; ++rifd
+        )
     {
+      start_accept();
+
       drts.add_worker (rifd->entry_points());
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 
       connected.wait();
-      ++rifd;
-      if (rifd != rifds.end())
-      {
-        start_accept();
-      }
-      else
-      {
-        break;
-      }
     }
 
     BOOST_REQUIRE_EQUAL (connections.size(), n);
