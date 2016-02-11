@@ -51,10 +51,7 @@ namespace sdpa
       if (!!e->exception())
       {
         exception = fhg::util::serialization::exception::serialize
-          ( e->exception().get()
-          , fhg::util::serialization::exception::serialization_functions()
-          , fhg::util::serialization::exception::aggregated_serialization_functions()
-          );
+          (e->exception().get());
       }
       SAVE_TO_ARCHIVE (exception);
     }
@@ -70,12 +67,7 @@ namespace sdpa
       else
       {
         ::new (e) worker_registration_response
-            ( fhg::util::serialization::exception::deserialize
-                ( exception.get()
-                , fhg::util::serialization::exception::serialization_functions()
-                , fhg::util::serialization::exception::aggregated_serialization_functions()
-                )
-            );
+          (fhg::util::serialization::exception::deserialize (exception.get()));
       }
     }
   }

@@ -22,8 +22,7 @@ namespace gpi
                              , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> server
                              )
         : _gaspi_context (gaspi_context)
-        , _service_dispatcher
-            (fhg::util::serialization::exception::serialization_functions())
+        , _service_dispatcher()
         , _alloc ( _service_dispatcher
                  , [&memory_manager] ( type::segment_id_t seg
                                      , type::handle_t hdl

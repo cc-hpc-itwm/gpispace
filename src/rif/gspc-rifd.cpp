@@ -144,8 +144,7 @@ try
     . as<fhg::util::boost::program_options::nonempty_string>()
     );
 
-  fhg::rpc::service_dispatcher service_dispatcher
-    {fhg::util::serialization::exception::serialization_functions()};
+  fhg::rpc::service_dispatcher service_dispatcher;
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service

@@ -246,12 +246,7 @@ namespace fhg
           archive & data;
 
           std::rethrow_exception
-            ( fhg::util::serialization::exception::deserialize
-                ( data
-                , fhg::util::serialization::exception::serialization_functions()
-                , fhg::util::serialization::exception::aggregated_serialization_functions()
-                )
-            );
+            (fhg::util::serialization::exception::deserialize (data));
         }
 
         //! \todo types from startup_data

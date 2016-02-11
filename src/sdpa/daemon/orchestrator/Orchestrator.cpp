@@ -22,8 +22,7 @@ namespace sdpa
                       , {}
                       , logger
                       )
-      , _rpc_dispatcher
-          (fhg::util::serialization::exception::serialization_functions())
+      , _rpc_dispatcher()
       , _rpc_server (_rpc_dispatcher)
       , _event_handler_thread (&Orchestrator::handle_events, this)
     {}

@@ -111,8 +111,7 @@ namespace fhg
 
         boost::asio::io_service io_service;
 
-        fhg::rpc::service_dispatcher service_dispatcher
-          {fhg::util::serialization::exception::serialization_functions()};
+        fhg::rpc::service_dispatcher service_dispatcher;
 
         fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
