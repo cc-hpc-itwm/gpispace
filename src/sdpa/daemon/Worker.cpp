@@ -19,7 +19,7 @@ namespace sdpa
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , _hostname (hostname)
-      , last_time_served_ (0)
+      , _last_time_idle (fhg::util::now())
       , reserved_ (false)
       , backlog_full_ (false)
     {
@@ -51,7 +51,6 @@ namespace sdpa
       if (!_children_allowed)
       {
         reserved_ = true;
-        last_time_served_ = fhg::util::now();
       }
     }
 
@@ -69,6 +68,7 @@ namespace sdpa
       pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
+      _last_time_idle = fhg::util::now();
       if (!_children_allowed)
       {
         reserved_ = false;

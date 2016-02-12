@@ -121,7 +121,7 @@ namespace sdpa
          bpq.emplace ( total_cost
                      , -1.0*it.first
                      , worker_info.shared_memory_size()
-                     , worker_info.last_time_served()
+                     , worker_info.last_time_idle()
                      , worker_info.worker_id()
                      );
        }

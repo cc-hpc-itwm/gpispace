@@ -195,8 +195,8 @@ namespace sdpa
       std::function<bool (worker_ptr const&, worker_ptr const&)> const
         comp_idles { [] (worker_ptr const& lhs, worker_ptr const& rhs)
                      {
-                       return lhs->second.lastTimeServed()
-                         > rhs->second.lastTimeServed();
+                       return lhs->second._last_time_idle
+                         > rhs->second._last_time_idle;
                      }
                    };
 

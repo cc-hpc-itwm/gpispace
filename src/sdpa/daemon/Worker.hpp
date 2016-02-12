@@ -28,8 +28,6 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      double lastTimeServed() const { return last_time_served_; }
-
       // capabilities
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
@@ -57,7 +55,7 @@ namespace sdpa
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
       std::string const _hostname;
-      double last_time_served_;
+      double _last_time_idle;
 
       std::set<job_id_t> pending_;
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

@@ -180,7 +180,7 @@ namespace sdpa
                                            , worker_id_host_info_t ( worker.first
                                                                    , worker.second._hostname
                                                                    , worker.second._allocated_shared_memory_size
-                                                                   , worker.second.lastTimeServed()
+                                                                   , worker.second._last_time_idle
                                                                    )
                                            );
         }
