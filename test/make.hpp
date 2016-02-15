@@ -30,10 +30,10 @@ namespace test
     };
     struct options : public fhg::util::ostream::modifier
     {
-      template<typename Option>
-        options& add (Option&& o)
+      template<typename Option, typename... Args>
+        options& add (Args&&... args)
       {
-        _options.emplace_back (o);
+        _options.emplace_back (new Option (std::forward<Args> (args)...));
 
         return *this;
       }

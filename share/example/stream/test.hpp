@@ -105,7 +105,7 @@ namespace share_example_stream_test
       , test::source_directory (vm)
       , installation_dir
       , test::option::options()
-      . add (new test::option::gen::include (test::source_directory (vm)))
+      . add<test::option::gen::include> (test::source_directory (vm))
       );
 
     gspc::stream::number_of_slots const num_slots

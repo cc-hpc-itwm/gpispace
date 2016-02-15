@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE (tutorial_credit)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::include (test::source_directory (vm) / ".."))
+    . add<test::option::include> (test::source_directory (vm) / "..")
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

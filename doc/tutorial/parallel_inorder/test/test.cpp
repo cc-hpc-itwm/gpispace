@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::include (test::source_directory (vm) / ".."))
+    . add<test::option::include> (test::source_directory (vm) / "..")
     );
 
   fhg::util::temporary_file const _output_file

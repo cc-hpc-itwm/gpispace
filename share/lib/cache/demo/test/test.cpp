@@ -65,9 +65,8 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::include
-             (installation.gspc_home() / "share" / "gspc" / "xml")
-          )
+    . add<test::option::include>
+        (installation.gspc_home() / "share" / "gspc" / "xml")
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
