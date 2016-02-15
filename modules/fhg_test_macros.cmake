@@ -197,6 +197,7 @@ macro(FHG_ADD_TEST)
 
     if (TEST_REQUIRES_VIRTUAL_MEMORY)
       list (APPEND tc_labels "requires_vmem")
+      set_property (TEST ${tc_name} APPEND PROPERTY RUN_SERIAL 1)
     endif()
 
     set_tests_properties (${tc_name}
