@@ -65,9 +65,9 @@ namespace sdpa
       class locked_job_id_list
       {
       public:
-        inline void push (job_id_t item);
+        inline void push (job_id_t const& item);
         template <typename Range>
-        inline void push (Range items);
+        inline void push (Range const& items);
         inline size_t erase (const job_id_t& item);
 
         std::list<job_id_t> get_and_clear();
@@ -118,7 +118,10 @@ namespace sdpa
         void store_result
           (worker_id_t const& worker, terminal_state const& result)
         {
-          _results.individual_results.emplace (worker, result);
+          if (!_results.individual_results.emplace (worker, result).second)
+          {
+            throw std::logic_error ("store_result: second result");
+          }
           if ( JobFSM_::s_finished const* f
              = boost::get<JobFSM_::s_finished> (&result)
              )
