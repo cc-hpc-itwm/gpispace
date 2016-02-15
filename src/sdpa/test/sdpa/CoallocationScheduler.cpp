@@ -11,9 +11,11 @@
 
 #include <boost/iterator/transform_iterator.hpp>
 
-#include <iostream>
+#include <algorithm>
 #include <functional>
+#include <iostream>
 #include <random>
+#include <thread>
 
 namespace
 {
@@ -2238,4 +2240,95 @@ BOOST_FIXTURE_TEST_CASE
   // the worker with 2 jobs, as they are in different equivalence classes
   BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 2);
   BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 0);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( the_worker_that_is_longer_idle_gets_first_the_job
+  , fixture_add_new_workers
+  )
+{
+  const unsigned int n_workers (3);
+  constexpr unsigned int n_jobs (n_workers + 1);
+
+  const std::vector<sdpa::worker_id_t> workers
+    (add_new_workers ({"A"}, 3));
+
+  std::vector<sdpa::job_id_t> jobs;
+  add_new_jobs (jobs, std::string ("A"), n_jobs);
+
+  BOOST_REQUIRE_EQUAL (get_workers_with_assigned_jobs (jobs).size(), n_workers);
+
+  sdpa::worker_id_t worker_with_2_jobs;
+  const sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (get_current_assignment());
+
+  // only one worker should have 2 jobs assigned, the others just 1
+  for (sdpa::worker_id_t const& worker : workers)
+  {
+    const unsigned int n_worker_jobs
+      (n_jobs_assigned_to_worker (worker, assignment));
+    BOOST_REQUIRE (n_worker_jobs == 1 || n_worker_jobs == 2);
+    if (n_worker_jobs == 2)
+    {
+      // remember the worker with 2 jobs
+      worker_with_2_jobs = worker;
+    }
+  }
+
+  // take the workers with 1 job in reverse order
+  std::vector<sdpa::worker_id_t> workers_with_1_job;
+  std::copy_if ( workers.rbegin()
+               , workers.rend()
+               , back_inserter (workers_with_1_job)
+               , [&worker_with_2_jobs] (sdpa::worker_id_t const& worker)
+                 {
+                   return worker != worker_with_2_jobs;
+                 }
+               );
+
+  BOOST_REQUIRE_EQUAL (workers_with_1_job.size(), 2);
+
+  // The workers having 1 job finish their job successively, after some delay.
+  // The finishing order is inverse to the starting order.
+  const std::chrono::milliseconds delay(20);
+  for (sdpa::worker_id_t const& worker : workers_with_1_job)
+  {
+    const std::set<sdpa::job_id_t> worker_jobs
+      (get_jobs_assigned_to_worker (worker, assignment));
+    BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
+
+    _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+      ( *worker_jobs.cbegin()
+      , {worker}
+      , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+      );
+
+    _scheduler.releaseReservation (*worker_jobs.begin());
+
+    std::this_thread::sleep_for (delay);
+  }
+
+  {
+    const sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (get_current_assignment());
+
+    // One worker has 2 pending jobs, 2 workers are idle, no jobs to assign are left
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 2);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment), 0);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment), 0);
+  }
+
+  request_scheduling();
+
+  {
+    const sdpa::daemon::CoallocationScheduler::assignment_t
+      assignment (get_current_assignment());
+
+    // The worker which stayed longer idle should steal the only job to steal from
+    // the worker with 2 pending jobs. The worker that stayed idle for a shorter time
+    // should get nothing, as stealing is not allowed by any other worker
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 1);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment), 1);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment), 0);
+  }
 }
