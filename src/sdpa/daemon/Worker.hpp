@@ -49,6 +49,7 @@ namespace sdpa
       void remove_pending_job (const job_id_t& job_id);
 
       std::set<job_id_t> getJobListAndCleanQueues();
+      bool stealing_allowed() const;
 
       capabilities_set_t _capabilities;
       std::set<std::string> capability_names_;

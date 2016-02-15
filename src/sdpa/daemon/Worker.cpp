@@ -194,5 +194,11 @@ namespace sdpa
       backlog_full_ = backlog_full;
     }
 
+    bool Worker::stealing_allowed() const
+    {
+      return ( (has_pending_jobs() && has_running_jobs())
+            || (pending_.size() > 1)
+             );
+    }
   }
 }

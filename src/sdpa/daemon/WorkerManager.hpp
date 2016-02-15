@@ -211,9 +211,7 @@ namespace sdpa
         fhg_assert (worker_ptr != worker_map.end());
         Worker const& worker (worker_ptr->second);
 
-        if ( (worker.has_pending_jobs() && worker.has_running_jobs())
-          || (worker.pending_.size() > 1)
-           )
+        if (worker.stealing_allowed())
         {
           to_steal_from.emplace (worker_ptr);
         }
@@ -249,9 +247,7 @@ namespace sdpa
         idles.pop();
         to_steal_from.pop();
 
-        if ( (richest_worker.has_pending_jobs() && richest_worker.has_running_jobs())
-          || (richest_worker.pending_.size() > 1)
-           )
+        if (richest_worker.stealing_allowed())
         {
           to_steal_from.emplace (richest);
         }
