@@ -74,12 +74,12 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   std::list<gspc::scoped_rifds> rifds;
 
+  std::vector<std::string> const hosts
+    (fhg::util::read_lines (nodefile_from_environment.path()));
+
+  BOOST_REQUIRE_GT (hosts.size(), 0);
+
   {
-    std::vector<std::string> const hosts
-      (fhg::util::read_lines (nodefile_from_environment.path()));
-
-    BOOST_REQUIRE_GT (hosts.size(), 0);
-
     std::vector<std::string>::const_iterator host (hosts.begin());
 
     for (unsigned int i (0); i < n; ++i, ++host)
@@ -97,80 +97,62 @@ BOOST_AUTO_TEST_CASE (add_worker)
     }
   }
 
-  gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.front().entry_points());
+  gspc::scoped_rifd const master
+    ( gspc::rifd::strategy {vm}
+    , gspc::rifd::hostname {hosts.front()}
+    , gspc::rifd::port {vm}
+    , installation
+    );
 
-  gspc::workflow workflow (make.pnet());
-  workflow.set_wait_for_output();
+  gspc::scoped_runtime_system drts
+    (vm, installation, "worker:1", boost::none, master.entry_point());
+
+  boost::asio::io_service io_service;
+  boost::asio::io_service::work const work (io_service);
+
+  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+    io_service_thread ([&io_service] { io_service.run(); });
+
+  FHG_UTIL_FINALLY ([&] { io_service.stop(); });
+
+  boost::asio::ip::tcp::acceptor acceptor (io_service, {});
 
   gspc::client client (drts);
-  gspc::job_id_t job_id;
+
+  gspc::job_id_t const job_id
+    ( client.submit
+        ( gspc::workflow (make.pnet())
+        , { {"address", fhg::util::connectable_to_address_string
+                          (acceptor.local_endpoint().address())
+            }
+          , {"port", static_cast<unsigned int>
+                       (acceptor.local_endpoint().port())
+            }
+          , {"wait", n}
+          }
+        )
+    );
 
   {
-    boost::asio::io_service io_service;
-    boost::asio::io_service::work const work (io_service);
-
-    boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
-      io_service_thread ([&io_service] { io_service.run(); });
-
-    FHG_UTIL_FINALLY ([&] { io_service.stop(); });
-
-    boost::asio::ip::tcp::acceptor acceptor (io_service, {});
     std::list<boost::asio::ip::tcp::socket> connections;
     fhg::util::thread::event<> connected;
 
-    auto&& start_accept
-      ( [&connections, &io_service, &acceptor, &connected]
-        {
-          connections.emplace_back (io_service);
-          acceptor.async_accept ( connections.back()
-                                , [&connected] (boost::system::error_code)
-                                  {
-                                    connected.notify();
-                                  }
-                                );
-        }
-      );
-
-    start_accept();
-
-    job_id = client.submit
-               ( workflow
-               , { {"trigger", we::type::literal::control()}
-                 , {"address", fhg::util::connectable_to_address_string
-                                 (acceptor.local_endpoint().address())
-                   }
-                 , {"port", static_cast<unsigned int>
-                              (acceptor.local_endpoint().port())
-                   }
-                 , {"wait", n}
-                 }
-               );
-
-    connected.wait();
-    start_accept();
-
-    std::list<gspc::scoped_rifds>::const_iterator
-      rifd (std::next (rifds.begin()));
-    while (true)
+    for (gspc::scoped_rifds const& rifd : rifds)
     {
-      drts.add_worker (rifd->entry_points());
+      connections.emplace_back (io_service);
+      acceptor.async_accept ( connections.back()
+                            , [&connected] (boost::system::error_code)
+                              {
+                                connected.notify();
+                              }
+                            );
+
+      drts.add_worker (rifd.entry_points());
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 
       connected.wait();
-      ++rifd;
-      if (rifd != rifds.end())
-      {
-        start_accept();
-      }
-      else
-      {
-        break;
-      }
     }
-
-    BOOST_REQUIRE_EQUAL (connections.size(), n);
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
