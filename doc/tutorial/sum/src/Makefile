@@ -1,6 +1,6 @@
 
 ifndef DIR_BUILD
-  DIR_BUILD=..
+  $(error DIR_BUILD not set)
 endif
 
 LIB_PATH = $(DIR_BUILD)
@@ -25,17 +25,3 @@ $(LIB_PATH):
 
 $(OBJ): sum.c $(LIB_PATH)
 	$(CC) $(CFLAGS) -c $< -o $@
-
-###############################################################################
-
-.PHONY: bakclean objclean clean
-
-ifndef RM
-  RM = $(shell which rm) -f
-endif
-
-clean: bakclean objclean
-bakclean:
-	-$(RM) *~
-objclean:
-	-$(RM) $(OBJ)
