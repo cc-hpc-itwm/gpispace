@@ -1,4 +1,7 @@
 <defun name="test_remove_worker">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
   <in name="address" type="string"/>
   <in name="port" type="unsigned int"/>
   <out name="done" type="control"/>

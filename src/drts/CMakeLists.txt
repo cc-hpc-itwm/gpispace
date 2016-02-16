@@ -39,7 +39,6 @@ extended_add_library (NAME gspc
             gpi-space-pc-segment
             fhg-revision
             Util::Generic
-            Network
             Boost::filesystem
             Boost::program_options
   INSTALL

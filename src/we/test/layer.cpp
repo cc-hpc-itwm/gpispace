@@ -55,8 +55,8 @@ namespace
                       ) const
       {
         //! \note hacky-di-hack
-        return fhg::util::serialization::exception::serialize (lhs, fhg::util::serialization::exception::serialization_functions(), fhg::util::serialization::exception::aggregated_serialization_functions())
-          == fhg::util::serialization::exception::serialize (rhs, fhg::util::serialization::exception::serialization_functions(), fhg::util::serialization::exception::aggregated_serialization_functions());
+        return fhg::util::serialization::exception::serialize (lhs)
+          == fhg::util::serialization::exception::serialize (rhs);
       }
     } visitor;
     return boost::apply_visitor (visitor, l, r);

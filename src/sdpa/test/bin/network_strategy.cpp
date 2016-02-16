@@ -6,7 +6,7 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE (perform_test)
 
   net.perform<sdpa::events::ErrorEvent>
     ( net.connect_to
-        ( fhg::com::host_t ( fhg::network::connectable_to_address_string
+        ( fhg::com::host_t ( fhg::util::connectable_to_address_string
                                (net.local_endpoint().address())
                            )
         , fhg::com::port_t (std::to_string (net.local_endpoint().port()))

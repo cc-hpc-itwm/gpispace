@@ -22,13 +22,7 @@ namespace fhg
     void started_process_promise::set_exception
       (std::exception_ptr exception)
     {
-      send ( false
-           , fhg::util::serialization::exception::serialize
-               ( exception
-               , fhg::util::serialization::exception::serialization_functions()
-               , fhg::util::serialization::exception::aggregated_serialization_functions()
-               )
-           );
+      send (false, fhg::util::serialization::exception::serialize (exception));
     }
 
     namespace

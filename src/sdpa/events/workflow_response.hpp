@@ -146,11 +146,7 @@ namespace sdpa
 
         workflow_response_response::serialized operator() (std::exception_ptr const& ex) const
         {
-          return fhg::util::serialization::exception::serialize
-                   ( ex
-                   , fhg::util::serialization::exception::serialization_functions()
-                   , fhg::util::serialization::exception::aggregated_serialization_functions()
-                   );
+          return fhg::util::serialization::exception::serialize (ex);
         }
       } visitor;
 
@@ -176,11 +172,7 @@ namespace sdpa
         workflow_response_response::content_t operator()
           (std::string const& ex) const
         {
-          return fhg::util::serialization::exception::deserialize
-                  ( ex
-                  , fhg::util::serialization::exception::serialization_functions()
-                  , fhg::util::serialization::exception::aggregated_serialization_functions()
-                  );
+          return fhg::util::serialization::exception::deserialize (ex);
         }
       } visitor;
 

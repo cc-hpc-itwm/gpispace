@@ -168,12 +168,7 @@ namespace drts
             if (ex.size())
             {
               std::rethrow_exception
-                ( fhg::util::serialization::exception::deserialize
-                  ( ex
-                  , fhg::util::serialization::exception::serialization_functions()
-                  , fhg::util::serialization::exception::aggregated_serialization_functions()
-                  )
-                );
+                (fhg::util::serialization::exception::deserialize (ex));
             }
           }
 
@@ -204,10 +199,7 @@ namespace drts
           boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
             (pipe_fds[1], boost::iostreams::close_handle) <<
               fhg::util::serialization::exception::serialize
-                ( std::current_exception()
-                , fhg::util::serialization::exception::serialization_functions()
-                , fhg::util::serialization::exception::aggregated_serialization_functions()
-                );
+                (std::current_exception());
 
           exit (1);
         }

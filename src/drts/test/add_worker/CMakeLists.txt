@@ -9,7 +9,6 @@ fhg_add_test (test.cpp
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util
-                 Network
                  Boost::program_options
                  Boost::filesystem
   REQUIRES_INSTALLATION

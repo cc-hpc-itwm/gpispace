@@ -2,13 +2,15 @@
 
 #include <rif/strategy/meta.hpp>
 
-#include <network/connectable_to_address_string.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
 #include <rif/strategy/ssh.hpp>
 
-#include <rpc/server_with_multiple_clients.hpp>
+#include <rpc/service_tcp_provider.hpp>
+#include <rpc/service_dispatcher.hpp>
+#include <rpc/service_handler.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -109,8 +111,7 @@ namespace fhg
 
         boost::asio::io_service io_service;
 
-        fhg::rpc::service_dispatcher service_dispatcher
-          {fhg::util::serialization::exception::serialization_functions()};
+        fhg::rpc::service_dispatcher service_dispatcher;
 
         fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
@@ -127,7 +128,8 @@ namespace fhg
               }
             );
 
-        fhg::rpc::server_with_multiple_clients rpc_server (service_dispatcher);
+        fhg::rpc::service_tcp_provider_with_io_service rpc_server
+          (service_dispatcher);
 
         boost::asio::ip::tcp::endpoint const local_endpoint
           (rpc_server.local_endpoint());
@@ -136,7 +138,7 @@ namespace fhg
           ( strategies.at (strategy).first
               ( hostnames
               , port
-              , fhg::network::connectable_to_address_string (local_endpoint.address())
+              , fhg::util::connectable_to_address_string (local_endpoint.address())
               , local_endpoint.port()
               , gspc_home / "bin" / "gspc-rifd"
               , parameters

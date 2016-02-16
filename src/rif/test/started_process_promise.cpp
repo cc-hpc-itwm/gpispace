@@ -269,10 +269,7 @@ namespace
           {
             std::rethrow_exception
               ( fhg::util::serialization::exception::deserialize
-                  ( serialized_exception
-                  , fhg::util::serialization::exception::serialization_functions()
-                  , fhg::util::serialization::exception::aggregated_serialization_functions()
-                  )
+                  (serialized_exception)
               );
           }
         , Exception (exception_args...)

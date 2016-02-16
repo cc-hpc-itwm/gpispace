@@ -89,12 +89,7 @@ namespace boost
       for (auto const& x : t)
       {
         std::string const exception_string
-          ( fhg::util::serialization::exception::serialize
-            ( x.second
-            , fhg::util::serialization::exception::serialization_functions()
-            , fhg::util::serialization::exception::aggregated_serialization_functions()
-            )
-          );
+          (fhg::util::serialization::exception::serialize (x.second));
         ar << x.first;
         ar << exception_string;
       }
@@ -117,11 +112,7 @@ namespace boost
         ar >> exception_string;
         t.emplace
           ( pid
-          , fhg::util::serialization::exception::deserialize
-            ( exception_string
-            , fhg::util::serialization::exception::serialization_functions()
-            , fhg::util::serialization::exception::aggregated_serialization_functions()
-            )
+          , fhg::util::serialization::exception::deserialize (exception_string)
           );
       }
     }

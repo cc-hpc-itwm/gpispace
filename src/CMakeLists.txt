@@ -4,7 +4,7 @@ extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES fhglog Util::Generic Network
+  LIBRARIES fhglog Util::Generic
 )
 add_subdirectory (fhgcom/tests)
 
@@ -147,7 +147,6 @@ add_subdirectory (mmgr)
 add_subdirectory (drts)
 add_subdirectory (bin)
 
-add_subdirectory (network)
 add_subdirectory (rpc)
 
 add_subdirectory (rif)

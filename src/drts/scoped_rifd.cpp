@@ -16,6 +16,7 @@
 
 #include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/serialization/unordered_map.hpp>
 
 #include <iterator>
 

@@ -121,12 +121,7 @@ namespace gpi
             if (_exception)
             {
               std::string const exception
-                ( fhg::util::serialization::exception::serialize
-                    ( _exception
-                    , fhg::util::serialization::exception::serialization_functions()
-                    , fhg::util::serialization::exception::aggregated_serialization_functions()
-                    )
-                );
+                (fhg::util::serialization::exception::serialize (_exception));
               ar << exception;
             }
           }
@@ -141,10 +136,7 @@ namespace gpi
               std::string exception;
               ar >> exception;
               _exception = fhg::util::serialization::exception::deserialize
-                ( exception
-                , fhg::util::serialization::exception::serialization_functions()
-                , fhg::util::serialization::exception::aggregated_serialization_functions()
-                );
+                (exception);
             }
           }
         };
