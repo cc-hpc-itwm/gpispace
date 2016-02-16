@@ -3,11 +3,10 @@
 #pragma once
 
 #include <sdpa/client.hpp>
-#include <sdpa/daemon/agent/Agent.hpp>
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <network/connectable_to_address_string.hpp>
 #include <util-generic/testing/printer/optional.hpp>
@@ -253,11 +252,15 @@ namespace utils
     orchestrator (fhg::log::Logger& logger)
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+          , boost::none
+          , {}
           , logger
+          , boost::none
+          , false
           )
     {}
 
-    sdpa::daemon::Orchestrator _;
+    sdpa::daemon::GenericDaemon _;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const
     {
@@ -291,8 +294,9 @@ namespace utils
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
-          , boost::none
           , logger
+          , boost::none
+          , true
           )
     {}
     template <typename T>
@@ -302,8 +306,9 @@ namespace utils
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
-          , boost::none
           , logger
+          , boost::none
+          , true
           )
     {}
     agent (const agent& master, fhg::log::Logger& logger)
@@ -312,11 +317,12 @@ namespace utils
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_info_tuple (master)}
-          , boost::none
           , logger
+          , boost::none
+          , true
           )
     {}
-    sdpa::daemon::Agent _;
+    sdpa::daemon::GenericDaemon _;
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const
     {

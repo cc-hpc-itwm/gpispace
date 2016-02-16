@@ -15,7 +15,7 @@
 #include <rif/started_process_promise.hpp>
 
 #include <boost/program_options.hpp>
-#include <sdpa/daemon/orchestrator/Orchestrator.hpp>
+#include <sdpa/daemon/GenericDaemon.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -59,11 +59,15 @@ int main (int argc, char **argv)
 
     po::notify(vm);
 
-    const sdpa::daemon::Orchestrator orchestrator
+    const sdpa::daemon::GenericDaemon orchestrator
       ( orchName
       , orchUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , boost::none
+      , {}
       , logger
+      , boost::none
+      , false
       );
 
     fhg::util::thread::event<> stop_requested;
@@ -83,10 +87,6 @@ int main (int argc, char **argv)
                              (orchestrator.peer_local_endpoint().address())
                          , std::to_string
                              (orchestrator.peer_local_endpoint().port())
-                         , fhg::network::connectable_to_address_string
-                             (orchestrator.rpc_local_endpoint().address())
-                         , std::to_string
-                             (orchestrator.rpc_local_endpoint().port())
                          }
                        );
 

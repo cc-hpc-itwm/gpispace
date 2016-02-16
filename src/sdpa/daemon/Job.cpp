@@ -6,12 +6,14 @@ namespace sdpa
   {
     Job::Job ( const job_id_t id
              , we::type::activity_t activity
-             , boost::optional<master_info_t::iterator> owner
+             , job_source source
+             , job_handler handler
              , job_requirements_t requirements
              )
       : _activity (std::move (activity))
       , id_ (id)
-      , m_owner (std::move (owner))
+      , _source (std::move (source))
+      , _handler (std::move (handler))
       , _requirements (std::move (requirements))
       , m_error_message()
       , result_()
@@ -23,9 +25,9 @@ namespace sdpa
     {
       return id_;
     }
-    boost::optional<master_info_t::iterator> const& Job::owner() const
+    job_source const& Job::source() const
     {
-      return m_owner;
+      return _source;
     }
     job_requirements_t Job::requirements() const
     {

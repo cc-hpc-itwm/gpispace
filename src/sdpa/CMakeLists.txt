@@ -7,8 +7,6 @@ ADD_LIBRARY(sdpa
   daemon/scheduler/CoallocationScheduler.cpp
   daemon/Worker.cpp
   daemon/WorkerManager.cpp
-  daemon/agent/Agent.cpp
-  daemon/orchestrator/Orchestrator.cpp
 )
 
 target_link_libraries (sdpa

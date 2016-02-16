@@ -56,12 +56,10 @@
 #include <queue>
 #include <random>
 
-#define OVERWRITTEN_IN_TEST virtual
-
 namespace sdpa {
   namespace daemon {
-    class GenericDaemon : public sdpa::events::EventHandler,
-                          boost::noncopyable
+    class GenericDaemon final : public sdpa::events::EventHandler
+                              , boost::noncopyable
     {
     public:
       GenericDaemon( const std::string name
@@ -70,20 +68,17 @@ namespace sdpa {
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , std::vector<name_host_port_tuple> const& masters
                    , fhg::log::Logger& logger
-                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info = boost::none
-                   , bool create_wfe = false
+                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
+                   , bool create_wfe
                    );
       virtual ~GenericDaemon() = default;
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
 
-    protected:
-      bool isTop() { return _master_info.empty(); }
-
     public:
       // WE interface
-      OVERWRITTEN_IN_TEST void submit( const we::layer::id_type & id, const we::type::activity_t&);
+      void submit( const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
       void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       void failed( const we::layer::id_type& wfId, std::string const& reason);
@@ -103,9 +98,9 @@ namespace sdpa {
       // masters and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
-    protected:
-      bool isSubscriber(const fhg::com::p2p::address_t&);
-    protected:
+
+      bool isSubscriber (fhg::com::p2p::address_t const&, job_id_t const&);
+
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
       {
@@ -117,7 +112,7 @@ namespace sdpa {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
       }
-    private:
+
       // agent info and properties
 
       bool isOwnCapability(const sdpa::capability_t& cpb)
@@ -127,16 +122,13 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void handleCancelJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobAckEvent* ) override = 0;
-      virtual void handleCancelJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent*) override = 0;
+      virtual void handleCancelJobEvent (fhg::com::p2p::address_t const&, sdpa::events::CancelJobEvent const*) override;
       virtual void handleCapabilitiesGainedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
       virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
-      virtual void handleDeleteJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::DeleteJobEvent* ) override =0;
+      virtual void handleDeleteJobEvent (fhg::com::p2p::address_t const&, events::DeleteJobEvent const*) override;
       virtual void handleErrorEvent(fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* ) override;
       virtual void handleJobFailedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent* ) override;
-      virtual void handleJobFailedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedEvent* ) override = 0;
       virtual void handleJobFinishedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent* ) override;
-      virtual void handleJobFinishedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedEvent* ) override = 0;
       //virtual void handleJobResultsReplyEvent (fhg::com::p2p::address_t const& source, const sdpa::events::JobResultsReplyEvent *) ?!
       virtual void handleSubmitJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobAckEvent* ) override;
       virtual void handleSubmitJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* ) override;
@@ -174,48 +166,52 @@ namespace sdpa {
       }
       void delay (std::function<void()>);
 
-    private:
       // registration
       void requestRegistration (master_network_info&);
       void request_registration_soon (master_network_info&);
 
       // workflow engine
-    protected:
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
-    private:
+      void handle_job_termination (Job*);
+      virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, events::JobFailedEvent const*) override;
+      virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, events::JobFinishedEvent const*) override;
+      virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, events::CancelJobAckEvent const*) override;
+
+      //! \todo aggregated results for coallocation jobs and sub jobs
+      void job_finished (Job*, we::type::activity_t const&);
+      void job_failed (Job*, std::string const& reason);
+      void job_canceled (Job*);
+
       // workers
       void serveJob(std::set<worker_id_t> const&, const job_id_t&);
 
-    private:
       // jobs
       std::string gen_id();
 
-    private:
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
-                  , boost::optional<master_info_t::iterator> owner
+                  , job_source
+                  , job_handler
                   );
       Job* addJob ( const sdpa::job_id_t& job_id
                   , we::type::activity_t
-                  , boost::optional<master_info_t::iterator> owner
+                  , job_source
+                  , job_handler
                   , job_requirements_t
                   );
 
-    protected:
       Job* findJob(const sdpa::job_id_t& job_id ) const;
+      Job* require_job (job_id_t const&, std::string const& error) const;
       void deleteJob(const sdpa::job_id_t& job_id);
 
-    private:
-      void delayed_cancel (const we::layer::id_type&);
+      void cancel_worker_handled_job (we::layer::id_type const&);
       void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
 
       // data members
-    protected:
       fhg::log::Logger& _logger;
 
-    private:
       std::string _name;
 
       master_info_t _master_info;
@@ -232,7 +228,6 @@ namespace sdpa {
 
       subscriber_relation_type _subscriptions;
 
-    private:
       std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>
         _discover_sources;
 
@@ -240,7 +235,6 @@ namespace sdpa {
       std::unordered_map<std::string, fhg::com::p2p::address_t>
         _workflow_response_source;
 
-    private:
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
@@ -253,11 +247,9 @@ namespace sdpa {
         GenericDaemon::job_map_t& _;
       } _cleanup_job_map_on_dtor_helper;
 
-    protected:
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
-    private:
       template <typename T>
       class concurrent_list_t
       {
@@ -282,29 +274,22 @@ namespace sdpa {
       };
       concurrent_list_t<worker_id_t> _new_workers_added;
 
-    protected:
       boost::mutex _scheduling_thread_mutex;
       boost::mutex _scheduling_requested_guard;
       boost::condition_variable _scheduling_requested_condition;
       bool _scheduling_requested;
       void request_scheduling();
-    private:
       void request_rescheduling (worker_id_t const&);
 
-    private:
       boost::optional<std::mt19937> _random_extraction_engine;
-
-    private:
 
       std::mutex mtx_subscriber_;
       std::mutex mtx_cpb_;
 
       sdpa::capabilities_set_t m_capabilities;
 
-    private:
       std::unique_ptr<NotificationService> m_guiService;
 
-    private:
       boost::posix_time::time_duration _registration_timeout;
 
       void do_registration_after_sleep (master_network_info&);
@@ -324,17 +309,17 @@ namespace sdpa {
         _scheduling_thread;
       void scheduling_thread();
 
-    protected:
       //! \note In order to call the correct abstract functions, the
       //! event handling thread needs to be in the class that defines
       //! the handlers, while the handling is done the same way for
       //! all classes. (see issue #618)
       void handle_events();
 
-    private:
       std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-    protected:
+      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
+        _event_handler_thread;
+
       struct child_proxy
       {
         child_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);

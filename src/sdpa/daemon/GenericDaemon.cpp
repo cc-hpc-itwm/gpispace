@@ -155,6 +155,7 @@ GenericDaemon::GenericDaemon( const std::string name
         (_logger, vmem_socket->string())
     : nullptr
     )
+  , _event_handler_thread (&GenericDaemon::handle_events, this)
 {
   for (master_network_info& master : _master_info)
   {
@@ -209,7 +210,8 @@ std::string GenericDaemon::gen_id()
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
-                               , boost::optional<master_info_t::iterator> owner
+                               , job_source source
+                               , job_handler handler
                                )
     {
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
@@ -251,21 +253,27 @@ std::string GenericDaemon::gen_id()
         , activity.memory_buffer_size_total()
         };
 
-      return
-        addJob (job_id, std::move (activity), owner, std::move (requirements));
+      return addJob ( job_id
+                    , std::move (activity)
+                    , std::move (source)
+                    , std::move (handler)
+                    , std::move (requirements)
+                    );
     }
 
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
-                               , boost::optional<master_info_t::iterator> owner
+                               , job_source source
+                               , job_handler handler
                                , job_requirements_t requirements
                                )
     {
       Job* pJob = new Job
         ( job_id
         , std::move (activity)
-        , std::move (owner)
+        , std::move (source)
+        , std::move (handler)
         , std::move (requirements)
         );
 
@@ -287,6 +295,18 @@ std::string GenericDaemon::gen_id()
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       return it != job_map_.end() ? it->second : nullptr;
     }
+
+    Job* GenericDaemon::require_job
+      (job_id_t const& id, std::string const& error) const
+    {
+      Job* job (findJob (id));
+      if (!job)
+      {
+        throw std::logic_error (error);
+      }
+      return job;
+    }
+
     void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (_job_map_mutex);
@@ -299,6 +319,88 @@ std::string GenericDaemon::gen_id()
 
       delete it->second;
       job_map_.erase (it);
+    }
+
+    void GenericDaemon::handleDeleteJobEvent
+      (fhg::com::p2p::address_t const& source, events::DeleteJobEvent const* event)
+    {
+      Job* const job (require_job (event->job_id(), "delete_job for unknown job"));
+
+      if (!sdpa::status::is_terminal (job->getStatus()))
+      {
+        throw std::runtime_error
+          ("Cannot delete a job which is in a non-terminal state.");
+      }
+
+      if (!boost::get<job_source_client> (&job->source()))
+      {
+        throw std::invalid_argument
+          ("tried deleting a job not submitted by a client");
+      }
+
+      deleteJob (job->id());
+      parent_proxy (this, source).delete_job_ack (event->job_id());
+    }
+
+    void GenericDaemon::handleCancelJobEvent
+      ( fhg::com::p2p::address_t const& source
+      , events::CancelJobEvent const* event
+      )
+    {
+      Job* const job (require_job (event->job_id(), "cancel_job for unknown job"));
+
+      if (job->getStatus() == sdpa::status::CANCELING)
+      {
+        throw std::runtime_error
+          ("A cancelation request for this job was already posted!");
+      }
+
+      if (sdpa::status::is_terminal (job->getStatus()))
+      {
+        throw std::runtime_error
+          ( "Cannot cancel an already terminated job, its current status is: "
+          + sdpa::status::show (job->getStatus())
+          );
+      }
+
+      if ( boost::get<job_source_master> (&job->source())
+         && boost::get<job_source_master> (job->source())._->address != source
+         )
+      {
+        throw std::logic_error
+          ("trying to cancel job owned by different master");
+      }
+
+      //! \note send immediately an acknowledgment to the component
+      // that requested the cancellation if it does not get a
+      // notification right after
+      if (boost::get<job_source_wfe> (&job->source())
+         || ( boost::get<job_source_client> (&job->source())
+            && !isSubscriber (source, job->id())
+            )
+         )
+      {
+        parent_proxy (this, source).cancel_job_ack (event->job_id());
+      }
+
+      if (boost::get<job_handler_wfe> (&job->handler()))
+      {
+        if (job->getStatus() == sdpa::status::RUNNING)
+        {
+          job->CancelJob();
+          workflowEngine()->cancel (job->id());
+        }
+        else
+        {
+          job_canceled (job);
+
+          deleteJob (job->id());
+        }
+      }
+      else
+      {
+        cancel_worker_handled_job (job->id());
+      }
     }
 
 void GenericDaemon::handleSubmitJobEvent
@@ -315,9 +417,15 @@ void GenericDaemon::handleSubmitJobEvent
 
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
+  auto const maybe_master (master_by_address (source));
   Job* const pJob (addJob ( job_id
                           , e.activity()
-                          , master_by_address (source)
+                          , maybe_master
+                          ? job_source (job_source_master {*maybe_master})
+                          : job_source (job_source_client{})
+                          , hasWorkflowEngine()
+                          ? job_handler (job_handler_wfe())
+                          : job_handler (job_handler_worker())
                           , {{}, {}, null_transfer_cost, 1.0, 0}
                           )
                   );
@@ -330,7 +438,7 @@ void GenericDaemon::handleSubmitJobEvent
 
   // check if the message comes from outside or from WFE
   // if it comes from outside and the agent has an WFE, submit it to it
-  if(hasWorkflowEngine() )
+  if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
     try
     {
@@ -550,7 +658,7 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  addJob (job_id, activity, boost::none);
+  addJob (job_id, activity, job_source_wfe(), job_handler_worker());
 
   _scheduler.enqueueJob (job_id);
   request_scheduling();
@@ -563,9 +671,9 @@ catch (...)
 
 void GenericDaemon::cancel (const we::layer::id_type& job_id)
 {
-  delay (std::bind (&GenericDaemon::delayed_cancel, this, job_id));
+  delay (std::bind (&GenericDaemon::cancel_worker_handled_job, this, job_id));
 }
-void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
+void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 {
   boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
@@ -594,95 +702,256 @@ void GenericDaemon::delayed_cancel(const we::layer::id_type& job_id)
   }
   else
   {
-    workflowEngine()->canceled (job_id);
-    pJob->CancelJobAck();
+    job_canceled (pJob);
+
     _scheduler.delete_job (job_id);
     _scheduler.releaseReservation (job_id);
-    deleteJob (job_id);
+
+    if (!boost::get<job_source_client> (&pJob->source()))
+    {
+      deleteJob (job_id);
+    }
   }
 }
 
 void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
 {
-  Job* const pJob = findJob(id);
-  if(!pJob)
-  {
-    throw std::runtime_error ("got finished message for old/unknown Job " + id);
-  }
+  Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
 
-  pJob->JobFinished (result);
-
-  if(!isSubscriber(pJob->owner().get()->address.get()))
-  {
-    parent_proxy (this, pJob->owner()).job_finished (id, result);
-  }
+  job_finished (pJob, result);
 
   if (m_guiService)
   {
-    const sdpa::daemon::NotificationEvent evt
-      ( {name()}
-      , pJob->id()
-      , NotificationEvent::STATE_FINISHED
-      , result
-      );
-
-    m_guiService->notify (evt);
+    m_guiService->notify ( { {name()}
+                           , pJob->id()
+                           , NotificationEvent::STATE_FINISHED
+                           , pJob->result()
+                           }
+                         );
   }
-
-  notify_subscribers<events::JobFinishedEvent> (id, id, result);
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
                           , std::string const & reason
                           )
 {
-  Job* const pJob = findJob(id);
-  if(!pJob)
-  {
-    throw std::runtime_error ("got failed message for old/unknown Job " + id);
-  }
+  Job* const pJob (require_job (id, "got failed message for old/unknown Job " + id));
 
-  pJob->JobFailed (reason);
-
-  if(!isSubscriber(pJob->owner().get()->address.get()))
-  {
-    parent_proxy (this, pJob->owner()).job_failed (id, reason);
-  }
+  job_failed (pJob, reason);
 
   if (m_guiService)
   {
-    const we::type::activity_t act (pJob->activity());
-    const sdpa::daemon::NotificationEvent evt
-      ( {name()}
-      , pJob->id()
-      , NotificationEvent::STATE_FINISHED
-      , act
-      );
-
-    m_guiService->notify (evt);
+    m_guiService->notify ( { {name()}
+                           , pJob->id()
+                           , NotificationEvent::STATE_FAILED
+                           , pJob->activity()
+                           }
+                         );
   }
-
-  notify_subscribers<events::JobFailedEvent> (id, id, reason);
 }
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)
 {
-  Job* const pJob (findJob (job_id));
-  if (!pJob)
+  Job* const pJob (require_job (job_id, "rts_canceled (unknown job)"));
+
+  job_canceled (pJob);
+
+  if (boost::get<job_source_master> (&pJob->source()))
   {
-    throw std::runtime_error ("rts_canceled (unknown job)");
-  }
-
-  pJob->CancelJobAck();
-
-  //! \todo Should be if (job-has-owner), i.e. was-submitted-to-this-daemon
-  if (!isTop())
-  {
-    parent_proxy (this, pJob->owner()).cancel_job_ack (job_id);
-
     deleteJob (job_id);
   }
 }
+
+
+    void GenericDaemon::handle_job_termination (Job* job)
+    {
+      auto const results
+        (_scheduler.get_aggregated_results_if_all_terminated (job->id()));
+
+      if (!results)
+      {
+        return;
+      }
+
+      //! \note rescheduled: never tell workflow engine or modify state!
+      if (job->getStatus() == sdpa::status::PENDING)
+      {
+        _scheduler.releaseReservation (job->id());
+        _scheduler.enqueueJob (job->id());
+        request_scheduling();
+
+        return;
+      }
+
+      //! \todo instead of ignoring sub-failures and merging error
+      //! messages, just pass on results to the user
+      if (job->getStatus() == sdpa::status::CANCELING)
+      {
+        job_canceled (job);
+      }
+      else
+      {
+        std::vector<std::string> errors;
+        for (auto& result : results->individual_results)
+        {
+          if ( JobFSM_::s_failed const* as_failed
+             = boost::get<JobFSM_::s_failed> (&result.second)
+             )
+          {
+            errors.emplace_back (result.first + ": " + as_failed->message);
+          }
+        }
+
+        if (errors.empty())
+        {
+          job_finished (job, results->last_success.result);
+        }
+        else
+        {
+          job_failed (job, fhg::util::join (errors.begin(), errors.end(), ", ").string());
+        }
+      }
+
+      _scheduler.releaseReservation (job->id());
+      request_scheduling();
+
+      if (boost::get<job_source_master> (&job->source()))
+      {
+        deleteJob (job->id());
+      }
+    }
+
+    void GenericDaemon::handleJobFinishedEvent
+      ( fhg::com::p2p::address_t const& source
+      , events::JobFinishedEvent const* event
+      )
+    {
+      child_proxy (this, source).job_finished_ack (event->job_id());
+
+      Job* const job
+        (require_job (event->job_id(), "job_finished for unknown job"));
+
+      _scheduler.store_result
+        ( _worker_manager.worker_by_address (source).get()->second
+        , job->id()
+        , JobFSM_::s_finished (event->result())
+        );
+
+      handle_job_termination (job);
+    }
+
+    void GenericDaemon::handleJobFailedEvent
+      ( fhg::com::p2p::address_t const& source
+      , events::JobFailedEvent const* event
+      )
+    {
+      child_proxy (this, source).job_failed_ack (event->job_id());
+
+      Job* const job
+        (require_job (event->job_id(), "job_failed for unknown job"));
+
+      _scheduler.store_result
+        ( _worker_manager.worker_by_address (source).get()->second
+        , job->id()
+        , JobFSM_::s_failed (event->error_message())
+        );
+
+      handle_job_termination (job);
+    }
+
+    void GenericDaemon::handleCancelJobAckEvent
+      ( fhg::com::p2p::address_t const& source
+      , events::CancelJobAckEvent const* event
+      )
+    {
+      Job* const job
+        (require_job (event->job_id(), "cancel_job_ack for unknown job"));
+
+      _scheduler.store_result
+        ( _worker_manager.worker_by_address (source).get()->second
+        , job->id()
+        , JobFSM_::s_canceled()
+        );
+
+      handle_job_termination (job);
+    }
+
+    void GenericDaemon::job_finished
+      (Job* job, we::type::activity_t const& result)
+    {
+      job->JobFinished (result);
+
+      struct
+      {
+        using result_type = void;
+        void operator() (job_source_wfe const&) const
+        {
+          _wfe->finished (_job->id(), _job->result());
+        }
+        void operator() (job_source_client const&) const {}
+        void operator() (job_source_master const& master) const
+        {
+          parent_proxy (_this, master._).job_finished (_job->id(), _job->result());
+        }
+        GenericDaemon* _this;
+        Job* _job;
+        we::layer* _wfe;
+      } visitor = {this, job, ptr_workflow_engine_.get()};
+      boost::apply_visitor (visitor, job->source());
+
+      notify_subscribers<events::JobFinishedEvent>
+        (job->id(), job->id(), job->result());
+    }
+    void GenericDaemon::job_failed (Job* job, std::string const& reason)
+    {
+      job->JobFailed (reason);
+
+      struct
+      {
+        using result_type = void;
+        void operator() (job_source_wfe const&) const
+        {
+          _wfe->failed (_job->id(), _job->error_message());
+        }
+        void operator() (job_source_client const&) const {}
+        void operator() (job_source_master const& master) const
+        {
+          parent_proxy (_this, master._).job_failed
+            (_job->id(), _job->error_message());
+        }
+        GenericDaemon* _this;
+        Job* _job;
+        we::layer* _wfe;
+      } visitor = {this, job, ptr_workflow_engine_.get()};
+      boost::apply_visitor (visitor, job->source());
+
+      notify_subscribers<events::JobFailedEvent>
+        (job->id(), job->id(), job->error_message());
+    }
+    void GenericDaemon::job_canceled (Job* job)
+    {
+      job->CancelJobAck();
+
+      struct
+      {
+        using result_type = void;
+        void operator() (job_source_wfe const&) const
+        {
+          _wfe->canceled (_job->id());
+        }
+        void operator() (job_source_client const&) const {}
+        void operator() (job_source_master const& master) const
+        {
+          parent_proxy (_this, master._).cancel_job_ack (_job->id());
+        }
+        GenericDaemon* _this;
+        Job* _job;
+        we::layer* _wfe;
+      } visitor = {this, job, ptr_workflow_engine_.get()};
+      boost::apply_visitor (visitor, job->source());
+
+      notify_subscribers<events::CancelJobAckEvent> (job->id(), job->id());
+    }
 
     boost::optional<master_info_t::iterator>
       GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
@@ -746,20 +1015,18 @@ void GenericDaemon::handleCapabilitiesGainedEvent
   {
     _scheduler.reschedule_pending_jobs_matching_worker (worker->second);
     request_scheduling();
-    if( !isTop() )
-    {
-      const sdpa::capabilities_set_t newWorkerCpbSet
-        (_worker_manager.worker_capabilities (worker->second));
 
-      if( !newWorkerCpbSet.empty() )
+    const sdpa::capabilities_set_t newWorkerCpbSet
+      (_worker_manager.worker_capabilities (worker->second));
+
+    if( !newWorkerCpbSet.empty() )
+    {
+      for (master_network_info const& info : _master_info)
       {
-        for (master_network_info const& info : _master_info)
+        if (info.address)
         {
-          if (info.address)
-          {
-            parent_proxy (this, *info.address).capabilities_gained
-              (newWorkerCpbSet);
-          }
+          parent_proxy (this, *info.address).capabilities_gained
+            (newWorkerCpbSet);
         }
       }
     }
@@ -921,11 +1188,12 @@ void GenericDaemon::handleSubscribeEvent
   INVALID_ENUM_VALUE (sdpa::status::code, status);
 }
 
-bool GenericDaemon::isSubscriber(const fhg::com::p2p::address_t& agentId)
+bool GenericDaemon::isSubscriber
+  (fhg::com::p2p::address_t const& agentId, job_id_t const& job)
 {
   std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-
-  return !boost::empty (_subscriptions.left.equal_range (agentId));
+  return _subscriptions.count
+    (decltype (_subscriptions)::value_type (agentId, job));
 }
 
 /**

@@ -127,12 +127,28 @@ namespace sdpa
       JobFSM_::s_finished last_success;
     };
 
+    struct job_source_wfe {};
+    struct job_source_master
+    {
+      master_info_t::iterator _;
+    };
+    struct job_source_client {};
+    using job_source = boost::variant < job_source_wfe
+                                      , job_source_master
+                                      , job_source_client
+                                      >;
+
+    struct job_handler_wfe {};
+    struct job_handler_worker {};
+    using job_handler = boost::variant<job_handler_wfe, job_handler_worker>;
+
     class Job : public boost::msm::back::state_machine<JobFSM_>
     {
     public:
       Job ( const job_id_t id
           , we::type::activity_t
-          , boost::optional<master_info_t::iterator>
+          , job_source
+          , job_handler
           , job_requirements_t
           );
 
@@ -141,7 +157,8 @@ namespace sdpa
         return _activity;
       }
       const job_id_t& id() const;
-      boost::optional<master_info_t::iterator> const& owner() const;
+      job_source const& source() const;
+      job_handler const& handler() const { return _handler; }
       job_requirements_t requirements() const;
 
       std::string error_message () const;
@@ -160,7 +177,8 @@ namespace sdpa
       mutable boost::mutex mtx_;
       we::type::activity_t _activity;
       job_id_t id_;
-      boost::optional<master_info_t::iterator> m_owner;
+      job_source _source;
+      job_handler _handler;
       job_requirements_t _requirements;
 
       std::string m_error_message;
