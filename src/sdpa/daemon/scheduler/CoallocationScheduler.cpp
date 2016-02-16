@@ -266,15 +266,8 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-      const allocation_table_t::const_iterator it
-        (allocation_table_.find (job_id));
-
-      if (it != allocation_table_.end())
-      {
-        return it->second->apply_to_workers_without_result (std::move (func));
-      }
-
-      return false;
+      return allocation_table_.at (job_id)
+        ->apply_to_workers_without_result (std::move (func));
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
