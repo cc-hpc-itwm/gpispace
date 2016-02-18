@@ -169,6 +169,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
 
   {
     _scheduler.assignJobsToWorkers();
+    _scheduler.steal_work();
     const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
@@ -183,10 +184,9 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
                             , fhg::util::testing::random_string()
                             );
 
-  _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
-
   {
     _scheduler.assignJobsToWorkers();
+    _scheduler.steal_work();
     const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
@@ -222,6 +222,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
 
   {
     _scheduler.assignJobsToWorkers();
+    _scheduler.steal_work();
     const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
@@ -229,10 +230,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
   }
 
   _worker_manager.add_worker_capabilities ("worker_1", {sdpa::capability_t ("C", "worker_1")});
-  _scheduler.reschedule_pending_jobs_matching_worker ("worker_1");
 
   {
     _scheduler.assignJobsToWorkers();
+    _scheduler.steal_work();
     const sdpa::daemon::CoallocationScheduler::assignment_t
       assignment (_scheduler.get_current_assignment_TESTING_ONLY());
 
