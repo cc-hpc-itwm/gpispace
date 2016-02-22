@@ -36,7 +36,8 @@ namespace sdpa
       bool has_pending_jobs() const;
       bool has_running_jobs() const;
 
-      void deleteJob(const job_id_t &job_id );
+      void delete_submitted_job (const job_id_t &job_id);
+      void delete_pending_job (const job_id_t& job_id);
 
       // methods related to reservation
       bool isReserved() const;
@@ -45,8 +46,6 @@ namespace sdpa
 
       // cost
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
-
-      void remove_pending_job (const job_id_t& job_id);
 
       std::set<job_id_t> getJobListAndCleanQueues();
       bool stealing_allowed() const;

@@ -63,15 +63,24 @@ namespace sdpa
       acknowledged_.insert (job_id);
     }
 
-    void Worker::deleteJob(const job_id_t &job_id)
+    void Worker::delete_submitted_job(const job_id_t &job_id)
     {
-      pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
       _last_time_idle = fhg::util::now();
       if (!_children_allowed)
       {
         reserved_ = false;
+      }
+    }
+
+    void Worker::delete_pending_job (const job_id_t& job_id)
+    {
+      if (0 == pending_.erase (job_id))
+      {
+        throw std::runtime_error ( "Could not remove the pending job "
+                                 + job_id
+                                 );
       }
     }
 
@@ -172,16 +181,6 @@ namespace sdpa
                                  }
                                )
              );
-    }
-
-    void Worker::remove_pending_job (const job_id_t& job_id)
-    {
-      if (0 == pending_.erase (job_id))
-      {
-        throw std::runtime_error ( "Could not remove the pending job "
-                                 + job_id
-                                 );
-      }
     }
 
     bool Worker::backlog_full() const

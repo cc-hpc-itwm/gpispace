@@ -330,14 +330,14 @@ namespace sdpa
 
         if (worker->second.pending_.count (job_id))
         {
+          worker->second.delete_pending_job (job_id);
           equivalence_class.dec_pending_jobs (1);
         }
         else
         {
+          worker->second.delete_submitted_job (job_id);
           equivalence_class.dec_running_jobs (1);
         }
-
-        worker->second.deleteJob (job_id);
       }
     }
 
