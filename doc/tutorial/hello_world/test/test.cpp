@@ -93,12 +93,10 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::gen::link (sum_module_dir / "hello2.o"))
-    . add (new test::option::gen::link (sum_module_dir / "hello_world.o"))
-    . add (new test::option::gen::library_path (sum_module_dir))
-    . add (new test::option::gen::include
-            (test::source_directory (vm) / "include")
-          )
+    . add<test::option::gen::link> (sum_module_dir / "hello2.o")
+    . add<test::option::gen::link> (sum_module_dir / "hello_world.o")
+    . add<test::option::gen::library_path> (sum_module_dir)
+    . add<test::option::gen::include> (test::source_directory (vm) / "include")
     );
 
   pnet::type::value::value_type const control {we::type::literal::control()};

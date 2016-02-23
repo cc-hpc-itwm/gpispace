@@ -84,9 +84,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::gen::include
-            (test::source_directory (vm) / "include")
-          )
+    . add<test::option::gen::include> (test::source_directory (vm) / "include")
     );
 
   boost::filesystem::path const generator

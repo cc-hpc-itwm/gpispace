@@ -1,6 +1,6 @@
 
 ifndef BUILDDIR
-  BUILDDIR = ..
+  $(error BUILDDIR not set)
 endif
 
 LIB_PATH = $(BUILDDIR)
@@ -40,17 +40,3 @@ $(OBJ_HELLO2): hello2.c $(LIB_PATH)
 
 $(OBJ_LIBHELLO): hello_util.c $(LIB_PATH)
 	$(CC) $(CFLAGS) -shared $< -o $@
-
-###############################################################################
-
-.PHONY: bakclean objclean clean
-
-ifndef RM
-  RM = $(shell which rm) -f
-endif
-
-clean: bakclean objclean
-bakclean:
-	-$(RM) *~
-objclean:
-	-$(RM) $(OBJ)

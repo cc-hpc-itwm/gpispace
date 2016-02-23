@@ -185,10 +185,8 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::gen::link (sum_module_dir / "sum.o"))
-    . add (new test::option::gen::include
-            (test::source_directory (vm) / "include")
-          )
+    . add<test::option::gen::link> (sum_module_dir / "sum.o")
+    . add<test::option::gen::include> (test::source_directory (vm) / "include")
     );
 
   run_and_check (vm, installation, make.pnet());

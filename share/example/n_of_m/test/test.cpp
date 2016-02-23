@@ -77,9 +77,8 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::gen::library_path
-            (installation.gspc_home() / "libexec" / "gspc")
-          )
+    . add<test::option::gen::library_path>
+        (installation.gspc_home() / "libexec" / "gspc")
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

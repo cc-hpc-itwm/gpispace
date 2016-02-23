@@ -115,8 +115,8 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::gen::cxx11())
-    . add (new test::option::gen::include (test::source_directory (vm)))
+    . add<test::option::gen::cxx11>()
+    . add<test::option::gen::include> (test::source_directory (vm))
     );
 
   boost::filesystem::path const implementation

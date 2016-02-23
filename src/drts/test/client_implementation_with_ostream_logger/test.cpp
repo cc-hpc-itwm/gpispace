@@ -113,11 +113,10 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add (new test::option::gen::cxx11())
-    . add (new test::option::gen::include
-            //! \todo urgh
-            (test::source_directory (vm).parent_path().parent_path().parent_path())
-          )
+    . add<test::option::gen::cxx11>()
+    . add<test::option::gen::include>
+        //! \todo urgh
+        (test::source_directory (vm).parent_path().parent_path().parent_path())
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
