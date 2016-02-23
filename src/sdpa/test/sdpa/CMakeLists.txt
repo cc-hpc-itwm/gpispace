@@ -1,3 +1,11 @@
+fhg_add_test (AddNewWorkers.cpp
+  PROJECT sdpa_test
+  BOOST_UNIT_TEST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LINK_LIBRARIES sdpa
+                 fhglog
+)
+
 fhg_add_test (CancelJob.cpp
   PROJECT sdpa_test
   BOOST_UNIT_TEST

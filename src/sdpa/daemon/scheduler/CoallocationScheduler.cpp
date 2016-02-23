@@ -121,7 +121,7 @@ namespace sdpa
          bpq.emplace ( total_cost
                      , -1.0*it.first
                      , worker_info.shared_memory_size()
-                     , worker_info.last_time_served()
+                     , worker_info.last_time_idle()
                      , worker_info.worker_id()
                      );
        }
@@ -148,24 +148,15 @@ namespace sdpa
         ) + computational_cost;
     }
 
-    CoallocationScheduler::assignment_t CoallocationScheduler::assignJobsToWorkers()
+    void CoallocationScheduler::assignJobsToWorkers()
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
       if (_worker_manager.all_workers_busy_and_have_pending_jobs())
       {
-        return {};
+        return;
       }
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
-      if (jobs_to_schedule.empty())
-      {
-        _worker_manager.steal_work<Reservation>
-          ( [this] (job_id_t const& job)
-            {return allocation_table_.at (job);}
-          , _job_requirements
-          );
-      }
-
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
 
       while (!jobs_to_schedule.empty())
@@ -227,7 +218,22 @@ namespace sdpa
 
       _jobs_to_schedule.push (jobs_to_schedule);
       _jobs_to_schedule.push (nonmatching_jobs_queue);
+    }
 
+    void CoallocationScheduler::steal_work()
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      _worker_manager.steal_work<Reservation>
+        ( [this] (job_id_t const& job)
+          {
+            return allocation_table_.at (job);
+          }
+        );
+    }
+
+    CoallocationScheduler::assignment_t
+      CoallocationScheduler::get_current_assignment_TESTING_ONLY() const
+    {
       assignment_t assignment;
       std::transform ( allocation_table_.begin()
                      , allocation_table_.end()

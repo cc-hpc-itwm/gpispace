@@ -28,16 +28,16 @@ namespace sdpa
 
       void acknowledge(const job_id_t&);
 
-      double lastTimeServed() const { return last_time_served_; }
-
       // capabilities
       bool addCapabilities(const capabilities_set_t& cpbset);
       bool removeCapabilities(const capabilities_set_t& cpbset);
       bool hasCapability(const std::string& cpbName) const;
 
       bool has_pending_jobs() const;
+      bool has_running_jobs() const;
 
-      void deleteJob(const job_id_t &job_id );
+      void delete_submitted_job (const job_id_t &job_id);
+      void delete_pending_job (const job_id_t& job_id);
 
       // methods related to reservation
       bool isReserved() const;
@@ -47,15 +47,15 @@ namespace sdpa
       // cost
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
-      void remove_pending_job (const job_id_t& job_id);
-
       std::set<job_id_t> getJobListAndCleanQueues();
+      bool stealing_allowed() const;
 
       capabilities_set_t _capabilities;
+      std::set<std::string> capability_names_;
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
       std::string const _hostname;
-      double last_time_served_;
+      double _last_time_idle;
 
       std::set<job_id_t> pending_;
       std::set<job_id_t> submitted_; //! the queue of jobs assigned to this worker (sent but not acknowledged)

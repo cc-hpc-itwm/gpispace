@@ -15,10 +15,11 @@ namespace sdpa
                    , const std::string& hostname
                    )
       : _capabilities (capabilities)
+      , capability_names_ (get_set_of_capability_names (capabilities))
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , _hostname (hostname)
-      , last_time_served_ (0)
+      , _last_time_idle (fhg::util::now())
       , reserved_ (false)
       , backlog_full_ (false)
     {
@@ -28,6 +29,11 @@ namespace sdpa
     bool Worker::has_pending_jobs() const
     {
       return !pending_.empty();
+    }
+
+    bool Worker::has_running_jobs() const
+    {
+      return !submitted_.empty() || !acknowledged_.empty();
     }
 
     void Worker::assign (const job_id_t& jobId)
@@ -45,7 +51,6 @@ namespace sdpa
       if (!_children_allowed)
       {
         reserved_ = true;
-        last_time_served_ = fhg::util::now();
       }
     }
 
@@ -58,14 +63,24 @@ namespace sdpa
       acknowledged_.insert (job_id);
     }
 
-    void Worker::deleteJob(const job_id_t &job_id)
+    void Worker::delete_submitted_job(const job_id_t &job_id)
     {
-      pending_.erase (job_id);
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
+      _last_time_idle = fhg::util::now();
       if (!_children_allowed)
       {
         reserved_ = false;
+      }
+    }
+
+    void Worker::delete_pending_job (const job_id_t& job_id)
+    {
+      if (0 == pending_.erase (job_id))
+      {
+        throw std::runtime_error ( "Could not remove the pending job "
+                                 + job_id
+                                 );
       }
     }
 
@@ -89,6 +104,9 @@ namespace sdpa
 	}
       }
 
+      if (bModified)
+        capability_names_ = get_set_of_capability_names (_capabilities);
+
       return bModified;
     }
 
@@ -99,6 +117,10 @@ namespace sdpa
       {
         removed += _capabilities.erase (capability);
       }
+
+      if (removed)
+        capability_names_ = get_set_of_capability_names (_capabilities);
+
       return removed != 0;
     }
 
@@ -161,16 +183,6 @@ namespace sdpa
              );
     }
 
-    void Worker::remove_pending_job (const job_id_t& job_id)
-    {
-      if (0 == pending_.erase (job_id))
-      {
-        throw std::runtime_error ( "Could not remove the pending job "
-                                 + job_id
-                                 );
-      }
-    }
-
     bool Worker::backlog_full() const
     {
       return backlog_full_;
@@ -181,5 +193,11 @@ namespace sdpa
       backlog_full_ = backlog_full;
     }
 
+    bool Worker::stealing_allowed() const
+    {
+      return ( (has_pending_jobs() && has_running_jobs())
+            || (pending_.size() > 1)
+             );
+    }
   }
 }

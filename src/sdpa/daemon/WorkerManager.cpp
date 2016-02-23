@@ -1,6 +1,8 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/types.hpp>
 
+#include <fhg/assert.hpp>
+
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm_ext/push_back.hpp>
 
@@ -57,13 +59,15 @@ namespace sdpa
         throw std::runtime_error ("worker '" + workerId + "' already exists");
       }
       worker_connections_.left.insert ({workerId, address});
-      worker_map_.emplace ( workerId
-                          , Worker ( cpbSet
-                                   , allocated_shared_memory_size
-                                   , children_allowed
-                                   , hostname
-                                   )
-                          );
+      auto result = worker_map_.emplace ( workerId
+                                        , Worker ( cpbSet
+                                                 , allocated_shared_memory_size
+                                                 , children_allowed
+                                                 , hostname
+                                                 )
+                                        );
+
+      worker_equiv_classes_[result.first->second.capability_names_].add_worker_entry (result.first);
     }
 
 
@@ -71,7 +75,19 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _ (mtx_);
 
-      worker_map_.erase (workerId);
+      auto const worker (worker_map_.find (workerId));
+      fhg_assert (worker != worker_map_.end(), "Worker not found when deletion was requested!");
+
+      auto const equivalence_class
+        (worker_equiv_classes_.find (worker->second.capability_names_));
+
+      equivalence_class->second.remove_worker_entry (worker);
+      if (equivalence_class->second.n_workers() == 0)
+      {
+        worker_equiv_classes_.erase (equivalence_class);
+      }
+
+      worker_map_.erase (worker);
       worker_connections_.left.erase (workerId);
     }
 
@@ -164,7 +180,7 @@ namespace sdpa
                                            , worker_id_host_info_t ( worker.first
                                                                    , worker.second._hostname
                                                                    , worker.second._allocated_shared_memory_size
-                                                                   , worker.second.lastTimeServed()
+                                                                   , worker.second._last_time_idle
                                                                    )
                                            );
         }
@@ -207,7 +223,7 @@ namespace sdpa
       {
         for (worker_id_t const& worker_id : workers)
         {
-          worker_map_.at (worker_id).submit (job_id);
+          submit_job_to_worker (job_id, worker_id);
         }
 
         serve_job (workers, job_id);
@@ -277,7 +293,20 @@ namespace sdpa
     void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
       boost::mutex::scoped_lock const _(mtx_);
-      worker_map_.at (worker_id).assign (job_id);
+      Worker& worker (worker_map_.at (worker_id));
+      worker.assign (job_id);
+      worker_equiv_classes_.at
+        (worker.capability_names_).inc_pending_jobs (1);
+    }
+
+    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    {
+      Worker& worker (worker_map_.at (worker_id));
+      worker.submit (job_id);
+      auto& equivalence_class (worker_equiv_classes_.at (worker.capability_names_));
+
+      equivalence_class.dec_pending_jobs (1);
+      equivalence_class.inc_running_jobs (1);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
@@ -296,7 +325,19 @@ namespace sdpa
       auto worker (worker_map_.find (worker_id));
       if (worker != worker_map_.end())
       {
-        worker->second.deleteJob (job_id);
+        auto& equivalence_class
+          (worker_equiv_classes_.at (worker->second.capability_names_));
+
+        if (worker->second.pending_.count (job_id))
+        {
+          worker->second.delete_pending_job (job_id);
+          equivalence_class.dec_pending_jobs (1);
+        }
+        else
+        {
+          worker->second.delete_submitted_job (job_id);
+          equivalence_class.dec_running_jobs (1);
+        }
       }
     }
 
@@ -312,12 +353,45 @@ namespace sdpa
       return worker_map_.at (worker).getJobListAndCleanQueues();
     }
 
+    void WorkerManager::change_equivalence_class ( worker_map_t::const_iterator worker
+                                                 , std::set<std::string> const& old_cpbs
+                                                 )
+    {
+      {
+        auto equivalence_class
+          (worker_equiv_classes_.find (old_cpbs));
+        fhg_assert (equivalence_class != worker_equiv_classes_.end());
+
+        equivalence_class->second.remove_worker_entry (worker);
+        if (equivalence_class->second.n_workers() == 0)
+        {
+          worker_equiv_classes_.erase (equivalence_class);
+        }
+      }
+
+      {
+        auto& equivalence_class
+          (worker_equiv_classes_[worker->second.capability_names_]);
+        equivalence_class.add_worker_entry (worker);
+      }
+    }
+
     bool WorkerManager::add_worker_capabilities ( const worker_id_t& worker_id
                                                 , const capabilities_set_t& cpb_set
                                                 )
     {
       boost::mutex::scoped_lock const _(mtx_);
-      return worker_map_.at (worker_id).addCapabilities (cpb_set);
+
+      worker_map_t::iterator worker (worker_map_.find (worker_id));
+      const std::set<std::string> old_cpbs (worker->second.capability_names_);
+
+      if (worker->second.addCapabilities (cpb_set))
+      {
+        change_equivalence_class (worker, old_cpbs);
+        return true;
+      }
+
+      return false;
     }
 
     bool WorkerManager::remove_worker_capabilities ( const worker_id_t& worker_id
@@ -325,7 +399,17 @@ namespace sdpa
                                                    )
     {
       boost::mutex::scoped_lock const _(mtx_);
-      return worker_map_.at (worker_id).removeCapabilities (cpb_set);
+
+      worker_map_t::iterator worker (worker_map_.find (worker_id));
+      const std::set<std::string> old_cpbs (worker->second.capability_names_);
+
+      if (worker->second.removeCapabilities (cpb_set))
+      {
+        change_equivalence_class (worker, old_cpbs);
+        return true;
+      }
+
+      return false;
     }
 
     void WorkerManager::set_worker_backlog_full ( const worker_id_t& worker_id
@@ -350,6 +434,78 @@ namespace sdpa
       WorkerManager::worker_connections_t::left_iterator it
         (worker_connections_.left.find (worker));
       return boost::make_optional (it != worker_connections_.left.end(), it);
+    }
+
+    WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()
+      : _n_pending_jobs (0)
+      , _n_running_jobs (0)
+      , _n_idle_workers (0)
+    {}
+
+    void WorkerManager::WorkerEquivalenceClass::inc_pending_jobs (unsigned int k)
+    {
+      _n_pending_jobs += k;
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::dec_pending_jobs (unsigned int k)
+    {
+      fhg_assert ( _n_pending_jobs >= k
+                 , "The number of pending jobs of a group of workers cannot be a negative number"
+                 );
+
+      _n_pending_jobs -= k;
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::inc_running_jobs (unsigned int k)
+    {
+      _n_running_jobs += k;
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::dec_running_jobs (unsigned int k)
+    {
+      fhg_assert ( _n_running_jobs >= k
+                 , "The number of running jobs of a group of workers cannot be a negative number"
+                 );
+
+      _n_running_jobs -= k;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_pending_jobs() const
+    {
+      return _n_pending_jobs;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_running_jobs() const
+    {
+      return _n_running_jobs;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_idle_workers() const
+    {
+      return _n_idle_workers;
+    }
+
+    unsigned int WorkerManager::WorkerEquivalenceClass::n_workers() const
+    {
+      return _worker_ids.size();
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::add_worker_entry (worker_map_t::const_iterator worker)
+    {
+      _worker_ids.insert (worker->first);
+      inc_pending_jobs (worker->second.pending_.size());
+      inc_running_jobs ( worker->second.submitted_.size()
+                       + worker->second.acknowledged_.size()
+                       );
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::remove_worker_entry (worker_map_t::const_iterator worker)
+    {
+      _worker_ids.erase (worker->first);
+      dec_pending_jobs (worker->second.pending_.size());
+      dec_running_jobs ( worker->second.submitted_.size()
+                       + worker->second.acknowledged_.size()
+                       );
     }
   }
 }
