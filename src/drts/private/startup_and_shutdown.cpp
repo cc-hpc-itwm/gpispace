@@ -7,6 +7,7 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 #include <fhg/util/starts_with.hpp>

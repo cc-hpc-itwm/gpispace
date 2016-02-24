@@ -12,6 +12,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
