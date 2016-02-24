@@ -2,7 +2,6 @@
 
 #include <drts/private/drts_impl.hpp>
 
-#include <util-generic/blocked.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -146,6 +145,7 @@ namespace
 
   fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
+    , fhg::rif::client& rif_client
     , std::string const& name
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
@@ -183,7 +183,7 @@ namespace
     }
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
-      ( fhg::rif::client (rif_entry_point).execute_and_get_startup_messages
+      ( rif_client.execute_and_get_startup_messages
           ( installation_path.agent()
           , agent_startup_arguments
           , logging_environment (log_host, log_port, log_dir, verbose, name)
@@ -312,97 +312,155 @@ namespace fhg
 
      std::atomic<std::size_t> num_nodes (0);
 
-     return
-       ( util::blocked_async<fhg::rif::entry_point>
-         ( entry_points
-         //! \todo let the blocksize be a parameter
-         , 64
-         , [] (fhg::rif::entry_point const& entry_point)
-           {
-             return entry_point;
-           }
-         , [&] (fhg::rif::entry_point const& entry_point)
-           {
-             //! \todo does this work correctly for multi-segments?!
-             if (  description.max_nodes == 0
-                || num_nodes.fetch_add (1) < description.max_nodes
+      std::unordered_map<fhg::rif::entry_point, std::vector<std::exception_ptr>>
+        exceptions;
+
+      //! \todo let thread count be a parameter
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+
+      std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
+      util::nest_exceptions<std::runtime_error>
+        ( [&]
+          {
+            for (rif::entry_point const& entry_point : entry_points)
+            {
+              rif_connections.emplace_back
+                ( std::piecewise_construct
+                , std::forward_as_tuple (io_service, entry_point)
+                , std::forward_as_tuple (entry_point)
+                );
+            }
+          }
+        , "connecting to rif entry points"
+        );
+
+      std::vector<std::tuple< fhg::rif::entry_point
+                            , std::future<std::pair<pid_t, std::vector<std::string>>>
+                            , std::string
+                            >
+                 > futures;
+
+      for (auto& connection : rif_connections)
+      {
+        //! \todo does this work correctly for multi-segments?!
+        if ( description.max_nodes != 0
+           && num_nodes.fetch_add (1) >= description.max_nodes
+           )
+        {
+          break;
+        }
+
+        for ( unsigned long identity (0)
+            ; identity < description.num_per_node
+            ; ++identity
+            )
+        {
+          try
+          {
+            std::string const name
+              ( name_prefix + "-" + connection.second.string()
+              + "-" + std::to_string (identity + 1)
+              + ( description.socket
+                ? ("." + std::to_string (description.socket.get()))
+                : std::string()
                 )
-             {
-               std::vector<std::exception_ptr> exceptions;
+              );
+            std::string const storage_name ("drts-kernel-" + name);
 
-               for ( unsigned long identity (0)
-                   ; identity < description.num_per_node
-                   ; ++identity
-                   )
-               {
-                 try
-                 {
-                   std::string const name
-                     ( name_prefix + "-" + entry_point.string()
-                     + "-" + std::to_string (identity + 1)
-                     + ( description.socket
-                       ? ("." + std::to_string (description.socket.get()))
-                       : std::string()
-                       )
-                     );
-                   std::string const storage_name ("drts-kernel-" + name);
+            {
+              boost::optional<pid_t> const mpid
+                (processes.pidof (connection.second, storage_name));
 
-                   {
-                     boost::optional<pid_t> const mpid
-                       (processes.pidof (entry_point, storage_name));
+              if (!!mpid)
+              {
+                throw std::logic_error
+                  ( "process with name '" + name + "' on entry point '"
+                  + connection.second.string() + "' already exists with pid "
+                  + std::to_string (*mpid)
+                  );
+              }
+            }
 
-                     if (!!mpid)
-                     {
-                       throw std::logic_error
-                         ( "process with name '" + name + "' on entry point '"
-                         + entry_point.string() + "' already exists with pid "
-                         + std::to_string (*mpid)
-                         );
-                     }
-                   }
+            std::unordered_map<std::string, std::string> environment
+              ( logging_environment
+                  (log_host, log_port, log_dir, verbose, name)
+              );
+            environment.emplace
+              ( "LD_LIBRARY_PATH"
+              , (installation_path.lib()).string() + ":"
+              + (installation_path.libexec()).string()
+              );
 
-                   std::unordered_map<std::string, std::string> environment
-                     ( logging_environment
-                         (log_host, log_port, log_dir, verbose, name)
-                     );
-                   environment.emplace
-                     ( "LD_LIBRARY_PATH"
-                     , (installation_path.lib()).string() + ":"
-                     + (installation_path.libexec()).string()
-                     );
+            futures.emplace_back
+              ( connection.second
+              , connection.first.execute_and_get_startup_messages
+                  ( installation_path.drts_kernel()
+                  , kernel_arguments (name)
+                  , environment
+                  )
+              , name
+              );
+          }
+          catch (...)
+          {
+            exceptions[connection.second].emplace_back
+              (std::current_exception());
+          }
+        }
+      }
 
-                   std::pair<pid_t, std::vector<std::string>> const pid_and_startup_messages
-                     ( fhg::rif::client (entry_point).execute_and_get_startup_messages
-                       ( installation_path.drts_kernel()
-                       , kernel_arguments (name)
-                       , environment
-                       ).get()
-                     );
+      for (auto& future : futures)
+      {
+        try
+        {
+          auto const pid_and_startup_messages (std::get<1> (future).get());
 
-                   if (!pid_and_startup_messages.second.empty())
-                   {
-                     throw std::runtime_error
-                       ("could not start " + name + ": expected no startup messages");
-                   }
+          if (!pid_and_startup_messages.second.empty())
+          {
+            throw std::runtime_error ( "could not start " + std::get<2> (future)
+                                     + ": expected no startup messages"
+                                     );
+          }
 
-                   processes.store ( entry_point
-                                   , storage_name
-                                   , pid_and_startup_messages.first
-                                   );
-                 }
-                 catch (...)
-                 {
-                   exceptions.emplace_back (std::current_exception());
-                 }
-               }
+          processes.store ( std::get<0> (future)
+                          , "drts-kernel-" + std::get<2> (future)
+                          , pid_and_startup_messages.first
+                          );
+        }
+        catch (...)
+        {
+          exceptions[std::get<0> (future)].emplace_back
+            (std::current_exception());
+        }
+      }
 
-               //! \todo return the individual exceptions
-               fhg::util::throw_collected_exceptions (exceptions);
-             }
-           }
-         )
-       );
-  }
+      std::pair< std::unordered_set<fhg::rif::entry_point>
+               , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+               > results;
+
+      for (auto const& connection : rif_connections)
+      {
+        try
+        {
+          auto const it (exceptions.find ((connection.second)));
+          if (it == exceptions.end())
+          {
+            results.first.emplace (connection.second);
+          }
+          else
+          {
+            //! \todo return the individual exceptions
+            fhg::util::throw_collected_exceptions (it->second);
+          }
+        }
+        catch (...)
+        {
+          results.second.emplace (connection.second, std::current_exception());
+        }
+      }
+
+      return results;
+    }
 
     worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
@@ -506,11 +564,16 @@ namespace fhg
                     << *gui_host << ":" << *gui_port << "\n";
       }
 
+      //! \todo let thread count be a parameter
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+
+      rif::client master_rif_client (io_service, master);
+
       std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
         ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                return rif::client (master).execute_and_get_startup_messages
+                return master_rif_client.execute_and_get_startup_messages
                   ( installation_path.orchestrator()
                   , std::vector<std::string> {"-u", "0", "-n", "orchestrator"}
                   , logging_environment
@@ -536,6 +599,24 @@ namespace fhg
             (orchestrator_startup_messages.second[1])
         );
 
+      std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
+      std::vector<std::string> hostnames;
+      util::nest_exceptions<std::runtime_error>
+        ( [&]
+          {
+            for (rif::entry_point const& entry_point : rif_entry_points)
+            {
+              rif_connections.emplace_back
+                ( std::piecewise_construct
+                , std::forward_as_tuple (io_service, entry_point)
+                , std::forward_as_tuple (entry_point)
+                );
+              hostnames.emplace_back (entry_point.hostname);
+            }
+          }
+        , "connecting to rif entry points"
+        );
+
       if (gpi_enabled)
       {
         if (!vmem_startup_timeout)
@@ -558,45 +639,21 @@ namespace fhg
                     << " with a timeout of " << vmem_startup_timeout.get().count()
                     << " seconds\n";
 
-        std::vector<std::string> nodes;
-        for (fhg::rif::entry_point const& entry_point : rif_entry_points)
-        {
-          nodes.emplace_back (entry_point.hostname);
-        }
-
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              std::mutex clients_guard;
-              std::list<rif::client> clients;
+              std::unordered_map<fhg::rif::entry_point, std::future<pid_t>>
+                queued_start_requests;
+              std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+                fails;
 
-              std::pair< std::unordered_map< fhg::rif::entry_point
-                                           , std::future<pid_t>
-                                           >
-                       , std::unordered_map< fhg::rif::entry_point
-                                           , std::exception_ptr
-                                           >
-                       > queued_start_requests
-                ( util::blocked_async_with_results< fhg::rif::entry_point
-                                                  , std::future<pid_t>
-                                                  >
-                  ( rif_entry_points
-                  //! \todo let the blocksize be a parameter
-                  , 64
-                  , [] (fhg::rif::entry_point const& entry_point)
-                    {
-                      return entry_point;
-                    }
-                  , [&] (fhg::rif::entry_point const& entry_point)
-                    {
-                      rif::client* client (nullptr);
-                      {
-                        std::lock_guard<std::mutex> const _ (clients_guard);
-                        clients.emplace_back (entry_point);
-                        client = &clients.back();
-                      }
-
-                      return client->start_vmem
+              for (auto& connection : rif_connections)
+              {
+                try
+                {
+                  queued_start_requests.emplace
+                    ( connection.second
+                    , connection.first.start_vmem
                         ( installation_path.vmem()
                         , verbose ? fhg::log::TRACE : fhg::log::INFO
                         , gpi_socket.get()
@@ -606,21 +663,21 @@ namespace fhg
                         ? std::make_pair (log_host.get(), log_port.get())
                         : boost::optional<std::pair<std::string, unsigned short>>()
                         , log_dir
-                        ? *log_dir / ("vmem-" + replace_whitespace (entry_point.string()) + ".log")
+                        ? *log_dir / ("vmem-" + replace_whitespace (connection.second.string()) + ".log")
                         : boost::optional<boost::filesystem::path>()
-                        , nodes
+                        , hostnames
                         , master.string()
-                        , entry_point == master
-                        );
-                    }
-                  )
-                );
+                        , connection.second == master
+                        )
+                    );
+                }
+                catch (...)
+                {
+                  fails.emplace (connection.second, std::current_exception());
+                }
+              }
 
-              std::unordered_map< fhg::rif::entry_point
-                                , std::exception_ptr
-                                > fails (queued_start_requests.second);
-
-              for (auto& request : queued_start_requests.first)
+              for (auto& request : queued_start_requests)
               {
                 try
                 {
@@ -636,7 +693,7 @@ namespace fhg
               {
                 fhg::util::throw_collected_exceptions
                   ( fails
-                  , [] (std::pair<fhg::rif::entry_point, std::exception_ptr> const& fail)
+                  , [] (std::pair<rif::entry_point, std::exception_ptr> const& fail)
                     {
                       return ( boost::format ("vmem startup failed %1%: %2%")
                              % fail.first
@@ -653,6 +710,7 @@ namespace fhg
       master_agent_name = "agent-" + master.string() + "-0";
 
       master_agent_hostinfo = start_agent ( master
+                                          , master_rif_client
                                           , master_agent_name
                                           , "orchestrator"
                                           , orchestrator_hostinfo
@@ -693,7 +751,6 @@ namespace fhg
           : throw std::logic_error ("invalid enum value")
           );
 
-        std::mutex guard_failures;
         std::unordered_map
           < rif::entry_point
           , std::pair< std::string /* kind */
@@ -701,83 +758,102 @@ namespace fhg
                      >
           > failures;
 
-        util::blocked_async<fhg::rif::entry_point>
-          ( entry_point_procs
-          //! \todo let the blocksize be a parameter
-          , 64
-          , [] (It const& it)
+        //! \todo let thread count be a parameter
+        fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+
+        using process_iter
+          = typename decltype (entry_point_procs.front()->second)::iterator;
+
+        std::list<fhg::rif::client> clients;
+        std::vector<std::tuple < It
+                               , std::future<std::unordered_map<pid_t, std::exception_ptr>>
+                               , std::unordered_map<pid_t, process_iter>
+                               , std::function<void()>
+                               >
+                   >futures;
+
+        for (auto const& entry_point_processes : entry_point_procs)
+        {
+          std::vector<pid_t> pids;
+          std::unordered_map<pid_t, process_iter> to_erase;
+          for ( process_iter it (entry_point_processes->second.begin())
+              ; it != entry_point_processes->second.end()
+              ; ++it
+              )
+          {
+            if (fhg::util::starts_with (kind, it->first))
             {
-              return it->first;
+              to_erase.emplace (it->second, it);
+              pids.emplace_back (it->second);
             }
-          , [&] (It const& entry_point_processes)
-            {
-              using process_iter
-                = typename decltype (entry_point_processes->second)::iterator;
-              std::vector<pid_t> pids;
-              std::unordered_map<pid_t, process_iter> to_erase;
-              for ( process_iter it (entry_point_processes->second.begin())
-                  ; it != entry_point_processes->second.end()
-                  ; ++it
-                  )
+          }
+
+          auto const& entry_point (entry_point_processes->first);
+          auto&& fail_group_with_current_exception
+            ( [&failures, pids, entry_point, &kind]
               {
-                if (fhg::util::starts_with (kind, it->first))
+                std::unordered_map<pid_t, std::exception_ptr> fails;
+
+                for (pid_t pid : pids)
                 {
-                  to_erase.emplace (it->second, it);
-                  pids.emplace_back (it->second);
+                  fails.emplace (pid, std::current_exception());
                 }
+
+                failures.emplace ( entry_point
+                                 , std::make_pair (kind, fails)
+                                 );
               }
+            );
 
-              if (!pids.empty())
-              {
-                info_output << "terminating " << kind << " on "
-                            << entry_point_processes->first
-                            << ": " << fhg::util::join (pids, ' ') << "\n";
+          if (!pids.empty())
+          {
+            info_output << "terminating " << kind << " on "
+                        << entry_point
+                        << ": " << fhg::util::join (pids, ' ') << "\n";
 
-                try
-                {
-                  std::unordered_map<pid_t, std::exception_ptr>
-                    const failures_kill
-                    ( rif::client (entry_point_processes->first)
-                    . kill (pids).get()
-                    );
-
-                  if (!failures_kill.empty())
-                  {
-                    std::lock_guard<std::mutex> const _ (guard_failures);
-
-                    failures.emplace
-                      ( entry_point_processes->first
-                      , std::make_pair (kind, failures_kill)
-                      );
-                  }
-                }
-                catch (...) // \note: e.g. rif::client::connect
-                {
-                  std::unordered_map<pid_t, std::exception_ptr> fails;
-
-                  for (pid_t pid : pids)
-                  {
-                    fails.emplace (pid, std::current_exception());
-                  }
-
-                  std::lock_guard<std::mutex> const _ (guard_failures);
-
-                  failures.emplace ( entry_point_processes->first
-                                   , std::make_pair (kind, fails)
+            try
+            {
+              clients.emplace_back (io_service, entry_point);
+              futures.emplace_back ( entry_point_processes
+                                   , clients.back().kill (pids)
+                                   , std::move (to_erase)
+                                   , fail_group_with_current_exception
                                    );
-                }
-
-                //! \note: remove the process from the list of
-                //! known processes in case of failure too
-                //! assumption: when kill failed once, it will
-                //! never succeed
-                for (auto const& iter : to_erase)
-                {
-                  entry_point_processes->second.erase (iter.second);
-                }
-              }
             }
-          );
+            catch (...) // \note: e.g. rif::client::connect
+            {
+              fail_group_with_current_exception();
+            }
+          }
+        }
+
+        for (auto& future : futures)
+        {
+          try
+          {
+            auto const failures_kill (std::get<1> (future).get());
+
+            if (!failures_kill.empty())
+            {
+              failures.emplace
+                ( std::get<0> (future)->first
+                , std::make_pair (kind, failures_kill)
+                );
+            }
+          }
+          catch (...)
+          {
+            std::get<3> (future)();
+          }
+
+          //! \note: remove the process from the list of known
+          //! processes in case of failure too assumption: when kill
+          //! failed once, it will never succeed
+          for (auto const& iter : std::get<2> (future))
+          {
+            std::get<0> (future)->second.erase (iter.second);
+          }
+        }
 
         return failures;
       }
