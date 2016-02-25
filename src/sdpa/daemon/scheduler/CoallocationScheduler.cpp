@@ -271,9 +271,9 @@ namespace sdpa
                                                               , const sdpa::job_id_t& job_id)
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-
-      return allocation_table_.at (job_id)
-        ->apply_to_workers_without_result (std::move (func));
+      Reservation* reservation (allocation_table_.at (job_id));
+      reservation->cancel();
+      return reservation->apply_to_workers_without_result (std::move (func));
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
@@ -319,6 +319,12 @@ namespace sdpa
         allocation_table_.erase (it);
       }
       //! \todo why can we ignore this?
+    }
+
+    bool CoallocationScheduler::reservation_canceled (job_id_t const& job) const
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      return allocation_table_.at (job)->is_canceled();
     }
 
     void CoallocationScheduler::store_result ( worker_id_t const& worker_id

@@ -52,6 +52,8 @@ namespace sdpa
       void reschedule_pending_jobs_matching_worker (const worker_id_t&);
       std::set<job_id_t> start_pending_jobs
         (std::function<void (std::set<worker_id_t> const&, const job_id_t&)>);
+
+      bool reservation_canceled (job_id_t const&) const;
     private:
       double compute_reservation_cost
         ( const job_id_t&
@@ -85,6 +87,7 @@ namespace sdpa
         Reservation (std::set<worker_id_t> workers, double cost)
           : _workers (workers)
           , _cost (cost)
+          , _canceled (false)
         {}
 
         void replace_worker (worker_id_t const& w1, worker_id_t w2)
@@ -157,8 +160,12 @@ namespace sdpa
           return applied;
         }
 
+        void cancel() {_canceled = true;}
+        bool is_canceled() const {return _canceled;}
+
       private:
         job_result_type _results;
+        bool _canceled;
       };
 
       mutable boost::mutex mtx_alloc_table_;
