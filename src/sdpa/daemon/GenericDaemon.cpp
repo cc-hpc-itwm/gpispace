@@ -551,35 +551,6 @@ void GenericDaemon::handleErrorEvent
       {
         throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
       }
-
-      _worker_manager.set_worker_backlog_full (as_worker.get()->second, true);
-
-      if (sdpa::status::is_terminal (pJob->getStatus()))
-      {
-        throw std::runtime_error
-          ("Got SDPA_EBACKLOGFULL error for an already terminated job!");
-      }
-
-      _scheduler.store_result
-        (as_worker.get()->second, jobId, JobFSM_::s_canceled());
-      pJob->Reschedule();
-
-      if ( !_scheduler.cancelNotTerminatedWorkerJobs
-             ( [this, &jobId](const sdpa::worker_id_t& wid)
-               {
-                 child_proxy (this, _worker_manager.address_by_worker (wid).get()->second)
-                   .cancel_job (jobId);
-               }
-             , jobId
-             )
-         )
-      {
-        _scheduler.releaseReservation (jobId);
-        _scheduler.enqueueJob (jobId);
-        _scheduler.assignJobsToWorkers();
-      }
-
-      break;
     }
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
     case events::ErrorEvent::SDPA_ENETWORKFAILURE:
@@ -597,37 +568,29 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        _scheduler.reschedule_pending_jobs_matching_worker (as_worker.get()->second);
-
-        const std::set<job_id_t> jobs_to_reschedule
-          (_worker_manager.get_worker_jobs_and_clean_queues (as_worker.get()->second));
-
-        for (sdpa::job_id_t const& jobId : jobs_to_reschedule)
-        {
-          Job* const pJob = findJob (jobId);
-          if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
-          {
-            _scheduler.store_result
-              (as_worker.get()->second, jobId, JobFSM_::s_canceled());
-            pJob->Reschedule();
-
-            if (!_scheduler.cancelNotTerminatedWorkerJobs
-              ( [this, &jobId](const sdpa::worker_id_t& wid)
-                {
-                  child_proxy (this, _worker_manager.address_by_worker (wid).get()->second)
-                    .cancel_job (jobId);
-                }
-                , jobId
-                )
-              )
+        _scheduler.reschedule_worker_jobs
+          ( as_worker.get()->second
+          , [this] (job_id_t const& job)
             {
-              _scheduler.releaseReservation (jobId);
-              _scheduler.enqueueJob (jobId);
+              return findJob (job);
             }
-          }
+          , [this] (worker_id_t const& worker, job_id_t const& job)
+            {
+              return child_proxy ( this
+                                 , _worker_manager.address_by_worker (worker).get()->second
+                                 ).cancel_job (job);
+            }
+          );
+
+        if (error.error_code() == events::ErrorEvent::SDPA_EBACKLOGFULL)
+        {
+          _worker_manager.set_worker_backlog_full (as_worker.get()->second, true);
+        }
+        else
+        {
+          _worker_manager.deleteWorker (as_worker.get()->second);
         }
 
-        _worker_manager.deleteWorker (as_worker.get()->second);
         request_scheduling();
       }
       else

@@ -267,6 +267,33 @@ namespace sdpa
       _jobs_to_schedule.push (removed_jobs);
     }
 
+    void CoallocationScheduler::reschedule_worker_jobs
+       ( worker_id_t const& worker
+       , std::function<Job* (sdpa::job_id_t const&)> get_job
+       , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
+       )
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+
+      std::unordered_set<job_id_t> const jobs_to_reschedule
+        (_worker_manager.delete_or_cancel_worker_jobs<Reservation>
+          ( worker
+          , get_job
+          , [=] (job_id_t const& jobId)
+            {return allocation_table_.at (jobId);}
+          , cancel_worker_job
+          )
+        );
+
+      for (job_id_t const& jobId : jobs_to_reschedule)
+      {
+        delete allocation_table_.at (jobId);
+        _list_pending_jobs.erase (jobId);
+        allocation_table_.erase (jobId);
+        enqueueJob (jobId);
+      }
+    }
+
     bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
                                                               , const sdpa::job_id_t& job_id)
     {
