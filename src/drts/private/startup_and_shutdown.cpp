@@ -317,7 +317,8 @@ namespace fhg
         exceptions;
 
       //! \todo let thread count be a parameter
-      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service
+        (std::min (64UL, entry_points.size()));
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
       util::nest_exceptions<std::runtime_error>
@@ -566,7 +567,8 @@ namespace fhg
       }
 
       //! \todo let thread count be a parameter
-      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service
+        (std::min (64UL, rif_entry_points.size()));
 
       rif::client master_rif_client (io_service, master);
 
@@ -759,8 +761,21 @@ namespace fhg
                      >
           > failures;
 
+        std::size_t processes_to_kill (0);
+        for (auto const& entry_point_processes : entry_point_procs)
+        {
+          for (auto const& it : entry_point_processes->second)
+          {
+            if (fhg::util::starts_with (kind, it.first))
+            {
+              ++processes_to_kill;
+            }
+          }
+        }
+
         //! \todo let thread count be a parameter
-        fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+        fhg::util::scoped_boost_asio_io_service_with_threads io_service
+          (std::min (64UL, processes_to_kill));
 
         using process_iter
           = typename decltype (entry_point_procs.front()->second)::iterator;
