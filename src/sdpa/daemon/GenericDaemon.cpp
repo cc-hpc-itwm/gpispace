@@ -1013,9 +1013,6 @@ void GenericDaemon::handleCapabilitiesGainedEvent
 
   if(bModified)
   {
-    _scheduler.reschedule_pending_jobs_matching_worker (worker->second);
-    request_scheduling();
-
     const sdpa::capabilities_set_t newWorkerCpbSet
       (_worker_manager.worker_capabilities (worker->second));
 
