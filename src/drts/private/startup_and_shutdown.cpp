@@ -786,7 +786,7 @@ namespace fhg
                                , std::unordered_map<pid_t, process_iter>
                                , std::function<void()>
                                >
-                   >futures;
+                   > futures;
 
         for (auto const& entry_point_processes : entry_point_procs)
         {
