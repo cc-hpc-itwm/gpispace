@@ -568,7 +568,7 @@ namespace fhg
 
       //! \todo let thread count be a parameter
       fhg::util::scoped_boost_asio_io_service_with_threads io_service
-        (std::min (64UL, rif_entry_points.size()));
+        (std::max (1UL, std::min (64UL, rif_entry_points.size())));
 
       rif::client master_rif_client (io_service, master);
 
