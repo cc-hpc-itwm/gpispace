@@ -205,16 +205,8 @@ namespace gpi
       {
         namespace
         {
-          struct part
-          {
-            type::offset_t local_offset;
-            type::offset_t remote_offset;
-            type::size_t size;
-            type::rank_t rank;
-          };
-
           //! \todo lazy iteration, …
-          std::list<part> split_by_rank
+          api::gaspi_t::transfers_t split_by_rank
             ( gpi::pc::type::size_t local_offset
             , const gpi::pc::type::size_t remote_base
             , gpi::pc::type::size_t offset
@@ -222,11 +214,11 @@ namespace gpi
             , gpi::pc::type::size_t amount
             )
           {
-            std::list<part> parts;
+            api::gaspi_t::transfers_t parts;
 
             while (amount)
             {
-              part p;
+              api::gaspi_t::transfer_part p;
 
               p.local_offset = local_offset;
               p.rank = offset / per_node_size;
@@ -258,30 +250,18 @@ namespace gpi
             , api::gaspi_t& gaspi
             )
           {
-            std::list<api::gaspi_t::read_dma_info> handles;
-
-            for ( auto const& part
-                : split_by_rank ( dst_hdl.offset + dst_offset
-                                , src_hdl.offset
-                                , src_offset
-                                , src_hdl.local_size
-                                , amount
-                                )
-                )
-            {
-              handles.emplace_back
-                ( gaspi.read_dma ( part.local_offset
-                                 , part.remote_offset
-                                 , part.size
-                                 , part.rank
-                                 )
-                );
-            }
-
-            gaspi.wait_readable (handles);
+            gaspi.wait_readable
+              ( gaspi.read_dma ( split_by_rank ( dst_hdl.offset + dst_offset
+                                               , src_hdl.offset
+                                               , src_offset
+                                               , src_hdl.local_size
+                                               , amount
+                                               )
+                               )
+              );
           }
 
-          std::list<api::gaspi_t::write_dma_info> do_write_dma
+          void do_write_dma_and_wait_remote_written
             ( const gpi::pc::type::handle::descriptor_t & src_hdl
             , const gpi::pc::type::size_t src_offset
             , const gpi::pc::type::handle::descriptor_t & dst_hdl
@@ -290,27 +270,15 @@ namespace gpi
             , api::gaspi_t& gaspi
             )
           {
-            std::list<api::gaspi_t::write_dma_info> handles;
-
-            for ( auto const& part
-                : split_by_rank ( src_hdl.offset + src_offset
-                                , dst_hdl.offset
-                                , dst_offset
-                                , dst_hdl.local_size
-                                , amount
+            gaspi.wait_remote_written
+              ( gaspi.write_dma ( split_by_rank ( src_hdl.offset + src_offset
+                                                , dst_hdl.offset
+                                                , dst_offset
+                                                , dst_hdl.local_size
+                                                , amount
+                                                )
                                 )
-                )
-            {
-              handles.emplace_back
-                ( gaspi.write_dma ( part.local_offset
-                                  , part.remote_offset
-                                  , part.size
-                                  , part.rank
-                                  )
-                );
-            }
-
-            return handles;
+              );
           }
         }
 
@@ -348,14 +316,13 @@ namespace gpi
               break;
             }
 
-            gaspi.wait_remote_written
-              ( do_write_dma ( dst_area.descriptor (buf.handle ())
-                             , 0
-                             , dst_area.descriptor (dst_loc.handle)
-                             , dst_loc.offset
-                             , buf.used ()
-                             , gaspi
-                             )
+            do_write_dma_and_wait_remote_written
+              ( dst_area.descriptor (buf.handle ())
+              , 0
+              , dst_area.descriptor (dst_loc.handle)
+              , dst_loc.offset
+              , buf.used ()
+              , gaspi
               );
 
             src_loc.offset += buf.used ();
@@ -432,14 +399,13 @@ namespace gpi
           return std::packaged_task<void()>
             ( [this, &dst_area, src, dst, amount]
               {
-                _gaspi.wait_remote_written
-                  ( helper::do_write_dma ( descriptor (src.handle)
-                                         , src.offset
-                                         , dst_area.descriptor (dst.handle)
-                                         , dst.offset
-                                         , amount
-                                         , _gaspi
-                                         )
+                helper::do_write_dma_and_wait_remote_written
+                  ( descriptor (src.handle)
+                  , src.offset
+                  , dst_area.descriptor (dst.handle)
+                  , dst.offset
+                  , amount
+                  , _gaspi
                   );
               }
             );
