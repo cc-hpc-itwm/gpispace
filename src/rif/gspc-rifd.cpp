@@ -318,6 +318,8 @@ try
     return 0;
   }
 
+  fhg::util::syscall::setsid();
+
   fhg::util::syscall::close (0);
   fhg::util::syscall::close (1);
   fhg::util::syscall::close (2);
