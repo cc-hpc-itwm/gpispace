@@ -193,6 +193,7 @@ macro(FHG_ADD_TEST)
 
     if (TEST_PERFORMANCE_TEST)
       list(APPEND tc_labels "performance_test")
+      set_property (TEST ${tc_name} APPEND PROPERTY RUN_SERIAL 1)
     endif()
 
     if (TEST_REQUIRES_VIRTUAL_MEMORY)
