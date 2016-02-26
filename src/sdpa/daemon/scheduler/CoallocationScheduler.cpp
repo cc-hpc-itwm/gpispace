@@ -247,26 +247,6 @@ namespace sdpa
       return assignment;
     }
 
-    void CoallocationScheduler::reschedule_pending_jobs_matching_worker
-      (const worker_id_t& worker)
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-
-      const std::unordered_set<job_id_t> removed_jobs
-        (_worker_manager.remove_pending_jobs_from_workers_with_similar_capabilities
-          (worker)
-        );
-
-      for (job_id_t const& job_id : removed_jobs)
-      {
-        _list_pending_jobs.erase (job_id);
-        delete allocation_table_.at (job_id);
-        allocation_table_.erase (job_id);
-      }
-
-      _jobs_to_schedule.push (removed_jobs);
-    }
-
     void CoallocationScheduler::reschedule_worker_jobs
        ( worker_id_t const& worker
        , std::function<Job* (sdpa::job_id_t const&)> get_job
@@ -292,15 +272,6 @@ namespace sdpa
         allocation_table_.erase (jobId);
         enqueueJob (jobId);
       }
-    }
-
-    bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
-                                                              , const sdpa::job_id_t& job_id)
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      Reservation* reservation (allocation_table_.at (job_id));
-      reservation->cancel();
-      return reservation->apply_to_workers_without_result (std::move (func));
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
