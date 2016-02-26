@@ -1,6 +1,8 @@
 
 #include <rif/entry_point.hpp>
 
+#include <fhg/revision.hpp>
+
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
@@ -37,6 +39,7 @@ try
 
   boost::program_options::options_description options_description;
   options_description.add_options()
+    ("help", "this message")
     ( option::entry_points_file
     , boost::program_options::value
         <fhg::util::boost::program_options::existing_path>()->required()
@@ -64,6 +67,15 @@ try
       .run()
     , vm
     );
+
+  if (vm.count ("help"))
+  {
+    std::cerr << fhg::project_info ( std::string (argv[0])
+                                   + ": tear down the gspc rif deamon"
+                                   ) << "\n";
+    std::cerr << options_description << "\n";
+    return 0;
+  }
 
   boost::program_options::notify (vm);
 
