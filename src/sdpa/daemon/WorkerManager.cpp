@@ -242,34 +242,6 @@ namespace sdpa
                          );
     }
 
-    std::unordered_set<job_id_t>
-      WorkerManager::remove_pending_jobs_from_workers_with_similar_capabilities
-        (worker_id_t const& w)
-    {
-      boost::mutex::scoped_lock const _(mtx_);
-      std::unordered_set<job_id_t> removed_jobs;
-
-      capabilities_set_t const cpb_set (worker_map_.at (w)._capabilities);
-
-      for (Worker& worker : worker_map_ | boost::adaptors::map_values)
-      {
-        if (std::all_of ( cpb_set.begin()
-                        , cpb_set.end()
-                        , [&worker](capability_t const& cpb)
-                          {return worker.hasCapability (cpb.name());}
-                        )
-           )
-        {
-          removed_jobs.insert ( worker.pending_.begin()
-                              , worker.pending_.end()
-                              );
-          worker.pending_.clear();
-        }
-      }
-
-      return removed_jobs;
-    }
-
     std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel
       (job_id_t const& job_id)
     {
@@ -345,12 +317,6 @@ namespace sdpa
     {
       boost::mutex::scoped_lock const _(mtx_);
       return worker_map_.at (worker)._capabilities;
-    }
-
-    const std::set<job_id_t> WorkerManager::get_worker_jobs_and_clean_queues (const worker_id_t& worker)
-    {
-      boost::mutex::scoped_lock const _(mtx_);
-      return worker_map_.at (worker).getJobListAndCleanQueues();
     }
 
     void WorkerManager::change_equivalence_class ( worker_map_t::const_iterator worker

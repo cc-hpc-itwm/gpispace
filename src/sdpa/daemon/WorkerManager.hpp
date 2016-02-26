@@ -97,10 +97,6 @@ namespace sdpa
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
-    std::unordered_set<job_id_t>
-      remove_pending_jobs_from_workers_with_similar_capabilities
-        (worker_id_t const&);
-
     template <typename T>
     std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
       ( worker_id_t const&
@@ -113,7 +109,6 @@ namespace sdpa
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
-    const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&);
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     void set_worker_backlog_full (const worker_id_t&, bool);
