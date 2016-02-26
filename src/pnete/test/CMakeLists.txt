@@ -1,5 +1,6 @@
-# bernd.loerwald@itwm.fraunhofer.de
+extended_add_executable (NAME monitor_pressure_generator
+  SOURCES monitor_pressure_generator.cpp
+  LIBRARIES pnet fhglog Boost::thread Util::Generic
+)
 
-  add_executable (monitor_pressure_generator monitor_pressure_generator.cpp)
-  target_link_libraries (monitor_pressure_generator pnet fhglog Boost::thread Util::Generic)
-  #! \todo Add test for monitor pressure.
+#! \todo Add test for monitor pressure.

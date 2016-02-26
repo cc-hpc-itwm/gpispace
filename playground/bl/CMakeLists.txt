@@ -1,13 +1,10 @@
-# bernd.loerwald@itwm.fraunhofer.de
+extended_add_executable (NAME dummy_server
+  SOURCES dummy_server.cpp
+  MOC dummy_server.hpp
+  LIBRARIES fhg_util_qt fhg-util Util::Generic Qt4::QtGui Qt4::QtNetwork
+)
 
-add_definitions (-Wno-unused-parameter)
-
-include_directories (${CMAKE_SOURCE_DIR}/editor/src)
-
-qt4_wrap_cpp (wrapped_cpps_server dummy_server.hpp OPTIONS ${FHG_QT_MOC_BOOST_HACK_OPTIONS})
-
-  add_executable (dummy_server dummy_server.cpp ${wrapped_cpps_server})
-  target_link_libraries (dummy_server ${QT_LIBRARIES} fhg_util_qt fhg-util Util::Generic)
-
-#add_executable (serialize_without_default_ctor serialize_without_default_ctor.cpp)
-#target_link_libraries (serialize_without_default_ctor Boost::serialization Util::Generic)
+#extended_add_executable (NAME serialize_without_default_ctor
+#  SOURCES serialize_without_default_ctor.cpp
+#  LIBRARIES Boost::serialization Util::Generic
+#)
