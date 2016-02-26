@@ -47,7 +47,6 @@ namespace sdpa
       // cost
       double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
 
-      std::set<job_id_t> getJobListAndCleanQueues();
       bool stealing_allowed() const;
 
       capabilities_set_t _capabilities;
