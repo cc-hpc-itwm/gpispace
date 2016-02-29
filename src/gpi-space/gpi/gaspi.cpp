@@ -212,74 +212,71 @@ namespace gpi
       return _current_queue;
     }
 
-    gaspi_t::read_dma_info gaspi_t::read_dma
-      ( const offset_t local_offset
-      , const offset_t remote_offset
-      , const size_t amount
-      , const rank_t from_node
-      )
+    gaspi_t::read_dma_info gaspi_t::read_dma (transfers_t const& transfers)
     {
       std::unordered_set<queue_desc_t> queues;
 
-      size_t remaining (amount);
-      const size_t chunk_size (_max_transfer_size);
-
-      size_t l_off (local_offset);
-      size_t r_off (remote_offset);
-
-      while (remaining)
+      for (auto const& transfer : transfers)
       {
-        const size_t to_transfer (std::min (chunk_size, remaining));
+        size_t remaining (transfer.size);
+        const size_t chunk_size (_max_transfer_size);
 
-        queues.emplace
-          ( queued_operation<1> ( gaspi_read
-                                , _segment_id
-                                , l_off
-                                , from_node
-                                , _segment_id
-                                , r_off
-                                , to_transfer
-                                )
-          );
+        size_t l_off (transfer.local_offset);
+        size_t r_off (transfer.remote_offset);
 
-        remaining -= to_transfer;
-        l_off     += to_transfer;
-        r_off     += to_transfer;
+        while (remaining)
+        {
+          const size_t to_transfer (std::min (chunk_size, remaining));
+
+          queues.emplace
+            ( queued_operation<1> ( gaspi_read
+                                  , _segment_id
+                                  , l_off
+                                  , transfer.rank
+                                  , _segment_id
+                                  , r_off
+                                  , to_transfer
+                                  )
+            );
+
+          remaining -= to_transfer;
+          l_off     += to_transfer;
+          r_off     += to_transfer;
+        }
       }
 
       return {queues};
     }
-    void gaspi_t::wait_readable (std::list<read_dma_info> const& infos)
+    void gaspi_t::wait_readable (read_dma_info&& info)
     {
       //! \todo wait on specific reads instead (gaspi_read_notify)
       std::unordered_set<queue_desc_t> waited_queues;
-      for (read_dma_info const& info : infos)
+      for (auto const& queue : info.queues)
       {
-        for (auto const& queue : info.queues)
+        if (waited_queues.emplace (queue).second)
         {
-          if (waited_queues.emplace (queue).second)
-          {
-            FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
-          }
+          FAIL_ON_NON_ZERO (gaspi_wait, queue, GASPI_BLOCK);
         }
       }
     }
 
-    gaspi_t::write_dma_info gaspi_t::write_dma
-      ( const offset_t local_offset
-      , const offset_t remote_offset
-      , const size_t amount
-      , const rank_t to_node
-      )
+
+    gaspi_t::write_dma_info gaspi_t::write_dma (transfers_t const& transfers)
     {
-      size_t remaining (amount);
-      const size_t chunk_size (_max_transfer_size);
-
-      size_t l_off (local_offset);
-      size_t r_off (remote_offset);
-
       notification_t const write_id (next_write_id());
-      std::size_t const chunks (fhg::util::divru (amount, chunk_size));
+
+      gpi::size_t const chunk_size (_max_transfer_size);
+      std::size_t const chunks
+        ( std::accumulate
+            ( transfers.begin()
+            , transfers.end()
+            , std::size_t (0)
+            , [&chunk_size] (std::size_t accum, transfer_part const& part)
+              {
+                return accum + fhg::util::divru (part.size, chunk_size);
+              }
+            )
+        );
 
       {
         std::lock_guard<std::mutex> const _ (_notification_guard);
@@ -290,52 +287,51 @@ namespace gpi
         }
       }
 
-      while (remaining)
+      for (auto const& transfer : transfers)
       {
-        const size_t to_transfer (std::min (chunk_size, remaining));
+        size_t remaining (transfer.size);
 
-        queued_operation<2> ( gaspi_write_notify
-                            , _segment_id
-                            , l_off
-                            , to_node
-                            , _segment_id
-                            , r_off
-                            , to_transfer
-                            , next_ping_id (to_node)
-                            , write_id
-                            );
+        size_t l_off (transfer.local_offset);
+        size_t r_off (transfer.remote_offset);
 
-        remaining -= to_transfer;
-        l_off     += to_transfer;
-        r_off     += to_transfer;
+        while (remaining)
+        {
+          const size_t to_transfer (std::min (chunk_size, remaining));
+
+          queued_operation<2> ( gaspi_write_notify
+                              , _segment_id
+                              , l_off
+                              , transfer.rank
+                              , _segment_id
+                              , r_off
+                              , to_transfer
+                              , next_ping_id (transfer.rank)
+                              , write_id
+                              );
+
+          remaining -= to_transfer;
+          l_off     += to_transfer;
+          r_off     += to_transfer;
+        }
       }
 
       return {write_id};
     }
 
-    void gaspi_t::wait_remote_written
-      (std::list<write_dma_info> const& infos)
+    void gaspi_t::wait_remote_written (write_dma_info&& info)
     {
-      std::unordered_set<notification_t> waited_write_ids;
-
       std::unique_lock<std::mutex> lock (_notification_guard);
 
-      for (write_dma_info const& info : infos)
-      {
-        if (waited_write_ids.emplace (info.write_id).second)
-        {
-          _notification_received.wait
-            ( lock
-            , [&]
-              {
-                return _outstanding_notifications.at (info.write_id) == 0;
-              }
-            );
+      _notification_received.wait
+        ( lock
+        , [&]
+          {
+            return _outstanding_notifications.at (info.write_id) == 0;
+          }
+        );
 
-          _outstanding_notifications.erase (info.write_id);
-          _write_ids.put (info.write_id);
-        }
-      }
+      _outstanding_notifications.erase (info.write_id);
+      _write_ids.put (info.write_id);
     }
 
     notification_id_t gaspi_t::pong_ids_offset() const

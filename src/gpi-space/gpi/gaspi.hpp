@@ -38,29 +38,30 @@ namespace gpi
 
       void* dma_ptr() const;
 
+      struct transfer_part
+      {
+        offset_t local_offset;
+        offset_t remote_offset;
+        size_t size;
+        rank_t rank;
+      };
+      using transfers_t = std::list<transfer_part>;
+
       struct read_dma_info
       {
         std::unordered_set<queue_desc_t> queues;
       };
 
-      read_dma_info read_dma ( const offset_t local_offset
-                             , const offset_t remote_offset
-                             , const size_t amount
-                             , const rank_t from_node
-                             );
-      void wait_readable (std::list<read_dma_info> const&);
+      read_dma_info read_dma (transfers_t const&);
+      void wait_readable (read_dma_info&&);
 
       struct write_dma_info
       {
         notification_t write_id;
       };
 
-      write_dma_info write_dma ( const offset_t local_offset
-                               , const offset_t remote_offset
-                               , const size_t amount
-                               , const rank_t to_node
-                               );
-      void wait_remote_written (std::list<write_dma_info> const&);
+      write_dma_info write_dma (transfers_t const&);
+      void wait_remote_written (write_dma_info&&);
 
     private:
       template<std::size_t queue_entry_count, typename Fun, typename... Args>
