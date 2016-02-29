@@ -949,11 +949,11 @@ void GenericDaemon::handle_worker_registration_response
 void GenericDaemon::handleCapabilitiesGainedEvent
   (fhg::com::p2p::address_t const& source, const events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
-	// tell the scheduler to add the capabilities of the worker source
+  // tell the scheduler to add the capabilities of the worker source
   if (pCpbGainEvt->capabilities().empty())
   {
-     return;
-   }
+    return;
+  }
 
  WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
