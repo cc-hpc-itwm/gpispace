@@ -6,6 +6,7 @@
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 
+#include <rif/strategy/pbsdsh.hpp>
 #include <rif/strategy/ssh.hpp>
 
 #include <rpc/service_tcp_provider.hpp>
@@ -54,7 +55,9 @@ namespace fhg
                 )
               >
             >
-          > const strategies {{"ssh", {ssh::bootstrap, ssh::teardown}}};
+          > const strategies { {"pbsdsh", {pbsdsh::bootstrap, pbsdsh::teardown}}
+                             , {"ssh", {ssh::bootstrap, ssh::teardown}}
+                             };
 
         void validate_strategy (std::string const& strategy)
         {
