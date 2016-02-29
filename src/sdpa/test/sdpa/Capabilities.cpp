@@ -85,7 +85,7 @@ namespace
           : _capabilities | boost::adaptors::map_values
           )
       {
-        capabilities.emplace (capability);
+        BOOST_REQUIRE (capabilities.emplace (capability).second);
       }
       BOOST_REQUIRE (capabilities == expected);
     }

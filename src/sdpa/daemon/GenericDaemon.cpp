@@ -1019,17 +1019,13 @@ void GenericDaemon::handleCapabilitiesGainedEvent
     _scheduler.reschedule_pending_jobs_matching_worker (worker->second);
     request_scheduling();
 
-    const sdpa::capabilities_set_t newWorkerCpbSet
-      (_worker_manager.worker_capabilities (worker->second));
-
-    if( !newWorkerCpbSet.empty() )
+    if (!workerCpbSet.empty())
     {
       for (master_network_info const& info : _master_info)
       {
         if (info.address)
         {
-          parent_proxy (this, *info.address).capabilities_gained
-            (newWorkerCpbSet);
+          parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
         }
       }
     }
