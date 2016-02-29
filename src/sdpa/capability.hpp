@@ -17,7 +17,10 @@ namespace sdpa
     std::string name() const { return name_;}
 
     size_t depth() const { return depth_;}
-    void incDepth() { depth_++; }
+    Capability with_increased_depth() const
+    {
+      return {name_, depth_ + 1, owner_, uuid_};
+    }
 
     std::string owner() const { return owner_; }
 
@@ -41,7 +44,18 @@ namespace sdpa
       return uuid_ == b.uuid_;
     }
 
-    private:
+  private:
+    Capability ( std::string name
+               , size_t depth
+               , std::string owner
+               , std::string uuid
+               )
+      : name_ (std::move (name))
+      , depth_ (depth)
+      , owner_ (std::move (owner))
+      , uuid_ (std::move (uuid))
+    {}
+
     std::string name_;
     size_t depth_;
     std::string owner_;

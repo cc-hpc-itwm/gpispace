@@ -489,9 +489,7 @@ try
     // by the descendants
     if (!isOwnCapability (cpb))
     {
-      sdpa::capability_t cpbMod (cpb);
-      cpbMod.incDepth();
-      workerCpbSet.insert (cpbMod);
+      workerCpbSet.emplace (cpb.with_increased_depth());
     }
   }
 
@@ -1001,9 +999,7 @@ void GenericDaemon::handleCapabilitiesGainedEvent
     // own capabilities have always the depth 0
     if (!isOwnCapability (cpb))
     {
-      sdpa::capability_t cpbMod (cpb);
-      cpbMod.incDepth();
-      workerCpbSet.insert (cpbMod);
+      workerCpbSet.emplace (cpb.with_increased_depth());
     }
   }
 
