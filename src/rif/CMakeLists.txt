@@ -49,6 +49,7 @@ extended_add_library (NAME rif-strategies
 fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
   SOURCES "gspc-bootstrap-rifd.cpp"
   LIBRARIES rif-strategies
+            fhg-revision
             fhg-util
             Util::Generic
             Boost::filesystem
@@ -59,6 +60,7 @@ fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
 fhg_add_runtime_executable (NAME gspc-teardown-rifd
   SOURCES "gspc-teardown-rifd.cpp"
   LIBRARIES rif-strategies
+            fhg-revision
             fhg-util
             Util::Generic
             Boost::filesystem

@@ -1,6 +1,8 @@
 
 #include <rif/entry_point.hpp>
 
+#include <fhg/revision.hpp>
+
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -41,6 +43,7 @@ try
 
   boost::program_options::options_description options_description;
   options_description.add_options()
+    ("help", "this message")
     ( option::port
     , boost::program_options::value
         <fhg::util::boost::program_options::positive_integral<unsigned short>>()
@@ -73,6 +76,15 @@ try
       .run()
     , vm
     );
+
+  if (vm.count ("help"))
+  {
+    std::cerr << fhg::project_info ( std::string (argv[0])
+                                   + ": bootstrap the gspc rif deamon"
+                                   ) << "\n";
+    std::cerr << options_description << "\n";
+    return 0;
+  }
 
   boost::program_options::notify (vm);
 
