@@ -992,6 +992,8 @@ void GenericDaemon::handleCapabilitiesGainedEvent
         }
       }
     }
+
+    request_scheduling();
   }
 }
 
