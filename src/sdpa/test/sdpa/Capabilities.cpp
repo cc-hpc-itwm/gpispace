@@ -107,6 +107,7 @@ namespace
   };
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
 {
   drts_component_observing_capabilities observer;
@@ -124,6 +125,7 @@ BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
 {
   drts_component_observing_capabilities observer;
@@ -162,6 +164,7 @@ BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
   drts_component_observing_capabilities observer;
@@ -186,6 +189,7 @@ BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   ( RACE_capabilities_of_children_are_removed_when_disconnected
   , setup_logging
@@ -227,6 +231,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
                         , setup_logging
                         )
