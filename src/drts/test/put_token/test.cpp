@@ -3,9 +3,15 @@
 #define BOOST_TEST_MODULE token_put
 #include <boost/test/unit_test.hpp>
 
+#include <test_start_callback.hpp>
+
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
+
+#include <rpc/service_dispatcher.hpp>
+#include <rpc/service_handler.hpp>
+#include <rpc/service_tcp_provider.hpp>
 
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
@@ -16,8 +22,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/latch.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -33,6 +41,11 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add_options()
+    ( "rpc-lib"
+    , boost::program_options::value<boost::filesystem::path>()->required()
+    , "lib for workflow to link to"
+    );
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -63,6 +76,13 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     , "wait_for_token_put"
     , test::source_directory (vm)
     , installation_dir
+    , test::option::options()
+    . add<test::option::gen::include> (test::source_directory (vm))
+    . add<test::option::gen::include>
+        (test::source_directory (vm).parent_path().parent_path().parent_path())
+    . add<test::option::gen::cxx11>()
+    . add<test::option::gen::link>
+        (vm.at ("rpc-lib").as<boost::filesystem::path>())
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -81,7 +101,32 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
   pnet::type::value::value_type const bad (std::string ("bad"));
   pnet::type::value::value_type const good (std::string ("good"));
 
-  gspc::job_id_t const job_id (client.submit (workflow, {{"in", good}}));
+  fhg::util::latch workflow_actually_running (1);
+
+  fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+  fhg::rpc::service_dispatcher service_dispatcher;
+  fhg::rpc::service_handler<protocol::callback> register_service
+    ( service_dispatcher
+    , [&workflow_actually_running]
+      {
+        workflow_actually_running.count_down();
+      }
+    );
+  fhg::rpc::service_tcp_provider const registry (io_service, service_dispatcher);
+
+  gspc::job_id_t const job_id
+    ( client.submit
+        ( workflow
+        , { {"in", good}
+          , {"register_host", fhg::util::connectable_to_address_string
+                                (registry.local_endpoint().address())}
+          , {"register_port", static_cast<unsigned int>
+                                (registry.local_endpoint().port())}
+          }
+        )
+    );
+
+  workflow_actually_running.wait();
 
   client.put_token (job_id, "in", bad);
 
