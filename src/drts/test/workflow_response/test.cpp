@@ -139,7 +139,7 @@ BOOST_DATA_TEST_CASE
         , { {"state", initial_state}
           , {"register_host", fhg::util::connectable_to_address_string
                                 (registry.local_endpoint().address())}
-          , {"register_port", static_cast<unsigned long>
+          , {"register_port", static_cast<unsigned int>
                                 (registry.local_endpoint().port())}
           }
         )
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
           , {"random_module_calls", dist (eng)}
           , {"register_host", fhg::util::connectable_to_address_string
                                 (registry.local_endpoint().address())}
-          , {"register_port", static_cast<unsigned long>
+          , {"register_port", static_cast<unsigned int>
                                 (registry.local_endpoint().port())}
           }
         )

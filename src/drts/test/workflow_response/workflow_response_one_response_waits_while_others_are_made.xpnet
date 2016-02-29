@@ -3,7 +3,7 @@
   <in name="random_module_calls" type="unsigned long" place="random_module_calls"/>
   <out name="done" type="control" place="done_done"/>
   <in name="register_host" place="register_host" type="string"/>
-  <in name="register_port" place="register_port" type="unsigned long"/>
+  <in name="register_port" place="register_port" type="unsigned int"/>
   <net>
     <struct name="value_and_response_id">
       <field name="value" type="unsigned long"/>
@@ -82,11 +82,11 @@
     <place name="done_done" type="control" put_token="true"/>
 
     <place name="register_host" type="string"/>
-    <place name="register_port" type="unsigned long"/>
+    <place name="register_port" type="unsigned int"/>
     <transition name="register">
       <defun>
         <in name="host" type="string"/>
-        <in name="port" type="unsigned long"/>
+        <in name="port" type="unsigned int"/>
         <module name="workflow_response" function="notify_running (host, port)">
           <cinclude href="rpc/remote_function.hpp"/>
           <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
