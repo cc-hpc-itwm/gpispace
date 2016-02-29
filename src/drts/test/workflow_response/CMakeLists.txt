@@ -6,7 +6,7 @@ fhg_add_test (test.cpp
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-       --rpc_lib "$<TARGET_FILE:RPC>"
+       --rpc-lib "$<TARGET_FILE:RPC>"
   LINK_LIBRARIES gspc
                  test-utilities
                  fhg-util

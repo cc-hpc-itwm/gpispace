@@ -60,7 +60,7 @@ BOOST_DATA_TEST_CASE
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
-    ( "rpc_lib"
+    ( "rpc-lib"
     , boost::program_options::value<boost::filesystem::path>()->required()
     , "lib for workflow to link to"
     );
@@ -100,7 +100,7 @@ BOOST_DATA_TEST_CASE
         (test::source_directory (vm).parent_path().parent_path().parent_path())
     . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
-        (vm.at ("rpc_lib").as<boost::filesystem::path>())
+        (vm.at ("rpc-lib").as<boost::filesystem::path>())
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
@@ -280,7 +280,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
-    ( "rpc_lib"
+    ( "rpc-lib"
     , boost::program_options::value<boost::filesystem::path>()->required()
     , "lib for workflow to link to"
     );
@@ -322,7 +322,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
         (test::source_directory (vm).parent_path().parent_path().parent_path())
     . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
-        (vm.at ("rpc_lib").as<boost::filesystem::path>())
+        (vm.at ("rpc-lib").as<boost::filesystem::path>())
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
