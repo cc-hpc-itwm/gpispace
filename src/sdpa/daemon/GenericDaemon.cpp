@@ -506,11 +506,14 @@ try
   request_scheduling();
 
   // send to the masters my new set of capabilities
-  for (master_network_info const& info : _master_info)
+  if (!workerCpbSet.empty())
   {
-    if (info.address)
+    for (master_network_info const& info : _master_info)
     {
-      parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+      if (info.address)
+      {
+        parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+      }
     }
   }
 

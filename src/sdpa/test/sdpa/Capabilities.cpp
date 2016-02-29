@@ -25,6 +25,8 @@ namespace
     virtual void handleCapabilitiesGainedEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent* event) override
     {
+      BOOST_REQUIRE (!event->capabilities().empty());
+
       std::lock_guard<std::mutex> const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
       {
