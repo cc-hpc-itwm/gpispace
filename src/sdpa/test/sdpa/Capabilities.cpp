@@ -98,6 +98,41 @@ namespace
   };
 }
 
+BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
+{
+  drts_component_observing_capabilities observer;
+
+  {
+    const utils::agent agent (observer, _logger);
+
+    const std::string name (utils::random_peer_name());
+    const sdpa::capability_t capability ("A", name);
+    utils::basic_drts_worker const worker (name, agent, {capability});
+
+    observer.wait_for_capabilities ({capability});
+  }
+
+  observer.wait_for_capabilities ({});
+}
+
+BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
+{
+  drts_component_observing_capabilities observer;
+
+  {
+    const utils::agent agent_0 (observer, _logger);
+    const utils::agent agent_1 (agent_0, _logger);
+
+    const std::string name (utils::random_peer_name());
+    const sdpa::capability_t capability ("A", name);
+    utils::basic_drts_worker const worker (name, agent_1, {capability});
+
+    observer.wait_for_capabilities ({capability});
+  }
+
+  observer.wait_for_capabilities ({});
+}
+
 BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 {
   drts_component_observing_capabilities observer;
