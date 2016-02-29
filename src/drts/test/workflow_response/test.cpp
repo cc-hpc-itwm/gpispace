@@ -9,7 +9,6 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
-#include <rpc/function_description.hpp>
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>
 #include <rpc/service_tcp_provider.hpp>
