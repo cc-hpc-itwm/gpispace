@@ -8,6 +8,8 @@
 #include <boost/thread.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <algorithm>
+
 namespace sdpa
 {
   namespace daemon
@@ -89,7 +91,6 @@ namespace sdpa
         Reservation (std::set<worker_id_t> workers, double cost)
           : _workers (workers)
           , _cost (cost)
-          , _canceled (false)
         {}
 
         void replace_worker (worker_id_t const& w1, worker_id_t w2)
@@ -162,12 +163,20 @@ namespace sdpa
           return applied;
         }
 
-        void cancel() {_canceled = true;}
-        bool is_canceled() const {return _canceled;}
+        bool is_canceled() const
+        {
+          return std::any_of
+            ( _results.individual_results.begin()
+            , _results.individual_results.end()
+            , [] (std::pair<sdpa::worker_id_t, terminal_state> const& result)
+              {
+                return boost::get<JobFSM_::s_canceled> (&result.second);
+              }
+            );
+        }
 
       private:
         job_result_type _results;
-        bool _canceled;
       };
 
       mutable boost::mutex mtx_alloc_table_;

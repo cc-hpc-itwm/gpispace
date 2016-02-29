@@ -737,7 +737,9 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       }
 
       //! \note rescheduled: never tell workflow engine or modify state!
-      if (_scheduler.reservation_canceled (job->id()))
+      if ( _scheduler.reservation_canceled (job->id())
+        && (job->getStatus() != sdpa::status::CANCELING)
+         )
       {
         _scheduler.releaseReservation (job->id());
         _scheduler.enqueueJob (job->id());

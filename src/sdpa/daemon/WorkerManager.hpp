@@ -290,7 +290,6 @@ namespace sdpa
         {
           T* reservation (get_reservation (jobId));
           reservation->store_result (worker_id, JobFSM_::s_canceled());
-          reservation->cancel();
           pJob->Reschedule();
 
           if (!reservation->apply_to_workers_without_result
