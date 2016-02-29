@@ -88,6 +88,13 @@ namespace
       BOOST_REQUIRE (capabilities == expected);
     }
 
+    void wait_for_capabilities (std::size_t count)
+    {
+      std::unique_lock<std::mutex> lock (_mutex);
+      _capabilities_changed.wait
+        (lock, [&] { return _capabilities.size() == count; });
+    }
+
   private:
     std::mutex _mutex;
     std::condition_variable _capabilities_changed;
@@ -216,4 +223,32 @@ BOOST_FIXTURE_TEST_CASE
 
     observer.wait_for_capabilities ({});
   }
+}
+
+BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
+                        , setup_logging
+                        )
+{
+  drts_component_observing_capabilities observer;
+
+  {
+    utils::agent const agent_0 (observer, _logger);
+    utils::agent const agent_1 (agent_0, _logger);
+
+    std::list<utils::basic_drts_worker> workers;
+
+    std::size_t const count (128);
+
+    for (std::size_t i (0); i < count; ++i)
+    {
+      sdpa::worker_id_t const name (utils::random_peer_name());
+      sdpa::capability_t const capability (std::to_string (count), name);
+      workers.emplace_back
+        (name, agent_1, sdpa::capabilities_set_t {capability});
+    }
+
+    observer.wait_for_capabilities (count);
+  }
+
+  observer.wait_for_capabilities ({});
 }
