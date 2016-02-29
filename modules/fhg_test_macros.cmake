@@ -127,7 +127,7 @@ set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
 set (TEST_VMEM_PORTS_PER_TEST 100)
 
 macro(FHG_ADD_TEST)
-  set (options VERBOSE BOOST_UNIT_TEST REQUIRES_INSTALLATION PERFORMANCE_TEST REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
+  set (options BOOST_UNIT_TEST REQUIRES_INSTALLATION PERFORMANCE_TEST REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
   set (one_value_options PROJECT DESCRIPTION)
   set (multi_value_options LINK_LIBRARIES DEPENDS ARGS COMPILE_FLAGS INCLUDE_DIRECTORIES)
   set (required_options)
@@ -165,24 +165,20 @@ macro(FHG_ADD_TEST)
       )
     endif()
 
-    if (TEST_VERBOSE)
-      message (STATUS "adding test ${tc_name} ${TEST_ARGS} (${TEST_DESCRIPTION})")
-    endif()
-
-    add_executable(${tc_name} ${TEST_SOURCE} ${TEST_ADDITIONAL_SOURCES})
+    extended_add_executable (NAME ${tc_name}
+      SOURCES ${TEST_SOURCE} ${TEST_ADDITIONAL_SOURCES}
+      LIBRARIES ${TEST_LINK_LIBRARIES}
+      DONT_APPEND_EXE_SUFFIX
+    )
     if (TEST_COMPILE_FLAGS)
-      set_target_properties(${tc_name} PROPERTIES COMPILE_FLAGS ${TEST_COMPILE_FLAGS})
+      set_target_properties (${tc_name} PROPERTIES COMPILE_FLAGS ${TEST_COMPILE_FLAGS})
     endif()
     if (TEST_INCLUDE_DIRECTORIES)
       target_include_directories (${tc_name} ${TEST_INCLUDE_DIRECTORIES})
     endif()
-    target_link_libraries(${tc_name} ${TEST_LINK_LIBRARIES})
     add_test (NAME ${tc_name} COMMAND $<TARGET_FILE:${tc_name}> ${TEST_ARGS})
 
-    get_test_property (${tc_name} LABELS tc_labels)
-    if (NOT tc_labels)
-      set (tc_labels)
-    endif()
+    set (tc_labels)
 
     if (TEST_REQUIRES_INSTALLATION)
       set_tests_properties (${tc_name}
@@ -193,6 +189,7 @@ macro(FHG_ADD_TEST)
 
     if (TEST_PERFORMANCE_TEST)
       list(APPEND tc_labels "performance_test")
+      set_property (TEST ${tc_name} APPEND PROPERTY RUN_SERIAL 1)
     endif()
 
     if (TEST_REQUIRES_VIRTUAL_MEMORY)
