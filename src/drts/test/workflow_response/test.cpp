@@ -126,7 +126,7 @@ BOOST_DATA_TEST_CASE
   fhg::rpc::service_dispatcher service_dispatcher;
   fhg::rpc::service_handler<protocol::callback> register_service
     ( service_dispatcher
-    , [&]
+    , [&workflow_actually_running]
       {
         workflow_actually_running.count_down();
       }
@@ -353,7 +353,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
   fhg::rpc::service_dispatcher service_dispatcher;
   fhg::rpc::service_handler<protocol::callback> register_service
     ( service_dispatcher
-    , [&]
+    , [&workflow_actually_running]
       {
         workflow_actually_running.count_down();
       }
