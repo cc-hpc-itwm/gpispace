@@ -23,14 +23,24 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <future>
 #include <map>
 #include <regex>
 
-namespace
-{
-  void check_response (std::string const& name, std::string const& topology)
+BOOST_DATA_TEST_CASE
+  ( workflow_response
+  , boost::unit_test::data::make ( std::vector<std::string>
+                                     { "workflow_response"
+                                     , "workflow_response_expression"
+                                     }
+                                 )
+  ^ boost::unit_test::data::make (std::vector<std::string> {"worker:2", ""})
+  , name
+  , topology
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -212,13 +222,6 @@ namespace
   BOOST_REQUIRE_EQUAL ( result.find (port_state)->second
                       , pnet::type::value::value_type (value)
                       );
-}
-}
-
-BOOST_AUTO_TEST_CASE (workflow_response)
-{
-  check_response ("workflow_response", "worker:2");
-  check_response ("workflow_response_expression", "");
 }
 
 BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
