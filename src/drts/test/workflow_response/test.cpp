@@ -24,6 +24,7 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/latch.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
