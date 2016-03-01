@@ -249,22 +249,21 @@ BOOST_FIXTURE_TEST_CASE
 
   const std::string job_name_1 (job_submitted_1.wait());
   BOOST_REQUIRE_EQUAL (job_name_1, job_submitted_2.wait());
-
   worker_1.report_backlog_full (job_name_1);
   worker_2.canceled (cancel_requested_2.wait());
+  worker_1.report_can_take_jobs();
 
   const std::string job_name_2 (job_submitted_1.wait());
+
   BOOST_REQUIRE_EQUAL (job_name_2, job_submitted_2.wait());
-  BOOST_REQUIRE (job_name_2 != job_name_1);
 
   worker_1.acknowledge_and_finish (job_name_2);
   worker_2.finish_and_wait_for_ack (job_name_2);
 
-  worker_1.report_can_take_jobs();
-
   const std::string job_name_3 (job_submitted_1.wait());
   BOOST_REQUIRE_EQUAL (job_name_3, job_submitted_2.wait());
-  BOOST_REQUIRE_EQUAL (job_name_3, job_name_1);
+
+  BOOST_REQUIRE (job_name_3 != job_name_2);
 
   worker_1.acknowledge_and_finish (job_name_3);
   worker_2.finish_and_wait_for_ack (job_name_3);

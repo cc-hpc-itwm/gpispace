@@ -247,33 +247,31 @@ namespace sdpa
       return assignment;
     }
 
-    void CoallocationScheduler::reschedule_pending_jobs_matching_worker
-      (const worker_id_t& worker)
+    void CoallocationScheduler::reschedule_worker_jobs
+       ( worker_id_t const& worker
+       , std::function<Job* (sdpa::job_id_t const&)> get_job
+       , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
+       )
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
 
-      const std::unordered_set<job_id_t> removed_jobs
-        (_worker_manager.remove_pending_jobs_from_workers_with_similar_capabilities
-          (worker)
+      std::unordered_set<job_id_t> const jobs_to_reschedule
+        (_worker_manager.delete_or_cancel_worker_jobs<Reservation>
+          ( worker
+          , get_job
+          , [=] (job_id_t const& jobId)
+            {return allocation_table_.at (jobId);}
+          , cancel_worker_job
+          )
         );
 
-      for (job_id_t const& job_id : removed_jobs)
+      for (job_id_t const& jobId : jobs_to_reschedule)
       {
-        _list_pending_jobs.erase (job_id);
-        delete allocation_table_.at (job_id);
-        allocation_table_.erase (job_id);
+        delete allocation_table_.at (jobId);
+        _list_pending_jobs.erase (jobId);
+        allocation_table_.erase (jobId);
+        enqueueJob (jobId);
       }
-
-      _jobs_to_schedule.push (removed_jobs);
-    }
-
-    bool CoallocationScheduler::cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
-                                                              , const sdpa::job_id_t& job_id)
-    {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-
-      return allocation_table_.at (job_id)
-        ->apply_to_workers_without_result (std::move (func));
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
@@ -319,6 +317,12 @@ namespace sdpa
         allocation_table_.erase (it);
       }
       //! \todo why can we ignore this?
+    }
+
+    bool CoallocationScheduler::reservation_canceled (job_id_t const& job) const
+    {
+      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      return allocation_table_.at (job)->is_canceled();
     }
 
     void CoallocationScheduler::store_result ( worker_id_t const& worker_id

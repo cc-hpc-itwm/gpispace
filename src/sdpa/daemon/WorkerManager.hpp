@@ -97,15 +97,18 @@ namespace sdpa
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
-    std::unordered_set<job_id_t>
-      remove_pending_jobs_from_workers_with_similar_capabilities
-        (worker_id_t const&);
+    template <typename T>
+    std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
+      ( worker_id_t const&
+      , std::function<Job* (sdpa::job_id_t const&)>
+      , std::function<T* (sdpa::job_id_t const&)>
+      , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
+      );
 
     void assign_job_to_worker (const job_id_t&, const worker_id_t&);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
-    const std::set<job_id_t> get_worker_jobs_and_clean_queues (const worker_id_t&);
     bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     void set_worker_backlog_full (const worker_id_t&, bool);
@@ -252,6 +255,78 @@ namespace sdpa
           to_steal_from.emplace (richest);
         }
       }
+    }
+
+    template <typename T>
+    std::unordered_set<sdpa::job_id_t> WorkerManager::delete_or_cancel_worker_jobs
+      ( worker_id_t const& worker_id
+      , std::function<Job* (sdpa::job_id_t const&)> get_job
+      , std::function<T* (sdpa::job_id_t const&)> get_reservation
+      , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
+      )
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+
+      Worker const& worker (worker_map_.at (worker_id));
+
+      std::unordered_set<sdpa::job_id_t> jobs_to_reschedule
+        ( worker.pending_.begin()
+        , worker.pending_.end()
+        );
+
+      std::unordered_set<sdpa::job_id_t> jobs_to_cancel;
+      std::set_union ( worker.submitted_.begin()
+                     , worker.submitted_.end()
+                     , worker.acknowledged_.begin()
+                     , worker.acknowledged_.end()
+                     , std::inserter (jobs_to_cancel, jobs_to_cancel.begin())
+                      );
+
+      for (job_id_t const& jobId : jobs_to_cancel)
+      {
+        Job* const pJob = get_job (jobId);
+
+        if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
+        {
+          T* reservation (get_reservation (jobId));
+          reservation->store_result (worker_id, JobFSM_::s_canceled());
+          pJob->Reschedule();
+
+          if (!reservation->apply_to_workers_without_result
+               ( [&jobId, &cancel_worker_job] (const sdpa::worker_id_t& wid)
+                 {
+                   cancel_worker_job (wid, jobId);
+                 }
+               )
+             )
+          {
+            jobs_to_reschedule.emplace (jobId);
+          }
+        }
+      }
+
+      for (job_id_t const& job_id : jobs_to_reschedule)
+      {
+        for (std::string const& worker_id : get_reservation (job_id)->workers())
+        {
+          Worker& worker (worker_map_.at (worker_id));
+          auto& equivalence_class
+            (worker_equiv_classes_.at (worker.capability_names_));
+
+          if (worker.pending_.count (job_id))
+          {
+            worker.delete_pending_job (job_id);
+            equivalence_class.dec_pending_jobs (1);
+          }
+          else
+          {
+            worker.delete_submitted_job (job_id);
+            equivalence_class.dec_running_jobs (1);
+          }
+        }
+      }
+
+      return jobs_to_reschedule;
     }
   }
 }

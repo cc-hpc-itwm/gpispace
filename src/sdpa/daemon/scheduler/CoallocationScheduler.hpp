@@ -8,6 +8,8 @@
 #include <boost/thread.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <algorithm>
+
 namespace sdpa
 {
   namespace daemon
@@ -39,9 +41,6 @@ namespace sdpa
       void steal_work();
       assignment_t get_current_assignment_TESTING_ONLY() const;
 
-      bool cancelNotTerminatedWorkerJobs ( std::function<void (worker_id_t const&)> func
-                                         , const sdpa::job_id_t& job_id);
-
       std::set<worker_id_t> find_job_assignment_minimizing_total_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , const size_t n_req_workers
@@ -49,9 +48,16 @@ namespace sdpa
         , const double computational_cost
         );
 
-      void reschedule_pending_jobs_matching_worker (const worker_id_t&);
+      void reschedule_worker_jobs
+        ( worker_id_t const&
+        , std::function<Job* (sdpa::job_id_t const&)>
+        , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
+        );
+
       std::set<job_id_t> start_pending_jobs
         (std::function<void (std::set<worker_id_t> const&, const job_id_t&)>);
+
+      bool reservation_canceled (job_id_t const&) const;
     private:
       double compute_reservation_cost
         ( const job_id_t&
@@ -155,6 +161,18 @@ namespace sdpa
           }
 
           return applied;
+        }
+
+        bool is_canceled() const
+        {
+          return std::any_of
+            ( _results.individual_results.begin()
+            , _results.individual_results.end()
+            , [] (std::pair<sdpa::worker_id_t, terminal_state> const& result)
+              {
+                return boost::get<JobFSM_::s_canceled> (&result.second);
+              }
+            );
         }
 
       private:

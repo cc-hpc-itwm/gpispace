@@ -139,20 +139,6 @@ namespace sdpa
       return reserved_;
     }
 
-    std::set<job_id_t> Worker::getJobListAndCleanQueues()
-    {
-      std::set<job_id_t> listAssignedJobs;
-
-      listAssignedJobs.insert (pending_.begin(), pending_.end());
-      listAssignedJobs.insert (submitted_.begin(), submitted_.end());
-      listAssignedJobs.insert (acknowledged_.begin(), acknowledged_.end());
-      pending_.clear();
-      submitted_.clear();
-      acknowledged_.clear();
-
-      return listAssignedJobs;
-    }
-
     double Worker::cost_assigned_jobs
       (std::function<double (job_id_t job_id)> cost_reservation) const
     {
