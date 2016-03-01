@@ -1,6 +1,8 @@
 <defun name="workflow_response">
   <inout name="state" type="unsigned long" place="state"/>
   <out name="done" type="control" place="done"/>
+  <in name="register_host" place="register_host" type="string"/>
+  <in name="register_port" place="register_port" type="unsigned int"/>
   <net>
     <place name="state" type="unsigned long"/>
     <place name="done" type="control" put_token="true"/>
@@ -24,6 +26,28 @@
       <connect-inout port="state" place="state"/>
       <connect-in port="trigger" place="get_and_update_state"/>
       <connect-response port="response" to="trigger"/>
+    </transition>
+
+    <place name="register_host" type="string"/>
+    <place name="register_port" type="unsigned int"/>
+    <transition name="register">
+      <defun>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <module name="workflow_response" function="notify_running (host, port)">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_start_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="host" place="register_host"/>
+      <connect-in port="port" place="register_port"/>
     </transition>
   </net>
 </defun>

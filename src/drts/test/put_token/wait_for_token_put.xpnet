@@ -2,6 +2,8 @@
   <in name="in" type="string" place="in"/>
   <out name="good" type="string" place="good"/>
   <out name="bad" type="string" place="bad"/>
+  <in name="register_host" place="register_host" type="string"/>
+  <in name="register_port" place="register_port" type="unsigned int"/>
   <net>
     <place name="in" type="string" put_token="true"/>
     <place name="good" type="string"/>
@@ -29,6 +31,28 @@
       </condition>
       <connect-in port="x" place="in"/>
       <connect-out port="x" place="bad"/>
+    </transition>
+
+    <place name="register_host" type="string"/>
+    <place name="register_port" type="unsigned int"/>
+    <transition name="register">
+      <defun>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <module name="workflow_response" function="notify_running (host, port)">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_start_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="host" place="register_host"/>
+      <connect-in port="port" place="register_port"/>
     </transition>
   </net>
 </defun>
