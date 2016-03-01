@@ -489,9 +489,7 @@ try
     // by the descendants
     if (!isOwnCapability (cpb))
     {
-      sdpa::capability_t cpbMod (cpb);
-      cpbMod.incDepth();
-      workerCpbSet.insert (cpbMod);
+      workerCpbSet.emplace (cpb.with_increased_depth());
     }
   }
 
@@ -506,11 +504,14 @@ try
   request_scheduling();
 
   // send to the masters my new set of capabilities
-  for (master_network_info const& info : _master_info)
+  if (!workerCpbSet.empty())
   {
-    if (info.address)
+    for (master_network_info const& info : _master_info)
     {
-      parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+      if (info.address)
+      {
+        parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+      }
     }
   }
 
@@ -984,49 +985,39 @@ void GenericDaemon::handle_worker_registration_response
 void GenericDaemon::handleCapabilitiesGainedEvent
   (fhg::com::p2p::address_t const& source, const events::CapabilitiesGainedEvent* pCpbGainEvt)
 {
-	// tell the scheduler to add the capabilities of the worker source
-  if (pCpbGainEvt->capabilities().empty())
-  {
-     return;
-   }
-
- WorkerManager::worker_connections_t::right_map::iterator const worker
+  WorkerManager::worker_connections_t::right_map::iterator const worker
     ( fhg::util::boost::get_or_throw<std::runtime_error>
-        (_worker_manager.worker_by_address (source), "capabilities_gained for unknown worker")
+        ( _worker_manager.worker_by_address (source)
+        , "capabilities_gained for unknown worker"
+        )
     );
 
   sdpa::capabilities_set_t workerCpbSet;
 
-  for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities() )
+  for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities())
   {
     // own capabilities have always the depth 0
-    if( !isOwnCapability(cpb) )
+    if (!isOwnCapability (cpb))
     {
-      sdpa::capability_t cpbMod(cpb);
-      cpbMod.incDepth();
-      workerCpbSet.insert(cpbMod);
+      workerCpbSet.emplace (cpb.with_increased_depth());
     }
   }
 
-  bool const bModified (_worker_manager.add_worker_capabilities
-    (worker->second, workerCpbSet));
+  bool const bModified
+    (_worker_manager.add_worker_capabilities (worker->second, workerCpbSet));
 
-  if(bModified)
+  if (bModified)
   {
     _scheduler.reschedule_pending_jobs_matching_worker (worker->second);
     request_scheduling();
 
-    const sdpa::capabilities_set_t newWorkerCpbSet
-      (_worker_manager.worker_capabilities (worker->second));
-
-    if( !newWorkerCpbSet.empty() )
+    if (!workerCpbSet.empty())
     {
       for (master_network_info const& info : _master_info)
       {
         if (info.address)
         {
-          parent_proxy (this, *info.address).capabilities_gained
-            (newWorkerCpbSet);
+          parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
         }
       }
     }

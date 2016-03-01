@@ -25,6 +25,8 @@ namespace
     virtual void handleCapabilitiesGainedEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent* event) override
     {
+      BOOST_REQUIRE (!event->capabilities().empty());
+
       std::lock_guard<std::mutex> const _ (_mutex);
       for (const sdpa::capability_t& cpb : event->capabilities())
       {
@@ -83,9 +85,16 @@ namespace
           : _capabilities | boost::adaptors::map_values
           )
       {
-        capabilities.emplace (capability);
+        BOOST_REQUIRE (capabilities.emplace (capability).second);
       }
       BOOST_REQUIRE (capabilities == expected);
+    }
+
+    void wait_for_capabilities (std::size_t count)
+    {
+      std::unique_lock<std::mutex> lock (_mutex);
+      _capabilities_changed.wait
+        (lock, [&] { return _capabilities.size() == count; });
     }
 
   private:
@@ -96,6 +105,43 @@ namespace
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
+{
+  drts_component_observing_capabilities observer;
+
+  {
+    const utils::agent agent (observer, _logger);
+
+    const std::string name (utils::random_peer_name());
+    const sdpa::capability_t capability ("A", name);
+    utils::basic_drts_worker const worker (name, agent, {capability});
+
+    observer.wait_for_capabilities ({capability});
+  }
+
+  observer.wait_for_capabilities ({});
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
+{
+  drts_component_observing_capabilities observer;
+
+  {
+    const utils::agent agent_0 (observer, _logger);
+    const utils::agent agent_1 (agent_0, _logger);
+
+    const std::string name (utils::random_peer_name());
+    const sdpa::capability_t capability ("A", name);
+    utils::basic_drts_worker const worker (name, agent_1, {capability});
+
+    observer.wait_for_capabilities ({capability});
+  }
+
+  observer.wait_for_capabilities ({});
 }
 
 BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
@@ -118,6 +164,7 @@ BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
   drts_component_observing_capabilities observer;
@@ -142,6 +189,7 @@ BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   ( RACE_capabilities_of_children_are_removed_when_disconnected
   , setup_logging
@@ -181,4 +229,33 @@ BOOST_FIXTURE_TEST_CASE
 
     observer.wait_for_capabilities ({});
   }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
+                        , setup_logging
+                        )
+{
+  drts_component_observing_capabilities observer;
+
+  {
+    utils::agent const agent_0 (observer, _logger);
+    utils::agent const agent_1 (agent_0, _logger);
+
+    std::list<utils::basic_drts_worker> workers;
+
+    std::size_t const count (128);
+
+    for (std::size_t i (0); i < count; ++i)
+    {
+      sdpa::worker_id_t const name (utils::random_peer_name());
+      sdpa::capability_t const capability (std::to_string (count), name);
+      workers.emplace_back
+        (name, agent_1, sdpa::capabilities_set_t {capability});
+    }
+
+    observer.wait_for_capabilities (count);
+  }
+
+  observer.wait_for_capabilities ({});
 }
