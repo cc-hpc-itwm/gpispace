@@ -5,6 +5,7 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
 #include <rif/strategy/pbsdsh.hpp>
 #include <rif/strategy/ssh.hpp>
@@ -112,8 +113,6 @@ namespace fhg
         std::condition_variable entry_point_added;
         std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
 
-        boost::asio::io_service io_service;
-
         fhg::rpc::service_dispatcher service_dispatcher;
 
         fhg::rpc::service_handler<bootstrap_callback> const register_service
@@ -131,8 +130,9 @@ namespace fhg
               }
             );
 
-        fhg::rpc::service_tcp_provider_with_io_service rpc_server
-          (service_dispatcher);
+        util::scoped_boost_asio_io_service_with_threads io_service (2);
+        fhg::rpc::service_tcp_provider rpc_server
+          (io_service, service_dispatcher);
 
         boost::asio::ip::tcp::endpoint const local_endpoint
           (rpc_server.local_endpoint());

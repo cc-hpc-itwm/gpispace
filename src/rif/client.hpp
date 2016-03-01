@@ -13,8 +13,10 @@ namespace fhg
     class client
     {
     public:
-      client (fhg::rif::entry_point const& entry_point)
-        : _endpoint (entry_point.hostname, entry_point.port)
+      client ( boost::asio::io_service& io_service
+             , fhg::rif::entry_point const& entry_point
+             )
+        : _endpoint (io_service, entry_point.hostname, entry_point.port)
         , execute_and_get_startup_messages (_endpoint)
         , execute_and_get_startup_messages_and_wait (_endpoint)
         , kill (_endpoint)
@@ -22,7 +24,7 @@ namespace fhg
       {}
 
     private:
-      fhg::rpc::remote_tcp_endpoint_with_io_service _endpoint;
+      fhg::rpc::remote_tcp_endpoint _endpoint;
 
     public:
       rpc::remote_function<protocol::execute_and_get_startup_messages>

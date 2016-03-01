@@ -118,13 +118,11 @@ namespace gpi
           }
         }
 
-        //! \todo use aggregated_* rpc
         std::vector<std::future<void>> results;
-        std::vector<fhg::rpc::remote_function<Description>> functions;
         for (fhg::rpc::remote_tcp_endpoint& other : _others)
         {
-          functions.emplace_back (other);
-          results.emplace_back (functions.back() (args...));
+          results.emplace_back
+            (fhg::rpc::remote_function<Description> (other) (args...));
         }
 
         wait_for (results, std::chrono::seconds (30));

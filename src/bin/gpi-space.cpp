@@ -12,6 +12,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -176,7 +177,7 @@ int main (int argc, char** argv)
       crit_error_handler (signal_handler, logger);
 
     //! \todo more than one thread, parameter
-    fhg::util::scoped_boost_asio_io_service_with_threads topology_io_service (1);
+    fhg::util::scoped_boost_asio_io_service_with_threads topology_io_service (8);
     auto topology_rpc_server
       ( fhg::util::cxx14::make_unique
           <fhg::rpc::service_tcp_provider_with_deferred_dispatcher>

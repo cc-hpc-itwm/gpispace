@@ -9,6 +9,7 @@
 
 #include <util-generic/blocked.hpp>
 #include <util-generic/read_lines.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <rif/client.hpp>
@@ -192,34 +193,55 @@ namespace gspc
               , std::unordered_map<std::string, std::string> const& environment
               ) const
     {
-      //! \todo use aggregated_rpc
-      return fhg::util::blocked_async_with_results< std::string
-                                                  , std::vector<std::string>
-                                                  >
-        ( hostnames
-        //! \todo make the blocksize an option, better: use aggregated_rpc
-        , 64
-        , [] (std::string const& hostname) { return hostname; }
-        , [&] (std::string const& hostname)
+      std::pair< std::unordered_map<std::string, std::vector<std::string>>
+               , std::unordered_map<std::string, std::exception_ptr>
+               > results;
+
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
+
+      std::list<fhg::rif::client> clients;
+      std::unordered_map<std::string, std::future<std::vector<std::string>>> futures;
+      for (std::string const& hostname : hostnames)
+      {
+        try
+        {
+          auto const pos (_entry_points.find (hostname));
+
+          if (pos == _entry_points.end())
           {
-            auto const pos (_entry_points.find (hostname));
-
-            if (pos == _entry_points.end())
-            {
-              throw std::invalid_argument
-                (( boost::format ("execute: unknown host '%1%'")
-                 % hostname
-                 ).str()
-                );
-            }
-
-            return fhg::rif::client (pos->second)
-              . execute_and_get_startup_messages_and_wait
-                  (command, arguments, environment)
-              . get()
-              ;
+            throw std::invalid_argument
+              (( boost::format ("execute: unknown host '%1%'")
+               % hostname
+               ).str()
+              );
           }
-        );
+
+          clients.emplace_back (io_service, pos->second);
+          futures.emplace
+            ( hostname
+            , clients.back().execute_and_get_startup_messages_and_wait
+                (command, arguments, environment)
+            );
+        }
+        catch (...)
+        {
+          results.second.emplace (hostname, std::current_exception());
+        }
+      }
+
+      for (auto& future : futures)
+      {
+        try
+        {
+          results.first.emplace (future.first, future.second.get());
+        }
+        catch (...)
+        {
+          results.second.emplace (future.first, std::current_exception());
+        }
+      }
+
+      return results;
     }
 
     std::string _strategy;

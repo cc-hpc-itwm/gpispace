@@ -299,8 +299,9 @@ try
   {
     io_service.post_fork_parent();
 
-    fhg::rpc::remote_tcp_endpoint_with_io_service endpoint
-      (register_host, register_port);
+    fhg::util::scoped_boost_asio_io_service_with_threads io_service_parent (1);
+    fhg::rpc::remote_tcp_endpoint endpoint
+      (io_service_parent, register_host, register_port);
 
     boost::asio::ip::tcp::endpoint const local_endpoint
       (server.local_endpoint());
