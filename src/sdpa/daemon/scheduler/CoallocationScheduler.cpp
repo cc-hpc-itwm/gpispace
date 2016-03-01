@@ -198,7 +198,7 @@ namespace sdpa
               );
 
             allocation_table_.emplace (jobId, pReservation);
-            _list_pending_jobs.emplace (jobId);
+            _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
           {
@@ -268,7 +268,7 @@ namespace sdpa
       for (job_id_t const& jobId : jobs_to_reschedule)
       {
         delete allocation_table_.at (jobId);
-        _list_pending_jobs.erase (jobId);
+        _pending_jobs.erase (jobId);
         allocation_table_.erase (jobId);
         enqueueJob (jobId);
       }
@@ -280,7 +280,7 @@ namespace sdpa
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      for (const job_id_t& job_id: _list_pending_jobs)
+      for (const job_id_t& job_id: _pending_jobs)
       {
         std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
@@ -295,7 +295,7 @@ namespace sdpa
         }
       }
 
-      std::swap (_list_pending_jobs, remaining_jobs);
+      std::swap (_pending_jobs, remaining_jobs);
 
       return jobs_started;
     }
@@ -315,7 +315,7 @@ namespace sdpa
         }
 
         delete ptr_reservation;
-        _list_pending_jobs.erase (it->first);
+        _pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }
       //! \todo why can we ignore this?
