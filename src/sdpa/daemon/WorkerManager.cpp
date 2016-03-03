@@ -282,15 +282,6 @@ namespace sdpa
       return bpq.assigned_workers();
     }
 
-    double WorkerManager::cost_assigned_jobs
-      ( const worker_id_t worker_id
-      , std::function<double (job_id_t job_id)> cost_reservation
-      )
-    {
-      boost::mutex::scoped_lock const _(mtx_);
-      return worker_map_.at (worker_id).cost_assigned_jobs (cost_reservation);
-    }
-
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const& job_id
       , std::set<worker_id_t> const& workers

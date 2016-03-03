@@ -88,8 +88,6 @@ namespace sdpa
         , const std::function<double (job_id_t const&)>
         ) const;
 
-      double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
-
       template <typename Reservation>
       void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
 
