@@ -41,13 +41,6 @@ namespace sdpa
       void steal_work();
       assignment_t get_current_assignment_TESTING_ONLY() const;
 
-      std::set<worker_id_t> find_job_assignment_minimizing_total_cost
-        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-        , const size_t n_req_workers
-        , const std::function<double (std::string const&)> transfer_cost
-        , const double computational_cost
-        );
-
       void reschedule_worker_jobs
         ( worker_id_t const&
         , std::function<Job* (sdpa::job_id_t const&)>

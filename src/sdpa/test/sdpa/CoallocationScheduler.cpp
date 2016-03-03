@@ -677,9 +677,19 @@ struct fixture_minimal_cost_assignment
        {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;}
       };
 
+    const job_requirements_t requirements ( {}
+                                          , we::type::schedule_data (n_req_workers)
+                                          , transfer_cost
+                                          , 1.0
+                                          , 100
+                                          );
+
     const std::set<sdpa::worker_id_t> set_assigned_workers
-      (_scheduler.find_job_assignment_minimizing_total_cost
-        (mmap_match_deg_worker, n_req_workers, transfer_cost, 1.0)
+      (_worker_manager.find_job_assignment_minimizing_total_cost
+        ( mmap_match_deg_worker
+        , requirements
+        , [] (sdpa::job_id_t const&) {return 1.0;}
+        )
       );
 
     BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);

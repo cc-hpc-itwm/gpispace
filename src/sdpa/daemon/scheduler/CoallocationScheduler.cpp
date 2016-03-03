@@ -30,105 +30,6 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
-    namespace
-    {
-      typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
-
-      typedef std::priority_queue < cost_deg_wid_t
-                                  , std::vector<cost_deg_wid_t>
-                                  > base_priority_queue_t;
-
-      class bounded_priority_queue_t : private base_priority_queue_t
-      {
-      public:
-        explicit bounded_priority_queue_t (std::size_t capacity)
-          : capacity_ (capacity)
-        {}
-
-        template<typename... Args>
-      void emplace (Args&&... args)
-      {
-        if (size() < capacity_)
-        {
-          base_priority_queue_t::emplace (std::forward<Args> (args)...);
-          return;
-        }
-
-        cost_deg_wid_t const next_tuple (std::forward<Args> (args)...);
-
-        if (comp (next_tuple, top()))
-        {
-          pop();
-          base_priority_queue_t::emplace (std::move (next_tuple));
-        }
-      }
-
-        std::set<worker_id_t> assigned_workers() const
-        {
-          std::set<worker_id_t> assigned_workers;
-
-          std::transform ( c.begin()
-                         , c.end()
-                         , std::inserter (assigned_workers, assigned_workers.begin())
-                         , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
-                           {
-                             return  std::get<4> (cost_deg_wid);
-                           }
-                         );
-
-          return assigned_workers;
-        }
-
-      private:
-        size_t capacity_;
-      };
-    }
-
-    std::set<worker_id_t> CoallocationScheduler::find_job_assignment_minimizing_total_cost
-       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-       , const size_t n_req_workers
-       , const std::function<double (std::string const&)> transfer_cost
-       , const double computational_cost
-       )
-     {
-       if (mmap_matching_workers.size() < n_req_workers)
-         return {};
-
-       bounded_priority_queue_t bpq (n_req_workers);
-
-       for ( std::pair<double const, worker_id_host_info_t> const& it
-           : mmap_matching_workers
-           )
-       {
-         const worker_id_host_info_t& worker_info = it.second;
-
-         double const cost_preassigned_jobs
-           ( _worker_manager.cost_assigned_jobs
-             ( worker_info.worker_id()
-             , [this] (const job_id_t& job_id) -> double
-               {
-                 return allocation_table_.at (job_id)->cost();
-               }
-             )
-           );
-
-         double const total_cost
-           ( transfer_cost (worker_info.worker_host())
-           + computational_cost
-           + cost_preassigned_jobs
-           );
-
-         bpq.emplace ( total_cost
-                     , -1.0*it.first
-                     , worker_info.shared_memory_size()
-                     , worker_info.last_time_idle()
-                     , worker_info.worker_id()
-                     );
-       }
-
-       return bpq.assigned_workers();
-     }
-
     double CoallocationScheduler::compute_reservation_cost
       ( const job_id_t& job_id
       , const std::set<worker_id_t>& workers
@@ -166,11 +67,13 @@ namespace sdpa
 
         const job_requirements_t& requirements (_job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
-          (find_job_assignment_minimizing_total_cost
+          (_worker_manager.find_job_assignment_minimizing_total_cost
              ( _worker_manager.getMatchingDegreesAndWorkers (requirements)
-             , requirements.numWorkers()
-             , requirements.transfer_cost()
-             , requirements.computational_cost()
+             , requirements
+             , [this] (const job_id_t& job_id) -> double
+               {
+                 return allocation_table_.at (job_id)->cost();
+               }
              )
           );
 

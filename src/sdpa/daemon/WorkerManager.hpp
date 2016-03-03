@@ -82,6 +82,11 @@ namespace sdpa
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers (const job_requirements_t&) const;
+      std::set<worker_id_t> find_job_assignment_minimizing_total_cost
+        ( const mmap_match_deg_worker_id_t&
+        , const job_requirements_t&
+        , const std::function<double (job_id_t const&)>
+        ) const;
 
       double cost_assigned_jobs (const worker_id_t, std::function<double (job_id_t job_id)>);
 
