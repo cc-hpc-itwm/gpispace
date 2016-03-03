@@ -88,6 +88,11 @@ namespace sdpa
         , const std::function<double (job_id_t const&)>
         ) const;
 
+      std::set<worker_id_t> find_assignment
+        ( const job_requirements_t&
+        , const std::function<double (job_id_t const&)>
+        ) const;
+
       template <typename Reservation>
       void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
 

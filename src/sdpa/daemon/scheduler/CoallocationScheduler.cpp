@@ -65,16 +65,15 @@ namespace sdpa
         sdpa::job_id_t const jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const job_requirements_t& requirements (_job_requirements (jobId));
+        const job_requirements_t requirements (_job_requirements (jobId));
         const std::set<worker_id_t> matching_workers
-          (_worker_manager.find_job_assignment_minimizing_total_cost
-             ( _worker_manager.getMatchingDegreesAndWorkers (requirements)
-             , requirements
-             , [this] (const job_id_t& job_id) -> double
-               {
-                 return allocation_table_.at (job_id)->cost();
-               }
-             )
+          (_worker_manager.find_assignment
+            ( requirements
+            , [this] (const job_id_t& job_id) -> double
+              {
+                return allocation_table_.at (job_id)->cost();
+              }
+            )
           );
 
         if (!matching_workers.empty())

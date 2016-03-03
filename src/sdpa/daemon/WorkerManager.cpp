@@ -242,6 +242,59 @@ namespace sdpa
       return mmap_match_deg_worker_id;
     }
 
+    std::set<worker_id_t> WorkerManager::find_assignment
+      ( const job_requirements_t& requirements
+      , const std::function<double (job_id_t const&)> cost_reservation
+      ) const
+    {
+      boost::mutex::scoped_lock const _(mtx_);
+
+      if (worker_map_.size() < requirements.numWorkers())
+      {
+        return {};
+      }
+
+      mmap_match_deg_worker_id_t mmap_matching_workers;
+
+      // note: the multimap container maintains the elements
+      // sorted according to the specified comparison criteria
+      // (here std::greater<int>, i.e. in the descending order of the matching degrees).
+      // Searching and insertion operations have logarithmic complexity, as the
+      // multimaps are implemented as binary search trees
+
+      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
+      {
+        if ( requirements.shared_memory_amount_required()
+           > worker.second._allocated_shared_memory_size
+           )
+          {continue;}
+
+        if (worker.second.backlog_full())
+          {continue;}
+
+        const boost::optional<double>
+        matching_degree (matchRequirements (worker.second, requirements));
+
+        if (matching_degree)
+        {
+          mmap_matching_workers.emplace
+            ( matching_degree.get()
+            , worker_id_host_info_t ( worker.first
+                                    , worker.second._hostname
+                                    , worker.second._allocated_shared_memory_size
+                                    , worker.second._last_time_idle
+                                    )
+            );
+        }
+      }
+
+      return find_job_assignment_minimizing_total_cost
+        ( mmap_matching_workers
+        , requirements
+        , cost_reservation
+        );
+    }
+
     std::set<worker_id_t> WorkerManager::find_job_assignment_minimizing_total_cost
       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
       , const job_requirements_t& requirements
