@@ -93,7 +93,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
 
   sdpa::mmap_match_deg_worker_id_t
     mmap_match_deg_worker_id
-      (worker_manager.getMatchingDegreesAndWorkers (job_req));
+      (worker_manager.getMatchingDegreesAndWorkers_TESTING_ONLY (job_req));
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
   sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());

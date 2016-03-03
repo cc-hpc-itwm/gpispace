@@ -195,7 +195,7 @@ namespace sdpa
       return (matchingDeg + 1.0)/(worker._capabilities.size() + 1.0);
     }
 
-    mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers
+    mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
       ( const job_requirements_t& job_reqs
       ) const
     {
