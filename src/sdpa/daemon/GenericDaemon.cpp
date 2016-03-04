@@ -582,16 +582,8 @@ void GenericDaemon::handleErrorEvent
                                  , _worker_manager.address_by_worker (worker).get()->second
                                  ).cancel_job (job);
             }
+          , (error.error_code() == events::ErrorEvent::SDPA_EBACKLOGFULL)
           );
-
-        if (error.error_code() == events::ErrorEvent::SDPA_EBACKLOGFULL)
-        {
-          _worker_manager.set_worker_backlog_full (as_worker.get()->second, true);
-        }
-        else
-        {
-          _worker_manager.deleteWorker (as_worker.get()->second);
-        }
 
         request_scheduling();
       }

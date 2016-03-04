@@ -153,6 +153,7 @@ namespace sdpa
        ( worker_id_t const& worker
        , std::function<Job* (sdpa::job_id_t const&)> get_job
        , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
+       , bool backlog_full
        )
     {
       boost::mutex::scoped_lock const _ (mtx_alloc_table_);
@@ -173,6 +174,15 @@ namespace sdpa
         _list_pending_jobs.erase (jobId);
         allocation_table_.erase (jobId);
         enqueueJob (jobId);
+      }
+
+      if (backlog_full)
+      {
+        _worker_manager.set_worker_backlog_full (worker, true);
+      }
+      else
+      {
+        _worker_manager.deleteWorker (worker);
       }
     }
 

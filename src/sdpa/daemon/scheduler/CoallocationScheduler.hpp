@@ -45,6 +45,7 @@ namespace sdpa
         ( worker_id_t const&
         , std::function<Job* (sdpa::job_id_t const&)>
         , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
+        , bool
         );
 
       std::set<job_id_t> start_pending_jobs
