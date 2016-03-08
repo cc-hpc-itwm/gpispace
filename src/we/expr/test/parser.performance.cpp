@@ -24,7 +24,7 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
     const maximum_running_time (1);
 
   const long round (750);
-  const long max (2000);
+  const pnet::type::value::value_type max (2000L);
   const std::string input ("${a} < ${b}");
 
   expr::eval::context context;
@@ -51,7 +51,7 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
     const maximum_running_time (1);
 
   const long round (75);
-  const long max (2000);
+  const pnet::type::value::value_type max (2000L);
   const std::string input ("${a} < ${b}");
 
   expr::eval::context context;
