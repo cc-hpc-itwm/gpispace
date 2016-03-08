@@ -6,12 +6,29 @@
 #include <fhgcom/tests/address_printer.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/thread.hpp>
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
+{
+  fhg::util::testing::require_exception
+    ( []
+      {
+        fhg::com::peer_t ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                         , fhg::com::host_t ("NONONONONONONONONONO")
+                         , fhg::com::port_t ("NONONONONONONONONONO")
+                         );
+      }
+    , boost::system::system_error
+        (boost::asio::error::service_not_found, "resolve")
+    );
+}
 
 BOOST_AUTO_TEST_CASE (peer_run_single)
 {
