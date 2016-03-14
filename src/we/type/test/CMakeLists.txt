@@ -27,13 +27,14 @@ fhg_add_test (module_call.cpp
   LINK_LIBRARIES pnet
 )
 
-add_executable (mk_cpp mk_cpp.cpp)
-target_link_libraries (mk_cpp pnet Boost::program_options Util::Generic)
+extended_add_executable (NAME mk_cpp
+  SOURCES "mk_cpp.cpp"
+  LIBRARIES pnet Boost::program_options Util::Generic
+)
 
 add_custom_command (
   OUTPUT sig_struct.hpp sig_op.hpp sig_op.cpp
-  COMMAND ${CMAKE_CURRENT_BINARY_DIR}/mk_cpp -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
-  DEPENDS mk_cpp
+  COMMAND "$<TARGET_FILE:mk_cpp.exe>" -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
 )
 
 extended_add_library (NAME sig_op
