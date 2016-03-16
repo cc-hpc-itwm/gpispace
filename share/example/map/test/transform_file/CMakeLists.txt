@@ -19,10 +19,10 @@ math (EXPR size_output "20 << 20")
 math (EXPR size_block "2 << 20")
 math (EXPR num_block "120")
 
-fhg_add_test (test.cpp
-  PROJECT share_example_map_transform_file
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+fhg_add_test (NAME share_example_map_transform_file
+  SOURCES test.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
@@ -32,12 +32,12 @@ fhg_add_test (test.cpp
        --size-output ${size_output}
        --size-block ${size_block}
        --num-block ${num_block}
-  LINK_LIBRARIES gspc
-                 test-utilities
-                 transform_file_type
-                 fhg-util
-                 Boost::program_options
-                 Boost::filesystem
+  LIBRARIES gspc
+            test-utilities
+            transform_file_type
+            fhg-util
+            Boost::program_options
+            Boost::filesystem
   DEPENDS transform_file_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY

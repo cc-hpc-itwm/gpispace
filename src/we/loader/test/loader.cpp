@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE loader
 #include <boost/test/unit_test.hpp>
 
 #include <we/loader/test/order/stack.hpp>

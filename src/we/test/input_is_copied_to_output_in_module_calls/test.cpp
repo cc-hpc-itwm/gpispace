@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE we_input_is_copied_to_output_in_module_calls
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

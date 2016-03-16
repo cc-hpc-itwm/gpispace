@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE pnet_type_signature
 #include <boost/test/unit_test.hpp>
 
 #include <sig_struct.hpp>

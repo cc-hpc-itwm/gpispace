@@ -12,19 +12,19 @@ target_link_libraries (gen.bin
   pthread
 )
 
-fhg_add_test (test.cpp
-  PROJECT doc_tutorial_avg_stddev
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+fhg_add_test (NAME doc_tutorial_avg_stddev
+  SOURCES test.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --generator "${CMAKE_CURRENT_BINARY_DIR}/gen.bin"
-  LINK_LIBRARIES gspc
-                 test-utilities
-                 fhg-util
-                 Boost::program_options
-                 Boost::filesystem
+  LIBRARIES gspc
+            test-utilities
+            fhg-util
+            Boost::program_options
+            Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

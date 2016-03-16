@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE layer
 #include <boost/test/unit_test.hpp>
 
 #include <we/layer.hpp>

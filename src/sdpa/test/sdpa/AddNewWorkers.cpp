@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE ADD_NEW_WORKERS
-
 #include <utils.hpp>
 #include <boost/test/unit_test.hpp>
 

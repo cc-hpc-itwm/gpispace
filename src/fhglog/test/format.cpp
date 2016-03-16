@@ -1,6 +1,5 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE formatter
 #include <boost/test/unit_test.hpp>
 
 #include <sstream> // std::ostringstream

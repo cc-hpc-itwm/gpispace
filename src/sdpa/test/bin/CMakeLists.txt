@@ -1,12 +1,12 @@
-fhg_add_test (network_strategy.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES sdpa we-dev
-                 fhgcom fhglog Boost::filesystem
+fhg_add_test (NAME sdpa_network_strategy
+  SOURCES network_strategy.cpp
+  USE_BOOST
+  LIBRARIES sdpa we-dev
+            fhgcom fhglog Boost::filesystem
 )
 
-fhg_add_test (job_states.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES fhg-util
+fhg_add_test (NAME sdpa_job_states
+  SOURCES job_states.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
 )

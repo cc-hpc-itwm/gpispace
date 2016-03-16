@@ -1,7 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE parse_duplicate_connect
-
 #include <xml/parse/error.hpp>
 #include <parser_fixture.hpp>
 

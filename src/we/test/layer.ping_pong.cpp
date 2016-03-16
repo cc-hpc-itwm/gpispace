@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE layer ping_pong
 #include <boost/test/unit_test.hpp>
 
 #include <test/source_directory.hpp>

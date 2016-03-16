@@ -1,6 +1,5 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE append
 #include <boost/test/unit_test.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE we_transition_cannot_fire_when_input_port_is_not_connected
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

@@ -1,7 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE parse_compile_and_compare
-
 #include <parser_fixture.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

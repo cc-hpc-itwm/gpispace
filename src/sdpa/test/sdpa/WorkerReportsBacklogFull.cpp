@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE WORKER_REPORTS_BACKLOG_FULL
-
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>

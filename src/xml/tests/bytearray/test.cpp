@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE xml_transport_bytearray
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

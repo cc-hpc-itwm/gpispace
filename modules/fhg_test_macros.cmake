@@ -1,11 +1,3 @@
-MACRO(CAR var)
-  SET(${var} ${ARGV1})
-ENDMACRO(CAR)
-
-MACRO(CDR var junk)
-  SET(${var} ${ARGN})
-ENDMACRO(CDR)
-
 set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-bootstrap-rifd"
@@ -126,82 +118,49 @@ set (FILES_REQUIRED_IN_INSTALLATION
 set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
 set (TEST_VMEM_PORTS_PER_TEST 100)
 
+#! \note due to half of the arguments not being known and them thus
+#! not being split (eg LIBRARIES is part of ARGS), appending would
+#! mean we might append into some other argument's parameters
+macro (prepend _list)
+  list (INSERT ${_list} 0 ${ARGN})
+endmacro()
+
 macro(FHG_ADD_TEST)
-  set (options BOOST_UNIT_TEST REQUIRES_INSTALLATION PERFORMANCE_TEST REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
-  set (one_value_options PROJECT DESCRIPTION)
-  set (multi_value_options LINK_LIBRARIES DEPENDS ARGS COMPILE_FLAGS INCLUDE_DIRECTORIES)
+  set (options REQUIRES_INSTALLATION REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
+  set (one_value_options)
+  set (multi_value_options LABELS ARGS)
   set (required_options)
   parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
-  CAR(TEST_SOURCE ${TEST_UNPARSED_ARGUMENTS})
-  CDR(TEST_ADDITIONAL_SOURCES ${TEST_UNPARSED_ARGUMENTS})
 
-    if (TEST_BOOST_UNIT_TEST)
-      set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} Boost::test_exec_monitor)
-      set (TEST_LINK_LIBRARIES ${TEST_LINK_LIBRARIES} Boost::unit_test_framework)
-    endif()
+  set (_fwd_args)
 
-    set (TEST_PREFIX "")
-    if (TEST_PROJECT)
-      set(TEST_PREFIX "${TEST_PROJECT}_")
-    endif()
+  if (TEST_REQUIRES_INSTALLATION)
+    list (APPEND _fwd_args REQUIRED_FILES ${FILES_REQUIRED_IN_INSTALLATION})
+    prepend (TEST_LABELS "requires_installation")
+  endif()
 
-    # get the filename without extension
-    string(REGEX REPLACE "(.*/)?(.*)\\.c.*" "${TEST_PREFIX}\\2" tc_name ${TEST_SOURCE})
-
-    if (TEST_START_SCOPED_RIF)
-      set (TEST_ARGS ${TEST_ARGS} --rif-strategy ${TESTING_RIF_STRATEGY})
-      if (TESTING_RIF_STRATEGY_PARAMETERS)
-        set (TEST_ARGS ${TEST_ARGS} RIF ${TESTING_RIF_STRATEGY_PARAMETERS} FIR)
-      endif()
-    endif()
-
-    if (TEST_REQUIRES_VIRTUAL_MEMORY)
-      set (TEST_ARGS ${TEST_ARGS} --virtual-memory-port ${TEST_VMEM_PORT_COUNTER})
-      math (EXPR TEST_VMEM_PORT_COUNTER_TMP
-                 "${TEST_VMEM_PORT_COUNTER} + ${TEST_VMEM_PORTS_PER_TEST}"
-      )
-      set (TEST_VMEM_PORT_COUNTER ${TEST_VMEM_PORT_COUNTER_TMP}
-        CACHE INTERNAL "NOTE: yep, cmake requires this temporary"
-      )
-    endif()
-
-    extended_add_executable (NAME ${tc_name}
-      SOURCES ${TEST_SOURCE} ${TEST_ADDITIONAL_SOURCES}
-      LIBRARIES ${TEST_LINK_LIBRARIES}
-      DONT_APPEND_EXE_SUFFIX
+  if (TEST_REQUIRES_VIRTUAL_MEMORY)
+    prepend (TEST_ARGS --virtual-memory-port ${TEST_VMEM_PORT_COUNTER})
+    math (EXPR TEST_VMEM_PORT_COUNTER_TMP
+               "${TEST_VMEM_PORT_COUNTER} + ${TEST_VMEM_PORTS_PER_TEST}"
     )
-    if (TEST_COMPILE_FLAGS)
-      set_target_properties (${tc_name} PROPERTIES COMPILE_FLAGS ${TEST_COMPILE_FLAGS})
-    endif()
-    if (TEST_INCLUDE_DIRECTORIES)
-      target_include_directories (${tc_name} ${TEST_INCLUDE_DIRECTORIES})
-    endif()
-    add_test (NAME ${tc_name} COMMAND $<TARGET_FILE:${tc_name}> ${TEST_ARGS})
-
-    set (tc_labels)
-
-    if (TEST_REQUIRES_INSTALLATION)
-      set_tests_properties (${tc_name}
-        PROPERTIES REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
-      )
-      list(APPEND tc_labels "requires_installation")
-    endif()
-
-    if (TEST_PERFORMANCE_TEST)
-      list(APPEND tc_labels "performance_test")
-      set_property (TEST ${tc_name} APPEND PROPERTY RUN_SERIAL 1)
-    endif()
-
-    if (TEST_REQUIRES_VIRTUAL_MEMORY)
-      list (APPEND tc_labels "requires_vmem")
-      set_property (TEST ${tc_name} APPEND PROPERTY RUN_SERIAL 1)
-    endif()
-
-    set_tests_properties (${tc_name}
-      PROPERTIES LABELS "${tc_labels}"
+    set (TEST_VMEM_PORT_COUNTER ${TEST_VMEM_PORT_COUNTER_TMP}
+      CACHE INTERNAL "NOTE: yep, cmake requires this temporary"
     )
+    prepend (TEST_LABELS "requires_vmem")
+    list (APPEND _fwd_args RUN_SERIAL)
+  endif()
 
-    foreach (d ${TEST_DEPENDS})
-      add_dependencies(${tc_name} ${d})
-    endforeach()
+  if (TEST_START_SCOPED_RIF)
+    prepend (TEST_ARGS --rif-strategy ${TESTING_RIF_STRATEGY})
+    if (TESTING_RIF_STRATEGY_PARAMETERS)
+      prepend (TEST_ARGS RIF ${TESTING_RIF_STRATEGY_PARAMETERS} FIR)
+    endif()
+  endif()
+
+  add_unit_test (${TEST_UNPARSED_ARGUMENTS}
+    LABELS ${TEST_LABELS}
+    ARGS ${TEST_ARGS}
+    ${_fwd_args}
+  )
 endmacro()

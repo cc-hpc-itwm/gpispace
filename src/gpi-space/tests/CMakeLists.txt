@@ -1,37 +1,37 @@
-fhg_add_test (handle_generator.cpp
-  PROJECT gpi-space_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 fhgcom
-                 fhglog
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
+fhg_add_test (NAME vmem_handle_generator
+  SOURCES handle_generator.cpp
+  USE_BOOST
+  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  LIBRARIES gpi-space-pc-segment
+            gpi-space-pc-memory
+            fhgcom
+            fhglog
+            ${CMAKE_THREAD_LIBS_INIT}
+            fhg-util
 )
 
-fhg_add_test (memory_area.cpp
-  PROJECT gpi-space_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 fhgcom
-                 fhglog
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
+fhg_add_test (NAME vmem_memory_area
+  SOURCES memory_area.cpp
+  USE_BOOST
+  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  LIBRARIES gpi-space-pc-segment
+            gpi-space-pc-memory
+            fhgcom
+            fhglog
+            ${CMAKE_THREAD_LIBS_INIT}
+            fhg-util
 )
 
-fhg_add_test (segment.cpp
-  PROJECT gpi-space_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 fhgcom
-                 fhglog
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
+fhg_add_test (NAME vmem_segment
+  SOURCES segment.cpp
+  USE_BOOST
+  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  LIBRARIES gpi-space-pc-segment
+            gpi-space-pc-memory
+            fhgcom
+            fhglog
+            ${CMAKE_THREAD_LIBS_INIT}
+            fhg-util
 )
 
 extended_add_executable (NAME check_beegfs_segment_requirements
@@ -50,21 +50,21 @@ file (GENERATE OUTPUT "${CMAKE_BINARY_DIR}/CTestCustom.cmake"
            )
 
            if (NOT \${check_beegfs_segment_requirements_result} EQUAL 0)
-             list (APPEND CTEST_CUSTOM_TESTS_IGNORE gpi-space_test_beegfs_area)
+             list (APPEND CTEST_CUSTOM_TESTS_IGNORE vmem_beegfs_area)
            endif()"
 )
 
-fhg_add_test (beegfs_area.cpp
-  PROJECT gpi-space_test
-  BOOST_UNIT_TEST
+fhg_add_test (NAME vmem_beegfs_area
+  SOURCES beegfs_area.cpp
+  USE_BOOST
   ARGS --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
-  LINK_LIBRARIES gpi-space-pc-segment
-                 gpi-space-pc-memory
-                 fhgcom
-                 fhglog
-                 Boost::filesystem
-                 ${CMAKE_THREAD_LIBS_INIT}
-                 fhg-util
-                 test-utilities
+  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  LIBRARIES gpi-space-pc-segment
+            gpi-space-pc-memory
+            fhgcom
+            fhglog
+            Boost::filesystem
+            ${CMAKE_THREAD_LIBS_INIT}
+            fhg-util
+            test-utilities
 )

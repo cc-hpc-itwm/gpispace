@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_map_transform_file
 #include <boost/test/unit_test.hpp>
 
 #include <map/test/transform_file/type.hpp>

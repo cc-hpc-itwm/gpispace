@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE GpiSpaceBEEGFSAreaTest
 #include <boost/test/unit_test.hpp>
 
 #include <sys/types.h> // pid_t

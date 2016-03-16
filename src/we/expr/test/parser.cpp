@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE we_expr_parser
 #include <boost/test/unit_test.hpp>
 
 #include <we/exception.hpp>

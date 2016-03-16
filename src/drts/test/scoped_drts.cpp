@@ -1,5 +1,4 @@
 
-#define BOOST_TEST_MODULE drts_scoped_rifd
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>

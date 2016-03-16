@@ -1,5 +1,4 @@
 
-#define BOOST_TEST_MODULE drts_context
 #include <boost/test/unit_test.hpp>
 
 #include <drts/worker/context.hpp>

@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE FhgAssertTest
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/assert.hpp>

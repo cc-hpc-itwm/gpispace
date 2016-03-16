@@ -1,6 +1,5 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE fhglog_level
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/level.hpp>

@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE pnetv_use_sequence
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>

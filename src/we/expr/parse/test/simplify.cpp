@@ -1,7 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE we_expr_parse_simplify
-
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/parse/simplify/simplify.hpp>
 #include <we/expr/parse/simplify/util.hpp>

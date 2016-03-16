@@ -1,30 +1,31 @@
-fhg_add_test (bytearray.cpp
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES pnet fhg-util
+fhg_add_test (NAME we_type_bytearray
+  SOURCES bytearray.cpp
+  USE_BOOST
+  LIBRARIES pnet fhg-util
 )
 
-fhg_add_test (value.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_type
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_type_value
+  SOURCES value.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (signature.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_type
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_type_signature
+  SOURCES signature.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (bitsetofint.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_type
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_type_bitsetofint
+  SOURCES bitsetofint.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (module_call.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_type
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_type_module_call
+  SOURCES module_call.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
 add_executable (mk_cpp mk_cpp.cpp)
@@ -41,15 +42,15 @@ extended_add_library (NAME sig_op
   INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}"
 )
 
-fhg_add_test (sig.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LINK_LIBRARIES sig_op pnet
+fhg_add_test (NAME we_type_sig
+  SOURCES sig.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+  LIBRARIES sig_op pnet
 )
 
-fhg_add_test (get_schedule_data.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_type
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_type_get_schedule_data
+  SOURCES get_schedule_data.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )

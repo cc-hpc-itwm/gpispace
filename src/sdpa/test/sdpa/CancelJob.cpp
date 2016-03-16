@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE TestCancelJob
-
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>

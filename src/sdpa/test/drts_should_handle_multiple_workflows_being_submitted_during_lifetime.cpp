@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE sdpa_test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

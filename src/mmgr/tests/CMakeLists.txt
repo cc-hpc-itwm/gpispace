@@ -1,3 +1,15 @@
-fhg_add_test (dtmmgr.cpp BOOST_UNIT_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
-fhg_add_test (tmmgr.cpp BOOST_UNIT_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
-fhg_add_test (perftmmgr.cpp BOOST_UNIT_TEST PERFORMANCE_TEST PROJECT mmgr LINK_LIBRARIES mmgr fhg-util)
+fhg_add_test (NAME mmgr_dtmmgr
+  SOURCES dtmmgr.cpp
+  USE_BOOST
+  LIBRARIES mmgr fhg-util
+)
+fhg_add_test (NAME mmgr_tmmgr
+  SOURCES tmmgr.cpp
+  USE_BOOST
+  LIBRARIES mmgr fhg-util
+)
+fhg_add_test (NAME mmgr_perftmmgr
+  SOURCES perftmmgr.cpp
+  USE_BOOST PERFORMANCE_TEST
+  LIBRARIES mmgr fhg-util
+)

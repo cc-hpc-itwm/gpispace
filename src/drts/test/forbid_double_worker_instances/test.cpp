@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE drts_forbid_double_worker_instances
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

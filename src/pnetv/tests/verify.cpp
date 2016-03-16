@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE pnetv_verify
 #include <boost/test/unit_test.hpp>
 
 #include <pnetv/jpna/Parsing.h>

@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE restart_worker_with_dummy_workflow
-
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

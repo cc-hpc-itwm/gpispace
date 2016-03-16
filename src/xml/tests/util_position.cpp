@@ -1,7 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE parse_util_position
-
 #include <xml/parse/util/position.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

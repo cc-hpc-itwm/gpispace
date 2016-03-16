@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE mmgr_perftmmgr
 #include <boost/test/unit_test.hpp>
 
 #include <mmgr/tmmgr.hpp>

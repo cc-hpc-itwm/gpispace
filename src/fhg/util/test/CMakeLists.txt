@@ -1,56 +1,56 @@
 # bernd.loerwald@itwm.fraunhofer.de
 
-fhg_add_test (alphanum.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhg_util
-  LINK_LIBRARIES fhg-util
+fhg_add_test (NAME util_alphanum
+  SOURCES alphanum.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
 )
 
-fhg_add_test (num.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhg_util
-  LINK_LIBRARIES fhg-util
+fhg_add_test (NAME util_num
+  SOURCES num.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
 )
 
-fhg_add_test (remove_prefix.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhg_util
-  LINK_LIBRARIES fhg-util
+fhg_add_test (NAME util_remove_prefix
+  SOURCES remove_prefix.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
 )
 
-fhg_add_test (xml_stream.cpp
-  BOOST_UNIT_TEST
-  PROJECT fhg_util
-  LINK_LIBRARIES fhg-util
+fhg_add_test (NAME util_xml_stream
+  SOURCES xml_stream.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
 )
 
-fhg_add_test(event.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES Boost::thread Boost::system fhg-util
+fhg_add_test (NAME util_event
+  SOURCES event.cpp
+  USE_BOOST
+  LIBRARIES Boost::thread Boost::system fhg-util
 )
 
-fhg_add_test(queue.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES Boost::thread Boost::system fhg-util
+fhg_add_test (NAME util_queue
+  SOURCES queue.cpp
+  USE_BOOST
+  LIBRARIES Boost::thread Boost::system fhg-util
 )
 
-fhg_add_test(assert.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
+fhg_add_test (NAME util_assert
+  SOURCES assert.cpp
+  USE_BOOST
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=1"
-  LINK_LIBRARIES fhg-util
+  LIBRARIES fhg-util
   )
 
-fhg_add_test(counter.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES fhg-util
+fhg_add_test (NAME util_counter
+  SOURCES counter.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
 )
 
-fhg_add_test(bounded_queue.cpp
-  BOOST_UNIT_TEST
-  PROJECT util
-  LINK_LIBRARIES Boost::thread Boost::system fhg-util
+fhg_add_test (NAME util_bounded_queue
+  SOURCES bounded_queue.cpp
+  USE_BOOST
+  LIBRARIES Boost::thread Boost::system fhg-util
 )

@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE drts_parallel_running_workflows
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

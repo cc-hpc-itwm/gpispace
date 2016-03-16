@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE event
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/event.hpp>

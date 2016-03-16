@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE TestWorkerManager
-
 #include <sdpa/daemon/WorkerManager.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

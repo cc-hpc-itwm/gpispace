@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE conditions_and_expressions_with_cdata
 #include <boost/test/unit_test.hpp>
 
 #include <xml/parse/parser.hpp>
