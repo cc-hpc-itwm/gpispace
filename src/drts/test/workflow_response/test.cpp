@@ -100,6 +100,7 @@ BOOST_DATA_TEST_CASE
     . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
         (vm.at ("rpc-lib").as<boost::filesystem::path>())
+    . add<test::option::gen::ld_flag> ("-lboost_coroutine")
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
@@ -322,6 +323,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
     . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
         (vm.at ("rpc-lib").as<boost::filesystem::path>())
+    . add<test::option::gen::ld_flag> ("-lboost_coroutine")
     );
 
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)

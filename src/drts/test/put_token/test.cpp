@@ -83,6 +83,7 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
         (vm.at ("rpc-lib").as<boost::filesystem::path>())
+    . add<test::option::gen::ld_flag> ("-lboost_coroutine")
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
