@@ -1,6 +1,6 @@
-fhg_add_test (url.cpp
-  BOOST_UNIT_TEST
-  PROJECT gpi_space
-  INCLUDE_DIRECTORIES SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
-  LINK_LIBRARIES gpi-space_url
+fhg_add_test (NAME vmem_url
+  SOURCES url.cpp
+  USE_BOOST
+  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  LIBRARIES gpi-space_url
 )

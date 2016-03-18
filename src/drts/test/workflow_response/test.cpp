@@ -1,6 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE drts_workflow_response
 #include <boost/test/unit_test.hpp>
 
 #include <test_start_callback.hpp>

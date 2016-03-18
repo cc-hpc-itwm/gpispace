@@ -1,7 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_stream_two_module_calls
-
 #include <share/example/stream/test.hpp>
 
 #include <sstream>

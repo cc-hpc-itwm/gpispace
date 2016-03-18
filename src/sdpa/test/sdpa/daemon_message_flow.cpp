@@ -1,6 +1,4 @@
 // bernd.loerwald@itwm.fraunhofer.de
-#define BOOST_TEST_MODULE Message flow between client/orchestrator/agent and \
-                          children/parents
 
 #include <utils.hpp>
 

@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE testDiscoverJobStates
 #include <boost/test/unit_test.hpp>
 
 #include <utils.hpp>

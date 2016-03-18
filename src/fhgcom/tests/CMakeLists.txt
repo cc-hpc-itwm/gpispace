@@ -1,25 +1,25 @@
-fhg_add_test (message.cpp
-  PROJECT fhgcom_test
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES fhgcom
-                 fhglog
+fhg_add_test (NAME fhgcom_message
+  SOURCES message.cpp
+  USE_BOOST
+  LIBRARIES fhgcom
+            fhglog
 )
 
-fhg_add_test (p2p.cpp
-  PROJECT fhgcom_test
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES fhgcom
-                 fhglog
+fhg_add_test (NAME fhgcom_p2p
+  SOURCES p2p.cpp
+  USE_BOOST
+  LIBRARIES fhgcom
+            fhglog
 )
 
-fhg_add_test (peer.cpp
-  PROJECT fhgcom_test
-  BOOST_UNIT_TEST
-  LINK_LIBRARIES fhgcom
-                 fhg-util
-                 fhglog
-                 Boost::filesystem
-                 Boost::serialization
-                 Boost::date_time
-                 Boost::thread
+fhg_add_test (NAME fhgcom_peer
+  SOURCES peer.cpp
+  USE_BOOST
+  LIBRARIES fhgcom
+            fhg-util
+            fhglog
+            Boost::filesystem
+            Boost::serialization
+            Boost::date_time
+            Boost::thread
 )

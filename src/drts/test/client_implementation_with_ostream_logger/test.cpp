@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE drts_client_with_ostream_logger
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

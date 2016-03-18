@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE URLTest
 #include <boost/test/unit_test.hpp>
 
 #include <gpi-space/pc/url.hpp>

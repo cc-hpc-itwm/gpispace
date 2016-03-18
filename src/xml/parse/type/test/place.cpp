@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE xml_parse_type_place
 #include <boost/test/unit_test.hpp>
 
 #include <xml/parse/type/place.hpp>

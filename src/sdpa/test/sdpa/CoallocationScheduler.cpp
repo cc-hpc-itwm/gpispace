@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE TestScheduler
 #include <utils.hpp>
 #include <boost/test/unit_test.hpp>
 

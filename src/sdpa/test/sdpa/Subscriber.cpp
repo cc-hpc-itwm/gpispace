@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE TestSubscriber
-
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

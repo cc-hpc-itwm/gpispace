@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE id_generator
 #include <boost/test/unit_test.hpp>
 
 #include <sdpa/id_generator.hpp>

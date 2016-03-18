@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE show_job_states
 
 #include <boost/test/unit_test.hpp>
 

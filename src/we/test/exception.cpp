@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE pnet_exception
 #include <boost/test/unit_test.hpp>
 
 #include <we/exception.hpp>

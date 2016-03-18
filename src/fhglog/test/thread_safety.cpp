@@ -1,6 +1,5 @@
 // alexander.petry@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE thread_safety
 #include <boost/test/unit_test.hpp>
 
 #include <fhglog/LogMacros.hpp>

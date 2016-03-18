@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE memory_buffer
 #include <boost/test/unit_test.hpp>
 
 #include <xml/parse/type/memory_buffer.hpp>

@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE UtilThreadQueueTest
 #include <boost/test/unit_test.hpp>
 
 #include <stdlib.h>

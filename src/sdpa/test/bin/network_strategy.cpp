@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE NetworkStrategyTest
 #include <boost/test/unit_test.hpp>
 
 #include <iostream>

@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE PeerTest
 #include <boost/test/unit_test.hpp>
 
 #include <fhgcom/peer.hpp>

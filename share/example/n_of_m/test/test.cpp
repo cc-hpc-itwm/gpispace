@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE share_example_n_of_m
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

@@ -11,10 +11,10 @@ math (EXPR size_output 50)
 math (EXPR size_block 10)
 math (EXPR num_block 10)
 
-fhg_add_test (test.cpp
-  PROJECT share_example_map_log
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+fhg_add_test (NAME share_example_map_log
+  SOURCES test.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
@@ -25,11 +25,11 @@ fhg_add_test (test.cpp
        --size-block ${size_block}
        --num-block ${num_block}
        --user-data "y()"
-  LINK_LIBRARIES gspc
-                 test-utilities
-                 fhg-util
-                 Boost::program_options
-                 Boost::filesystem
+  LIBRARIES gspc
+            test-utilities
+            fhg-util
+            Boost::program_options
+            Boost::filesystem
   DEPENDS log_map-impl
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY

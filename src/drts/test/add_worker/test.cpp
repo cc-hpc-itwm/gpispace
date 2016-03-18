@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE drts_add_worker
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>

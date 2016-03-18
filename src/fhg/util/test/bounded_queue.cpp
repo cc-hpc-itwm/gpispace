@@ -1,5 +1,5 @@
 // tiberiu.rotaru@itwm.fraunhofer.de
-#define BOOST_TEST_MODULE UtilThreadBoundedQueueTest
+
 #include <boost/test/unit_test.hpp>
 
 #include <boost/thread.hpp>

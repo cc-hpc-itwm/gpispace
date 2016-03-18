@@ -1,6 +1,5 @@
 // mirko.rahn@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE module
 #include <boost/test/unit_test.hpp>
 
 #include <we/loader/Module.hpp>

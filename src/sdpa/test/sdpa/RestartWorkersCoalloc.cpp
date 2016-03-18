@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE restart_worker_with_coallocation_workflow
-
 #include <utils.hpp>
 
 #include <boost/test/unit_test.hpp>

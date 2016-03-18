@@ -1,60 +1,60 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_test (layer.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_layer
+  SOURCES layer.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (layer.ping_pong.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet Boost::program_options test-utilities
+fhg_add_test (NAME we_layer.ping_pong
+  SOURCES layer.ping_pong.cpp
+  USE_BOOST
+  LIBRARIES pnet Boost::program_options test-utilities
   ARGS --source-directory ${CMAKE_SOURCE_DIR}
 )
 
-fhg_add_test (layer.performance.cpp
-  BOOST_UNIT_TEST
+fhg_add_test (NAME we_layer.performance
+  SOURCES layer.performance.cpp
+  USE_BOOST
   PERFORMANCE_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+  LIBRARIES pnet
 )
 
-fhg_add_test (require_type.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_require_type
+  SOURCES require_type.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (signature_of.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_signature_of
+  SOURCES signature_of.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (exception.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_exception
+  SOURCES exception.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (context.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_context
+  SOURCES context.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (expression_based_cross_product.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
+fhg_add_test (NAME we_expression_based_cross_product
+  SOURCES expression_based_cross_product.cpp
+  USE_BOOST
+  LIBRARIES pnet
 )
 
-fhg_add_test (net.cpp
-  BOOST_UNIT_TEST
-  PROJECT we
-  LINK_LIBRARIES pnet
-                 Util::Generic
+fhg_add_test (NAME we_net
+  SOURCES net.cpp
+  USE_BOOST
+  LIBRARIES pnet
+            Util::Generic
 )
 
 add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)

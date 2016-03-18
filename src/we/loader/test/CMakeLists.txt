@@ -1,23 +1,23 @@
 # mirko.rahn@itwm.fraunhofer.de
 
-fhg_add_test (loader.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_loader
-  LINK_LIBRARIES pnet
-                 order_stack
-                 ${CMAKE_DL_LIBS}
+fhg_add_test (NAME we_loader_loader
+  SOURCES loader.cpp
+  USE_BOOST
+  LIBRARIES pnet
+            order_stack
+            ${CMAKE_DL_LIBS}
   DEPENDS question
           answer
           order_a
           order_b
 )
 
-fhg_add_test (module.cpp
-  BOOST_UNIT_TEST
-  PROJECT we_loader
-  LINK_LIBRARIES pnet
-                 fhglog
-                 ${CMAKE_DL_LIBS}
+fhg_add_test (NAME we_loader_module
+  SOURCES module.cpp
+  USE_BOOST
+  LIBRARIES pnet
+            fhglog
+            ${CMAKE_DL_LIBS}
   DEPENDS initialize_throws
           empty_not_linked_with_pnet
           empty

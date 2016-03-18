@@ -1,4 +1,3 @@
-#define BOOST_TEST_MODULE net
 #include <boost/test/unit_test.hpp>
 
 #include <we/type/expression.hpp>

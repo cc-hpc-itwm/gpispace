@@ -1,109 +1,113 @@
-fhg_add_test (AddNewWorkers.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_AddNewWorkers
+  SOURCES AddNewWorkers.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (CancelJob.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_CancelJob
+  SOURCES CancelJob.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (Capabilities.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_Capabilities
+  SOURCES Capabilities.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (Coallocation.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_Coallocation
+  SOURCES Coallocation.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (CoallocationScheduler.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_CoallocationScheduler
+  SOURCES CoallocationScheduler.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (daemon_message_flow.cpp
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
+fhg_add_test (NAME sdpa_daemon_message_flow
+  SOURCES daemon_message_flow.cpp
+  DESCRIPTION "Message flow between client/orchestrator/agent and children/parents"
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
 )
 
-fhg_add_test (DiscoverJobStates.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_DiscoverJobStates
+  SOURCES DiscoverJobStates.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (InvalidNbWorkersReq.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_InvalidNbWorkersReq
+  SOURCES InvalidNbWorkersReq.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (RestartWorkersCoalloc.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_RestartWorkersCoalloc
+  SOURCES RestartWorkersCoalloc.cpp
+  NAME restart_workers_with_coallocation_workflow
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (RestartWorkersDummy.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_RestartWorkersDummy
+  SOURCES RestartWorkersDummy.cpp
+  NAME restart_worker_with_dummy_workflow
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (Subscriber.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_Subscriber
+  SOURCES Subscriber.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (Topologies.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_Topologies
+  SOURCES Topologies.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (WorkerManager.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_WorkerManager
+  SOURCES WorkerManager.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )
 
-fhg_add_test (WorkerReportsBacklogFull.cpp
-  PROJECT sdpa_test
-  BOOST_UNIT_TEST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LINK_LIBRARIES sdpa
-                 fhglog
+fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
+  SOURCES WorkerReportsBacklogFull.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa
+            fhglog
 )

@@ -1,5 +1,3 @@
-#define BOOST_TEST_MODULE we_type_module_call
-
 #include <we/type/module_call.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

@@ -1,6 +1,5 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#define BOOST_TEST_MODULE alphanum
 #include <boost/test/unit_test.hpp>
 
 #include <fhg/util/alphanum.hpp>
