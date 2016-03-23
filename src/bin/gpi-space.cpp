@@ -14,6 +14,7 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
+#include <util-generic/syscall.hpp>
 #include <fhg/util/thread/event.hpp>
 
 #include <fhglog/Configuration.hpp>
@@ -159,13 +160,14 @@ int main (int argc, char** argv)
     {
       std::string const server_url
         ((boost::format ("%1%:%2%") % *log_host % *log_port).str());
-      setenv ("FHGLOG_to_server", server_url.c_str(), true);
+      fhg::util::syscall::setenv ("FHGLOG_to_server", server_url.c_str(), true);
     }
-    setenv ("FHGLOG_level", log_level.c_str(), true);
+    fhg::util::syscall::setenv ("FHGLOG_level", log_level.c_str(), true);
 
     if (log_file)
     {
-      setenv ("FHGLOG_to_file", log_file->string().c_str(), true);
+      fhg::util::syscall::setenv
+        ("FHGLOG_to_file", log_file->string().c_str(), true);
     }
 
     boost::asio::io_service remote_log_io_service;

@@ -80,16 +80,13 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
     area.write_to (memory_location_t (handle, 0), text, strlen (text));
 
     {
-      int fd = open ( ((path_to_shared_file / "data").string ().c_str ())
-                    , O_RDONLY
-                    );
-      BOOST_REQUIRE_GE (fd, 0);
+      int fd = fhg::util::syscall::open
+        (((path_to_shared_file / "data").string ().c_str()), O_RDONLY);
 
       char buf [size];
-      int read_bytes (read (fd, buf, size));
-      BOOST_REQUIRE_GE (read_bytes, 0);
+      std::size_t read_bytes (fhg::util::syscall::read (fd, buf, size));
       BOOST_CHECK_EQUAL (size, gpi::pc::type::size_t (read_bytes));
-      close (fd);
+      fhg::util::syscall::close (fd);
 
       int eq = strncmp (text, buf, strlen (text));
       BOOST_CHECK_EQUAL (0, eq);

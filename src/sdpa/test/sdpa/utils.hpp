@@ -9,10 +9,11 @@
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/syscall.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random_integral.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <fhglog/Configuration.hpp>
 
@@ -34,7 +35,7 @@ struct setup_logging
   setup_logging()
     : _logger()
   {
-    setenv ("FHGLOG_level", "TRACE", true);
+    fhg::util::syscall::setenv ("FHGLOG_level", "TRACE", true);
     fhg::log::configure (io_service, _logger);
   }
   fhg::log::Logger _logger;

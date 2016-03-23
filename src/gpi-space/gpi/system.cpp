@@ -1,18 +1,18 @@
 #include <gpi-space/gpi/system.hpp>
 
-#include <unistd.h> // getpagesize, sysconf
+#include <util-generic/syscall.hpp>
 
 namespace sys
 {
   uint64_t get_total_memory_size ()
   {
-    const long total_pages = sysconf(_SC_PHYS_PAGES);
-    return total_pages * getpagesize();
+    const long total_pages = fhg::util::syscall::sysconf (_SC_PHYS_PAGES);
+    return total_pages * fhg::util::syscall::sysconf (_SC_PAGESIZE);
   }
 
   uint64_t get_avail_memory_size ()
   {
-    const long avail_pages = sysconf(_SC_AVPHYS_PAGES);
-    return avail_pages * getpagesize();
+    const long avail_pages = fhg::util::syscall::sysconf (_SC_AVPHYS_PAGES);
+    return avail_pages * fhg::util::syscall::sysconf (_SC_PAGESIZE);
   }
 }
