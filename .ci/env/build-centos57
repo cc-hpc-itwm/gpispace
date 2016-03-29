@@ -10,7 +10,7 @@ path git/2.6.4/bin
 path qt/4.8.6/bin
 pkg_config_path GPI2/1.2.0/lib64/pkgconfig
 pkg_config_path hwloc/1.11.1/lib/pkgconfig
-pkg_config_path libssh2/1.6.0/lib/pkgconfig
+pkg_config_path libssh2/1.7.0+fpic/lib/pkgconfig
 pkg_config_path openssl/1.0.2e/lib/pkgconfig
 
 export CC="${external}/ccache/3.2.4/lib/gcc"

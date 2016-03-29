@@ -114,9 +114,6 @@ include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
 include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
-# TODO : Remove again?
-link_directories (${Boost_LIBRARY_DIRS})
-
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
 endif()
