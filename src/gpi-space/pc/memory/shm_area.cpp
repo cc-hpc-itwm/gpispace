@@ -10,6 +10,9 @@
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
+#include <util-generic/finally.hpp>
+#include <util-generic/syscall.hpp>
+
 #include <boost/lexical_cast.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>
@@ -24,7 +27,7 @@ namespace gpi
       {
         static void unlink (std::string const &p)
         {
-          shm_unlink (p.c_str());
+          fhg::util::syscall::shm_unlink (p.c_str());
         }
 
         static void* open ( std::string const & path
@@ -36,12 +39,9 @@ namespace gpi
           int fd (-1);
           void *ptr (nullptr);
 
-          fd = shm_open (path.c_str(), open_flags, open_mode);
-          if (fd < 0)
-          {
-            std::string err = "open: " + path + ": " + strerror (errno);
-            throw std::runtime_error (err);
-          }
+          fd = fhg::util::syscall::shm_open
+                 (path.c_str(), open_flags, open_mode);
+          FHG_UTIL_FINALLY ([fd] { fhg::util::syscall::close (fd); });
 
           int prot (0);
           if (open_flags & O_RDONLY)
@@ -53,53 +53,37 @@ namespace gpi
 
           if (0 == size)
           {
-            off_t end = lseek (fd, 0, SEEK_END);
-            if (end == (off_t)(-1))
-            {
-              std::string err (strerror (errno));
-              ::close (fd);
-              throw std::runtime_error ("lseek: " + err);
-            }
-            else
-            {
-              //! \todo clarify which side opens the segment to not
-              //! have this auto-size-determination in here, and to be
-              //! able to drop memory_area_t::reinit
-              size = (gpi::pc::type::size_t)(end);
-              lseek (fd, 0, SEEK_SET);
-            }
+            //! \todo clarify which side opens the segment to not have
+            //! this auto-size-determination in here, and to be able
+            //! to drop memory_area_t::reinit
+            size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
+            fhg::util::syscall::lseek (fd, 0, SEEK_SET);
           }
           else if (open_flags & O_CREAT)
           {
-            if (ftruncate (fd, size) != 0)
-            {
-              std::string err (strerror (errno));
-              ::close (fd); fd = -1;
-              throw std::runtime_error ("ftruncate: " + err);
-            }
+            fhg::util::syscall::ftruncate (fd, size);
           }
 
-          ptr = mmap ( nullptr
-                     , size
-                     , prot
-                     , MAP_SHARED
-                     , fd
-                     , 0
-                     );
-          if (MAP_FAILED == ptr)
+          try
           {
-            std::string err (strerror(errno));
-            ::close (fd);
-
+            ptr = fhg::util::syscall::mmap ( nullptr
+                                           , size
+                                           , prot
+                                           , MAP_SHARED
+                                           , fd
+                                           , 0
+                                           );
+          }
+          catch (...)
+          {
             if (open_flags & O_CREAT)
             {
               detail::unlink (path.c_str ());
             }
 
-            throw std::runtime_error ("mmap: " + err);
+            throw;
           }
 
-          ::close (fd);
           return ptr;
         }
 
@@ -107,11 +91,7 @@ namespace gpi
         {
           if (ptr)
           {
-            if (munmap(ptr, sz) < 0)
-            {
-              std::string err (strerror(errno));
-              throw std::runtime_error ("munmap: " + err);
-            }
+            fhg::util::syscall::munmap (ptr, sz);
           }
         }
       }
