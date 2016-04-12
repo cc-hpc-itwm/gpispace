@@ -250,6 +250,8 @@ namespace sdpa
                                       )
                     );
 
+        fhg_assert (it_job != richest_worker.pending_.end());
+
         reservation (*it_job)->replace_worker (richest->first, thief->first);
 
         thief->second.assign (*it_job);
