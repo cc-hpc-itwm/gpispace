@@ -1,8 +1,9 @@
 #include <sdpa/daemon/WorkerManager.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random_integral.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
@@ -309,4 +310,135 @@ BOOST_AUTO_TEST_CASE (find_non_submitted_job)
   const sdpa::job_id_t job_not_submitted (fhg::util::testing::random_string());
   std::unordered_set<sdpa::worker_id_t>  workers (worker_manager.findSubmOrAckWorkers (job_not_submitted));
   BOOST_REQUIRE (workers.empty());
+}
+
+BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
+{
+  // <boilerplate>
+  sdpa::daemon::WorkerManager worker_manager;
+
+  struct mock_reservation
+  {
+    mock_reservation (double cost, bool allowed_to_be_stolen)
+      : _cost (cost)
+      , _allowed_to_be_stolen (allowed_to_be_stolen)
+    {}
+    double cost()
+    {
+      return _cost;
+    }
+    void replace_worker (sdpa::worker_id_t, sdpa::worker_id_t)
+    {
+      BOOST_REQUIRE (_allowed_to_be_stolen);
+    }
+
+  private:
+    double _cost;
+    bool _allowed_to_be_stolen;
+  };
+  std::unordered_map<sdpa::job_id_t, mock_reservation> reservations;
+
+  std::string const capability_name (fhg::util::testing::random_string());
+  auto&& add_worker ( [&] (sdpa::worker_id_t worker_id)
+                      {
+                        worker_manager.addWorker
+                          ( worker_id
+                          , {sdpa::capability_t (capability_name, worker_id)}
+                          , random_ulong()
+                          , random_bool()
+                          , fhg::util::testing::random_string()
+                          , fhg::util::testing::random_string()
+                          );
+                      }
+                    );
+
+  auto&& add_pending_job
+    ( [&] ( sdpa::worker_id_t worker_id, sdpa::job_id_t job_id
+          , double cost, bool allowed_to_be_stolen
+          )
+      {
+        reservations.emplace
+          (job_id, mock_reservation (cost, allowed_to_be_stolen));
+        worker_manager.assign_job_to_worker (job_id, worker_id);
+      }
+    );
+  auto&& add_running_job
+    ( [&] ( sdpa::worker_id_t worker_id, sdpa::job_id_t job_id
+          , double cost, bool allowed_to_be_stolen
+          )
+      {
+        add_pending_job (worker_id, job_id, cost, allowed_to_be_stolen);
+        BOOST_REQUIRE
+          ( worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+            ( job_id
+            , {worker_id}
+            , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){}
+            )
+          );
+      }
+    );
+
+  auto&& steal_work
+    ( [&]
+      {
+        std::function<mock_reservation* (sdpa::job_id_t const&)> reservation
+          ( [&] (sdpa::job_id_t const& job_id)
+            {
+              return &reservations.at (job_id);
+            }
+          );
+        worker_manager.steal_work (reservation);
+      }
+    );
+
+  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_id_pool;
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_id_pool;
+  // </boilerplate>
+
+
+  // A reference to the top of a queue was held, which was then popped
+  // but conditionally used after popping again. The condition was
+  // that a worker may be stolen from again. This means that it has a
+  // running and a pending job, or multiple pending jobs, after
+  // stealing once.
+
+  // This can be trivially triggered by having three jobs which are
+  // all assigned to the same worker, and two workers without
+  // jobs. Both workers will then try to steal from the first one,
+  // which results in undefined behaviour as the reference will point
+  // to an element in an empty queue when stealing the second time.
+
+  // If now a fourth worker exists which can also be stolen from,
+  // instead of pointing into an empty queue, it will be pointing to a
+  // different element of the queue, which leads to emplacing a
+  // different element of the queue a second time, rather than
+  // emplacing the intended worker. As this is easier to detect than
+  // an invalid-read, this test case only does this test.
+
+
+  // 1 running; 2 stealable, cost 1 each
+  {
+    sdpa::worker_id_t const worker_id (worker_id_pool());
+    add_worker (worker_id);
+    add_running_job (worker_id, job_id_pool(), 1.0, false);
+    add_pending_job (worker_id, job_id_pool(), 1.0, true);
+    add_pending_job (worker_id, job_id_pool(), 1.0, true);
+  }
+
+  // 1 running; 1 stealable, cost 0 each
+  {
+    sdpa::worker_id_t const worker_id (worker_id_pool());
+    add_worker (worker_id);
+    add_running_job (worker_id, job_id_pool(), 0.0, false);
+    add_pending_job (worker_id, job_id_pool(), 0.0, false);
+  }
+
+  add_worker (worker_id_pool());
+  add_worker (worker_id_pool());
+
+
+  // Has BOOST_REQUIRE inside via mock_reservation::replace_worker, so
+  // that only those expensive jobs are stolen. With the invalid-read,
+  // the second job is stolen from the cheaper worker.
+  steal_work();
 }
