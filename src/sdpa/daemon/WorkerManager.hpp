@@ -234,7 +234,7 @@ namespace sdpa
 
       while (!(idles.empty() || to_steal_from.empty()))
       {
-        worker_ptr const& richest (to_steal_from.top());
+        worker_ptr const richest (to_steal_from.top());
         worker_ptr const& thief (idles.top());
         Worker& richest_worker (richest->second);
 
