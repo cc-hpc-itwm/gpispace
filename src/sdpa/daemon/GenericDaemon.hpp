@@ -336,7 +336,6 @@ namespace sdpa {
         parent_proxy (GenericDaemon*, boost::optional<master_info_t::iterator> const&);
 
         void worker_registration (capabilities_set_t) const;
-        void notify_shutdown() const;
 
         void job_failed (job_id_t, std::string error_message) const;
         void job_finished (job_id_t, we::type::activity_t) const;

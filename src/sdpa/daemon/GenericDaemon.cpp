@@ -1668,12 +1668,6 @@ namespace sdpa
         );
     }
 
-    void GenericDaemon::parent_proxy::notify_shutdown() const
-    {
-      _that->sendEventToOther<events::ErrorEvent>
-        (_address, events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "");
-    }
-
     void GenericDaemon::parent_proxy::job_failed
       (job_id_t id, std::string message) const
     {
