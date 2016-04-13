@@ -8,7 +8,7 @@
 
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhgcom/peer.hpp>
+#include <sdpa/com/NetworkStrategy.hpp>
 
 #include <we/type/value.hpp>
 
@@ -32,7 +32,6 @@ namespace sdpa
              , fhg::com::port_t const& orchestrator_port
              , std::unique_ptr<boost::asio::io_service> peer_io_service
              );
-      ~Client();
 
       job_id_t submitJob(const we::type::activity_t &);
       void cancelJob(const job_id_t &);
@@ -61,7 +60,7 @@ namespace sdpa
 
       fhg::com::message_t m_message;
       bool _stopping;
-      fhg::com::peer_t m_peer;
+      com::NetworkStrategy _network;
       fhg::com::p2p::address_t _drts_entrypoint_address;
     };
   }

@@ -36,70 +36,19 @@ namespace sdpa
                    , fhg::com::port_t const& orchestrator_port
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    )
-      : _stopping (false)
-      , m_peer ( std::move (peer_io_service)
-               , fhg::com::host_t ("*")
-               , fhg::com::port_t ("0")
-               )
+      : _network ( [&] ( fhg::com::p2p::address_t const&
+                       , events::SDPAEvent::Ptr event
+                       )
+                   {
+                     m_incoming_events.put (event);
+                   }
+                 , std::move (peer_io_service)
+                 , fhg::com::host_t ("*")
+                 , fhg::com::port_t ("0")
+                 )
       , _drts_entrypoint_address
-          (m_peer.connect_to (orchestrator_host, orchestrator_port))
-    {
-      m_peer.async_recv ( &m_message
-                        , std::bind ( &Client::handle_recv
-                                    , this
-                                    , std::placeholders::_1
-                                    , std::placeholders::_2
-                                    )
-                        );
-    }
-
-    Client::~Client()
-    {
-      _stopping = true;
-    }
-
-    void Client::handle_recv ( boost::system::error_code const & ec
-                             , boost::optional<fhg::com::p2p::address_t>
-                             )
-    {
-      static sdpa::events::Codec const codec {};
-
-      if (! ec)
-      {
-        sdpa::events::SDPAEvent::Ptr const evt
-          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-        m_incoming_events.put (evt);
-      }
-      else if ( ec == boost::system::errc::operation_canceled
-              || ec == boost::system::errc::network_down
-              )
-      {
-        _stopping = true;
-      }
-      else
-      {
-        if (m_message.header.src != m_peer.address())
-        {
-          sdpa::events::ErrorEvent::Ptr const
-            error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-                                               , "receiving response failed: " + boost::lexical_cast<std::string>(ec)
-                                               )
-                 );
-          m_incoming_events.put (error);
-        }
-      }
-
-      if (!_stopping)
-      {
-        m_peer.async_recv ( &m_message
-                          , std::bind ( &Client::handle_recv
-                                      , this
-                                      , std::placeholders::_1
-                                      , std::placeholders::_2
-                                      )
-                          );
-      }
-    }
+          (_network.connect_to (orchestrator_host, orchestrator_port))
+    {}
 
     namespace
     {
@@ -130,8 +79,7 @@ namespace sdpa
 
       m_incoming_events.INDICATES_A_RACE_clear();
 
-      static sdpa::events::Codec const codec {};
-      m_peer.send (_drts_entrypoint_address, codec.encode (&event));
+      _network.perform<Sent> (_drts_entrypoint_address, std::move (event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* const e = dynamic_cast<Expected*> (reply.get()))
