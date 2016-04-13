@@ -5,11 +5,11 @@
 #include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhgcom/peer.hpp>
 #include <fhglog/Logger.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 
+#include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -106,15 +106,12 @@ public:
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
+  virtual void handleErrorEvent
+    (fhg::com::p2p::address_t const&, sdpa::events::ErrorEvent const*) override;
 
 private:
   void event_thread();
   void job_execution_thread();
-
-  void start_receiver();
-
-  template<typename Event, typename... Args>
-    void send_event (fhg::com::p2p::address_t const& destination, Args&&... args);
 
   fhg::log::Logger& _logger;
 
@@ -150,7 +147,7 @@ private:
   mutable std::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
 
-  fhg::com::peer_t _peer;
+  sdpa::com::NetworkStrategy _network;
 
   boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
     m_event_thread;

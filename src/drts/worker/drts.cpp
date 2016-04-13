@@ -196,14 +196,18 @@ DRTSImpl::DRTSImpl
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)
-  , _peer ( std::move (peer_io_service)
-          , fhg::com::host_t ("*"), fhg::com::port_t ("0")
-          )
+  , _network ( [&] ( fhg::com::p2p::address_t source
+                   , sdpa::events::SDPAEvent::Ptr event
+                   )
+               {
+                 m_event_queue.put (std::move (source), std::move (event));
+               }
+             , std::move (peer_io_service)
+             , fhg::com::host_t ("*"), fhg::com::port_t ("0")
+             )
   , m_event_thread (&DRTSImpl::event_thread, this)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)
 {
-  start_receiver();
-
   std::set<sdpa::Capability> const capabilities
     (make_capabilities (capability_names, m_my_name));
 
@@ -214,7 +218,7 @@ DRTSImpl::DRTSImpl
     fhg::com::p2p::address_t const master_address
       ( m_masters.emplace
           ( std::get<0> (master)
-          , _peer.connect_to (std::get<1> (master), std::get<2> (master))
+          , _network.connect_to (std::get<1> (master), std::get<2> (master))
           ).first->second
       );
 
@@ -223,7 +227,7 @@ DRTSImpl::DRTSImpl
           (master_address, std::promise<void>()).first->second.get_future()
       );
 
-    send_event<sdpa::events::WorkerRegistrationEvent>
+    _network.perform<sdpa::events::WorkerRegistrationEvent>
       ( master_address
       , m_my_name
       , capabilities
@@ -305,7 +309,7 @@ void DRTSImpl::handleSubmitJobEvent
 
   if (m_shutting_down)
   {
-    send_event<sdpa::events::ErrorEvent>
+    _network.perform<sdpa::events::ErrorEvent>
       ( source
       , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
       , "abusing backlogfull to stop getting new jobs"
@@ -323,7 +327,7 @@ void DRTSImpl::handleSubmitJobEvent
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
   {
-    send_event<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
+    _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
     return;
   }
 
@@ -340,7 +344,7 @@ void DRTSImpl::handleSubmitJobEvent
     LLOG ( WARN, _logger
          , "cannot accept new job (" << job->id << "), backlog is full."
          );
-    send_event<sdpa::events::ErrorEvent>
+    _network.perform<sdpa::events::ErrorEvent>
       ( source
       , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
       , "I am busy right now, please try again later!"
@@ -353,7 +357,7 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  send_event<sdpa::events::SubmitJobAckEvent> (master->second, job->id);
+  _network.perform<sdpa::events::SubmitJobAckEvent> (master->second, job->id);
   m_jobs.emplace (job->id, job);
 }
 
@@ -378,7 +382,7 @@ void DRTSImpl::handleCancelJobEvent
   if (job_it->second->state.compare_exchange_strong (job_state, Job::CANCELED))
   {
     LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
-    send_event<sdpa::events::CancelJobAckEvent>
+    _network.perform<sdpa::events::CancelJobAckEvent>
       (job_it->second->owner->second, job_it->second->id);
   }
   else if (job_state == DRTSImpl::Job::RUNNING)
@@ -449,7 +453,7 @@ void DRTSImpl::handleDiscoverJobStatesEvent
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
 
   const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
-  send_event<sdpa::events::DiscoverJobStatesReplyEvent>
+  _network.perform<sdpa::events::DiscoverJobStatesReplyEvent>
     ( source
     , event->discover_id()
     , sdpa::discovery_info_t
@@ -479,7 +483,7 @@ void DRTSImpl::event_thread()
     }
     catch (std::exception const& ex)
     {
-      send_event<sdpa::events::ErrorEvent>
+      _network.perform<sdpa::events::ErrorEvent>
         ( event.first
         , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
         , fhg::util::current_exception_printer (": ").string()
@@ -504,7 +508,7 @@ void DRTSImpl::job_execution_thread()
       std::lock_guard<std::mutex> const _ (_guard_backlogfull_notified_masters);
       for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
       {
-        send_event<sdpa::events::BacklogNoLongerFullEvent> (master);
+        _network.perform<sdpa::events::BacklogNoLongerFullEvent> (master);
       }
 
       _masters_backlogfull_notified.clear();
@@ -631,17 +635,17 @@ void DRTSImpl::job_execution_thread()
     switch (job->state.load())
     {
     case DRTSImpl::Job::FINISHED:
-      send_event<sdpa::events::JobFinishedEvent>
+      _network.perform<sdpa::events::JobFinishedEvent>
         (job->owner->second, job->id, job->result);
 
       break;
     case DRTSImpl::Job::FAILED:
-      send_event<sdpa::events::JobFailedEvent>
+      _network.perform<sdpa::events::JobFailedEvent>
         (job->owner->second, job->id, job->message);
 
       break;
     case DRTSImpl::Job::CANCELED:
-      send_event<sdpa::events::CancelJobAckEvent>
+      _network.perform<sdpa::events::CancelJobAckEvent>
         (job->owner->second, job->id);
 
       break;
@@ -658,58 +662,29 @@ void DRTSImpl::job_execution_thread()
   }
 }
 
-void DRTSImpl::start_receiver()
+void DRTSImpl::handleErrorEvent ( fhg::com::p2p::address_t const& source
+                                , sdpa::events::ErrorEvent const* error
+                                )
 {
-  _peer.async_recv
-    ( &m_message
-    , [this] ( boost::system::error_code const& ec
-             , boost::optional<fhg::com::p2p::address_t> source
-             )
-      {
-        static sdpa::events::Codec codec;
+  if ( error->error_code() != sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+     && error->error_code() != sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+     )
+  {
+    return sdpa::events::EventHandler::handleErrorEvent (source, error);
+  }
 
-        if (!ec)
-        {
-          m_event_queue.put
-            ( source.get()
-            , sdpa::events::SDPAEvent::Ptr
-                ( codec.decode
-                    (std::string (m_message.data.begin(), m_message.data.end()))
-                )
-            );
-
-          start_receiver();
-        }
-        else if (!m_shutting_down)
-        {
-          if (!_registration_responses.empty())
-          {
-            _registration_responses.at (source.get())
-              .set_exception
-                ( std::make_exception_ptr
-                    ( std::system_error
-                        (std::make_error_code (std::errc::connection_aborted))
-                    )
-                );
-          }
-          else
-          {
-            _request_stop();
-          }
-        }
-        else
-        {
-          LLOG (TRACE, _logger, m_my_name << " is shutting down");
-        }
-      }
-    );
-}
-
-template<typename Event, typename... Args>
-  void DRTSImpl::send_event ( fhg::com::p2p::address_t const& destination
-                            , Args&&... args
-                            )
-{
-  static sdpa::events::Codec codec;
-  _peer.send (destination, codec.encode<Event> (std::forward<Args> (args)...));
+  if (!_registration_responses.empty())
+  {
+    _registration_responses.at (source)
+      .set_exception
+        ( std::make_exception_ptr
+            ( std::system_error
+                (std::make_error_code (std::errc::connection_aborted))
+            )
+        );
+  }
+  else
+  {
+    _request_stop();
+  }
 }
