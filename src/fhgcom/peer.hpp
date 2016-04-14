@@ -30,8 +30,7 @@ namespace fhg
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
       peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
-
-      virtual ~peer_t ();
+      ~peer_t();
 
       p2p::address_t const & address () const { return my_addr_.get(); }
       boost::asio::ip::tcp::endpoint local_endpoint() const
