@@ -5,15 +5,247 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
+#include <fhgcom/tests/address_printer.hpp>
+
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <boost/thread.hpp>
 
 #include <boost/asio/io_service.hpp>
 
 #include <functional>
+
+namespace
+{
+  void disallow_events
+    ( fhg::com::p2p::address_t const&
+    , boost::shared_ptr<sdpa::events::SDPAEvent> const& received
+    )
+  {
+    sdpa::events::ErrorEvent* error_event
+      (dynamic_cast<sdpa::events::ErrorEvent*> (received.get()));
+
+    BOOST_REQUIRE (error_event);
+    BOOST_REQUIRE
+      ( error_event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+      || error_event->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+      );
+  }
+
+  fhg::com::host_t host (boost::asio::ip::tcp::endpoint const& ep)
+  {
+    return fhg::com::host_t
+      (fhg::util::connectable_to_address_string (ep.address()));
+  }
+  fhg::com::port_t port (boost::asio::ip::tcp::endpoint const& ep)
+  {
+    return fhg::com::port_t (std::to_string (ep.port()));
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_AUTO_TEST_CASE (ctor_does_not_hang_when_resolve_throws)
+{
+  fhg::util::testing::require_exception
+    ( []
+      {
+        sdpa::com::NetworkStrategy
+          ( &disallow_events
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+          , fhg::com::host_t ("NONONONONONONONONONO")
+          , fhg::com::port_t ("NONONONONONONONONONO")
+          );
+      }
+    , boost::system::system_error
+        (boost::asio::error::service_not_found, "resolve")
+    );
+}
+
+BOOST_AUTO_TEST_CASE (connect_to_nonexisting_peer)
+{
+  sdpa::com::NetworkStrategy net
+    ( &disallow_events
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  BOOST_CHECK_THROW ( net.connect_to ( fhg::com::host_t ("unknown host")
+                                     , fhg::com::port_t ("unknown service")
+                                     )
+                    , std::exception
+                    );
+}
+
+BOOST_AUTO_TEST_CASE (identifiable_addresses)
+{
+  sdpa::com::NetworkStrategy peer_1
+    ( &disallow_events
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  sdpa::com::NetworkStrategy peer_2
+    ( &disallow_events
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  sdpa::com::NetworkStrategy peer_3
+    ( &disallow_events
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  BOOST_REQUIRE_EQUAL ( peer_2.connect_to ( host (peer_1.local_endpoint())
+                                          , port (peer_1.local_endpoint())
+                                          )
+                      , peer_3.connect_to ( host (peer_1.local_endpoint())
+                                          , port (peer_1.local_endpoint())
+                                          )
+                      );
+}
+
+BOOST_AUTO_TEST_CASE (ping)
+{
+  std::string const content (fhg::util::testing::random_string());
+
+  sdpa::com::NetworkStrategy peer_1
+    ( &disallow_events
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  fhg::util::thread::event<boost::shared_ptr<sdpa::events::SDPAEvent>> event;
+  sdpa::com::NetworkStrategy peer_2
+    ( [&] ( fhg::com::p2p::address_t const&
+          , boost::shared_ptr<sdpa::events::SDPAEvent> const& received
+          )
+      {
+        event.notify (received);
+      }
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  peer_1.perform<sdpa::events::ErrorEvent>
+    ( peer_1.connect_to ( host (peer_2.local_endpoint())
+                        , port (peer_2.local_endpoint())
+                        )
+    , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+    , content
+    );
+
+  boost::shared_ptr<sdpa::events::SDPAEvent> raw_event (event.wait());
+  sdpa::events::ErrorEvent* error_event
+    (dynamic_cast<sdpa::events::ErrorEvent*> (raw_event.get()));
+  BOOST_REQUIRE (error_event);
+  BOOST_REQUIRE_EQUAL
+    (error_event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
+  BOOST_REQUIRE_EQUAL (error_event->reason(), content);
+}
+
+BOOST_AUTO_TEST_CASE (ping_pong)
+{
+  std::string const content (fhg::util::testing::random_string());
+
+  fhg::util::thread::event<boost::shared_ptr<sdpa::events::SDPAEvent>> event;
+
+  sdpa::com::NetworkStrategy peer_1
+    ( [&] ( fhg::com::p2p::address_t const&
+          , boost::shared_ptr<sdpa::events::SDPAEvent> const& received
+          )
+      {
+        event.notify (received);
+      }
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  sdpa::com::NetworkStrategy peer_2
+    ( [&] ( fhg::com::p2p::address_t const& source
+          , boost::shared_ptr<sdpa::events::SDPAEvent> const& received
+          )
+      {
+        sdpa::events::ErrorEvent* error_event
+          (dynamic_cast<sdpa::events::ErrorEvent*> (received.get()));
+        BOOST_REQUIRE (error_event);
+
+        peer_2.perform<sdpa::events::ErrorEvent>
+          (source, error_event->error_code(), error_event->reason());
+      }
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  peer_1.perform<sdpa::events::ErrorEvent>
+    ( peer_1.connect_to ( host (peer_2.local_endpoint())
+                        , port (peer_2.local_endpoint())
+                        )
+    , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+    , content
+    );
+
+  boost::shared_ptr<sdpa::events::SDPAEvent> raw_event (event.wait());
+  sdpa::events::ErrorEvent* error_event
+    (dynamic_cast<sdpa::events::ErrorEvent*> (raw_event.get()));
+  BOOST_REQUIRE (error_event);
+  BOOST_REQUIRE_EQUAL
+    (error_event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
+  BOOST_REQUIRE_EQUAL (error_event->reason(), content);
+}
+
+BOOST_AUTO_TEST_CASE (large_event)
+{
+  std::string const content (2 << 25, 'X');
+
+  sdpa::com::NetworkStrategy peer_1
+    ( &disallow_events
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  fhg::util::thread::event<boost::shared_ptr<sdpa::events::SDPAEvent>> event;
+  sdpa::com::NetworkStrategy peer_2
+    ( [&] ( fhg::com::p2p::address_t const&
+          , boost::shared_ptr<sdpa::events::SDPAEvent> const& received
+          )
+      {
+        event.notify (received);
+      }
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  peer_1.perform<sdpa::events::ErrorEvent>
+    ( peer_1.connect_to ( host (peer_2.local_endpoint())
+                        , port (peer_2.local_endpoint())
+                        )
+    , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+    , content
+    );
+
+  boost::shared_ptr<sdpa::events::SDPAEvent> raw_event (event.wait());
+  sdpa::events::ErrorEvent* error_event
+    (dynamic_cast<sdpa::events::ErrorEvent*> (raw_event.get()));
+  BOOST_REQUIRE (error_event);
+  BOOST_REQUIRE_EQUAL
+    (error_event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
+  BOOST_REQUIRE_EQUAL (error_event->reason(), content);
+}
 
 namespace
 {
@@ -53,9 +285,10 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (perform_test)
+BOOST_AUTO_TEST_CASE (many_to_self)
 {
-  wait_for_n_events_strategy counter (1);
+  std::size_t n (10231);
+  wait_for_n_events_strategy counter (n);
 
   sdpa::com::NetworkStrategy net
     ( std::bind ( &wait_for_n_events_strategy::perform
@@ -68,16 +301,20 @@ BOOST_AUTO_TEST_CASE (perform_test)
     , fhg::com::port_t ("0")
     );
 
-  net.perform<sdpa::events::ErrorEvent>
+  auto&& addr
     ( net.connect_to
         ( fhg::com::host_t ( fhg::util::connectable_to_address_string
                                (net.local_endpoint().address())
                            )
         , fhg::com::port_t (std::to_string (net.local_endpoint().port()))
         )
-    , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
-    , "success"
     );
+
+  while (n --> 0)
+  {
+    net.perform<sdpa::events::ErrorEvent>
+      (addr, sdpa::events::ErrorEvent::SDPA_EUNKNOWN, "success");
+  }
 
   counter.wait();
 }

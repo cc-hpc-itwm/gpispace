@@ -11,15 +11,3 @@ fhg_add_test (NAME fhgcom_p2p
   LIBRARIES fhgcom
             fhglog
 )
-
-fhg_add_test (NAME fhgcom_peer
-  SOURCES peer.cpp
-  USE_BOOST
-  LIBRARIES fhgcom
-            fhg-util
-            fhglog
-            Boost::filesystem
-            Boost::serialization
-            Boost::date_time
-            Boost::thread
-)
