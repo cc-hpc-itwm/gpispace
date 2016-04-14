@@ -40,6 +40,53 @@ namespace
   {
     return fhg::com::port_t (std::to_string (ep.port()));
   }
+
+  fhg::com::message_t recv (fhg::com::peer_t& peer)
+  {
+    boost::this_thread::disable_interruption const interuption_disabler;
+
+    fhg::com::message_t message;
+    fhg::util::thread::event<boost::system::error_code> recv_finished;
+    peer.async_recv
+      ( &message
+      , [&] (boost::system::error_code err, boost::optional<fhg::com::p2p::address_t>)
+        {
+          recv_finished.notify (err);
+        }
+      );
+
+    boost::system::error_code const ec (recv_finished.wait());
+    if (ec)
+    {
+      throw boost::system::system_error (ec);
+    }
+
+    return message;
+  }
+
+  void send ( fhg::com::peer_t& peer
+            , fhg::com::p2p::address_t addr
+            , std::string data
+            )
+  {
+    boost::this_thread::disable_interruption const interuption_disabler;
+
+    fhg::com::message_t message;
+    fhg::util::thread::event<boost::system::error_code> send_finished;
+    peer.async_send
+      ( addr, data
+      , [&] (boost::system::error_code err)
+        {
+          send_finished.notify (err);
+        }
+      );
+
+    boost::system::error_code const ec (send_finished.wait());
+    if (ec)
+    {
+      throw boost::system::system_error (ec);
+    }
+  }
 }
 
 BOOST_AUTO_TEST_CASE (peer_run_two)
@@ -56,13 +103,14 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
                 , port_t("0")
                 );
 
-  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                  , port (peer_2.local_endpoint())
-                                  )
-              , "hello world!"
-              );
-    message_t m;
-    peer_2.TESTING_ONLY_recv (&m);
+  send ( peer_1
+       , peer_1.connect_to ( host (peer_2.local_endpoint())
+                           , port (peer_2.local_endpoint())
+                           )
+       , "hello world!"
+       );
+
+  message_t const m (recv (peer_2));
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
@@ -93,13 +141,13 @@ BOOST_AUTO_TEST_CASE (send_large_data)
                 , port_t("0")
                 );
 
-  peer_1.send( peer_1.connect_to ( host (peer_1.local_endpoint())
-                                 , port (peer_1.local_endpoint())
-                                 )
-             , std::string (2<<25, 'X')
-             );
-    message_t r;
-    peer_1.TESTING_ONLY_recv(&r);
+  send ( peer_1
+       , peer_1.connect_to ( host (peer_1.local_endpoint())
+                           , port (peer_1.local_endpoint())
+                           )
+       , std::string (2<<25, 'X')
+       );
+  message_t const r (recv (peer_1));
 
     BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }

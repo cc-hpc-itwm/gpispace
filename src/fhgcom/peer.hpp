@@ -45,10 +45,6 @@ namespace fhg
                       , std::string const & data
                       , handler_t h
                       );
-      void send ( p2p::address_t const& addr
-                , std::string const & data
-                );
-
       void async_recv
         ( message_t *m
         , std::function<void ( boost::system::error_code
@@ -56,7 +52,6 @@ namespace fhg
                              )
                        >
         );
-      void TESTING_ONLY_recv (message_t *m);
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);

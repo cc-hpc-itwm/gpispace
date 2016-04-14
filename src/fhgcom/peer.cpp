@@ -166,26 +166,6 @@ namespace fhg
       return addr;
     }
 
-    void peer_t::send ( p2p::address_t const& addr
-                      , const std::string & data
-                      )
-    {
-      boost::this_thread::disable_interruption const interuption_disabler;
-
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
-      async_op_t send_finished;
-      async_send
-        ( addr, data
-        , std::bind (&async_op_t::notify, &send_finished, std::placeholders::_1)
-        );
-
-      const boost::system::error_code ec (send_finished.wait());
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
-    }
-
     void peer_t::async_send ( p2p::address_t const& addr
                             , const std::string & data
                             , peer_t::handler_t completion_handler
@@ -214,26 +194,6 @@ namespace fhg
 
         if (cd.o_queue.size () == 1)
           start_sender (addr);
-    }
-
-    void peer_t::TESTING_ONLY_recv (message_t *m)
-    {
-      fhg_assert (m);
-
-      boost::this_thread::disable_interruption const interuption_disabler;
-
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
-      async_op_t recv_finished;
-      async_recv
-        ( m
-        , std::bind (&async_op_t::notify, &recv_finished, std::placeholders::_1)
-        );
-
-      const boost::system::error_code ec (recv_finished.wait());
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
-      }
     }
 
     void peer_t::async_recv
