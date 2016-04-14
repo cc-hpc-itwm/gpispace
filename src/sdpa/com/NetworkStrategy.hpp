@@ -19,6 +19,7 @@ namespace sdpa
     {
     public:
       NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
+                      , std::function<void (fhg::com::p2p::address_t const&, std::exception_ptr const&)> network_error_handler
                       , std::unique_ptr<boost::asio::io_service> peer_io_service
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
@@ -40,24 +41,14 @@ namespace sdpa
               {
                 if (ec)
                 {
-                  _event_handler
-                    ( address
-                    , boost::make_shared<events::ErrorEvent>
-                        (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
-                    );
+                  _on_error (address, std::make_exception_ptr (boost::system::system_error (ec)));
                 }
               }
             );
         }
         catch (...)
         {
-          _event_handler
-            ( address
-            , boost::make_shared<events::ErrorEvent>
-                ( events::ErrorEvent::SDPA_ENETWORKFAILURE
-                , fhg::util::current_exception_printer (": ").string()
-                )
-            );
+          _on_error (address, std::current_exception());
         }
       }
 
@@ -73,6 +64,7 @@ namespace sdpa
                        );
 
       std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> _event_handler;
+      std::function<void (fhg::com::p2p::address_t const&, std::exception_ptr const&)> _on_error;
 
       fhg::com::message_t m_message;
       bool m_shutting_down;

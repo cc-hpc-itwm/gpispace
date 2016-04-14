@@ -42,6 +42,17 @@ namespace sdpa
                    {
                      m_incoming_events.put (event);
                    }
+                 , [&] ( fhg::com::p2p::address_t const&
+                       , std::exception_ptr const& error
+                       )
+                   {
+                     m_incoming_events.put
+                       ( boost::make_shared<events::ErrorEvent>
+                           ( events::ErrorEvent::SDPA_ENETWORKFAILURE
+                           , fhg::util::exception_printer (error, ": ").string()
+                           )
+                       );
+                   }
                  , std::move (peer_io_service)
                  , fhg::com::host_t ("*")
                  , fhg::com::port_t ("0")

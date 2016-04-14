@@ -23,16 +23,15 @@ namespace
 {
   void disallow_events
     ( fhg::com::p2p::address_t const&
-    , boost::shared_ptr<sdpa::events::SDPAEvent> const& received
+    , boost::shared_ptr<sdpa::events::SDPAEvent> const&
     )
   {
-    sdpa::events::ErrorEvent* error_event
-      (dynamic_cast<sdpa::events::ErrorEvent*> (received.get()));
+    BOOST_FAIL ("no events allowed in this peer");
+  }
 
-    BOOST_REQUIRE (error_event);
-    BOOST_REQUIRE_EQUAL ( error_event->error_code()
-                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                        );
+  void ignore_network_failure
+    (fhg::com::p2p::address_t const&, std::exception_ptr const&)
+  {
   }
 
   fhg::com::host_t host (boost::asio::ip::tcp::endpoint const& ep)
@@ -54,6 +53,7 @@ BOOST_AUTO_TEST_CASE (ctor_does_not_hang_when_resolve_throws)
       {
         sdpa::com::NetworkStrategy
           ( &disallow_events
+          , &ignore_network_failure
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , fhg::com::host_t ("NONONONONONONONONONO")
           , fhg::com::port_t ("NONONONONONONONONONO")
@@ -68,6 +68,7 @@ BOOST_AUTO_TEST_CASE (connect_to_nonexisting_peer)
 {
   sdpa::com::NetworkStrategy net
     ( &disallow_events
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -84,6 +85,7 @@ BOOST_AUTO_TEST_CASE (identifiable_addresses)
 {
   sdpa::com::NetworkStrategy peer_1
     ( &disallow_events
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -91,6 +93,7 @@ BOOST_AUTO_TEST_CASE (identifiable_addresses)
 
   sdpa::com::NetworkStrategy peer_2
     ( &disallow_events
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -98,6 +101,7 @@ BOOST_AUTO_TEST_CASE (identifiable_addresses)
 
   sdpa::com::NetworkStrategy peer_3
     ( &disallow_events
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -112,12 +116,53 @@ BOOST_AUTO_TEST_CASE (identifiable_addresses)
                       );
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_AUTO_TEST_CASE (network_failure_handler_is_called_on_disconnect)
+{
+  fhg::util::thread::event<> network_failure_called;
+
+  sdpa::com::NetworkStrategy peer_1
+    ( &disallow_events
+    , [&] (fhg::com::p2p::address_t const&, std::exception_ptr const&)
+      {
+        network_failure_called.notify();
+      }
+    , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    );
+
+  {
+    sdpa::com::NetworkStrategy peer_2
+      ( &disallow_events
+      , [&] (fhg::com::p2p::address_t const&, std::exception_ptr const&)
+        {
+          BOOST_FAIL ("peer 2 should never get an error: peer 1 outlives");
+        }
+      , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , fhg::com::host_t ("localhost")
+      , fhg::com::port_t ("0")
+      );
+
+    //! \note Should also work the other way around, but connecting is
+    //! slower than destructing peer 2, thus would require a sleep and
+    //! be a race.
+    //! \todo Test the inverse connect_to as well.
+    peer_1.connect_to ( host (peer_2.local_endpoint())
+                      , port (peer_2.local_endpoint())
+                      );
+  }
+
+  network_failure_called.wait();
+}
+
 BOOST_AUTO_TEST_CASE (ping)
 {
   std::string const content (fhg::util::testing::random_string());
 
   sdpa::com::NetworkStrategy peer_1
     ( &disallow_events
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -131,6 +176,7 @@ BOOST_AUTO_TEST_CASE (ping)
       {
         event.notify (received);
       }
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -166,6 +212,7 @@ BOOST_AUTO_TEST_CASE (ping_pong)
       {
         event.notify (received);
       }
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -183,6 +230,7 @@ BOOST_AUTO_TEST_CASE (ping_pong)
         peer_2.perform<sdpa::events::ErrorEvent>
           (source, error_event->error_code(), error_event->reason());
       }
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -211,6 +259,7 @@ BOOST_AUTO_TEST_CASE (large_event)
 
   sdpa::com::NetworkStrategy peer_1
     ( &disallow_events
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -224,6 +273,7 @@ BOOST_AUTO_TEST_CASE (large_event)
       {
         event.notify (received);
       }
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
@@ -295,6 +345,7 @@ BOOST_AUTO_TEST_CASE (many_to_self)
                 , std::placeholders::_1
                 , std::placeholders::_2
                 )
+    , &ignore_network_failure
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")

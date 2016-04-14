@@ -49,26 +49,21 @@ namespace
       _capabilities_changed.notify_one();
     }
 
-    virtual void handleErrorEvent
-      ( fhg::com::p2p::address_t const& source
-      , sdpa::events::ErrorEvent const* event
-      ) override
+    virtual void on_network_failure
+      (fhg::com::p2p::address_t const& source) override
     {
-      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE)
-      {
-        //! \note hack? isn't this part of what this test is supposed
-        //! to test?
-        std::lock_guard<std::mutex> const _ (_mutex);
-        _capabilities.remove_if
-          ( [&] (decltype (_capabilities)::value_type const& elem)
-            {
-              return elem.first == source;
-            }
-          );
-        _capabilities_changed.notify_one();
-      }
+      //! \note hack? isn't this part of what this test is supposed to
+      //! test?
+      std::lock_guard<std::mutex> const _ (_mutex);
+      _capabilities.remove_if
+        ( [&] (decltype (_capabilities)::value_type const& elem)
+          {
+            return elem.first == source;
+          }
+        );
+      _capabilities_changed.notify_one();
 
-      utils::basic_drts_component::handleErrorEvent (source, event);
+      utils::basic_drts_component::on_network_failure (source);
     }
 
     void wait_for_capabilities

@@ -106,8 +106,6 @@ public:
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
-  virtual void handleErrorEvent
-    (fhg::com::p2p::address_t const&, sdpa::events::ErrorEvent const*) override;
 
 private:
   void event_thread();

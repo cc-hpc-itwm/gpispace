@@ -13,12 +13,14 @@ namespace sdpa
   namespace com
   {
     NetworkStrategy::NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
+                                     , std::function<void (fhg::com::p2p::address_t const&, std::exception_ptr const&)> on_error
                                      , std::unique_ptr<boost::asio::io_service> peer_io_service
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
                                      )
       : _codec()
       , _event_handler (event_handler)
+      , _on_error (std::move (on_error))
       , m_message()
       , m_shutting_down (false)
       , _peer (std::move (peer_io_service), host, port)
@@ -66,12 +68,9 @@ namespace sdpa
       }
       else if (! m_shutting_down)
       {
-          sdpa::events::ErrorEvent::Ptr const
-            error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                                , ec.message()
-                                                )
-                );
-          _event_handler (source.get(), error);
+        _on_error ( source.get()
+                  , std::make_exception_ptr (boost::system::system_error (ec))
+                  );
 
           _peer.async_recv
            ( &m_message

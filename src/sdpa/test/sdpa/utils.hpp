@@ -353,6 +353,12 @@ namespace utils
                    {
                      _event_queue.put (source, e);
                    }
+                 , [this] ( fhg::com::p2p::address_t const& source
+                          , std::exception_ptr const&
+                          )
+                   {
+                     on_network_failure (source);
+                   }
                  , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                  , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
                  )
@@ -421,20 +427,15 @@ namespace utils
         (source, boost::none);
     }
 
-    virtual void handleErrorEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* e) override
+    virtual void on_network_failure (fhg::com::p2p::address_t const& source)
     {
-      if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE)
+      BOOST_REQUIRE (_accept_workers);
+
+      boost::mutex::scoped_lock const _ (_mutex_workers_shutdown);
+      BOOST_REQUIRE (_accepted_workers.erase (source));
+      if (_accepted_workers.empty())
       {
-        BOOST_REQUIRE (_accept_workers);
-        boost::mutex::scoped_lock const _ (_mutex_workers_shutdown);
-        BOOST_REQUIRE (_accepted_workers.erase (source));
-        if(_accepted_workers.empty())
-          _cond_workers_shutdown.notify_all();
-      }
-      else
-      {
-        throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent");
+        _cond_workers_shutdown.notify_all();
       }
     }
 

@@ -202,6 +202,19 @@ DRTSImpl::DRTSImpl
                {
                  m_event_queue.put (std::move (source), std::move (event));
                }
+             , [&] ( fhg::com::p2p::address_t const& source
+                   , std::exception_ptr const& error
+                   )
+               {
+                 if (!_registration_responses.empty())
+                 {
+                   _registration_responses.at (source).set_exception (error);
+                 }
+                 else
+                 {
+                   _request_stop();
+                 }
+               }
              , std::move (peer_io_service)
              , fhg::com::host_t ("*"), fhg::com::port_t ("0")
              )
@@ -659,30 +672,5 @@ void DRTSImpl::job_execution_thread()
     default:
       INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
     }
-  }
-}
-
-void DRTSImpl::handleErrorEvent ( fhg::com::p2p::address_t const& source
-                                , sdpa::events::ErrorEvent const* error
-                                )
-{
-  if (error->error_code() != sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE)
-  {
-    return sdpa::events::EventHandler::handleErrorEvent (source, error);
-  }
-
-  if (!_registration_responses.empty())
-  {
-    _registration_responses.at (source)
-      .set_exception
-        ( std::make_exception_ptr
-            ( std::system_error
-                (std::make_error_code (std::errc::connection_aborted))
-            )
-        );
-  }
-  else
-  {
-    _request_stop();
   }
 }

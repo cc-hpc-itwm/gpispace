@@ -20,6 +20,17 @@ namespace
           {
             _event_received.notify (e);
           }
+        , [this] ( fhg::com::p2p::address_t const&
+                 , std::exception_ptr const& error
+                 )
+          {
+            _event_received.notify
+              ( boost::make_shared<sdpa::events::ErrorEvent>
+                  ( sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                  , fhg::util::exception_printer (error, ": ").string()
+                  )
+              );
+          }
         , fhg::util::cxx14::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
         )

@@ -127,6 +127,18 @@ GenericDaemon::GenericDaemon( const std::string name
                       {
                         _event_queue.put (source, e);
                       }
+                      , [this] ( fhg::com::p2p::address_t const& address
+                               , std::exception_ptr const& error
+                               )
+                        {
+                          _event_queue.put
+                            ( address
+                            , boost::make_shared<events::ErrorEvent>
+                                ( events::ErrorEvent::SDPA_ENETWORKFAILURE
+                                , fhg::util::exception_printer (error, ": ").string()
+                                )
+                            );
+                        }
                       , std::move (peer_io_service)
                       , host_from_url (url)
                       , port_from_url (url)
