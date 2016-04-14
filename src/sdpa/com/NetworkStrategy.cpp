@@ -73,8 +73,7 @@ namespace sdpa
                                                 , ec.message()
                                                 )
                 );
-          _event_handler
-            (source.get_value_or (fhg::com::p2p::address_t ("unknown")), error);
+          _event_handler (source.get(), error);
 
           _peer.async_recv
            ( &m_message
