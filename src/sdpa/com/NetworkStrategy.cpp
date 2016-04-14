@@ -66,8 +66,6 @@ namespace sdpa
       }
       else if (! m_shutting_down)
       {
-        if (m_message.header.src != _peer.address())
-        {
           sdpa::events::ErrorEvent::Ptr const
             error(new sdpa::events::ErrorEvent ( (ec == boost::asio::error::eof) // Connection closed cleanly by peer
                                                 ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
@@ -86,7 +84,6 @@ namespace sdpa
                        , std::placeholders::_2
                        )
            );
-        }
       }
     }
   }
