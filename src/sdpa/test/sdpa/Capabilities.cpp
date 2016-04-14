@@ -54,7 +54,7 @@ namespace
       , sdpa::events::ErrorEvent const* event
       ) override
     {
-      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE)
       {
         //! \note hack? isn't this part of what this test is supposed
         //! to test?

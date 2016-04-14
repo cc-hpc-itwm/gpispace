@@ -666,9 +666,7 @@ void DRTSImpl::handleErrorEvent ( fhg::com::p2p::address_t const& source
                                 , sdpa::events::ErrorEvent const* error
                                 )
 {
-  if ( error->error_code() != sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-     && error->error_code() != sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-     )
+  if (error->error_code() != sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE)
   {
     return sdpa::events::EventHandler::handleErrorEvent (source, error);
   }

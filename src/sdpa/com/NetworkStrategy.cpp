@@ -67,9 +67,7 @@ namespace sdpa
       else if (! m_shutting_down)
       {
           sdpa::events::ErrorEvent::Ptr const
-            error(new sdpa::events::ErrorEvent ( (ec == boost::asio::error::eof) // Connection closed cleanly by peer
-                                                ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                                : sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+            error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
                                                 , ec.message()
                                                 )
                 );

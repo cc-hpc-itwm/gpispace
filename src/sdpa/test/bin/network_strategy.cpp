@@ -30,10 +30,9 @@ namespace
       (dynamic_cast<sdpa::events::ErrorEvent*> (received.get()));
 
     BOOST_REQUIRE (error_event);
-    BOOST_REQUIRE
-      ( error_event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-      || error_event->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-      );
+    BOOST_REQUIRE_EQUAL ( error_event->error_code()
+                        , sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+                        );
   }
 
   fhg::com::host_t host (boost::asio::ip::tcp::endpoint const& ep)
