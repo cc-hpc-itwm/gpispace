@@ -24,19 +24,19 @@ namespace sdpa
         : _codec()
         , _event_handler (event_handler)
         , _on_error (std::move (on_error))
-        , _peer (std::move (peer_io_service), host, port)
-      {
-        _peer.start_recv
-          ( [this] ( fhg::com::p2p::address_t const& source
-                   , std::string const& data
-                   )
-            {
-              _event_handler
-                (source, sdpa::events::SDPAEvent::Ptr (_codec.decode (data)));
-            }
-          , _on_error
-          );
-      }
+        , _peer ( std::move (peer_io_service)
+                , host
+                , port
+                , [this] ( fhg::com::p2p::address_t const& source
+                         , std::string const& data
+                         )
+                  {
+                    _event_handler
+                      (source, sdpa::events::SDPAEvent::Ptr (_codec.decode (data)));
+                  }
+                , _on_error
+                )
+      {}
 
       fhg::com::p2p::address_t connect_to
         (fhg::com::host_t const& host, fhg::com::port_t const& port)

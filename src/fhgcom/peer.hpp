@@ -27,7 +27,12 @@ namespace fhg
     class peer_t : private boost::noncopyable
     {
     public:
-      peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
+      peer_t ( std::unique_ptr<boost::asio::io_service>
+             , host_t const& host
+             , port_t const& port
+             , std::function<void (p2p::address_t const&, std::string const&)> on_message
+             , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
+             );
       ~peer_t();
 
       p2p::address_t const & address () const { return my_addr_.get(); }
@@ -46,17 +51,17 @@ namespace fhg
                                      > on_error
                       );
 
-      void start_recv
-        ( std::function<void (p2p::address_t const&, std::string const&)> on_message
-        , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
-        );
-
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
       void handle_user_data   (connection_t::ptr_t, const message_t *m);
       void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
 
     private:
+      void start_recv
+        ( std::function<void (p2p::address_t const&, std::string const&)> on_message
+        , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
+        );
+
       struct to_send_t
       {
         to_send_t ()

@@ -20,6 +20,8 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
+                   , std::function<void (p2p::address_t const&, std::string const&)> on_message
+                   , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
                    )
       : stopping_ (false)
       , host_(host)
@@ -63,6 +65,8 @@ namespace fhg
                                   );
 
         accept_new ();
+
+        start_recv (on_message, on_error);
       }
       catch (...)
       {
