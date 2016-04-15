@@ -5,11 +5,10 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <fhgcom/tests/address_printer.hpp>
-
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/random_string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
@@ -18,6 +17,25 @@
 #include <boost/asio/io_service.hpp>
 
 #include <functional>
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (fhg::com::p2p::address_t, os, address)
+{
+  os << fhg::com::p2p::to_string (address);
+}
+
+BOOST_AUTO_TEST_CASE (address_translation_equal)
+{
+  BOOST_CHECK_EQUAL ( fhg::com::p2p::address_t ("name-1")
+                    , fhg::com::p2p::address_t ("name-1")
+                    );
+}
+
+BOOST_AUTO_TEST_CASE (address_translation_unique)
+{
+  BOOST_CHECK_NE ( fhg::com::p2p::address_t ("name-1")
+                 , fhg::com::p2p::address_t ("name-2")
+                 );
+}
 
 namespace
 {

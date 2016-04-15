@@ -6,7 +6,6 @@ extended_add_library (NAME fhgcom
           "fhgcom/peer.cpp"
   LIBRARIES fhglog Util::Generic
 )
-add_subdirectory (fhgcom/tests)
 
 extended_add_library (NAME fhglog
   SOURCES "fhglog/Configuration.cpp"
