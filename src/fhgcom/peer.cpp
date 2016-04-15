@@ -413,7 +413,6 @@ namespace fhg
         {
           backlog_.erase (c);
 
-          c->local_address (m->header.dst);
           c->remote_address (m->header.src);
 
           connection_data_t & cd = connections_[m->header.src];
