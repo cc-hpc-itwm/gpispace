@@ -1,6 +1,6 @@
 .\" Manpage for xpnet file format.
 .\" Contact @PROJECT_CONTACT@ to correct errors or typos.
-.TH man 5 "2015" "@PROJECT_VERSION@" "xpnet man page"
+.TH man 5 "2016" "@PROJECT_VERSION@" "xpnet man page"
 .SH NAME
 xpnet - the GPISpace Petri-Net XML format
 .SH DESCRIPTION

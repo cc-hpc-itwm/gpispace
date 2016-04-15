@@ -14,7 +14,7 @@ include (add_macros)
 include (beautify_find_boost)
 include (require_compiler_version)
 
-set (PROJECT_VERSION "15.11")
+set (PROJECT_VERSION "16.04")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 execute_process (
   COMMAND git rev-parse HEAD
