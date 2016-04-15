@@ -1,7 +1,6 @@
 ADD_LIBRARY(sdpa
   capability.cpp
   client.cpp
-  com/NetworkStrategy.cpp
   daemon/GenericDaemon.cpp
   daemon/Job.cpp
   daemon/scheduler/CoallocationScheduler.cpp

@@ -223,24 +223,21 @@ namespace fhg
                      , boost::optional<fhg::com::p2p::address_t> const& source
                      )
                    {
-                     if (source) // == not shut down
+                     if (!ec)
                      {
-                       if (ec)
-                       {
-                         on_message ( source.get()
-                                    , { _incoming_message.data.begin()
-                                      , _incoming_message.data.end()
-                                      }
-                                    );
-                       }
-                       else
-                       {
-                         on_error ( source.get()
-                                  , std::make_exception_ptr
-                                      (boost::system::system_error (ec))
+                       on_message ( source.get()
+                                  , { _incoming_message.data.begin()
+                                    , _incoming_message.data.end()
+                                    }
                                   );
-                       }
-
+                       start_recv (on_message, on_error);
+                     }
+                     else if (!!source) // == not called due to shutdown
+                     {
+                       on_error ( source.get()
+                                , std::make_exception_ptr
+                                    (boost::system::system_error (ec))
+                                );
                        start_recv (on_message, on_error);
                      }
                    }

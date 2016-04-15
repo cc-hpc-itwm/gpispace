@@ -20,6 +20,8 @@
 
 #include <fhg/util/macros.hpp>
 
+#include <util-generic/print_exception.hpp>
+
 #include <boost/lexical_cast.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
