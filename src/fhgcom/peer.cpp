@@ -168,20 +168,24 @@ namespace fhg
       return addr;
     }
 
-    void peer_t::async_send ( p2p::address_t const& addr
-                            , const std::string & data
-                            , peer_t::handler_t completion_handler
-                            )
+    void peer_t::async_send
+      ( p2p::address_t const& addr
+      , const std::string & data
+      , std::function<void ( fhg::com::p2p::address_t const&
+                           , std::exception_ptr
+                           )
+                     > on_error
+      )
+    try
     {
-      fhg_assert (completion_handler);
-
       lock_type lock(mutex_);
 
       if (stopping_)
       {
-        using namespace boost::system;
-        completion_handler (errc::make_error_code (errc::network_down));
-        return;
+        throw boost::system::system_error
+          ( boost::system::errc::make_error_code
+              (boost::system::errc::network_down)
+          );
       }
 
       // TODO: io_service_->post (...);
@@ -191,11 +195,21 @@ namespace fhg
         to_send.message.header.src = my_addr_.get();
         to_send.message.header.dst = addr;
         to_send.message.assign (data);
-        to_send.handler = completion_handler;
+        to_send.handler = [addr, on_error] (boost::system::error_code const& ec)
+          {
+            if (ec)
+            {
+              on_error (addr, std::make_exception_ptr (boost::system::system_error (ec)));
+            }
+          };
         cd.o_queue.push_back (to_send);
 
         if (cd.o_queue.size () == 1)
           start_sender (addr);
+    }
+    catch (...)
+    {
+      on_error (addr, std::current_exception());
     }
 
     void peer_t::async_recv

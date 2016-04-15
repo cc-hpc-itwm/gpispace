@@ -27,8 +27,6 @@ namespace fhg
     class peer_t : private boost::noncopyable
     {
     public:
-      typedef std::function <void (boost::system::error_code const &)> handler_t;
-
       peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
       ~peer_t();
 
@@ -42,7 +40,10 @@ namespace fhg
 
       void async_send ( p2p::address_t const& addr
                       , std::string const & data
-                      , handler_t h
+                      , std::function<void ( fhg::com::p2p::address_t const&
+                                           , std::exception_ptr
+                                           )
+                                     > on_error
                       );
       void async_recv
         ( message_t *m
@@ -66,7 +67,7 @@ namespace fhg
         {}
 
         message_t  message;
-        handler_t  handler;
+        std::function <void (boost::system::error_code const &)> handler;
       };
 
       struct to_recv_t

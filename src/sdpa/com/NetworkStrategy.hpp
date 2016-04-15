@@ -32,24 +32,10 @@ namespace sdpa
       template<typename Event, typename... Args>
         void perform (fhg::com::p2p::address_t const& address, Args... args)
       {
-        try
-        {
-          _peer.async_send
-            ( address
-            , _codec.encode<Event> (std::forward<Args> (args)...)
-            , [address, this] (boost::system::error_code const& ec)
-              {
-                if (ec)
-                {
-                  _on_error (address, std::make_exception_ptr (boost::system::system_error (ec)));
-                }
-              }
-            );
-        }
-        catch (...)
-        {
-          _on_error (address, std::current_exception());
-        }
+        _peer.async_send ( address
+                         , _codec.encode<Event> (std::forward<Args> (args)...)
+                         , _on_error
+                         );
       }
 
       boost::asio::ip::tcp::endpoint local_endpoint() const
