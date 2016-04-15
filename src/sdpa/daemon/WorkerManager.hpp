@@ -234,7 +234,7 @@ namespace sdpa
 
       while (!(idles.empty() || to_steal_from.empty()))
       {
-        worker_ptr const& richest (to_steal_from.top());
+        worker_ptr const richest (to_steal_from.top());
         worker_ptr const& thief (idles.top());
         Worker& richest_worker (richest->second);
 
@@ -249,6 +249,8 @@ namespace sdpa
                                         }
                                       )
                     );
+
+        fhg_assert (it_job != richest_worker.pending_.end());
 
         reservation (*it_job)->replace_worker (richest->first, thief->first);
 
