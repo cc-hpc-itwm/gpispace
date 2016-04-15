@@ -15,7 +15,7 @@ namespace sdpa
                    , const std::string& hostname
                    )
       : _capabilities (capabilities)
-      , capability_names_ (get_set_of_capability_names (capabilities))
+      , capability_names_()
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
       , _hostname (hostname)
@@ -23,7 +23,10 @@ namespace sdpa
       , reserved_ (false)
       , backlog_full_ (false)
     {
-
+      for (capability_t const& capability : capabilities)
+      {
+        capability_names_.emplace (capability.name());
+      }
     }
 
     bool Worker::has_pending_jobs() const
@@ -94,6 +97,7 @@ namespace sdpa
 	if (itwcpb == _capabilities.end())
 	{
 	  _capabilities.insert (capability);
+          capability_names_.emplace (capability.name());
 	  bModified = true;
 	}
 	else if (itwcpb->depth() > capability.depth())
@@ -104,9 +108,6 @@ namespace sdpa
 	}
       }
 
-      if (bModified)
-        capability_names_ = get_set_of_capability_names (_capabilities);
-
       return bModified;
     }
 
@@ -116,22 +117,15 @@ namespace sdpa
       for (Capability const& capability : cpbset)
       {
         removed += _capabilities.erase (capability);
+        capability_names_.erase (capability.name());
       }
-
-      if (removed)
-        capability_names_ = get_set_of_capability_names (_capabilities);
 
       return removed != 0;
     }
 
     bool Worker::hasCapability(const std::string& cpbName) const
     {
-      return std::find_if ( _capabilities.begin(), _capabilities.end()
-                          , [&cpbName] (capability_t const& cap)
-                          {
-                            return cap.name() == cpbName;
-                          }
-                          ) != _capabilities.end();
+      return capability_names_.contains (cpbName);
     }
 
     bool Worker::isReserved() const
