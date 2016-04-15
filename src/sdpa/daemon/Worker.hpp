@@ -6,6 +6,8 @@
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 
+#include <util-generic/refcounted_set.hpp>
+
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -50,7 +52,7 @@ namespace sdpa
       bool stealing_allowed() const;
 
       capabilities_set_t _capabilities;
-      std::set<std::string> capability_names_;
+      fhg::util::refcounted_set<std::string> capability_names_;
       unsigned long const _allocated_shared_memory_size;
       bool const _children_allowed;
       std::string const _hostname;
