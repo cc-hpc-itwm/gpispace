@@ -21,66 +21,24 @@ namespace sdpa
       : _codec()
       , _event_handler (event_handler)
       , _on_error (std::move (on_error))
-      , m_message()
-      , m_shutting_down (false)
       , _peer (std::move (peer_io_service), host, port)
     {
-      _peer.async_recv
-        ( &m_message
-        , std::bind ( &NetworkStrategy::handle_recv
-                    , this
-                    , std::placeholders::_1
-                    , std::placeholders::_2
-                    )
+      _peer.start_recv
+        ( [this] ( fhg::com::p2p::address_t const& source
+                 , std::string const& data
+                 )
+          {
+            _event_handler
+              (source, sdpa::events::SDPAEvent::Ptr (_codec.decode (data)));
+          }
+        , _on_error
         );
-    }
-
-    NetworkStrategy::~NetworkStrategy()
-    {
-      m_shutting_down = true;
     }
 
     fhg::com::p2p::address_t NetworkStrategy::connect_to
       (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
       return _peer.connect_to (host, port);
-    }
-
-    void NetworkStrategy::handle_recv ( boost::system::error_code const & ec
-                                      , boost::optional<fhg::com::p2p::address_t> source
-                                      )
-    {
-      if (! ec)
-      {
-        // convert m_message to event
-        sdpa::events::SDPAEvent::Ptr const evt
-          (_codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
-        _event_handler (source.get(), evt);
-
-        _peer.async_recv
-          ( &m_message
-          , std::bind ( &NetworkStrategy::handle_recv
-                      , this
-                      , std::placeholders::_1
-                      , std::placeholders::_2
-                      )
-          );
-      }
-      else if (! m_shutting_down)
-      {
-        _on_error ( source.get()
-                  , std::make_exception_ptr (boost::system::system_error (ec))
-                  );
-
-          _peer.async_recv
-           ( &m_message
-           , std::bind ( &NetworkStrategy::handle_recv
-                       , this
-                       , std::placeholders::_1
-                       , std::placeholders::_2
-                       )
-           );
-      }
     }
   }
 }

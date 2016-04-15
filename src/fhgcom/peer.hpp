@@ -45,12 +45,10 @@ namespace fhg
                                            )
                                      > on_error
                       );
-      void async_recv
-        ( message_t *m
-        , std::function<void ( boost::system::error_code
-                             , boost::optional<fhg::com::p2p::address_t> source
-                             )
-                       >
+
+      void start_recv
+        ( std::function<void (p2p::address_t const&, std::string const&)> on_message
+        , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
         );
 
     protected:
@@ -100,6 +98,15 @@ namespace fhg
       void connection_established (const p2p::address_t, boost::system::error_code const &);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
+
+      message_t _incoming_message;
+      void async_recv
+        ( message_t *m
+        , std::function<void ( boost::system::error_code
+                             , boost::optional<fhg::com::p2p::address_t> source
+                             )
+                       >
+        );
 
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;

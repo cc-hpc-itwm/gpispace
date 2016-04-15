@@ -212,6 +212,41 @@ namespace fhg
       on_error (addr, std::current_exception());
     }
 
+    void peer_t::start_recv
+      ( std::function<void (p2p::address_t const&, std::string const&)> on_message
+      , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
+      )
+    {
+      async_recv ( &_incoming_message
+                 , [this, on_message, on_error]
+                     ( boost::system::error_code const& ec
+                     , boost::optional<fhg::com::p2p::address_t> const& source
+                     )
+                   {
+                     if (source) // == not shut down
+                     {
+                       if (ec)
+                       {
+                         on_message ( source.get()
+                                    , { _incoming_message.data.begin()
+                                      , _incoming_message.data.end()
+                                      }
+                                    );
+                       }
+                       else
+                       {
+                         on_error ( source.get()
+                                  , std::make_exception_ptr
+                                      (boost::system::system_error (ec))
+                                  );
+                       }
+
+                       start_recv (on_message, on_error);
+                     }
+                   }
+                 );
+    }
+
     void peer_t::async_recv
       ( message_t *m
       , std::function<void ( boost::system::error_code
