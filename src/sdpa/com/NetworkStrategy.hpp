@@ -49,7 +49,6 @@ namespace sdpa
       {
         _peer.async_send ( address
                          , _codec.encode<Event> (std::forward<Args> (args)...)
-                         , _on_error
                          );
       }
 

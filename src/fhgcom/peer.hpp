@@ -43,13 +43,7 @@ namespace fhg
 
       p2p::address_t connect_to (host_t const&, port_t const&);
 
-      void async_send ( p2p::address_t const& addr
-                      , std::string const & data
-                      , std::function<void ( fhg::com::p2p::address_t const&
-                                           , std::exception_ptr
-                                           )
-                                     > on_error
-                      );
+      void async_send (p2p::address_t const& addr, std::string const & data);
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
@@ -57,10 +51,10 @@ namespace fhg
       void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
 
     private:
-      void start_recv
-        ( std::function<void (p2p::address_t const&, std::string const&)> on_message
-        , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
-        );
+      std::function<void (p2p::address_t const&, std::string const&)> _on_message;
+      std::function<void (p2p::address_t const&, std::exception_ptr const&)> _on_error;
+
+      void start_recv();
 
       struct to_send_t
       {

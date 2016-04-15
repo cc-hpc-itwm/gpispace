@@ -23,7 +23,9 @@ namespace fhg
                    , std::function<void (p2p::address_t const&, std::string const&)> on_message
                    , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
                    )
-      : stopping_ (false)
+      : _on_message (std::move (on_message))
+      , _on_error (std::move (on_error))
+      , stopping_ (false)
       , host_(host)
       , port_(port)
       , io_service_ (std::move (io_service))
@@ -66,7 +68,7 @@ namespace fhg
 
         accept_new ();
 
-        start_recv (on_message, on_error);
+        start_recv();
       }
       catch (...)
       {
@@ -173,13 +175,7 @@ namespace fhg
     }
 
     void peer_t::async_send
-      ( p2p::address_t const& addr
-      , const std::string & data
-      , std::function<void ( fhg::com::p2p::address_t const&
-                           , std::exception_ptr
-                           )
-                     > on_error
-      )
+      (p2p::address_t const& addr, const std::string & data)
     try
     {
       lock_type lock(mutex_);
@@ -199,11 +195,11 @@ namespace fhg
         to_send.message.header.src = my_addr_.get();
         to_send.message.header.dst = addr;
         to_send.message.assign (data);
-        to_send.handler = [addr, on_error] (boost::system::error_code const& ec)
+        to_send.handler = [addr, this] (boost::system::error_code const& ec)
           {
             if (ec)
             {
-              on_error (addr, std::make_exception_ptr (boost::system::system_error (ec)));
+              _on_error (addr, std::make_exception_ptr (boost::system::system_error (ec)));
             }
           };
         cd.o_queue.push_back (to_send);
@@ -213,36 +209,33 @@ namespace fhg
     }
     catch (...)
     {
-      on_error (addr, std::current_exception());
+      _on_error (addr, std::current_exception());
     }
 
-    void peer_t::start_recv
-      ( std::function<void (p2p::address_t const&, std::string const&)> on_message
-      , std::function<void (p2p::address_t const&, std::exception_ptr const&)> on_error
-      )
+    void peer_t::start_recv()
     {
       async_recv ( &_incoming_message
-                 , [this, on_message, on_error]
+                 , [this]
                      ( boost::system::error_code const& ec
                      , boost::optional<fhg::com::p2p::address_t> const& source
                      )
                    {
                      if (!ec)
                      {
-                       on_message ( source.get()
-                                  , { _incoming_message.data.begin()
-                                    , _incoming_message.data.end()
-                                    }
-                                  );
-                       start_recv (on_message, on_error);
+                       _on_message ( source.get()
+                                   , { _incoming_message.data.begin()
+                                     , _incoming_message.data.end()
+                                     }
+                                   );
+                       start_recv();
                      }
                      else if (!!source) // == not called due to shutdown
                      {
-                       on_error ( source.get()
-                                , std::make_exception_ptr
-                                    (boost::system::system_error (ec))
-                                );
-                       start_recv (on_message, on_error);
+                       _on_error ( source.get()
+                                 , std::make_exception_ptr
+                                     (boost::system::system_error (ec))
+                                 );
+                       start_recv();
                      }
                    }
                  );
