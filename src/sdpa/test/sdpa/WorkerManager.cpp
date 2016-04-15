@@ -35,6 +35,13 @@ namespace
   {
     return fhg::util::testing::random_integral<unsigned long>();
   }
+
+  fhg::com::p2p::address_t random_address()
+  {
+    return { fhg::util::testing::random_string()
+           , fhg::util::testing::random_integral<unsigned short>()
+           };
+  }
 }
 
 BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
@@ -47,7 +54,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -55,7 +62,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
   worker_manager.addWorker ( worker_ids[2]
                            , { sdpa::capability_t ("A", worker_ids[2])
@@ -65,7 +72,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[3]
@@ -75,7 +82,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
@@ -110,7 +117,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -118,7 +125,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[2]
@@ -126,7 +133,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   BOOST_REQUIRE (worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY (worker_ids[0]));
@@ -144,7 +151,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -152,7 +159,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.deleteWorker (worker_ids[1]);
@@ -178,7 +185,7 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -186,7 +193,7 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   worker_manager.addWorker ( worker_ids[2]
@@ -194,7 +201,7 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   sdpa::capabilities_set_t acquired_capabilities;
@@ -213,7 +220,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
                            , random_ulong()
                            , random_bool()
                            , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
+                           , random_address()
                            );
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -256,7 +263,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
                              , random_ulong()
                              , random_bool()
                              , fhg::util::testing::random_string()
-                             , fhg::util::testing::random_string()
+                             , random_address()
                              );
   }
 

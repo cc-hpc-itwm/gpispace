@@ -25,15 +25,18 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (fhg::com::p2p::address_t, os, address)
 
 BOOST_AUTO_TEST_CASE (address_translation_equal)
 {
-  BOOST_CHECK_EQUAL ( fhg::com::p2p::address_t ("name-1")
-                    , fhg::com::p2p::address_t ("name-1")
+  BOOST_CHECK_EQUAL ( fhg::com::p2p::address_t ("host", 1)
+                    , fhg::com::p2p::address_t ("host", 1)
                     );
 }
 
 BOOST_AUTO_TEST_CASE (address_translation_unique)
 {
-  BOOST_CHECK_NE ( fhg::com::p2p::address_t ("name-1")
-                 , fhg::com::p2p::address_t ("name-2")
+  BOOST_CHECK_NE ( fhg::com::p2p::address_t ("name1", 1)
+                 , fhg::com::p2p::address_t ("name2", 1)
+                 );
+  BOOST_CHECK_NE ( fhg::com::p2p::address_t ("name", 1)
+                 , fhg::com::p2p::address_t ("name", 2)
                  );
 }
 

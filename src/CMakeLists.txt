@@ -2,7 +2,6 @@
 
 extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
-          "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
   LIBRARIES fhglog Util::Generic
 )

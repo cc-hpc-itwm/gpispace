@@ -25,6 +25,13 @@ namespace
   {
     return fhg::util::testing::random_integral<unsigned long>();
   }
+
+  fhg::com::p2p::address_t random_address()
+  {
+    return { fhg::util::testing::random_string()
+           , fhg::util::testing::random_integral<unsigned short>()
+           };
+  }
 }
 
 struct fixture_scheduler_and_requirements
@@ -115,7 +122,7 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   _worker_manager.addWorker ( "worker_1"
@@ -123,7 +130,7 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   const unsigned int n_jobs (100);
@@ -157,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   add_job ("job_0", no_requirements());
@@ -180,7 +187,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   {
@@ -202,7 +209,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( "worker_1"
@@ -210,7 +217,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   add_job ("job_0", require ("C"));
@@ -248,7 +255,7 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   _worker_manager.addWorker ( "B0"
@@ -256,7 +263,7 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   _worker_manager.addWorker ( "A1"
@@ -264,14 +271,14 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   _worker_manager.addWorker ( "B1"
                                         , {sdpa::capability_t ("B", "B1")}
                                         , random_ulong()
                                         , false, fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   add_job ("2A", require ("A", 2));
@@ -311,14 +318,14 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requireme
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( "worker_1"
                             , {}
                             , random_ulong()
                             , false, fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   add_job ("job_0", no_requirements());
@@ -355,7 +362,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requireme
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _scheduler.assignJobsToWorkers();
@@ -375,7 +382,7 @@ BOOST_FIXTURE_TEST_CASE
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   add_job ("2", require (2));
@@ -417,7 +424,7 @@ BOOST_FIXTURE_TEST_CASE
                             , random_ulong()
                             , true
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   sdpa::job_id_t const job_id_0 (random_job_id());
@@ -468,7 +475,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   sdpa::job_id_t const job_id_0 (random_job_id());
@@ -524,7 +531,7 @@ BOOST_FIXTURE_TEST_CASE
                             , random_ulong()
                             , true
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   sdpa::job_id_t const job_id_0 (random_job_id());
@@ -577,7 +584,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
@@ -630,26 +637,26 @@ struct fixture_minimal_cost_assignment
       , _worker_manager
       )
   {
-    _worker_manager.addWorker ("worker_01", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_02", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_03", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_04", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_05", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_06", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_07", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_08", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_09", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_10", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_11", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_12", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_13", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_14", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_15", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_16", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_17", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_18", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_19", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_20", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_01", {}, random_ulong(), false, "node1", random_address());
+    _worker_manager.addWorker ("worker_02", {}, random_ulong(), false, "node1", random_address());
+    _worker_manager.addWorker ("worker_03", {}, random_ulong(), false, "node1", random_address());
+    _worker_manager.addWorker ("worker_04", {}, random_ulong(), false, "node1", random_address());
+    _worker_manager.addWorker ("worker_05", {}, random_ulong(), false, "node2", random_address());
+    _worker_manager.addWorker ("worker_06", {}, random_ulong(), false, "node2", random_address());
+    _worker_manager.addWorker ("worker_07", {}, random_ulong(), false, "node2", random_address());
+    _worker_manager.addWorker ("worker_08", {}, random_ulong(), false, "node2", random_address());
+    _worker_manager.addWorker ("worker_09", {}, random_ulong(), false, "node3", random_address());
+    _worker_manager.addWorker ("worker_10", {}, random_ulong(), false, "node3", random_address());
+    _worker_manager.addWorker ("worker_11", {}, random_ulong(), false, "node3", random_address());
+    _worker_manager.addWorker ("worker_12", {}, random_ulong(), false, "node3", random_address());
+    _worker_manager.addWorker ("worker_13", {}, random_ulong(), false, "node4", random_address());
+    _worker_manager.addWorker ("worker_14", {}, random_ulong(), false, "node4", random_address());
+    _worker_manager.addWorker ("worker_15", {}, random_ulong(), false, "node4", random_address());
+    _worker_manager.addWorker ("worker_16", {}, random_ulong(), false, "node4", random_address());
+    _worker_manager.addWorker ("worker_17", {}, random_ulong(), false, "node5", random_address());
+    _worker_manager.addWorker ("worker_18", {}, random_ulong(), false, "node5", random_address());
+    _worker_manager.addWorker ("worker_19", {}, random_ulong(), false, "node5", random_address());
+    _worker_manager.addWorker ("worker_20", {}, random_ulong(), false, "node5", random_address());
   }
 
   double max_value (const std::map<std::string, double>& map_cost)
@@ -1015,7 +1022,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
 
   for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
-    _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, fhg::util::testing::random_string());
+    _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, random_address());
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -1047,7 +1054,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
                                         , random_ulong()
                                         , true
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
@@ -1056,7 +1063,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
@@ -1080,7 +1087,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_i
                                         , random_ulong()
                                         , true
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
@@ -1089,7 +1096,7 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_i
                                         , random_ulong()
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   sdpa::job_id_t const job_id_0 (utils::random_peer_name());
@@ -1164,7 +1171,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   for (int i=0; i<n_workers;i++)
   {
-    _worker_manager.addWorker (worker_ids[i], {}, random_ulong(), false, host_ids[i], fhg::util::testing::random_string());
+    _worker_manager.addWorker (worker_ids[i], {}, random_ulong(), false, host_ids[i], random_address());
   }
 
   std::for_each ( job_ids.begin()
@@ -1212,7 +1219,7 @@ BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_a
                                         , avail_mem
                                         , false
                                         , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
+                            , random_address()
                                         );
 
   const sdpa::job_id_t job_id;
@@ -1245,7 +1252,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                             , size_0
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( "worker_1"
@@ -1253,7 +1260,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                             , size_1
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
 
@@ -1262,7 +1269,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                             , size_0 + size_1
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   const sdpa::job_id_t job_id_0 ("job_0");
@@ -1335,7 +1342,7 @@ BOOST_FIXTURE_TEST_CASE
     , random_ulong()
     , false
     , fhg::util::testing::random_string()
-    , fhg::util::testing::random_string()
+    , random_address()
     );
   _worker_manager.addWorker
     ( name_worker_1
@@ -1343,7 +1350,7 @@ BOOST_FIXTURE_TEST_CASE
     , random_ulong()
     , false
     , fhg::util::testing::random_string()
-    , fhg::util::testing::random_string()
+    , random_address()
     );
 
   sdpa::job_id_t const job_id {fhg::util::testing::random_string()};
@@ -1373,7 +1380,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( "worker_1"
@@ -1383,7 +1390,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( "worker_2"
@@ -1394,7 +1401,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   const sdpa::job_id_t job_id ("job_0");
@@ -1428,7 +1435,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                             , 199
                             , false
                             , name_node_0
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( name_worker_1
@@ -1436,7 +1443,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                             , 200
                             , false
                             , name_node_1
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   sdpa::job_id_t const job_id_0 (fhg::util::testing::random_string());
@@ -1495,7 +1502,7 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _worker_manager.addWorker ( "worker_1"
@@ -1503,7 +1510,7 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   const sdpa::job_id_t job_0 ("job_0");
@@ -1535,7 +1542,7 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   _scheduler.assignJobsToWorkers();
@@ -1582,7 +1589,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   const sdpa::job_id_t job_0 ("job_0");
@@ -1622,7 +1629,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                             , random_ulong()
                             , false
                             , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
+                            , random_address()
                             );
 
   {
@@ -1721,7 +1728,7 @@ struct fixture_add_new_workers
                                 , random_ulong()
                                 , false
                                 , fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
+                                , random_address()
                                 );
       request_scheduling();
     }

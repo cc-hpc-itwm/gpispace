@@ -58,8 +58,9 @@ namespace fhg
         acceptor_.bind(endpoint);
         acceptor_.listen();
 
-        my_addr_ = p2p::address_t
-          (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
+        my_addr_ = p2p::address_t ( fhg::util::hostname()
+                                  , local_endpoint().port()
+                                  );
 
         accept_new ();
       }
@@ -131,12 +132,13 @@ namespace fhg
     {
       boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
 
-      std::string const fake_name (std::string (host) + ":" + std::string (port));
-      p2p::address_t const addr (fake_name);
+      p2p::address_t const addr (host, port);
 
       if (connections_.find (addr) != connections_.end())
       {
-        throw std::logic_error ("already connected to " + fake_name);
+        throw std::logic_error ( "already connected to " + std::string (host)
+                               + ":" + std::string (port)
+                               );
       }
 
       connection_data_t& cd (connections_[addr]);
