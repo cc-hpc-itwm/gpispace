@@ -140,19 +140,37 @@ namespace fhg
       cd.connection->local_address (my_addr_.get());
       cd.connection->remote_address (addr);
 
-      boost::system::error_code ec;
-      boost::asio::connect
-        ( cd.connection->socket()
-        , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
-        , ec
-        );
-
-      connection_established (addr, ec);
-
-      if (ec)
+      try
       {
-        throw boost::system::system_error (ec);
+        boost::asio::connect
+          ( cd.connection->socket()
+          , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
+          );
       }
+      catch (...)
+      {
+        boost::system::error_code ignore;
+        cd.connection->socket().cancel (ignore);
+        cd.connection->socket().close (ignore);
+
+        connections_.erase (addr);
+
+        throw;
+      }
+
+      cd.connection->set_option (boost::asio::socket_base::keep_alive (true));
+      cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
+
+      to_send_t to_send;
+      to_send.handler = [](boost::system::error_code const&) {};
+      to_send.message.header.src = my_addr_.get();
+      to_send.message.header.dst = addr;
+      to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
+      to_send.message.resize (0);
+
+      cd.connection->start();
+      cd.o_queue.push_front (to_send);
+      start_sender (addr);
 
       return addr;
     }
@@ -193,42 +211,6 @@ namespace fhg
     catch (...)
     {
       _on_error (addr, std::current_exception());
-    }
-
-    void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
-    {
-      lock_type lock (mutex_);
-
-      if (! ec)
-      {
-        connection_data_t & cd = connections_.find (a)->second;
-
-        {
-          boost::asio::socket_base::keep_alive o(true);
-          cd.connection->set_option (o);
-          cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
-        }
-
-        // send hello message
-        to_send_t to_send;
-        to_send.handler = [](boost::system::error_code const&) {};
-        to_send.message.header.src = my_addr_.get();
-        to_send.message.header.dst = a;
-        to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
-        to_send.message.resize (0);
-
-        cd.connection->start ();
-        cd.o_queue.push_front (to_send);
-        start_sender (a);
-      }
-      else
-      {
-        if (connections_.find (a) != connections_.end())
-        {
-          connection_data_t & cd = connections_.find (a)->second;
-          handle_error (cd.connection, ec);
-        }
-      }
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
