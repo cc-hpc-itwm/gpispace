@@ -67,8 +67,6 @@ namespace fhg
                                   );
 
         accept_new ();
-
-        start_recv();
       }
       catch (...)
       {
@@ -110,21 +108,6 @@ namespace fhg
         }
 
         connections_.erase (connections_.begin());
-      }
-
-      // remove pending
-      while (! m_pending.empty())
-      {
-        delete m_pending.front();
-        m_pending.pop_front();
-      }
-
-      while (! m_to_recv.empty())
-      {
-        to_recv_t to_recv = m_to_recv.front();
-        m_to_recv.pop_front();
-        using namespace boost::system;
-        to_recv.handler (errc::make_error_code(errc::operation_canceled), boost::none);
       }
 
       backlog_.clear ();
@@ -210,80 +193,6 @@ namespace fhg
     catch (...)
     {
       _on_error (addr, std::current_exception());
-    }
-
-    void peer_t::start_recv()
-    {
-      async_recv ( &_incoming_message
-                 , [this]
-                     ( boost::system::error_code const& ec
-                     , boost::optional<fhg::com::p2p::address_t> const& source
-                     )
-                   {
-                     if (!ec)
-                     {
-                       _on_message ( source.get()
-                                   , { _incoming_message.data.begin()
-                                     , _incoming_message.data.end()
-                                     }
-                                   );
-                       start_recv();
-                     }
-                     else if (!!source) // == not called due to shutdown
-                     {
-                       _on_error ( source.get()
-                                 , std::make_exception_ptr
-                                     (boost::system::system_error (ec))
-                                 );
-                       start_recv();
-                     }
-                   }
-                 );
-    }
-
-    void peer_t::async_recv
-      ( message_t *m
-      , std::function<void ( boost::system::error_code
-                           , boost::optional<fhg::com::p2p::address_t>
-                           )
-                     > completion_handler
-      )
-    {
-      fhg_assert (m);
-      fhg_assert (completion_handler);
-
-      {
-        lock_type lock(mutex_);
-
-        if (stopping_)
-        {
-          using namespace boost::system;
-          completion_handler ( errc::make_error_code (errc::network_down)
-                             , boost::none
-                             );
-          return;
-        }
-
-        // TODO: implement async receive on connection!
-        if (m_pending.empty())
-        {
-          to_recv_t to_recv;
-          to_recv.message = m;
-          to_recv.handler = completion_handler;
-          m_to_recv.push_back (to_recv);
-          return;
-        }
-        else
-        {
-          const message_t * p = m_pending.front();
-          m_pending.pop_front();
-          *m = *p;
-          delete p;
-        }
-      }
-
-      using namespace boost::system;
-      completion_handler (errc::make_error_code (errc::success), m->header.src);
     }
 
     void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
@@ -473,32 +382,9 @@ namespace fhg
     {
       fhg_assert (m);
 
-      lock_type lock (mutex_);
-      {
-        if (m_to_recv.empty())
-        {
-          // TODO: maybe add a flag to the message indicating whether it should be delivered
-          // at all costs or not
-          // if (m->header.flags & IMPORTANT)
-          m_pending.emplace_back (m);
-          return;
-        }
-        else
-        {
-          to_recv_t to_recv = m_to_recv.front();
-          m_to_recv.pop_front();
-          *to_recv.message = *m;
-          delete m;
-
-          using namespace boost::system;
-
-          lock.unlock ();
-          to_recv.handler ( errc::make_error_code (errc::success)
-                          , connection->remote_address()
-                          );
-          lock.lock ();
-        }
-      }
+      _on_message ( connection->remote_address()
+                  , {m->data.begin(), m->data.end()}
+                  );
     }
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
@@ -528,22 +414,12 @@ namespace fhg
           lock.lock ();
         }
 
-        // the handler might async recv again...
-        std::list<to_recv_t> tmp (m_to_recv);
-        m_to_recv.clear();
-
-        while (! tmp.empty())
-        {
-          to_recv_t to_recv = tmp.front();
-          tmp.pop_front();
-
-          to_recv.message->header.src = c->remote_address();
-          to_recv.message->header.dst = c->local_address();
-
-          lock.unlock ();
-          to_recv.handler (ec, c->remote_address());
-          lock.lock ();
-        }
+        lock.unlock ();
+        _on_error ( c->remote_address()
+                  , std::make_exception_ptr
+                      (boost::system::system_error (ec))
+                  );
+        lock.lock ();
 
         connections_.erase(c->remote_address());
       }

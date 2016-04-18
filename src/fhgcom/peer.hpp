@@ -54,8 +54,6 @@ namespace fhg
       std::function<void (p2p::address_t const&, std::string const&)> _on_message;
       std::function<void (p2p::address_t const&, std::exception_ptr const&)> _on_error;
 
-      void start_recv();
-
       struct to_send_t
       {
         to_send_t ()
@@ -65,20 +63,6 @@ namespace fhg
 
         message_t  message;
         std::function <void (boost::system::error_code const &)> handler;
-      };
-
-      struct to_recv_t
-      {
-        to_recv_t ()
-          : message (nullptr)
-          , handler()
-        {}
-
-        message_t  *message;
-        std::function<void ( boost::system::error_code
-                           , boost::optional<fhg::com::p2p::address_t>
-                           )
-                     > handler;
       };
 
       struct connection_data_t
@@ -97,15 +81,6 @@ namespace fhg
       void connection_established (const p2p::address_t, boost::system::error_code const &);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
-
-      message_t _incoming_message;
-      void async_recv
-        ( message_t *m
-        , std::function<void ( boost::system::error_code
-                             , boost::optional<fhg::com::p2p::address_t> source
-                             )
-                       >
-        );
 
       typedef boost::recursive_mutex mutex_type;
       typedef boost::unique_lock<mutex_type> lock_type;
@@ -126,9 +101,6 @@ namespace fhg
       std::set<connection_t::ptr_t> backlog_;
 
       connection_t::ptr_t listen_;
-
-      std::list<to_recv_t> m_to_recv;
-      std::list<const message_t *> m_pending;
 
       boost::strict_scoped_thread<boost::join_if_joinable> _io_thread;
     };
