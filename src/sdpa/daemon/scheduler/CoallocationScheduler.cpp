@@ -162,7 +162,7 @@ namespace sdpa
         (_worker_manager.delete_or_cancel_worker_jobs<Reservation>
           ( worker
           , get_job
-          , [=] (job_id_t const& jobId)
+          , [this] (job_id_t const& jobId)
             {return allocation_table_.at (jobId);}
           , cancel_worker_job
           )

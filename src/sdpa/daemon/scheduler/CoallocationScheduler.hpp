@@ -14,7 +14,7 @@ namespace sdpa
 {
   namespace daemon
   {
-    class CoallocationScheduler
+    class CoallocationScheduler : boost::noncopyable
     {
     public:
       typedef std::map<job_id_t, std::set<worker_id_t>> assignment_t;
