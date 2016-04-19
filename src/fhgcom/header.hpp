@@ -96,7 +96,7 @@ namespace fhg
         uint32_t length;           // size of payload in bytes
         address_t src;             // unique source address
         address_t dst;             // unique destination address
-      } __attribute__ ((packed));
+      };
     }
   }
 }
