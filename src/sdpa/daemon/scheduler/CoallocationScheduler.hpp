@@ -131,6 +131,10 @@ namespace sdpa
             _results.last_success = *f;
           }
         }
+        void mark_as_canceled_if_no_result_stored_yet (worker_id_t const& worker)
+        {
+          _results.individual_results.emplace (worker, JobFSM_::s_canceled());
+        }
 
         boost::optional<job_result_type>
           get_aggregated_results_if_all_terminated() const
@@ -173,7 +177,9 @@ namespace sdpa
         job_result_type _results;
       };
 
-      mutable std::mutex mtx_alloc_table_;
+      //! \note to be able to call releaseReservation instead of
+      //! reimplementing in reschedule_worker_jobs
+      mutable std::recursive_mutex mtx_alloc_table_;
       typedef std::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;

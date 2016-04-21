@@ -111,3 +111,10 @@ fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
   LIBRARIES sdpa
             fhglog
 )
+
+fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
+  SOURCES remove_workers_in_a_coallocation_job.cpp
+  USE_BOOST
+  INCLUDE PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa fhglog
+)
