@@ -298,44 +298,24 @@ namespace sdpa
       for (job_id_t const& jobId : jobs_to_cancel)
       {
         Job* const pJob = get_job (jobId);
+        fhg_assert (pJob);
 
-        if (pJob && !sdpa::status::is_terminal (pJob->getStatus()))
-        {
-          T* reservation (get_reservation (jobId));
-          reservation->store_result (worker_id, JobFSM_::s_canceled());
-          pJob->Reschedule();
+        T* reservation (get_reservation (jobId));
+        pJob->Reschedule();
 
-          if (!reservation->apply_to_workers_without_result
-               ( [&jobId, &cancel_worker_job] (const sdpa::worker_id_t& wid)
+        //! \note would never be set otherwise (function is only
+        //! called after a worker died)
+        reservation->mark_as_canceled_if_no_result_stored_yet (worker_id);
+
+        if ( !reservation->apply_to_workers_without_result // false for worker 5, true for worker 4
+               ( [&jobId, &cancel_worker_job, this] (worker_id_t const& wid)
                  {
                    cancel_worker_job (wid, jobId);
                  }
                )
-             )
-          {
-            jobs_to_reschedule.emplace (jobId);
-          }
-        }
-      }
-
-      for (job_id_t const& job_id : jobs_to_reschedule)
-      {
-        for (std::string const& worker_id : get_reservation (job_id)->workers())
+           )
         {
-          Worker& worker (worker_map_.at (worker_id));
-          auto& equivalence_class
-            (worker_equiv_classes_.at (worker.capability_names_));
-
-          if (worker.pending_.count (job_id))
-          {
-            worker.delete_pending_job (job_id);
-            equivalence_class.dec_pending_jobs (1);
-          }
-          else
-          {
-            worker.delete_submitted_job (job_id);
-            equivalence_class.dec_running_jobs (1);
-          }
+          jobs_to_reschedule.emplace (jobId);
         }
       }
 
