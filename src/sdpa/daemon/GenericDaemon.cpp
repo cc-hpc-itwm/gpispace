@@ -1575,6 +1575,8 @@ namespace sdpa
         boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
 
         _scheduler.assignJobsToWorkers();
+        _scheduler.start_pending_jobs
+           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
