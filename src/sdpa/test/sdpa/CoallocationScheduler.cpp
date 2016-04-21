@@ -1566,6 +1566,12 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                  && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_2"})
                   );
   }
+
+  _scheduler.start_pending_jobs
+    ( [](std::set<sdpa::worker_id_t> const&, const sdpa::job_id_t&)
+      {}
+    );
+
   _scheduler.steal_work();
 
   {
@@ -1778,6 +1784,10 @@ struct fixture_add_new_workers
   void request_scheduling()
   {
     _scheduler.assignJobsToWorkers();
+    _scheduler.start_pending_jobs
+      ( [](std::set<sdpa::worker_id_t> const&, const sdpa::job_id_t&)
+        {}
+      );
     _scheduler.steal_work();
   }
 
@@ -1839,18 +1849,19 @@ struct fixture_add_new_workers
   void check_work_stealing
     ( std::vector<sdpa::worker_id_t> const& initial_workers
     , std::vector<sdpa::worker_id_t> const& new_workers
-    , std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> old_assignment
+    , std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>>
     , unsigned int n_total_jobs
     )
   {
-    unsigned int n_stolen_jobs (0);
-    unsigned int n_jobs_initial_workers (0);
     auto const new_assignment (get_current_assignment());
 
+    unsigned int n_jobs_new_assignment (0);
     for (sdpa::worker_id_t worker : new_workers)
     {
-      BOOST_REQUIRE_EQUAL
-        (n_jobs_assigned_to_worker (worker, new_assignment), 1);
+      const unsigned int n_worker_jobs
+        (n_jobs_assigned_to_worker (worker, new_assignment));
+      BOOST_REQUIRE_GE (n_worker_jobs, 1);
+      n_jobs_new_assignment += n_worker_jobs;
     }
 
     for (sdpa::worker_id_t worker : initial_workers)
@@ -1859,22 +1870,10 @@ struct fixture_add_new_workers
         (n_jobs_assigned_to_worker (worker, new_assignment));
       BOOST_REQUIRE_GE (n_new_jobs, 1);
 
-      const unsigned int n_jobs_diff
-        ( n_jobs_assigned_to_worker (worker, old_assignment)
-        - n_new_jobs
-        );
-
-      BOOST_REQUIRE (n_jobs_diff == 0 || n_jobs_diff == 1);
-
-      n_stolen_jobs += n_jobs_diff;
-      n_jobs_initial_workers += n_new_jobs;
+      n_jobs_new_assignment += n_new_jobs;
     }
 
-    // Each of the new workers has stolen exactly one job
-    BOOST_REQUIRE_EQUAL (n_stolen_jobs, new_workers.size());
-
-    // the total number of jobs is conserved
-    BOOST_REQUIRE_EQUAL (n_jobs_initial_workers + n_stolen_jobs, n_total_jobs);
+    BOOST_REQUIRE_EQUAL (n_jobs_new_assignment, n_total_jobs);
   }
 };
 

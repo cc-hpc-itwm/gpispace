@@ -226,7 +226,7 @@ namespace sdpa
         {
           to_steal_from.emplace (worker_ptr);
         }
-        else if (!worker.has_running_jobs() && !worker.has_pending_jobs())
+        if (!worker.has_running_jobs())
         {
           idles.emplace (worker_ptr);
         }
@@ -234,36 +234,39 @@ namespace sdpa
 
       while (!(idles.empty() || to_steal_from.empty()))
       {
-        worker_ptr const richest (to_steal_from.top());
-        worker_ptr const& thief (idles.top());
-        Worker& richest_worker (richest->second);
+        auto const richest (to_steal_from.top());
 
-        auto it_job (std::max_element ( richest_worker.pending_.begin()
-                                      , richest_worker.pending_.end()
-                                      , [&reservation] ( job_id_t const& r
-                                                       , job_id_t const& l
-                                                       )
-                                        {
-                                          return reservation (r)->cost()
-                                            < reservation (l)->cost();
-                                        }
-                                      )
-                    );
+        // todo: re-add costs
+        // todo: O(N^>=2): add map workers_required -> prioqueue<reservation>
+        auto it_job (richest->second.pending_.begin());
 
-        fhg_assert (it_job != richest_worker.pending_.end());
-
-        reservation (*it_job)->replace_worker (richest->first, thief->first);
-
-        thief->second.assign (*it_job);
-        richest_worker.pending_.erase (*it_job);
-
-        idles.pop();
-        to_steal_from.pop();
-
-        if (richest_worker.stealing_allowed())
+        while (richest->second.stealing_allowed() && it_job != richest->second.pending_.end())
         {
-          to_steal_from.emplace (richest);
+          job_id_t job_id (*it_job);
+
+          auto&& sources (reservation (job_id)->workers());
+
+          if (idles.size() >= sources.size())
+          {
+            for (auto&& source : sources)
+            {
+              auto&& thief (idles.top());
+
+              worker_map.at (source).delete_pending_job (job_id);
+              reservation (job_id)->replace_worker (source, thief->first);
+              thief->second.assign (job_id);
+
+              idles.pop();
+            }
+
+            goto cont;
+          }
+
+          ++it_job;
         }
+
+        to_steal_from.pop();
+        cont: ;
       }
     }
 
