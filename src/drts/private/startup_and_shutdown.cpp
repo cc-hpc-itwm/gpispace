@@ -650,6 +650,8 @@ namespace fhg
               std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
                 fails;
 
+              //! \note requires ranks to be matching index in hostnames!
+              std::size_t rank (0);
               for (auto& connection : rif_connections)
               {
                 try
@@ -670,7 +672,7 @@ namespace fhg
                         : boost::optional<boost::filesystem::path>()
                         , hostnames
                         , master.string()
-                        , connection.second == master
+                        , rank++
                         )
                     );
                 }

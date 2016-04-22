@@ -5,6 +5,7 @@
 #include <util-generic/hostname.hpp>
 
 #include <GASPI.h>
+#include <GASPI_Ext.h>
 
 #include <algorithm>
 #include <limits>

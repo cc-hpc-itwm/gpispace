@@ -94,7 +94,7 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
   timer
   unit_test_framework
 )
-find_package (GASPI 1.1.0 REQUIRED QUIET)
+find_package (GASPI 1.3.0 REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
 find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
