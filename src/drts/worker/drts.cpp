@@ -365,7 +365,7 @@ void DRTSImpl::handleCancelJobEvent
 
   if (job_it == m_jobs.end())
   {
-    throw std::runtime_error ("cancel_job for unknown job");
+    return;
   }
   if (*job_it->second->owner != source)
   {
