@@ -78,10 +78,10 @@ starting the monitor. If the monitor is started after workers got long
 running jobs, the gantt might indicate that no worker is running,
 while they in fact are all busy.
 
-NOTE: Coallocation jobs do not have an intuitive representation but
-rather show to start on all workers and instantly finishing on all but
-one workers. This might lead to empty lines even though the workers
-are in use by a coallocation job.
+NOTE: Jobs that use more than one worker do not have an intuitive
+representation but rather show to start on all workers and instantly
+finishing on all but one workers. This might lead to empty lines even
+though the workers are (indirectly) in use by a job.
 
 Task-blocks are color coded by state: In the default configuration, a
 running job is yellow, a finished job is green, a failed one is red,
