@@ -27,8 +27,8 @@ Logging
 -------
 
 In the "Logging" window the log output of all components of the
-distributed system is displayed. Use this to see the output of the RTM
-kernels. On the right there are controls to adjust the log level and
+distributed system is displayed. Use this to see the output of the
+application. On the right there are controls to adjust the log level and
 to clear the log window. Dropping filtered log entries can help to
 avoid performance issues when receiving a lot of unwanted lines,
 e.g. due to debugging output. There is a hardcoded limit of 10000
