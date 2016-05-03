@@ -65,7 +65,7 @@ and actions. The panel can be resized using the splitter and may be
 hidden.
 
 .Execution Monitor window of the GPI-Space Monitor
-image::gspc-monitor-gantt.png[Execution Monitor window of the GPI-Space Monitor]
+image::gspc-monitor-gantt.png[Execution Monitor window of the GPI-Space Monitor, with workers grouped by type]
 
 Each line contains blocks that represent tasks a worker is
 executing. The workers' names in the first column contain their role,
@@ -92,8 +92,8 @@ clicking onto the respective entry in the legend on the options pane.
 .Legend for task colors
 image::gspc-monitor-gantt-legend.png[Legend for task colors]
 
-The two list boxescan be used to arrange the workers in groups, either
-by their type or by the node they are running on. Filters can be
+The two list boxes can be used to arrange the workers in groups,
+either +by worker type+ or +by node+ they are running on. Filters can be
 selected by double clicking or using +deselect+ and +select+, and may
 be reordered by dragging or pressing +up+ and +down+. This will result
 in the task view showing one line per group, which can be expanded to
