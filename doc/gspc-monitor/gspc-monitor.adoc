@@ -110,7 +110,7 @@ depending on column type.
 .+Clear+ button for Execution Monitor
 image::gspc-monitor-gantt-clear.png[+Clear+ button for Execution Monitor]
 
-Double clicking the gannt column's header allows to change the time
+Double clicking the gantt column's header allows to change the time
 scale in milliseconds (input box on the right) as well as the visible
 time range (scrollbar on the left). Doing the latter will
 automatically disable the continous scrolling, which can be re-enabled
