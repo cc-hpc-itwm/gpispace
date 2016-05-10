@@ -208,7 +208,7 @@ try
            , boost::optional<boost::filesystem::path> log_file
            , std::vector<std::string> nodes
            , std::string gaspi_master
-           , bool is_master
+           , std::size_t rank
            ) -> pid_t
         {
           std::vector<std::string> arguments
@@ -272,10 +272,11 @@ try
             ( fhg::rif::execute_and_get_startup_messages
                 ( command
                 , arguments
-                , { {"GASPI_MFILE", nodefile.string()}
-                  , {"GASPI_MASTER", gaspi_master}
+                , { {"GASPI_MASTER", gaspi_master}
                   , {"GASPI_SOCKET", "0"}
-                  , {"GASPI_TYPE", is_master ? "GASPI_MASTER" : "GASPI_WORKER"}
+                  , {"GASPI_MFILE", nodefile.string()}
+                  , {"GASPI_RANK", std::to_string (rank)}
+                  , {"GASPI_NRANKS", std::to_string (nodes.size())}
                   , {"GASPI_SET_NUMA_SOCKET", "0"}
                   }
                 )

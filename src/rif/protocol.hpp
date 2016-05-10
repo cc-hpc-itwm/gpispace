@@ -66,7 +66,7 @@ namespace fhg
                 , boost::optional<boost::filesystem::path> log_file
                 , std::vector<std::string> nodes
                 , std::string gaspi_master
-                , bool is_master
+                , std::size_t rank
                 )
         );
     }
