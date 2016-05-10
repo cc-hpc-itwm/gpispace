@@ -8,6 +8,9 @@ path cmake/3.4.1/bin
 path gcc/4.9.3/bin
 path git/2.6.4/bin
 path qt/4.8.6/bin
+path asciidoc/8.6.9/bin
+path source-highlight/3.1.8/bin
+ld_library_path source-highlight/3.1.8/lib
 pkg_config_path GPI2/1.3.0/lib64/pkgconfig
 pkg_config_path hwloc/1.11.1/lib/pkgconfig
 pkg_config_path libssh2/1.7.0+fpic/lib/pkgconfig
