@@ -273,7 +273,11 @@ namespace we
     void layer::canceled (id_type child)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (child));
-      fhg_assert (parent);
+
+      if (!parent)
+      {
+        return;
+      }
 
       if (_running_jobs.terminated (*parent, child))
       {
