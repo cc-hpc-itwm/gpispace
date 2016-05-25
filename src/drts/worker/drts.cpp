@@ -563,6 +563,10 @@ void DRTSImpl::job_execution_thread()
                              , task.activity.transition().data()
                              );
       }
+      catch (drts::worker::context::cancelled const&)
+      {
+        task.state = wfe_task_t::CANCELED;
+      }
       catch (...)
       {
         task.state = wfe_task_t::FAILED;
@@ -589,6 +593,10 @@ void DRTSImpl::job_execution_thread()
       else if (wfe_task_t::FAILED == task.state)
       {
         LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message);
+      }
+      else if (wfe_task_t::CANCELED == task.state)
+      {
+        LLOG (INFO, _logger, "task canceled: " << task.id);
       }
 
       if (_notification_service)
