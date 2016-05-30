@@ -570,8 +570,7 @@ void DRTSImpl::job_execution_thread()
       catch (...)
       {
         task.state = wfe_task_t::FAILED;
-        job->message = "Module call failed: "
-          + fhg::util::current_exception_printer (": ").string();
+        job->message = fhg::util::current_exception_printer (": ").string();
       }
 
       {
