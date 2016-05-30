@@ -109,21 +109,29 @@ namespace
 
     void operator() (we::type::module_call_t& mod) const
     {
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            _activity.add_output
-              ( we::loader::module_call ( loader
-                                        , _virtual_memory_api
-                                        , _shared_memory
-                                        , &task.context
-                                        , _activity.evaluation_context()
-                                        , mod
-                                        )
-              );
-          }
-        , "call to '" + mod.module() + "::" + mod.function() + "' failed"
-        );
+      try
+      {
+        _activity.add_output
+          ( we::loader::module_call ( loader
+                                    , _virtual_memory_api
+                                    , _shared_memory
+                                    , &task.context
+                                    , _activity.evaluation_context()
+                                    , mod
+                                    )
+          );
+      }
+      catch (drts::worker::context::cancelled const&)
+      {
+        throw;
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ("call to '" + mod.module() + "::" + mod.function() + "' failed")
+          );
+      }
     }
 
     void operator() (we::type::expression_t&) const
