@@ -109,21 +109,29 @@ namespace
 
     void operator() (we::type::module_call_t& mod) const
     {
-      fhg::util::nest_exceptions<std::runtime_error>
-        ( [&]
-          {
-            _activity.add_output
-              ( we::loader::module_call ( loader
-                                        , _virtual_memory_api
-                                        , _shared_memory
-                                        , &task.context
-                                        , _activity.evaluation_context()
-                                        , mod
-                                        )
-              );
-          }
-        , "call to '" + mod.module() + "::" + mod.function() + "' failed"
-        );
+      try
+      {
+        _activity.add_output
+          ( we::loader::module_call ( loader
+                                    , _virtual_memory_api
+                                    , _shared_memory
+                                    , &task.context
+                                    , _activity.evaluation_context()
+                                    , mod
+                                    )
+          );
+      }
+      catch (drts::worker::context::cancelled const&)
+      {
+        throw;
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ("call to '" + mod.module() + "::" + mod.function() + "' failed")
+          );
+      }
     }
 
     void operator() (we::type::expression_t&) const
@@ -563,11 +571,14 @@ void DRTSImpl::job_execution_thread()
                              , task.activity.transition().data()
                              );
       }
+      catch (drts::worker::context::cancelled const&)
+      {
+        task.state = wfe_task_t::CANCELED;
+      }
       catch (...)
       {
         task.state = wfe_task_t::FAILED;
-        job->message = "Module call failed: "
-          + fhg::util::current_exception_printer (": ").string();
+        job->message = fhg::util::current_exception_printer (": ").string();
       }
 
       {
@@ -589,6 +600,10 @@ void DRTSImpl::job_execution_thread()
       else if (wfe_task_t::FAILED == task.state)
       {
         LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message);
+      }
+      else if (wfe_task_t::CANCELED == task.state)
+      {
+        LLOG (INFO, _logger, "task canceled: " << task.id);
       }
 
       if (_notification_service)
