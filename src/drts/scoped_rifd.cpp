@@ -168,10 +168,7 @@ namespace gspc
 
       for (auto const& entry_point : entry_points)
       {
-        if (!result.second.count (entry_point.first))
-        {
-          _entry_points.erase (entry_point.first);
-        }
+        _entry_points.erase (entry_point.first);
       }
 
       return result;
