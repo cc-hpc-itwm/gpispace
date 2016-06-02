@@ -525,6 +525,8 @@ try
     bool notify_can_take_jobs;
     std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
 
+    boost::this_thread::disable_interruption const interruption_disabler;
+
     if (notify_can_take_jobs)
     {
       std::lock_guard<std::mutex> const _ (_guard_backlogfull_notified_masters);
