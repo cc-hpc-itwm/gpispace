@@ -10,6 +10,7 @@
 #include <boost/format.hpp>
 #include <boost/iostreams/device/file_descriptor.hpp>
 #include <boost/iostreams/stream.hpp>
+#include <boost/system/system_error.hpp>
 
 #include <iostream>
 #include <stdexcept>
@@ -134,7 +135,18 @@ namespace drts
             {
               cancelled = true;
 
-              fhg::util::syscall::kill (child, SIGUSR2);
+              try
+              {
+                fhg::util::syscall::kill (child, SIGUSR2);
+              }
+              catch (boost::system::system_error const& se)
+              {
+                // ignore: race with normally exiting child (waited below)
+                if (se.code() != boost::system::errc::no_such_process)
+                {
+                  throw;
+                }
+              }
             }
           );
 
