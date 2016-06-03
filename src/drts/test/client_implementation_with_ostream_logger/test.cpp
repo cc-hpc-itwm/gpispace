@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
      }
     );
 
-  boost::strict_scoped_thread<boost::join_if_joinable> const service_thread
+  boost::strict_scoped_thread<> const service_thread
     ([&io_service] { io_service.run(); });
 
   gspc::installation const installation (vm);

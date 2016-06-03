@@ -129,7 +129,7 @@ namespace fhg
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
 
-      boost::strict_scoped_thread<boost::join_if_joinable> _io_thread;
+      boost::strict_scoped_thread<> _io_thread;
     };
   }
 }
