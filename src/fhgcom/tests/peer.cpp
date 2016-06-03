@@ -11,7 +11,8 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
-#include <boost/thread.hpp>
+
+#include <thread>
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
@@ -206,7 +207,7 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
   boost::asio::ip::tcp::endpoint peer_2_endpoint
     (boost::asio::ip::address::from_string ("127.0.0.1"), 15123);
 
-  boost::thread sender ( [&peer_1, &stop_request, &peer_2_endpoint]
+  std::thread sender ( [&peer_1, &stop_request, &peer_2_endpoint]
                        {
                          while (not stop_request)
                          {
@@ -226,7 +227,7 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
                            }
                          }
                        }
-                       );
+                     );
 
   for (std::size_t i (0); i < 100; ++i)
   {

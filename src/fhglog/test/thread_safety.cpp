@@ -9,8 +9,10 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
+
+#include <mutex>
+#include <thread>
 
 namespace
 {
@@ -18,7 +20,7 @@ namespace
 
   void thread_function (fhg::log::Logger* logger)
   {
-    boost::this_thread::yield();
+    std::this_thread::yield();
 
     for (std::size_t i (0); i < loop_count; ++i)
     {
@@ -50,14 +52,14 @@ namespace
 
     virtual void append (const fhg::log::LogEvent &evt) override
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (_mutex);
+      std::unique_lock<std::recursive_mutex> const _ (_mutex);
 
       _container->push_back (fhg::log::format ("%m", evt));
     }
     virtual void flush () override {}
 
     std::vector<std::string>* _container;
-    boost::recursive_mutex _mutex;
+    std::recursive_mutex _mutex;
   };
 
   struct counter
