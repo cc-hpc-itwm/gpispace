@@ -2,14 +2,14 @@
 
 #include <sdpa/id_generator.hpp>
 
+#include <util-generic/latch.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <boost/format.hpp>
 #include <boost/random.hpp>
 #include <boost/thread.hpp>
-#include <boost/thread/barrier.hpp>
 
 #include <functional>
 #include <mutex>
@@ -59,10 +59,11 @@ namespace
   void insert ( sdpa::id_generator& id_generator
               , threaded_unique_set_of_id& ids
               , std::size_t number
-              , boost::barrier& barrier
+              , fhg::util::latch& latch
               )
   {
-    barrier.wait();
+    latch.count_down();
+    latch.wait();
 
     while (number --> 0)
     {
@@ -74,7 +75,7 @@ namespace
   {
     boost::thread_group threads;
     boost::mt19937 engine;
-    boost::barrier barrier (num_threads);
+    fhg::util::latch latch (num_threads);
 
     boost::uniform_int<std::size_t> random (100, 1000);
 
@@ -87,7 +88,7 @@ namespace
                                             , std::ref (id_generator)
                                             , std::ref (ids)
                                             , random (engine)
-                                            , std::ref (barrier)
+                                            , std::ref (latch)
                                             )
                          );
     }
