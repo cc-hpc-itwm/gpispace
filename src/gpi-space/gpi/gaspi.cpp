@@ -62,6 +62,9 @@ namespace gpi
       , m_dma (nullptr)
       , _segment_id (gaspi_context)
       , _current_queue (0)
+      , _notification_check_interrupted (false)
+      , _interrupt_notification_check
+          ([this] { _notification_check_interrupted = true; })
     {
       if (sys::get_total_memory_size() < _per_node_size)
       {
@@ -161,6 +164,7 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
+      _notification_check_interrupted = true;
       _notification_check.reset();
 
       FAIL_ON_NON_ZERO (gaspi_segment_delete, _segment_id);
@@ -382,10 +386,8 @@ namespace gpi
 
     void gaspi_t::notification_check()
     {
-      for (;;)
+      while (!_notification_check_interrupted)
       {
-        boost::this_thread::interruption_point();
-
         gaspi_notification_id_t notification_id;
         gaspi_return_t const waitsome_result
           ( gaspi_notify_waitsome
