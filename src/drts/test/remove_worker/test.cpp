@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
 
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+  boost::strict_scoped_thread<> const
     io_service_thread ([&io_service] { io_service.run(); });
 
   FHG_UTIL_FINALLY ([&] { io_service.stop(); });

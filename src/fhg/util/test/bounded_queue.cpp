@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (thread_bounded_queue_test_expected_order_several_producer_
 
   fhg::thread::bounded_queue<unsigned int>  items (capacity);
 
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+  boost::strict_scoped_thread<> const
     producer (&produce_items, boost::ref (items), num_items);
 
   for (unsigned int k = 0; k < items.capacity(); ++k)
