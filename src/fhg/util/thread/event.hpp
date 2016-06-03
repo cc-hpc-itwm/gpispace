@@ -1,5 +1,7 @@
 #pragma once
 
+#include <boost/utility.hpp>
+
 #include <condition_variable>
 #include <mutex>
 
