@@ -41,6 +41,7 @@ namespace we
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
+      , _stop_extracting ([this] { _nets_to_extract_from.interrupt(); })
     {}
 
     namespace
@@ -293,7 +294,7 @@ namespace we
         {
           const id_type a_id (activity_data._id);
 
-          boost::mutex::scoped_lock const _ (_discover_state_mutex);
+          std::lock_guard<std::mutex> const _ (_discover_state_mutex);
           fhg_assert (_discover_state.find (discover_id) == _discover_state.end());
 
           std::pair<std::size_t, sdpa::discovery_info_t > state
@@ -323,7 +324,7 @@ namespace we
     void layer::discovered
       (id_type discover_id, sdpa::discovery_info_t result)
     {
-      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      std::lock_guard<std::mutex> const _ (_discover_state_mutex);
       fhg_assert (_discover_state.find (discover_id) != _discover_state.end());
 
       std::pair<std::size_t, sdpa::discovery_info_t >& state
@@ -408,6 +409,7 @@ namespace we
   }
 
     void layer::extract_from_nets()
+    try
     {
       while (true)
       {
@@ -505,6 +507,9 @@ namespace we
         }
       }
     }
+    catch (async_remove_queue::interrupted const&)
+    {
+    }
 
     void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
     {
@@ -591,10 +596,15 @@ namespace we
 
     layer::activity_data_type layer::async_remove_queue::get()
     {
-      boost::recursive_mutex::scoped_lock lock (_container_mutex);
+      std::unique_lock<std::recursive_mutex> lock (_container_mutex);
 
-      _condition_non_empty.wait
-        (lock, [this]() -> bool { return !_container.empty(); });
+      _condition_not_empty_or_interrupted.wait
+        (lock, [this] { return !_container.empty() || _interrupted; });
+
+      if (_interrupted)
+      {
+        throw interrupted();
+      }
 
       return _container.get_front();
     }
@@ -602,7 +612,7 @@ namespace we
     void layer::async_remove_queue::put
       (activity_data_type activity_data, bool active)
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       bool do_put (true);
 
@@ -652,7 +662,7 @@ namespace we
         {
           _container.push_back (std::move (activity_data));
 
-          _condition_non_empty.notify_one();
+          _condition_not_empty_or_interrupted.notify_one();
         }
         else
         {
@@ -667,7 +677,7 @@ namespace we
       , std::function<void (std::exception_ptr)> on_error
       )
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -709,7 +719,7 @@ namespace we
       , std::function<void (std::exception_ptr)> on_error
       )
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -741,7 +751,7 @@ namespace we
         }
         _container.push_back (std::move (activity_data));
 
-        _condition_non_empty.notify_one();
+        _condition_not_empty_or_interrupted.notify_one();
       }
       else
       {
@@ -751,7 +761,7 @@ namespace we
 
     void layer::async_remove_queue::forget (id_type id)
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       to_be_removed_type::iterator const pos
         (_to_be_removed.find (id));
@@ -780,6 +790,13 @@ namespace we
       }
     }
 
+    void layer::async_remove_queue::interrupt()
+    {
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
+
+      _interrupted = true;
+      _condition_not_empty_or_interrupted.notify_all();
+    }
 
     // activity_data_type
 
@@ -799,7 +816,7 @@ namespace we
     void layer::locked_parent_child_relation_type::started
       (id_type parent, id_type child)
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       _relation.insert (relation_type::value_type (parent, child));
     }
@@ -807,7 +824,7 @@ namespace we
     bool layer::locked_parent_child_relation_type::terminated
       (id_type parent, id_type child)
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       _relation.erase (relation_type::value_type (parent, child));
 
@@ -817,7 +834,7 @@ namespace we
     boost::optional<layer::id_type>
       layer::locked_parent_child_relation_type::parent (id_type child)
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       relation_type::right_map::const_iterator const pos
         (_relation.right.find (child));
@@ -833,7 +850,7 @@ namespace we
     bool layer::locked_parent_child_relation_type::contains
       (id_type parent) const
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       return _relation.left.find (parent) != _relation.left.end();
     }
@@ -841,7 +858,7 @@ namespace we
     void layer::locked_parent_child_relation_type::apply
       (id_type parent, std::function<void (id_type)> fun) const
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       for ( id_type child
           : _relation.left.equal_range (parent) | boost::adaptors::map_values
