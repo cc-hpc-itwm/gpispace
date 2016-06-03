@@ -149,6 +149,14 @@ GenericDaemon::GenericDaemon( const std::string name
                          )
   , _registration_threads()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
+  , _interrupt_scheduling_thread
+      ( [this]
+        {
+          boost::mutex::scoped_lock const _ (_scheduling_requested_guard);
+          _scheduling_interrupted = true;
+          _scheduling_requested_condition.notify_one();
+        }
+      )
   , _virtual_memory_api
     ( vmem_socket
     ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
@@ -1562,7 +1570,17 @@ namespace sdpa
         {
           boost::mutex::scoped_lock lock (_scheduling_requested_guard);
           _scheduling_requested_condition.wait
-            (lock, [this] { return _scheduling_requested; });
+            ( lock
+            , [this]
+              {
+                return _scheduling_requested || _scheduling_interrupted;
+              }
+            );
+
+          if (_scheduling_interrupted)
+          {
+            break;
+          }
 
           _scheduling_requested = false;
         }

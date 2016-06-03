@@ -44,6 +44,7 @@
 #include <gpi-space/pc/client/api.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/finally.hpp>
 #include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <util-generic/threadsafe_queue.hpp>
@@ -253,6 +254,7 @@ namespace sdpa {
       boost::mutex _scheduling_thread_mutex;
       boost::mutex _scheduling_requested_guard;
       boost::condition_variable _scheduling_requested_condition;
+      bool _scheduling_interrupted = false;
       bool _scheduling_requested;
       void request_scheduling();
 
@@ -281,8 +283,8 @@ namespace sdpa {
 
       fhg::thread::set _registration_threads;
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _scheduling_thread;
+      boost::strict_scoped_thread<> _scheduling_thread;
+      fhg::util::finally_t<std::function<void()>> _interrupt_scheduling_thread;
       void scheduling_thread();
 
       //! \note In order to call the correct abstract functions, the
