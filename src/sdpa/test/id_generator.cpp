@@ -7,11 +7,12 @@
 #include <util-generic/testing/random_string.hpp>
 
 #include <boost/format.hpp>
+#include <boost/random.hpp>
 #include <boost/thread.hpp>
 #include <boost/thread/barrier.hpp>
-#include <boost/random.hpp>
 
 #include <functional>
+#include <mutex>
 #include <stdexcept>
 #include <unordered_set>
 
@@ -22,7 +23,7 @@ namespace
   public:
     std::string insert (std::string const& id)
     {
-      boost::mutex::scoped_lock const _ (_mutex_ids);
+      std::lock_guard<std::mutex> const _ (_mutex_ids);
 
       if (!_ids.insert (id).second)
       {
@@ -33,7 +34,7 @@ namespace
       return id;
     }
   private:
-    boost::mutex _mutex_ids;
+    std::mutex _mutex_ids;
     std::unordered_set<std::string> _ids;
   };
 }

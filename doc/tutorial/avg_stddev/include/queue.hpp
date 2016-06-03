@@ -1,9 +1,8 @@
 #pragma once
 
-#include <boost/thread/recursive_mutex.hpp>
-#include <boost/thread/condition_variable.hpp>
-
+#include <condition_variable>
 #include <deque>
+#include <mutex>
 
 namespace fhg
 {
@@ -18,9 +17,9 @@ namespace fhg
     class queue
     {
     public:
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
-      typedef boost::condition_variable_any condition_type;
+      typedef std::mutex mutex_type;
+      typedef std::unique_lock<mutex_type> lock_type;
+      typedef std::condition_variable condition_type;
 
       typedef T value_type;
       typedef Container<T, Allocator> container_type;

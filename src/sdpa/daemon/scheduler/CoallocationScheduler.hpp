@@ -5,10 +5,10 @@
 #include <sdpa/types.hpp>
 
 #include <boost/optional.hpp>
-#include <boost/thread.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
+#include <mutex>
 
 namespace sdpa
 {
@@ -75,7 +75,7 @@ namespace sdpa
         std::list<job_id_t> get_and_clear();
 
       private:
-        mutable boost::mutex mtx_;
+        mutable std::mutex mtx_;
         std::list<job_id_t> container_;
       } _jobs_to_schedule;
 
@@ -173,7 +173,7 @@ namespace sdpa
         job_result_type _results;
       };
 
-      mutable boost::mutex mtx_alloc_table_;
+      mutable std::mutex mtx_alloc_table_;
       typedef std::unordered_map<sdpa::job_id_t, Reservation*>
         allocation_table_t;
       allocation_table_t allocation_table_;

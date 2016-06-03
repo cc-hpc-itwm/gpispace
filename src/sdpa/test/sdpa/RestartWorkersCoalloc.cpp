@@ -31,22 +31,22 @@ namespace
       _network.perform<sdpa::events::CancelJobAckEvent>
         (source, pEvt->job_id());
 
-      boost::mutex::scoped_lock const _ (_mtx_cancel);
+      std::lock_guard<std::mutex> const _ (_mtx_cancel);
       ++_pending_cancel_requests;
       _cond_cancel.notify_one();
     }
 
     void wait_for_cancel()
     {
-      boost::mutex::scoped_lock lock (_mtx_cancel);
+      std::unique_lock<std::mutex> lock (_mtx_cancel);
       _cond_cancel.wait
         (lock, [&] { return _pending_cancel_requests == 1; });
       --_pending_cancel_requests;
     }
 
   private:
-    boost::mutex _mtx_cancel;
-    boost::condition_variable_any _cond_cancel;
+    std::mutex _mtx_cancel;
+    std::condition_variable _cond_cancel;
     std::size_t _pending_cancel_requests;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };

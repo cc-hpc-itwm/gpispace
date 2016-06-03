@@ -119,7 +119,7 @@ GenericDaemon::GenericDaemon( const std::string name
                    (gui_info->first, gui_info->second)
                  : nullptr
                  )
-  , _registration_timeout (boost::posix_time::seconds (1))
+  , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
   , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
                                , events::SDPAEvent::Ptr const& e
@@ -152,7 +152,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _interrupt_scheduling_thread
       ( [this]
         {
-          boost::mutex::scoped_lock const _ (_scheduling_requested_guard);
+          std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
           _scheduling_interrupted = true;
           _scheduling_requested_condition.notify_one();
         }
@@ -286,7 +286,7 @@ std::string GenericDaemon::gen_id()
         , std::move (requirements)
         );
 
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -299,7 +299,7 @@ std::string GenericDaemon::gen_id()
 
     Job* GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
     {
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       return it != job_map_.end() ? it->second : nullptr;
@@ -318,7 +318,7 @@ std::string GenericDaemon::gen_id()
 
     void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id)
     {
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       if (it == job_map_.end())
@@ -641,7 +641,7 @@ void GenericDaemon::cancel (const we::layer::id_type& job_id)
 }
 void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 {
-  boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+  std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
 
   Job* const pJob (findJob (job_id));
   if (!pJob)
@@ -1059,7 +1059,7 @@ void GenericDaemon::request_registration_soon
 void GenericDaemon::do_registration_after_sleep
   (master_network_info& master)
 {
-  boost::this_thread::sleep (_registration_timeout);
+  std::this_thread::sleep_for (_registration_timeout);
 
   requestRegistration (master);
 }
@@ -1568,7 +1568,7 @@ namespace sdpa
       for (;;)
       {
         {
-          boost::mutex::scoped_lock lock (_scheduling_requested_guard);
+          std::unique_lock<std::mutex> lock (_scheduling_requested_guard);
           _scheduling_requested_condition.wait
             ( lock
             , [this]
@@ -1585,7 +1585,7 @@ namespace sdpa
           _scheduling_requested = false;
         }
 
-        boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+        std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
 
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
@@ -1596,7 +1596,7 @@ namespace sdpa
 
     void GenericDaemon::request_scheduling()
     {
-      boost::mutex::scoped_lock const _ (_scheduling_requested_guard);
+      std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
       _scheduling_requested = true;
       _scheduling_requested_condition.notify_one();
     }

@@ -8,11 +8,11 @@
 
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <deque>
 #include <list>
+#include <mutex>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -106,8 +106,8 @@ namespace fhg
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
 
-      typedef boost::recursive_mutex mutex_type;
-      typedef boost::unique_lock<mutex_type> lock_type;
+      typedef std::recursive_mutex mutex_type;
+      typedef std::unique_lock<mutex_type> lock_type;
 
       mutable mutex_type mutex_;
 

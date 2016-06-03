@@ -5,8 +5,8 @@
 #include <fhglog/Logger.hpp>
 
 #include <boost/function.hpp>
-#include <boost/thread.hpp>
 
+#include <mutex>
 #include <list>
 #include <map>
 
@@ -26,7 +26,7 @@ namespace fhg
     private:
       friend struct scoped_signal_handler;
 
-      mutable boost::mutex _handler_mutex;
+      mutable std::mutex _handler_mutex;
       using functions = std::list<boost::function<void (int, siginfo_t*, void*)>>;
       std::map<int, std::pair<struct sigaction, functions>> _handlers;
     };

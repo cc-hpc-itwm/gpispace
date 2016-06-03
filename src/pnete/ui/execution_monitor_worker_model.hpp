@@ -10,13 +10,14 @@
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/range.hpp>
-#include <boost/thread.hpp>
 
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QVector>
 
 #include <functional>
+#include <mutex>
+#include <thread>
 
 namespace fhg
 {
@@ -98,14 +99,14 @@ namespace fhg
         QMap<QString, std::vector<value_type>> _worker_containers;
         QDateTime _base_time;
 
-        boost::mutex _event_queue;
+        std::mutex _event_queue;
         QVector<log::LogEvent> _queued_events;
         void append_event (const log::LogEvent&);
 
         boost::asio::io_service _io_service;
         fhg::log::Logger _logger;
         log::remote::LogServer _log_server;
-        boost::thread _io_thread;
+        std::thread _io_thread;
       };
     }
   }

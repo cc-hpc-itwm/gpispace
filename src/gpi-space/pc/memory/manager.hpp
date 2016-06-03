@@ -2,8 +2,6 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 
 #include <fhglog/Logger.hpp>
 
@@ -18,6 +16,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -113,8 +112,8 @@ namespace gpi
                    );
 
       private:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+        typedef std::recursive_mutex mutex_type;
+        typedef std::unique_lock<mutex_type> lock_type;
         typedef std::unordered_map< gpi::pc::type::segment_id_t
                                   , area_ptr
                                   > area_map_t;

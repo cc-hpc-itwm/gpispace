@@ -149,14 +149,14 @@ namespace sdpa
       worker_connections_t worker_connections_;
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
 
-      mutable boost::mutex mtx_;
+      mutable std::mutex mtx_;
     };
 
     template <typename Reservation>
     void WorkerManager::steal_work
       (std::function<Reservation* (job_id_t const&)> reservation)
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       for (WorkerEquivalenceClass& weqc : worker_equiv_classes_
                                         | boost::adaptors::map_values
           )
@@ -275,7 +275,7 @@ namespace sdpa
       , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
       )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
 
       Worker const& worker (worker_map_.at (worker_id));
 

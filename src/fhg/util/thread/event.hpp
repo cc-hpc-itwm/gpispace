@@ -1,6 +1,7 @@
 #pragma once
 
-#include <boost/thread.hpp>
+#include <condition_variable>
+#include <mutex>
 
 namespace fhg
 {
@@ -15,13 +16,13 @@ namespace fhg
       {
         T _event;
         bool _signalled {false};
-        mutable boost::mutex _mutex;
-        mutable boost::condition_variable _condition;
+        mutable std::mutex _mutex;
+        mutable std::condition_variable _condition;
 
       public:
         T wait()
         {
-          boost::mutex::scoped_lock lock (_mutex);
+          std::unique_lock<std::mutex> lock (_mutex);
 
           _condition.wait (lock, [this] { return _signalled; });
           _signalled = false;
@@ -31,7 +32,7 @@ namespace fhg
 
         void notify (T u)
         {
-          boost::mutex::scoped_lock const _ (_mutex);
+          std::lock_guard<std::mutex> const _ (_mutex);
 
           _event = std::move (u);
 
@@ -44,13 +45,13 @@ namespace fhg
         class event<void> : boost::noncopyable
       {
         bool _signalled {false};
-        mutable boost::mutex _mutex;
-        mutable boost::condition_variable _condition;
+        mutable std::mutex _mutex;
+        mutable std::condition_variable _condition;
 
       public:
         void wait()
         {
-          boost::mutex::scoped_lock lock (_mutex);
+          std::unique_lock<std::mutex> lock (_mutex);
 
           _condition.wait (lock, [this] { return _signalled; });
           _signalled = false;
@@ -58,7 +59,7 @@ namespace fhg
 
         void notify()
         {
-          boost::mutex::scoped_lock const _ (_mutex);
+          std::lock_guard<std::mutex> const _ (_mutex);
 
           _signalled = true;
           _condition.notify_one();

@@ -51,7 +51,7 @@ namespace sdpa
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       if (_worker_manager.all_workers_busy_and_have_pending_jobs())
       {
         return;
@@ -124,7 +124,7 @@ namespace sdpa
 
     void CoallocationScheduler::steal_work()
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       _worker_manager.steal_work<Reservation>
         ( [this] (job_id_t const& job)
           {
@@ -156,7 +156,7 @@ namespace sdpa
        , bool backlog_full
        )
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
 
       std::unordered_set<job_id_t> const jobs_to_reschedule
         (_worker_manager.delete_or_cancel_worker_jobs<Reservation>
@@ -191,7 +191,7 @@ namespace sdpa
     {
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       for (const job_id_t& job_id: _pending_jobs)
       {
         std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
@@ -214,7 +214,7 @@ namespace sdpa
 
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       const allocation_table_t::const_iterator it
        (allocation_table_.find (job_id));
 
@@ -235,7 +235,7 @@ namespace sdpa
 
     bool CoallocationScheduler::reservation_canceled (job_id_t const& job) const
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       return allocation_table_.at (job)->is_canceled();
     }
 
@@ -244,7 +244,7 @@ namespace sdpa
                                              , terminal_state result
                                              )
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       auto const it (allocation_table_.find (job_id));
       //! \todo assert only as this probably is a logical error?
       if (it == allocation_table_.end())
@@ -258,7 +258,7 @@ namespace sdpa
     boost::optional<job_result_type>
       CoallocationScheduler::get_aggregated_results_if_all_terminated (job_id_t const& job_id)
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::mutex> const _ (mtx_alloc_table_);
       auto const it (allocation_table_.find (job_id));
       //! \todo assert only as this probably is a logical error?
       if (it == allocation_table_.end())
@@ -272,20 +272,20 @@ namespace sdpa
 
     void CoallocationScheduler::locked_job_id_list::push (job_id_t const& item)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       container_.emplace_back (item);
     }
 
     template <typename Range>
     void CoallocationScheduler::locked_job_id_list::push (Range const& range)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       container_.insert (container_.end(), std::begin (range), std::end (range));
     }
 
     size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       size_t count (0);
       std::list<job_id_t>::iterator iter (container_.begin());
       while (iter != container_.end())
@@ -305,7 +305,7 @@ namespace sdpa
 
     std::list<job_id_t> CoallocationScheduler::locked_job_id_list::get_and_clear()
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
 
       std::list<job_id_t> ret;
       std::swap (ret, container_);

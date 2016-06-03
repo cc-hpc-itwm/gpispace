@@ -28,10 +28,8 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -51,6 +49,8 @@
 
 #include <fhglog/LogMacros.hpp>
 
+#include <chrono>
+#include <condition_variable>
 #include <forward_list>
 #include <memory>
 #include <mutex>
@@ -239,7 +239,7 @@ namespace sdpa {
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
-      mutable boost::mutex _job_map_mutex;
+      mutable std::mutex _job_map_mutex;
       job_map_t job_map_;
       struct cleanup_job_map_on_dtor_helper
       {
@@ -251,9 +251,9 @@ namespace sdpa {
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
-      boost::mutex _scheduling_thread_mutex;
-      boost::mutex _scheduling_requested_guard;
-      boost::condition_variable _scheduling_requested_condition;
+      std::mutex _scheduling_thread_mutex;
+      std::mutex _scheduling_requested_guard;
+      std::condition_variable _scheduling_requested_condition;
       bool _scheduling_interrupted = false;
       bool _scheduling_requested;
       void request_scheduling();
@@ -267,7 +267,7 @@ namespace sdpa {
 
       std::unique_ptr<NotificationService> m_guiService;
 
-      boost::posix_time::time_duration _registration_timeout;
+      std::chrono::seconds _registration_timeout;
 
       void do_registration_after_sleep (master_network_info&);
 

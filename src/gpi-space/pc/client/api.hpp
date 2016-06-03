@@ -13,10 +13,10 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/thread.hpp>
 
 #include <list>
 #include <map>
+#include <mutex>
 #include <string>
 #include <utility>
 
@@ -89,8 +89,8 @@ namespace gpi
         type::segment_id_t create_segment (std::string const& info);
         void delete_segment (type::segment_id_t);
 
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+        typedef std::recursive_mutex mutex_type;
+        typedef std::unique_lock<mutex_type> lock_type;
 
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
 

@@ -1,12 +1,12 @@
 #include <fhgcom/header.hpp>
 
 #include <boost/lexical_cast.hpp>
-#include <boost/thread.hpp>
 #include <boost/uuid/uuid.hpp>
 #include <boost/uuid/uuid_generators.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
 #include <cstring>
+#include <mutex>
 
 namespace fhg
 {
@@ -31,11 +31,11 @@ namespace fhg
 
           boost::uuids::uuid operator () (std::string const & name)
           {
-            boost::lock_guard<boost::mutex> lock(m_mutex);
+            std::lock_guard<std::mutex> lock(m_mutex);
             return m_gen (name);
           }
         private:
-          mutable boost::mutex m_mutex;
+          mutable std::mutex m_mutex;
           boost::uuids::name_generator m_gen;
         };
       }
