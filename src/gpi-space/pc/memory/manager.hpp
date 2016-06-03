@@ -11,7 +11,7 @@
 #include <gpi-space/pc/memory/memory_area.hpp>
 #include <gpi-space/pc/memory/memory_buffer.hpp>
 
-#include <fhg/util/thread/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <vmem/gaspi_context.hpp>
 
@@ -141,10 +141,12 @@ namespace gpi
 
         std::mutex _memcpy_task_guard;
         std::size_t _next_memcpy_id;
-        fhg::thread::queue<std::packaged_task<void()>> _tasks;
+        fhg::util::interruptible_threadsafe_queue<std::packaged_task<void()>>
+          _tasks;
         std::map<std::size_t, std::future<void>> _task_by_id;
-        std::vector<std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>>
+        std::vector<std::unique_ptr<boost::strict_scoped_thread<>>>
           _task_threads;
+        decltype (_tasks)::interrupt_on_scope_exit _interrupt_task_queue;
         fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
 
         handle_generator_t _handle_generator;
