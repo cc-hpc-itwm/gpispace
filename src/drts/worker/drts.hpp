@@ -10,6 +10,8 @@
 
 #include <gpi-space/pc/client/api.hpp>
 
+#include <util-generic/threadsafe_queue.hpp>
+
 #include <sdpa/daemon/NotificationService.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -138,24 +140,27 @@ private:
   //! \todo Two sets for connected and unconnected masters?
   map_of_masters_t m_masters;
 
-  fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
-    m_event_queue;
+  fhg::util::interruptible_threadsafe_queue<std::pair< fhg::com::p2p::address_t
+                                                     , sdpa::events::SDPAEvent::Ptr
+                                                     >
+                                           > m_event_queue;
 
   mutable std::mutex m_job_map_mutex;
 
   map_of_jobs_t m_jobs;
 
-  fhg::thread::bounded_queue<std::shared_ptr<DRTSImpl::Job>> m_pending_jobs;
+  fhg::util::interruptible_bounded_threadsafe_queue<std::shared_ptr<DRTSImpl::Job>>
+    m_pending_jobs;
 
   mutable std::mutex _guard_backlogfull_notified_masters;
   std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
 
   fhg::com::peer_t _peer;
 
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    m_event_thread;
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-    m_execution_thread;
+  boost::strict_scoped_thread<> m_event_thread;
+  decltype (m_event_queue)::interrupt_on_scope_exit _interrupt_event_thread;
+  boost::strict_scoped_thread<> m_execution_thread;
+  decltype (m_pending_jobs)::interrupt_on_scope_exit _interrupt_execution_thread;
 
   std::unordered_map<fhg::com::p2p::address_t, std::promise<void>>
     _registration_responses;

@@ -46,7 +46,7 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
-#include <fhg/util/thread/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -269,10 +269,11 @@ namespace sdpa {
 
       void do_registration_after_sleep (master_network_info&);
 
-      fhg::thread::queue< std::pair< fhg::com::p2p::address_t
-                                   , boost::shared_ptr<events::SDPAEvent>
-                                   >
-                        > _event_queue;
+      fhg::util::interruptible_threadsafe_queue
+        < std::pair< fhg::com::p2p::address_t
+                   , boost::shared_ptr<events::SDPAEvent>
+                   >
+        > _event_queue;
 
       sdpa::com::NetworkStrategy _network_strategy;
 
@@ -292,8 +293,8 @@ namespace sdpa {
 
       std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _event_handler_thread;
+      boost::strict_scoped_thread<> _event_handler_thread;
+      decltype (_event_queue)::interrupt_on_scope_exit _interrupt_event_queue;
 
       struct child_proxy
       {

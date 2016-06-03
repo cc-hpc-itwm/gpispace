@@ -156,6 +156,7 @@ GenericDaemon::GenericDaemon( const std::string name
     : nullptr
     )
   , _event_handler_thread (&GenericDaemon::handle_events, this)
+  , _interrupt_event_queue (_event_queue)
 {
   for (master_network_info& master : _master_info)
   {
@@ -1008,6 +1009,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
 }
 
 void GenericDaemon::handle_events()
+try
 {
   while (true)
   {
@@ -1026,6 +1028,9 @@ void GenericDaemon::handle_events()
         );
     }
   }
+}
+catch (decltype (_event_queue)::interrupted const&)
+{
 }
 
 void GenericDaemon::delay (std::function<void()> fun)

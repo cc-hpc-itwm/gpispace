@@ -14,6 +14,7 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random_integral.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <fhglog/Configuration.hpp>
 
@@ -382,22 +383,6 @@ namespace utils
       wait_for_workers_to_shutdown();
     }
 
-    struct event_thread_and_worker_join
-    {
-      event_thread_and_worker_join (basic_drts_component& component)
-        : _component (component)
-        , _event_thread (&basic_drts_component::event_thread, &component)
-      {}
-      ~event_thread_and_worker_join()
-      {
-        _component.wait_for_workers_to_shutdown();
-      }
-
-      basic_drts_component& _component;
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _event_thread;
-    };
-
     virtual void handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
       , sdpa::events::worker_registration_response const* response
@@ -464,13 +449,15 @@ namespace utils
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
   private:
-    fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
+    fhg::util::interruptible_threadsafe_queue
+        <std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
       _event_queue;
 
   protected:
     sdpa::com::NetworkStrategy _network;
 
     void event_thread()
+    try
     {
       for (;;)
       {
@@ -479,6 +466,27 @@ namespace utils
         event.second->handleBy (event.first, this);
       }
     }
+    catch (decltype (_event_queue)::interrupted const&)
+    {
+    }
+
+    struct event_thread_and_worker_join
+    {
+      event_thread_and_worker_join (basic_drts_component& component)
+        : _component (component)
+        , _event_thread (&basic_drts_component::event_thread, &component)
+        , _interrupt_thread (component._event_queue)
+      {}
+      ~event_thread_and_worker_join()
+      {
+        _component.wait_for_workers_to_shutdown();
+      }
+
+      basic_drts_component& _component;
+      boost::strict_scoped_thread<> _event_thread;
+      decltype (basic_drts_component::_event_queue)::interrupt_on_scope_exit
+        _interrupt_thread;
+    };
 
   private:
       boost::mutex _mutex_workers_shutdown;
