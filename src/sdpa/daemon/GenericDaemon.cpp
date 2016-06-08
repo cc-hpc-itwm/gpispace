@@ -713,6 +713,16 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 
   job_canceled (pJob);
 
+  if (m_guiService)
+  {
+    m_guiService->notify ( { {name()}
+                           , pJob->id()
+                           , NotificationEvent::STATE_CANCELED
+                           , pJob->result()
+                           }
+                         );
+  }
+
   if (boost::get<job_source_master> (&pJob->source()))
   {
     deleteJob (job_id);
