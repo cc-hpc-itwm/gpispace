@@ -79,7 +79,7 @@ std::string worker_gen()
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
   const unsigned long r (lrand48() % sizeof(names)/sizeof(*names));
-  return (boost::format ("%1%-%2%") % names[r] % ++ids[r]).str();
+  return (boost::format ("%1%-ip-127-0-0-1 22001 50501-%2%") % names[r] % ++ids[r]).str();
 }
 
 int main(int ac, char **av)

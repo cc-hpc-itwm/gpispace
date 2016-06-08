@@ -42,44 +42,55 @@ namespace fhg
       {
         using util::qt::mvc::transform_functions_model;
 
-        struct nth_substring_of_name
+        struct hostname_of_worker
           : public transform_functions_model::transform_function
         {
-          nth_substring_of_name()
-            : _n (0)
-            , _sep ('\0')
-          { }
-          nth_substring_of_name (int n, char sep)
-            : _n (n)
-            , _sep (sep)
-          { }
-
           virtual QString operator() (QModelIndex index) const override
           {
-            return util::qt::value<QString>
-              (index.data (worker_model::name_role)).split (_sep)[_n];
+            auto const worker_name
+              (util::qt::value<QString> (index.data (worker_model::name_role)));
+
+            auto const start (worker_name.indexOf ('-') + 1);
+            return worker_name.mid
+              (start, worker_name.lastIndexOf ('-') - start);
           }
 
           template<class Archive>
-            void serialize (Archive& ar, const unsigned int)
+            void serialize (Archive&, const unsigned int)
           {
-            ar & _n & _sep;
             boost::serialization::void_cast_register
-              ( static_cast<nth_substring_of_name*> (nullptr)
+              ( static_cast<hostname_of_worker*> (nullptr)
               , static_cast<transform_functions_model::transform_function*> (nullptr)
               );
           }
+        };
+        struct worker_type_of_worker
+          : public transform_functions_model::transform_function
+        {
+          virtual QString operator() (QModelIndex index) const override
+          {
+            auto const worker_name
+              (util::qt::value<QString> (index.data (worker_model::name_role)));
 
-        private:
-          int _n;
-          char _sep;
+            return worker_name.left (worker_name.indexOf ('-'));
+          }
+
+          template<class Archive>
+            void serialize (Archive&, const unsigned int)
+          {
+            boost::serialization::void_cast_register
+              ( static_cast<worker_type_of_worker*> (nullptr)
+              , static_cast<transform_functions_model::transform_function*> (nullptr)
+              );
+          }
         };
       }
     }
   }
 }
 
-BOOST_CLASS_EXPORT (fhg::pnete::ui::nth_substring_of_name)
+BOOST_CLASS_EXPORT (fhg::pnete::ui::hostname_of_worker)
+BOOST_CLASS_EXPORT (fhg::pnete::ui::worker_type_of_worker)
 
 template<typename T>
   QDataStream& operator<< (QDataStream& stream, const boost::shared_ptr<T>& ptr)
@@ -128,11 +139,11 @@ namespace fhg
           model->insertRows (0, 2);
           model->setItemData
             ( model->index (0, 0)
-            , item ("by worker type", new nth_substring_of_name (0, '-'))
+            , item ("by worker type", new worker_type_of_worker())
             );
           model->setItemData
             ( model->index (1, 0)
-            , item ("by node", new nth_substring_of_name (1, '-'))
+            , item ("by node", new hostname_of_worker())
             );
         }
 
