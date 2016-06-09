@@ -1,0 +1,46 @@
+See #496.
+
+These applications are under control of the gpispace team:
+
+- _frtm_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/rtm
+ - Tested automatically: Yes
+- _parsu_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/top/sdpa_application
+ - Tested automatically: NO
+   - component sort: Yes
+   - component seislib: NO
+   - component sudiff/op2/...: NO
+- _ufbmig_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/ufbmig
+ - Tested automatically: NO
+- _superbin_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/superbin
+ - Tested automatically: Yes
+- _azimuthal_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/bernd.loerwald/pspro_azimutal
+ - Tested automatically: NO
+- _gpispace-course_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/gpispace-kurs
+ - Tested automatically: INCOMPLETE (3 out of 6 selftest creation in progress)
+- _mapreduce_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/mapreduce
+ - Tested automatically: Yes, needs bigger examples
+- _smartb_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/smartb
+ - Tested automatically: NO
+- _adaptive_stacking_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/adaptive-stacking
+ - Tested automatically: Yes, needs bigger examples
+- _SPLOTCH_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/splotch
+ - Tested automatically: YES
+- _SINGULAR-MINOR_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/singular-minor
+ - Tested automatically: YES
+- _DLPS_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/dlps
+ - Tested automatically: YES
+- _Kirchhoff_
+ - Repo: http://gitlab.hpc.devnet.itwm.fhg.de/gspc-applications/kirchhoff
+ - Tested automatically: YES
