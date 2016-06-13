@@ -1,6 +1,7 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <util-generic/finally.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/syscall/process_signal_block.hpp>
@@ -126,6 +127,8 @@ namespace drts
 
         bool cancelled {false};
 
+        auto const module_call_do_cancel (_module_call_do_cancel);
+
         set_module_call_do_cancel
           ( [&child, &cancelled]
             {
@@ -134,6 +137,9 @@ namespace drts
               fhg::util::syscall::kill (child, SIGUSR2);
             }
           );
+
+        FHG_UTIL_FINALLY
+          ([&] { set_module_call_do_cancel (module_call_do_cancel); });
 
         int status;
 
