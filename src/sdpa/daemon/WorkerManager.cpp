@@ -70,14 +70,14 @@ namespace sdpa
 
     bool WorkerManager::hasWorker_INDICATES_A_RACE_TESTING_ONLY(const worker_id_t& worker_id) const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       return worker_map_.find(worker_id) != worker_map_.end();
     }
 
     std::unordered_set<worker_id_t> WorkerManager::findSubmOrAckWorkers
       (job_id_t const& job_id) const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       std::unordered_set<worker_id_t> submitted_or_ack_workers;
 
       boost::copy ( worker_map_
@@ -105,7 +105,7 @@ namespace sdpa
                                   , const fhg::com::p2p::address_t& address
                                   )
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
 
       if (worker_map_.count (workerId) != 0)
       {
@@ -126,7 +126,7 @@ namespace sdpa
 
     void WorkerManager::deleteWorker (const worker_id_t& workerId)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
 
       auto const worker (worker_map_.find (workerId));
       fhg_assert (worker != worker_map_.end(), "Worker not found when deletion was requested!");
@@ -146,7 +146,7 @@ namespace sdpa
 
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet) const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
 
       for (Worker const& worker : worker_map_ | boost::adaptors::map_values)
       {
@@ -199,7 +199,7 @@ namespace sdpa
       ( const job_requirements_t& job_reqs
       ) const
     {
-      boost::mutex::scoped_lock const lock_worker_map (mtx_);
+      std::lock_guard<std::mutex> const lock_worker_map (mtx_);
 
       if (worker_map_.size() < job_reqs.numWorkers())
       {
@@ -247,7 +247,7 @@ namespace sdpa
       , const std::function<double (job_id_t const&)> cost_reservation
       ) const
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
 
       if (worker_map_.size() < requirements.numWorkers())
       {
@@ -344,7 +344,7 @@ namespace sdpa
                      > const& serve_job
       )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       bool const can_start
         ( std::all_of ( std::begin(workers)
                       , std::end(workers)
@@ -371,7 +371,7 @@ namespace sdpa
 
     bool WorkerManager::all_workers_busy_and_have_pending_jobs() const
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       return std::all_of ( worker_map_.begin()
                          , worker_map_.end()
                          , [](const worker_map_t::value_type& p)
@@ -401,7 +401,7 @@ namespace sdpa
 
     void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       Worker& worker (worker_map_.at (worker_id));
       worker.assign (job_id);
       worker_equiv_classes_.at
@@ -422,7 +422,7 @@ namespace sdpa
                                                        , const worker_id_t& worker_id
                                                        )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       worker_map_.at (worker_id).acknowledge (job_id);
     }
 
@@ -430,7 +430,7 @@ namespace sdpa
                                                , const worker_id_t& worker_id
                                                )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       auto worker (worker_map_.find (worker_id));
       if (worker != worker_map_.end())
       {
@@ -452,7 +452,7 @@ namespace sdpa
 
     const capabilities_set_t& WorkerManager::worker_capabilities (const worker_id_t& worker) const
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
       return worker_map_.at (worker)._capabilities;
     }
 
@@ -483,7 +483,7 @@ namespace sdpa
                                                 , const capabilities_set_t& cpb_set
                                                 )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
 
       worker_map_t::iterator worker (worker_map_.find (worker_id));
       const std::set<std::string> old_cpbs (worker->second.capability_names_);
@@ -501,7 +501,7 @@ namespace sdpa
                                                    , const capabilities_set_t& cpb_set
                                                    )
     {
-      boost::mutex::scoped_lock const _(mtx_);
+      std::lock_guard<std::mutex> const _(mtx_);
 
       worker_map_t::iterator worker (worker_map_.find (worker_id));
       const std::set<std::string> old_cpbs (worker->second.capability_names_);
@@ -519,7 +519,7 @@ namespace sdpa
                                                 , bool val
                                                 )
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       return worker_map_.at (worker_id).set_backlog_full (val);
     }
 

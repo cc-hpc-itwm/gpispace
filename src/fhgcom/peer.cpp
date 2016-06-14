@@ -129,7 +129,7 @@ namespace fhg
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
     {
-      boost::unique_lock<boost::recursive_mutex> const _ (mutex_);
+      std::unique_lock<std::recursive_mutex> const _ (mutex_);
 
       std::string const fake_name (std::string (host) + ":" + std::string (port));
       p2p::address_t const addr (fake_name);
@@ -170,8 +170,6 @@ namespace fhg
                       , const std::string & data
                       )
     {
-      boost::this_thread::disable_interruption const interuption_disabler;
-
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t send_finished;
       async_send
@@ -219,8 +217,6 @@ namespace fhg
     void peer_t::TESTING_ONLY_recv (message_t *m)
     {
       fhg_assert (m);
-
-      boost::this_thread::disable_interruption const interuption_disabler;
 
       typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
       async_op_t recv_finished;

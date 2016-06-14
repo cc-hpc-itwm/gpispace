@@ -28,10 +28,8 @@
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/date_time/posix_time/posix_time.hpp>
 #include <boost/optional.hpp>
 #include <boost/utility.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/shared_ptr.hpp>
 
@@ -44,12 +42,15 @@
 #include <gpi-space/pc/client/api.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/finally.hpp>
 #include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
-#include <fhg/util/thread/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
+#include <chrono>
+#include <condition_variable>
 #include <forward_list>
 #include <memory>
 #include <mutex>
@@ -238,7 +239,7 @@ namespace sdpa {
       typedef std::unordered_map<sdpa::job_id_t, sdpa::daemon::Job*>
         job_map_t;
 
-      mutable boost::mutex _job_map_mutex;
+      mutable std::mutex _job_map_mutex;
       job_map_t job_map_;
       struct cleanup_job_map_on_dtor_helper
       {
@@ -250,9 +251,10 @@ namespace sdpa {
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
-      boost::mutex _scheduling_thread_mutex;
-      boost::mutex _scheduling_requested_guard;
-      boost::condition_variable _scheduling_requested_condition;
+      std::mutex _scheduling_thread_mutex;
+      std::mutex _scheduling_requested_guard;
+      std::condition_variable _scheduling_requested_condition;
+      bool _scheduling_interrupted = false;
       bool _scheduling_requested;
       void request_scheduling();
 
@@ -265,14 +267,15 @@ namespace sdpa {
 
       std::unique_ptr<NotificationService> m_guiService;
 
-      boost::posix_time::time_duration _registration_timeout;
+      std::chrono::seconds _registration_timeout;
 
       void do_registration_after_sleep (master_network_info&);
 
-      fhg::thread::queue< std::pair< fhg::com::p2p::address_t
-                                   , boost::shared_ptr<events::SDPAEvent>
-                                   >
-                        > _event_queue;
+      fhg::util::interruptible_threadsafe_queue
+        < std::pair< fhg::com::p2p::address_t
+                   , boost::shared_ptr<events::SDPAEvent>
+                   >
+        > _event_queue;
 
       sdpa::com::NetworkStrategy _network_strategy;
 
@@ -280,8 +283,8 @@ namespace sdpa {
 
       fhg::thread::set _registration_threads;
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _scheduling_thread;
+      boost::strict_scoped_thread<> _scheduling_thread;
+      fhg::util::finally_t<std::function<void()>> _interrupt_scheduling_thread;
       void scheduling_thread();
 
       //! \note In order to call the correct abstract functions, the
@@ -292,8 +295,8 @@ namespace sdpa {
 
       std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _event_handler_thread;
+      boost::strict_scoped_thread<> _event_handler_thread;
+      decltype (_event_queue)::interrupt_on_scope_exit _interrupt_event_queue;
 
       struct child_proxy
       {

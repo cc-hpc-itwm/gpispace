@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <util-generic/finally.hpp>
+
 #include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
@@ -15,9 +17,9 @@
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <random>
@@ -151,6 +153,9 @@ namespace we
 
         void forget (id_type);
 
+        struct interrupted{};
+        void interrupt();
+
       private:
         struct list_with_id_lookup
         {
@@ -170,11 +175,12 @@ namespace we
           position_in_container_type _position_in_container;
         };
 
-        mutable boost::recursive_mutex _container_mutex;
+        mutable std::recursive_mutex _container_mutex;
         list_with_id_lookup _container;
         list_with_id_lookup _container_inactive;
 
-        boost::condition_variable_any _condition_non_empty;
+        bool _interrupted = false;
+        std::condition_variable_any _condition_not_empty_or_interrupted;
 
         typedef std::unordered_map
           < id_type
@@ -193,7 +199,7 @@ namespace we
       std::unordered_map<id_type, std::function<void()>>
         _finalize_job_cancellation;
 
-      mutable boost::mutex _discover_state_mutex;
+      mutable std::mutex _discover_state_mutex;
       std::unordered_map
         < id_type, std::pair<std::size_t, sdpa::discovery_info_t >
         > _discover_state;
@@ -209,7 +215,7 @@ namespace we
         void apply (id_type parent, std::function<void (id_type)>) const;
 
       private:
-        mutable boost::mutex _relation_mutex;
+        mutable std::mutex _relation_mutex;
         typedef boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<id_type>
           , boost::bimaps::unordered_set_of<id_type>
@@ -218,7 +224,7 @@ namespace we
         relation_type _relation;
       } _running_jobs;
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _extract_from_nets_thread;
+      boost::strict_scoped_thread<> _extract_from_nets_thread;
+      fhg::util::finally_t<std::function<void()>> _stop_extracting;
     };
 }

@@ -4,6 +4,8 @@
 
 #include <gpi-space/types.hpp>
 
+#include <util-generic/finally.hpp>
+
 #include <vmem/gaspi_context.hpp>
 
 #include <fhg/util/thread/queue.hpp>
@@ -146,8 +148,9 @@ namespace gpi
       std::condition_variable _notification_received;
       std::map<notification_t, std::size_t> _outstanding_notifications;
 
-      std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-        _notification_check;
+      std::atomic<bool> _notification_check_interrupted;
+      std::unique_ptr<boost::strict_scoped_thread<>> _notification_check;
+      fhg::util::finally_t<std::function<void()>> _interrupt_notification_check;
       void notification_check();
     };
   }

@@ -6,12 +6,14 @@
 #include <cstdlib>
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 
 #include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
+
+#include <chrono>
+#include <thread>
 
 using namespace sdpa::daemon;
 
@@ -125,12 +127,12 @@ try
       workers[worker] = boost::none;
     }
 
-    boost::this_thread::sleep (boost::posix_time::milliseconds (duration));
+    std::this_thread::sleep_for (std::chrono::milliseconds (duration));
   }
 
   //! \note Wait for remote logger being done.
   //! \todo Wait more cleverly.
-  boost::this_thread::sleep (boost::posix_time::seconds (2));
+  std::this_thread::sleep_for (std::chrono::seconds (2));
 
   return 0;
 }

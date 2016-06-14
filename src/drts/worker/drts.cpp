@@ -208,7 +208,9 @@ DRTSImpl::DRTSImpl
           , fhg::com::host_t ("*"), fhg::com::port_t ("0")
           )
   , m_event_thread (&DRTSImpl::event_thread, this)
+  , _interrupt_event_thread (m_event_queue)
   , m_execution_thread (&DRTSImpl::job_execution_thread, this)
+  , _interrupt_execution_thread (m_pending_jobs)
 {
   start_receiver();
 
@@ -476,6 +478,7 @@ void DRTSImpl::handleDiscoverJobStatesEvent
 }
 
 void DRTSImpl::event_thread()
+try
 {
   for (;;)
   {
@@ -495,8 +498,12 @@ void DRTSImpl::event_thread()
     }
   }
 }
+catch (decltype (m_event_queue)::interrupted const&)
+{
+}
 
 void DRTSImpl::job_execution_thread()
+try
 {
   //! \todo let user supply a seed
   std::mt19937 engine;
@@ -671,6 +678,9 @@ void DRTSImpl::job_execution_thread()
       INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job->state);
     }
   }
+}
+catch (decltype (m_pending_jobs)::interrupted const&)
+{
 }
 
 void DRTSImpl::start_receiver()

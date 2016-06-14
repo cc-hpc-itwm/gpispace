@@ -3,13 +3,13 @@
 #include <fhglog/LogMacros.hpp>
 #include <fhglog/remote/server.hpp>
 
-#include <boost/thread.hpp>
-
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <QAbstractTableModel>
 #include <QMutex>
 #include <QWidget>
+
+#include <thread>
 
 class QCheckBox;
 class QComboBox;
@@ -94,5 +94,5 @@ private:
   boost::asio::io_service _io_service;
   fhg::log::Logger _logger;
   fhg::log::remote::LogServer _log_server;
-  boost::thread _io_thread;
+  std::thread _io_thread;
 };

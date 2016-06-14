@@ -51,6 +51,7 @@ namespace gpi
         : _logger (logger)
         , _gaspi_context (gaspi_context)
         , _next_memcpy_id (0)
+        , _interrupt_task_queue (_tasks)
         , _handle_generator (gaspi_context.rank())
       {
         _handle_generator.initialize_counter
@@ -60,12 +61,18 @@ namespace gpi
         for (std::size_t i (0); i < number_of_queues; ++i)
         {
           _task_threads.emplace_back
-            ( fhg::util::cxx14::make_unique<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
+            ( fhg::util::cxx14::make_unique<boost::strict_scoped_thread<>>
                 ( [this]
                   {
-                    for (;;)
+                    try
                     {
-                      _tasks.get()();
+                      for (;;)
+                      {
+                        _tasks.get()();
+                      }
+                    }
+                    catch (decltype (_tasks)::interrupted const&)
+                    {
                     }
                   }
                 )

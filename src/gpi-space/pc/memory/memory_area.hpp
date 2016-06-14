@@ -2,7 +2,6 @@
 
 #include <mmgr/dtmmgr.hpp>
 
-#include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/signals2.hpp>
@@ -22,6 +21,7 @@
 #include <fhg/util/thread/queue.hpp>
 
 #include <future>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -212,8 +212,8 @@ namespace gpi
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) {}
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) {}
       private:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+        typedef std::recursive_mutex mutex_type;
+        typedef std::unique_lock<mutex_type> lock_type;
         typedef std::unordered_set <gpi::pc::type::process_id_t> process_ids_t;
         typedef std::unordered_map< gpi::pc::type::handle_t
                                   , gpi::pc::type::handle::descriptor_t

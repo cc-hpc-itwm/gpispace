@@ -11,7 +11,8 @@
 
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
-#include <boost/thread.hpp>
+
+#include <mutex>
 
 namespace sdpa
 {
@@ -174,7 +175,7 @@ namespace sdpa
       void Reschedule();
 
     private:
-      mutable boost::mutex mtx_;
+      mutable std::mutex mtx_;
       we::type::activity_t _activity;
       job_id_t id_;
       job_source _source;

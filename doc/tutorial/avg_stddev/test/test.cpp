@@ -84,6 +84,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , installation_dir
     , test::option::options()
     . add<test::option::gen::include> (test::source_directory (vm) / "include")
+    . add<test::option::gen::cxx_flag> ("--std=c++11")
     );
 
   boost::filesystem::path const generator

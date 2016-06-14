@@ -14,18 +14,20 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random_integral.hpp>
 #include <util-generic/testing/random_string.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <fhglog/Configuration.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/ref.hpp>
 #include <boost/test/unit_test.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <condition_variable>
 #include <fstream>
 #include <functional>
 #include <memory>
+#include <mutex>
 #include <sstream>
 #include <string>
 
@@ -382,22 +384,6 @@ namespace utils
       wait_for_workers_to_shutdown();
     }
 
-    struct event_thread_and_worker_join
-    {
-      event_thread_and_worker_join (basic_drts_component& component)
-        : _component (component)
-        , _event_thread (&basic_drts_component::event_thread, &component)
-      {}
-      ~event_thread_and_worker_join()
-      {
-        _component.wait_for_workers_to_shutdown();
-      }
-
-      basic_drts_component& _component;
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _event_thread;
-    };
-
     virtual void handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
       , sdpa::events::worker_registration_response const* response
@@ -427,7 +413,7 @@ namespace utils
       if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
       {
         BOOST_REQUIRE (_accept_workers);
-        boost::mutex::scoped_lock const _ (_mutex_workers_shutdown);
+        std::lock_guard<std::mutex> const _ (_mutex_workers_shutdown);
         BOOST_REQUIRE (_accepted_workers.erase (source));
         if(_accepted_workers.empty())
           _cond_workers_shutdown.notify_all();
@@ -440,7 +426,7 @@ namespace utils
 
     void wait_for_workers_to_shutdown()
     {
-      boost::mutex::scoped_lock lock (_mutex_workers_shutdown);
+      std::unique_lock<std::mutex> lock (_mutex_workers_shutdown);
       _cond_workers_shutdown.wait
         (lock, [&] { return _accepted_workers.empty(); });
     }
@@ -464,13 +450,15 @@ namespace utils
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
   private:
-    fhg::thread::queue<std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
+    fhg::util::interruptible_threadsafe_queue
+        <std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
       _event_queue;
 
   protected:
     sdpa::com::NetworkStrategy _network;
 
     void event_thread()
+    try
     {
       for (;;)
       {
@@ -479,10 +467,31 @@ namespace utils
         event.second->handleBy (event.first, this);
       }
     }
+    catch (decltype (_event_queue)::interrupted const&)
+    {
+    }
+
+    struct event_thread_and_worker_join
+    {
+      event_thread_and_worker_join (basic_drts_component& component)
+        : _component (component)
+        , _event_thread (&basic_drts_component::event_thread, &component)
+        , _interrupt_thread (component._event_queue)
+      {}
+      ~event_thread_and_worker_join()
+      {
+        _component.wait_for_workers_to_shutdown();
+      }
+
+      basic_drts_component& _component;
+      boost::strict_scoped_thread<> _event_thread;
+      decltype (basic_drts_component::_event_queue)::interrupt_on_scope_exit
+        _interrupt_thread;
+    };
 
   private:
-      boost::mutex _mutex_workers_shutdown;
-      boost::condition_variable_any _cond_workers_shutdown;
+      std::mutex _mutex_workers_shutdown;
+      std::condition_variable _cond_workers_shutdown;
   };
 
   namespace no_thread
@@ -719,7 +728,7 @@ namespace utils
       , const sdpa::events::CancelJobEvent* pEvt
       ) override
     {
-      boost::mutex::scoped_lock const _ (_cancels_mutex);
+      std::lock_guard<std::mutex> const _ (_cancels_mutex);
 
       _cancels.emplace (pEvt->job_id(), source);
       _announce_cancel (pEvt->job_id());
@@ -727,7 +736,7 @@ namespace utils
 
     void canceled (std::string job_id)
     {
-      boost::mutex::scoped_lock const _ (_cancels_mutex);
+      std::lock_guard<std::mutex> const _ (_cancels_mutex);
 
       const fhg::com::p2p::address_t master (_cancels.at (job_id));
       _cancels.erase (job_id);
@@ -737,7 +746,7 @@ namespace utils
 
   private:
     std::function<void (std::string)> _announce_cancel;
-    mutable boost::mutex _cancels_mutex;
+    mutable std::mutex _cancels_mutex;
     std::map<std::string, fhg::com::p2p::address_t> _cancels;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };

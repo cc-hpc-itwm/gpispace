@@ -142,7 +142,7 @@ namespace fhg
 
       void worker_model::append_event (const log::LogEvent& event)
       {
-        boost::lock_guard<boost::mutex> guard (_event_queue);
+        std::lock_guard<std::mutex> guard (_event_queue);
         _queued_events << event;
       }
 
@@ -152,7 +152,7 @@ namespace fhg
 
         QVector<log::LogEvent> events;
         {
-          boost::lock_guard<boost::mutex> guard (_event_queue);
+          std::lock_guard<std::mutex> guard (_event_queue);
           std::swap (events, _queued_events);
         }
 

@@ -20,12 +20,12 @@ namespace fhg
   {
     namespace
     {
-      boost::mutex GLOBAL_manager_mutex;
+      std::mutex GLOBAL_manager_mutex;
       signal_handler_manager* GLOBAL_manager;
 
       void signal_handler (int sig_num, siginfo_t* info, void* context)
       {
-        boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
+        std::lock_guard<std::mutex> const _ (GLOBAL_manager_mutex);
         if (GLOBAL_manager)
         {
           GLOBAL_manager->handle (sig_num, info, context);
@@ -35,14 +35,14 @@ namespace fhg
 
     signal_handler_manager::signal_handler_manager()
     {
-      boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
+      std::lock_guard<std::mutex> const _ (GLOBAL_manager_mutex);
       fhg_assert (!GLOBAL_manager);
       GLOBAL_manager = this;
     }
 
     signal_handler_manager::~signal_handler_manager()
     {
-      boost::mutex::scoped_lock const _ (GLOBAL_manager_mutex);
+      std::lock_guard<std::mutex> const _ (GLOBAL_manager_mutex);
       fhg_assert (GLOBAL_manager == this);
       GLOBAL_manager = nullptr;
 
@@ -55,7 +55,7 @@ namespace fhg
     void signal_handler_manager::handle
       (int sig_num, siginfo_t* info, void* context) const
     {
-      boost::mutex::scoped_lock const _ (_handler_mutex);
+      std::lock_guard<std::mutex> const _ (_handler_mutex);
       for ( const boost::function<void (int, siginfo_t*, void*)>& fun
           : _handlers.find (sig_num)->second.second
           )
@@ -72,7 +72,7 @@ namespace fhg
       : _manager (manager)
       , _sig_num (sig_num)
     {
-      boost::mutex::scoped_lock const _ (_manager._handler_mutex);
+      std::lock_guard<std::mutex> const _ (_manager._handler_mutex);
 
       if (_manager._handlers.find (_sig_num) == _manager._handlers.end())
       {
@@ -90,7 +90,7 @@ namespace fhg
     }
     scoped_signal_handler::~scoped_signal_handler()
     {
-      boost::mutex::scoped_lock const _ (_manager._handler_mutex);
+      std::lock_guard<std::mutex> const _ (_manager._handler_mutex);
 
       _manager._handlers.find (_sig_num)->second.second.erase (_it);
     }

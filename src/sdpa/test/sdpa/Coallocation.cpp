@@ -79,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
     //! happen though: Scheduling should be triggered when worker_3
     //! registered.
     //! may be equivalent to agent._.request_scheduling();
-    boost::this_thread::sleep (boost::posix_time::seconds (5));
+    std::this_thread::sleep_for (std::chrono::seconds (5));
   }
 
   // x. cleanup: terminate jobs.
@@ -229,7 +229,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
     //! loop should happen though: Scheduling should be triggered when
     //! worker_4 and worker_5 are registered.
     //! may be equivalent to agent._.request_scheduling();
-    boost::this_thread::sleep (boost::posix_time::seconds (5));
+    std::this_thread::sleep_for (std::chrono::seconds (5));
   }
 
   worker_1.canceled (canceled_job_1);

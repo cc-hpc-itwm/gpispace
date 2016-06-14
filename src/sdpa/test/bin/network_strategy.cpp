@@ -9,11 +9,11 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
-#include <boost/thread.hpp>
-
 #include <boost/asio/io_service.hpp>
 
+#include <condition_variable>
 #include <functional>
+#include <mutex>
 
 namespace
 {
@@ -28,7 +28,7 @@ namespace
                  , const boost::shared_ptr<sdpa::events::SDPAEvent>&
                  )
     {
-      boost::mutex::scoped_lock _ (_counter_mutex);
+      std::lock_guard<std::mutex> _ (_counter_mutex);
       ++_counter;
 
       BOOST_REQUIRE_LE (_counter, _expected);
@@ -39,15 +39,15 @@ namespace
     }
     void wait() const
     {
-      boost::mutex::scoped_lock _ (_counter_mutex);
+      std::unique_lock<std::mutex> _ (_counter_mutex);
 
       _expected_count_reached.wait (_, [&] { return _counter >= _expected; });
 
       BOOST_REQUIRE_EQUAL (_counter, _expected);
     }
 
-    mutable boost::mutex _counter_mutex;
-    mutable boost::condition_variable _expected_count_reached;
+    mutable std::mutex _counter_mutex;
+    mutable std::condition_variable _expected_count_reached;
     unsigned int _counter;
     unsigned int _expected;
   };
