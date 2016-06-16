@@ -42,7 +42,6 @@ try
     "      %L - line number\n"
     "      %m - log message\n"
     "      %d - date\n"
-    "      %t - timestamp\n"
     "      %T - thread id\n"
     "      %R - process id\n"
     "      %n - new line\n"

@@ -62,14 +62,6 @@ namespace fhg
               os << buf;
             }
             break;
-          case 't':
-            {
-              fhg::util::save_stream_flags const _ (os);
-              os.unsetf (std::ios_base::scientific);
-              os.setf (std::ios_base::fixed);
-              os << evt.tstamp();
-            }
-            break;
           case 'T':
             {
               fhg::util::save_stream_flags const _ (os);
@@ -108,12 +100,12 @@ namespace fhg
     {
       static std::string const & SHORT()
       {
-        static std::string f("[%t] %s: %m%n");
+        static std::string f("[%d] %s: %m%n");
         return f;
       }
       static std::string const & LONG()
       {
-        static std::string f("%t %S pid:%R thread:%T: %m%n");
+        static std::string f("%d %S pid:%R thread:%T: %m%n");
         return f;
       }
     };
