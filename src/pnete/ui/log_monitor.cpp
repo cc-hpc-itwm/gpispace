@@ -5,6 +5,7 @@
 #include <we/type/activity.hpp>
 
 #include <fhglog/appender/call.hpp>
+#include <fhglog/format.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
@@ -460,7 +461,7 @@ void log_monitor::save ()
 
     for (const fhg::log::LogEvent &evt : data)
     {
-      ofs << evt << std::endl;
+      fhg::log::format (ofs, "[%d] %h: pid %R tid %T: %s: %m%n", evt);
     }
     _last_saved_filename = fname;
   }
