@@ -14,7 +14,9 @@
 #include <GASPI_Ext.h>
 
 #include <algorithm>
+#include <chrono>
 #include <limits>
+#include <thread>
 #include <unordered_set>
 
 namespace gpi
@@ -395,12 +397,14 @@ namespace gpi
               , 0
               , total_number_of_notifications()
               , &notification_id
-              , 100
+              , GASPI_TEST
               )
           );
 
         if (waitsome_result == GASPI_TIMEOUT)
         {
+          std::this_thread::sleep_for (std::chrono::milliseconds (1));
+
           continue;
         }
         else if (waitsome_result != GASPI_SUCCESS)
