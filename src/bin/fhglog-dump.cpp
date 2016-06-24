@@ -3,6 +3,7 @@
 #include <fhglog/format.hpp>
 
 #include <fhg/util/parse/position.hpp>
+#include <fhg/util/parse/require.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <boost/program_options.hpp>
@@ -41,7 +42,6 @@ try
     "      %L - line number\n"
     "      %m - log message\n"
     "      %d - date\n"
-    "      %t - timestamp\n"
     "      %T - thread id\n"
     "      %R - process id\n"
     "      %n - new line\n"
@@ -79,6 +79,8 @@ try
   while (std::cin.good())
   {
     logger.log (fhg::log::LogEvent (pos));
+
+    fhg::util::parse::require::skip_spaces (pos);
   }
 
   return 0;

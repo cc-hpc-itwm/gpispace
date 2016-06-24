@@ -48,6 +48,7 @@ namespace fhg
           case 'm': os << evt.message(); break;
           case 'R': os << evt.pid(); break;
           case 'n': os << "\n"; break;
+          case 'h': os << evt.host(); break;
           case 'd':
             {
               char buf[128];
@@ -60,14 +61,6 @@ namespace fhg
 
               buf[std::find (buf, buf + sizeof (buf), '\n') - buf] = 0;
               os << buf;
-            }
-            break;
-          case 't':
-            {
-              fhg::util::save_stream_flags const _ (os);
-              os.unsetf (std::ios_base::scientific);
-              os.setf (std::ios_base::fixed);
-              os << evt.tstamp();
             }
             break;
           case 'T':
@@ -108,12 +101,12 @@ namespace fhg
     {
       static std::string const & SHORT()
       {
-        static std::string f("[%t] %s: %m%n");
+        static std::string f("[%d] %h: %s: %m%n");
         return f;
       }
       static std::string const & LONG()
       {
-        static std::string f("%t %S pid:%R thread:%T: %m%n");
+        static std::string f("%d %h %S pid:%R thread:%T: %m%n");
         return f;
       }
     };
