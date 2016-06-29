@@ -146,7 +146,7 @@ namespace gpi
       }
     }
 
-    boost::optional<std::string const&>
+    boost::optional<std::string>
     url_t::get (std::string const& key) const
     {
       arg_map_t::const_iterator const value (m_args.find (key));
