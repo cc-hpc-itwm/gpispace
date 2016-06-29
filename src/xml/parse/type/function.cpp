@@ -1767,8 +1767,6 @@ namespace xml
               {
                 port_type const& port_in
                   (_function.get_port_in (name).get());
-                boost::optional<const port_type&> port_out
-                  (_function.get_port_out (name));
 
                 if (    mod.port_return()
                    && (*mod.port_return() == port_in.name())
