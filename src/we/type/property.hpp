@@ -33,6 +33,7 @@ namespace we
 
         void set (const path_type& path, const value_type&);
         boost::optional<const value_type&> get (const path_type& path) const;
+        bool is_true (path_type const&) const;
 
       private:
         value_type _value;
