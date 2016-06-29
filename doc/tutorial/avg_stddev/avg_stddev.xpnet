@@ -115,6 +115,7 @@
                 function="sum work (configuration, range_file)"
         >
           <cinclude href="reader.hpp"/>
+          <cinclude href="iostream"/>
           <cinclude href="thread"/>
           <code><![CDATA[
             std::cout << "work on range [" << range_file.begin
