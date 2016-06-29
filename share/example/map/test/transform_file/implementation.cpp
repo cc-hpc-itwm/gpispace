@@ -4,6 +4,7 @@
 #include <boost/format.hpp>
 
 #include <fstream>
+#include <iostream>
 #include <stdexcept>
 
 void map_produce ( map::user_data_type const& user_data

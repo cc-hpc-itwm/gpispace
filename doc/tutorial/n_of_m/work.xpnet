@@ -18,6 +18,7 @@
           <in name="n" type="long"/>
           <in name="config" type="T"/>
           <module name="work" function="work (v, n, config)">
+            <cinclude href="iostream"/>
             <code><![CDATA[
             std::cout << "### work " << v.id << " of [0.." << n << ")"
                       << " credit " << v.credit
