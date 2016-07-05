@@ -301,10 +301,7 @@ namespace
 
         std::ostringstream virt;
 
-        if ( opts.show_virtual
-           && boost::get<bool>
-                (place.property().get ({"virtual"}).get_value_or (false))
-           )
+        if (opts.show_virtual && place.property().is_true ({"virtual"}))
         {
             virt << endl << props ("virtual");
         }

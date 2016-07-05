@@ -46,6 +46,13 @@ namespace we
         return pnet::type::value::peek (path.begin(), path.end(), _value);
       }
 
+      bool type::is_true (path_type const& path) const
+      {
+        auto const value (get (path));
+
+        return !!value && boost::get<bool> (*value);
+      }
+
       namespace dump
       {
         void dump (::fhg::util::xml::xmlstream& s, const type& p)

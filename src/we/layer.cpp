@@ -468,10 +468,8 @@ namespace we
         }
 
         if (  _running_jobs.contains (activity_data._id)
-           || ( boost::get<bool> ( activity_data._activity->transition().prop()
-                                 . get ({"drts", "wait_for_output"})
-                                 . get_value_or (false)
-                                 )
+           || ( activity_data._activity->transition().prop()
+              . is_true ({"drts", "wait_for_output"})
               && activity_data._activity->output_missing()
               )
            )

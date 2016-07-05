@@ -684,15 +684,12 @@ namespace xml
 
               if (num_outport > 1)
               {
-                const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch ( properties.get ( { "pnetc"
-                                                    , "warning"
-                                                    , "inline_many_output_ports"
-                                                    }
-                                                  )
-                                 );
-
-                if (boost::get<bool> (warning_switch.get_value_or (false)))
+                if (properties.is_true ( { "pnetc"
+                                         , "warning"
+                                         , "inline_many_output_ports"
+                                         }
+                                       )
+                  )
                 {
                   state.warn ( warning::inline_many_output_ports
                              ( trans.name()
