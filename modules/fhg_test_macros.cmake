@@ -130,7 +130,7 @@ macro(FHG_ADD_TEST)
   set (one_value_options)
   set (multi_value_options LABELS ARGS)
   set (required_options)
-  parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+  _parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
   set (_fwd_args)
 
