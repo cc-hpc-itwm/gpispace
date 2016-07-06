@@ -11,6 +11,8 @@
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/optional.hpp>
 
+#include <util-generic/hash/combined_hash.hpp>
+
 #include <iosfwd>
 #include <limits>
 #include <string>
@@ -94,3 +96,8 @@ namespace we
     };
   }
 }
+
+FHG_UTIL_MAKE_COMBINED_STD_HASH ( we::type::PortDirection
+                                , port_direction
+                                , static_cast<int> (port_direction)
+                                )
