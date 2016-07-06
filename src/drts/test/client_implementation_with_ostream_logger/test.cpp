@@ -31,17 +31,6 @@
 
 #include <list>
 
-namespace
-{
-  namespace option
-  {
-    namespace po = fhg::util::boost::program_options;
-
-    po::option<po::existing_path> const implementation
-      {"implementation", "implementation"};
-  }
-}
-
 BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 {
   boost::program_options::options_description options_description;
@@ -53,9 +42,10 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   options_description.add (gspc::options::scoped_rifd());
   //! \todo switch to generic interface
   options_description.add_options()
-    ( option::implementation.name().c_str()
-    , option::implementation()->required()
-    , option::implementation.description().c_str()
+    ( "implementation"
+    , boost::program_options::value
+      <fhg::util::boost::program_options::existing_path>()->required()
+    , "implementation"
     );
 
   boost::program_options::variables_map vm
@@ -128,7 +118,9 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
     (vm, installation, "worker:1", rifds.entry_points());
 
   boost::filesystem::path const implementation
-    (option::implementation.get_from (vm));
+    ( vm.at ("implementation")
+    . as<fhg::util::boost::program_options::existing_path>()
+    );
 
   std::list<std::string> lines;
 
