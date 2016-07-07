@@ -76,6 +76,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_write.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libprocess.a"
   "${CMAKE_INSTALL_PREFIX}/revision"
+  "${CMAKE_INSTALL_PREFIX}/git.submodules"
   "${CMAKE_INSTALL_PREFIX}/share/man/man5/xpnet.5"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/lib/5.xml"
