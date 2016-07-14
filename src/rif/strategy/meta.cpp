@@ -95,9 +95,10 @@ namespace fhg
         }
       }
 
-      std::pair < std::unordered_map<std::string, fhg::rif::entry_point>
-                , std::unordered_map<std::string, std::exception_ptr>
-                > bootstrap
+      std::tuple < std::unordered_map<std::string, fhg::rif::entry_point>
+                 , std::unordered_map<std::string, std::exception_ptr>
+                 , std::unordered_map<std::string, std::string>
+                 > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
@@ -112,19 +113,24 @@ namespace fhg
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
         std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
+        std::unordered_map<std::string, std::string> real_hostnames;
 
         fhg::rpc::service_dispatcher service_dispatcher;
 
         fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
-            , [&entry_points, &entry_points_guard, &entry_point_added]
+            , [&entry_points, &entry_points_guard, &entry_point_added
+              , &real_hostnames
+              ]
                 ( std::string const& key
+                , std::string hostname
                 , fhg::rif::entry_point const& entry_point
                 )
               {
                 {
                   std::lock_guard<std::mutex> const _ (entry_points_guard);
                   entry_points.emplace (key, entry_point);
+                  real_hostnames.emplace (key, hostname);
                 }
                 entry_point_added.notify_one();
               }
@@ -159,7 +165,7 @@ namespace fhg
             );
         }
 
-        return {entry_points, failed};
+        return std::make_tuple (entry_points, failed, real_hostnames);
       }
       std::pair < std::unordered_set<std::string>
                 , std::unordered_map<std::string, std::exception_ptr>

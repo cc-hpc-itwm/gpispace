@@ -120,20 +120,26 @@ try
           . as<option::strategy_parameters_type>()
           )
     );
+
+  std::unordered_map<std::string, std::string> const& real_hostnames
+    (std::get<2> (result));
+
   for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
-      : result.first
+      : std::get<0> (result)
       )
   {
-    std::cout << entry_point.first << ' ' << entry_point.second << '\n';
+    std::cout << entry_point.first << ' ' << entry_point.second
+              << " (" << real_hostnames.at (entry_point.first) << ')'
+              << '\n';
   }
 
-  for (auto const& failure : result.second)
+  for (auto const& failure : std::get<1> (result))
   {
     std::cerr << failure.first << ": "
               << fhg::util::exception_printer (failure.second) << "\n";
   }
 
-  return result.second.empty() ? 0 : 1;
+  return std::get<1> (result).empty() ? 0 : 1;
 }
 catch (...)
 {
