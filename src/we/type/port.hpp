@@ -7,11 +7,11 @@
 #include <we/type/signature.hpp>
 #include <we/type/signature/serialize.hpp>
 
+#include <util-generic/cxx14/enum_hash.hpp>
+
 #include <boost/optional.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/optional.hpp>
-
-#include <util-generic/hash/combined_hash.hpp>
 
 #include <iosfwd>
 #include <limits>
@@ -96,8 +96,3 @@ namespace we
     };
   }
 }
-
-FHG_UTIL_MAKE_COMBINED_STD_HASH ( we::type::PortDirection
-                                , port_direction
-                                , static_cast<int> (port_direction)
-                                )

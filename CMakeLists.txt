@@ -115,7 +115,6 @@ endmacro()
 
 include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
