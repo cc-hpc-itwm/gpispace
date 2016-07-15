@@ -132,14 +132,18 @@ namespace gspc
         }
       }
 
-      std::pair< entry_point_by_host
-               , std::unordered_map<std::string, std::exception_ptr>
-               > const boot
+      std::tuple< entry_point_by_host
+                , std::unordered_map<std::string, std::exception_ptr>
+                , std::unordered_map<std::string, std::string>
+                > const boot
         ( fhg::rif::strategy::bootstrap
             (_strategy, no_duplicates, _port, _installation.gspc_home(), _parameters)
         );
 
-      for (auto const& new_entry_point : boot.first)
+      std::unordered_map<std::string, std::string> const& real_hostname
+        (std::get<2> (boot));
+
+      for (auto const& new_entry_point : std::get<0> (boot))
       {
         if (!_entry_points.emplace (new_entry_point).second)
         {
@@ -149,14 +153,17 @@ namespace gspc
              ).str()
             );
         }
+
+        _real_hostnames.emplace
+          (new_entry_point.first, real_hostname.at (new_entry_point.first));
       }
 
-      for (auto& failed_boot : boot.second)
+      for (auto& failed_boot : std::get<1> (boot))
       {
         failed.emplace (std::move (failed_boot));
       }
 
-      return {boot.first, failed};
+      return {std::get<0> (boot), failed};
     }
 
     std::pair < std::unordered_set<std::string>
@@ -169,6 +176,7 @@ namespace gspc
       for (auto const& entry_point : entry_points)
       {
         _entry_points.erase (entry_point.first);
+        _real_hostnames.erase (entry_point.first);
       }
 
       return result;
@@ -247,6 +255,7 @@ namespace gspc
     installation _installation;
 
     entry_point_by_host _entry_points;
+    std::unordered_map<std::string, std::string> _real_hostnames;
   };
 
   rifds::rifds ( rifd::strategy const& strategy
@@ -278,7 +287,7 @@ namespace gspc
 
   std::vector<std::string> rifds::hosts() const
   {
-    return keys (_->entry_points());
+    return values (_->_real_hostnames);
   }
   std::pair< rifd_entry_points
            , std::pair< std::unordered_set<std::string>

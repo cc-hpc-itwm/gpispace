@@ -16,7 +16,6 @@
 
 #include <sdpa/client.hpp>
 
-#include <util-generic/hostname.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>

@@ -6,6 +6,7 @@
 #include <util-generic/syscall.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -310,6 +311,7 @@ try
     fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
       {endpoint}
       ( register_key
+      , fhg::util::hostname()
       , fhg::rif::entry_point
           ( fhg::util::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()

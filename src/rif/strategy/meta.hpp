@@ -21,14 +21,18 @@ namespace fhg
     namespace strategy
     {
       FHG_RPC_FUNCTION_DESCRIPTION ( bootstrap_callback
-                                   , void (std::string, entry_point)
+                                   , void ( std::string // register_key
+                                          , std::string // hostname()
+                                          , entry_point
+                                          )
                                    );
 
       std::vector<std::string> available_strategies();
 
-      std::pair < std::unordered_map<std::string, fhg::rif::entry_point>
-                , std::unordered_map<std::string, std::exception_ptr>
-                > bootstrap
+      std::tuple < std::unordered_map<std::string, fhg::rif::entry_point>
+                 , std::unordered_map<std::string, std::exception_ptr>
+                 , std::unordered_map<std::string, std::string>
+                 > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames
         , boost::optional<unsigned short> const& port
