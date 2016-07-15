@@ -76,6 +76,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_write.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libprocess.a"
   "${CMAKE_INSTALL_PREFIX}/revision"
+  "${CMAKE_INSTALL_PREFIX}/git.submodules"
   "${CMAKE_INSTALL_PREFIX}/share/man/man5/xpnet.5"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/lib/5.xml"
@@ -130,7 +131,7 @@ macro(FHG_ADD_TEST)
   set (one_value_options)
   set (multi_value_options LABELS ARGS)
   set (required_options)
-  parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+  _parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
   set (_fwd_args)
 

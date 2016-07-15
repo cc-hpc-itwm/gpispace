@@ -2,6 +2,7 @@ extended_add_library (NAME pnetv-jpn
   SOURCES "jpn/Marking.cpp"
           "jpn/analysis/Backtrack.cpp"
           "jpn/analysis/StateSpace.cpp"
+  LIBRARIES Boost::base
 )
 extended_add_library (NAME pnetv-jpna
   SOURCES "jpna/Parsing.cpp"

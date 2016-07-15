@@ -7,6 +7,8 @@
 #include <we/type/signature.hpp>
 #include <we/type/signature/serialize.hpp>
 
+#include <util-generic/cxx14/enum_hash.hpp>
+
 #include <boost/optional.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/optional.hpp>

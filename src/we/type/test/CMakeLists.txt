@@ -41,6 +41,7 @@ add_custom_command (
 extended_add_library (NAME sig_op
   SOURCES "${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp"
   INCLUDE_DIRECTORIES "${CMAKE_CURRENT_BINARY_DIR}"
+  LIBRARIES Boost::base
 )
 
 fhg_add_test (NAME we_type_sig

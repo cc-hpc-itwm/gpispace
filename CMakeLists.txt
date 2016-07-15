@@ -13,6 +13,7 @@ add_subdirectory (cmake)
 include (add_macros)
 include (beautify_find_boost)
 include (require_compiler_version)
+include (git_submodules)
 
 set (PROJECT_VERSION "16.04")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
@@ -29,6 +30,8 @@ if (${_res_git} EQUAL 0)
 else()
   message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
 endif()
+
+install_git_submodules_information ("git.submodules")
 
 set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
 
@@ -112,7 +115,6 @@ endmacro()
 
 include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)

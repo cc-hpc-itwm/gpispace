@@ -4,6 +4,7 @@ extended_add_library (NAME log_map-impl
   TYPE MODULE
   SOURCES "implementation.cpp"
   INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
+  LIBRARIES we-dev
 )
 
 math (EXPR size_input 50)
