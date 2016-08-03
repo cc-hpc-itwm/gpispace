@@ -4,20 +4,20 @@ extended_add_library (NAME gpi-space-gpiapi
   LIBRARIES GASPI::static
             Util::Generic
             GPISpace::vmem
-  INCLUDE_DIRECTORIES "${GASPI_INCLUDE_DIR}"
-  SYSTEM_INCLUDE_DIRECTORIES "${LIBRT_INCLUDE_DIR}"
+  INCLUDE_DIRECTORIES PRIVATE "${GASPI_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-client-static
   SOURCES "pc/client/api.cpp"
   LIBRARIES Util::Generic
-  SYSTEM_INCLUDE_DIRECTORIES "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-segment
   SOURCES "pc/segment/segment.cpp"
   LIBRARIES "${LIBRT_SHARED_LIBRARY}" Util::Generic
-  SYSTEM_INCLUDE_DIRECTORIES "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-memory
@@ -33,19 +33,19 @@ extended_add_library (NAME gpi-space-pc-memory
             gpi-space_url
             Util::Generic
             gpi-space-gpiapi
-  SYSTEM_INCLUDE_DIRECTORIES "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-container
   SOURCES "pc/container/manager.cpp"
   LIBRARIES Util::Generic
-  SYSTEM_INCLUDE_DIRECTORIES "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-global
   SOURCES "pc/global/topology.cpp"
   LIBRARIES Util::Generic RPC
-  SYSTEM_INCLUDE_DIRECTORIES "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space_url

@@ -4,11 +4,8 @@ extended_add_library (NAME test-utilities
           "shared_directory.cpp"
           "source_directory.cpp"
           "virtual_memory_socket_name_for_localhost.cpp"
-  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}"
+  INCLUDE_DIRECTORIES PUBLIC "${CMAKE_SOURCE_DIR}"
   LIBRARIES fhg-util
             Boost::program_options
             Boost::filesystem
-)
-set_property (TARGET test-utilities APPEND
-  PROPERTY INTERFACE_INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}"
 )

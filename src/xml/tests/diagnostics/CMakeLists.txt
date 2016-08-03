@@ -29,7 +29,7 @@ fhg_add_test (NAME xml_parse_virtual_place_not_tunneled
 fhg_add_test (NAME xml_parse_diagnostics
   SOURCES diagnostics.cpp
   USE_BOOST
-  INCLUDE PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/.."
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/.."
   LIBRARIES pnet Boost::filesystem Boost::program_options
   DESCRIPTION "check parser diagnostics"
 )
