@@ -8,7 +8,7 @@ configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)
 fhg_add_test (NAME xml_parse_duplicate_connect
   SOURCES parse_duplicate_connect.cpp
   USE_BOOST
-  INCLUDE PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
   LIBRARIES pnet Boost::filesystem Boost::program_options
   DESCRIPTION "pnetc shall throw if there are mutiple connections with the same port, place and direction"
 )
@@ -16,7 +16,7 @@ fhg_add_test (NAME xml_parse_duplicate_connect
 fhg_add_test (NAME xml_parse_compile_and_compare
   SOURCES parse_compile_and_compare.cpp
   USE_BOOST
-  INCLUDE PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
   LIBRARIES pnet Boost::filesystem Boost::program_options
   DESCRIPTION "pnetc shall produce the same output as given in the reference files"
 )
