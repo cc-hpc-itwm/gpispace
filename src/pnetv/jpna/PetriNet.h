@@ -46,7 +46,7 @@ class PetriNet {
     /**
      * \return All the transitions in the Petri net.
      */
-    const std::vector<const Transition *> &transitions() const { return reinterpret_cast<const std::vector<const Transition *> &>(transitions_); }
+    std::vector<Transition *> transitions() const { return transitions_; }
 
     /**
      * \param id Id of the transitions.
