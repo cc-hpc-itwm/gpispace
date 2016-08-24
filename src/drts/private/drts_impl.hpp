@@ -36,8 +36,6 @@ namespace gspc
 
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
-    std::pair<std::list<std::string>, unsigned long> const
-      _nodes_and_number_of_unique_nodes;
 
     struct started_runtime_system
     {

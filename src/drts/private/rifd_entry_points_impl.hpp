@@ -4,8 +4,6 @@
 
 #include <rif/entry_point.hpp>
 
-#include <list>
-#include <unordered_set>
 #include <vector>
 
 namespace gspc
@@ -15,21 +13,6 @@ namespace gspc
     implementation (std::vector<fhg::rif::entry_point> const& entry_points)
       : _entry_points (entry_points)
     {}
-
-    std::pair<std::list<std::string>, unsigned long>
-      nodes_and_number_of_unique_nodes() const
-    {
-      std::unordered_set<std::string> unique_nodes;
-      std::list<std::string> nodes;
-
-      for (fhg::rif::entry_point const& entry_point : _entry_points)
-      {
-        unique_nodes.emplace (entry_point.hostname);
-        nodes.emplace_back (entry_point.hostname);
-      }
-
-      return {nodes, unique_nodes.size()};
-    }
 
     std::vector<fhg::rif::entry_point> _entry_points;
   };

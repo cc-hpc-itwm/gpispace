@@ -322,11 +322,6 @@ namespace gspc
           (std::chrono::seconds (get_virtual_memory_startup_timeout (vm).get()))
         : boost::none
         )
-      , _nodes_and_number_of_unique_nodes
-          ( !entry_points
-            ? decltype (_nodes_and_number_of_unique_nodes) {{}, 0}
-            : entry_points->_->nodes_and_number_of_unique_nodes()
-          )
       , _started_runtime_system
           ( get_gui_host (vm)
           , get_gui_port (vm)
@@ -404,11 +399,6 @@ namespace gspc
                                               ) const
   {
     return stream (*this, name, buffer, size_of_slot, on_slot_filled);
-  }
-
-  unsigned long scoped_runtime_system::number_of_unique_nodes() const
-  {
-    return _->_nodes_and_number_of_unique_nodes.second;
   }
 
   std::unordered_map< rifd_entry_point
