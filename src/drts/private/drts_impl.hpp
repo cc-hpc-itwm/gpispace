@@ -73,7 +73,6 @@ namespace gspc
 
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
-      std::vector<fhg::rif::entry_point> _rif_entry_points;
       boost::optional<std::string> _gui_host;
       boost::optional<unsigned short> _gui_port;
       boost::optional<std::string> _log_host;
