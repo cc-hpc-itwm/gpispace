@@ -149,21 +149,15 @@ namespace we
       }
 
       // outgoing connections, transition ports to places
-      for ( std::pair< transition_id_type
-                     , net_type::port_to_place_with_info_type
-                     > const& tppi
-          : input_net.port_to_place()
-          )
+      for (auto const& tppi : input_net.port_to_place())
       {
-        for ( net_type::port_to_place_with_info_type::value_type const& ppi
-            : tppi.second
-            )
+        for (auto const& ppi : tppi.second)
         {
           new_net.add_connection ( edge::TP
                                  , transition_id.at (tppi.first)
-                                 , place_id.at (ppi.get_right())
-                                 , ppi.get_left() // new port id equals old one
-                                 , ppi.info
+                                 , place_id.at (ppi.second.first)
+                                 , ppi.first // new port id equals old one
+                                 , ppi.second.second
                                  );
         }
       }
@@ -497,22 +491,16 @@ namespace we
       }
 
       // connect transition ports to places (outgoing)
-      for ( std::pair< transition_id_type
-                     , net_type::port_to_place_with_info_type
-                     > const& tppi
-          : input_net.port_to_place()
-          )
+      for (auto const& tppi : input_net.port_to_place())
       {
-        for ( net_type::port_to_place_with_info_type::value_type const& ppi
-            : tppi.second
-            )
+        for (auto const& ppi : tppi.second)
         {
           new_net.add_connection
             ( edge::TP
             , transition_id.at (tppi.first)
-            , place_id.at (ppi.get_right())
-            , transition_port_id_map.at (tppi.first).at (ppi.get_left())
-            , ppi.info
+            , place_id.at (ppi.second.first)
+            , transition_port_id_map.at (tppi.first).at (ppi.first)
+            , ppi.second.second
             );
         }
       }

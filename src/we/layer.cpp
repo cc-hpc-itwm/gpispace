@@ -147,7 +147,7 @@ namespace we
         {
             we::place_id_type const place_id
               ( net.port_to_place().at (net.transitions().begin()->first)
-              .left.find (p.first)->get_right()
+              . at (p.first).first
               );
 
             for ( const pnet::type::value::value_type& token

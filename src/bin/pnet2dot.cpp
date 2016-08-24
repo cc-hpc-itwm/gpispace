@@ -332,18 +332,15 @@ namespace
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
         {
-          for ( we::type::net_type::port_to_place_with_info_type::value_type
-                  const& port_to_place
-              : net.port_to_place().at (trans_id)
-              )
+          for (auto const& port_to_place : net.port_to_place().at (trans_id))
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
+                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
+                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
                       );
           }
         }

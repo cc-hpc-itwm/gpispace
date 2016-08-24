@@ -97,10 +97,15 @@ namespace we
       {
       case edge::TP:
         _adj_tp.emplace (place_id, transition_id);
-        _port_to_place[transition_id].insert
-          ( port_to_place_with_info_type::value_type
-              (port_id, place_id, property)
-          );
+        if (!_port_to_place[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (port_id)
+             , std::forward_as_tuple (place_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
         break;
       case edge::PT:
         _adj_pt_consume.insert
@@ -515,12 +520,12 @@ namespace we
           )
       {
         if (  _port_to_place.count (tid)
-           && _port_to_place.at (tid).left.count (p.first)
+           && _port_to_place.at (tid).count (p.first)
            )
         {
           pending_updates.emplace_back
             ( do_put_value
-              ( _port_to_place.at (tid).left.find (p.first)->get_right()
+              ( _port_to_place.at (tid).at (p.first).first
               , context.value ({p.second.name()})
               )
             );
@@ -561,11 +566,11 @@ namespace we
       {
         if ( _port_to_place.count (*child.transition_id())
            && _port_to_place.at (*child.transition_id())
-            . left.count (token_on_port.second)
+            . count (token_on_port.second)
            )
         {
           put_value ( _port_to_place.at (*child.transition_id())
-                    . left.find (token_on_port.second)->get_right()
+                    . at (token_on_port.second).first
                     , token_on_port.first
                     );
         }
