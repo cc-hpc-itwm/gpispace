@@ -169,22 +169,16 @@ namespace we
       }
 
       // incoming connections, places to transition ports
-      for ( std::pair< transition_id_type
-                     , net_type::place_to_port_with_info_type
-                     > const& tppi
-          : input_net.place_to_port()
-          )
+      for (auto const& tppi: input_net.place_to_port())
       {
         transition_id_type const tid (tppi.first);
 
         auto const place_ids_consume
           (input_net.place_to_transition_consume().right.equal_range (tid));
 
-        for ( net_type::place_to_port_with_info_type::value_type const& ppi
-            : tppi.second
-            )
+        for (auto const& ppi: tppi.second)
         {
-          place_id_type const input_net_place_id (ppi.get_left());
+          place_id_type const input_net_place_id (ppi.first);
 
           new_net.add_connection
             ( std::find_if ( place_ids_consume.first  // iterator begin
@@ -195,8 +189,8 @@ namespace we
               ? edge::PT : edge::PT_READ
             , transition_id.at (tid)
             , place_id.at (input_net_place_id)
-            , ppi.get_right()
-            , ppi.info
+            , ppi.second.first
+            , ppi.second.second
             );
         }
       }
@@ -524,22 +518,16 @@ namespace we
       }
 
       // connect transition places to ports (incoming), skip transformed place
-      for ( std::pair< transition_id_type
-                     , net_type::place_to_port_with_info_type
-                     > const& tppi
-          : input_net.place_to_port()
-          )
+      for (auto const& tppi : input_net.place_to_port())
       {
         transition_id_type const tid (tppi.first);
 
         auto const place_ids_consume
           (input_net.place_to_transition_consume().right.equal_range (tid));
 
-        for ( net_type::place_to_port_with_info_type::value_type const& ppi
-            : tppi.second
-            )
+        for (auto const& ppi : tppi.second)
         {
-          place_id_type const input_net_place_id (ppi.get_left());
+          place_id_type const input_net_place_id (ppi.first);
 
           if (input_net_place_id != control_place_id)
           {
@@ -552,8 +540,8 @@ namespace we
                 ? edge::PT : edge::PT_READ
               , transition_id.at (tid)
               , place_id.at (input_net_place_id)
-              , transition_port_id_map.at (tid).at (ppi.get_right())
-              , ppi.info
+              , transition_port_id_map.at (tid).at (ppi.second.first)
+              , ppi.second.second
               );
           }
         }

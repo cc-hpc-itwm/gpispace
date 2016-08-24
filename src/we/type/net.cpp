@@ -105,18 +105,28 @@ namespace we
       case edge::PT:
         _adj_pt_consume.insert
           (adj_pt_type::value_type (place_id, transition_id));
-        _place_to_port[transition_id].insert
-          ( place_to_port_with_info_type::value_type
-              (place_id, port_id, property)
-          );
+        if (!_place_to_port[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (place_id)
+             , std::forward_as_tuple (port_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
         update_enabled (transition_id);
         break;
       case edge::PT_READ:
         _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
-        _place_to_port[transition_id].insert
-          ( place_to_port_with_info_type::value_type
-              (place_id, port_id, property)
-          );
+        if (!_place_to_port[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (place_id)
+             , std::forward_as_tuple (port_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate read connection");
+        }
         update_enabled (transition_id);
         break;
       }
@@ -402,7 +412,7 @@ namespace we
         token_id_type const token_id (pt.second.first);
         bool const is_read_connection (pt.second.second);
 
-        fun ( _place_to_port.at (tid).left.find (pid)->get_right()
+        fun ( _place_to_port.at (tid).at (pid).first
             , _token_by_place_id.at (pid).at (token_id)
             );
 
@@ -678,8 +688,8 @@ namespace we
         {
           context.bind_ref
             ( transition.ports_input()
-            . at (n->place_to_port().at (transition_id).left
-            . find (pits.first)->get_right()).name()
+            . at (n->place_to_port().at (transition_id)
+            . at (pits.first).first).name()
             , pits.second.pos()->second
             );
         }

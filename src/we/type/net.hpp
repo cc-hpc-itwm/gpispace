@@ -49,21 +49,18 @@ namespace we
         , boost::bimaps::left_based
         , boost::bimaps::with_info<we::type::property::type>
         > port_to_response_with_info_type;
-      typedef boost::bimaps::bimap
-        < place_id_type
-        , port_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > place_to_port_with_info_type;
       typedef std::unordered_map< transition_id_type
                                 , port_to_place_with_info_type
                                 > port_to_place_type;
       typedef std::unordered_map< transition_id_type
                                 , port_to_response_with_info_type
                                 > port_to_response_type;
-      typedef std::unordered_map< transition_id_type
-                                , place_to_port_with_info_type
-                                > place_to_port_type;
+      typedef std::unordered_map
+        < transition_id_type
+        , std::unordered_map< place_id_type
+                            , std::pair<port_id_type, we::type::property::type>
+                            >
+        > place_to_port_type;
       using token_by_id_type =
         std::unordered_map<token_id_type, pnet::type::value::value_type>;
 
