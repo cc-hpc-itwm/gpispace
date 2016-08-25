@@ -37,21 +37,18 @@ namespace we
         , boost::bimaps::unordered_multiset_of<transition_id_type>
         , boost::bimaps::set_of_relation<>
         > adj_pt_type;
-      typedef boost::bimaps::bimap
-        < port_id_type
-        , std::string
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > port_to_response_with_info_type;
       typedef std::unordered_map
         < transition_id_type
         , std::unordered_map< port_id_type
                             , std::pair<place_id_type, we::type::property::type>
                             >
         > port_to_place_type;
-      typedef std::unordered_map< transition_id_type
-                                , port_to_response_with_info_type
-                                > port_to_response_type;
+      typedef std::unordered_map
+        < transition_id_type
+        , std::unordered_map< port_id_type
+                            , std::pair<std::string, we::type::property::type>
+                            >
+        > port_to_response_type;
       typedef std::unordered_map
         < transition_id_type
         , std::unordered_map< place_id_type

@@ -143,8 +143,15 @@ namespace we
                                 , we::type::property::type const& property
                                 )
     {
-      _port_to_response[transition_id].insert
-        (port_to_response_with_info_type::value_type (port_id, to, property));
+      if (!_port_to_response[transition_id].emplace
+           ( std::piecewise_construct
+           , std::forward_as_tuple (port_id)
+           , std::forward_as_tuple (to, property)
+           ).second
+         )
+      {
+        throw std::logic_error ("duplicate response");
+      }
     }
 
     const std::unordered_map<place_id_type, place::type>&
@@ -535,10 +542,10 @@ namespace we
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                assert (_port_to_response.at (tid).left.count (p.first));
+                assert (_port_to_response.at (tid).count (p.first));
 
                 std::string const to ( _port_to_response.at (tid)
-                                     . left.find (p.first)->get_right()
+                                     . at (p.first).first
                                      );
 
                 workflow_response ( context.value ({to})
@@ -580,14 +587,14 @@ namespace we
             ( [&]
               {
                 assert ( _port_to_response.at (*child.transition_id())
-                       . left.count (token_on_port.second)
+                       . count (token_on_port.second)
                        );
                pnet::type::value::value_type const description
                   ([this, &child, &token_on_port]
                    {
                      std::string const to
                        ( _port_to_response.at (*child.transition_id())
-                       . left.find (token_on_port.second)->get_right()
+                       . at (token_on_port.second).first
                        );
                     we::port_id_type const input_port_id
                        (child.transition().input_port_by_name (to));
