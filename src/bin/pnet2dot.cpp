@@ -42,6 +42,7 @@ namespace
     static std::string const modcall ("yellow");
     static std::string const expression ("white");
     static std::string const node ("white");
+    static std::string const put_token ("lightblue");
   }
 
   namespace style
@@ -155,7 +156,10 @@ namespace
     return keyval ("bgcolor", color);
   }
 
-  std::string node (const std::string& shape, const std::string& label)
+  std::string node ( const std::string& shape
+                   , const std::string& label
+                   , std::string const& fillcolor = color::node
+                   )
   {
     return brackets ( keyval ("shape", shape)
                     + ", "
@@ -163,7 +167,7 @@ namespace
                     + ", "
                     + keyval ("style", "filled")
                     + ", "
-                    + keyval ("fillcolor", color::node)
+                    + keyval ("fillcolor", fillcolor)
                     );
   }
 
@@ -315,6 +319,7 @@ namespace
              , with_signature (place.name(), place.signature(), opts)
              + quote (token.str())
              + virt.str()
+             , place.is_marked_for_put_token() ? color::put_token : color::node
              );
       }
 
