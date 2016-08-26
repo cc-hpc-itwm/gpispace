@@ -112,8 +112,6 @@ namespace gspc
       , char const* const data
       ) const;
 
-    unsigned long number_of_unique_nodes() const;
-
     stream create_stream ( std::string const& name
                          , gspc::vmem_allocation const& buffer
                          , gspc::stream::size_of_slot const&

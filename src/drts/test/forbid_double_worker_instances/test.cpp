@@ -64,7 +64,7 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
     , gspc::rifd_entry_point_hash
     > const errors (drts.add_worker (rifds.entry_points()));
 
-  BOOST_REQUIRE_EQUAL (drts.number_of_unique_nodes(), errors.size());
+  BOOST_REQUIRE_EQUAL (rifds.hosts().size(), errors.size());
 
   for (auto const& exceptions : errors | boost::adaptors::map_values)
   {

@@ -36,8 +36,6 @@ namespace gspc
 
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
-    std::pair<std::list<std::string>, unsigned long> const
-      _nodes_and_number_of_unique_nodes;
 
     struct started_runtime_system
     {
@@ -73,7 +71,6 @@ namespace gspc
 
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
-      std::vector<fhg::rif::entry_point> _rif_entry_points;
       boost::optional<std::string> _gui_host;
       boost::optional<unsigned short> _gui_port;
       boost::optional<std::string> _log_host;
