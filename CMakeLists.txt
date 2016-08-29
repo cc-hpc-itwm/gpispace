@@ -17,19 +17,28 @@ include (git_submodules)
 
 set (PROJECT_VERSION "16.04")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
-execute_process (
-  COMMAND git rev-parse HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE _out_git
-  ERROR_VARIABLE _err_git
-  RESULT_VARIABLE _res_git
-)
-if (${_res_git} EQUAL 0)
-  string (STRIP "${_out_git}" _out_git)
-  set (PROJECT_REVISION ${_out_git})
-else()
-  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif()
+
+#! \todo move to shared/cmake
+function (determine_git_revision directory output_variable_name)
+  find_package (Git REQUIRED)
+
+  set (command "${GIT_EXECUTABLE}" rev-parse HEAD)
+  execute_process (COMMAND ${command}
+    WORKING_DIRECTORY "${directory}"
+    OUTPUT_VARIABLE output OUTPUT_STRIP_TRAILING_WHITESPACE
+    RESULT_VARIABLE error_code)
+
+  if (NOT ${error_code} EQUAL 0)
+    string (REPLACE ";" " " command_string "${command}")
+    message (FATAL_ERROR "could not discover revision info for '${directory}': "
+      "`${command_string}` failed with error code ${error_code}. "
+      "output: ${output}")
+  endif()
+
+  set (${output_variable_name} "${output}" PARENT_SCOPE)
+endfunction()
+
+determine_git_revision ("${CMAKE_SOURCE_DIR}" PROJECT_REVISION)
 
 install_git_submodules_information ("git.submodules")
 
