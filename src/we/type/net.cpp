@@ -97,26 +97,41 @@ namespace we
       {
       case edge::TP:
         _adj_tp.emplace (place_id, transition_id);
-        _port_to_place[transition_id].insert
-          ( port_to_place_with_info_type::value_type
-              (port_id, place_id, property)
-          );
+        if (!_port_to_place[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (port_id)
+             , std::forward_as_tuple (place_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
         break;
       case edge::PT:
         _adj_pt_consume.insert
           (adj_pt_type::value_type (place_id, transition_id));
-        _place_to_port[transition_id].insert
-          ( place_to_port_with_info_type::value_type
-              (place_id, port_id, property)
-          );
+        if (!_place_to_port[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (place_id)
+             , std::forward_as_tuple (port_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
         update_enabled (transition_id);
         break;
       case edge::PT_READ:
         _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
-        _place_to_port[transition_id].insert
-          ( place_to_port_with_info_type::value_type
-              (place_id, port_id, property)
-          );
+        if (!_place_to_port[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (place_id)
+             , std::forward_as_tuple (port_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate read connection");
+        }
         update_enabled (transition_id);
         break;
       }
@@ -128,8 +143,15 @@ namespace we
                                 , we::type::property::type const& property
                                 )
     {
-      _port_to_response[transition_id].insert
-        (port_to_response_with_info_type::value_type (port_id, to, property));
+      if (!_port_to_response[transition_id].emplace
+           ( std::piecewise_construct
+           , std::forward_as_tuple (port_id)
+           , std::forward_as_tuple (to, property)
+           ).second
+         )
+      {
+        throw std::logic_error ("duplicate response");
+      }
     }
 
     const std::unordered_map<place_id_type, place::type>&
@@ -402,7 +424,7 @@ namespace we
         token_id_type const token_id (pt.second.first);
         bool const is_read_connection (pt.second.second);
 
-        fun ( _place_to_port.at (tid).left.find (pid)->get_right()
+        fun ( _place_to_port.at (tid).at (pid).first
             , _token_by_place_id.at (pid).at (token_id)
             );
 
@@ -505,12 +527,12 @@ namespace we
           )
       {
         if (  _port_to_place.count (tid)
-           && _port_to_place.at (tid).left.count (p.first)
+           && _port_to_place.at (tid).count (p.first)
            )
         {
           pending_updates.emplace_back
             ( do_put_value
-              ( _port_to_place.at (tid).left.find (p.first)->get_right()
+              ( _port_to_place.at (tid).at (p.first).first
               , context.value ({p.second.name()})
               )
             );
@@ -520,10 +542,10 @@ namespace we
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                assert (_port_to_response.at (tid).left.count (p.first));
+                assert (_port_to_response.at (tid).count (p.first));
 
                 std::string const to ( _port_to_response.at (tid)
-                                     . left.find (p.first)->get_right()
+                                     . at (p.first).first
                                      );
 
                 workflow_response ( context.value ({to})
@@ -551,11 +573,11 @@ namespace we
       {
         if ( _port_to_place.count (*child.transition_id())
            && _port_to_place.at (*child.transition_id())
-            . left.count (token_on_port.second)
+            . count (token_on_port.second)
            )
         {
           put_value ( _port_to_place.at (*child.transition_id())
-                    . left.find (token_on_port.second)->get_right()
+                    . at (token_on_port.second).first
                     , token_on_port.first
                     );
         }
@@ -565,14 +587,14 @@ namespace we
             ( [&]
               {
                 assert ( _port_to_response.at (*child.transition_id())
-                       . left.count (token_on_port.second)
+                       . count (token_on_port.second)
                        );
                pnet::type::value::value_type const description
                   ([this, &child, &token_on_port]
                    {
                      std::string const to
                        ( _port_to_response.at (*child.transition_id())
-                       . left.find (token_on_port.second)->get_right()
+                       . at (token_on_port.second).first
                        );
                     we::port_id_type const input_port_id
                        (child.transition().input_port_by_name (to));
@@ -678,8 +700,8 @@ namespace we
         {
           context.bind_ref
             ( transition.ports_input()
-            . at (n->place_to_port().at (transition_id).left
-            . find (pits.first)->get_right()).name()
+            . at (n->place_to_port().at (transition_id)
+            . at (pits.first).first).name()
             , pits.second.pos()->second
             );
         }

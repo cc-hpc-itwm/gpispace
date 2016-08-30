@@ -337,47 +337,41 @@ namespace
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
         {
-          for ( we::type::net_type::port_to_place_with_info_type::value_type
-                  const& port_to_place
-              : net.port_to_place().at (trans_id)
-              )
+          for (auto const& port_to_place : net.port_to_place().at (trans_id))
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
+                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
+                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
                       );
           }
         }
 
         if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
         {
-          for ( we::type::net_type::place_to_port_with_info_type::value_type
-                  const& place_to_port
-              : net.place_to_port().at (trans_id)
-              )
+          for (auto const& place_to_port : net.place_to_port().at (trans_id))
           {
             s << fhg::util::deeper (_indent)
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
+                      , "place_" + boost::lexical_cast<std::string> (place_to_port.first)
                       )
               << arrow
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
+                      , "port_" + boost::lexical_cast<std::string> (place_to_port.second.first)
                       )
               << (  net.place_to_transition_read().find
                     ( we::type::net_type::adj_pt_type::value_type
-                     (place_to_port.get_left(), trans_id)
+                     (place_to_port.first, trans_id)
                     )
                  != net.place_to_transition_read().end()
                  ? brackets (keyval ("style", style::read_connection))
                  : ""
                  );
 
-            if (place_to_port.info.get ({"pnetc", "tunnel"}))
+            if (place_to_port.second.second.get ({"pnetc", "tunnel"}))
             {
               s << association();
             }
