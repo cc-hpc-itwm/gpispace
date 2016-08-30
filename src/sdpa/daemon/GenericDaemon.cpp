@@ -793,7 +793,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       _scheduler.releaseReservation (job->id());
       request_scheduling();
 
-      if (boost::get<job_source_master> (&job->source()))
+      if (boost::get<job_source_wfe> (&job->source()))
       {
         deleteJob (job->id());
       }
