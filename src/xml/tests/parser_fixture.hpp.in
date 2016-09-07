@@ -29,7 +29,6 @@ namespace
       , function (boost::none)
     {
       path_to_xpnets = "@XML_PARSE_TEST_XPNETS_DIR@";
-      path_to_pnets = "@XML_PARSE_TEST_PNETS_DIR@";
     }
 
     void parse (const boost::filesystem::path& path)
@@ -62,21 +61,10 @@ namespace
       return ::xml::parse::xml_to_we (*function, state);
     }
 
-    void require_same ( const ::we::type::activity_t& activity
-                      , const boost::filesystem::path& path
-                      )
-    {
-      BOOST_REQUIRE_EQUAL ( ::we::type::activity_t
-                            (fhg::util::read_file (path_to_pnets / path))
-                          , activity
-                          );
-    }
-
     ::xml::parse::state::type state;
     boost::optional< ::xml::parse::type::function_type> function;
 
     boost::filesystem::path xpnet;
     boost::filesystem::path path_to_xpnets;
-    boost::filesystem::path path_to_pnets;
   };
 }
