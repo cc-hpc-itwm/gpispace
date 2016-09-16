@@ -25,7 +25,6 @@ namespace fhg
      std::string const _path;
      std::ofstream _stream;
      std::string const _format;
-     int _event_count;
    };
  }
 }

@@ -13,7 +13,6 @@ namespace fhg
                                )
       : _path (path)
       , _format (fmt)
-      , _event_count (0)
     {
       _stream.exceptions (std::ios_base::badbit | std::ios_base::failbit);
     }
@@ -35,11 +34,7 @@ namespace fhg
 
       format (_stream, _format, event);
 
-      if (++_event_count >= 5)
-      {
-        flush();
-        _event_count = 0;
-      }
+      flush();
     }
   }
 }
