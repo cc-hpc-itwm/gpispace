@@ -323,3 +323,21 @@ BOOST_FIXTURE_TEST_CASE
 
   execution.join();
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( execute_and_kill_on_cancel_can_be_called_more_often_than_max_open_files
+  , context_fixture
+  )
+{
+  long const maximum_open_files (fhg::util::syscall::sysconf (_SC_OPEN_MAX));
+
+  for (long i (0); i < 2 * maximum_open_files; ++i)
+  {
+    context.execute_and_kill_on_cancel
+      ( [](){}
+      , &on_cancel_unexpected
+      , &on_signal_unexpected
+      , [] (int exit_code) { BOOST_REQUIRE_EQUAL (exit_code, 0); }
+      );
+  }
+}
