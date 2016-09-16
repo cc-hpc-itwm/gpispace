@@ -124,6 +124,8 @@ namespace drts
 
       if (pid_t child = fhg::util::syscall::fork())
       {
+        FHG_UTIL_FINALLY
+          ([&pipe_fds]() {fhg::util::syscall::close (pipe_fds[0]); });
         fhg::util::syscall::close (pipe_fds[1]);
 
         bool cancelled {false};
@@ -175,7 +177,7 @@ namespace drts
           if (WEXITSTATUS (status) == 1)
           {
             boost::iostreams::stream<boost::iostreams::file_descriptor_source>
-              pipe_read (pipe_fds[0], boost::iostreams::close_handle);
+              pipe_read (pipe_fds[0], boost::iostreams::never_close_handle);
 
             pipe_read >> std::noskipws;
 
@@ -200,6 +202,8 @@ namespace drts
       }
       else
       {
+        FHG_UTIL_FINALLY
+          ([&pipe_fds]() {fhg::util::syscall::close (pipe_fds[1]); });
         fhg::util::syscall::close (pipe_fds[0]);
 
         //! \note block to avoid "normal" exit due to external signal
@@ -215,7 +219,7 @@ namespace drts
         catch (...)
         {
           boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-            (pipe_fds[1], boost::iostreams::close_handle) <<
+            (pipe_fds[1], boost::iostreams::never_close_handle) <<
               fhg::util::serialization::exception::serialize
                 (std::current_exception());
 
