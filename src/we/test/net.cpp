@@ -157,3 +157,27 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   BOOST_REQUIRE_EQUAL (net.get_token (place_out).size(), 1);
   BOOST_REQUIRE_EQUAL (net.get_token (place_credit).size(), 1);
 }
+
+namespace we
+{
+  namespace type
+  {
+    BOOST_AUTO_TEST_CASE (empty_net)
+    {
+      net_type net;
+
+      BOOST_REQUIRE (net.places().empty());
+      BOOST_REQUIRE (net.transitions().empty());
+      BOOST_REQUIRE (net.transition_to_place().empty());
+      BOOST_REQUIRE (net.place_to_transition_consume().empty());
+      BOOST_REQUIRE (net.place_to_transition_read().empty());
+      BOOST_REQUIRE (net.port_to_place().empty());
+      BOOST_REQUIRE (net.port_to_response().empty());
+      BOOST_REQUIRE (net.place_to_port().empty());
+      BOOST_REQUIRE
+        ( !net.fire_expressions_and_extract_activity_random
+            (random_engine(), unexpected_workflow_response)
+        );
+    }
+  }
+}
