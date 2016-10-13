@@ -27,6 +27,11 @@ namespace
 
     return _;
   }
+
+  we::type::property::type no_properties()
+  {
+    return {};
+  }
 }
 
 BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
@@ -36,7 +41,7 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
                        ( fhg::util::testing::random_string()
                        , we::type::expression_t()
                        , boost::none
-                       , we::type::property::type()
+                       , no_properties()
                        , we::priority_type()
                        )
                      );
@@ -58,7 +63,7 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
                          ( fhg::util::testing::random_string()
                          , we::type::expression_t()
                          , boost::none
-                         , we::type::property::type()
+                         , no_properties()
                          , we::priority_type()
                          )
                        );
@@ -81,7 +86,6 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
 {
   pnet::type::signature::signature_type const signature
     (std::string ("control"));
-  we::type::property::type const no_properties;
 
   we::type::net_type net;
 
@@ -94,7 +98,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
          (place::type ( std::to_string (++place)
                       , signature
                       , boost::none
-                      , no_properties
+                      , no_properties()
                       )
          );
      }
@@ -111,7 +115,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
     ( fhg::util::testing::random_identifier()
     , we::type::expression_t ("${out} := ${in}")
     , boost::none
-    , no_properties
+    , no_properties()
     , we::priority_type()
     );
 
@@ -121,7 +125,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
          ) -> we::port_id_type
      {
        return transition.add_port
-         (we::type::port_t (name, direction, signature, no_properties));
+         (we::type::port_t (name, direction, signature, no_properties()));
      }
     );
 
@@ -135,7 +139,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   auto&& connect
     ([&] (we::edge::type edge, we::place_id_type place, we::port_id_type port)
      {
-       net.add_connection (edge, transition_id, place, port, no_properties);
+       net.add_connection (edge, transition_id, place, port, no_properties());
      }
     );
 
