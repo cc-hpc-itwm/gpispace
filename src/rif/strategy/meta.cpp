@@ -163,6 +163,13 @@ namespace fhg
             ( lock
             , [&entry_points, &hostnames, &failed]
               {
+                //! not just do once: new entry_points may be added
+                //! later on, thus re-remove every time they changed.
+                for (auto&& failure : failed)
+                {
+                  entry_points.erase (failure.first);
+                }
+
                 return entry_points.size() + failed.size() == hostnames.size();
               }
             );
