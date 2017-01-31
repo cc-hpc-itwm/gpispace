@@ -45,6 +45,7 @@ namespace fhg
                 , unsigned short
                 , boost::filesystem::path const&
                 , std::vector<std::string> const&
+                , std::ostream&
                 )
               >
             , std::function
@@ -104,6 +105,7 @@ namespace fhg
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
         , std::vector<std::string> const& parameters
+        , std::ostream& out
         )
       {
         validate_strategy (strategy);
@@ -151,6 +153,7 @@ namespace fhg
               , local_endpoint.port()
               , gspc_home / "bin" / "gspc-rifd"
               , parameters
+              , out
               )
           );
 

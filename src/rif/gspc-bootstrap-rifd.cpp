@@ -118,6 +118,7 @@ try
               (fhg::util::executable_path().parent_path() / INSTALLATION_HOME)
           , vm.at (option::strategy_parameters)
           . as<option::strategy_parameters_type>()
+          , std::cout
           )
     );
 

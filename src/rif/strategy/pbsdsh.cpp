@@ -66,6 +66,7 @@ namespace fhg
                     , unsigned short register_port
                     , boost::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
+                    , std::ostream&
                     )
         {
           EXTRACT_PARAMETERS (parameters);
