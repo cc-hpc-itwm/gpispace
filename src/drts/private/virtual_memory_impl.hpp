@@ -88,7 +88,7 @@ namespace gspc
     }
   }
 
-  struct vmem_allocation::implementation
+  struct scoped_vmem_segment_and_allocation::implementation
   {
     implementation ( std::unique_ptr<gpi::pc::client::api_t> const& api
                    , vmem::segment_description segment_desc

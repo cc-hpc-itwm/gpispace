@@ -206,12 +206,12 @@ int main(int ac, char **av)
           )
       : nullptr
       );
-    std::unique_ptr<gspc::scoped_allocation> const shared_memory
+    std::unique_ptr<gspc::scoped_vmem_cache> const vmem_cache
       ( ( virtual_memory_api
         && vm.count (option_name::shared_memory_size)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
-      ? fhg::util::cxx14::make_unique<gspc::scoped_allocation>
+      ? fhg::util::cxx14::make_unique<gspc::scoped_vmem_cache>
         ( virtual_memory_api
         , kernel_name + "-shared_memory"
         , vm.at (option_name::shared_memory_size).as<unsigned long>()
@@ -265,7 +265,7 @@ int main(int ac, char **av)
         : nullptr
       , kernel_name
       , virtual_memory_api.get()
-      , shared_memory.get()
+      , vmem_cache.get()
       , master_info
       , vm.at (option_name::capability)
       .as<std::vector<std::string>>()

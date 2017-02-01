@@ -100,12 +100,12 @@ namespace gspc
                       >
       remove_worker (rifd_entry_points const&);
 
-    vmem_allocation alloc
+    scoped_vmem_segment_and_allocation alloc
       ( vmem::segment_description
       , unsigned long size
       , std::string const& name
       ) const;
-    vmem_allocation alloc_and_fill
+    scoped_vmem_segment_and_allocation alloc_and_fill
       ( vmem::segment_description
       , unsigned long size
       , std::string const& name
@@ -113,7 +113,7 @@ namespace gspc
       ) const;
 
     stream create_stream ( std::string const& name
-                         , gspc::vmem_allocation const& buffer
+                         , gspc::scoped_vmem_segment_and_allocation const& buffer
                          , gspc::stream::size_of_slot const&
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
@@ -124,7 +124,7 @@ namespace gspc
     scoped_runtime_system& operator= (scoped_runtime_system&&) = delete;
 
   private:
-    friend class vmem_allocation;
+    friend class scoped_vmem_segment_and_allocation;
     friend class information_to_reattach;
     friend class stream;
 

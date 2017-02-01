@@ -1,6 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
-#include <drts/private/scoped_allocation.hpp>
+#include <drts/private/scoped_vmem_cache.hpp>
 
 #include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
@@ -87,7 +87,7 @@ public:
     , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
-    , gspc::scoped_allocation /*const*/* shared_memory
+    , gspc::scoped_vmem_cache* vmem_cache
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -134,7 +134,7 @@ private:
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-  gspc::scoped_allocation /*const*/* _shared_memory;
+  gspc::scoped_vmem_cache* _vmem_cache;
 
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?

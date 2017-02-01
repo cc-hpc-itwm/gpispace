@@ -123,7 +123,7 @@ namespace share_example_stream_test
     gspc::scoped_runtime_system const drts
       (vm, installation, topology (size_slot), rifds.entry_points());
 
-    gspc::vmem_allocation const allocation_buffer
+    gspc::scoped_vmem_segment_and_allocation const allocation_buffer
       ( drts.alloc ( gspc::vmem::gaspi_segment_description()
                    , size
                    , workflow_name + "_buffer"

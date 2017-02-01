@@ -35,23 +35,23 @@ namespace gspc
     };
   }
 
-  class vmem_allocation
+  class scoped_vmem_segment_and_allocation
   {
   private:
     friend class scoped_runtime_system;
     friend class stream;
 
-    vmem_allocation ( scoped_runtime_system const* const
-                    , vmem::segment_description
-                    , unsigned long size
-                    , std::string const& description
-                    );
-    vmem_allocation ( scoped_runtime_system const* const
-                    , vmem::segment_description
-                    , unsigned long size
-                    , std::string const& description
-                    , char const* const datia
-                    );
+    scoped_vmem_segment_and_allocation ( scoped_runtime_system const* const
+                                       , vmem::segment_description
+                                       , unsigned long size
+                                       , std::string const& description
+                                       );
+    scoped_vmem_segment_and_allocation ( scoped_runtime_system const* const
+                                       , vmem::segment_description
+                                       , unsigned long size
+                                       , std::string const& description
+                                       , char const* const datia
+                                       );
 
   public:
     std::size_t size() const;
@@ -61,13 +61,13 @@ namespace gspc
                                                       , std::size_t const size
                                                       ) const;
 
-    vmem_allocation (vmem_allocation const&) = delete;
-    vmem_allocation& operator= (vmem_allocation const&) = delete;
+    scoped_vmem_segment_and_allocation (scoped_vmem_segment_and_allocation const&) = delete;
+    scoped_vmem_segment_and_allocation& operator= (scoped_vmem_segment_and_allocation const&) = delete;
 
-    vmem_allocation (vmem_allocation&&);
-    vmem_allocation& operator= (vmem_allocation&&) = delete;
+    scoped_vmem_segment_and_allocation (scoped_vmem_segment_and_allocation&&);
+    scoped_vmem_segment_and_allocation& operator= (scoped_vmem_segment_and_allocation&&) = delete;
 
-    PIMPL (vmem_allocation);
+    PIMPL (scoped_vmem_segment_and_allocation);
   };
 
   vmem::gaspi_segment_description::gaspi_segment_description

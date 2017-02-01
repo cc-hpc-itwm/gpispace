@@ -10,7 +10,7 @@
 #include <drts/private/virtual_memory_impl.hpp>
 #include <drts/virtual_memory.hpp>
 
-#include <drts/private/scoped_allocation.hpp>
+#include <drts/private/scoped_vmem_cache.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 #include <gpi-space/pc/type/handle.hpp>
@@ -44,7 +44,7 @@ namespace gspc
 
     implementation ( scoped_runtime_system const& drts
                    , std::string const& name
-                   , gspc::vmem_allocation const& buffer
+                   , gspc::scoped_vmem_segment_and_allocation const& buffer
                    , stream::size_of_slot const& size_of_slot
                    , std::function<void (pnet::type::value::value_type const&)>
                        on_slot_filled
@@ -79,14 +79,14 @@ namespace gspc
 
     std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
     std::function<void (pnet::type::value::value_type const&)> _on_slot_filled;
-    gspc::vmem_allocation const& _buffer;
+    gspc::scoped_vmem_segment_and_allocation const& _buffer;
     unsigned long const _size_of_slot;
     unsigned long const _number_of_slots;
     unsigned long const _offset_to_meta_data;
 
-    scoped_allocation const _flags;
-    scoped_allocation const _update;
-    scoped_allocation const _data;
+    scoped_vmem_cache const _flags;
+    scoped_vmem_cache const _update;
+    scoped_vmem_cache const _data;
 
     std::unordered_set<unsigned long> _free_slots;
     std::atomic<std::size_t> _sequence_number;
@@ -169,7 +169,7 @@ namespace gspc
 
   stream::stream ( scoped_runtime_system const& drts
                  , std::string const& name
-                 , gspc::vmem_allocation const& buffer
+                 , gspc::scoped_vmem_segment_and_allocation const& buffer
                  , stream::size_of_slot const& size_of_slot
                  , std::function<void (pnet::type::value::value_type const&)>
                      on_slot_filled

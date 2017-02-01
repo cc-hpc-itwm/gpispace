@@ -5,7 +5,7 @@
 
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/pimpl.hpp>
-#include <drts/private/scoped_allocation.hpp>
+#include <drts/private/scoped_vmem_cache.hpp>
 #include <drts/private/virtual_memory_impl.hpp>
 
 #include <we/type/value/poke.hpp>
@@ -17,25 +17,27 @@
 
 namespace gspc
 {
-  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
-                                   , vmem::segment_description segment_desc
-                                   , unsigned long size
-                                   , std::string const& description
-                                   )
-    : _ ( new vmem_allocation::implementation
+  scoped_vmem_segment_and_allocation::scoped_vmem_segment_and_allocation
+      ( scoped_runtime_system const* const drts
+      , vmem::segment_description segment_desc
+      , unsigned long size
+      , std::string const& description
+      )
+    : _ ( new scoped_vmem_segment_and_allocation::implementation
             (drts->_->_virtual_memory_api, segment_desc, size, description)
         )
   {}
-  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
-                                   , vmem::segment_description segment_desc
-                                   , unsigned long size
-                                   , std::string const& description
-                                   , char const* const data
-                                   )
-    : vmem_allocation (drts, segment_desc, size, description)
+  scoped_vmem_segment_and_allocation::scoped_vmem_segment_and_allocation
+      ( scoped_runtime_system const* const drts
+      , vmem::segment_description segment_desc
+      , unsigned long size
+      , std::string const& description
+      , char const* const data
+      )
+    : scoped_vmem_segment_and_allocation (drts, segment_desc, size, description)
   {
-    scoped_allocation const buffer
-      (drts->_->_virtual_memory_api, "vmem_allocation_buffer", size);
+    scoped_vmem_cache const buffer
+      (drts->_->_virtual_memory_api, "scoped_vmem_segment_and_allocation_buffer", size);
 
     char* const content
       (static_cast<char* const> (drts->_->_virtual_memory_api->ptr (buffer)));
@@ -47,13 +49,13 @@ namespace gspc
       , size
       );
   }
-  PIMPL_DTOR (vmem_allocation)
+  PIMPL_DTOR (scoped_vmem_segment_and_allocation)
 
-  std::size_t vmem_allocation::size() const
+  std::size_t scoped_vmem_segment_and_allocation::size() const
   {
     return _->_size;
   }
-  pnet::type::value::value_type vmem_allocation::global_memory_range
+  pnet::type::value::value_type scoped_vmem_segment_and_allocation::global_memory_range
     ( std::size_t const offset
     , std::size_t const size
     ) const
@@ -86,11 +88,11 @@ namespace gspc
 
     return range;
   }
-  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  pnet::type::value::value_type scoped_vmem_segment_and_allocation::global_memory_range() const
   {
     return global_memory_range (0UL, _->_size);
   }
-  vmem_allocation::vmem_allocation (vmem_allocation&& other)
+  scoped_vmem_segment_and_allocation::scoped_vmem_segment_and_allocation (scoped_vmem_segment_and_allocation&& other)
     : _ (std::move (other._))
   {}
 }

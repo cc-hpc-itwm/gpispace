@@ -56,7 +56,7 @@ namespace we
 
     void put_global_data
       ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_allocation /*const*/& shared_memory
+      , gspc::scoped_vmem_cache& vmem_cache
       , const fvmAllocHandle_t global_memory_handle
       , const fvmOffset_t global_memory_offset
       , const fvmSize_t size
@@ -67,14 +67,14 @@ namespace we
         ( gpi::pc::type::memory_location_t
             (global_memory_handle, global_memory_offset)
         , gpi::pc::type::memory_location_t
-            (shared_memory, shared_memory_offset)
+            (vmem_cache, shared_memory_offset)
         , size
         );
     }
 
     void get_global_data
       ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_allocation /*const*/& shared_memory
+      , gspc::scoped_vmem_cache& vmem_cache
       , const fvmAllocHandle_t global_memory_handle
       , const fvmOffset_t global_memory_offset
       , const fvmSize_t size
@@ -83,7 +83,7 @@ namespace we
     {
       virtual_memory_api.memcpy_and_wait
         ( gpi::pc::type::memory_location_t
-            (shared_memory, shared_memory_offset)
+            (vmem_cache, shared_memory_offset)
         , gpi::pc::type::memory_location_t
             (global_memory_handle, global_memory_offset)
         , size
@@ -93,14 +93,14 @@ namespace we
     void transfer
       ( std::function<void
                       ( gpi::pc::client::api_t /*const*/&
-                      , gspc::scoped_allocation /*const*/&
+                      , gspc::scoped_vmem_cache /*const*/&
                       , const fvmAllocHandle_t
                       , const fvmOffset_t
                       , const fvmSize_t
                       , const fvmShmemOffset_t
                       )> do_transfer
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , gspc::scoped_vmem_cache* vmem_cache
       , std::unordered_map<std::string, buffer> const& memory_buffer
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
@@ -130,7 +130,7 @@ namespace we
 
         do_transfer
           ( *virtual_memory_api
-          , *shared_memory
+          , *vmem_cache
           , std::stoul (global.handle().name(), nullptr, 16)
           , global.offset()
           , local.size()
@@ -145,7 +145,7 @@ namespace we
     expr::eval::context module_call
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , gspc::scoped_vmem_cache* vmem_cache
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
@@ -160,7 +160,7 @@ namespace we
           : module_call.memory_buffers()
           )
       {
-        if (!virtual_memory_api || !shared_memory)
+        if (!virtual_memory_api || !vmem_cache)
         {
           throw std::logic_error
             ( ( boost::format
@@ -176,7 +176,7 @@ namespace we
         }
 
         char* const local_memory
-          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
+          (static_cast<char*> (virtual_memory_api->ptr (*vmem_cache)));
 
         unsigned long const size
           (evaluate_size_or_die (input, buffer_and_size.second));
@@ -186,19 +186,19 @@ namespace we
 
         position += size;
 
-        if (position > shared_memory->size())
+        if (position > vmem_cache->size())
         {
           //! \todo specific exception
           throw std::runtime_error
             ( ( boost::format ("not enough local memory: %1% > %2%")
               % position
-              % shared_memory->size()
+              % vmem_cache->size()
               ).str()
             );
         }
       }
 
-      transfer ( get_global_data, virtual_memory_api, shared_memory
+      transfer ( get_global_data, virtual_memory_api, vmem_cache
                , memory_buffer, module_call.gets (input)
                );
 
@@ -217,10 +217,10 @@ namespace we
           (module_call.function(), context, input, out, pointers);
       }
 
-      transfer ( put_global_data, virtual_memory_api, shared_memory
+      transfer ( put_global_data, virtual_memory_api, vmem_cache
                , memory_buffer, puts_evaluated_before_call
                );
-      transfer ( put_global_data, virtual_memory_api, shared_memory
+      transfer ( put_global_data, virtual_memory_api, vmem_cache
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
 

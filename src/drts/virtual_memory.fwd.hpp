@@ -4,7 +4,7 @@
 
 namespace gspc
 {
-  class vmem_allocation;
+  class scoped_vmem_segment_and_allocation;
 
   namespace vmem
   {

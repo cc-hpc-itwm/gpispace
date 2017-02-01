@@ -8,7 +8,7 @@
 
 namespace gspc
 {
-  class scoped_allocation
+  class scoped_vmem_cache
   {
     class scoped_segment
     {
@@ -38,7 +38,7 @@ namespace gspc
     };
 
   public:
-    scoped_allocation
+    scoped_vmem_cache
       ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
       , std::string const& description
       , unsigned long size
@@ -55,7 +55,7 @@ namespace gspc
         , _size (size)
     {}
 
-    ~scoped_allocation()
+    ~scoped_vmem_cache()
     {
       _virtual_memory->free (_handle);
     }

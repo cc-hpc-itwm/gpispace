@@ -374,26 +374,26 @@ namespace gspc
       .remove_worker (rifd_entry_points._->_entry_points);
   }
 
-  vmem_allocation scoped_runtime_system::alloc
+  scoped_vmem_segment_and_allocation scoped_runtime_system::alloc
     ( vmem::segment_description segment_description
     , unsigned long size
     , std::string const& name
     ) const
   {
-    return vmem_allocation (this, segment_description, size, name);
+    return scoped_vmem_segment_and_allocation (this, segment_description, size, name);
   }
-  vmem_allocation scoped_runtime_system::alloc_and_fill
+  scoped_vmem_segment_and_allocation scoped_runtime_system::alloc_and_fill
     ( vmem::segment_description segment_description
     , unsigned long size
     , std::string const& name
     , char const* const data
     ) const
   {
-    return vmem_allocation (this, segment_description, size, name, data);
+    return scoped_vmem_segment_and_allocation (this, segment_description, size, name, data);
   }
 
   stream scoped_runtime_system::create_stream ( std::string const& name
-                                              , gspc::vmem_allocation const& buffer
+                                              , gspc::scoped_vmem_segment_and_allocation const& buffer
                                               , stream::size_of_slot const& size_of_slot
                                               , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                                               ) const
