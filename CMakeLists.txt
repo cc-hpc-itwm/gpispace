@@ -77,7 +77,6 @@ set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS
 set (PNETC_LIB_DIR "share/gspc/xml/lib")
 
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
-add_definitions ("-DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES")
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while

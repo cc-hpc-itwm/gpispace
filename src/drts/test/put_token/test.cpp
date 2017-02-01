@@ -80,7 +80,6 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     . add<test::option::gen::include> (test::source_directory (vm))
     . add<test::option::gen::include>
         (test::source_directory (vm).parent_path().parent_path().parent_path())
-    . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
         (vm.at ("rpc-lib").as<boost::filesystem::path>())
     . add<test::option::gen::ld_flag> ("-lboost_coroutine")

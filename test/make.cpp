@@ -50,6 +50,7 @@ namespace test
         << option::generic ("input", source_directory / (_main + ".xpnet"))
         << option::generic ("output", pnet())
         << option::gen::cxx_flag ("-O3")
+        << option::gen::cxx_flag ("--std=c++11")
         << options
         ;
 
@@ -110,9 +111,6 @@ namespace test
 
     namespace gen
     {
-      cxx11::cxx11()
-        : cxx_flag ("--std=c++11")
-      {}
       include::include (boost::filesystem::path const& path)
         : cxx_flag (boost::format ("'-I %1%'") % path)
       {}

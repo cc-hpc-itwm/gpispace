@@ -160,7 +160,6 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add<test::option::gen::cxx11>()
     . add<test::option::gen::include> (test::source_directory (vm))
     );
 
