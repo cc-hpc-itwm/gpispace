@@ -14,10 +14,11 @@
 #include <boost/program_options/variables_map.hpp>
 
 #include <exception>
+#include <iostream>
 #include <string>
-#include <vector>
 #include <unordered_map>
 #include <unordered_set>
+#include <vector>
 
 namespace gspc
 {
@@ -94,7 +95,7 @@ namespace gspc
     std::pair< rifd_entry_points
              , std::unordered_map<std::string, std::exception_ptr>
              >
-      bootstrap (rifd::hostnames const&);
+      bootstrap (rifd::hostnames const&, std::ostream&);
 
     std::pair < std::unordered_set<std::string>
               , std::unordered_map<std::string, std::exception_ptr>
@@ -141,6 +142,7 @@ namespace gspc
                 , rifd::hostname const&
                 , rifd::port const&
                 , installation const&
+                , std::ostream& = std::cout
                 );
     ~scoped_rifd(); //! \todo report the failed entry points
     rifd_entry_point entry_point() const;
@@ -154,6 +156,7 @@ namespace gspc
                  , rifd::hostnames const&
                  , rifd::port const&
                  , installation const&
+                 , std::ostream& = std::cout
                  );
     ~scoped_rifds(); //! \todo report the failed entry points
   };
