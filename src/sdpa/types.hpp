@@ -5,6 +5,8 @@
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
 
+#include <vmem/types.hpp>
+
 #include <boost/optional.hpp>
 
 #include <forward_list>
@@ -42,25 +44,25 @@ namespace sdpa {
   {
   public:
     worker_id_host_info_t ( const worker_id_t& worker_id
-                          , const std::string& worker_host
-                          , unsigned long shared_memory_size
+                          , boost::optional<intertwine::vmem::rank_t> vmem_rank_
+                          , boost::optional<intertwine::vmem::size_t> vmem_cache_size_
                           , const double& last_time_idle
                           )
       : worker_id_ (worker_id)
-      , worker_host_ (worker_host)
-      , shared_memory_size_ (shared_memory_size)
+      , vmem_rank (vmem_rank_)
+      , vmem_cache_size (vmem_cache_size_)
       , _last_time_idle (last_time_idle)
     {}
 
     const worker_id_t& worker_id() const {return worker_id_;}
-    const std::string& worker_host() const {return worker_host_;}
     double last_time_idle() const {return _last_time_idle;}
-    unsigned long shared_memory_size() const {return shared_memory_size_;}
 
   private:
     worker_id_t worker_id_;
-    std::string worker_host_;
-    unsigned long shared_memory_size_;
+  public:
+    boost::optional<intertwine::vmem::rank_t> vmem_rank;
+    boost::optional<intertwine::vmem::size_t> vmem_cache_size;
+  private:
     double _last_time_idle;
   };
 

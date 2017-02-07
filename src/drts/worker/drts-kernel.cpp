@@ -194,15 +194,11 @@ int main(int ac, char **av)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handlers, SIGINT, std::bind (request_stop));
 
-    std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
+    std::unique_ptr<intertwine::vmem::ipc_client> const virtual_memory_api
       ( vm.count (option_name::virtual_memory_socket)
-      ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-          ( logger
-          , (static_cast<boost::filesystem::path>
-              ( vm.at (option_name::virtual_memory_socket)
-              .as<fhg::util::boost::program_options::existing_path>()
-              )
-            ).string()
+      ? fhg::util::cxx14::make_unique<intertwine::vmem::ipc_client>
+          ( vm.at (option_name::virtual_memory_socket)
+          . as<fhg::util::boost::program_options::existing_path>()
           )
       : nullptr
       );
@@ -212,10 +208,10 @@ int main(int ac, char **av)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
       ? fhg::util::cxx14::make_unique<gspc::scoped_vmem_cache>
-        ( virtual_memory_api
-        , kernel_name + "-shared_memory"
-        , vm.at (option_name::shared_memory_size).as<unsigned long>()
-        )
+          ( *virtual_memory_api
+          , intertwine::vmem::size_t
+              (vm.at (option_name::shared_memory_size).as<unsigned long>())
+          )
       : nullptr
       );
 

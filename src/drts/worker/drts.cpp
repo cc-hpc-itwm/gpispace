@@ -6,6 +6,7 @@
 #include <util-generic/hostname.hpp>
 
 #include <fhg/util/macros.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
@@ -62,8 +63,8 @@ namespace
   {
     wfe_exec_context
       ( we::loader::loader& module_loader
-      , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_vmem_cache* vmem_cache
+      , intertwine::vmem::ipc_client* virtual_memory_api
+      , gspc::scoped_vmem_cache const* vmem_cache
       , wfe_task_t& target
       , std::mt19937& engine
       , we::type::activity_t& activity
@@ -141,8 +142,8 @@ namespace
 
   private:
     we::loader::loader& loader;
-    gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-    gspc::scoped_vmem_cache* _vmem_cache;
+    intertwine::vmem::ipc_client* _virtual_memory_api;
+    gspc::scoped_vmem_cache const* _vmem_cache;
     wfe_task_t& task;
     std::mt19937& _engine;
     we::type::activity_t& _activity;
@@ -186,8 +187,8 @@ DRTSImpl::DRTSImpl
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
-    , gpi::pc::client::api_t /*const*/* virtual_memory_api
-    , gspc::scoped_vmem_cache* vmem_cache
+    , intertwine::vmem::ipc_client* virtual_memory_api
+    , gspc::scoped_vmem_cache const* vmem_cache
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -237,9 +238,10 @@ DRTSImpl::DRTSImpl
       ( master_address
       , m_my_name
       , capabilities
-      , (_vmem_cache != nullptr) ? _vmem_cache->size() : 0
+      , FHG_UTIL_MAKE_OPTIONAL (_vmem_cache, _vmem_cache->size())
+      , FHG_UTIL_MAKE_OPTIONAL
+          (_virtual_memory_api, _virtual_memory_api->rank())
       , false
-      , fhg::util::hostname()
       );
   }
 

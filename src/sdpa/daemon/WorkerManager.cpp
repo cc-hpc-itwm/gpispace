@@ -12,7 +12,7 @@ namespace sdpa
   {
     namespace
     {
-      typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
+      typedef std::tuple<double, double, boost::optional<intertwine::vmem::size_t>, double, worker_id_t> cost_deg_wid_t;
       typedef std::priority_queue < cost_deg_wid_t
                                   , std::vector<cost_deg_wid_t>
                                   > base_priority_queue_t;
@@ -63,9 +63,10 @@ namespace sdpa
       };
     }
 
-    std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
+    boost::optional<intertwine::vmem::rank_t>
+      WorkerManager::vmem_rank (worker_id_t const& worker) const
     {
-      return worker_map_.at(worker)._hostname;
+      return worker_map_.at (worker).vmem_rank;
     }
 
     bool WorkerManager::hasWorker_INDICATES_A_RACE_TESTING_ONLY(const worker_id_t& worker_id) const
@@ -99,9 +100,9 @@ namespace sdpa
 
     void WorkerManager::addWorker ( const worker_id_t& workerId
                                   , const capabilities_set_t& cpbSet
-                                  , unsigned long allocated_shared_memory_size
+                                  , boost::optional<intertwine::vmem::size_t> vmem_cache_size
+                                  , boost::optional<intertwine::vmem::rank_t> vmem_rank
                                   , const bool children_allowed
-                                  , const std::string& hostname
                                   , const fhg::com::p2p::address_t& address
                                   )
     {
@@ -114,9 +115,9 @@ namespace sdpa
       worker_connections_.left.insert ({workerId, address});
       auto result = worker_map_.emplace ( workerId
                                         , Worker ( cpbSet
-                                                 , allocated_shared_memory_size
+                                                 , vmem_cache_size
+                                                 , vmem_rank
                                                  , children_allowed
-                                                 , hostname
                                                  )
                                         );
 
@@ -217,7 +218,7 @@ namespace sdpa
       for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
         if ( job_reqs.shared_memory_amount_required()
-           > worker.second._allocated_shared_memory_size
+           > static_cast<std::size_t> (worker.second.vmem_cache_size.get_value_or (intertwine::vmem::size_t (0)))
            )
           continue;
 
@@ -231,8 +232,8 @@ namespace sdpa
         {
           mmap_match_deg_worker_id.emplace ( matchingDeg.get()
                                            , worker_id_host_info_t ( worker.first
-                                                                   , worker.second._hostname
-                                                                   , worker.second._allocated_shared_memory_size
+                                                                   , worker.second.vmem_rank
+                                                                   , worker.second.vmem_cache_size
                                                                    , worker.second._last_time_idle
                                                                    )
                                            );
@@ -265,7 +266,7 @@ namespace sdpa
       for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
         if ( requirements.shared_memory_amount_required()
-           > worker.second._allocated_shared_memory_size
+           > static_cast<std::size_t> (worker.second.vmem_cache_size.get_value_or (intertwine::vmem::size_t (0)))
            )
           {continue;}
 
@@ -280,8 +281,8 @@ namespace sdpa
           mmap_matching_workers.emplace
             ( matching_degree.get()
             , worker_id_host_info_t ( worker.first
-                                    , worker.second._hostname
-                                    , worker.second._allocated_shared_memory_size
+                                    , worker.second.vmem_rank
+                                    , worker.second.vmem_cache_size
                                     , worker.second._last_time_idle
                                     )
             );
@@ -319,14 +320,14 @@ namespace sdpa
           );
 
         double const total_cost
-          ( requirements.transfer_cost() (worker_info.worker_host())
+          ( requirements.transfer_cost() (*worker_info.vmem_rank)
           + requirements.computational_cost()
           + cost_preassigned_jobs
           );
 
         bpq.emplace ( total_cost
                     , -1.0*it.first
-                    , worker_info.shared_memory_size()
+                    , worker_info.vmem_cache_size
                     , worker_info.last_time_idle()
                     , worker_info.worker_id()
                     );

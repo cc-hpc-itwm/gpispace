@@ -10,15 +10,15 @@ namespace sdpa
   namespace daemon
   {
     Worker::Worker ( const capabilities_set_t& capabilities
-                   , unsigned long allocated_shared_memory_size
+                   , boost::optional<intertwine::vmem::size_t> vmem_cache_size_
+                   , boost::optional<intertwine::vmem::rank_t> vmem_rank_
                    , const bool children_allowed
-                   , const std::string& hostname
                    )
       : _capabilities (capabilities)
       , capability_names_()
-      , _allocated_shared_memory_size (allocated_shared_memory_size)
+      , vmem_cache_size (vmem_cache_size_)
+      , vmem_rank (vmem_rank_)
       , _children_allowed (children_allowed)
-      , _hostname (hostname)
       , _last_time_idle (fhg::util::now())
       , reserved_ (false)
       , backlog_full_ (false)

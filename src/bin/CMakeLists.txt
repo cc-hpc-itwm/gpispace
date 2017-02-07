@@ -2,24 +2,15 @@
 
 fhg_add_runtime_executable (NAME gpi-space
   SOURCES "gpi-space.cpp"
-  LIBRARIES gpi-space-gpiapi
-            gpi-space-pc-container
-            gpi-space-pc-global
-            gpi-space-pc-memory
-            gpi-space-pc-segment
+  LIBRARIES INTERTWinE-vmem::server
+            INTERTWinE-vmem::gaspi
             fhg-revision
             fhg-util
-            mmgr
-            fhgcom
             fhglog
             rif-started_process_promise
             Util::Generic
-            ${CMAKE_THREAD_LIBS_INIT}
             Boost::filesystem
             Boost::program_options
-            Boost::serialization
-            Boost::thread
-            Boost::system
   CREATE_BUNDLE_INFO
   INSTALL_DESTINATION "libexec/gspc"
 )

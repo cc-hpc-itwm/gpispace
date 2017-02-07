@@ -8,6 +8,12 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <util-generic/finally.hpp>
+
+#include <vmem/intertwine_compat.hpp>
+#include <vmem/operations.hpp>
+#include <vmem/types.hpp>
+
 #include <boost/format.hpp>
 
 #include <functional>
@@ -17,195 +23,133 @@
 
 namespace we
 {
-  namespace
-  {
-    unsigned long evaluate_size_or_die ( expr::eval::context context
-                                       , std::string const& expression
-                                       )
-    {
-      return boost::get<unsigned long>
-        (expr::parse::parser (expression).eval_all (context));
-    }
-
-    class buffer
-    {
-    public:
-      buffer (unsigned long position, unsigned long size)
-        : _size (size)
-        , _position (position)
-      {}
-
-      unsigned long position() const
-      {
-        return _position;
-      }
-      unsigned long size() const
-      {
-        return _size;
-      }
-
-    private:
-      unsigned long _size;
-      unsigned long _position;
-    };
-
-    typedef unsigned long fvmAllocHandle_t;
-    typedef unsigned long fvmSize_t;
-    typedef unsigned long fvmOffset_t;
-    typedef unsigned long fvmShmemOffset_t;
-
-    void put_global_data
-      ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_vmem_cache& vmem_cache
-      , const fvmAllocHandle_t global_memory_handle
-      , const fvmOffset_t global_memory_offset
-      , const fvmSize_t size
-      , const fvmShmemOffset_t shared_memory_offset
-      )
-    {
-      virtual_memory_api.memcpy_and_wait
-        ( gpi::pc::type::memory_location_t
-            (global_memory_handle, global_memory_offset)
-        , gpi::pc::type::memory_location_t
-            (vmem_cache, shared_memory_offset)
-        , size
-        );
-    }
-
-    void get_global_data
-      ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_vmem_cache& vmem_cache
-      , const fvmAllocHandle_t global_memory_handle
-      , const fvmOffset_t global_memory_offset
-      , const fvmSize_t size
-      , const fvmShmemOffset_t shared_memory_offset
-      )
-    {
-      virtual_memory_api.memcpy_and_wait
-        ( gpi::pc::type::memory_location_t
-            (vmem_cache, shared_memory_offset)
-        , gpi::pc::type::memory_location_t
-            (global_memory_handle, global_memory_offset)
-        , size
-        );
-    }
-
-    void transfer
-      ( std::function<void
-                      ( gpi::pc::client::api_t /*const*/&
-                      , gspc::scoped_vmem_cache /*const*/&
-                      , const fvmAllocHandle_t
-                      , const fvmOffset_t
-                      , const fvmSize_t
-                      , const fvmShmemOffset_t
-                      )> do_transfer
-      , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_vmem_cache* vmem_cache
-      , std::unordered_map<std::string, buffer> const& memory_buffer
-      , std::list<std::pair<local::range, global::range>> const& transfers
-      )
-    {
-      for (std::pair<local::range, global::range> const& transfer : transfers)
-      {
-        local::range const& local (transfer.first);
-        global::range const& global (transfer.second);
-
-        fhg_assert (local.size() == global.size());
-
-        if (!memory_buffer.count (local.buffer()))
-        {
-          //! \todo specific exception
-          throw std::runtime_error ("unknown memory buffer " + local.buffer());
-        }
-
-        if ( local.offset() + local.size()
-           > memory_buffer.at (local.buffer()).size()
-           )
-        {
-          //! \todo specific exception
-          throw std::runtime_error ("local range to large");
-        }
-
-        //! \todo check global range, needs knowledge about global memory
-
-        do_transfer
-          ( *virtual_memory_api
-          , *vmem_cache
-          , std::stoul (global.handle().name(), nullptr, 16)
-          , global.offset()
-          , local.size()
-          , memory_buffer.at (local.buffer()).position() + local.offset()
-          );
-      }
-    }
-  }
-
   namespace loader
   {
+    namespace
+    {
+      unsigned long evaluate_size_or_die ( expr::eval::context context
+                                         , std::string const& expression
+                                         )
+      {
+        return boost::get<unsigned long>
+          (expr::parse::parser (expression).eval_all (context));
+      }
+    }
+
     expr::eval::context module_call
       ( we::loader::loader& loader
-      , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_vmem_cache* vmem_cache
+      , intertwine::vmem::ipc_client* virtual_memory_api
+      , gspc::scoped_vmem_cache const* cache
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
       )
     {
-      unsigned long position (0);
+      std::unordered_map<std::string, std::size_t> memory_buffers;
 
-      std::map<std::string, void*> pointers;
-      std::unordered_map<std::string, buffer> memory_buffer;
-
+      // Calculate actual sizes of memory buffers.
       for ( std::pair<std::string, std::string> const& buffer_and_size
           : module_call.memory_buffers()
           )
       {
-        if (!virtual_memory_api || !vmem_cache)
-        {
-          throw std::logic_error
-            ( ( boost::format
-                ( "module call '%1%::%2%' with %3% memory transfers scheduled "
-                  "to worker '%4%' that is unable to manage memory"
-                )
-              % module_call.module()
-              % module_call.function()
-              % module_call.memory_buffers().size()
-              % context->worker_name()
-              ).str()
-            );
-        }
-
-        char* const local_memory
-          (static_cast<char*> (virtual_memory_api->ptr (*vmem_cache)));
-
         unsigned long const size
           (evaluate_size_or_die (input, buffer_and_size.second));
 
-        memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
-        pointers.emplace (buffer_and_size.first, local_memory + position);
-
-        position += size;
-
-        if (position > vmem_cache->size())
-        {
-          //! \todo specific exception
-          throw std::runtime_error
-            ( ( boost::format ("not enough local memory: %1% > %2%")
-              % position
-              % vmem_cache->size()
-              ).str()
-            );
-        }
+        memory_buffers.emplace (buffer_and_size.first, size);
       }
 
-      transfer ( get_global_data, virtual_memory_api, vmem_cache
-               , memory_buffer, module_call.gets (input)
-               );
+      std::unordered_map<std::string, global::range> input_memory_buffers;
+      std::unordered_map<std::string, intertwine::vmem::mutable_local_range_t> local_ranges;
 
+      FHG_UTIL_FINALLY
+        ( [&]
+          {
+            for (auto range : local_ranges)
+            {
+              try
+              {
+                boost::get<intertwine::vmem::void_t>
+                  ( virtual_memory_api->execute_sync
+                      ( intertwine::vmem::op::release_t {range.second})
+                  );
+              }
+              catch (boost::system::system_error const&)
+              {
+                //! \note Ignore: The virtual memory server somehow
+                //! disappeared. It will have killed the ranges with
+                //! itself.
+              }
+            }
+          }
+        );
+
+      std::map<std::string, void*> pointers;
+
+      // Collect input buffers and fetch data.
+      for (auto get : module_call.gets (input))
+      {
+        local::range const& local (get.first);
+        global::range const& global (get.second);
+
+        if (!memory_buffers.count (local.buffer()))
+        {
+          //! \todo specific exception
+          throw std::runtime_error ("unknown memory buffer " + local.buffer());
+        }
+
+        if (local.offset() || local.size() != memory_buffers.at (local.buffer()))
+        {
+          //! \todo implement
+          throw std::runtime_error
+            ("unable to gather multiple gets into one buffer currently");
+        }
+
+        input_memory_buffers.emplace (local.buffer(), global);
+
+        auto local_range
+          ( boost::get<intertwine::vmem::mutable_local_range_t>
+              ( virtual_memory_api->execute_sync
+                  ( intertwine::vmem::op::get_mutable_t
+                      { fhg::vmem::intertwine_compat::global_range (global)
+                      , *cache
+                      }
+                  )
+              )
+          );
+        pointers.emplace (local.buffer(), local_range.pointer());
+        local_ranges.emplace (local.buffer(), local_range);
+      }
+
+      // Allocate memory for pure output buffers.
+      std::unordered_map<std::string, std::size_t>
+        pure_output_memory_buffers (memory_buffers);
+      for (auto const& input : input_memory_buffers)
+      {
+        pure_output_memory_buffers.erase (input.first);
+      }
+
+      for (auto const& pure_output_buffer : pure_output_memory_buffers)
+      {
+        auto local_range
+          ( boost::get<intertwine::vmem::mutable_local_range_t>
+              ( virtual_memory_api->execute_sync
+                  ( intertwine::vmem::op::allocate_t
+                      { intertwine::vmem::size_t (pure_output_buffer.second)
+                      , *cache
+                      }
+                  )
+              )
+          );
+        pointers.emplace (pure_output_buffer.first, local_range.pointer());
+        local_ranges.emplace (pure_output_buffer.first, local_range);
+      }
+
+      // Eval puts.
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
           (module_call.puts_evaluated_before_call (input));
 
+      // Call.
       expr::eval::context out (input);
 
       {
@@ -217,12 +161,36 @@ namespace we
           (module_call.function(), context, input, out, pointers);
       }
 
-      transfer ( put_global_data, virtual_memory_api, vmem_cache
-               , memory_buffer, puts_evaluated_before_call
-               );
-      transfer ( put_global_data, virtual_memory_api, vmem_cache
-               , memory_buffer, module_call.puts_evaluated_after_call (out)
-               );
+      // Put.
+      for ( auto puts
+          : { puts_evaluated_before_call
+            , module_call.puts_evaluated_after_call (out)
+            }
+          )
+      {
+        for (auto put : puts)
+        {
+          local::range const& local (put.first);
+          global::range const& global (put.second);
+
+          if (!memory_buffers.count (local.buffer()))
+          {
+            //! \todo specific exception
+            throw std::runtime_error ("unknown memory buffer " + local.buffer());
+          }
+
+          auto range (local_ranges.at (local.buffer()));
+          range.range.offset += intertwine::vmem::offset_t (local.offset());
+          range.range.size = intertwine::vmem::size_t (local.size());
+
+          boost::get<intertwine::vmem::void_t>
+            ( virtual_memory_api->execute_sync
+                ( intertwine::vmem::op::put_t
+                    {range, fhg::vmem::intertwine_compat::global_range (global)}
+                )
+            );
+        }
+      }
 
       return out;
     }

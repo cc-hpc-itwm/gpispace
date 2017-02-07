@@ -44,13 +44,11 @@ namespace gspc
     scoped_vmem_segment_and_allocation ( scoped_runtime_system const* const
                                        , vmem::segment_description
                                        , unsigned long size
-                                       , std::string const& description
                                        );
     scoped_vmem_segment_and_allocation ( scoped_runtime_system const* const
                                        , vmem::segment_description
                                        , unsigned long size
-                                       , std::string const& description
-                                       , char const* const datia
+                                       , char const* const data
                                        );
 
   public:

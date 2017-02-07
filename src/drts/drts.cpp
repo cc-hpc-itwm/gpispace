@@ -12,8 +12,6 @@
 
 #include <we/type/activity.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-
 #include <sdpa/client.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
@@ -350,8 +348,8 @@ namespace gspc
       , _logger()
       , _virtual_memory_api
         ( _virtual_memory_socket
-        ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-            (_logger, _virtual_memory_socket->string())
+        ? fhg::util::cxx14::make_unique<intertwine::vmem::ipc_client>
+            (*_virtual_memory_socket)
         : nullptr
         )
   {}
@@ -377,28 +375,27 @@ namespace gspc
   scoped_vmem_segment_and_allocation scoped_runtime_system::alloc
     ( vmem::segment_description segment_description
     , unsigned long size
-    , std::string const& name
     ) const
   {
-    return scoped_vmem_segment_and_allocation (this, segment_description, size, name);
+    return scoped_vmem_segment_and_allocation (this, segment_description, size);
   }
   scoped_vmem_segment_and_allocation scoped_runtime_system::alloc_and_fill
     ( vmem::segment_description segment_description
     , unsigned long size
-    , std::string const& name
     , char const* const data
     ) const
   {
-    return scoped_vmem_segment_and_allocation (this, segment_description, size, name, data);
+    return scoped_vmem_segment_and_allocation
+      (this, segment_description, size, data);
   }
 
-  stream scoped_runtime_system::create_stream ( std::string const& name
-                                              , gspc::scoped_vmem_segment_and_allocation const& buffer
-                                              , stream::size_of_slot const& size_of_slot
-                                              , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
-                                              ) const
+  stream scoped_runtime_system::create_stream
+    ( gspc::scoped_vmem_segment_and_allocation const& buffer
+    , stream::size_of_slot const& size_of_slot
+    , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+    ) const
   {
-    return stream (*this, name, buffer, size_of_slot, on_slot_filled);
+    return stream (*this, buffer, size_of_slot, on_slot_filled);
   }
 
   std::unordered_map< rifd_entry_point

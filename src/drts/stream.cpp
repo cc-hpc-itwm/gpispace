@@ -12,8 +12,8 @@
 
 #include <drts/private/scoped_vmem_cache.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <vmem/intertwine_compat.hpp>
+#include <vmem/operations.hpp>
 
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
@@ -43,41 +43,66 @@ namespace gspc
     }
 
     implementation ( scoped_runtime_system const& drts
-                   , std::string const& name
                    , gspc::scoped_vmem_segment_and_allocation const& buffer
                    , stream::size_of_slot const& size_of_slot
                    , std::function<void (pnet::type::value::value_type const&)>
                        on_slot_filled
                    )
-      : _virtual_memory (drts._->_virtual_memory_api)
+      : _virtual_memory (drts._->_virtual_memory_api.get())
       , _on_slot_filled (on_slot_filled)
       , _buffer (buffer)
       , _size_of_slot (size_of_slot)
       , _number_of_slots
           (get_number_of_slots_or_throw (buffer.size(), _size_of_slot))
       , _offset_to_meta_data (_number_of_slots * _size_of_slot)
-      , _flags
-        (_virtual_memory, "stream_producer_flags_" + name, _number_of_slots)
-      , _update
-        (_virtual_memory, "stream_producer_update_" + name, _number_of_slots)
-      , _data
-        (_virtual_memory, "stream_producer_data_" + name, _size_of_slot)
+      , _flags (*_virtual_memory, intertwine::vmem::size_t (_number_of_slots))
+      , _update (*_virtual_memory, intertwine::vmem::size_t (_number_of_slots))
+      , _data (*_virtual_memory, intertwine::vmem::size_t (_size_of_slot))
+
+      , _flags_range
+          ( boost::get<intertwine::vmem::mutable_local_range_t>
+              ( _virtual_memory->execute_sync
+                  ( intertwine::vmem::op::get_mutable_t
+                      ( { _buffer._->_data_id
+                        , { intertwine::vmem::offset_t (_offset_to_meta_data)
+                          , intertwine::vmem::size_t (_number_of_slots)
+                          }
+                        }
+                      , _flags
+                      )
+                  )
+              )
+          )
+
+      ,  _data_range (boost::get<intertwine::vmem::mutable_local_range_t>
+        ( _virtual_memory->execute_sync
+            ( intertwine::vmem::op::allocate_t
+                (intertwine::vmem::size_t (_size_of_slot), _data)
+            )
+        ))
+
       , _free_slots()
       , _sequence_number (0)
     {
-      _virtual_memory->memcpy_and_wait
-        ( {_flags, 0}
-        , {_buffer._->_handle_id, _offset_to_meta_data}
-        , _number_of_slots
-        );
-
       for (unsigned long slot (0); slot < _number_of_slots; ++slot)
       {
         _free_slots.emplace (slot);
       }
     }
+    ~implementation()
+    {
+      boost::get<intertwine::vmem::void_t>
+        ( _virtual_memory->execute_sync
+            (intertwine::vmem::op::release_t (_flags_range))
+        );
 
-    std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
+      boost::get<intertwine::vmem::void_t>
+        ( _virtual_memory->execute_sync
+            (intertwine::vmem::op::release_t (_data_range))
+        );
+    }
+
+    intertwine::vmem::ipc_client* _virtual_memory;
     std::function<void (pnet::type::value::value_type const&)> _on_slot_filled;
     gspc::scoped_vmem_segment_and_allocation const& _buffer;
     unsigned long const _size_of_slot;
@@ -87,6 +112,9 @@ namespace gspc
     scoped_vmem_cache const _flags;
     scoped_vmem_cache const _update;
     scoped_vmem_cache const _data;
+
+    intertwine::vmem::mutable_local_range_t const _flags_range;
+    intertwine::vmem::mutable_local_range_t const _data_range;
 
     std::unordered_set<unsigned long> _free_slots;
     std::atomic<std::size_t> _sequence_number;
@@ -103,19 +131,21 @@ namespace gspc
           );
       }
 
-      char* const flag
-        (static_cast<char*> (_virtual_memory->ptr (_flags)));
+      char* const flag (static_cast<char*> (_flags_range.pointer()));
 
       if (_free_slots.empty())
       {
-        _virtual_memory->memcpy_and_wait
-          ( {_update, 0}
-          , {_buffer._->_handle_id, _offset_to_meta_data}
-          , _number_of_slots
+        auto update_range
+          ( boost::get<intertwine::vmem::const_local_range_t>
+              ( _virtual_memory->execute_sync
+                  ( intertwine::vmem::op::get_const_t
+                  ({_buffer._->_data_id, {intertwine::vmem::offset_t (_offset_to_meta_data), intertwine::vmem::size_t (_number_of_slots)}}, _update)
+                  )
+              )
           );
 
-        char const* const update
-          (static_cast<char*> (_virtual_memory->ptr (_update)));
+
+        auto const update (static_cast<char const*> (update_range.pointer()));
 
         for (unsigned long slot (0); slot < _number_of_slots; ++slot)
         {
@@ -125,6 +155,11 @@ namespace gspc
             _free_slots.emplace (slot);
           }
         }
+
+      boost::get<intertwine::vmem::void_t>
+        ( _virtual_memory->execute_sync
+            (intertwine::vmem::op::release_t (update_range))
+        );
       }
 
       if (_free_slots.empty())
@@ -135,15 +170,21 @@ namespace gspc
       unsigned long const slot (*_free_slots.begin());
       _free_slots.erase (_free_slots.begin());
 
-      char* const content
-        (static_cast<char*> (_virtual_memory->ptr (_data)));
+      std::copy ( data.begin(), data.end()
+                , static_cast<char*> (_data_range.pointer())
+                );
 
-      std::copy (data.begin(), data.end(), content);
-
-      _virtual_memory->memcpy_and_wait
-        ( {_buffer._->_handle_id, slot * _size_of_slot}
-        , {_data, 0}
-        , data.size()
+      boost::get<intertwine::vmem::void_t>
+        ( _virtual_memory->execute_sync
+            ( intertwine::vmem::op::put_t
+                ( _data_range
+                , { _buffer._->_data_id
+                  , { intertwine::vmem::offset_t (slot * _size_of_slot)
+                    , intertwine::vmem::size_t (_size_of_slot)
+                    }
+                  }
+                )
+            )
         );
 
       pnet::type::value::value_type value;
@@ -168,14 +209,12 @@ namespace gspc
   };
 
   stream::stream ( scoped_runtime_system const& drts
-                 , std::string const& name
                  , gspc::scoped_vmem_segment_and_allocation const& buffer
                  , stream::size_of_slot const& size_of_slot
                  , std::function<void (pnet::type::value::value_type const&)>
                      on_slot_filled
                  )
     : _ (new implementation ( drts
-                            , name
                             , buffer
                             , size_of_slot
                             , on_slot_filled

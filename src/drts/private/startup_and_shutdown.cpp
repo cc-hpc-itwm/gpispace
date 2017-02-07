@@ -660,16 +660,9 @@ namespace fhg
                     ( connection.second
                     , connection.first.start_vmem
                         ( installation_path.vmem()
-                        , verbose ? fhg::log::TRACE : fhg::log::INFO
                         , gpi_socket.get()
                         , vmem_port.get()
                         , vmem_startup_timeout.get()
-                        , log_host && log_port
-                        ? std::make_pair (log_host.get(), log_port.get())
-                        : boost::optional<std::pair<std::string, unsigned short>>()
-                        , log_dir
-                        ? *log_dir / ("vmem-" + replace_whitespace (connection.second.string()) + ".log")
-                        : boost::optional<boost::filesystem::path>()
                         , hostnames
                         , master.string()
                         , rank++

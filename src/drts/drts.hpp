@@ -103,17 +103,14 @@ namespace gspc
     scoped_vmem_segment_and_allocation alloc
       ( vmem::segment_description
       , unsigned long size
-      , std::string const& name
       ) const;
     scoped_vmem_segment_and_allocation alloc_and_fill
       ( vmem::segment_description
       , unsigned long size
-      , std::string const& name
       , char const* const data
       ) const;
 
-    stream create_stream ( std::string const& name
-                         , gspc::scoped_vmem_segment_and_allocation const& buffer
+    stream create_stream ( gspc::scoped_vmem_segment_and_allocation const& buffer
                          , gspc::stream::size_of_slot const&
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;

@@ -4,8 +4,9 @@
 #include <we/loader/loader.hpp>
 #include <we/type/module_call.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
 #include <drts/private/scoped_vmem_cache.hpp>
+
+#include <vmem/ipc_client.hpp>
 
 namespace we
 {
@@ -13,8 +14,8 @@ namespace we
   {
     expr::eval::context module_call
       ( we::loader::loader& loader
-      , gpi::pc::client::api_t /*const*/*
-      , gspc::scoped_vmem_cache*
+      , intertwine::vmem::ipc_client*
+      , gspc::scoped_vmem_cache const*
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call

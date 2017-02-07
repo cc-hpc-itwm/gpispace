@@ -46,7 +46,6 @@ namespace gspc
     friend class scoped_runtime_system;
 
     stream ( scoped_runtime_system const&
-           , std::string const& name
            , gspc::scoped_vmem_segment_and_allocation const& buffer
            , size_of_slot const&
            , std::function<void (pnet::type::value::value_type const&)>

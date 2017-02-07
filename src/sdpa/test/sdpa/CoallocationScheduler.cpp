@@ -112,17 +112,15 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
 {
   _worker_manager.addWorker ( "worker_0"
                                         , {}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
   _worker_manager.addWorker ( "worker_1"
                                         , {}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -154,9 +152,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
 {
   _worker_manager.addWorker ( "worker_0"
                                         , {}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -177,9 +174,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
 
   _worker_manager.addWorker ( "worker_1"
                             , {}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -199,17 +195,15 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
 {
   _worker_manager.addWorker ( "worker_0"
                             , {sdpa::capability_t ("C", "worker_0")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
   _worker_manager.addWorker ( "worker_1"
                             , {}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -245,32 +239,29 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
 {
   _worker_manager.addWorker ( "A0"
                                         , {sdpa::capability_t ("A", "A0")}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
   _worker_manager.addWorker ( "B0"
                                         , {sdpa::capability_t ("B", "B0")}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
   _worker_manager.addWorker ( "A1"
                                         , {sdpa::capability_t ("A", "A1")}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
   _worker_manager.addWorker ( "B1"
                                         , {sdpa::capability_t ("B", "B1")}
-                                        , random_ulong()
-                                        , false, fhg::util::testing::random_string()
+                            , boost::none, boost::none
+                                        , false
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -308,16 +299,15 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requireme
 {
   _worker_manager.addWorker ( "worker_0"
                             , {}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
   _worker_manager.addWorker ( "worker_1"
                             , {}
-                            , random_ulong()
-                            , false, fhg::util::testing::random_string()
+                            , boost::none, boost::none
+                            , false
                             , fhg::util::testing::random_string()
                             );
 
@@ -352,9 +342,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requireme
 
   _worker_manager.addWorker ( "worker_0"
                             , {}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -372,9 +361,8 @@ BOOST_FIXTURE_TEST_CASE
 {
   _worker_manager.addWorker ( "worker"
                             , {}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -414,9 +402,8 @@ BOOST_FIXTURE_TEST_CASE
 
   _worker_manager.addWorker ( worker_id
                             , {}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , true
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -465,9 +452,8 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
 
   _worker_manager.addWorker ( worker_id
                                         , {}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -521,9 +507,8 @@ BOOST_FIXTURE_TEST_CASE
                             , { sdpa::capability_t("A", worker_id)
                               , sdpa::capability_t("B", worker_id)
                               }
-                            , random_ulong()
+                            , boost::none, boost::none
                             , true
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -574,9 +559,8 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
                             , { sdpa::capability_t ("A", worker_id)
                               , sdpa::capability_t ("B", worker_id)
                               }
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -630,40 +614,40 @@ struct fixture_minimal_cost_assignment
       , _worker_manager
       )
   {
-    _worker_manager.addWorker ("worker_01", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_02", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_03", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_04", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_05", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_06", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_07", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_08", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_09", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_10", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_11", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_12", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_13", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_14", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_15", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_16", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_17", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_18", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_19", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_20", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_01", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_02", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_03", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_04", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_05", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_06", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_07", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_08", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_09", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_10", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_11", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_12", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_13", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_14", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_15", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_16", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_17", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_18", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_19", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_20", {}, boost::none, boost::none, false, fhg::util::testing::random_string());
   }
 
-  double max_value (const std::map<std::string, double>& map_cost)
+  double max_value (const std::map<intertwine::vmem::rank_t, double>& map_cost)
   {
     return std::max_element ( map_cost.begin()
                             , map_cost.end()
-                            , [] ( const std::pair<std::string, double>& lhs
-                                 , const std::pair<std::string, double>& rhs
+                            , [] ( const std::pair<intertwine::vmem::rank_t, double>& lhs
+                                 , const std::pair<intertwine::vmem::rank_t, double>& rhs
                                  )
                                  {return lhs.second < rhs.second;}
                             )->second;
   }
 
-  void check_scheduler_finds_minimal_cost_assignement ( const std::map<std::string, double>& map_host_transfer_cost
+  void check_scheduler_finds_minimal_cost_assignement ( const std::map<intertwine::vmem::rank_t, double>& map_host_transfer_cost
                                                       , const sdpa::mmap_match_deg_worker_id_t& mmap_match_deg_worker
                                                       , const size_t n_req_workers
                                                       , const double min_total_cost
@@ -671,8 +655,8 @@ struct fixture_minimal_cost_assignment
   {
     const double max_cost (max_value (map_host_transfer_cost));
 
-    const std::function<double (std::string const&)> transfer_cost
-      {[&map_host_transfer_cost, &max_cost](const std::string& host_id)
+    const std::function<double (intertwine::vmem::rank_t const&)> transfer_cost
+      {[&map_host_transfer_cost, &max_cost](const intertwine::vmem::rank_t& host_id)
        {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;}
       };
 
@@ -699,7 +683,7 @@ struct fixture_minimal_cost_assignment
                    , std::inserter (map_worker_cost, map_worker_cost.begin())
                    , [&map_host_transfer_cost] (const sdpa::mmap_match_deg_worker_id_t::value_type p)
                      {return std::make_pair ( p.second.worker_id()
-                                            , map_host_transfer_cost.at(p.second.worker_host())
+                                            , map_host_transfer_cost.at(*p.second.vmem_rank)
                                             );
                      }
                    );
@@ -723,12 +707,12 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
                         )
 {
   // assume we have 5 nodes and the transfer cost for each is its rank
-  const std::map<std::string, double> map_host_transfer_cost
-    { {"node_1", 1.0}
-    , {"node_2", 2.0}
-    , {"node_3", 3.0}
-    , {"node_4", 4.0}
-    , {"node_5", 5.0}
+  const std::map<intertwine::vmem::rank_t, double> map_host_transfer_cost
+    { {intertwine::vmem::rank_t {1}, 1.0}
+    , {intertwine::vmem::rank_t {2}, 2.0}
+    , {intertwine::vmem::rank_t {3}, 3.0}
+    , {intertwine::vmem::rank_t {4}, 4.0}
+    , {intertwine::vmem::rank_t {5}, 5.0}
     };
 
   // find an allocation minimizing the transfer costs for 5 workers
@@ -736,28 +720,28 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
   const double min_total_cost (6.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
-  // first 4 on the "node_0", the next 4 on the "node_1" and so on
+  // first 4 on rank 1, the next 4 on rank 2 and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {20, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {19, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {18, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {17, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {16, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {15, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {14, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {13, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {12, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {11, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {10, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , { 9, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , { 8, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , { 7, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , { 6, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , { 5, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , { 4, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , { 3, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , { 2, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , { 1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {20, {"worker_20", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {19, {"worker_19", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {18, {"worker_18", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {17, {"worker_17", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {16, {"worker_16", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {15, {"worker_15", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {14, {"worker_14", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {13, {"worker_13", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {12, {"worker_12", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {11, {"worker_11", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {10, {"worker_10", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , { 9, {"worker_09", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , { 8, {"worker_08", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 7, {"worker_07", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 6, {"worker_06", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 5, {"worker_05", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 4, {"worker_04", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , { 3, {"worker_03", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , { 2, {"worker_02", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , { 1, {"worker_01", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -772,12 +756,12 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
                         )
 {
   // assume we have 5 nodes and the transfer cost is the same for all hosts
-  const std::map<std::string, double> map_host_transfer_cost
-    { {"node_1", 1.0}
-    , {"node_2", 1.0}
-    , {"node_3", 1.0}
-    , {"node_4", 1.0}
-    , {"node_5", 1.0}
+  const std::map<intertwine::vmem::rank_t, double> map_host_transfer_cost
+    { {intertwine::vmem::rank_t {1}, 1.0}
+    , {intertwine::vmem::rank_t {2}, 1.0}
+    , {intertwine::vmem::rank_t {3}, 1.0}
+    , {intertwine::vmem::rank_t {4}, 1.0}
+    , {intertwine::vmem::rank_t {5}, 1.0}
     };
 
   // find an allocation minimizing the transfer costs for 5 workers
@@ -785,28 +769,28 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
   const double min_total_cost (5.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
-  // first 4 on "node_0", the next 4 on the "node_1" and so on
+  // first 4 on rank 1, the next 4 on rank 2 and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {20, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {19, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {18, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {17, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {16, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {15, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {14, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {13, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {12, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {11, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {10, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , { 9, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , { 8, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , { 7, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , { 6, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , { 5, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , { 4, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , { 3, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , { 2, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , { 1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {20, {"worker_20", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {19, {"worker_19", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {18, {"worker_18", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {17, {"worker_17", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {16, {"worker_16", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {15, {"worker_15", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {14, {"worker_14", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {13, {"worker_13", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {12, {"worker_12", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {11, {"worker_11", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {10, {"worker_10", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , { 9, {"worker_09", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , { 8, {"worker_08", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 7, {"worker_07", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 6, {"worker_06", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 5, {"worker_05", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , { 4, {"worker_04", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , { 3, {"worker_03", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , { 2, {"worker_02", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , { 1, {"worker_01", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -821,12 +805,12 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_diff
                         )
 {
   // assume we have 5 nodes and the transfer cost is different for any host
-  const std::map<std::string, double> map_host_transfer_cost
-    { {"node_1", 5.0}
-    , {"node_2", 4.0}
-    , {"node_3", 3.0}
-    , {"node_4", 2.0}
-    , {"node_5", 1.0}
+  const std::map<intertwine::vmem::rank_t, double> map_host_transfer_cost
+    { {intertwine::vmem::rank_t {1}, 5.0}
+    , {intertwine::vmem::rank_t {2}, 4.0}
+    , {intertwine::vmem::rank_t {3}, 3.0}
+    , {intertwine::vmem::rank_t {4}, 2.0}
+    , {intertwine::vmem::rank_t {5}, 1.0}
     };
 
   // find an allocation minimizing the transfer costs for 5 workers
@@ -834,28 +818,28 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_diff
   const double min_total_cost (6.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
-  // first 4 on "node_0", the next 4 on the "node_1" and so on
+  // first 4 on rank 1, the next 4 on the rank 2 and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {1, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {1, {"worker_20", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_19", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_18", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_17", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_16", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_15", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_14", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_13", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_12", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_11", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_10", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_09", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_08", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_07", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_06", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_05", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_04", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , {1, {"worker_03", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , {1, {"worker_02", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , {1, {"worker_01", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -870,12 +854,12 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_equa
                         )
 {
   // assume we have 5 nodes and the transfer cost is the same for all hosts
-  const std::map<std::string, double> map_host_transfer_cost
-    { {"node_1", 1.0}
-    , {"node_2", 1.0}
-    , {"node_3", 1.0}
-    , {"node_4", 1.0}
-    , {"node_5", 1.0}
+  const std::map<intertwine::vmem::rank_t, double> map_host_transfer_cost
+    { {intertwine::vmem::rank_t {1}, 1.0}
+    , {intertwine::vmem::rank_t {2}, 1.0}
+    , {intertwine::vmem::rank_t {3}, 1.0}
+    , {intertwine::vmem::rank_t {4}, 1.0}
+    , {intertwine::vmem::rank_t {5}, 1.0}
     };
 
   // find an allocation minimizing the transfer costs for 5 workers
@@ -883,28 +867,28 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_equa
   const double min_total_cost (5.0);
 
   // assume that we have 20 workers, i.e. 4 workers per host
-  // first 4 on "node_0", the next 4 on the "node_1" and so on
+  // first 4 on rank 1, the next 4 on the rank 2 and so on
   const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {1, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {1, {"worker_20", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_19", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_18", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_17", intertwine::vmem::rank_t {5}, boost::none, 0.0}}
+    , {1, {"worker_16", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_15", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_14", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_13", intertwine::vmem::rank_t {4}, boost::none, 0.0}}
+    , {1, {"worker_12", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_11", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_10", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_09", intertwine::vmem::rank_t {3}, boost::none, 0.0}}
+    , {1, {"worker_08", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_07", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_06", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_05", intertwine::vmem::rank_t {2}, boost::none, 0.0}}
+    , {1, {"worker_04", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , {1, {"worker_03", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , {1, {"worker_02", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
+    , {1, {"worker_01", intertwine::vmem::rank_t {1}, boost::none, 0.0}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -935,24 +919,31 @@ struct serve_job_and_check_for_minimal_cost_assignement
     return worker_ids;
   }
 
-  std::map<sdpa::worker_id_t, double>
-    generate_costs (std::vector<std::string> worker_ids)
+  std::map<intertwine::vmem::rank_t, double>
+    generate_costs ( std::vector<std::string> worker_ids
+                   , std::map<sdpa::worker_id_t, intertwine::vmem::rank_t>* ranks
+                   )
   {
     std::random_device rd;
     std::mt19937 gen (rd());
     std::normal_distribution<> dist(0,1);
 
-    std::map<sdpa::worker_id_t, double> map_costs;
+    std::map<intertwine::vmem::rank_t, double> map_costs;
+
+    intertwine::vmem::rank_t rank (0);
     for (sdpa::worker_id_t const& worker : worker_ids)
     {
-      map_costs.insert (std::make_pair (worker, dist (gen)));
+      ranks->emplace (worker, rank);
+      map_costs.emplace (rank, dist (gen));
+      ++rank;
     }
 
     return map_costs;
   }
 
-  void serve_and_check_assignment ( const std::function<double (std::string const&)> cost
+  void serve_and_check_assignment ( const std::function<double (intertwine::vmem::rank_t const&)> cost
                                   , const std::vector<std::string>& worker_ids
+                                  , std::map<sdpa::worker_id_t, intertwine::vmem::rank_t> rank
                                   , std::set<sdpa::worker_id_t> const& assigned_worker_ids
                                   , const sdpa::job_id_t&
                                   )
@@ -960,8 +951,8 @@ struct serve_job_and_check_for_minimal_cost_assignement
     sdpa::worker_id_t assigned_worker_with_max_cost
       (*std::max_element ( assigned_worker_ids.begin()
                          , assigned_worker_ids.end()
-                         , [cost](const sdpa::worker_id_t& wid_l, const sdpa::worker_id_t& wid_r)
-                           { return cost (wid_l) < cost (wid_r); }
+                         , [&cost, &rank](const sdpa::worker_id_t& wid_l, const sdpa::worker_id_t& wid_r)
+                           { return cost (rank.at (wid_l)) < cost (rank.at (wid_r)); }
                          )
       );
 
@@ -971,7 +962,7 @@ struct serve_job_and_check_for_minimal_cost_assignement
       {
          // any not assigned worker has n associated a cost that is either greater or equal
          // to the maximum cost of the assigned workers
-         BOOST_REQUIRE_GE (cost (wid), cost (assigned_worker_with_max_cost));
+         BOOST_REQUIRE_GE (cost (rank.at (wid)), cost (rank.at (assigned_worker_with_max_cost)));
       }
     }
   }
@@ -989,11 +980,12 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
   const std::vector<std::string>
     worker_ids (generate_worker_names (n_workers));
 
-  const std::map<sdpa::worker_id_t, double>
-    map_transfer_costs (generate_costs (worker_ids));
+  std::map<sdpa::worker_id_t, intertwine::vmem::rank_t> rank;
+  const std::map<intertwine::vmem::rank_t, double>
+    map_transfer_costs (generate_costs (worker_ids, &rank));
 
-  const std::function<double (std::string const&)>
-    test_transfer_cost ( [&map_transfer_costs](const std::string& worker) -> double
+  const std::function<double (intertwine::vmem::rank_t const&)>
+    test_transfer_cost ( [&map_transfer_costs](intertwine::vmem::rank_t const& worker) -> double
                          {
                            return map_transfer_costs.at (worker);
                          }
@@ -1015,7 +1007,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
 
   for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
-    _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, fhg::util::testing::random_string());
+    _worker_manager.addWorker (worker_id, {}, boost::none, rank.at (worker_id), false, fhg::util::testing::random_string());
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -1027,6 +1019,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                , this
                , test_transfer_cost
                , worker_ids
+               , rank
                , std::placeholders::_1
                , std::placeholders::_2
                )
@@ -1044,18 +1037,16 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
 
   _worker_manager.addWorker ( agent_id
                                         , {sdpa::capability_t ("A", utils::random_peer_name())}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , true
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
   _worker_manager.addWorker ( worker_id
                                         , {sdpa::capability_t ("A", worker_id)}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -1077,18 +1068,16 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_i
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
   _worker_manager.addWorker ( agent_id
                                         , {}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , true
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
   _worker_manager.addWorker ( worker_id
                                         , {}
-                                        , random_ulong()
+                            , boost::none, boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -1117,6 +1106,9 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   std::vector<sdpa::worker_id_t> host_ids (n_hosts);
   std::generate_n (host_ids.begin(), n_hosts, utils::random_peer_name);
 
+  std::vector<intertwine::vmem::rank_t> ranks (n_hosts);
+  std::iota (ranks.begin(), ranks.end(), 0);
+
   std::uniform_real_distribution<double> dist (1.0, n_hosts);
   std::random_device rand_dev;
   std::mt19937 rand_engine (rand_dev());
@@ -1128,15 +1120,14 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                   , [&dist,&rand_engine]() {return dist (rand_engine);}
                   );
 
-  const std::function<double (std::string const&)>
-    test_transfer_cost ( [&host_ids, &transfer_costs]
-                         (const std::string& host) -> double
+  const std::function<double (intertwine::vmem::rank_t const&)>
+    test_transfer_cost ( [&ranks, &transfer_costs]
+                           (intertwine::vmem::rank_t const& rank) -> double
                          {
-                           std::vector<std::string>::const_iterator
-                             it (std::find (host_ids.begin(), host_ids.end(), host));
-                           if (it != host_ids.end())
+                           auto it (std::find (ranks.begin(), ranks.end(), rank));
+                           if (it != ranks.end())
                            {
-                             return  transfer_costs[it - host_ids.begin()];
+                             return  transfer_costs[it - ranks.begin()];
                            }
                            else
                            {
@@ -1164,7 +1155,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   for (int i=0; i<n_workers;i++)
   {
-    _worker_manager.addWorker (worker_ids[i], {}, random_ulong(), false, host_ids[i], fhg::util::testing::random_string());
+    _worker_manager.addWorker (worker_ids[i], {}, boost::none, ranks[i], false, fhg::util::testing::random_string());
   }
 
   std::for_each ( job_ids.begin()
@@ -1209,9 +1200,8 @@ BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_a
 
   _worker_manager.addWorker ( "worker_0"
                                         , {}
-                                        , avail_mem
+                            , intertwine::vmem::size_t (avail_mem), boost::none
                                         , false
-                                        , fhg::util::testing::random_string()
                                         , fhg::util::testing::random_string()
                                         );
 
@@ -1235,33 +1225,30 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                         , fixture_scheduler_and_requirements
                         )
 {
-  unsigned int size_0 (1000);
-  unsigned int size_1 (2000);
+  intertwine::vmem::size_t size_0 (1000);
+  intertwine::vmem::size_t size_1 (2000);
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
   std::set<sdpa::worker_id_t> set_1 {"worker_1"};
 
   _worker_manager.addWorker ( "worker_0"
                             , {}
-                            , size_0
+                            , size_0, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
   _worker_manager.addWorker ( "worker_1"
                             , {}
-                            , size_1
+                            , size_1, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
 
   _worker_manager.addWorker ( "worker_2"
                             , {}
-                            , size_0 + size_1
+                            , size_0 + size_1, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1272,7 +1259,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                                         , we::type::schedule_data()
                                         , null_transfer_cost
                                         , computational_cost
-                                        , size_0
+                                        , static_cast<std::size_t> (size_0)
                                         )
           );
 
@@ -1280,7 +1267,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                                          , we::type::schedule_data()
                                          , null_transfer_cost
                                          , computational_cost
-                                         , size_1
+                                         , static_cast<std::size_t> (size_1)
                                          )
            );
 
@@ -1332,17 +1319,15 @@ BOOST_FIXTURE_TEST_CASE
   _worker_manager.addWorker
     ( name_worker_0
     , {}
-    , random_ulong()
+    , boost::none, boost::none
     , false
-    , fhg::util::testing::random_string()
     , fhg::util::testing::random_string()
     );
   _worker_manager.addWorker
     ( name_worker_1
     , {sdpa::Capability (name_capability, name_worker_1)}
-    , random_ulong()
+    , boost::none, boost::none
     , false
-    , fhg::util::testing::random_string()
     , fhg::util::testing::random_string()
     );
 
@@ -1370,9 +1355,8 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
 
   _worker_manager.addWorker ( "worker_0"
                             , {sdpa::Capability("A", "worker_0")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1380,9 +1364,8 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
                             , { sdpa::Capability("A", "worker_1")
                               , sdpa::Capability("B", "worker_1")
                               }
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1391,9 +1374,8 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
                               , sdpa::Capability("B", "worker_2")
                               , sdpa::Capability("C", "worker_2")
                               }
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1418,38 +1400,36 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
 {
   std::string const name_worker_0 {"worker_0_" + fhg::util::testing::random_string()};
   std::string const name_worker_1 {"worker_1_" + fhg::util::testing::random_string()};
-  std::string const name_node_0 {"node_0_" + fhg::util::testing::random_string()};
-  std::string const name_node_1 {"node_1_" + fhg::util::testing::random_string()};
+  intertwine::vmem::rank_t const rank_0 (0);
+  intertwine::vmem::rank_t const rank_1 (1);
 
   std::set<sdpa::worker_id_t> const expected_assignment {name_worker_1};
 
   _worker_manager.addWorker ( name_worker_0
                             , {}
-                            , 199
+                            , intertwine::vmem::size_t (199), rank_0
                             , false
-                            , name_node_0
                             , fhg::util::testing::random_string()
                             );
 
   _worker_manager.addWorker ( name_worker_1
                             , {}
-                            , 200
+                            , intertwine::vmem::size_t (200), rank_1
                             , false
-                            , name_node_1
                             , fhg::util::testing::random_string()
                             );
 
   sdpa::job_id_t const job_id_0 (fhg::util::testing::random_string());
   sdpa::job_id_t const job_id_1 (fhg::util::testing::random_string());
 
-  std::function<double (std::string const&)> const
-    test_transfer_cost ( [&name_node_0, &name_node_1](const std::string& host) -> double
+  std::function<double (intertwine::vmem::rank_t const&)> const
+    test_transfer_cost ( [&](intertwine::vmem::rank_t const& rank) -> double
                          {
-                           if (host == name_node_0)
+                           if (rank == rank_0)
                              return 1000.0;
-                           if (host == name_node_1)
+                           if (rank == rank_1)
                              return 1.0;
-                           throw std::runtime_error ("Unexpected host argument in test transfer cost function");
+                           throw std::runtime_error ("Unexpected rank argument in test transfer cost function");
                          }
                        );
 
@@ -1492,17 +1472,15 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
 
   _worker_manager.addWorker ( "worker_0"
                             , {sdpa::Capability("A", "worker_0")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
   _worker_manager.addWorker ( "worker_1"
                             , { sdpa::Capability("A", "worker_1")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1532,9 +1510,8 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
 
   _worker_manager.addWorker ( "worker_2"
                             , { sdpa::Capability("A", "worker_2")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1579,9 +1556,8 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
 {
   _worker_manager.addWorker ( "worker_0"
                             , {sdpa::Capability("A", "worker_0")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1619,9 +1595,8 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
 
   _worker_manager.addWorker ( "worker_1"
                             , { sdpa::Capability("A", "worker_1")}
-                            , random_ulong()
+                            , boost::none, boost::none
                             , false
-                            , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
                             );
 
@@ -1718,9 +1693,8 @@ struct fixture_add_new_workers
 
       _worker_manager.addWorker ( worker
                                 , cpbset
-                                , random_ulong()
+                                , boost::none, boost::none
                                 , false
-                                , fhg::util::testing::random_string()
                                 , fhg::util::testing::random_string()
                                 );
       request_scheduling();

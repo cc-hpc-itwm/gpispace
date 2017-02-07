@@ -22,11 +22,12 @@ extended_add_library (NAME fhglog
 add_subdirectory (fhglog/appender/test)
 add_subdirectory (fhglog/test)
 
-add_subdirectory (gpi-space)
 add_subdirectory (vmem)
 
   add_subdirectory (pnete)
   add_subdirectory (util)
+
+find_package (INTERTWinE-vmem REQUIRED)
 
 extended_add_library (NAME pnet
   SOURCES "we/exception.cpp"
@@ -135,6 +136,7 @@ extended_add_library (NAME pnet
             RPC
             ${CMAKE_DL_LIBS}
             rapidxml
+            INTERTWinE-vmem::ipc_client
 )
 
 add_subdirectory (xml/tests)
@@ -142,7 +144,6 @@ add_subdirectory (xml/parse/type/test)
 
 add_subdirectory(pnetv)
 add_subdirectory (we)
-add_subdirectory (mmgr)
 
 add_subdirectory (drts)
 add_subdirectory (bin)

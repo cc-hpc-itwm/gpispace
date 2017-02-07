@@ -23,6 +23,8 @@
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
 
+#include <vmem/intertwine_compat.hpp>
+
 #include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/map.hpp>
 
@@ -159,8 +161,7 @@ GenericDaemon::GenericDaemon( const std::string name
       )
   , _virtual_memory_api
     ( vmem_socket
-    ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        (_logger, vmem_socket->string())
+    ? fhg::util::cxx14::make_unique<intertwine::vmem::ipc_client> (*vmem_socket)
     : nullptr
     )
   , _event_handler_thread (&GenericDaemon::handle_events, this)
@@ -230,7 +231,6 @@ std::string GenericDaemon::gen_id()
         , activity.get_schedule_data()
         , [&]
           {
-            //! \todo Move to gpi::pc::client::api_t
             if (!activity.transition().module_call())
             {
               return null_transfer_cost;
@@ -238,15 +238,37 @@ std::string GenericDaemon::gen_id()
 
             expr::eval::context const context {activity.evaluation_context()};
 
-            std::list<std::pair<we::local::range, we::global::range>>
-              vm_transfers (activity.transition().module_call()->gets (context));
+            std::vector<intertwine::vmem::ipc_client::operation_t> ops;
 
-            std::list<std::pair<we::local::range, we::global::range>>
-              puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
+            for (auto&& get : activity.transition().module_call()->gets (context))
+            {
+              we::global::range const& global (get.second);
 
-            vm_transfers.splice (vm_transfers.end(), puts_before);
+              //! \todo Right cache id. How?!
+              intertwine::vmem::cache_id_t const cache{};
+              ops.emplace_back
+                ( intertwine::vmem::op::get_mutable_t
+                    {fhg::vmem::intertwine_compat::global_range (global), cache}
+                );
+            }
 
-            if (vm_transfers.empty())
+            for (auto&& put : activity.transition().module_call()->puts_evaluated_before_call (context))
+            {
+              we::local::range const& local (put.first);
+              we::global::range const& global (put.second);
+
+              //! \todo Right cache id. How?!
+              intertwine::vmem::mutable_local_range_t range;
+              range.range.offset = intertwine::vmem::offset_t (local.offset());
+              range.range.size = intertwine::vmem::size_t (local.size());
+
+              ops.emplace_back
+                ( intertwine::vmem::op::put_and_release_t
+                    {range, fhg::vmem::intertwine_compat::global_range (global)}
+                );
+            }
+
+            if (ops.empty())
             {
               return null_transfer_cost;
             }
@@ -256,7 +278,19 @@ std::string GenericDaemon::gen_id()
               throw std::logic_error
                 ("vmem transfers without vmem knowledge in agent");
             }
-            return _virtual_memory_api->transfer_costs (vm_transfers);
+            auto costs (_virtual_memory_api->transfer_costs (ops));
+            return std::function<double (intertwine::vmem::rank_t const&)>
+              ( [costs] (intertwine::vmem::rank_t const& rank)
+                {
+                  return std::find_if
+                    ( costs.begin(), costs.end()
+                    , [&] (std::pair<intertwine::vmem::rank_t, double> const& e)
+                      {
+                        return e.first == rank;
+                      }
+                    )->second;
+                }
+              );
           }()
         , computational_cost
         , activity.memory_buffer_size_total()
@@ -505,9 +539,10 @@ try
   _worker_manager.addWorker
     ( event->name()
     , workerCpbSet
-    , event->allocated_shared_memory_size()
+    , event->vmem_cache_size
+    , event->vmem_rank
     , event->children_allowed()
-    , event->hostname(), source
+    , source
     );
 
   request_scheduling();
@@ -1697,7 +1732,11 @@ namespace sdpa
     {
       _that->sendEventToOther<events::WorkerRegistrationEvent>
         ( _address
-        , _that->name(), capabilities, 0, true, fhg::util::hostname()
+        , _that->name()
+        , capabilities
+        , boost::none
+        , boost::none
+        , true
         );
     }
 

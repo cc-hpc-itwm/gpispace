@@ -5,6 +5,8 @@
 #include <drts/drts.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
+#include <vmem/ipc_client.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
@@ -91,6 +93,6 @@ namespace gspc
       unsigned short _orchestrator_port;
     } _started_runtime_system;
     fhg::log::Logger _logger;
-    std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+    std::unique_ptr<intertwine::vmem::ipc_client> _virtual_memory_api;
   };
 }

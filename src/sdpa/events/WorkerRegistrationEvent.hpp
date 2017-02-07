@@ -3,6 +3,8 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 
+#include <vmem/types.hpp>
+
 #include <boost/optional.hpp>
 
 namespace sdpa
@@ -17,16 +19,16 @@ namespace sdpa
       WorkerRegistrationEvent
         ( std::string const& name
         , const capabilities_set_t& cpbset
-        , const unsigned long allocated_shared_memory_size
+        , boost::optional<intertwine::vmem::size_t> vmem_cache_size_
+        , boost::optional<intertwine::vmem::rank_t> vmem_rank_
         , bool children_allowed
-        , const std::string& hostname
         )
           : MgmtEvent()
           , _name (name)
           , cpbset_ (cpbset)
-          , allocated_shared_memory_size_ (allocated_shared_memory_size)
+          , vmem_cache_size (vmem_cache_size_)
+          , vmem_rank (vmem_rank_)
           , children_allowed_(children_allowed)
-          , hostname_(hostname)
       {}
 
       std::string const& name() const
@@ -38,19 +40,9 @@ namespace sdpa
         return cpbset_;
       }
 
-      const std::string& hostname() const
-      {
-        return hostname_;
-      }
-
       const bool& children_allowed() const
       {
 	return children_allowed_;
-      }
-
-      const unsigned long& allocated_shared_memory_size() const
-      {
-        return allocated_shared_memory_size_;
       }
 
       virtual void handleBy
@@ -62,9 +54,11 @@ namespace sdpa
     private:
       std::string _name;
       capabilities_set_t cpbset_;
-      unsigned long allocated_shared_memory_size_;
+    public:
+      boost::optional<intertwine::vmem::size_t> vmem_cache_size;
+      boost::optional<intertwine::vmem::rank_t> vmem_rank;
+    private:
       bool children_allowed_;
-      std::string hostname_;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -72,9 +66,9 @@ namespace sdpa
       SAVE_MGMTEVENT_CONSTRUCT_DATA (e);
       SAVE_TO_ARCHIVE (e->name());
       SAVE_TO_ARCHIVE (e->capabilities());
-      SAVE_TO_ARCHIVE (e->allocated_shared_memory_size());
+      SAVE_TO_ARCHIVE (e->vmem_cache_size);
+      SAVE_TO_ARCHIVE (e->vmem_rank);
       SAVE_TO_ARCHIVE (e->children_allowed());
-      SAVE_TO_ARCHIVE (e->hostname());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -82,15 +76,15 @@ namespace sdpa
       LOAD_MGMTEVENT_CONSTRUCT_DATA();
       LOAD_FROM_ARCHIVE (std::string, name);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
-      LOAD_FROM_ARCHIVE (unsigned long, allocated_shared_memory_size);
+      LOAD_FROM_ARCHIVE (boost::optional<intertwine::vmem::size_t>, vmem_cache_size);
+      LOAD_FROM_ARCHIVE (boost::optional<intertwine::vmem::rank_t>, vmem_rank);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
-      LOAD_FROM_ARCHIVE (std::string, hostname);
 
       ::new (e) WorkerRegistrationEvent ( name
                                         , cpbset
-                                        , allocated_shared_memory_size
+                                        , vmem_cache_size
+                                        , vmem_rank
                                         , children_allowed
-                                        , hostname
                                         );
     }
   }

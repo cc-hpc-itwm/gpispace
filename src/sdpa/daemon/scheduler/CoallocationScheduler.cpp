@@ -44,7 +44,7 @@ namespace sdpa
           {
             return total
               + _job_requirements (job_id).transfer_cost()
-                  (_worker_manager.host_INDICATES_A_RACE (wid));
+                  (*_worker_manager.vmem_rank (wid));
           }
         ) + computational_cost;
     }

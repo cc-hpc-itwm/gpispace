@@ -8,6 +8,8 @@
 
 #include <util-generic/refcounted_set.hpp>
 
+#include <vmem/types.hpp>
+
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
 
@@ -20,9 +22,9 @@ namespace sdpa
       friend class WorkerManager;
 
       explicit Worker ( const capabilities_set_t&
-                      , unsigned long allocated_shared_memory_size
+                      , boost::optional<intertwine::vmem::size_t>
+                      , boost::optional<intertwine::vmem::rank_t>
                       , const bool children_allowed
-                      , const std::string& hostname
                       );
 
       void assign (const job_id_t&);
@@ -53,9 +55,9 @@ namespace sdpa
 
       capabilities_set_t _capabilities;
       fhg::util::refcounted_set<std::string> capability_names_;
-      unsigned long const _allocated_shared_memory_size;
+      boost::optional<intertwine::vmem::size_t> vmem_cache_size;
+      boost::optional<intertwine::vmem::rank_t> vmem_rank;
       bool const _children_allowed;
-      std::string const _hostname;
       double _last_time_idle;
 
       std::set<job_id_t> pending_;

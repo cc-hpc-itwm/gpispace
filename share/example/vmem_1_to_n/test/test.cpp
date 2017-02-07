@@ -98,11 +98,7 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
     );
 
   gspc::scoped_vmem_segment_and_allocation const allocation_data
-    ( drts.alloc ( gspc::vmem::gaspi_segment_description()
-                 , num_bytes
-                 , "data"
-                 )
-    );
+    (drts.alloc (gspc::vmem::gaspi_segment_description(), num_bytes));
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run

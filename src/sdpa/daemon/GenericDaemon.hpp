@@ -39,13 +39,13 @@
 #include <sdpa/types.hpp>
 #include <sdpa/capability.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hash/std/pair.hpp>
 #include <fhg/util/thread/set.hpp>
 #include <util-generic/threadsafe_queue.hpp>
+
+#include <vmem/ipc_client.hpp>
 
 #include <fhglog/LogMacros.hpp>
 
@@ -293,7 +293,7 @@ namespace sdpa {
       //! all classes. (see issue #618)
       void handle_events();
 
-      std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+      std::unique_ptr<intertwine::vmem::ipc_client> _virtual_memory_api;
 
       boost::strict_scoped_thread<> _event_handler_thread;
       decltype (_event_queue)::interrupt_on_scope_exit _interrupt_event_queue;

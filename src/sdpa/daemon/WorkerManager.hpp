@@ -66,14 +66,15 @@ namespace sdpa
       std::unordered_set<worker_id_t> findSubmOrAckWorkers
         (const sdpa::job_id_t& job_id) const;
 
-      std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
+      boost::optional<intertwine::vmem::rank_t>
+        vmem_rank (worker_id_t const&) const;
 
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
                      , const capabilities_set_t& cpbset
-                     , unsigned long allocated_shared_memory_size
+                     , boost::optional<intertwine::vmem::size_t> vmem_cache_size
+                     , boost::optional<intertwine::vmem::rank_t> vmem_rank
                      , const bool children_allowed
-                     , const std::string& hostname
                      , const fhg::com::p2p::address_t& address
                      );
 

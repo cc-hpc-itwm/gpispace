@@ -126,7 +126,6 @@ namespace share_example_stream_test
     gspc::scoped_vmem_segment_and_allocation const allocation_buffer
       ( drts.alloc ( gspc::vmem::gaspi_segment_description()
                    , size
-                   , workflow_name + "_buffer"
                    )
       );
     gspc::client client (drts);
@@ -141,8 +140,7 @@ namespace share_example_stream_test
       (client.submit (workflow, {{"rounds", rounds}}));
 
     gspc::stream stream
-      (drts.create_stream ( "stream_test"
-                          , allocation_buffer
+      (drts.create_stream ( allocation_buffer
                           , size_slot
                           , [&client, &job_id] (pnet::type::value::value_type const& value) -> void
                             {

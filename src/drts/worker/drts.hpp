@@ -8,7 +8,7 @@
 #include <fhgcom/peer.hpp>
 #include <fhglog/Logger.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
+#include <vmem/ipc_client.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
 
@@ -86,8 +86,8 @@ public:
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
-    , gpi::pc::client::api_t /*const*/* virtual_memory_socket
-    , gspc::scoped_vmem_cache* vmem_cache
+    , intertwine::vmem::ipc_client*
+    , gspc::scoped_vmem_cache const*
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -133,8 +133,8 @@ private:
 
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
-  gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-  gspc::scoped_vmem_cache* _vmem_cache;
+  intertwine::vmem::ipc_client* _virtual_memory_api;
+  gspc::scoped_vmem_cache const* _vmem_cache;
 
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?

@@ -373,9 +373,9 @@ namespace utils
         ( _master.get()
         , _name
         , capabilities
-        , fhg::util::testing::random_integral<unsigned long>()
+        , boost::none
+        , boost::none
         , accept_workers
-        , fhg::util::testing::random_string()
         );
     }
 

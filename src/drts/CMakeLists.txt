@@ -35,12 +35,11 @@ extended_add_library (NAME gspc
   LIBRARIES sdpa
             pnet
             rif-strategies
-            gpi-space-pc-client-static
-            gpi-space-pc-segment
             fhg-revision
             Util::Generic
             Boost::filesystem
             Boost::program_options
+            GPISpace::vmem
   INSTALL
 )
 

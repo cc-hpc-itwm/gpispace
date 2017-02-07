@@ -58,12 +58,9 @@ namespace fhg
       FHG_RPC_FUNCTION_DESCRIPTION
         ( start_vmem
         , pid_t ( boost::filesystem::path command
-                , fhg::log::Level log_level
                 , boost::filesystem::path socket
                 , unsigned short gaspi_port
                 , std::chrono::seconds proc_init_timeout
-                , boost::optional<std::pair<std::string, unsigned short>> log_server
-                , boost::optional<boost::filesystem::path> log_file
                 , std::vector<std::string> nodes
                 , std::string gaspi_master
                 , std::size_t rank
