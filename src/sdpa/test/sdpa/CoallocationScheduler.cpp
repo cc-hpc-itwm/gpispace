@@ -2230,3 +2230,36 @@ BOOST_FIXTURE_TEST_CASE
     BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment), 0);
   }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  (request_arbitrary_number_of_workers, fixture_add_new_workers)
+{
+  unsigned int const n_workers (1000);
+  unsigned int const n_max_workers_per_job (10);
+
+  std::vector<sdpa::worker_id_t> const workers
+    (add_new_workers ({"A"}, n_workers));
+
+  unsigned int n_assigned_workers (0);
+  unsigned int k (0);
+  while (n_assigned_workers < n_workers)
+  {
+    sdpa::job_id_t const job ("job_" + std::to_string (k));
+
+    unsigned int const n_req_workers
+      {fhg::util::testing::random_integral<unsigned int>() % n_max_workers_per_job + 1};
+
+    add_job (job, require ("A", n_req_workers));
+
+    _scheduler.enqueueJob (job);
+    request_scheduling();
+
+    sdpa::daemon::CoallocationScheduler::assignment_t const
+      assignment (get_current_assignment());
+
+    BOOST_REQUIRE_EQUAL (assignment.at (job).size(), n_req_workers);
+
+    n_assigned_workers += n_req_workers;
+    k++;
+  }
+}
