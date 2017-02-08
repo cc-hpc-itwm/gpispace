@@ -252,9 +252,12 @@ namespace sdpa
             {
               auto&& thief (idles.top());
 
-              worker_map.at (source).delete_pending_job (job_id);
-              reservation (job_id)->replace_worker (source, thief->first);
-              thief->second.assign (job_id);
+              if (!sources.count (thief->first))
+              {
+                worker_map.at (source).delete_pending_job (job_id);
+                reservation (job_id)->replace_worker (source, thief->first);
+                thief->second.assign (job_id);
+              }
 
               idles.pop();
             }
