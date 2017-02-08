@@ -6,6 +6,7 @@ path()
   fi
 }
 export PATH
+
 pkg_config_path()
 {
   path=${external}/${1}; shift
@@ -14,6 +15,7 @@ pkg_config_path()
   fi
 }
 export PKG_CONFIG_PATH
+
 ld_library_path()
 {
   path=${external}/${1}; shift
@@ -22,3 +24,12 @@ ld_library_path()
   fi
 }
 export LD_LIBRARY_PATH
+
+cmake_prefix_path()
+{
+  path=${external}/${1}; shift
+  if [[ ":${CMAKE_PREFIX_PATH:-}:" != *":${path}:"* ]]; then
+    CMAKE_PREFIX_PATH="${path}${CMAKE_PREFIX_PATH:+":$CMAKE_PREFIX_PATH"}"
+  fi
+}
+export CMAKE_PREFIX_PATH
