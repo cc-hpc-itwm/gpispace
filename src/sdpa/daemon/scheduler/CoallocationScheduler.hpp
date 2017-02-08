@@ -95,7 +95,10 @@ namespace sdpa
           }
 
           _workers.erase (w1);
-          _workers.emplace (std::move (w2));
+          if (!_workers.emplace (std::move (w2)).second)
+          {
+            throw std::logic_error ("Duplicate worker");
+          }
         }
 
         std::set<worker_id_t> workers() const
