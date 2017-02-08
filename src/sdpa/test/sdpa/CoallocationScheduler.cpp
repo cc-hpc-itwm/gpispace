@@ -2263,3 +2263,79 @@ BOOST_FIXTURE_TEST_CASE
     k++;
   }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( request_arbitrary_number_of_workers_and_finish_arbitrary_number_of_jobs
+  , fixture_add_new_workers
+  )
+{
+  unsigned int const n_workers (1000);
+  unsigned int const n_jobs (1000);
+  unsigned int const n_max_workers_per_job (10);
+
+  std::vector<sdpa::worker_id_t> const workers
+    (add_new_workers ({"A"}, n_workers));
+
+  for (unsigned int k = 0; k < n_jobs; k++)
+  {
+    sdpa::job_id_t const job ("job_" + std::to_string (k));
+
+    unsigned int const n_req_workers
+      { fhg::util::testing::random_integral<unsigned int>()
+      % n_max_workers_per_job
+      + 1
+      };
+
+    add_job (job, require ("A", n_req_workers));
+    _scheduler.enqueueJob (job);
+  }
+
+  _scheduler.assignJobsToWorkers();
+  _scheduler.steal_work();
+
+  sdpa::daemon::CoallocationScheduler::assignment_t
+    assignment (get_current_assignment());
+
+  for (auto const& req : _requirements)
+  {
+    BOOST_REQUIRE_EQUAL (assignment.at (req.first).size(), req.second.numWorkers());
+  }
+
+  std::set<sdpa::job_id_t> running_jobs;
+  while (!assignment.empty())
+  {
+    std::set<sdpa::job_id_t> const jobs_started
+      (_scheduler.start_pending_jobs
+        ( [&assignment, this] ( std::set<sdpa::worker_id_t> const& workers
+                              , sdpa::job_id_t const& job
+                              )
+          {
+            BOOST_REQUIRE_EQUAL (assignment.at (job).size(), _requirements.at (job).numWorkers());
+            BOOST_REQUIRE_EQUAL (assignment.at (job), workers);
+          }
+        )
+      );
+
+    running_jobs.insert (jobs_started.begin(), jobs_started.end());
+    if (!running_jobs.empty())
+    {
+
+      long unsigned int const n_finishing_jobs
+        { fhg::util::testing::random_integral<long unsigned int>()
+        % running_jobs.size()
+        + 1
+        };
+
+      // finish an arbitrary number of running jobs
+      for (unsigned int k = 0; k < n_finishing_jobs; k++)
+      {
+        _scheduler.releaseReservation (*running_jobs.begin());
+        running_jobs.erase (running_jobs.begin());
+      }
+    }
+
+    _scheduler.assignJobsToWorkers();
+    _scheduler.steal_work();
+    assignment = std::move (get_current_assignment());
+  }
+}
