@@ -9,6 +9,8 @@
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/serialization/std/chrono.hpp>
 
+#include <vmem/server/server_communication.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/optional.hpp>
@@ -56,16 +58,33 @@ namespace fhg
         );
 
       FHG_RPC_FUNCTION_DESCRIPTION
-        ( start_vmem
-        , pid_t ( boost::filesystem::path command
-                , boost::filesystem::path socket
-                , unsigned short gaspi_port
-                , std::chrono::seconds proc_init_timeout
-                , std::vector<std::string> nodes
-                , std::string gaspi_master
-                , std::size_t rank
-                )
+        ( start_vmem_step_a
+        , std::pair<pid_t, std::uint16_t>
+            ( boost::filesystem::path command
+            , boost::filesystem::path socket
+            , unsigned short gaspi_port
+            , std::chrono::seconds proc_init_timeout
+            )
         );
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_vmem_step_b
+        , void ( pid_t
+               , std::vector<intertwine::vmem::node> nodes
+               , uint16_t local_communication_port
+               )
+        );
+
+      namespace local
+      {
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( vmem_set_port_and_continue
+          , void ( std::vector<intertwine::vmem::node> nodes
+                 , uint16_t local_communication_port
+                 )
+          );
+        FHG_RPC_FUNCTION_DESCRIPTION (vmem_setup_finished, void());
+      }
     }
   }
 }

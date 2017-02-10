@@ -21,11 +21,12 @@
 #include <rif/protocol.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <rpc/remote_tcp_endpoint.hpp>
 #include <rpc/remote_function.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>
+#include <rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -197,55 +198,17 @@ try
       }
     );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
-    start_vmem_service
+  std::unordered_map<pid_t, std::string> pending_vmems;
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_step_a>
+    start_vmem_service_step_a
       ( service_dispatcher
-      , [] ( boost::filesystem::path command
-           , boost::filesystem::path socket
-           , unsigned short gaspi_port
-           , std::chrono::seconds proc_init_timeout
-           , std::vector<std::string> nodes
-           , std::string gaspi_master
-           , std::size_t rank
-           ) -> pid_t
+      , [&] ( boost::filesystem::path command
+            , boost::filesystem::path socket
+            , unsigned short gaspi_port
+            ,  std::chrono::seconds proc_init_timeout
+            ) -> std::pair<pid_t, std::uint16_t>
         {
-          //! \todo allow to specify folder to put temporary file in
-          boost::filesystem::path const nodefile
-            ( boost::filesystem::unique_path
-                ("GPISPACE-VMEM-NODEFILE-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            );
-          fhg::util::temporary_file nodefile_temporary (nodefile);
-          {
-            std::ofstream nodefile_stream (nodefile.string());
-
-            if (!nodefile_stream)
-            {
-              throw std::runtime_error
-                ( ( boost::format ("Could not create nodefile %1%: %2%")
-                  % nodefile
-                  % strerror (errno)
-                  )
-                . str()
-                );
-            }
-
-            for (std::string const& node : nodes)
-            {
-              nodefile_stream << node << "\n";
-            }
-
-            if (!nodefile_stream)
-            {
-              throw std::runtime_error
-                ( ( boost::format ("Could not write to nodefile %1%: %2%")
-                  % nodefile
-                  % strerror (errno)
-                  )
-                . str()
-                );
-            }
-          }
-
           std::pair<pid_t, std::vector<std::string>> const
             startup_messages
             ( fhg::rif::execute_and_get_startup_messages
@@ -254,22 +217,43 @@ try
                   , "--port", std::to_string (gaspi_port)
                   , "--gpi-timeout", std::to_string (proc_init_timeout.count())
                   }
-                , { {"GASPI_MASTER", gaspi_master}
-                  , {"GASPI_SOCKET", "0"}
-                  , {"GASPI_MFILE", nodefile.string()}
-                  , {"GASPI_RANK", std::to_string (rank)}
-                  , {"GASPI_NRANKS", std::to_string (nodes.size())}
-                  , {"GASPI_SET_NUMA_SOCKET", "0"}
-                  }
+                , std::unordered_map<std::string, std::string> {}
                 )
             );
 
-          if (!startup_messages.second.empty())
+          if (startup_messages.second.size() != 2)
           {
-            throw std::logic_error ("expected no startup messages");
+            throw std::logic_error ("expected two startup messages");
           }
 
-          return startup_messages.first;
+          pending_vmems.emplace
+            (startup_messages.first, startup_messages.second[0]);
+
+          return { startup_messages.first
+                 , std::stoi (startup_messages.second[1])
+                 };
+        }
+      );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_step_b>
+    start_vmem_service_step_b
+      ( service_dispatcher
+      , [&] ( pid_t pid
+            , std::vector<intertwine::vmem::node> nodes
+            , uint16_t local_communication_port
+            ) -> void
+        {
+          fhg::util::scoped_boost_asio_io_service_with_threads setup_thread {1};
+          fhg::rpc::remote_socket_endpoint endpoint
+            { setup_thread
+            , boost::asio::local::stream_protocol::endpoint
+                (pending_vmems.at (pid))
+            };
+          fhg::rpc::sync_remote_function
+            <fhg::rif::protocol::local::vmem_set_port_and_continue> {endpoint}
+              ( nodes
+              , local_communication_port
+              );
         }
       );
 

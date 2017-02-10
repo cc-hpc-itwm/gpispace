@@ -7,6 +7,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <util-generic/hostname.hpp>
 
+#include <rif/protocol.hpp>
 #include <rif/started_process_promise.hpp>
 
 #include <vmem/gaspi/equally_distributed_segment.hpp>
@@ -83,11 +84,37 @@ int main (int argc, char** argv)
       );
 
 
+    std::vector<intertwine::vmem::node> nodes;
+    uint16_t local_communication_port;
+    std::promise<void> setup_step_a;
+    std::promise<void> setup_finished;
+
+    fhg::rpc::service_dispatcher setup_dispatcher;
+    fhg::rpc::service_handler
+      <fhg::rif::protocol::local::vmem_set_port_and_continue> setup_handler
+        { setup_dispatcher
+        , [&] ( std::vector<intertwine::vmem::node> nodes_
+              , uint16_t local_communication_port_
+              )
+          {
+            nodes = nodes_;
+            local_communication_port = local_communication_port_;
+            setup_step_a.set_value();
+            setup_finished.get_future().get();
+          }
+        };
+    fhg::util::scoped_boost_asio_io_service_with_threads setup_thread {1};
+    fhg::rpc::service_socket_provider setup_provider
+      {setup_thread, setup_dispatcher};
+
+    promise.set_result ({setup_provider.local_endpoint().path(), "10502"});
+
+    setup_step_a.get_future().get();
+
     intertwine::vmem::server server
-      ( intertwine::vmem::gaspi::context::params
-          {gpi_timeout, gpi_port}
-      , {fhg::util::hostname()}
-      , 10502
+      ( intertwine::vmem::gaspi::context::params {gpi_timeout, gpi_port}
+      , nodes
+      , local_communication_port
       );
     intertwine::vmem::ipc_server ipc_server (server, socket_path);
 
@@ -101,7 +128,7 @@ int main (int argc, char** argv)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handler, SIGINT, std::bind (request_stop));
 
-    promise.set_result ({});
+    setup_finished.set_value();
 
     stop_requested.wait();
 

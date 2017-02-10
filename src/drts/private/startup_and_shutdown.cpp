@@ -645,27 +645,37 @@ namespace fhg
         fhg::util::nest_exceptions<std::runtime_error>
           ( [&]
             {
-              std::unordered_map<fhg::rif::entry_point, std::future<pid_t>>
-                queued_start_requests;
+              std::list < std::tuple
+                            < rif::client*
+                            , rif::entry_point
+                            , std::future<std::pair<pid_t, std::uint16_t>>
+                            >
+                        > queued_start_requests;
+              std::list < std::tuple
+                            < rif::client*
+                            , rif::entry_point
+                            , pid_t
+                            , std::uint16_t
+                            >
+                        > done_start_requests;
+
               std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
                 fails;
 
-              //! \note requires ranks to be matching index in hostnames!
-              std::size_t rank (0);
+              std::vector<intertwine::vmem::node> nodes;
+
               for (auto& connection : rif_connections)
               {
                 try
                 {
-                  queued_start_requests.emplace
-                    ( connection.second
-                    , connection.first.start_vmem
+                  queued_start_requests.emplace_back
+                    ( &connection.first
+                    , connection.second
+                    , connection.first.start_vmem_step_a
                         ( installation_path.vmem()
                         , gpi_socket.get()
                         , vmem_port.get()
                         , vmem_startup_timeout.get()
-                        , hostnames
-                        , master.string()
-                        , rank++
                         )
                     );
                 }
@@ -679,11 +689,34 @@ namespace fhg
               {
                 try
                 {
-                  processes.store (request.first, "vmem", request.second.get());
+                  auto result (std::get<2> (request).get());
+                  processes.store (std::get<1> (request), "vmem", result.first);
+                  nodes.emplace_back
+                    (std::get<1> (request).hostname, result.second);
+                  done_start_requests.emplace_back ( std::get<0> (request)
+                                                   , std::get<1> (request)
+                                                   , result.first
+                                                   , result.second
+                                                   );
                 }
                 catch (...)
                 {
-                  fails.emplace (request.first, std::current_exception());
+                  fails.emplace
+                    (std::get<1> (request), std::current_exception());
+                }
+              }
+
+              for (auto& request : done_start_requests)
+              {
+                try
+                {
+                  std::get<0> (request)->start_vmem_step_b
+                    (std::get<2> (request), nodes, std::get<3> (request));
+                }
+                catch (...)
+                {
+                  fails.emplace
+                    (std::get<1> (request), std::current_exception());
                 }
               }
 

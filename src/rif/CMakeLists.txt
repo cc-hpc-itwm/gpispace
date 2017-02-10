@@ -7,6 +7,7 @@ fhg_add_runtime_executable (NAME gspc-rifd
             fhg-util
             fhglog
             Util::Generic
+            INTERTWinE-vmem::server
             Boost::filesystem
             Boost::iostreams
             Boost::program_options
