@@ -83,9 +83,26 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
       );
 
+    struct hopefully_free_port
+    {
+      uint16_t get() const
+      {
+        return _provider->local_endpoint().port();
+      }
+      uint16_t release()
+      {
+        auto res (get());
+        _provider.reset();
+        return res;
+      }
+
+      boost::asio::io_service _io_service;
+      fhg::rpc::service_dispatcher _dispatcher;
+      std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_start>
+        _provider = fhg::util::cxx14::make_unique<fhg::rpc::service_tcp_provider_with_deferred_start> (_io_service, _dispatcher);
+    } intertwine_comm_port;
 
     std::vector<intertwine::vmem::node> nodes;
-    uint16_t local_communication_port;
     std::promise<void> setup_step_a;
     std::promise<void> setup_finished;
 
@@ -93,12 +110,9 @@ int main (int argc, char** argv)
     fhg::rpc::service_handler
       <fhg::rif::protocol::local::vmem_set_port_and_continue> setup_handler
         { setup_dispatcher
-        , [&] ( std::vector<intertwine::vmem::node> nodes_
-              , uint16_t local_communication_port_
-              )
+        , [&] (std::vector<intertwine::vmem::node> nodes_)
           {
             nodes = nodes_;
-            local_communication_port = local_communication_port_;
             setup_step_a.set_value();
             setup_finished.get_future().get();
           }
@@ -107,14 +121,17 @@ int main (int argc, char** argv)
     fhg::rpc::service_socket_provider setup_provider
       {setup_thread, setup_dispatcher};
 
-    promise.set_result ({setup_provider.local_endpoint().path(), "10502"});
+    promise.set_result ( { setup_provider.local_endpoint().path()
+                         , std::to_string (intertwine_comm_port.get())
+                         }
+                       );
 
     setup_step_a.get_future().get();
 
     intertwine::vmem::server server
       ( intertwine::vmem::gaspi::context::params {gpi_timeout, gpi_port}
       , nodes
-      , local_communication_port
+      , intertwine_comm_port.release()
       );
     intertwine::vmem::ipc_server ipc_server (server, socket_path);
 

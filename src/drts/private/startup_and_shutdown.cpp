@@ -655,7 +655,6 @@ namespace fhg
                             < rif::client*
                             , rif::entry_point
                             , pid_t
-                            , std::uint16_t
                             >
                         > done_start_requests;
 
@@ -693,11 +692,8 @@ namespace fhg
                   processes.store (std::get<1> (request), "vmem", result.first);
                   nodes.emplace_back
                     (std::get<1> (request).hostname, result.second);
-                  done_start_requests.emplace_back ( std::get<0> (request)
-                                                   , std::get<1> (request)
-                                                   , result.first
-                                                   , result.second
-                                                   );
+                  done_start_requests.emplace_back
+                    (std::get<0> (request), std::get<1> (request), result.first);
                 }
                 catch (...)
                 {
@@ -711,7 +707,7 @@ namespace fhg
                 try
                 {
                   std::get<0> (request)->start_vmem_step_b
-                    (std::get<2> (request), nodes, std::get<3> (request));
+                    (std::get<2> (request), nodes);
                 }
                 catch (...)
                 {

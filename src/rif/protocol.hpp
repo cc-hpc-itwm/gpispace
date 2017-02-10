@@ -69,19 +69,14 @@ namespace fhg
 
       FHG_RPC_FUNCTION_DESCRIPTION
         ( start_vmem_step_b
-        , void ( pid_t
-               , std::vector<intertwine::vmem::node> nodes
-               , uint16_t local_communication_port
-               )
+        , void (pid_t, std::vector<intertwine::vmem::node> nodes)
         );
 
       namespace local
       {
         FHG_RPC_FUNCTION_DESCRIPTION
           ( vmem_set_port_and_continue
-          , void ( std::vector<intertwine::vmem::node> nodes
-                 , uint16_t local_communication_port
-                 )
+          , void (std::vector<intertwine::vmem::node> nodes)
           );
         FHG_RPC_FUNCTION_DESCRIPTION (vmem_setup_finished, void());
       }

@@ -238,10 +238,7 @@ try
   fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_step_b>
     start_vmem_service_step_b
       ( service_dispatcher
-      , [&] ( pid_t pid
-            , std::vector<intertwine::vmem::node> nodes
-            , uint16_t local_communication_port
-            ) -> void
+      , [&] (pid_t pid, std::vector<intertwine::vmem::node> nodes) -> void
         {
           fhg::util::scoped_boost_asio_io_service_with_threads setup_thread {1};
           fhg::rpc::remote_socket_endpoint endpoint
@@ -251,9 +248,7 @@ try
             };
           fhg::rpc::sync_remote_function
             <fhg::rif::protocol::local::vmem_set_port_and_continue> {endpoint}
-              ( nodes
-              , local_communication_port
-              );
+              (nodes);
         }
       );
 
