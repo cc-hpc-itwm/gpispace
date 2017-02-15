@@ -95,7 +95,7 @@ namespace gspc
     std::pair< rifd_entry_points
              , std::unordered_map<std::string, std::exception_ptr>
              >
-      bootstrap (rifd::hostnames const&, std::ostream&);
+      bootstrap (rifd::hostnames const&, std::ostream& = std::cout);
 
     std::pair < std::unordered_set<std::string>
               , std::unordered_map<std::string, std::exception_ptr>
