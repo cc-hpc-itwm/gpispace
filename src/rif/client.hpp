@@ -20,8 +20,8 @@ namespace fhg
         , execute_and_get_startup_messages (_endpoint)
         , execute_and_get_startup_messages_and_wait (_endpoint)
         , kill (_endpoint)
-        , start_vmem_step_a (_endpoint)
-        , start_vmem_step_b (_endpoint)
+        , start_vmem_initial_setup_and_wait_for_local_comm_port (_endpoint)
+        , continue_vmem_set_nodes_and_wait_for_startup (_endpoint)
       {}
 
     private:
@@ -33,8 +33,10 @@ namespace fhg
       rpc::remote_function<protocol::execute_and_get_startup_messages_and_wait>
         execute_and_get_startup_messages_and_wait;
       rpc::remote_function<protocol::kill> kill;
-      rpc::remote_function<protocol::start_vmem_step_a> start_vmem_step_a;
-      rpc::remote_function<protocol::start_vmem_step_b> start_vmem_step_b;
+      rpc::remote_function<protocol::start_vmem_initial_setup_and_wait_for_local_comm_port>
+        start_vmem_initial_setup_and_wait_for_local_comm_port;
+      rpc::remote_function<protocol::continue_vmem_set_nodes_and_wait_for_startup>
+        continue_vmem_set_nodes_and_wait_for_startup;
     };
   }
 }

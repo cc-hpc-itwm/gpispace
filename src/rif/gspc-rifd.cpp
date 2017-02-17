@@ -200,8 +200,8 @@ try
 
   std::unordered_map<pid_t, std::string> pending_vmems;
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_step_a>
-    start_vmem_service_step_a
+  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_initial_setup_and_wait_for_local_comm_port>
+    start_vmem_initial_setup_and_wait_for_local_comm_port_service
       ( service_dispatcher
       , [&] ( boost::filesystem::path command
             , boost::filesystem::path socket
@@ -235,8 +235,8 @@ try
         }
       );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_step_b>
-    start_vmem_service_step_b
+  fhg::rpc::service_handler<fhg::rif::protocol::continue_vmem_set_nodes_and_wait_for_startup>
+    continue_vmem_set_nodes_and_wait_for_startup_service
       ( service_dispatcher
       , [&] (pid_t pid, std::vector<intertwine::vmem::node> nodes) -> void
         {
@@ -247,7 +247,7 @@ try
                 (pending_vmems.at (pid))
             };
           fhg::rpc::sync_remote_function
-            <fhg::rif::protocol::local::vmem_set_port_and_continue> {endpoint}
+            <fhg::rif::protocol::local::vmem_set_nodes_and_wait_for_startup> {endpoint}
               (nodes);
         }
       );

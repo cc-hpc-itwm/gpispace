@@ -58,7 +58,7 @@ namespace fhg
         );
 
       FHG_RPC_FUNCTION_DESCRIPTION
-        ( start_vmem_step_a
+        ( start_vmem_initial_setup_and_wait_for_local_comm_port
         , std::pair<pid_t, std::uint16_t>
             ( boost::filesystem::path command
             , boost::filesystem::path socket
@@ -68,17 +68,16 @@ namespace fhg
         );
 
       FHG_RPC_FUNCTION_DESCRIPTION
-        ( start_vmem_step_b
+        ( continue_vmem_set_nodes_and_wait_for_startup
         , void (pid_t, std::vector<intertwine::vmem::node> nodes)
         );
 
       namespace local
       {
         FHG_RPC_FUNCTION_DESCRIPTION
-          ( vmem_set_port_and_continue
+          ( vmem_set_nodes_and_wait_for_startup
           , void (std::vector<intertwine::vmem::node> nodes)
           );
-        FHG_RPC_FUNCTION_DESCRIPTION (vmem_setup_finished, void());
       }
     }
   }

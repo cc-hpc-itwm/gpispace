@@ -102,21 +102,19 @@ int main (int argc, char** argv)
         _provider = fhg::util::cxx14::make_unique<fhg::rpc::service_tcp_provider_with_deferred_start> (_io_service, _dispatcher);
     } intertwine_comm_port;
 
-    std::vector<intertwine::vmem::node> nodes;
-    std::promise<void> setup_step_a;
+    std::promise<std::vector<intertwine::vmem::node>> nodes_promise;
     std::promise<void> setup_finished;
 
     fhg::rpc::service_dispatcher setup_dispatcher;
     fhg::rpc::service_handler
-      <fhg::rif::protocol::local::vmem_set_port_and_continue> setup_handler
-        { setup_dispatcher
-        , [&] (std::vector<intertwine::vmem::node> nodes_)
-          {
-            nodes = nodes_;
-            setup_step_a.set_value();
-            setup_finished.get_future().get();
-          }
-        };
+      <fhg::rif::protocol::local::vmem_set_nodes_and_wait_for_startup>
+        setup_handler { setup_dispatcher
+                      , [&] (std::vector<intertwine::vmem::node> nodes_)
+                        {
+                          nodes_promise.set_value (std::move (nodes_));
+                          setup_finished.get_future().get();
+                        }
+                      };
     fhg::util::scoped_boost_asio_io_service_with_threads setup_thread {1};
     fhg::rpc::service_socket_provider setup_provider
       {setup_thread, setup_dispatcher};
@@ -126,7 +124,7 @@ int main (int argc, char** argv)
                          }
                        );
 
-    setup_step_a.get_future().get();
+    auto nodes (nodes_promise.get_future().get());
 
     intertwine::vmem::server server
       ( intertwine::vmem::gaspi::context::params {gpi_timeout, gpi_port}

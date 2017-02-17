@@ -670,7 +670,7 @@ namespace fhg
                   queued_start_requests.emplace_back
                     ( &connection.first
                     , connection.second
-                    , connection.first.start_vmem_step_a
+                    , connection.first.start_vmem_initial_setup_and_wait_for_local_comm_port
                         ( installation_path.vmem()
                         , gpi_socket.get()
                         , vmem_port.get()
@@ -706,7 +706,7 @@ namespace fhg
               {
                 try
                 {
-                  std::get<0> (request)->start_vmem_step_b
+                  std::get<0> (request)->continue_vmem_set_nodes_and_wait_for_startup
                     (std::get<2> (request), nodes);
                 }
                 catch (...)
