@@ -15,7 +15,7 @@ pkg_config_path GPI2/1.3.0/lib64/pkgconfig
 pkg_config_path hwloc/1.11.1/lib/pkgconfig
 pkg_config_path libssh2/1.7.0+fpic/lib/pkgconfig
 pkg_config_path openssl/1.0.2e/lib/pkgconfig
-cmake_prefix_path intertwine-vmem/0d54dab643ddbaa58410313e04df17890179158d/lib/cmake
+cmake_prefix_path intertwine-vmem/ea5688e4c5e637e19761d223e4fe0d7b57e23149/lib/cmake
 
 export CC="${external}/ccache/3.2.4/lib/gcc"
 export CXX="${external}/ccache/3.2.4/lib/g++"

@@ -28,7 +28,7 @@ add_subdirectory (vmem)
   add_subdirectory (util)
 
 find_package (INTERTWinE-vmem REQUIRED
-  COMPONENTS "REVISION=0d54dab643ddbaa58410313e04df17890179158d")
+  COMPONENTS "REVISION=ea5688e4c5e637e19761d223e4fe0d7b57e23149")
 
 extended_add_library (NAME pnet
   SOURCES "we/exception.cpp"
