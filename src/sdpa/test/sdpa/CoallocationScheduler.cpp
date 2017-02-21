@@ -2301,17 +2301,22 @@ BOOST_FIXTURE_TEST_CASE
     BOOST_REQUIRE_EQUAL (assignment.at (req.first).size(), req.second.numWorkers());
   }
 
+  unsigned int started_jobs (0);
+
   std::set<sdpa::job_id_t> running_jobs;
   while (!assignment.empty())
   {
     std::set<sdpa::job_id_t> const jobs_started
       (_scheduler.start_pending_jobs
-        ( [&assignment, this] ( std::set<sdpa::worker_id_t> const& workers
-                              , sdpa::job_id_t const& job
-                              )
+        ( [&assignment, this, &started_jobs]
+              ( std::set<sdpa::worker_id_t> const& workers
+              , sdpa::job_id_t const& job
+              )
           {
             BOOST_REQUIRE_EQUAL (assignment.at (job).size(), _requirements.at (job).numWorkers());
             BOOST_REQUIRE_EQUAL (assignment.at (job), workers);
+
+            ++started_jobs;
           }
         )
       );
@@ -2338,4 +2343,6 @@ BOOST_FIXTURE_TEST_CASE
     _scheduler.steal_work();
     assignment = std::move (get_current_assignment());
   }
+
+  BOOST_REQUIRE_EQUAL (started_jobs, n_jobs);
 }
