@@ -39,7 +39,6 @@ extended_add_library (NAME gspc
             Util::Generic
             Boost::filesystem
             Boost::program_options
-            GPISpace::vmem
   INSTALL
 )
 
