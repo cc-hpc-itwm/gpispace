@@ -9,6 +9,7 @@
 
 #include <boost/filesystem/path.hpp>
 
+#include <chrono>
 #include <string>
 
 namespace gspc
@@ -29,9 +30,15 @@ namespace gspc
     };
     struct beegfs_segment_description
     {
-      inline beegfs_segment_description (boost::filesystem::path);
+      inline beegfs_segment_description
+        ( boost::filesystem::path path_
+        , std::size_t thread_count_ = 5
+        , std::chrono::milliseconds timeout_ = std::chrono::seconds (5)
+        );
 
       boost::filesystem::path _path;
+      std::size_t _thread_count;
+      std::chrono::milliseconds _timeout;
     };
   }
 
@@ -77,7 +84,12 @@ namespace gspc
   {}
 
   vmem::beegfs_segment_description::beegfs_segment_description
-      (boost::filesystem::path path)
-    : _path (std::move (path))
+      ( boost::filesystem::path path
+      , std::size_t thread_count
+      , std::chrono::milliseconds timeout
+      )
+    : _path (path)
+    , _thread_count (thread_count)
+    , _timeout (timeout)
   {}
 }

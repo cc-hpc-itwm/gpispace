@@ -4,6 +4,7 @@ fhg_add_runtime_executable (NAME gpi-space
   SOURCES "gpi-space.cpp"
   LIBRARIES INTERTWinE-vmem::server
             INTERTWinE-vmem::gaspi
+            INTERTWinE-vmem::beegfs
             fhg-revision
             fhg-util
             fhglog

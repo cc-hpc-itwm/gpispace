@@ -128,6 +128,7 @@ int main (int argc, char** argv)
 
     intertwine::vmem::server server
       ( intertwine::vmem::gaspi::context::params {gpi_timeout, gpi_port}
+      , intertwine::vmem::beegfs::context::params {}
       , nodes
       , intertwine_comm_port.release()
       );

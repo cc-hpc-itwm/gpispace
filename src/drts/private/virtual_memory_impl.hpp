@@ -8,6 +8,7 @@
 
 #include <util-generic/cxx14/make_unique.hpp>
 
+#include <vmem/beegfs/single_file_segment.hpp>
 #include <vmem/gaspi/equally_distributed_segment_description.hpp>
 
 #include <stdexcept>
@@ -70,9 +71,14 @@ namespace fhg
             );
         }
         std::unique_ptr<remote_segment> operator()
-          (gspc::vmem::beegfs_segment_description const&) const
+          (gspc::vmem::beegfs_segment_description const& desc) const
         {
-          throw std::logic_error ("NYI: beegfs segment (desc._path)");
+          return fhg::util::cxx14::make_unique<remote_segment>
+            ( _client
+            , _size
+            , intertwine::vmem::beegfs::single_file_segment_description
+                (desc._path, desc._thread_count, desc._timeout)
+            );
         }
 
         visitor_t ( intertwine::vmem::ipc_client& client
