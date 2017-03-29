@@ -50,10 +50,10 @@ namespace sdpa
         void remove_worker_entry (worker_map_t::const_iterator);
 
         template <typename Reservation>
-        void steal_work
-          ( std::function<Reservation* (job_id_t const&)>
-          , worker_map_t&
-          );
+          void steal_work
+            ( std::function<Reservation* (job_id_t const&)>
+            , worker_map_t&
+            );
 
       private:
         unsigned int _n_pending_jobs;
@@ -95,43 +95,43 @@ namespace sdpa
         ) const;
 
       template <typename Reservation>
-      void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
+        void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
 
-    bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const&, std::set<worker_id_t> const&
-      , std::function<void ( std::set<worker_id_t> const&
-                           , const job_id_t&
-                           )> const& serve_job
-      );
+      bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
+        ( job_id_t const&, std::set<worker_id_t> const&
+        , std::function<void ( std::set<worker_id_t> const&
+                             , const job_id_t&
+                             )> const& serve_job
+        );
 
-    bool all_workers_busy_and_have_pending_jobs() const;
+      bool all_workers_busy_and_have_pending_jobs() const;
 
-    template <typename T>
-    std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
-      ( worker_id_t const&
-      , std::function<Job* (sdpa::job_id_t const&)>
-      , std::function<T* (sdpa::job_id_t const&)>
-      , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
-      );
+      template <typename T>
+        std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
+          ( worker_id_t const&
+          , std::function<Job* (sdpa::job_id_t const&)>
+          , std::function<T* (sdpa::job_id_t const&)>
+          , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
+          );
 
-    void assign_job_to_worker (const job_id_t&, const worker_id_t&);
-    void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
-    void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
-    const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
-    bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
-    bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
-    void set_worker_backlog_full (const worker_id_t&, bool);
+      void assign_job_to_worker (const job_id_t&, const worker_id_t&);
+      void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
+      void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
+      const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
+      bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
+      bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
+      void set_worker_backlog_full (const worker_id_t&, bool);
 
-    using worker_connections_t
-      = boost::bimap < boost::bimaps::unordered_set_of<std::string>
-                     , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
-                     >;
+      using worker_connections_t
+        = boost::bimap < boost::bimaps::unordered_set_of<std::string>
+                       , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
+                       >;
 
-    boost::optional<WorkerManager::worker_connections_t::right_iterator>
-      worker_by_address (fhg::com::p2p::address_t const&);
+      boost::optional<WorkerManager::worker_connections_t::right_iterator>
+        worker_by_address (fhg::com::p2p::address_t const&);
 
-    boost::optional<WorkerManager::worker_connections_t::left_iterator>
-      address_by_worker (std::string const&);
+      boost::optional<WorkerManager::worker_connections_t::left_iterator>
+        address_by_worker (std::string const&);
 
       bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
 
@@ -154,8 +154,8 @@ namespace sdpa
     };
 
     template <typename Reservation>
-    void WorkerManager::steal_work
-      (std::function<Reservation* (job_id_t const&)> reservation)
+      void WorkerManager::steal_work
+        (std::function<Reservation* (job_id_t const&)> reservation)
     {
       std::lock_guard<std::mutex> const _(mtx_);
       for (WorkerEquivalenceClass& weqc : worker_equiv_classes_
@@ -167,10 +167,10 @@ namespace sdpa
     }
 
     template <typename Reservation>
-    void WorkerManager::WorkerEquivalenceClass::steal_work
-      ( std::function<Reservation* (job_id_t const&)> reservation
-      , worker_map_t& worker_map
-      )
+      void WorkerManager::WorkerEquivalenceClass::steal_work
+        ( std::function<Reservation* (job_id_t const&)> reservation
+        , worker_map_t& worker_map
+        )
     {
       if (n_running_jobs() == n_workers())
       {
@@ -269,12 +269,12 @@ namespace sdpa
     }
 
     template <typename T>
-    std::unordered_set<sdpa::job_id_t> WorkerManager::delete_or_cancel_worker_jobs
-      ( worker_id_t const& worker_id
-      , std::function<Job* (sdpa::job_id_t const&)> get_job
-      , std::function<T* (sdpa::job_id_t const&)> get_reservation
-      , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
-      )
+      std::unordered_set<sdpa::job_id_t> WorkerManager::delete_or_cancel_worker_jobs
+        ( worker_id_t const& worker_id
+        , std::function<Job* (sdpa::job_id_t const&)> get_job
+        , std::function<T* (sdpa::job_id_t const&)> get_reservation
+        , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
+        )
     {
       std::lock_guard<std::mutex> const _(mtx_);
 
