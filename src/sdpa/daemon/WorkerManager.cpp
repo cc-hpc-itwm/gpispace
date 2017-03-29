@@ -540,6 +540,14 @@ namespace sdpa
       return boost::make_optional (it != worker_connections_.left.end(), it);
     }
 
+    cache_info_t const& WorkerManager::cache_info
+      ( intertwine::vmem::rank_t const& vmem_rank
+      , intertwine::vmem::cache_id_t const& cache_id
+      ) const
+    {
+      return _caches.at (std::make_pair (vmem_rank, cache_id));
+    }
+
     WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()
       : _n_pending_jobs (0)
       , _n_running_jobs (0)

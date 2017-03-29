@@ -137,6 +137,10 @@ namespace sdpa
 
       std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
+      cache_info_t const& cache_info
+        ( intertwine::vmem::rank_t const&
+        , intertwine::vmem::cache_id_t const&
+        ) const;
     private:
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
       void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
@@ -149,6 +153,7 @@ namespace sdpa
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
+      std::unordered_map<cache_info_key_t, cache_info_t, cache_info_key_hasher> _caches;
 
       mutable std::mutex mtx_;
     };
