@@ -459,13 +459,19 @@ namespace sdpa
       return workers_to_cancel;
     }
 
-    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    void WorkerManager::assign_job_to_workers
+      ( job_id_t const& job_id
+      , std::set<worker_id_t> const& workers
+      )
     {
       std::lock_guard<std::mutex> const _(mtx_);
-      Worker& worker (worker_map_.at (worker_id));
-      worker.assign (job_id);
-      worker_equiv_classes_.at
-        (worker.capability_names_).inc_pending_jobs (1);
+      for (auto const& worker_id : workers)
+      {
+        Worker& worker (worker_map_.at (worker_id));
+        worker.assign (job_id);
+        worker_equiv_classes_.at
+          (worker.capability_names_).inc_pending_jobs (1);
+      }
     }
 
     void WorkerManager::submit_job_to_workers

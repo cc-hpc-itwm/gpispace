@@ -91,10 +91,7 @@ namespace sdpa
 
           try
           {
-            for (worker_id_t const& worker : matching_workers)
-            {
-              _worker_manager.assign_job_to_worker (jobId, worker);
-            }
+            _worker_manager.assign_job_to_workers (jobId, matching_workers);
 
             Reservation* const pReservation
               (new Reservation ( matching_workers
