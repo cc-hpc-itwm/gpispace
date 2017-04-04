@@ -490,26 +490,40 @@ namespace sdpa
       worker_map_.at (worker_id).acknowledge (job_id);
     }
 
-    void WorkerManager::delete_job_from_worker ( const job_id_t &job_id
-                                               , const worker_id_t& worker_id
-                                               )
+    void WorkerManager::delete_job_from_workers
+      ( job_id_t const& job_id
+      , std::set<worker_id_t> const& workers
+      )
     {
       std::lock_guard<std::mutex> const _(mtx_);
-      auto worker (worker_map_.find (worker_id));
-      if (worker != worker_map_.end())
-      {
-        auto& equivalence_class
-          (worker_equiv_classes_.at (worker->second.capability_names_));
 
-        if (worker->second.pending_.count (job_id))
+      for (auto const& worker_id : workers)
+      {
+        try
         {
-          worker->second.delete_pending_job (job_id);
-          equivalence_class.dec_pending_jobs (1);
+          auto worker (worker_map_.find (worker_id));
+          if (worker != worker_map_.end())
+          {
+            auto& equivalence_class
+              (worker_equiv_classes_.at (worker->second.capability_names_));
+
+            if (worker->second.pending_.count (job_id))
+            {
+              worker->second.delete_pending_job (job_id);
+              equivalence_class.dec_pending_jobs (1);
+            }
+            else
+            {
+              worker->second.delete_submitted_job (job_id);
+              equivalence_class.dec_running_jobs (1);
+            }
+          }
         }
-        else
+        catch (...)
         {
-          worker->second.delete_submitted_job (job_id);
-          equivalence_class.dec_running_jobs (1);
+          //! \note can be ignored: was deleted using deleteWorker()
+          //! which correctly clears queues already, and
+          //! delete_job_from_worker does nothing else.
         }
       }
     }

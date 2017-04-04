@@ -117,7 +117,7 @@ namespace sdpa
 
       void assign_job_to_worker (const job_id_t&, const worker_id_t&);
       void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
-      void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
+      void delete_job_from_workers (job_id_t const&, std::set<worker_id_t> const&);
       const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
       bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
       bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);

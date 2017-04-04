@@ -110,11 +110,7 @@ namespace sdpa
           }
           catch (std::out_of_range const&)
           {
-            for (const worker_id_t& wid : matching_workers)
-            {
-              _worker_manager.delete_job_from_worker (jobId, wid);
-            }
-
+            _worker_manager.delete_job_from_workers (jobId, matching_workers);
             jobs_to_schedule.push_front (jobId);
           }
         }
@@ -225,19 +221,7 @@ namespace sdpa
       if (it != allocation_table_.end())
       {
         Reservation const* const ptr_reservation(it->second);
-        for (std::string const& worker : ptr_reservation->workers())
-        {
-          try
-          {
-            _worker_manager.delete_job_from_worker (job_id, worker);
-          }
-          catch (...)
-          {
-            //! \note can be ignored: was deleted using deleteWorker()
-            //! which correctly clears queues already, and
-            //! delete_job_from_worker does nothing else.
-          }
-        }
+        _worker_manager.delete_job_from_workers (job_id, ptr_reservation->workers());
 
         delete ptr_reservation;
         _pending_jobs.erase (it->first);
