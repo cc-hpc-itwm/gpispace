@@ -422,11 +422,7 @@ namespace sdpa
 
       if (can_start)
       {
-        for (worker_id_t const& worker_id : workers)
-        {
-          submit_job_to_worker (job_id, worker_id);
-        }
-
+        submit_job_to_workers (job_id, workers);
         serve_job (workers, job_id);
       }
 
@@ -472,14 +468,20 @@ namespace sdpa
         (worker.capability_names_).inc_pending_jobs (1);
     }
 
-    void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    void WorkerManager::submit_job_to_workers
+      ( job_id_t const& job_id
+      , std::set<worker_id_t> const& workers
+      )
     {
-      Worker& worker (worker_map_.at (worker_id));
-      worker.submit (job_id);
-      auto& equivalence_class (worker_equiv_classes_.at (worker.capability_names_));
+      for (auto const& worker_id : workers)
+      {
+        Worker& worker (worker_map_.at (worker_id));
+        worker.submit (job_id);
+        auto& equivalence_class (worker_equiv_classes_.at (worker.capability_names_));
 
-      equivalence_class.dec_pending_jobs (1);
-      equivalence_class.inc_running_jobs (1);
+        equivalence_class.dec_pending_jobs (1);
+        equivalence_class.inc_running_jobs (1);
+      }
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id

@@ -143,7 +143,7 @@ namespace sdpa
         , intertwine::vmem::cache_id_t const&
         ) const;
     private:
-      void submit_job_to_worker (const job_id_t&, const worker_id_t&);
+      void submit_job_to_workers (job_id_t const&, std::set<worker_id_t> const&);
       void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
 
       boost::optional<double> matchRequirements
