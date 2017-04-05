@@ -2043,11 +2043,8 @@ BOOST_FIXTURE_TEST_CASE
     (get_jobs_assigned_to_worker (worker_with_1_job, old_assignment));
   BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
 
-  _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-    ( *worker_jobs.cbegin()
-    , {worker_with_1_job}
-    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
-    );
+  _scheduler.start_pending_jobs
+    ([] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {});
 
   _scheduler.releaseReservation (*worker_jobs.begin());
 
@@ -2101,11 +2098,8 @@ BOOST_FIXTURE_TEST_CASE
     (get_jobs_assigned_to_worker (worker_with_1_job, old_assignment));
   BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
 
-  _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-    ( *worker_jobs.cbegin()
-    , {worker_with_1_job}
-    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
-    );
+  _scheduler.start_pending_jobs
+    ([] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {});
 
   // the worker with 1 job finishes the assigned job
   BOOST_REQUIRE (!worker_jobs.empty());
@@ -2177,11 +2171,8 @@ BOOST_FIXTURE_TEST_CASE
       (get_jobs_assigned_to_worker (worker, assignment));
     BOOST_REQUIRE_EQUAL (worker_jobs.size(), 1);
 
-    _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( *worker_jobs.cbegin()
-      , {worker}
-      , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
-      );
+    _scheduler.start_pending_jobs
+      ([] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {});
 
     _scheduler.releaseReservation (*worker_jobs.begin());
 
