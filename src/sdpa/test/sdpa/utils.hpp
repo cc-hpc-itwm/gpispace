@@ -375,6 +375,7 @@ namespace utils
         , capabilities
         , boost::none
         , boost::none
+        , boost::none
         , accept_workers
         );
     }

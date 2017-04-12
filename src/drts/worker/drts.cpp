@@ -238,6 +238,7 @@ DRTSImpl::DRTSImpl
       ( master_address
       , m_my_name
       , capabilities
+      , FHG_UTIL_MAKE_OPTIONAL (_vmem_cache, static_cast<intertwine::vmem::cache_id_t>(*_vmem_cache))
       , FHG_UTIL_MAKE_OPTIONAL (_vmem_cache, _vmem_cache->size())
       , FHG_UTIL_MAKE_OPTIONAL
           (_virtual_memory_api, _virtual_memory_api->rank())
