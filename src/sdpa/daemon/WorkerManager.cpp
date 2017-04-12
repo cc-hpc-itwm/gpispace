@@ -230,13 +230,14 @@ namespace sdpa
 
         if (matchingDeg)
         {
-          mmap_match_deg_worker_id.emplace ( matchingDeg.get()
-                                           , worker_id_host_info_t ( worker.first
-                                                                   , worker.second.vmem_rank
-                                                                   , worker.second.vmem_cache_size
-                                                                   , worker.second._last_time_idle
-                                                                   )
-                                           );
+          mmap_match_deg_worker_id.emplace
+            ( matchingDeg.get()
+            , worker_scheduling_info_t ( worker.first
+                                       , worker.second.vmem_rank
+                                       , worker.second.vmem_cache_size
+                                       , worker.second._last_time_idle
+                                       )
+            );
         }
       }
 
@@ -280,11 +281,11 @@ namespace sdpa
         {
           mmap_matching_workers.emplace
             ( matching_degree.get()
-            , worker_id_host_info_t ( worker.first
-                                    , worker.second.vmem_rank
-                                    , worker.second.vmem_cache_size
-                                    , worker.second._last_time_idle
-                                    )
+            , worker_scheduling_info_t ( worker.first
+                                       , worker.second.vmem_rank
+                                       , worker.second.vmem_cache_size
+                                       , worker.second._last_time_idle
+                                       )
             );
         }
       }
@@ -309,11 +310,11 @@ namespace sdpa
 
       bounded_priority_queue_t bpq (n_req_workers);
 
-      for ( std::pair<double const, worker_id_host_info_t> const& it
+      for ( std::pair<double const, worker_scheduling_info_t> const& it
           : mmap_matching_workers
           )
       {
-        const worker_id_host_info_t& worker_info = it.second;
+        const worker_scheduling_info_t& worker_info = it.second;
         double const cost_preassigned_jobs
           (worker_map_.at (worker_info.worker_id()).cost_assigned_jobs
              (cost_reservation)

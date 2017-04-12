@@ -42,14 +42,15 @@ namespace sdpa {
   };
   using master_info_t = std::forward_list<master_network_info>;
 
-  class worker_id_host_info_t
+  class worker_scheduling_info_t
   {
   public:
-    worker_id_host_info_t ( const worker_id_t& worker_id
-                          , boost::optional<intertwine::vmem::rank_t> vmem_rank
-                          , boost::optional<intertwine::vmem::size_t> vmem_cache_size
-                          , const double& last_time_idle
-                          )
+    worker_scheduling_info_t
+        ( const worker_id_t& worker_id
+        , boost::optional<intertwine::vmem::rank_t> vmem_rank
+        , boost::optional<intertwine::vmem::size_t> vmem_cache_size
+        , const double& last_time_idle
+        )
       : worker_id_ (worker_id)
       , _vmem_rank (vmem_rank)
       , _vmem_cache_size (vmem_cache_size)
@@ -68,7 +69,7 @@ namespace sdpa {
     double _last_time_idle;
   };
 
-  typedef std::multimap<double, worker_id_host_info_t, std::greater<double>> mmap_match_deg_worker_id_t;
+  typedef std::multimap<double, worker_scheduling_info_t, std::greater<double>> mmap_match_deg_worker_id_t;
 
   struct discovery_info_t;
 
