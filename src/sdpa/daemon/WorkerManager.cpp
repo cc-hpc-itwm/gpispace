@@ -320,14 +320,14 @@ namespace sdpa
           );
 
         double const total_cost
-          ( requirements.transfer_cost() (*worker_info.vmem_rank)
+          ( requirements.transfer_cost() (*worker_info.vmem_rank())
           + requirements.computational_cost()
           + cost_preassigned_jobs
           );
 
         bpq.emplace ( total_cost
                     , -1.0*it.first
-                    , worker_info.vmem_cache_size
+                    , worker_info.vmem_cache_size()
                     , worker_info.last_time_idle()
                     , worker_info.worker_id()
                     );

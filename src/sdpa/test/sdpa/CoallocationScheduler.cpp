@@ -683,7 +683,7 @@ struct fixture_minimal_cost_assignment
                    , std::inserter (map_worker_cost, map_worker_cost.begin())
                    , [&map_host_transfer_cost] (const sdpa::mmap_match_deg_worker_id_t::value_type p)
                      {return std::make_pair ( p.second.worker_id()
-                                            , map_host_transfer_cost.at(*p.second.vmem_rank)
+                                            , map_host_transfer_cost.at(*p.second.vmem_rank())
                                             );
                      }
                    );

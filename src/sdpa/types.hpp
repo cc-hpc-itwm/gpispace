@@ -46,25 +46,25 @@ namespace sdpa {
   {
   public:
     worker_id_host_info_t ( const worker_id_t& worker_id
-                          , boost::optional<intertwine::vmem::rank_t> vmem_rank_
-                          , boost::optional<intertwine::vmem::size_t> vmem_cache_size_
+                          , boost::optional<intertwine::vmem::rank_t> vmem_rank
+                          , boost::optional<intertwine::vmem::size_t> vmem_cache_size
                           , const double& last_time_idle
                           )
       : worker_id_ (worker_id)
-      , vmem_rank (vmem_rank_)
-      , vmem_cache_size (vmem_cache_size_)
+      , _vmem_rank (vmem_rank)
+      , _vmem_cache_size (vmem_cache_size)
       , _last_time_idle (last_time_idle)
     {}
 
     const worker_id_t& worker_id() const {return worker_id_;}
     double last_time_idle() const {return _last_time_idle;}
+    boost::optional<intertwine::vmem::rank_t> vmem_rank() const { return _vmem_rank; }
+    boost::optional<intertwine::vmem::size_t> vmem_cache_size() const { return _vmem_cache_size; }
 
   private:
     worker_id_t worker_id_;
-  public:
-    boost::optional<intertwine::vmem::rank_t> vmem_rank;
-    boost::optional<intertwine::vmem::size_t> vmem_cache_size;
-  private:
+    boost::optional<intertwine::vmem::rank_t> _vmem_rank;
+    boost::optional<intertwine::vmem::size_t> _vmem_cache_size;
     double _last_time_idle;
   };
 
