@@ -42,9 +42,15 @@ namespace sdpa
         , 0.0
         , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
           {
-            return total
-              + _job_requirements (job_id).transfer_cost()
-                  (*_worker_manager.vmem_rank (wid));
+            if (_worker_manager.vmem_rank (wid))
+            {
+              return total + _job_requirements (job_id).transfer_cost()
+                (*_worker_manager.vmem_rank (wid));
+            }
+            else
+            {
+              return total;
+            }
           }
         ) + computational_cost;
     }

@@ -40,14 +40,14 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {sdpa::capability_t ("B", worker_ids[1])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -56,7 +56,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                              , sdpa::capability_t ("B", worker_ids[2])
                              , sdpa::capability_t ("C", worker_ids[2])
                              }
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , { sdpa::capability_t ("A", worker_ids[3])
                              , sdpa::capability_t ("B", worker_ids[3])
                              }
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -99,21 +99,21 @@ BOOST_AUTO_TEST_CASE (add_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {sdpa::capability_t ("B", worker_ids[1])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[2]
                            , {sdpa::capability_t ("C", worker_ids[2])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -130,14 +130,14 @@ BOOST_AUTO_TEST_CASE (delete_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {sdpa::capability_t ("B", worker_ids[1])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -162,21 +162,21 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {*it++}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {*it++}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[2]
                            , {*it++}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -194,7 +194,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , boost::none, boost::none
+                           , boost::none, boost::none, boost::none
                            , random_bool()
                            , fhg::util::testing::random_string()
                            );
@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
   {
     worker_manager.addWorker ( worker_ids[k]
                              , {sdpa::capability_t ("A", worker_ids[k])}
-                             , boost::none, boost::none
+                             , boost::none, boost::none, boost::none
                              , random_bool()
                              , fhg::util::testing::random_string()
                              );
@@ -325,7 +325,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
                         worker_manager.addWorker
                           ( worker_id
                           , {sdpa::capability_t (capability_name, worker_id)}
-                          , boost::none, boost::none
+                          , boost::none, boost::none, boost::none
                           , random_bool()
                           , fhg::util::testing::random_string()
                           );

@@ -22,7 +22,7 @@ namespace sdpa
       friend class WorkerManager;
 
       explicit Worker ( const capabilities_set_t&
-                      , boost::optional<intertwine::vmem::size_t>
+                      , boost::optional<intertwine::vmem::cache_id_t>
                       , boost::optional<intertwine::vmem::rank_t>
                       , const bool children_allowed
                       );
@@ -55,7 +55,7 @@ namespace sdpa
 
       capabilities_set_t _capabilities;
       fhg::util::refcounted_set<std::string> capability_names_;
-      boost::optional<intertwine::vmem::size_t> vmem_cache_size;
+      boost::optional<intertwine::vmem::cache_id_t> vmem_cache_id;
       boost::optional<intertwine::vmem::rank_t> vmem_rank;
       bool const _children_allowed;
       double _last_time_idle;

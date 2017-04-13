@@ -72,6 +72,7 @@ namespace sdpa
       //! throws if workerId was not unique
       void addWorker ( const worker_id_t& workerId
                      , const capabilities_set_t& cpbset
+                     , boost::optional<intertwine::vmem::cache_id_t> vmem_cache_id
                      , boost::optional<intertwine::vmem::size_t> vmem_cache_size
                      , boost::optional<intertwine::vmem::rank_t> vmem_rank
                      , const bool children_allowed

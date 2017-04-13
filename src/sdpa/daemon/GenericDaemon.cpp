@@ -539,6 +539,7 @@ try
   _worker_manager.addWorker
     ( event->name()
     , workerCpbSet
+    , event->vmem_cache_id
     , event->vmem_cache_size
     , event->vmem_rank
     , event->children_allowed()

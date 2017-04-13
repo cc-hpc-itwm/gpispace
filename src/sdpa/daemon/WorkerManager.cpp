@@ -3,6 +3,7 @@
 
 #include <fhg/assert.hpp>
 
+#include <boost/format.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm_ext/push_back.hpp>
 
@@ -100,6 +101,7 @@ namespace sdpa
 
     void WorkerManager::addWorker ( const worker_id_t& workerId
                                   , const capabilities_set_t& cpbSet
+                                  , boost::optional<intertwine::vmem::cache_id_t> vmem_cache_id
                                   , boost::optional<intertwine::vmem::size_t> vmem_cache_size
                                   , boost::optional<intertwine::vmem::rank_t> vmem_rank
                                   , const bool children_allowed
@@ -115,11 +117,45 @@ namespace sdpa
       worker_connections_.left.insert ({workerId, address});
       auto result = worker_map_.emplace ( workerId
                                         , Worker ( cpbSet
-                                                 , vmem_cache_size
+                                                 , vmem_cache_id
                                                  , vmem_rank
                                                  , children_allowed
                                                  )
                                         );
+
+
+      if (vmem_cache_id)
+      {
+        if (!vmem_rank)
+        {
+          throw std::logic_error
+            ( (boost::format ( "No vmem rank specified for the cache id %1%")
+                             % intertwine::vmem::to_string (*vmem_cache_id
+                             )
+              )
+            . str()
+            );
+        }
+
+        if (!vmem_cache_size)
+        {
+          throw std::logic_error
+            ( (boost::format ("The cache "
+                             +  intertwine::vmem::to_string (*vmem_cache_id)
+                             + " has no size specified!"
+                             )
+              )
+            . str()
+            );
+        }
+
+        cache_info_key_t const cache_info_key (*vmem_rank, *vmem_cache_id);
+        _caches.emplace
+          ( std::piecewise_construct
+          , std::forward_as_tuple (cache_info_key)
+          , std::forward_as_tuple (static_cast<std::size_t>(*vmem_cache_size))
+          ).first->second.inc_ref_count();
+      }
 
       worker_equiv_classes_[result.first->second.capability_names_].add_worker_entry (result.first);
     }
@@ -139,6 +175,16 @@ namespace sdpa
       if (equivalence_class->second.n_workers() == 0)
       {
         worker_equiv_classes_.erase (equivalence_class);
+      }
+
+      if (worker->second.vmem_cache_id && worker->second.vmem_rank)
+      {
+        cache_info_key_t const key
+          (*worker->second.vmem_rank, *worker->second.vmem_cache_id);
+        if (_caches.at (key).dec_ref_count() == 0)
+        {
+          _caches.erase (key);
+        }
       }
 
       worker_map_.erase (worker);
@@ -215,15 +261,21 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
+      for (std::pair<worker_id_t const, Worker> const& worker: worker_map_)
       {
-        if ( job_reqs.shared_memory_amount_required()
-           > static_cast<std::size_t> (worker.second.vmem_cache_size.get_value_or (intertwine::vmem::size_t (0)))
-           )
-          continue;
+        boost::optional<intertwine::vmem::size_t> cache_size (boost::none);
+
+        if (worker.second.vmem_rank && worker.second.vmem_cache_id)
+        {
+          cache_info_t const& cache
+            (cache_info (*worker.second.vmem_rank, *worker.second.vmem_cache_id));
+          *cache_size = static_cast<intertwine::vmem::size_t> (cache.size());
+          if (job_reqs.shared_memory_amount_required() > cache.size())
+            { continue; }
+        }
 
         if (worker.second.backlog_full())
-          continue;
+          { continue;  }
 
         const boost::optional<double>
           matchingDeg (matchRequirements (worker.second, job_reqs));
@@ -234,7 +286,7 @@ namespace sdpa
             ( matchingDeg.get()
             , worker_scheduling_info_t ( worker.first
                                        , worker.second.vmem_rank
-                                       , worker.second.vmem_cache_size
+                                       , cache_size
                                        , worker.second._last_time_idle
                                        )
             );
@@ -264,12 +316,18 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
+      for (std::pair<worker_id_t const, Worker> const& worker: worker_map_)
       {
-        if ( requirements.shared_memory_amount_required()
-           > static_cast<std::size_t> (worker.second.vmem_cache_size.get_value_or (intertwine::vmem::size_t (0)))
-           )
-          {continue;}
+        boost::optional<intertwine::vmem::size_t> cache_size (boost::none);
+
+        if (worker.second.vmem_rank && worker.second.vmem_cache_id)
+        {
+          cache_info_t const& cache
+            (cache_info (*worker.second.vmem_rank, *worker.second.vmem_cache_id));
+          *cache_size = static_cast<intertwine::vmem::size_t> (cache.size());
+          if (requirements.shared_memory_amount_required() > cache.size())
+            { continue; }
+        }
 
         if (worker.second.backlog_full())
           {continue;}
@@ -283,7 +341,7 @@ namespace sdpa
             ( matching_degree.get()
             , worker_scheduling_info_t ( worker.first
                                        , worker.second.vmem_rank
-                                       , worker.second.vmem_cache_size
+                                       , cache_size
                                        , worker.second._last_time_idle
                                        )
             );
@@ -320,11 +378,15 @@ namespace sdpa
              (cost_reservation)
           );
 
-        double const total_cost
-          ( requirements.transfer_cost() (*worker_info.vmem_rank())
-          + requirements.computational_cost()
+        double total_cost
+          ( requirements.computational_cost()
           + cost_preassigned_jobs
           );
+
+        if (worker_info.vmem_rank())
+        {
+          total_cost += requirements.transfer_cost() (*worker_info.vmem_rank());
+        }
 
         bpq.emplace ( total_cost
                     , -1.0*it.first

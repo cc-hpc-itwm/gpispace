@@ -10,13 +10,13 @@ namespace sdpa
   namespace daemon
   {
     Worker::Worker ( const capabilities_set_t& capabilities
-                   , boost::optional<intertwine::vmem::size_t> vmem_cache_size_
+                   , boost::optional<intertwine::vmem::cache_id_t> cache_id
                    , boost::optional<intertwine::vmem::rank_t> vmem_rank_
                    , const bool children_allowed
                    )
       : _capabilities (capabilities)
       , capability_names_()
-      , vmem_cache_size (vmem_cache_size_)
+      , vmem_cache_id (cache_id)
       , vmem_rank (vmem_rank_)
       , _children_allowed (children_allowed)
       , _last_time_idle (fhg::util::now())
