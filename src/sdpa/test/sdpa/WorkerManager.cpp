@@ -213,6 +213,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
         // do nothing, serve_job is merged with submit_if_can_start in
         // order to avoid races when workers are removed
       }
+    , 0
     );
 
   workers = worker_manager.findSubmOrAckWorkers (job_id);
@@ -263,6 +264,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
         // do nothing, serve_job is merged with submit_if_can_start in
         // order to avoid races when workers are removed
       }
+    , 0
     );
 
   std::unordered_set<sdpa::worker_id_t>workers
@@ -357,6 +359,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
             ( job_id
             , {worker_id}
             , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){}
+            , 0
             )
           );
       }

@@ -107,7 +107,11 @@ namespace sdpa
           }
           catch (std::out_of_range const&)
           {
-            _worker_manager.delete_job_from_workers (jobId, matching_workers);
+            _worker_manager.delete_job_from_workers
+              ( jobId
+              , matching_workers
+              , _job_requirements (jobId).shared_memory_amount_required()
+              );
             jobs_to_schedule.push_front (jobId);
           }
         }
@@ -193,7 +197,7 @@ namespace sdpa
       {
         std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-             (job_id, workers, serve_job)
+             (job_id, workers, serve_job, _job_requirements (job_id).shared_memory_amount_required())
            )
         {
           jobs_started.insert (job_id);
@@ -218,7 +222,11 @@ namespace sdpa
       if (it != allocation_table_.end())
       {
         Reservation const* const ptr_reservation(it->second);
-        _worker_manager.delete_job_from_workers (job_id, ptr_reservation->workers());
+        _worker_manager.delete_job_from_workers
+          ( job_id
+          , ptr_reservation->workers()
+          , _job_requirements (job_id).shared_memory_amount_required()
+          );
 
         delete ptr_reservation;
         _pending_jobs.erase (it->first);

@@ -406,23 +406,40 @@ namespace sdpa
                            , const job_id_t&
                            )
                      > const& serve_job
+      , std::size_t cache_amount_required
       )
     {
       std::lock_guard<std::mutex> const _(mtx_);
+      std::set <cache_info_key_t> used_caches;
       bool const can_start
-        ( std::all_of ( std::begin(workers)
-                      , std::end(workers)
-                      , [this] (const worker_id_t& worker_id)
-                        {
-                          return worker_map_.count (worker_id)
-                            && !worker_map_.at (worker_id).isReserved();
-                        }
-                      )
+        ( std::all_of
+            ( std::begin(workers)
+            , std::end(workers)
+            , [this, &used_caches, &cache_amount_required] (const worker_id_t& worker_id)
+              {
+                bool can_run_job
+                  (worker_map_.count (worker_id) && !worker_map_.at (worker_id).isReserved());
+
+                Worker const& worker (worker_map_.at (worker_id));
+                if (!can_run_job || !worker.vmem_cache_id || !worker.vmem_rank)
+                {
+                  return can_run_job;
+                }
+
+                used_caches.emplace (*worker.vmem_rank, *worker.vmem_cache_id);
+                return cache_info (*worker.vmem_rank, *worker.vmem_cache_id).available()
+                  >= cache_amount_required;
+              }
+            )
         );
 
       if (can_start)
       {
         submit_job_to_workers (job_id, workers);
+        for (auto&& cache : used_caches)
+        {
+          _caches.at (cache).shrink (cache_amount_required);
+        }
         serve_job (workers, job_id);
       }
 
@@ -501,10 +518,11 @@ namespace sdpa
     void WorkerManager::delete_job_from_workers
       ( job_id_t const& job_id
       , std::set<worker_id_t> const& workers
+      , std::size_t const& cache_amount_required
       )
     {
       std::lock_guard<std::mutex> const _(mtx_);
-
+      std::set<cache_info_key_t> used_caches;
       for (auto const& worker_id : workers)
       {
         try
@@ -525,6 +543,12 @@ namespace sdpa
               worker->second.delete_submitted_job (job_id);
               equivalence_class.dec_running_jobs (1);
             }
+
+            if (worker->second.vmem_cache_id && worker->second.vmem_rank)
+            {
+              used_caches.emplace
+                (*worker->second.vmem_rank, *worker->second.vmem_cache_id);
+            }
           }
         }
         catch (...)
@@ -533,6 +557,11 @@ namespace sdpa
           //! which correctly clears queues already, and
           //! delete_job_from_worker does nothing else.
         }
+      }
+
+      for (auto&& cache : used_caches)
+      {
+        _caches.at (cache).grow (cache_amount_required);
       }
     }
 
