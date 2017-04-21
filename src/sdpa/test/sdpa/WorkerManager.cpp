@@ -31,6 +31,11 @@ namespace
     std::bernoulli_distribution dist (0.5);
     return dist (gen);
   }
+
+  unsigned long random_ulong()
+  {
+   return fhg::util::testing::random_integral<unsigned long>();
+  }
 }
 
 BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
@@ -428,4 +433,87 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   // that only those expensive jobs are stolen. With the invalid-read,
   // the second job is stolen from the cheaper worker.
   steal_work();
+}
+
+BOOST_AUTO_TEST_CASE (two_workers_sharing_the_same_cache)
+{
+  std::string const capability (fhg::util::testing::random_string());
+  intertwine::vmem::cache_id_t const cache_id (random_ulong());
+  std::size_t const job_size_0 (random_ulong() % 1000);
+  std::size_t const job_size_1 (random_ulong() % 1000);
+  intertwine::vmem::size_t const cache_size
+    (job_size_0 + job_size_1 + random_ulong() % 1000);
+  intertwine::vmem::rank_t const vmem_rank (random_ulong());
+
+  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_id_pool;
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_id_pool;
+
+  sdpa::daemon::WorkerManager worker_manager;
+
+  sdpa::worker_id_t const worker_0 (worker_id_pool());
+  worker_manager.addWorker ( worker_0
+                           , {sdpa::capability_t (capability, worker_0)}
+                           , cache_id
+                           , cache_size
+                           , vmem_rank
+                           , random_bool()
+                           , fhg::util::testing::random_string()
+                           );
+
+  sdpa::worker_id_t const worker_1 (worker_id_pool());
+  worker_manager.addWorker ( worker_1
+                           , {sdpa::capability_t (capability, worker_1)}
+                           , cache_id
+                           , cache_size
+                           , vmem_rank
+                           , random_bool()
+                           , fhg::util::testing::random_string()
+                           );
+
+ BOOST_REQUIRE_EQUAL
+   ( worker_manager.cache_info (vmem_rank, cache_id).size()
+   , static_cast<std::size_t>(cache_size)
+   );
+
+  sdpa::job_id_t const job_0 (job_id_pool());
+  worker_manager.assign_job_to_workers (job_0, {worker_0});
+
+  worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( job_0
+    , {worker_0}
+    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){}
+    , job_size_0
+    );
+
+  BOOST_REQUIRE_EQUAL
+    ( worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size) - job_size_0
+    );
+
+  sdpa::job_id_t const job_1 (job_id_pool());
+  worker_manager.assign_job_to_workers (job_1, {worker_1});
+
+  worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    ( job_1
+    , {worker_1}
+    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){}
+    , job_size_1
+    );
+
+  BOOST_REQUIRE_EQUAL
+    ( worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size) - job_size_0 - job_size_1
+    );
+
+  worker_manager.delete_job_from_workers (job_0, {worker_0}, job_size_0);
+  BOOST_REQUIRE_EQUAL
+    ( worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size) - job_size_1
+    );
+
+  worker_manager.delete_job_from_workers (job_1, {worker_1}, job_size_1);
+  BOOST_REQUIRE_EQUAL
+    ( worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size)
+    );
 }

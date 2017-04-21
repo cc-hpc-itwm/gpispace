@@ -5,8 +5,9 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/set.hpp>
 #include <util-generic/testing/printer/generic.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random_integral.hpp>
+#include <util-generic/testing/random_string.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
 
@@ -100,6 +101,11 @@ namespace
   job_requirements_t require (unsigned long workers)
   {
     return {{}, we::type::schedule_data (workers), null_transfer_cost, computational_cost, 0};
+  }
+
+  job_requirements_t require (unsigned long workers, std::size_t mem_size)
+  {
+    return {{}, we::type::schedule_data (workers), null_transfer_cost, computational_cost, mem_size};
   }
 
   job_requirements_t no_requirements()
@@ -2202,4 +2208,77 @@ BOOST_FIXTURE_TEST_CASE
     BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment), 1);
     BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment), 0);
   }
+}
+
+BOOST_FIXTURE_TEST_CASE (workers_sharing_the_same_cache, fixture_add_new_workers)
+{
+  std::string const capability (fhg::util::testing::random_string());
+  intertwine::vmem::cache_id_t const cache_id (random_ulong());
+  std::size_t const job_size_0 (random_ulong() % 1000);
+  std::size_t const job_size_1 (random_ulong() % 1000);
+  intertwine::vmem::size_t const cache_size
+    (job_size_0 + job_size_1 + random_ulong() % 1000);
+  intertwine::vmem::rank_t const vmem_rank (random_ulong());
+
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_id_pool;
+
+  unsigned int const n_workers (6 + random_ulong() % 10);
+  std::vector<sdpa::worker_id_t> workers (n_workers);
+
+  std::generate_n (workers.begin(), n_workers, fhg::util::testing::random_string);
+
+  for (sdpa::worker_id_t const& worker : workers)
+  {
+    _worker_manager.addWorker ( worker
+                              , {}
+                              , cache_id
+                              , cache_size
+                              , vmem_rank
+                              , false
+                              , fhg::util::testing::random_string()
+                              );
+  }
+
+  BOOST_REQUIRE_EQUAL
+    ( _worker_manager.cache_info (vmem_rank, cache_id).size()
+    , static_cast<std::size_t>(cache_size)
+    );
+
+  sdpa::job_id_t const job_0 (job_id_pool());
+  add_job (job_0, require (random_ulong() % 2 + 1, job_size_0));
+  _scheduler.enqueueJob (job_0);
+
+  request_scheduling();
+  _scheduler.start_pending_jobs
+    ([] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){});
+
+  BOOST_REQUIRE_EQUAL
+    ( _worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size) - job_size_0
+    );
+
+  sdpa::job_id_t const job_1 (job_id_pool());
+  add_job (job_1, require (random_ulong() % 2 + 1, job_size_1));
+  _scheduler.enqueueJob (job_1);
+
+  request_scheduling();
+  _scheduler.start_pending_jobs
+    ([] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){});
+
+  BOOST_REQUIRE_EQUAL
+    ( _worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size) - job_size_0 - job_size_1
+    );
+
+  _scheduler.releaseReservation (job_0);
+  BOOST_REQUIRE_EQUAL
+    ( _worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size) - job_size_1
+    );
+
+  _scheduler.releaseReservation (job_1);
+  BOOST_REQUIRE_EQUAL
+    ( _worker_manager.cache_info (vmem_rank, cache_id).available()
+    , static_cast<std::size_t>(cache_size)
+    );
 }
