@@ -9,6 +9,7 @@
 #include <fhg/util/thread/bounded_queue.hpp>
 
 #include <functional>
+#include <numeric>
 #include <thread>
 #include <vector>
 

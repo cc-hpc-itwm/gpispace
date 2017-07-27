@@ -15,6 +15,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <numeric>
 #include <unordered_set>
 
 namespace gpi

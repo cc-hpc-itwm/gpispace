@@ -31,6 +31,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <numeric>
 #include <regex>
 #include <stdexcept>
 #include <string>
