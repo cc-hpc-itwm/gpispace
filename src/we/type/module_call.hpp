@@ -30,6 +30,7 @@
 
 #include <algorithm>
 #include <list>
+#include <numeric>
 #include <unordered_map>
 
 namespace we { namespace type {

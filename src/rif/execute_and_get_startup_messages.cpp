@@ -22,6 +22,7 @@
 #include <functional>
 #include <future>
 #include <mutex>
+#include <numeric>
 #include <sstream>
 #include <system_error>
 

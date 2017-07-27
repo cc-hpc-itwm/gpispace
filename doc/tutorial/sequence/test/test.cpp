@@ -23,6 +23,7 @@
 #include <algorithm>
 #include <list>
 #include <map>
+#include <numeric>
 #include <vector>
 
 BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)

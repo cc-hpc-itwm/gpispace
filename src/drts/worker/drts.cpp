@@ -27,6 +27,8 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <random>
+
 struct wfe_task_t
 {
   enum state_t
