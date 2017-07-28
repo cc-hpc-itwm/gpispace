@@ -133,10 +133,10 @@ namespace sdpa
         );
     }
 
-    CoallocationScheduler::assignment_t
+    CoallocationScheduler::assignment_t_TESTING_ONLY
       CoallocationScheduler::get_current_assignment_TESTING_ONLY() const
     {
-      assignment_t assignment;
+      assignment_t_TESTING_ONLY assignment;
       std::transform ( allocation_table_.begin()
                      , allocation_table_.end()
                      , std::inserter (assignment, assignment.end())
