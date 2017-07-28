@@ -133,22 +133,6 @@ namespace sdpa
         );
     }
 
-    CoallocationScheduler::assignment_t
-      CoallocationScheduler::get_current_assignment_TESTING_ONLY() const
-    {
-      assignment_t assignment;
-      std::transform ( allocation_table_.begin()
-                     , allocation_table_.end()
-                     , std::inserter (assignment, assignment.end())
-                     , [](allocation_table_t::value_type const &p)
-                       {
-                         return std::make_pair (p.first, p.second->workers());
-                       }
-                     );
-
-      return assignment;
-    }
-
     void CoallocationScheduler::reschedule_worker_jobs
        ( worker_id_t const& worker
        , std::function<Job* (sdpa::job_id_t const&)> get_job

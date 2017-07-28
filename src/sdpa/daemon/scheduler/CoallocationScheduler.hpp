@@ -17,8 +17,6 @@ namespace sdpa
     class CoallocationScheduler : boost::noncopyable
     {
     public:
-      typedef std::map<job_id_t, std::set<worker_id_t>> assignment_t;
-
       CoallocationScheduler
         ( std::function<job_requirements_t (const sdpa::job_id_t&)>
         , WorkerManager&
@@ -39,7 +37,6 @@ namespace sdpa
       void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
       void steal_work();
-      assignment_t get_current_assignment_TESTING_ONLY() const;
 
       void reschedule_worker_jobs
         ( worker_id_t const&
@@ -184,6 +181,8 @@ namespace sdpa
         allocation_table_t;
       allocation_table_t allocation_table_;
       std::unordered_set<job_id_t> _pending_jobs;
+
+      friend class access_allocation_table_TESTING_ONLY;
     };
   }
 }
