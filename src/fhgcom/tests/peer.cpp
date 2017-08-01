@@ -35,7 +35,7 @@ BOOST_AUTO_TEST_CASE (peer_run_single)
   using namespace fhg::com;
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
-                , port_t("1235")
+                , port_t("12351")
                 );
 }
 
