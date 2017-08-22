@@ -134,7 +134,7 @@ private:
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
   intertwine::vmem::ipc_client* _virtual_memory_api;
-  gspc::scoped_vmem_cache const* _vmem_cache;
+  gspc::scoped_vmem_cache const* _vmem_own_cache;
 
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
