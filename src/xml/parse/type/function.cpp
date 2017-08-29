@@ -563,16 +563,20 @@ namespace xml
 
         we_transition_type operator () (const module_type& mod) const
         {
-          std::unordered_map<std::string, std::string> memory_buffers;
+          std::unordered_map<std::string, we::type::memory_buffer_info> memory_buffers;
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
             memory_buffer_type const& memory_buffer
               (*fun.memory_buffers().get (memory_buffer_name));
 
-            memory_buffers.emplace ( memory_buffer.name()
-                                   , memory_buffer.size()
-                                   );
+            memory_buffers.emplace
+              ( std::piecewise_construct
+              , std::make_tuple (memory_buffer.name())
+              , std::make_tuple ( memory_buffer.size()
+                                , memory_buffer.read_only().get_value_or (false)
+                                )
+              );
           }
 
           std::list<we::type::memory_transfer> memory_gets;

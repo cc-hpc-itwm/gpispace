@@ -21,6 +21,7 @@
 #include <we/type/module_call.fwd.hpp>
 
 #include <we/expr/eval/context.hpp>
+#include <we/type/memory_buffer_info.hpp>
 #include <we/type/memory_transfer.hpp>
 #include <we/type/range.hpp>
 
@@ -39,7 +40,7 @@ namespace we { namespace type {
     module_call_t
       ( const std::string & module
       , const std::string & function
-      , std::unordered_map<std::string, std::string>&& memory_buffers
+      , std::unordered_map<std::string, memory_buffer_info>&& memory_buffers
       , std::list<memory_transfer>&& memory_gets
       , std::list<memory_transfer>&& memory_puts
       )
@@ -53,7 +54,7 @@ namespace we { namespace type {
     const std::string & module () const { return module_; }
     const std::string & function () const { return function_; }
 
-    std::unordered_map<std::string, std::string> const& memory_buffers() const
+    std::unordered_map<std::string, memory_buffer_info> const& memory_buffers() const
     {
       return _memory_buffers;
     }
@@ -94,7 +95,7 @@ namespace we { namespace type {
     private:
     std::string module_;
     std::string function_;
-    std::unordered_map<std::string, std::string> _memory_buffers;
+    std::unordered_map<std::string, memory_buffer_info> _memory_buffers;
     std::list<memory_transfer> _memory_gets;
     std::list<memory_transfer> _memory_puts;
 

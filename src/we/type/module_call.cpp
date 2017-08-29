@@ -75,15 +75,15 @@ namespace we
     {
       std::unordered_map<std::string, unsigned long> sizes;
 
-      for ( std::pair<std::string, std::string> const& name_and_expression
+      for ( std::pair<std::string, memory_buffer_info> const& buffer
           : memory_buffers()
           )
       {
         expr::eval::context context (input);
 
-        sizes.emplace ( name_and_expression.first
+        sizes.emplace ( buffer.first
                       , boost::get<unsigned long>
-                          (expr::parse::parser (name_and_expression.second)
+                          (expr::parse::parser (buffer.second.size())
                             .eval_all (context)
                           )
                       );
