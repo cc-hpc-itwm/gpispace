@@ -96,3 +96,31 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
   BOOST_REQUIRE (equal (module_call.memory_buffer_sizes (context), expected));
   BOOST_REQUIRE_EQUAL (module_call.memory_buffer_size_total (context), total);
 }
+
+BOOST_AUTO_TEST_CASE (memory_buffer_info)
+{
+  std::string const name (fhg::util::testing::random_string());
+  std::string const size (fhg::util::testing::random_string());
+  bool const read_only (fhg::util::testing::random_integral<unsigned long>()%2);
+
+  std::unordered_map<std::string, we::type::memory_buffer_info> memory_buffers;
+
+  memory_buffers.emplace
+    ( std::piecewise_construct
+    , std::make_tuple (name)
+    , std::make_tuple (size, read_only)
+    );
+
+  we::type::module_call_t const module_call
+    ( fhg::util::testing::random_identifier()
+    , fhg::util::testing::random_identifier()
+    , std::move (memory_buffers)
+    , {}
+    , {}
+    );
+
+  BOOST_REQUIRE_EQUAL (module_call.memory_buffers().size(), 1);
+  BOOST_REQUIRE_EQUAL (module_call.memory_buffers().cbegin()->first, name);
+  BOOST_REQUIRE_EQUAL (module_call.memory_buffers().cbegin()->second.size(), size);
+  BOOST_REQUIRE_EQUAL (module_call.memory_buffers().cbegin()->second.read_only(), read_only);
+}
