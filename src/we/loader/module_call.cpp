@@ -122,7 +122,7 @@ namespace we
       }
 
       // Allocate memory for pure output buffers.
-      std::unordered_map<std::string, std::size_t>&
+      std::unordered_map<std::string, std::size_t>
         pure_output_memory_buffers (memory_buffers);
       for (auto const& input : input_memory_buffers)
       {
@@ -174,9 +174,7 @@ namespace we
           local::range const& local (put.first);
           global::range const& global (put.second);
 
-          if ( !pure_output_memory_buffers.count (local.buffer())
-             && !input_memory_buffers.count (local.buffer())
-             )
+          if (!memory_buffers.count (local.buffer()))
           {
             //! \todo specific exception
             throw std::runtime_error ("unknown memory buffer " + local.buffer());
