@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
   BOOST_REQUIRE_EQUAL (module_call.memory_buffer_size_total (context), total);
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_info)
+BOOST_AUTO_TEST_CASE (memory_buffer_info_is_stored)
 {
   std::string const name (fhg::util::testing::random_string());
   std::string const size (fhg::util::testing::random_string());
