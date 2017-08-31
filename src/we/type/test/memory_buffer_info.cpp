@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
 BOOST_AUTO_TEST_CASE (read_only_is_stored)
 {
   std::string const size (fhg::util::testing::random_string());
-  bool const read_only(fhg::util::testing::random_integral<unsigned long>()%2);
+  bool const read_only (fhg::util::testing::random_integral<unsigned long>()%2);
 
   BOOST_REQUIRE_EQUAL
     ( read_only
