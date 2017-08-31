@@ -133,8 +133,8 @@ BOOST_AUTO_TEST_CASE
 {
   std::string const name (random_identifier_with_valid_prefix());
   std::string const size (fhg::util::testing::random_content_string());
-  bool read_only (fhg::util::testing::random_integral<unsigned long>()%2);
-  std::string attribute_value (read_only ? "true" : "false");
+  bool const read_only (fhg::util::testing::random_integral<unsigned long>()%2);
+  std::string const attribute_value (read_only ? "true" : "false");
 
   std::string const input
     ( ( boost::format (R"EOS(
