@@ -10,6 +10,7 @@
 #include <we/type/net.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random_integral.hpp>
 #include <util-generic/testing/random_string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/boost/variant.hpp>
@@ -91,7 +92,8 @@ BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
       );
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
+BOOST_AUTO_TEST_CASE
+  (memory_buffer_with_read_only_attribute_not_set_is_stored_in_function)
 {
   std::string const name (random_identifier_with_valid_prefix());
   std::string const size (fhg::util::testing::random_content_string());
@@ -122,6 +124,47 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
     BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->size()
                         , size
                         );
+    BOOST_REQUIRE
+      (function.memory_buffers().begin()->read_only() == boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  (memory_buffer_with_read_only_attribute_set_is_stored_in_function)
+{
+  std::string const name (random_identifier_with_valid_prefix());
+  std::string const size (fhg::util::testing::random_content_string());
+  bool const read_only (fhg::util::testing::random_integral<unsigned long>()%2);
+  std::string const attribute_value (read_only ? "true" : "false");
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun>
+  <memory-buffer name="%1%" read-only="%2%"><size>%3%</size></memory-buffer>
+  <module name="%4%" function="%5%"/>
+</defun>)EOS")
+      % name
+      % attribute_value
+      % size
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+    std::istringstream input_stream (input);
+
+    xml::parse::state::type state;
+    xml::parse::type::function_type const function
+      (xml::parse::just_parse (state, input_stream));
+
+    BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 1);
+    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->name()
+                        , name
+                        );
+    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->size()
+                        , size
+                        );
+    BOOST_REQUIRE
+      (function.memory_buffers().begin()->read_only().get() == read_only);
 }
 
 BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)

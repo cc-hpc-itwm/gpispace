@@ -56,3 +56,9 @@ fhg_add_test (NAME we_type_get_schedule_data
   USE_BOOST
   LIBRARIES pnet
 )
+
+fhg_add_test (NAME we_type_memory_buffer_info
+  SOURCES memory_buffer_info.cpp
+  USE_BOOST
+  LIBRARIES fhg-util
+)
