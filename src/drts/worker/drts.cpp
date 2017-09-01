@@ -64,6 +64,7 @@ namespace
     wfe_exec_context
       ( we::loader::loader& module_loader
       , intertwine::vmem::ipc_client* virtual_memory_api
+      , boost::optional<intertwine::vmem::shared_cache_id_t> vmem_shared_cache
       , gspc::scoped_vmem_cache const* vmem_own_cache
       , wfe_task_t& target
       , std::mt19937& engine
@@ -71,6 +72,7 @@ namespace
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
+      , _vmem_shared_cache (vmem_shared_cache)
       , _vmem_own_cache (vmem_own_cache)
       , task (target)
       , _engine (engine)
@@ -92,6 +94,7 @@ namespace
         {
           boost::apply_visitor ( wfe_exec_context ( loader
                                                   , _virtual_memory_api
+                                                  , _vmem_shared_cache
                                                   , _vmem_own_cache
                                                   , task
                                                   , _engine
@@ -115,6 +118,7 @@ namespace
         _activity.add_output
           ( we::loader::module_call ( loader
                                     , _virtual_memory_api
+                                    , _vmem_shared_cache
                                     , _vmem_own_cache
                                     , &task.context
                                     , _activity.evaluation_context()
@@ -143,6 +147,7 @@ namespace
   private:
     we::loader::loader& loader;
     intertwine::vmem::ipc_client* _virtual_memory_api;
+    boost::optional<intertwine::vmem::shared_cache_id_t> _vmem_shared_cache;
     gspc::scoped_vmem_cache const* _vmem_own_cache;
     wfe_task_t& task;
     std::mt19937& _engine;
@@ -188,6 +193,7 @@ DRTSImpl::DRTSImpl
     , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , intertwine::vmem::ipc_client* virtual_memory_api
+    , boost::optional<intertwine::vmem::shared_cache_id_t> vmem_shared_cache
     , gspc::scoped_vmem_cache const* vmem_own_cache
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
@@ -203,6 +209,7 @@ DRTSImpl::DRTSImpl
   , m_loader ({library_path.begin(), library_path.end()})
   , _notification_service (std::move (gui_notification_service))
   , _virtual_memory_api (virtual_memory_api)
+  , _vmem_shared_cache (vmem_shared_cache)
   , _vmem_own_cache (vmem_own_cache)
   , m_pending_jobs (backlog_length)
   , _peer ( std::move (peer_io_service)
@@ -572,6 +579,7 @@ try
 
         boost::apply_visitor ( wfe_exec_context ( m_loader
                                                 , _virtual_memory_api
+                                                , _vmem_shared_cache
                                                 , _vmem_own_cache
                                                 , task
                                                 , engine

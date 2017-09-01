@@ -15,6 +15,7 @@ namespace we
     expr::eval::context module_call
       ( we::loader::loader& loader
       , intertwine::vmem::ipc_client*
+      , boost::optional<intertwine::vmem::shared_cache_id_t>
       , gspc::scoped_vmem_cache const*
       , drts::worker::context* context
       , expr::eval::context const& input
