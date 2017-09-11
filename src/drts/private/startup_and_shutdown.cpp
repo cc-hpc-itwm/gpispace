@@ -345,7 +345,7 @@ namespace fhg
         );
 
       std::vector<std::tuple< fhg::rif::entry_point
-                            , std::future<std::pair<pid_t, std::vector<std::string>>>
+                            , std::future<pid_t>
                             , std::string
                             >
                  > futures;
@@ -403,7 +403,8 @@ namespace fhg
 
             futures.emplace_back
               ( connection.second
-              , connection.first.execute_and_get_startup_messages
+              //! \todo move construction of kernel_arguments and environment into rifd
+              , connection.first.start_worker_and_get_startup_messages
                   ( installation_path.drts_kernel()
                   , kernel_arguments (name)
                   , environment
@@ -423,18 +424,9 @@ namespace fhg
       {
         try
         {
-          auto const pid_and_startup_messages (std::get<1> (future).get());
-
-          if (!pid_and_startup_messages.second.empty())
-          {
-            throw std::runtime_error ( "could not start " + std::get<2> (future)
-                                     + ": expected no startup messages"
-                                     );
-          }
-
           processes.store ( std::get<0> (future)
                           , "drts-kernel-" + std::get<2> (future)
-                          , pid_and_startup_messages.first
+                          , std::get<1> (future).get()
                           );
         }
         catch (...)

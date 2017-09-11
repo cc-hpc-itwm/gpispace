@@ -58,6 +58,14 @@ namespace fhg
         );
 
       FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_worker_and_get_startup_messages
+        , pid_t ( boost::filesystem::path command
+                , std::vector<std::string> arguments
+                , std::unordered_map<std::string, std::string> environment
+                )
+        );
+
+      FHG_RPC_FUNCTION_DESCRIPTION
         ( start_vmem_initial_setup_and_wait_for_local_comm_port
         , std::pair<pid_t, std::uint16_t>
             ( boost::filesystem::path command

@@ -20,6 +20,7 @@ namespace fhg
         , execute_and_get_startup_messages (_endpoint)
         , execute_and_get_startup_messages_and_wait (_endpoint)
         , kill (_endpoint)
+        , start_worker_and_get_startup_messages (_endpoint)
         , start_vmem_initial_setup_and_wait_for_local_comm_port (_endpoint)
         , continue_vmem_set_nodes_and_wait_for_startup (_endpoint)
       {}
@@ -33,6 +34,8 @@ namespace fhg
       rpc::remote_function<protocol::execute_and_get_startup_messages_and_wait>
         execute_and_get_startup_messages_and_wait;
       rpc::remote_function<protocol::kill> kill;
+      rpc::remote_function<protocol::start_worker_and_get_startup_messages>
+        start_worker_and_get_startup_messages;
       rpc::remote_function<protocol::start_vmem_initial_setup_and_wait_for_local_comm_port>
         start_vmem_initial_setup_and_wait_for_local_comm_port;
       rpc::remote_function<protocol::continue_vmem_set_nodes_and_wait_for_startup>

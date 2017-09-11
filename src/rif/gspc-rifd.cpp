@@ -198,6 +198,36 @@ try
       }
     );
 
+  //! \todo multiple
+  boost::optional<intertwine::vmem::shared_cache_id_t> shared_cache_id;
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_worker_and_get_startup_messages>
+    start_worker_and_get_startup_messages_service
+      ( service_dispatcher
+      , [&] ( boost::filesystem::path command
+            , std::vector<std::string> arguments
+            , std::unordered_map<std::string, std::string> environment
+            ) -> pid_t
+        {
+          if (shared_cache_id)
+          {
+            arguments.emplace_back ("--shared-cache-id");
+            arguments.emplace_back (shared_cache_id->to_string());
+          }
+
+          auto pid_and_startup_messages
+            (fhg::rif::execute_and_get_startup_messages (command, arguments, environment));
+
+          if (!pid_and_startup_messages.second.empty())
+          {
+            throw std::runtime_error
+              ("could not start worker: expected no startup messages");
+          }
+
+          return pid_and_startup_messages.first;
+        }
+      );
+
   std::unordered_map<pid_t, std::string> pending_vmems;
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_vmem_initial_setup_and_wait_for_local_comm_port>
