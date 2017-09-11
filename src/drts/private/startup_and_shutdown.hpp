@@ -8,6 +8,8 @@
 
 #include <rif/entry_point.hpp>
 
+#include <vmem/types.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -105,6 +107,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , boost::optional<intertwine::vmem::size_t> shared_cache_size
       );
   }
 }

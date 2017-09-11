@@ -25,6 +25,7 @@ namespace gspc
                    , boost::optional<rifd_entry_points> const& entry_points
                    , rifd_entry_point const& master
                    , std::ostream& info_output
+                   , boost::optional<std::size_t> shared_cache_size
                    );
 
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
@@ -58,6 +59,7 @@ namespace gspc
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& master
                              , std::ostream& info_output
+                             , boost::optional<intertwine::vmem::size_t> shared_cache_size
                              );
 
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>

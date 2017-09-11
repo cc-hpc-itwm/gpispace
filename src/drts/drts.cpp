@@ -15,6 +15,7 @@
 #include <sdpa/client.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
@@ -135,7 +136,38 @@ namespace gspc
                               , entry_points
                               , master
                               , info_output
+                              , boost::none
                               )
+          )
+  {}
+
+  scoped_runtime_system::scoped_runtime_system
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
+    , std::string const& topology_description
+    , rifd_entry_points const& entry_points
+    , std::size_t const& shared_cache_size
+    )
+      : _ ( new implementation
+              ( vm
+              , installation
+              , topology_description
+              , entry_points
+              , [&entry_points]() -> rifd_entry_point
+                {
+                  if (entry_points._->_entry_points.empty())
+                  {
+                    throw std::logic_error
+                      ("scoped_runtime_system: no entry_points given");
+                  }
+
+                  return { new rifd_entry_point::implementation
+                             (entry_points._->_entry_points.front())
+                         };
+                }()
+              , std::cerr
+              , shared_cache_size
+              )
           )
   {}
 
@@ -178,6 +210,7 @@ namespace gspc
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , std::ostream& info_output
+      , boost::optional<intertwine::vmem::size_t> shared_cache_size
       )
     : _info_output (info_output)
     , _master (master)
@@ -194,6 +227,12 @@ namespace gspc
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
+
+    if (shared_cache_size && !gpi_enabled)
+    {
+      throw std::logic_error
+        ("requested a shared cache, but vmem is disabled");
+    }
 
     std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
       ( _gui_host
@@ -215,6 +254,7 @@ namespace gspc
       , _master_agent_name
       , _master_agent_hostinfo
       , _info_output
+      , shared_cache_size
       );
 
     if (!rif_entry_points.empty())
@@ -312,6 +352,7 @@ namespace gspc
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
+    , boost::optional<std::size_t> shared_cache_size
     )
       : _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -344,6 +385,9 @@ namespace gspc
             : entry_points->_->_entry_points
           , master._->_entry_point
           , info_output
+          , FHG_UTIL_MAKE_OPTIONAL ( !!shared_cache_size
+                                   , intertwine::vmem::size_t (*shared_cache_size)
+                                   )
           )
       , _logger()
       , _virtual_memory_api

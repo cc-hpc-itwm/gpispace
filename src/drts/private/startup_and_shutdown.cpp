@@ -155,6 +155,7 @@ namespace
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
+    , boost::optional<intertwine::vmem::size_t> shared_cache_size
     , bool verbose
     , gspc::installation_path const& installation_path
     , boost::optional<boost::filesystem::path> const& log_dir
@@ -181,6 +182,13 @@ namespace
     {
       agent_startup_arguments.emplace_back ("--vmem-socket");
       agent_startup_arguments.emplace_back (gpi_socket->string());
+    }
+
+    if (shared_cache_size)
+    {
+      agent_startup_arguments.emplace_back ("--shared-cache-size");
+      agent_startup_arguments.emplace_back
+        (std::to_string (std::size_t (*shared_cache_size)));
     }
 
     std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
@@ -534,6 +542,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , boost::optional<intertwine::vmem::size_t>
       )
     {
       if (log_dir)
@@ -746,6 +755,7 @@ namespace fhg
                                           , log_host
                                           , log_port
                                           , gpi_socket
+                                          , shared_cache_size
                                           , verbose
                                           , installation_path
                                           , log_dir

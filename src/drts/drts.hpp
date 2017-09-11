@@ -87,6 +87,14 @@ namespace gspc
       , std::ostream& info_output
       );
 
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const& installation
+      , std::string const& topology_description
+      , rifd_entry_points const& entry_points
+      , std::size_t const& shared_cache_size
+      );
+
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
                       , rifd_entry_point_hash
