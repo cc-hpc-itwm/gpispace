@@ -16,6 +16,19 @@ fhg_add_runtime_executable (NAME gpi-space
   INSTALL_DESTINATION "libexec/gspc"
 )
 
+fhg_add_runtime_executable (NAME vmem_shared_cache
+  SOURCES "vmem_shared_cache.cpp"
+  LIBRARIES INTERTWinE-vmem::ipc_client
+            fhg-util
+            fhglog
+            rif-started_process_promise
+            Util::Generic
+            Boost::filesystem
+            Boost::program_options
+  CREATE_BUNDLE_INFO
+  INSTALL_DESTINATION "libexec/gspc"
+)
+
 fhg_add_runtime_executable (NAME pnet2dot
   SOURCES "pnet2dot.cpp"
   LIBRARIES fhg-revision

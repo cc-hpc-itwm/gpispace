@@ -50,5 +50,9 @@ namespace gspc
     {
       return libexec() / "gpi-space";
     }
+    boost::filesystem::path vmem_shared_cache() const
+    {
+      return libexec() / "vmem_shared_cache";
+    }
   };
 }
