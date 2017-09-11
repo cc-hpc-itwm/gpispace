@@ -80,6 +80,14 @@ namespace fhg
         , void (pid_t, std::vector<intertwine::vmem::node> nodes)
         );
 
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( create_shared_vmem_cache
+        , pid_t ( boost::filesystem::path shared_cache_binary
+                , boost::filesystem::path socket
+                , intertwine::vmem::size_t cache_size
+                )
+        );
+
       namespace local
       {
         FHG_RPC_FUNCTION_DESCRIPTION

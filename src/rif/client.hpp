@@ -23,6 +23,7 @@ namespace fhg
         , start_worker_and_get_startup_messages (_endpoint)
         , start_vmem_initial_setup_and_wait_for_local_comm_port (_endpoint)
         , continue_vmem_set_nodes_and_wait_for_startup (_endpoint)
+        , create_shared_vmem_cache (_endpoint)
       {}
 
     private:
@@ -40,6 +41,8 @@ namespace fhg
         start_vmem_initial_setup_and_wait_for_local_comm_port;
       rpc::remote_function<protocol::continue_vmem_set_nodes_and_wait_for_startup>
         continue_vmem_set_nodes_and_wait_for_startup;
+      rpc::remote_function<protocol::create_shared_vmem_cache>
+        create_shared_vmem_cache;
     };
   }
 }

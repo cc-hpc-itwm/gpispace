@@ -282,6 +282,36 @@ try
         }
       );
 
+  fhg::rpc::service_handler<fhg::rif::protocol::create_shared_vmem_cache>
+    create_shared_vmem_cache
+      ( service_dispatcher
+      , [&] ( boost::filesystem::path shared_cache_binary
+            , boost::filesystem::path socket
+            , intertwine::vmem::size_t cache_size
+            ) -> pid_t
+        {
+          std::pair<pid_t, std::vector<std::string>> const
+            startup_messages
+              ( fhg::rif::execute_and_get_startup_messages
+                  ( shared_cache_binary
+                  , { "--socket", socket.string()
+                    , "--cache-size", std::to_string (std::size_t (cache_size))
+                    }
+                  , std::unordered_map<std::string, std::string> {}
+                  )
+              );
+
+          if (startup_messages.second.size() != 1)
+          {
+            throw std::logic_error ("expected one startup message");
+          }
+
+          shared_cache_id = intertwine::vmem::shared_cache_id_t::from_string (startup_messages.second[0]);
+
+          return startup_messages.first;
+        }
+      );
+
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
   fhg::rpc::service_tcp_provider_with_deferred_start server

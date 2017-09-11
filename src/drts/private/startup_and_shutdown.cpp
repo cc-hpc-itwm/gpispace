@@ -534,7 +534,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
-      , boost::optional<intertwine::vmem::size_t>
+      , boost::optional<intertwine::vmem::size_t> shared_cache_size
       )
     {
       if (log_dir)
@@ -732,6 +732,76 @@ namespace fhg
               }
             }
           , "could not start vmem"
+          );
+      }
+
+      if (shared_cache_size && gpi_socket)
+      {
+        fhg::util::nest_exceptions<std::runtime_error>
+          ( [&]
+            {
+              std::list < std::tuple
+                            < rif::client*
+                            , rif::entry_point
+                            , std::future<pid_t>
+                            >
+                        > queued_start_requests;
+
+              std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+                fails;
+
+              for (auto& connection : rif_connections)
+              {
+                try
+                {
+                  queued_start_requests.emplace_back
+                    ( &connection.first
+                    , connection.second
+                    , connection.first.create_shared_vmem_cache
+                        ( installation_path.vmem_shared_cache()
+                        , gpi_socket.get()
+                        , shared_cache_size.get()
+                        )
+                    );
+                }
+                catch (...)
+                {
+                  fails.emplace (connection.second, std::current_exception());
+                }
+              }
+
+              for (auto& request : queued_start_requests)
+              {
+                try
+                {
+                  processes.store ( std::get<1> (request)
+                                  //! \todo use unique name here for multiple shared caches
+                                  , "shared_cache"
+                                  , std::get<2> (request).get()
+                                  );
+                }
+                catch (...)
+                {
+                  fails.emplace
+                    (std::get<1> (request), std::current_exception());
+                }
+              }
+
+              if (!fails.empty())
+              {
+                fhg::util::throw_collected_exceptions
+                  ( fails
+                  , [] (std::pair<rif::entry_point, std::exception_ptr> const& fail)
+                    {
+                      return ( boost::format ("shared cache creation failed %1%: %2%")
+                             % fail.first
+                             % fhg::util::exception_printer (fail.second)
+                             ).str();
+                    }
+                  );
+              }
+            }
+          , "could not create shared cache"
           );
       }
 
