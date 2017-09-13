@@ -380,7 +380,7 @@ namespace we
     }
     _nets_to_extract_from.apply
       ( id
-      , [this, workflow_response_id, place_name, value]
+      , [workflow_response_id, place_name, value]
           (activity_data_type& activity_data)
         {
           boost::get<we::type::net_type>

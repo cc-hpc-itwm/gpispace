@@ -89,13 +89,13 @@ BOOST_FIXTURE_TEST_CASE
   channel_from_child_to_parent channel;
 
   context.execute_and_kill_on_cancel
-    ( [r, &channel, &exited]()
+    ( [r, &channel]()
       {
         channel.write (r);
       }
     , &on_cancel_unexpected
     , &on_signal_unexpected
-    , [r, &exited] (int exit_code)
+    , [&exited] (int exit_code)
       {
         BOOST_REQUIRE_EQUAL (exit_code, 0);
 
@@ -149,7 +149,7 @@ BOOST_FIXTURE_TEST_CASE
   bool signalled {false};
 
   context.execute_and_kill_on_cancel
-    ( [&signalled] ()
+    ( []()
       {
         fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGUSR1);
       }
