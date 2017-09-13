@@ -2,8 +2,6 @@
 
 #include <util/qt/restricted_tree_column_sorter.hpp>
 
-#include <util-qt/connect.hpp>
-
 #include <QHeaderView>
 #include <QTreeView>
 
@@ -23,9 +21,9 @@ namespace fhg
           , _last_state (none)
           , _last_column (-1)
       {
-        _tree->header()->setClickable (true);
-        util::qt::connect<void (int)>
-          ( _tree->header(), SIGNAL (sectionClicked (int))
+        _tree->header()->setSectionsClickable (true);
+        connect
+          ( _tree->header(), &QHeaderView::sectionClicked
           , std::bind (&restricted_tree_column_sorter::next, this, std::placeholders::_1)
           );
         next (*_allowed_columns.begin());

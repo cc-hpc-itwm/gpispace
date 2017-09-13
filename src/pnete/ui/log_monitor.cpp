@@ -1,11 +1,11 @@
 #include <pnete/ui/log_monitor.hpp>
 
-#include <util-qt/connect.hpp>
-
 #include <we/type/activity.hpp>
 
 #include <fhglog/appender/call.hpp>
 #include <fhglog/format.hpp>
+
+#include <util-qt/overload.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/function.hpp>
@@ -313,7 +313,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   _log_table->setWordWrap (false);
   _log_table->verticalHeader()->setVisible (false);
   _log_table->horizontalHeader()->setStretchLastSection (true);
-  _log_table->verticalHeader()->setResizeMode
+  _log_table->verticalHeader()->setSectionResizeMode
     (QHeaderView::ResizeToContents);
 
   QGroupBox* filter_level_box (new QGroupBox (tr ("Filter"), this));
@@ -333,13 +333,13 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                        << tr ("Error")
                                        );
 
-  fhg::util::qt::connect<void (int)>
-    ( filter_level_combobox, SIGNAL (currentIndexChanged(int))
+  connect
+    ( filter_level_combobox, QOverload<int>::of (&QComboBox::currentIndexChanged)
     , this, boost::lambda::var (_filter_level) = boost::lambda::_1
     );
-  fhg::util::qt::connect<void (int)>
+  connect
     ( filter_level_combobox
-    , SIGNAL (currentIndexChanged(int))
+    , QOverload<int>::of (&QComboBox::currentIndexChanged)
     , _log_filter
     , std::bind (&detail::log_filter_proxy::minimum_severity, _log_filter, std::placeholders::_1)
     );
@@ -357,8 +357,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   drop_filtered_box->setChecked (_drop_filtered);
   drop_filtered_box->setToolTip
     (tr ("Drop filtered events instead of keeping them"));
-  fhg::util::qt::connect<void (bool)>
-    ( drop_filtered_box, SIGNAL (toggled (bool))
+  connect
+    ( drop_filtered_box, &QCheckBox::toggled
     , this, boost::lambda::var (_drop_filtered) = boost::lambda::_1
     );
 
@@ -367,8 +367,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
   clear_log_button->setToolTip (tr ("Clear all events"));
-  fhg::util::qt::connect<void()>
-    ( clear_log_button, SIGNAL (clicked())
+  connect
+    ( clear_log_button, &QPushButton::clicked
     , _log_model, std::bind (&detail::log_table_model::clear, _log_model)
     );
 

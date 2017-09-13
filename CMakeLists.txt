@@ -109,10 +109,9 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
 find_package (GASPI 1.3.0 REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
-find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
+find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED QUIET)
 find_package (Threads REQUIRED QUIET)
 
-include (${QT_USE_FILE})
 include (CTest)
 include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
