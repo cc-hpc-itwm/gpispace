@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
 
   unsigned long const size (num_block * size_block);
 
-  std::vector<char> const verify (generate_data (file_data, size, 2 << 20));
+  std::vector<char> const verify (generate_data (file_data, size, 2 << 10));
 
   we::type::bytearray const user_data
     ( transform_file::to_bytearray

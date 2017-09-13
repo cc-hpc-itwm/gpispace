@@ -14,9 +14,9 @@ extended_add_library (NAME transform_file_map-impl
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
 )
 
-math (EXPR size_input "20 << 20")
-math (EXPR size_output "20 << 20")
-math (EXPR size_block "2 << 20")
+math (EXPR size_input "20 << 10")
+math (EXPR size_output "20 << 10")
+math (EXPR size_block "2 << 10")
 math (EXPR num_block "120")
 
 fhg_add_test (NAME share_example_map_transform_file
