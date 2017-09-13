@@ -175,7 +175,7 @@ BOOST_DATA_TEST_CASE
 
   //! \todo specific exception
   fhg::util::testing::require_exception
-    ([&client, &job_id]()
+    ([&client]()
      {
        client.synchronous_workflow_response
          ("JOB-NOT-EXISTENT", "get_and_update_state", 12UL);
@@ -402,7 +402,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   auto&& thread_function
     ( [ &status_updates, &job_id, &drts, &no_longer_do_status_update
-      , &no_longer_do_status_update_guard, &eng
+      , &no_longer_do_status_update_guard
       ]
       {
         unsigned long updates (0);

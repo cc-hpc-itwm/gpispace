@@ -400,7 +400,7 @@ namespace fhg
         util::qt::connect<void()>
           ( clear_model, SIGNAL (triggered())
           , this
-          , [base, header_view, next]
+          , [base, header_view]
             {
               //! \note HACK: for some reason the signal blocking in
               //! execution_monitor_editor::update() does not work,
