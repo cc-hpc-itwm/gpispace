@@ -4,7 +4,7 @@ external=/home/projects/sdpa/external
 
 export BOOST_ROOT=${external}/boost/1.59.0
 path chrpath/0.16/bin
-path cmake/3.4.1/bin
+path cmake/3.9.1/bin
 path gcc/4.9.3/bin
 path git/2.6.4/bin
 path qt/4.8.6/bin
