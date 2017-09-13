@@ -98,7 +98,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   long const num_buffer (10);
 
   fhg::util::nest_exceptions<std::runtime_error>
-    ([&generator, &size_buffer, &num_values, &data_file]()
+    ([&generator, &data_file]()
      {
        //! \todo inline the generator code instead of calling a binary
        std::ostringstream command_generate;
