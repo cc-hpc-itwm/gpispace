@@ -305,7 +305,7 @@ namespace sdpa
         reservation->mark_as_canceled_if_no_result_stored_yet (worker_id);
 
         if ( !reservation->apply_to_workers_without_result // false for worker 5, true for worker 4
-               ( [&jobId, &cancel_worker_job, this] (worker_id_t const& wid)
+               ( [&jobId, &cancel_worker_job] (worker_id_t const& wid)
                  {
                    cancel_worker_job (wid, jobId);
                  }

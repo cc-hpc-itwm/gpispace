@@ -1021,7 +1021,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
 
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler
-    _scheduler (  [n_req_workers, &test_transfer_cost] (const sdpa::job_id_t&)
+    _scheduler (  [&test_transfer_cost] (const sdpa::job_id_t&)
                   {
                     return job_requirements_t ( {}
                                               , we::type::schedule_data (n_req_workers)
