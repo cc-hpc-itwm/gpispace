@@ -64,6 +64,7 @@ int main (int argc, char **argv)
       , orchUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , boost::none
+      , boost::none
       , {}
       , logger
       , boost::none

@@ -256,6 +256,7 @@ namespace utils
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
+          , boost::none
           , {}
           , logger
           , boost::none
@@ -296,6 +297,7 @@ namespace utils
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
+          , boost::none
           , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
           , logger
           , boost::none
@@ -308,6 +310,7 @@ namespace utils
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
+          , boost::none
           , {make_master_info_tuple (master)}
           , logger
           , boost::none
@@ -318,6 +321,7 @@ namespace utils
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+          , boost::none
           , boost::none
           , {make_master_info_tuple (master)}
           , logger
