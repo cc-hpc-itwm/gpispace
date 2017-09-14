@@ -220,6 +220,17 @@ std::string GenericDaemon::gen_id()
   return generator.next();
 }
 
+    namespace
+    {
+      unsigned long evaluate_size_or_die ( expr::eval::context context
+                                         , std::string const& expression
+                                         )
+      {
+        return boost::get<unsigned long>
+          (expr::parse::parser (expression).eval_all (context));
+      }
+    }
+
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
@@ -265,6 +276,25 @@ std::string GenericDaemon::gen_id()
                   ( intertwine::vmem::op::get_mutable_t
                       {fhg::vmem::intertwine_compat::global_range (global), cache}
                   );
+              }
+              else
+              {
+                if (!_shared_cache_size)
+                {
+                  throw std::logic_error
+                    ( "Attempting to transfer read-only data from the global memory "
+                      "into a non-existing shared cache!"
+                    );
+                }
+                else if ( evaluate_size_or_die (context, memory_buffers.at (local.buffer()).size())
+                        > std::size_t (*_shared_cache_size)
+                        )
+                {
+                  throw std::logic_error
+                    ( "Attempting to transfer read-only data from the global memory "
+                      "into a shared cache with insufficient size!"
+                    );
+                }
               }
             }
 
@@ -327,8 +357,7 @@ std::string GenericDaemon::gen_id()
             {
               if (buffer.second.read_only())
               {
-                cache_amount_required -= boost::get<unsigned long>
-                  (expr::parse::parser (buffer.second.size()).eval_all (context));
+                cache_amount_required -= evaluate_size_or_die (context, buffer.second.size());
               }
             }
 
