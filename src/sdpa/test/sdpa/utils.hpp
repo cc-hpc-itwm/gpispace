@@ -317,6 +317,19 @@ namespace utils
           , true
           )
     {}
+    template <typename T>
+    agent (const T& master, boost::optional<intertwine::vmem::size_t> const& shared_cache_size, fhg::log::Logger& logger)
+      : boost::noncopyable ()
+      , _ ( random_peer_name(), "127.0.0.1"
+          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+          , boost::none
+          , shared_cache_size
+          , {make_master_info_tuple (master)}
+          , logger
+          , boost::none
+          , true
+          )
+    {}
     agent (const agent& master, fhg::log::Logger& logger)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
@@ -810,6 +823,12 @@ namespace utils
     {
       sdpa::client::job_info_t UNUSED_job_info;
       return _.wait_for_terminal_state (id, UNUSED_job_info);
+    }
+
+    sdpa::status::code wait_for_terminal_state
+      (const sdpa::job_id_t& id, sdpa::client::job_info_t& job_info)
+    {
+      return _.wait_for_terminal_state (id, job_info);
     }
 
     sdpa::status::code wait_for_terminal_state_and_cleanup_polling

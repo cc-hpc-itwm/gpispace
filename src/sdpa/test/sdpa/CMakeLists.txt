@@ -118,3 +118,10 @@ fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa fhglog
 )
+
+fhg_add_test (NAME write_only_shared_caches
+  SOURCES write_only_shared_caches.cpp
+  USE_BOOST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  LIBRARIES sdpa fhglog
+)
