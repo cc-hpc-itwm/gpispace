@@ -233,7 +233,7 @@ automatically unregister (e.g. tcp connection close).
   have this kind of information in a key-value store instead. for log
   messages this would be
 
-  - level
+  - category
   - host, pid, tid
   - timestamp
   - MISCONCEPTION: line, file were dropped at some point
@@ -248,9 +248,10 @@ automatically unregister (e.g. tcp connection close).
   - activity id
   - inputs
 
-  Thinking about it again, it seems like level is the only thing that
-  GUI messages don't have while the stuff they have extra is just
-  their message.
+  Thinking about it again, it seems like category is the only thing
+  that GUI messages don't have while the stuff they have extra is just
+  their message. They do have the implicit category of "activity
+  stream".
 
   -> Misconception: just keep as is, make them use the same event type.
 
@@ -268,12 +269,12 @@ automatically unregister (e.g. tcp connection close).
 
 == logging API ==
 
-* provide std::c** bound logging that falls back to a given channel
-  and log level. in module calls automatically provide that.
+* provide std::c** bound logging that falls back to a given
+  channel. in module calls automatically provide that.
 
 * provide a logger that can communicate to a host-local log server via
-  socket. a category and level should be set per message. a level
-  filter should be set per logger to discard lower levels already.
+  socket. a category should be set per message. a category filter
+  should be set per logger to discard lower categories already.
 
 * on xml level, add the ability to tag transitions with
   `emit_trace_events:bool,default=false` to have expressions show up
@@ -289,8 +290,7 @@ automatically unregister (e.g. tcp connection close).
 * provide sink registration to a log server. making the sink push
   protocol part of the API is probably overkill. a class that
   registers and calls a callback per push is probably enough. it
-  should be possible to configure level or category filters at this
-  point.
+  should be possible to configure category filters at this point.
 
 == server / implementation ==
 
@@ -335,10 +335,12 @@ care of the rest.
 * tcp is used so drops reported by lukas and dirk or #630 are gone
 * --log-to-file was added, specifying both, --gui-host and a
   --$category-to-file provides him with a copy of the stream
-* call site level filter can be set per logger. we do have a
-  --log-level which is currently only verbose/not for the agent. we
-  can pump that api up to specify levels for sinks. I would rank this
-  low priority and not do for now.
+* call site category filter can be set per logger. we do have a
+  --log-level which is currently only verbose/not for the agent and
+  for all categories. since we drop levels, we can change that api to
+  be `--log-categories=agent-info,agent-warn,application`. Top level
+  filtering should be implemented that way directly, log-site
+  filtering is something that I consider low priority and would defer.
 * gantt replayability is not handled but since a file sink can be
   installed for the gui stream, can be implemented at a later point
 * we provide more data in the gui messages, so more information can be
