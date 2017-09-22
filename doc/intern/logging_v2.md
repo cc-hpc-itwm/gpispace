@@ -275,11 +275,14 @@ automatically unregister (e.g. tcp connection close).
   socket. a category and level should be set per message. a level
   filter should be set per logger to discard lower levels already.
 
-* on xml level, add the ability to tag expressions with
-  "emit_trace_events" to have expressions show up in gantt. since
-  those events would include the activity name and inputs like module
-  calls would, I don't think a "tag" is needed since it can only be
-  something derived from that to begin with.
+* on xml level, add the ability to tag transitions with
+  `emit_trace_events:bool,default=false` to have expressions show up
+  in gantt just like module calls. since those events would include
+  the activity name and inputs like module calls would, a "tag" is not
+  needed since it can only be something derived from that to begin
+  with. also, add `traced_inputs:list<string>,default={}` and
+  `traced_outputs:list<string>,default={}`, which indicate which
+  inputs and outputs are sent to the sink.
 
 * on xml/expression level, add the ability to log a string. this will
   probably result in wanting to log data as well, which would open a
@@ -344,7 +347,7 @@ care of the rest.
 * gantt replayability is not handled but since a file sink can be
   installed for the gui stream, can be implemented at a later point
 * we provide more data in the gui messages, so more information can be
-  shown in gantt
+  shown in gantt, including in- and output
 * logging from expressions is possible, specific expressions can be
   tagged to fire gantt events
 
