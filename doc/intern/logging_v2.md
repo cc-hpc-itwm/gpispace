@@ -284,11 +284,6 @@ automatically unregister (e.g. tcp connection close).
   `traced_outputs:list<string>,default={}`, which indicate which
   inputs and outputs are sent to the sink.
 
-* on xml/expression level, add the ability to log a string. this will
-  probably result in wanting to log data as well, which would open a
-  hole for n-ary functions in expressions. instead, log (value_type)
-  and don't care for now.
-
 == receiver API ==
 
 * provide sink registration to a log server. making the sink push
@@ -348,8 +343,10 @@ care of the rest.
   installed for the gui stream, can be implemented at a later point
 * we provide more data in the gui messages, so more information can be
   shown in gantt, including in- and output
-* logging from expressions is possible, specific expressions can be
-  tagged to fire gantt events
+* logging from expressions is not possible, since there likely is no
+  real use for it (no application that really had a module call for
+  logging only existed). For debugging, expression tracing is probably
+  enough.
 
 * dirks wish for splitting logs into multiple files per jobs is not
   handled. this implies dynamic sink reconfiguration on the global
