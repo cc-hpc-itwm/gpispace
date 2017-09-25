@@ -1,0 +1,27 @@
+<defun>
+  <include-structs href="memory/global/range.xpnet"/>
+  <in name="global_range" type="global_memory_range"/>
+  <in name="buffer_size" type="unsigned long"/>
+  <out name="result" type="string"/>
+  <memory-buffer name="input" read-only="true">
+    <size>
+      ${buffer_size}
+    </size>
+  </memory-buffer>
+  <memory-get>
+    <global>
+      stack_push (List(), ${global_range});
+    </global>
+    <local>
+      ${range.buffer} := "input";
+      ${range.offset} := 0UL;
+      ${range.size} := ${global_range.size};
+      stack_push (List(), ${range});
+    </local>
+  </memory-get>
+  <module name="module_using_read_only_buffers" function="result module_using_read_only_buffers (global_range, buffer_size, input)">
+    <code><![CDATA[
+       return "executed";
+    ]]></code>
+  </module>
+</defun>

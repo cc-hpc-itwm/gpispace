@@ -47,3 +47,4 @@ fhg_add_test (NAME scoped_drts
 
 add_subdirectory (client_implementation_with_ostream_logger)
 add_subdirectory (scoped_rifd_execute)
+add_subdirectory (transfer_ready_only_data_in_write_only_caches)
