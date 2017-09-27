@@ -2,8 +2,6 @@
 
 #include <util/qt/dual_list_selector.hpp>
 
-#include <util-qt/connect.hpp>
-
 #include <fhg/assert.hpp>
 
 #include <QAbstractListModel>
@@ -133,7 +131,7 @@ namespace fhg
 
         void list_view_with_drop_source_check::dragMoveEvent (QDragMoveEvent* e)
         {
-          if (!_sources.contains (e->source()))
+          if (!_sources.contains (const_cast<QWidget*> (static_cast<QWidget const*> (e->source()))))
           {
             e->ignore();
             return;
@@ -290,29 +288,29 @@ namespace fhg
         _selected_view->allowed_drop_sources
           (QSet<QWidget*>() << _available_view << _selected_view);
 
-        qt::connect<void()>
-          ( _deselect, SIGNAL (triggered())
+        connect
+          ( _deselect, &QAction::triggered
           , std::bind (move_selected_entries, _selected_view, _available_view)
           );
-        qt::connect<void()>
-          ( _select, SIGNAL (triggered())
+        connect
+          ( _select, &QAction::triggered
           , std::bind (move_selected_entries, _available_view, _selected_view)
           );
-        qt::connect<void()>
-          ( _move_up, SIGNAL (triggered())
+        connect
+          ( _move_up, &QAction::triggered
           , std::bind (move_selected<-1>, _selected_view, _selected)
           );
-        qt::connect<void()>
-          ( _move_down, SIGNAL (triggered())
+        connect
+          ( _move_down, &QAction::triggered
           ,  std::bind (move_selected<1>, _selected_view, _selected)
           );
 
-        qt::connect<void (QModelIndex)>
-          ( _selected_view, SIGNAL (doubleClicked (QModelIndex))
+        connect
+          ( _selected_view, &QListView::doubleClicked
           , std::bind (move_entry, _selected_view, _available_view, std::placeholders::_1)
           );
-        qt::connect<void (QModelIndex)>
-          ( _available_view, SIGNAL (doubleClicked (QModelIndex))
+        connect
+          ( _available_view, &QListView::doubleClicked
           , std::bind (move_entry, _available_view, _selected_view, std::placeholders::_1)
           );
 

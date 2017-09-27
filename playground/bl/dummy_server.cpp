@@ -37,14 +37,14 @@ server::server (int port, const QString& hostlist, QObject* parent)
            << "using hostlist" << _hostlist;
 }
 
-void server::incomingConnection (int socket_descriptor)
+void server::incomingConnection (qintptr socket_descriptor)
 {
   ::thread* t (new ::thread (socket_descriptor, _hostlist));
   t->moveToThread (t);
   t->start();
 }
 
-thread::thread (int socket_descriptor, const QString& hostlist, QObject* parent)
+thread::thread (qintptr socket_descriptor, const QString& hostlist, QObject* parent)
   : QThread (parent)
   , _socket_descriptor (socket_descriptor)
   , _socket (nullptr)

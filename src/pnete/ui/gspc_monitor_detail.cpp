@@ -2,7 +2,6 @@
 
 #include <pnete/ui/gspc_monitor_detail.hpp>
 
-#include <util-qt/connect.hpp>
 #include <util-qt/widget/file_line_edit.hpp>
 
 #include <fhg/assert.hpp>
@@ -218,7 +217,7 @@ namespace fhg
         setSelectionMode (QAbstractItemView::NoSelection);
         verticalHeader()->setVisible (false);
         horizontalHeader()->setStretchLastSection (true);
-        verticalHeader()->setResizeMode(QHeaderView::ResizeToContents);
+        verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
         setHorizontalHeaderLabels
           (QStringList() << tr ("time") << tr ("node") << tr ("message"));
       }
@@ -340,8 +339,7 @@ namespace fhg
         QTimer* timer (QObject* parent, int timeout, std::function<void()> fun)
         {
           QTimer* timer (new QTimer (parent));
-          fhg::util::qt::connect<void()>
-            (timer, SIGNAL (timeout()), parent, fun);
+          QObject::connect (timer, &QTimer::timeout, parent, fun);
           timer->start (timeout);
           return timer;
         }
@@ -1187,9 +1185,9 @@ namespace fhg
                    && action_name_intersection.contains (action_name)
                    )
                 {
-                  fhg::util::qt::connect<void (void)>
+                  connect
                     ( action
-                    , SIGNAL (triggered())
+                    , &QAction::triggered
                     , this
                     , std::bind ( &node_state_widget::trigger_action
                                 , this
@@ -1219,9 +1217,9 @@ namespace fhg
                    && action_name_intersection.contains (action_name)
                    )
                 {
-                  fhg::util::qt::connect<void (void)>
+                  connect
                     ( action
-                    , SIGNAL (triggered())
+                    , &QAction::triggered
                     , this
                     , std::bind ( &node_state_widget::trigger_action
                                 , this
@@ -1261,16 +1259,16 @@ namespace fhg
                   action->setChecked (all);
                   for (const int index : nodes)
                   {
-                    fhg::util::qt::connect<void (bool)>
+                    connect
                       ( action
-                      , SIGNAL (toggled (bool))
+                      , &QAction::toggled
                       , _monitor_client
                       , std::bind (&node_type::watched, &(node (index)), !all)
                       );
 
-                    fhg::util::qt::connect<void (void)>
+                    connect
                       ( action
-                      , SIGNAL (triggered())
+                      , &QAction::triggered
                       , this
                       , std::bind (&node_state_widget::update_node, this, index)
                       );
@@ -1285,28 +1283,28 @@ namespace fhg
 
                   for (const int index : nodes)
                   {
-                    fhg::util::qt::connect<void (void)>
+                    connect
                       ( unwatch_all
-                      , SIGNAL (triggered())
+                      , &QAction::triggered
                       , _monitor_client
                       , std::bind (&node_type::watched, &(node (index)), false)
                       );
-                    fhg::util::qt::connect<void (void)>
+                    connect
                       ( watch_all
-                      , SIGNAL (triggered())
+                      , &QAction::triggered
                       , _monitor_client
                       , std::bind (&node_type::watched, &(node (index)), true)
                       );
 
-                    fhg::util::qt::connect<void (void)>
+                    connect
                       ( unwatch_all
-                      , SIGNAL (triggered())
+                      , &QAction::triggered
                       , this
                       , std::bind (&node_state_widget::update_node, this, index)
                       );
-                    fhg::util::qt::connect<void (void)>
+                    connect
                       ( watch_all
-                      , SIGNAL (triggered())
+                      , &QAction::triggered
                       , this
                       , std::bind (&node_state_widget::update_node, this, index)
                       );

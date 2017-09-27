@@ -17,7 +17,7 @@ public:
   server (int port, const QString& hostlist, QObject* parent = nullptr);
 
 protected:
-  virtual void incomingConnection (int) override;
+  virtual void incomingConnection (qintptr) override;
 
 private:
   QString _hostlist;
@@ -27,7 +27,7 @@ class thread : public QThread
 {
   Q_OBJECT
 public:
-  thread (int socket_descriptor, const QString& hostlist, QObject* parent = nullptr);
+  thread (qintptr socket_descriptor, const QString& hostlist, QObject* parent = nullptr);
 
 protected:
   virtual void run() override;
@@ -44,7 +44,7 @@ private:
   void send_action_description (fhg::util::parse::position&);
   void send_layout_hint (fhg::util::parse::position&);
 
-  int _socket_descriptor;
+  qintptr _socket_descriptor;
   QTcpSocket* _socket;
 
   mutable QMutex _hosts_mutex;

@@ -3,7 +3,6 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 #include <pnete/ui/execution_monitor_detail.hpp>
 
-#include <util-qt/connect.hpp>
 #include <util/qt/dual_list_selector.hpp>
 #include <util-qt/widget/mini_button.hpp>
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
@@ -346,7 +345,7 @@ namespace fhg
         tree->expandAll();
 
         header_view->setStretchLastSection (true);
-        header_view->setClickable (true);
+        header_view->setSectionsClickable (true);
         header_view->setSortIndicatorShown (true);
         header_view->delegate (delegate);
 
@@ -356,25 +355,25 @@ namespace fhg
         QAction* add_column (new QAction (tr ("add_column_action"), next));
         QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
-        util::qt::connect<void()>
-          (add_column, SIGNAL (triggered()), std::bind (&add_columns, 1, next));
-        util::qt::connect<void()>
-          (remove_column, SIGNAL (triggered()), std::bind (&add_columns, -1, next));
+        connect
+          (add_column, &QAction::triggered, std::bind (&add_columns, 1, next));
+        connect
+          (remove_column, &QAction::triggered, std::bind (&add_columns, -1, next));
 
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsInserted
           , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsRemoved
           , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsInserted
           , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsRemoved
           , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
 
@@ -397,8 +396,8 @@ namespace fhg
         QAction* clear_model (new QAction (tr ("clear_action"), base));
         clear_model->setIcon (QIcon::fromTheme ("edit-clear"));
 
-        util::qt::connect<void()>
-          ( clear_model, SIGNAL (triggered())
+        connect
+          ( clear_model, &QAction::triggered
           , this
           , [base, header_view]
             {
@@ -452,16 +451,16 @@ namespace fhg
             style_button (label, delegate->color_for_state (state));
             legend_box_layout->addWidget (label);
 
-            util::qt::connect<void()>
+            connect
               ( label
-              , SIGNAL (clicked())
+              , &QPushButton::clicked
               , this
               , std::bind (&change_gantt_color, delegate, label, state, this)
               );
 
-            util::qt::connect<void (sdpa::daemon::NotificationEvent::state_t, QColor)>
+            connect
               ( delegate
-              , SIGNAL (color_for_state_changed (sdpa::daemon::NotificationEvent::state_t, QColor))
+              , &execution_monitor_delegate::color_for_state_changed
               , this
               , std::bind (&maybe_style_button, label, state, std::placeholders::_1, std::placeholders::_2)
               );

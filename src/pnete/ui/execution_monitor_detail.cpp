@@ -2,9 +2,9 @@
 
 #include <pnete/ui/execution_monitor_detail.hpp>
 
-#include <util-qt/connect.hpp>
 #include <util/qt/cast.hpp>
 #include <util/qt/mvc/delegating_header_view.hpp>
+#include <util-qt/overload.hpp>
 #include <util-qt/painter_state_saver.hpp>
 #include <util/qt/scoped_disconnect.hpp>
 #include <util/qt/scoped_signal_block.hpp>
@@ -71,14 +71,14 @@ namespace fhg
         if (sourceModel())
         {
           fhg_assert (sourceModel()->columnCount() == 1, "source model shall only have one column");
-          util::qt::connect<void ()>
+          connect
             ( sourceModel()
-            , SIGNAL (columnsAboutToBeInserted (const QModelIndex&, int, int))
+            , &QAbstractItemModel::columnsAboutToBeInserted
             , &abort_on_column_change
             );
-          util::qt::connect<void ()>
+          connect
             ( sourceModel()
-            , SIGNAL (columnsAboutToBeRemoved (const QModelIndex&, int, int))
+            , &QAbstractItemModel::columnsAboutToBeRemoved
             , &abort_on_column_change
             );
         }
@@ -823,13 +823,13 @@ namespace fhg
         update();
 
 
-        util::qt::connect<void (int)>
-          ( _scrollbar, SIGNAL (valueChanged (int))
+        connect
+          ( _scrollbar, &QScrollBar::valueChanged
           , _automove, std::bind (&QCheckBox::setChecked, _automove, false)
           );
 
-        util::qt::connect<void (bool)>
-          ( _automove, SIGNAL (toggled (bool))
+        connect
+          ( _automove, &QCheckBox::toggled
           , delegate
           , [this] (bool value)
           {
@@ -837,8 +837,8 @@ namespace fhg
           }
           );
 
-        util::qt::connect<void (int)>
-          ( _visible_range_length, SIGNAL (valueChanged (int))
+        connect
+          ( _visible_range_length, QOverload<int>::of (&QSpinBox::valueChanged)
           , delegate
           , [this] (int value)
           {
@@ -846,8 +846,8 @@ namespace fhg
           }
           );
 
-        util::qt::connect<void (int)>
-          ( _scrollbar, SIGNAL (valueChanged (int))
+        connect
+          ( _scrollbar, &QScrollBar::valueChanged
           , delegate
           , [this] (int value)
           {
@@ -855,8 +855,8 @@ namespace fhg
           }
           );
 
-        util::qt::connect<void (bool)>
-          ( _merge_groups, SIGNAL (toggled (bool))
+        connect
+          ( _merge_groups, &QCheckBox::toggled
           , delegate
           , [this] (bool value)
             {
@@ -942,8 +942,8 @@ namespace fhg
         case execution_monitor_proxy::name_column:
           {
             QLineEdit* line_edit (new QLineEdit (_get_filter(), parent));
-            util::qt::connect<void (QString)>
-              (line_edit, SIGNAL (textChanged (QString)), _set_filter);
+            connect
+              (line_edit, &QLineEdit::textChanged, _set_filter);
             return line_edit;
           }
 
@@ -1125,9 +1125,9 @@ namespace fhg
                                 )
                             )
           );
-        fhg::util::qt::connect<void()>
+        connect
           ( toggle_column_type
-          , SIGNAL (triggered())
+          , &QAction::triggered
           , index._model
           , [index, type]
           {
@@ -1142,9 +1142,9 @@ namespace fhg
         menu->addSeparator();
 
         QAction* remove (menu->addAction (tr ("remove_column_action")));
-        fhg::util::qt::connect<void()>
+        connect
           ( remove
-          , SIGNAL (triggered())
+          , &QAction::triggered
           , index._model
           , std::bind ( index._orientation == Qt::Horizontal
                       ? &QAbstractItemModel::removeColumn

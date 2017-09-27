@@ -7,7 +7,7 @@ path chrpath/0.16/bin
 path cmake/3.9.1/bin
 path gcc/4.9.3/bin
 path git/2.6.4/bin
-path qt/4.8.6/bin
+path qt/5.6.2/bin
 path asciidoc/8.6.9/bin
 path source-highlight/3.1.8/bin
 ld_library_path source-highlight/3.1.8/lib
