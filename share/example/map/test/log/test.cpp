@@ -142,8 +142,11 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
                                  , gspc::rifd::port {vm}
                                  , installation
                                  );
+
+  std::size_t const shared_cache_size
+    (2 * rifds.hosts().size() * size_block);
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology_description.str(), rifds.entry_points());
+    (vm, installation, topology_description.str(), rifds.entry_points(), shared_cache_size);
 
   gspc::scoped_vmem_segment_and_allocation const allocation_input
     (drts.alloc (gspc::vmem::gaspi_segment_description(), size_input));

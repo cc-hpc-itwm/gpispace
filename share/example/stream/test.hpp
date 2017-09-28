@@ -120,8 +120,11 @@ namespace share_example_stream_test
                                    , gspc::rifd::port {vm}
                                    , installation
                                    );
+
+    std::size_t const shared_cache_size
+      (rifds.hosts().size() * size_slot);
     gspc::scoped_runtime_system const drts
-      (vm, installation, topology (size_slot), rifds.entry_points());
+      (vm, installation, topology (size_slot), rifds.entry_points(), shared_cache_size);
 
     gspc::scoped_vmem_segment_and_allocation const allocation_buffer
       ( drts.alloc ( gspc::vmem::gaspi_segment_description()
