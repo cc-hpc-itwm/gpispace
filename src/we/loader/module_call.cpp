@@ -9,6 +9,7 @@
 #include <drts/worker/context_impl.hpp>
 
 #include <util-generic/finally.hpp>
+#include <util-generic/functor_visitor.hpp>
 
 #include <vmem/intertwine_compat.hpp>
 #include <vmem/operations.hpp>
@@ -40,13 +41,14 @@ namespace we
     expr::eval::context module_call
       ( we::loader::loader& loader
       , intertwine::vmem::ipc_client* virtual_memory_api
+      , boost::optional<intertwine::vmem::shared_cache_id_t> shared_cache
       , gspc::scoped_vmem_cache const* cache
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
       )
     {
-      std::unordered_map<std::string, std::size_t> memory_buffers;
+      std::unordered_map<std::string, std::pair<std::size_t, bool>> memory_buffers;
 
       // Calculate actual sizes of memory buffers.
       for ( std::pair<std::string, we::type::memory_buffer_info> const& buffer
@@ -56,30 +58,65 @@ namespace we
         unsigned long const size
           (evaluate_size_or_die (input, buffer.second.size()));
 
-        memory_buffers.emplace (buffer.first, size);
+        memory_buffers.emplace
+          ( std::piecewise_construct
+          , std::forward_as_tuple (buffer.first)
+          , std::forward_as_tuple (size, buffer.second.read_only())
+          );
       }
 
       std::unordered_set<std::string> input_memory_buffers;
-      std::unordered_map<std::string, intertwine::vmem::mutable_local_range_t> local_ranges;
+      std::unordered_map
+        < std::string
+        , boost::variant< intertwine::vmem::const_local_range_t
+                        , intertwine::vmem::mutable_local_range_t
+                        >
+        > local_ranges;
 
       FHG_UTIL_FINALLY
         ( [&]
           {
             for (auto range : local_ranges)
             {
-              try
-              {
-                boost::get<intertwine::vmem::void_t>
-                  ( virtual_memory_api->execute_sync
-                      ( intertwine::vmem::op::release_t {range.second})
-                  );
-              }
-              catch (boost::system::system_error const&)
-              {
-                //! \note Ignore: The virtual memory server somehow
-                //! disappeared. It will have killed the ranges with
-                //! itself.
-              }
+              fhg::util::visit<void>
+                ( range.second
+                , [&] (intertwine::vmem::const_local_range_t const& r)
+                  {
+                    try
+                    {
+                      boost::get<intertwine::vmem::void_t>
+                        ( virtual_memory_api->execute_sync
+                            ( intertwine::vmem::op::release_t
+                                {boost::get<intertwine::vmem::const_local_range_t>(r)}
+                            )
+                        );
+                    }
+                    catch (boost::system::system_error const&)
+                    {
+                      //! \note Ignore: The virtual memory server somehow
+                      //! disappeared. It will have killed the ranges with
+                      //! itself.
+                    }
+                  }
+                , [&] (intertwine::vmem::mutable_local_range_t const& r)
+                  {
+                    try
+                    {
+                      boost::get<intertwine::vmem::void_t>
+                        ( virtual_memory_api->execute_sync
+                            ( intertwine::vmem::op::release_t
+                                {boost::get<intertwine::vmem::mutable_local_range_t>(r)}
+                            )
+                        );
+                    }
+                    catch (boost::system::system_error const&)
+                    {
+                      //! \note Ignore: The virtual memory server somehow
+                      //! disappeared. It will have killed the ranges with
+                      //! itself.
+                    }
+                  }
+                );
             }
           }
         );
@@ -98,7 +135,8 @@ namespace we
           throw std::runtime_error ("unknown memory buffer " + local.buffer());
         }
 
-        if (local.offset() || local.size() != memory_buffers.at (local.buffer()))
+        auto const& buffer_info (memory_buffers.at (local.buffer()));
+        if (local.offset() || local.size() != buffer_info.first)
         {
           //! \todo implement
           throw std::runtime_error
@@ -107,22 +145,52 @@ namespace we
 
         input_memory_buffers.emplace (local.buffer());
 
-        auto local_range
-          ( boost::get<intertwine::vmem::mutable_local_range_t>
-              ( virtual_memory_api->execute_sync
-                  ( intertwine::vmem::op::get_mutable_t
-                      { fhg::vmem::intertwine_compat::global_range (global)
-                      , *cache
-                      }
-                  )
-              )
-          );
-        pointers.emplace (local.buffer(), local_range.pointer());
-        local_ranges.emplace (local.buffer(), local_range);
+        if (buffer_info.second) //the buffer is read-only
+        {
+          if (!shared_cache)
+          {
+            throw std::runtime_error
+              ("Attempting to get const data in unspecified or non-existing shared cache");
+          }
+
+          auto const local_range
+            ( boost::get<intertwine::vmem::const_local_range_t>
+                ( virtual_memory_api->execute_sync
+                    ( intertwine::vmem::op::get_const_t
+                        { fhg::vmem::intertwine_compat::global_range (global)
+                        , *shared_cache
+                        }
+                    )
+                )
+            );
+          pointers.emplace (local.buffer(), const_cast<void*>(local_range.pointer()));
+          local_ranges.emplace (local.buffer(), local_range);
+        }
+        else
+        {
+          if (!cache)
+          {
+            throw std::runtime_error
+              ("Attempting to get mutable data in unspecified or non-existing private cache");
+          }
+
+          auto const local_range
+            ( boost::get<intertwine::vmem::mutable_local_range_t>
+                ( virtual_memory_api->execute_sync
+                    ( intertwine::vmem::op::get_mutable_t
+                        { fhg::vmem::intertwine_compat::global_range (global)
+                        , *cache
+                        }
+                    )
+                )
+            );
+          pointers.emplace (local.buffer(), local_range.pointer());
+          local_ranges.emplace (local.buffer(), local_range);
+        }
       }
 
       // Allocate memory for pure output buffers.
-      std::unordered_map<std::string, std::size_t>
+      std::unordered_map<std::string, std::pair<std::size_t, bool>>
         pure_output_memory_buffers (memory_buffers);
       for (auto const& input : input_memory_buffers)
       {
@@ -131,11 +199,17 @@ namespace we
 
       for (auto const& pure_output_buffer : pure_output_memory_buffers)
       {
-        auto local_range
+        if (!cache)
+        {
+          throw std::runtime_error
+            ("Attempting to allocate data in unspecified or non-existing private cache!");
+        }
+
+        auto const local_range
           ( boost::get<intertwine::vmem::mutable_local_range_t>
               ( virtual_memory_api->execute_sync
                   ( intertwine::vmem::op::allocate_t
-                      { intertwine::vmem::size_t (pure_output_buffer.second)
+                      { intertwine::vmem::size_t (pure_output_buffer.second.first)
                       , *cache
                       }
                   )
@@ -180,16 +254,28 @@ namespace we
             throw std::runtime_error ("unknown memory buffer " + local.buffer());
           }
 
-          auto range (local_ranges.at (local.buffer()));
-          range.range.offset += intertwine::vmem::offset_t (local.offset());
-          range.range.size = intertwine::vmem::size_t (local.size());
+          try
+          {
+            intertwine::vmem::mutable_local_range_t range
+              ( boost::get<intertwine::vmem::mutable_local_range_t>
+                  (local_ranges.at (local.buffer()))
+              );
 
-          boost::get<intertwine::vmem::void_t>
-            ( virtual_memory_api->execute_sync
-                ( intertwine::vmem::op::put_t
-                    {range, fhg::vmem::intertwine_compat::global_range (global)}
-                )
-            );
+            range.range.offset += intertwine::vmem::offset_t (local.offset());
+            range.range.size = intertwine::vmem::size_t (local.size());
+
+            boost::get<intertwine::vmem::void_t>
+              ( virtual_memory_api->execute_sync
+                  ( intertwine::vmem::op::put_t
+                      {range, fhg::vmem::intertwine_compat::global_range (global)}
+                  )
+              );
+          }
+          catch (boost::bad_get const&)
+          {
+            throw std::runtime_error
+              ("invalid local range type appearing in a put operation");
+          }
         }
       }
 

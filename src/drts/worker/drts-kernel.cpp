@@ -6,6 +6,7 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -34,7 +35,9 @@ namespace
   {
     constexpr char const* const virtual_memory_socket
       {"virtual-memory-socket"};
-    constexpr char const* const shared_memory_size
+    constexpr char const* const shared_cache
+      {"shared-cache-id"};
+    constexpr char const* const own_cache_size
       {"shared-memory-size"};
     constexpr char const* const capability {"capability"};
     constexpr char const* const backlog_length {"backlog-length"};
@@ -136,7 +139,11 @@ int main(int ac, char **av)
         ", if given the virtual memory manager is required to be running"
         ", if not given, the kernel can not manage memory"
       )
-      ( option_name::shared_memory_size
+      ( option_name::shared_cache
+      , po::value<std::string>()
+      , "id of the node-local shared cache"
+      )
+      ( option_name::own_cache_size
       , po::value<unsigned long>()
       , "size of shared memory associated with the kernel"
       )
@@ -202,15 +209,22 @@ int main(int ac, char **av)
           )
       : nullptr
       );
-    std::unique_ptr<gspc::scoped_vmem_cache> const vmem_cache
+    boost::optional<intertwine::vmem::shared_cache_id_t> vmem_shared_cache
+      ( FHG_UTIL_MAKE_OPTIONAL
+          ( vm.count (option_name::shared_cache)
+          , intertwine::vmem::shared_cache_id_t::from_string
+              (vm.at (option_name::shared_cache).as<std::string>())
+          )
+      );
+    std::unique_ptr<gspc::scoped_vmem_cache> const vmem_own_cache
       ( ( virtual_memory_api
-        && vm.count (option_name::shared_memory_size)
-        && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
+        && vm.count (option_name::own_cache_size)
+        && vm.at (option_name::own_cache_size).as<unsigned long>() > 0
         )
       ? fhg::util::cxx14::make_unique<gspc::scoped_vmem_cache>
           ( *virtual_memory_api
           , intertwine::vmem::size_t
-              (vm.at (option_name::shared_memory_size).as<unsigned long>())
+              (vm.at (option_name::own_cache_size).as<unsigned long>())
           )
       : nullptr
       );
@@ -261,7 +275,8 @@ int main(int ac, char **av)
         : nullptr
       , kernel_name
       , virtual_memory_api.get()
-      , vmem_cache.get()
+      , vmem_shared_cache
+      , vmem_own_cache.get()
       , master_info
       , vm.at (option_name::capability)
       .as<std::vector<std::string>>()

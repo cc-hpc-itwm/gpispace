@@ -87,6 +87,7 @@ public:
     , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , intertwine::vmem::ipc_client*
+    , boost::optional<intertwine::vmem::shared_cache_id_t> vmem_shared_cache
     , gspc::scoped_vmem_cache const*
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
@@ -134,7 +135,8 @@ private:
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
 
   intertwine::vmem::ipc_client* _virtual_memory_api;
-  gspc::scoped_vmem_cache const* _vmem_cache;
+  boost::optional<intertwine::vmem::shared_cache_id_t> _vmem_shared_cache;
+  gspc::scoped_vmem_cache const* _vmem_own_cache;
 
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
