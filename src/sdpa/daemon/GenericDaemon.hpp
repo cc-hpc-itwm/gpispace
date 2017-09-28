@@ -67,6 +67,7 @@ namespace sdpa {
                    , const std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
+                   , boost::optional<intertwine::vmem::size_t> const& shared_cache_size
                    , std::vector<name_host_port_tuple> const& masters
                    , fhg::log::Logger& logger
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
@@ -294,6 +295,7 @@ namespace sdpa {
       void handle_events();
 
       std::unique_ptr<intertwine::vmem::ipc_client> _virtual_memory_api;
+      boost::optional<intertwine::vmem::size_t> _shared_cache_size;
 
       boost::strict_scoped_thread<> _event_handler_thread;
       decltype (_event_queue)::interrupt_on_scope_exit _interrupt_event_queue;

@@ -87,6 +87,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
+                            , boost::optional<intertwine::vmem::size_t> const& shared_cache_size
                             , std::vector<name_host_port_tuple> const& masters
                             , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
@@ -164,6 +165,7 @@ GenericDaemon::GenericDaemon( const std::string name
     ? fhg::util::cxx14::make_unique<intertwine::vmem::ipc_client> (*vmem_socket)
     : nullptr
     )
+  , _shared_cache_size (shared_cache_size)
   , _event_handler_thread (&GenericDaemon::handle_events, this)
   , _interrupt_event_queue (_event_queue)
 {
@@ -218,6 +220,17 @@ std::string GenericDaemon::gen_id()
   return generator.next();
 }
 
+    namespace
+    {
+      unsigned long evaluate_size_or_die ( expr::eval::context context
+                                         , std::string const& expression
+                                         )
+      {
+        return boost::get<unsigned long>
+          (expr::parse::parser (expression).eval_all (context));
+      }
+    }
+
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
@@ -240,16 +253,49 @@ std::string GenericDaemon::gen_id()
 
             std::vector<intertwine::vmem::ipc_client::operation_t> ops;
 
+            std::unordered_map<std::string, we::type::memory_buffer_info> memory_buffers
+              (activity.transition().module_call()->memory_buffers());
+
             for (auto&& get : activity.transition().module_call()->gets (context))
             {
+              we::local::range const& local (get.first);
               we::global::range const& global (get.second);
 
-              //! \todo Right cache id. How?!
-              intertwine::vmem::cache_id_t const cache{};
-              ops.emplace_back
-                ( intertwine::vmem::op::get_mutable_t
-                    {fhg::vmem::intertwine_compat::global_range (global), cache}
-                );
+              if (!memory_buffers.count (local.buffer()))
+              {
+                throw std::runtime_error ("unknown memory buffer " + local.buffer());
+              }
+
+              // ignore the costs for transferring data into the shared cache
+              if (!memory_buffers.at (local.buffer()).read_only())
+              {
+                //! note: the (private) cache plays no role, just the host/vmem_rank where the
+                //! data should be transferred from the global memory
+                intertwine::vmem::cache_id_t const cache{};
+                ops.emplace_back
+                  ( intertwine::vmem::op::get_mutable_t
+                      {fhg::vmem::intertwine_compat::global_range (global), cache}
+                  );
+              }
+              else
+              {
+                if (!_shared_cache_size)
+                {
+                  throw std::logic_error
+                    ( "Attempting to transfer read-only data from the global memory "
+                      "into a non-existing shared cache!"
+                    );
+                }
+                else if ( evaluate_size_or_die (context, memory_buffers.at (local.buffer()).size())
+                        > std::size_t (*_shared_cache_size)
+                        )
+                {
+                  throw std::logic_error
+                    ( "Attempting to transfer read-only data from the global memory "
+                      "into a shared cache with insufficient size!"
+                    );
+                }
+              }
             }
 
             for (auto&& put : activity.transition().module_call()->puts_evaluated_before_call (context))
@@ -257,7 +303,8 @@ std::string GenericDaemon::gen_id()
               we::local::range const& local (put.first);
               we::global::range const& global (put.second);
 
-              //! \todo Right cache id. How?!
+              //! note: the (private) cache plays no role, just the host/vmem_rank where
+              //! the local data to transfer into the global memory is located
               intertwine::vmem::mutable_local_range_t range;
               range.range.offset = intertwine::vmem::offset_t (local.offset());
               range.range.size = intertwine::vmem::size_t (local.size());
@@ -266,7 +313,7 @@ std::string GenericDaemon::gen_id()
                 ( intertwine::vmem::op::put_and_release_t
                     {range, fhg::vmem::intertwine_compat::global_range (global)}
                 );
-            }
+             }
 
             if (ops.empty())
             {
@@ -293,7 +340,29 @@ std::string GenericDaemon::gen_id()
               );
           }()
         , computational_cost
-        , activity.memory_buffer_size_total()
+        , [&]() -> unsigned long
+          {
+            if (!activity.transition().module_call())
+            {
+              return 0;
+            }
+
+            expr::eval::context context {activity.evaluation_context()};
+
+            unsigned long cache_amount_required
+              (activity.memory_buffer_size_total());
+
+            // ignore the size of data to be transferred into the shared cache
+            for (auto&& buffer : activity.transition().module_call()->memory_buffers())
+            {
+              if (buffer.second.read_only())
+              {
+                cache_amount_required -= evaluate_size_or_die (context, buffer.second.size());
+              }
+            }
+
+            return cache_amount_required;
+          }()
         };
 
       return addJob ( job_id
@@ -303,7 +372,6 @@ std::string GenericDaemon::gen_id()
                     , std::move (requirements)
                     );
     }
-
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity

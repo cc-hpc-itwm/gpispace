@@ -9,6 +9,7 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <rif/started_process_promise.hpp>
@@ -20,6 +21,7 @@
 #include <boost/filesystem/path.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -35,6 +37,7 @@ namespace
   namespace option_name
   {
     constexpr const char* vmem_socket {"vmem-socket"};
+    constexpr const char* vmem_shared_cache_size {"shared-cache-size"};
   }
 }
 
@@ -51,6 +54,7 @@ int main (int argc, char **argv)
     std::vector<std::string> arrMasterNames;
     std::string appGuiUrl;
     boost::optional<bfs::path> vmem_socket;
+    boost::optional<intertwine::vmem::size_t> shared_cache_size;
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
@@ -66,6 +70,10 @@ int main (int argc, char **argv)
       ( option_name::vmem_socket
       , boost::program_options::value<validators::nonempty_string>()
       , "socket file to communicate with the virtual memory manager"
+      )
+      ( option_name::vmem_shared_cache_size
+      , po::value<fhg::util::boost::program_options::positive_integral<std::size_t>>()
+      , "size of the shared cache"
       )
       ;
 
@@ -85,6 +93,14 @@ int main (int argc, char **argv)
     {
       vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
     }
+
+    boost::optional<intertwine::vmem::size_t> vmem_shared_cache_size
+      ( FHG_UTIL_MAKE_OPTIONAL
+          ( vm.count (option_name::vmem_shared_cache_size)
+          , intertwine::vmem::size_t
+              (vm.at (option_name::vmem_shared_cache_size).as<fhg::util::boost::program_options::positive_integral<std::size_t>>())
+          )
+      );
 
     std::vector<std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>> masters;
     for (std::string const& name_host_port : arrMasterNames)
@@ -110,6 +126,7 @@ int main (int argc, char **argv)
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , vmem_socket
+      , vmem_shared_cache_size
       , masters
       , logger
       , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
