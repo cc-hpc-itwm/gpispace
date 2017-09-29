@@ -10,5 +10,6 @@ fhg_add_test (NAME transfer_ready_only_data_in_write_only_caches
             Boost::program_options
             Boost::filesystem
   REQUIRES_INSTALLATION
+  REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
 )
