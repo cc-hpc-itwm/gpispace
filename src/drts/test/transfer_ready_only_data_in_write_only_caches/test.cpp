@@ -39,6 +39,7 @@ BOOST_AUTO_TEST_CASE
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -60,8 +61,6 @@ BOOST_AUTO_TEST_CASE
 
   gspc::set_application_search_path (vm, installation_dir);
   test::set_virtual_memory_socket_name_for_localhost (vm);
-  gspc::set_virtual_memory_startup_timeout (vm, 10);
-  gspc::set_virtual_memory_port (vm, 10200);
 
   vm.notify();
 
@@ -131,6 +130,7 @@ BOOST_AUTO_TEST_CASE
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -152,8 +152,6 @@ BOOST_AUTO_TEST_CASE
 
   gspc::set_application_search_path (vm, installation_dir);
   test::set_virtual_memory_socket_name_for_localhost (vm);
-  gspc::set_virtual_memory_startup_timeout (vm, 10);
-  gspc::set_virtual_memory_port (vm, 10200);
 
   vm.notify();
 
@@ -215,6 +213,7 @@ BOOST_AUTO_TEST_CASE
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add (gspc::options::virtual_memory());
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -236,8 +235,6 @@ BOOST_AUTO_TEST_CASE
 
   gspc::set_application_search_path (vm, installation_dir);
   test::set_virtual_memory_socket_name_for_localhost (vm);
-  gspc::set_virtual_memory_startup_timeout (vm, 10);
-  gspc::set_virtual_memory_port (vm, 10200);
 
   vm.notify();
 
