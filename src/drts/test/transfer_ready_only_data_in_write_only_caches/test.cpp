@@ -16,6 +16,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/peek_or_die.hpp>
 
+#include <util-generic/divru.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -88,8 +89,12 @@ BOOST_AUTO_TEST_CASE
     (vm, installation, "worker:1,100", rifds.entry_points(), shared_cache_size);
 
   std::size_t const buffer_size
-    ( shared_cache_size
-    + fhg::util::testing::random_integral_without_zero<unsigned long>() % 100
+    ( fhg::util::divru
+        ( shared_cache_size
+        + fhg::util::testing::random_integral_without_zero<unsigned long>() % 100
+        , rifds.hosts().size()
+        )
+    * rifds.hosts().size()
     );
 
   gspc::scoped_vmem_segment_and_allocation const allocation
@@ -174,12 +179,19 @@ BOOST_AUTO_TEST_CASE
     (vm, installation, "worker:1,100", rifds.entry_points());
 
   std::size_t const buffer_size
-    ( fhg::util::testing::random_integral_without_zero<unsigned long>()
-    % 100
+    ( fhg::util::divru
+        ( fhg::util::testing::random_integral_without_zero<unsigned long>()
+        % 100
+        , rifds.hosts().size()
+        )
+    * rifds.hosts().size()
     );
 
   gspc::scoped_vmem_segment_and_allocation const allocation
-    (drts.alloc (gspc::vmem::gaspi_segment_description(), buffer_size));
+    ( drts.alloc ( gspc::vmem::gaspi_segment_description()
+                 , buffer_size
+                 )
+    );
 
   gspc::client client (drts);
   gspc::job_id_t const job_id
@@ -261,12 +273,19 @@ BOOST_AUTO_TEST_CASE
     (vm, installation, "worker:1,100", rifds.entry_points(), shared_cache_size);
 
   std::size_t const buffer_size
-    ( fhg::util::testing::random_integral_without_zero<unsigned long>()
-    % shared_cache_size
+    ( fhg::util::divru
+        ( fhg::util::testing::random_integral_without_zero<unsigned long>()
+        % shared_cache_size
+        , rifds.hosts().size()
+        )
+    * rifds.hosts().size()
     );
 
   gspc::scoped_vmem_segment_and_allocation const allocation
-    (drts.alloc (gspc::vmem::gaspi_segment_description(), buffer_size));
+    ( drts.alloc ( gspc::vmem::gaspi_segment_description()
+                 , buffer_size
+                 )
+    );
 
   gspc::client client (drts);
   gspc::job_id_t const job_id
