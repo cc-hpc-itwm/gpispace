@@ -48,9 +48,10 @@ namespace gspc
     char* const content (static_cast<char*> (range.pointer()));
     std::copy (data, data + size, content);
 
+    //! \note put+release split due to eu/intertwine#49
     boost::get<intertwine::vmem::void_t>
       ( drts->_->_virtual_memory_api->execute_sync
-          ( intertwine::vmem::op::put_and_release_t
+          ( intertwine::vmem::op::put_t
               ( range
               , { _->_data_id
                 , { intertwine::vmem::offset_t (0)
@@ -59,6 +60,10 @@ namespace gspc
                 }
               )
           )
+      );
+    boost::get<intertwine::vmem::void_t>
+      ( drts->_->_virtual_memory_api->execute_sync
+          (intertwine::vmem::op::release_t (range))
       );
   }
   PIMPL_DTOR (scoped_vmem_segment_and_allocation)
