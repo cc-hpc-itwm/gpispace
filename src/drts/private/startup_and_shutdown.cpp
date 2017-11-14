@@ -752,6 +752,11 @@ namespace fhg
 
               for (auto& connection : rif_connections)
               {
+                info_output << "I: creating a shared cache of size "
+                            << static_cast<std::size_t> (shared_cache_size.get()) << " on host "
+                            << connection.second.hostname
+                            << std::endl;
+
                 try
                 {
                   queued_start_requests.emplace_back
@@ -776,7 +781,7 @@ namespace fhg
                 {
                   processes.store ( std::get<1> (request)
                                   //! \todo use unique name here for multiple shared caches
-                                  , "shared_cache"
+                                  , "vmem_shared_cache"
                                   , std::get<2> (request).get()
                                   );
                 }
@@ -847,6 +852,7 @@ namespace fhg
           : component == component_type::agent ? "agent"
           : component == component_type::orchestrator ? "orchestrator"
           : component == component_type::vmem ? "vmem"
+          : component == component_type::vmem_shared_cache ? "vmem_shared_cache"
           : throw std::logic_error ("invalid enum value")
           );
 
@@ -1030,6 +1036,7 @@ namespace fhg
       util::apply_for_each_and_collect_exceptions
         ( { component_type::worker
           , component_type::agent
+          , component_type::vmem_shared_cache
           , component_type::vmem
           , component_type::orchestrator
           }

@@ -38,7 +38,7 @@ namespace fhg
 
     using hostinfo_type = std::pair<std::string, unsigned short>;
 
-    enum class component_type {vmem, orchestrator, agent, worker};
+    enum class component_type {vmem, vmem_shared_cache, orchestrator, agent, worker};
 
     struct processes_storage : boost::noncopyable
     {
