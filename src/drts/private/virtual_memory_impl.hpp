@@ -4,6 +4,7 @@
 
 #include <vmem/ipc_client.hpp>
 #include <vmem/equally_distributed_data.hpp>
+#include <vmem/prefix_filled_data.hpp>
 #include <vmem/types.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
@@ -112,7 +113,8 @@ namespace gspc
       , _data_id ( _client->allocate ( intertwine::vmem::size_t (_size)
                                      , *_remote_segment
                                      //! \todo let pass in!
-                                     , intertwine::vmem::equally_distributed_data{}
+                                     //! \note workaround for eu/intertwine#50
+                                     , intertwine::vmem::prefix_filled_data{}
                                      )
                  )
       , _disowned (false)
