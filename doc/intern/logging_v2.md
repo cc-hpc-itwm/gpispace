@@ -1,9 +1,9 @@
-= goal =
+# goal
 
 * redo logging infrastructure to be decentralized and more usable
 * extend with functionality that applications need
 
-== original requests by mirko ==
+## original requests by mirko
 
 * decentralized
  * a group of workers sends to a "local" server
@@ -14,7 +14,7 @@
 * a server has 1..n parents
 * tracing / profiling support of workflow by application
 
-== open questions ==
+## open questions
 
 * separate process or inside rifd?
 * udp or tcp?
@@ -22,9 +22,9 @@
 * behaviour in case of log server or log source crash
 * how is topology described?
 
-= State of applications and their requirements =
+# State of applications and their requirements
 
-== frtm ==
+## frtm
 
 * every module call creates job_hook which talks to job server and
   reports start and end, reporting worker names and job class ==
@@ -33,17 +33,17 @@
 * status query lists number of job per class
 * list-nodes lists workers/hosts of jobs by class
 
--> could likely just operate on a tcp based gui stream as well
+→ could likely just operate on a tcp based gui stream as well
 
-== dlps ==
+## dlps
 
 * does frtm lite, but the reported resource is an id, rather than
   class + workers
   * tracked id luckily is in set of inputs for activity
 
--> needs ability to track inputs in gui stream in addition to name
+→ needs ability to track inputs in gui stream in addition to name
 
-== gitfan ==
+## gitfan
 
 * counters for benchmarking/debugging: todo what is counted?
 * lastWill to output something on module call termination or worker
@@ -51,40 +51,40 @@
 * macht derzeit eigene log files damit er nach worker aufschlüsseln
   kann
 
--> for timings, intercepting the gui stream is fine. for more fine
+→ for timings, intercepting the gui stream is fine. for more fine
    grained timings, we either need to provide something via
    drts_context (or some global static state). apparently a map name
-   -> counter/data/T would be enough. I am personally not sure that we
+   → counter/data/T would be enough. I am personally not sure that we
    should do that. A generic implementation would be some worthless
    key value store that is at some point dumped. An application can
    just as easily do that itself. Since we don't want to do global
    state, we wouldn't offer anything additional.
 
--> the last will on module call seems like a helper that can be
+→ the last will on module call seems like a helper that can be
    provided. it is probably just a scoped thing that logs the last set
    value on destruction and can be created in each module call.
 
--> splitting logs into files per worker is something we need to make
+→ splitting logs into files per worker is something we need to make
    possible. e.g. by source / by host / …
 
-== smartb ==
+## smartb
 
 In contrast to all other applications, smartb also logs to our server
 outside of the workflow. We should probably still allow for that in
 our interface. We currently do so since we expose pretty much all of
 fhglog. The API is not really intended for public use and might thus
 be improved, e.g. by doing the parameter parsing properly rather than
-hiding env+argv parsing in a macro that is given an io_service.
+hiding env+argv parsing in a macro that is given an `io_service`.
 
 This use also indicates that applications likely want to copy a stream
 of all log messages to their application server as well, so just like
 the gui stream mirroring, we should allow for log mirroring as well.
 
--> provide log-writing API outside of module calls
+→ provide log-writing API outside of module calls
 
--> provide log-reading API at all
+→ provide log-reading API at all
 
-= outputs from talking to people =
+# outputs from talking to people
 
 * Lukas has experienced package drops in the GUI stream, and thus one
   has to assume that this too happened in logging as well.
@@ -118,7 +118,7 @@ the gui stream mirroring, we should allow for log mirroring as well.
   macros for expert users. Lukas wanting to use levels suggests he is
   fine with using the macros.
 
-= existing (relevant) issues related to logging =
+# existing (relevant) issues related to logging
 
 * #715: allow user to nicely configure, filter and redirect logging:
   about bootstrapping though. Should probably also use the redesigned
@@ -132,11 +132,11 @@ the gui stream mirroring, we should allow for log mirroring as well.
   - at-runtime modification via control messaes
 * #174: categorize log messages: is about what we log, not how we log
 * #51: restrict file size of file sink / log rotation
-* #49: add categories for application <> runtime separation
+* #49: add categories for application ↔ runtime separation
 
-= existing solutions =
+# existing solutions
 
-== rsyslogd ==
+## rsyslogd
 
 For the purposes of logging with our requirements, syslogd sounds
 absolutely perfect. It supports aggregation, forwarding, local
@@ -151,9 +151,9 @@ second syslogd world independent from the system one is quite a
 pain. It is also superseeded by systemd-journald, of course, so
 probably not even available everywhere.
 
--> don't use
+→ don't use
 
-== rabbitmq as brokering infrastructure ==
+## rabbitmq as brokering infrastructure
 
 We could avoid having to redo the aggregation infrastructure ourself
 by relying on a third party solution like rabbitmq. rabbitmq has
@@ -169,16 +169,16 @@ there exists software built on top of log4j and rabbitmq to do
 application logging in a cloud environment, so it is possible and has
 been done. I have not done deeper investigation into it
 
--> probably don't use. seems like overkill, needs more investigation
+→ probably don't use. seems like overkill, needs more investigation
    if interest exists.
 
-= discussion =
+# discussion
 
 Since the existing solutions or my research into them has shown that
 using them is probably not what we want, we're back to doing
 everything ourselves. Let's discuss individual topics:
 
-== general structure ==
+## general structure
 
 Modeling after syslogd, an approach where
 
@@ -201,7 +201,7 @@ Modeling after syslogd, an approach where
 * to be reliable, it should be a separate process over putting stuff
   into rifd.
 
-=== push or pull ===
+### push or pull
 
 we want to have multiple sinks. in a pull model, that implies the
 number of sinks is known so that after the last pull, data can be
@@ -215,16 +215,16 @@ the sink dead and stop pushing there, knowing that discarding data is
 possible.
 
 Based on this I would go for push. The criteria for pushing should
-probably be timeout || backlog_full to reduce traffic but stay
+probably be `timeout || backlog_full` to reduce traffic but stay
 somewhat real time. It should of course be possible to configure it to
-just always push through and never cache == backlog_size=0.
+just always push through and never `cache == backlog_size``
 
 If a sink is unreachable, it shall be retried for the configured
 duration / times, and then dropped. If it was crashed and reappaers,
 it shall re-register. For "nice" crashes, we will notice the crash and
 automatically unregister (e.g. tcp connection close).
 
-== <insert section title> ==
+## <insert section title>
 
 * currently gui messages abuse the logging framework more than they
   use it. this means that they still have fields like file and line
@@ -253,23 +253,23 @@ automatically unregister (e.g. tcp connection close).
   their message. They do have the implicit category of "activity
   stream".
 
-  -> Misconception: just keep as is, make them use the same event type.
+  → Misconception: just keep as is, make them use the same event type.
 
 * the topology description in the first step should probably be
   mirroring the one of our workers. it works there and it doesn't seem
   like we have a bottlenet with that currently. this means that per
   host 1 server is started, who all log to the server on the agent
-  host. extra sinks should be easily configurable with --log-file
-  (adding a global file sink on top host), --log-file-prefix-per-host
-  (adding a local file sink per host), --log-file-prefix-per-source
+  host. extra sinks should be easily configurable with `--log-file`
+  (adding a global file sink on top host), `--log-file-prefix-per-host`
+  (adding a local file sink per host), `--log-file-prefix-per-source`
   (adding a local file sink per host splitting by source =
   worker). Additional sinks (e.g. the application wanting a copy of
   the stream) do not need to be known at startup time and are thus
   irrelevant to the topology description.
 
-== logging API ==
+## logging API
 
-* provide std::c** bound logging that falls back to a given
+* provide `std::c**` bound logging that falls back to a given
   channel. in module calls automatically provide that.
 
 * provide a logger that can communicate to a host-local log server via
@@ -285,28 +285,28 @@ automatically unregister (e.g. tcp connection close).
   `traced_outputs:list<string>,default={}`, which indicate which
   inputs and outputs are sent to the sink.
 
-== receiver API ==
+## receiver API
 
 * provide sink registration to a log server. making the sink push
   protocol part of the API is probably overkill. a class that
   registers and calls a callback per push is probably enough. it
   should be possible to configure category filters at this point.
 
-== server / implementation ==
+## server / implementation
 
 * open a local socket to receive data
 * open a socket to be queried for
 
-== how are requirements fulfilled? ==
+## how are requirements fulfilled?
 
-=== frtm + dlps ===
+### frtm + dlps
 
 job hook + server are a sink for the GUI stream which on callback
 maintains the number of running tasks. job hook just provides an event
 for start and end of an activity providing the name. this information
 is available.
 
-=== gitfan ===
+### gitfan
 
 timing can be done by registering a sink for the GUI stream. I
 currently don't see a reason to provide more fine grained tracing
@@ -320,9 +320,9 @@ that logs on exit whatever is currently set. We should not encourage
 cross-module-call state.
 
 splitting logs into files per worker is just another way of setting up
-the local sinks and provided with  --log-file-prefix-per-source
+the local sinks and provided with `--log-file-prefix-per-source`
 
-=== smartb ===
+### smartb
 
 it is not yet clear to me if we can assume that a log server will also
 be started on the application server host. we can probably just add
@@ -330,13 +330,13 @@ that to the minimal topology description we have. then, one can just
 use our logging API to push to that, and the installed sinks will take
 care of the rest.
 
-=== misc ===
+### misc
 
 * tcp is used so drops reported by lukas and dirk or #630 are gone
-* --log-to-file was added, specifying both, --gui-host and a
-  --$category-to-file provides him with a copy of the stream
+* `--log-to-file` was added, specifying both, `--gui-host` and a
+  `--$category-to-file` provides him with a copy of the stream
 * call site category filter can be set per logger. we do have a
-  --log-level which is currently only verbose/not for the agent and
+  `--log-level` which is currently only verbose/not for the agent and
   for all categories. since we drop levels, we can change that api to
   be `--log-categories=agent-info,agent-warn,application`. Top level
   filtering should be implemented that way directly, log-site
@@ -355,14 +355,14 @@ care of the rest.
   level which there is currently no other reason for. since this was a
   "nice to have", I think one can ignore it for now.
 
-=== issues ===
+### issues
 
 * #715: is untouched. since bootstrapping is setting up the logging
   infrastructre to begin with, i don't really have a solution for
   that. the focus of that issue should probably be not part of this
   task since it is more about "what do we log to begin with?".
 * #432: is not really having influence on the design since it just is
-  adding more event types and emitting more events. -> defer
+  adding more event types and emitting more events. → defer
 * #257
   - I don't know of a case where we did end up with threading
     issues yet. I suspect we could say that the log function can just be
