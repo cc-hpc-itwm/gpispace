@@ -26,7 +26,7 @@ add_subdirectory (fhglog/test)
   add_subdirectory (util)
 
 find_package (INTERTWinE-vmem REQUIRED
-  COMPONENTS "REVISION=85428de53f53c6a7d6e7b4500a60ae90a5864672")
+  COMPONENTS "REVISION=a3305a5e442b6d8ab7e1905f6801d1d72b17f106")
 
 extended_add_library (NAME pnet
   SOURCES "we/exception.cpp"
