@@ -21,8 +21,7 @@ extended_add_library (NAME gpi-space-pc-segment
 )
 
 extended_add_library (NAME gpi-space-pc-memory
-  SOURCES "pc/memory/memory_buffer.cpp"
-          "pc/memory/memory_area.cpp"
+  SOURCES "pc/memory/memory_area.cpp"
           "pc/memory/handle_generator.cpp"
           "pc/memory/manager.cpp"
           "pc/memory/gaspi_area.cpp"

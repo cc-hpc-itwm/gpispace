@@ -57,13 +57,6 @@ namespace gpi
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
 
-        virtual std::packaged_task<void()> get_specific_transfer_task
-          ( const gpi::pc::type::memory_location_t src
-          , const gpi::pc::type::memory_location_t dst
-          , area_t & dst_area
-          , gpi::pc::type::size_t amount
-          ) override;
-
         virtual std::packaged_task<void()> get_send_task
           ( area_t & src_area
           , const gpi::pc::type::memory_location_t src

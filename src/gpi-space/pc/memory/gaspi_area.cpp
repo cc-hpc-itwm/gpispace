@@ -384,53 +384,6 @@ namespace gpi
         }
       }
 
-      std::packaged_task<void()> gaspi_area_t::get_specific_transfer_task
-        ( const gpi::pc::type::memory_location_t src
-        , const gpi::pc::type::memory_location_t dst
-        , area_t & dst_area
-        , gpi::pc::type::size_t amount
-        )
-      {
-        fhg_assert (type () == dst_area.type ());
-
-        if (is_local (gpi::pc::type::memory_region_t (src, amount)))
-        {
-          // write dma
-          return std::packaged_task<void()>
-            ( [this, &dst_area, src, dst, amount]
-              {
-                helper::do_write_dma_and_wait_remote_written
-                  ( descriptor (src.handle)
-                  , src.offset
-                  , dst_area.descriptor (dst.handle)
-                  , dst.offset
-                  , amount
-                  , _gaspi
-                  );
-              }
-            );
-        }
-        else if (dst_area.is_local (gpi::pc::type::memory_region_t (dst, amount)))
-        {
-          // read dma
-          return std::packaged_task<void()>
-            ( std::bind ( &helper::dma_read_and_wait_for_readable
-                        , this->descriptor (src.handle)
-                        , src.offset
-                        , dst_area.descriptor (dst.handle)
-                        , dst.offset
-                        , amount
-                        , std::ref (_gaspi)
-                        )
-            );
-        }
-
-        throw std::runtime_error
-          ( "illegal memory transfer requested:"
-          " source and destination cannot both be remote!"
-          );
-      }
-
       std::packaged_task<void()> gaspi_area_t::get_send_task
         ( area_t & src_area
         , const gpi::pc::type::memory_location_t src

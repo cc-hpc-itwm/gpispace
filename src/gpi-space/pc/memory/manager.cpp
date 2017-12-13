@@ -78,14 +78,6 @@ namespace gpi
                 )
             );
         }
-
-        for (size_t i = 0; i < number_of_queues; ++i)
-        {
-          constexpr size_t DEF_BUFFER_SIZE (4194304);
-
-          m_memory_buffer_pool.put
-            (fhg::util::cxx14::make_unique<buffer_t> (DEF_BUFFER_SIZE));
-        }
       }
 
       manager_t::~manager_t ()
@@ -438,7 +430,6 @@ namespace gpi
                       , dst
                       , dst_area
                       , amount
-                      , m_memory_buffer_pool
                       )
                   );
 

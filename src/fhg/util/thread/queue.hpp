@@ -52,33 +52,5 @@ namespace fhg
 
       container_type m_container;
     };
-
-    template<typename T>
-      class ptr_queue : public boost::noncopyable
-    {
-    public:
-      std::unique_ptr<T> get()
-      {
-        std::unique_lock<std::mutex> lock (m_mtx);
-        m_get_cond.wait (lock, [this] { return !m_container.empty(); });
-
-        std::unique_ptr<T> ret (std::move (m_container.front()));
-        m_container.pop_front();
-        return ret;
-      }
-
-      void put (std::unique_ptr<T> t)
-      {
-        std::unique_lock<std::mutex> const _ (m_mtx);
-        m_container.push_back (std::move (t));
-        m_get_cond.notify_one();
-      }
-
-    private:
-      mutable std::mutex m_mtx;
-      std::condition_variable m_get_cond;
-
-      std::list<std::unique_ptr<T>> m_container;
-    };
   }
 }
