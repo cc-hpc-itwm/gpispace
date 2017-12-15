@@ -16,7 +16,6 @@
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
 #include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
@@ -34,8 +33,6 @@ namespace gpi
       class area_t : boost::noncopyable
       {
       public:
-        typedef fhg::thread::ptr_queue<buffer_t> memory_pool_t;
-
         virtual ~area_t () = default;
 
         /* public interface the basic implementation is the same
@@ -137,7 +134,6 @@ namespace gpi
           , const type::memory_location_t dst
           , area_t& dst_area
           , type::size_t amount
-          , memory_pool_t& buffer_pool
           );
         virtual double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                           , const gpi::rank_t
@@ -172,13 +168,6 @@ namespace gpi
         virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                                      , const gpi::pc::type::flags_t flags
                                                      ) const = 0;
-
-        virtual std::packaged_task<void()> get_specific_transfer_task
-          ( const gpi::pc::type::memory_location_t src
-          , const gpi::pc::type::memory_location_t dst
-          , area_t& dst_area
-          , gpi::pc::type::size_t amount
-          );
 
         virtual std::packaged_task<void()> get_send_task
           ( area_t& src_area

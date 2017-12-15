@@ -7,7 +7,6 @@
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
 
@@ -146,7 +145,6 @@ namespace gpi
         std::vector<std::unique_ptr<boost::strict_scoped_thread<>>>
           _task_threads;
         decltype (_tasks)::interrupt_on_scope_exit _interrupt_task_queue;
-        fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
 
         handle_generator_t _handle_generator;
       };
