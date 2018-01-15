@@ -824,14 +824,6 @@ namespace
     }
   };
 
-  struct by_y
-  {
-    bool operator() (s_type const& a, s_type const& b) const
-    {
-      return a.y() < b.y();
-    }
-  };
-
   bool operator< (s_type const& a, s_type const& b)
   {
     return by_x() (a, b);
