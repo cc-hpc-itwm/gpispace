@@ -816,17 +816,9 @@ namespace
     int _y;
   };
 
-  struct by_x
-  {
-    bool operator() (s_type const& a, s_type const& b) const
-    {
-      return a.x() < b.x();
-    }
-  };
-
   bool operator< (s_type const& a, s_type const& b)
   {
-    return by_x() (a, b);
+    return a.x() < b.x();
   }
 }
 
