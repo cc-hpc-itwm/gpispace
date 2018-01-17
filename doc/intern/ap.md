@@ -8,7 +8,7 @@
 |   | Task                                 | Time             | Person
 |---|--------------------------------------|------------------|----------------
 | 1 | Definition of Requirements           | 2/2018 -  3/2018 | Adrien + Team
-| 2 | Definition of Datastructures 1       | 3/2018 -  9/2019 | Adrien
+| 2 | Definition of Datastructures 1       | 3/2018 -  9/2018 | Adrien
 | 3 | Standalone Prototype                 | 9/2018 -  3/2019 | Adrien
 | 4 | Definition of Datastructures 2       |11/2018 -  5/2019 | Adrien
 | 5 | Roadmap: Integration into GPI-Space  |11/2018 -  5/2019 | Adrien + Team
