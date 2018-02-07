@@ -20,7 +20,7 @@
 #include <util-generic/join.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>

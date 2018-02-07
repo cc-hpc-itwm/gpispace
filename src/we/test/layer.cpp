@@ -15,7 +15,7 @@
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>

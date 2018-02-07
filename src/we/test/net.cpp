@@ -5,7 +5,7 @@
 #include <we/type/transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
