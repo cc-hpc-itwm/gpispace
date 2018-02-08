@@ -372,7 +372,7 @@ namespace utils
         ( _master.get()
         , _name
         , capabilities
-        , fhg::util::testing::random<unsigned long>()
+        , fhg::util::testing::random<unsigned long>{}()
         , accept_workers
         , fhg::util::testing::random_string()
         );
