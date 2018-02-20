@@ -16,7 +16,7 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

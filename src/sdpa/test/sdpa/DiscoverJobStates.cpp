@@ -9,7 +9,7 @@
 #include <we/layer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/optional/optional_io.hpp>
 #include <boost/ptr_container/ptr_list.hpp>

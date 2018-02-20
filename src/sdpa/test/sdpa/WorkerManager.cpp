@@ -2,8 +2,8 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random_integral.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/integral.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>

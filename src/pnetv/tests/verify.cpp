@@ -8,7 +8,7 @@
 
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (jpna::VerificationResult::Result, os, result)
 {

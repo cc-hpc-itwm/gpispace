@@ -6,7 +6,7 @@
 
 #include <we/type/bytearray.hpp>
 
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <inttypes.h>
 

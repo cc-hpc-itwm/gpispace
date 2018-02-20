@@ -7,7 +7,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/xml.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/format.hpp>
 
