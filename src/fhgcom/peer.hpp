@@ -117,6 +117,7 @@ namespace fhg
       boost::optional<p2p::address_t> my_addr_;
 
       std::unique_ptr<boost::asio::io_service> io_service_;
+      boost::asio::io_service::strand strand_;
       boost::asio::io_service::work io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
 

@@ -33,6 +33,7 @@ namespace fhg
       explicit
       connection_t
         ( boost::asio::io_service & io_service
+        , boost::asio::io_service::strand const& strand
         , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
         , std::function<void (ptr_t connection, const message_t*)> handle_user_data
         , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error

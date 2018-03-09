@@ -23,6 +23,7 @@ namespace fhg
       , host_(host)
       , port_(port)
       , io_service_ (std::move (io_service))
+      , strand_ (*io_service_)
       , io_service_work_(*io_service_)
       , acceptor_(*io_service_)
       , connections_()
@@ -140,6 +141,7 @@ namespace fhg
       connection_data_t& cd (connections_[addr]);
       cd.connection = boost::make_shared<connection_t>
         ( *io_service_
+        , strand_
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
@@ -347,13 +349,14 @@ namespace fhg
       {
         if (! cd.o_queue.empty())
         {
-          // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
-                                    , std::bind ( &peer_t::handle_send
-                                                , this
-                                                , a
-                                                , std::placeholders::_1
-                                                )
+                                    , strand_.wrap
+                                        ( std::bind ( &peer_t::handle_send
+                                                    , this
+                                                    , a
+                                                    , std::placeholders::_1
+                                                    )
+                                        )
                                     );
         }
         else
@@ -382,11 +385,13 @@ namespace fhg
 
         cd.send_in_progress = true;
         cd.connection->async_send ( &cd.o_queue.front().message
-                                  , std::bind ( &peer_t::handle_send
-                                              , this
-                                              , a
-                                              , std::placeholders::_1
-                                              )
+                                  , strand_.wrap
+                                      ( std::bind ( &peer_t::handle_send
+                                                  , this
+                                                  , a
+                                                  , std::placeholders::_1
+                                                )
+                                      )
                                   );
       }
       catch (std::out_of_range const &)
@@ -397,8 +402,6 @@ namespace fhg
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
     {
-      lock_type lock (mutex_);
-
       if (! ec && !stopping_)
       {
         fhg_assert (listen_);
@@ -419,18 +422,21 @@ namespace fhg
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( *io_service_
+          , strand_
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
           )
         );
       listen_->local_address(my_addr_.get());
-      acceptor_.async_accept( listen_->socket()
-                            , std::bind( &peer_t::handle_accept
-                                       , this
-                                       , std::placeholders::_1
-                                       )
-                            );
+      acceptor_.async_accept ( listen_->socket()
+                             , strand_.wrap
+                                 ( std::bind ( &peer_t::handle_accept
+                                             , this
+                                             , std::placeholders::_1
+                                             )
+                                 )
+                             );
     }
 
     void peer_t::handle_hello_message (connection_t::ptr_t c, const message_t *m)
