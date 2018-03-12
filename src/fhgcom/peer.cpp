@@ -1,6 +1,7 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -10,6 +11,7 @@
 
 #include <cstdlib>
 #include <functional>
+#include <memory>
 
 namespace fhg
 {
@@ -18,6 +20,7 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
+                   , certificates_t const& certificates
                    )
       : stopping_ (false)
       , host_(host)
@@ -32,6 +35,36 @@ namespace fhg
       try
       {
         lock_type const _ (mutex_);
+
+        if (certificates)
+        {
+          ctx_ = fhg::util::cxx14::make_unique<boost::asio::ssl::context>
+                   (*io_service_, boost::asio::ssl::context::sslv23);
+
+          ctx_->set_options ( boost::asio::ssl::context::default_workarounds
+                            | boost::asio::ssl::context::no_sslv2
+                            | boost::asio::ssl::context::no_sslv3
+                            | boost::asio::ssl::context::single_dh_use
+                            );
+
+          ctx_->use_certificate_chain_file
+            (boost::filesystem::canonical (certificates.get()/"server.crt").string());
+
+          ctx_->use_private_key_file
+            (boost::filesystem::canonical ( certificates.get()/"server.key").string()
+                                          , boost::asio::ssl::context::pem
+                                          );
+          ctx_->use_tmp_dh_file
+            (boost::filesystem::canonical (certificates.get()/"dh2048.pem").string());
+
+          ctx_->set_verify_mode
+            ( boost::asio::ssl::context::verify_fail_if_no_peer_cert
+            | boost::asio::ssl::context::verify_peer
+            );
+
+          ctx_->load_verify_file
+            (boost::filesystem::canonical (certificates.get()/"server.crt").string());
+        }
 
         boost::asio::ip::tcp::resolver resolver(*io_service_);
         boost::asio::ip::tcp::resolver::query query(host_, port_);

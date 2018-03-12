@@ -6,6 +6,9 @@
 
 #include <fhg/util/thread/event.hpp>
 
+#include <boost/asio/ssl.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -21,6 +24,8 @@ namespace fhg
 {
   namespace com
   {
+    using certificates_t = boost::optional<boost::filesystem::path>;
+
     /*!
       This class abstracts from an endpoint
      */
@@ -29,7 +34,11 @@ namespace fhg
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
-      peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
+      peer_t ( std::unique_ptr<boost::asio::io_service>
+             , host_t const& host
+             , port_t const& port
+             , certificates_t const& certificates
+             );
 
       virtual ~peer_t ();
 
@@ -131,6 +140,8 @@ namespace fhg
       std::list<const message_t *> m_pending;
 
       boost::strict_scoped_thread<> _io_thread;
+
+      std::unique_ptr<boost::asio::ssl::context> ctx_;
     };
   }
 }

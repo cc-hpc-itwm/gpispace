@@ -4,7 +4,7 @@ extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES fhglog Util::Generic
+  LIBRARIES fhglog Util::Generic ssl crypto
 )
 add_subdirectory (fhgcom/tests)
 
@@ -138,7 +138,9 @@ extended_add_library (NAME pnet
             Boost::date_time
             RPC
             ${CMAKE_DL_LIBS}
-            rapidxml
+            rapidxml 
+            ssl
+            crypto
 )
 
 add_subdirectory (xml/tests)
