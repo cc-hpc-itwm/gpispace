@@ -37,7 +37,7 @@ namespace fhg
       }
     }
 
-    boost::asio::ip::tcp::socket & connection_t::socket()
+    boost::asio::ip::tcp::socket& connection_t::socket ()
     {
       return socket_;
     }
@@ -50,11 +50,11 @@ namespace fhg
     void connection_t::stop ()
     {
       boost::system::error_code ec;
-      if (socket_.is_open())
+      if (socket().is_open())
       {
-        socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
+        socket().shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
       }
-      socket_.close(ec);
+      socket().close(ec);
     }
 
     void connection_t::start_read ()

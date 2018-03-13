@@ -48,7 +48,7 @@ namespace fhg
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
       {
-        socket_.set_option (o);
+        socket().set_option (o);
       }
 
       void start ();
