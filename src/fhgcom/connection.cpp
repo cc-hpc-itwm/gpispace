@@ -86,6 +86,30 @@ namespace fhg
       socket_or_next_layer_socket().close(ec);
     }
 
+    void connection_t::request_handshake()
+    {
+      if (ssl_enabled_)
+      {
+        get_ssl_stream().handshake (boost::asio::ssl::stream_base::client);
+      }
+    }
+
+    void connection_t::acknowledge_handshake
+      (std::function <void (const boost::system::error_code&)> handler)
+    {
+      if (ssl_enabled_)
+      {
+        get_ssl_stream().async_handshake ( boost::asio::ssl::stream_base::server
+                                         , strand_.wrap (handler)
+                                         );
+      }
+      else
+      {
+        const boost::system::error_code ec;
+        handler (ec);
+      }
+    }
+
     void connection_t::start_read ()
     {
       fhg_assert (in_message_ != nullptr);

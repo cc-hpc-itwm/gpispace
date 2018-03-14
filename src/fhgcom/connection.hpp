@@ -72,6 +72,11 @@ namespace fhg
       {
         m_remote_addr = a;
       }
+
+      void request_handshake();
+      void acknowledge_handshake
+        (std::function <void (const boost::system::error_code&)> handler);
+
     private:
       struct to_send_t
       {
