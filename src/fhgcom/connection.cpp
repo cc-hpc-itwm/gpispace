@@ -3,6 +3,8 @@
 
 #include <fhg/assert.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
+
 #include <boost/system/error_code.hpp>
 
 #include <functional>
@@ -20,13 +22,21 @@ namespace fhg
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
       )
       : strand_(strand)
-      , socket_ (std::unique_ptr<tcp_socket_t> (new tcp_socket_t (io_service)))
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
       , in_message_(new message_t)
       , ssl_enabled_ (ctx)
-    {}
+    {
+      if (ctx)
+      {
+        socket_ = fhg::util::cxx14::make_unique<ssl_stream_t> (io_service, *ctx);
+      }
+      else
+      {
+        socket_ = fhg::util::cxx14::make_unique<tcp_socket_t> (io_service);
+      }
+    }
 
     connection_t::~connection_t ()
     {
