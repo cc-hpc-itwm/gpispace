@@ -49,9 +49,16 @@ namespace fhg
       }
     }
 
-    boost::asio::ip::tcp::socket& connection_t::socket ()
+    tcp_socket_t& connection_t::socket_or_next_layer_socket()
     {
-      return *boost::get<std::unique_ptr<tcp_socket_t>> (socket_);
+      if (ssl_enabled_)
+      {
+        return boost::get<std::unique_ptr<ssl_stream_t>> (socket_)->next_layer();
+      }
+      else
+      {
+        return *boost::get<std::unique_ptr<tcp_socket_t>> (socket_);
+      }
     }
 
     void connection_t::start()
@@ -62,18 +69,18 @@ namespace fhg
     void connection_t::stop ()
     {
       boost::system::error_code ec;
-      if (socket().is_open())
+      if (socket_or_next_layer_socket().is_open())
       {
-        socket().shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
+        socket_or_next_layer_socket().shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
       }
-      socket().close(ec);
+      socket_or_next_layer_socket().close(ec);
     }
 
     void connection_t::start_read ()
     {
       fhg_assert (in_message_ != nullptr);
 
-      boost::asio::async_read( socket()
+      boost::asio::async_read( socket_or_next_layer_socket()
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
                              ( std::bind ( &connection_t::handle_read_header
@@ -95,7 +102,7 @@ namespace fhg
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
 
-        boost::asio::async_read ( socket()
+        boost::asio::async_read ( socket_or_next_layer_socket()
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
                                 ( std::bind ( &connection_t::handle_read_data
@@ -160,7 +167,7 @@ namespace fhg
 
       try
       {
-        boost::asio::async_write( socket()
+        boost::asio::async_write( socket_or_next_layer_socket()
                                 , d.to_buffers()
                                 , strand_.wrap (std::bind( &connection_t::handle_write
                                                          , shared_from_this()

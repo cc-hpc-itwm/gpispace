@@ -49,14 +49,14 @@ namespace fhg
 
       ~connection_t ();
 
-      boost::asio::ip::tcp::socket & socket ();
+      tcp_socket_t& socket_or_next_layer_socket();
 
       void async_send (const message_t * msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
       {
-        socket().set_option (o);
+        socket_or_next_layer_socket().set_option (o);
       }
 
       void start ();
