@@ -50,6 +50,8 @@ namespace fhg
       ~connection_t ();
 
       tcp_socket_t& socket_or_next_layer_socket();
+      tcp_socket_t& get_tcp_socket();
+      ssl_stream_t& get_ssl_stream();
 
       void async_send (const message_t * msg, completion_handler_t hdl);
 

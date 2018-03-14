@@ -61,6 +61,16 @@ namespace fhg
       }
     }
 
+    tcp_socket_t& connection_t::get_tcp_socket()
+    {
+      return *boost::get<std::unique_ptr<tcp_socket_t>> (socket_);
+    }
+
+    ssl_stream_t& connection_t::get_ssl_stream()
+    {
+      return *boost::get<std::unique_ptr<ssl_stream_t>> (socket_);
+    }
+
     void connection_t::start()
     {
       start_read();
@@ -80,15 +90,27 @@ namespace fhg
     {
       fhg_assert (in_message_ != nullptr);
 
-      boost::asio::async_read( socket_or_next_layer_socket()
-                             , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
-                             , strand_.wrap
-                             ( std::bind ( &connection_t::handle_read_header
-                                         , shared_from_this()
-                                         , std::placeholders::_1
-                                         , std::placeholders::_2
-                                         )
-                             ));
+      auto const& handler = std::bind ( &connection_t::handle_read_header
+                                      , shared_from_this()
+                                      , std::placeholders::_1
+                                      , std::placeholders::_2
+                                      );
+      if (ssl_enabled_)
+      {
+        boost::asio::async_read
+          ( get_ssl_stream()
+          , boost::asio::buffer ( &in_message_->header, sizeof(p2p::header_t))
+          , strand_.wrap (handler)
+          );
+      }
+      else
+      {
+        boost::asio::async_read
+          ( get_tcp_socket()
+          , boost::asio::buffer ( &in_message_->header, sizeof(p2p::header_t))
+          , strand_.wrap (handler)
+          );
+      }
     }
 
     void connection_t::handle_read_header( const boost::system::error_code & ec
@@ -102,15 +124,26 @@ namespace fhg
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
 
-        boost::asio::async_read ( socket_or_next_layer_socket()
-                                , boost::asio::buffer (in_message_->data)
-                                , strand_.wrap
-                                ( std::bind ( &connection_t::handle_read_data
-                                            , shared_from_this()
-                                            , std::placeholders::_1
-                                            , std::placeholders::_2
-                                            )
-                                ));
+        auto const& handler = std::bind ( &connection_t::handle_read_data
+                                        , shared_from_this()
+                                        , std::placeholders::_1
+                                        , std::placeholders::_2
+                                        );
+
+        if (ssl_enabled_)
+        {
+          boost::asio::async_read ( get_ssl_stream()
+                                  , boost::asio::buffer (in_message_->data)
+                                  , strand_.wrap (handler)
+                                  );
+        }
+        else
+        {
+          boost::asio::async_read ( get_tcp_socket()
+                                  , boost::asio::buffer (in_message_->data)
+                                  , strand_.wrap (handler)
+                                  );
+        }
       }
       else
       {
@@ -167,14 +200,25 @@ namespace fhg
 
       try
       {
-        boost::asio::async_write( socket_or_next_layer_socket()
-                                , d.to_buffers()
-                                , strand_.wrap (std::bind( &connection_t::handle_write
-                                                         , shared_from_this()
-                                                         , std::placeholders::_1
-                                                         )
-                                               )
-                                );
+        auto const& handler = std::bind ( &connection_t::handle_write
+                                        , shared_from_this()
+                                        , std::placeholders::_1
+                                        );
+
+        if (ssl_enabled_)
+        {
+          boost::asio::async_write ( get_ssl_stream()
+                                   , d.to_buffers()
+                                   , strand_.wrap (handler)
+                                   );
+        }
+        else
+        {
+          boost::asio::async_write ( get_tcp_socket()
+                                   , d.to_buffers()
+                                   , strand_.wrap (handler)
+                                   );
+        }
       }
       catch (std::length_error const &)
       {
