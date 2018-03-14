@@ -20,7 +20,7 @@ namespace fhg
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
       )
       : strand_(strand)
-      , socket_(io_service)
+      , socket_ (std::unique_ptr<tcp_socket_t> (new tcp_socket_t (io_service)))
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
@@ -41,7 +41,7 @@ namespace fhg
 
     boost::asio::ip::tcp::socket& connection_t::socket ()
     {
-      return socket_;
+      return *boost::get<std::unique_ptr<tcp_socket_t>> (socket_);
     }
 
     void connection_t::start()
@@ -63,7 +63,7 @@ namespace fhg
     {
       fhg_assert (in_message_ != nullptr);
 
-      boost::asio::async_read( socket_
+      boost::asio::async_read( socket()
                              , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
                              , strand_.wrap
                              ( std::bind ( &connection_t::handle_read_header
@@ -85,7 +85,7 @@ namespace fhg
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
 
-        boost::asio::async_read ( socket_
+        boost::asio::async_read ( socket()
                                 , boost::asio::buffer (in_message_->data)
                                 , strand_.wrap
                                 ( std::bind ( &connection_t::handle_read_data
@@ -150,7 +150,7 @@ namespace fhg
 
       try
       {
-        boost::asio::async_write( socket_
+        boost::asio::async_write( socket()
                                 , d.to_buffers()
                                 , strand_.wrap (std::bind( &connection_t::handle_write
                                                          , shared_from_this()

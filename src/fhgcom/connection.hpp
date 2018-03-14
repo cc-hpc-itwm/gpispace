@@ -11,6 +11,7 @@
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/variant.hpp>
 
 #include <functional>
 #include <iomanip>
@@ -24,6 +25,10 @@ namespace fhg
 {
   namespace com
   {
+    using tcp_socket_t = boost::asio::ip::tcp::socket;
+    using ssl_stream_t = boost::asio::ssl::stream<tcp_socket_t>;
+    using socket_t = boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
+
     class connection_t : private boost::noncopyable
                        , public boost::enable_shared_from_this<connection_t>
     {
@@ -116,7 +121,7 @@ namespace fhg
       void handle_write ( const boost::system::error_code & ec );
 
       boost::asio::io_service::strand strand_;
-      boost::asio::ip::tcp::socket socket_;
+      socket_t socket_;
 
       std::function<void (ptr_t connection, const message_t*)> _handle_hello_message;
       std::function<void (ptr_t connection, const message_t*)> _handle_user_data;
