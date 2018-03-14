@@ -6,6 +6,8 @@
 #include <fhg/assert.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/asio/ssl/context.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
@@ -33,6 +35,7 @@ namespace fhg
       explicit
       connection_t
         ( boost::asio::io_service & io_service
+        , std::unique_ptr<boost::asio::ssl::context> const& ctx
         , boost::asio::io_service::strand const& strand
         , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
         , std::function<void (ptr_t connection, const message_t*)> handle_user_data
@@ -124,6 +127,8 @@ namespace fhg
 
       p2p::address_t m_local_addr;
       p2p::address_t m_remote_addr;
+
+      bool ssl_enabled_;
     };
   }
 }

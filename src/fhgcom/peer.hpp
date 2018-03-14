@@ -6,8 +6,6 @@
 
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/asio/ssl.hpp>
-#include <boost/asio/ssl/context.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>

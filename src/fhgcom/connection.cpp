@@ -13,6 +13,7 @@ namespace fhg
   {
     connection_t::connection_t
       ( boost::asio::io_service & io_service
+      , std::unique_ptr<boost::asio::ssl::context> const& ctx
       , boost::asio::io_service::strand const& strand
       , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
       , std::function<void (ptr_t connection, const message_t*)> handle_user_data
@@ -24,6 +25,7 @@ namespace fhg
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
       , in_message_(new message_t)
+      , ssl_enabled_ (ctx)
     {}
 
     connection_t::~connection_t ()

@@ -174,6 +174,7 @@ namespace fhg
       connection_data_t& cd (connections_[addr]);
       cd.connection = boost::make_shared<connection_t>
         ( *io_service_
+        , ctx_
         , strand_
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
@@ -455,6 +456,7 @@ namespace fhg
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( *io_service_
+          , ctx_
           , strand_
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
