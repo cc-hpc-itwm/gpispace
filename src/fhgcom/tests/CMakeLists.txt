@@ -23,3 +23,6 @@ fhg_add_test (NAME fhgcom_peer
             Boost::date_time
             Boost::thread
 )
+
+file(COPY certs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+
