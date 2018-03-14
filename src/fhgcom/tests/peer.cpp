@@ -14,15 +14,23 @@
 
 #include <thread>
 
+namespace
+{
+  fhg::com::certificates_t const test_certificates
+    (boost::filesystem::current_path()/"certs");
+}
+
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
+void test_peer_does_not_hang_when_resolve_throws
+  (fhg::com::certificates_t const& certificates)
 {
   fhg::util::testing::require_exception
-    ( []
+    ( [&certificates]
       {
         fhg::com::peer_t ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                          , fhg::com::host_t ("NONONONONONONONONONO")
                          , fhg::com::port_t ("NONONONONONONONONONO")
+                         , certificates
                          );
       }
     , boost::system::system_error
@@ -30,13 +38,34 @@ BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
     );
 }
 
-BOOST_AUTO_TEST_CASE (peer_run_single)
+BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
+{
+  test_peer_does_not_hang_when_resolve_throws (boost::none);
+
+  if (test_certificates)
+  {
+    test_peer_does_not_hang_when_resolve_throws (test_certificates);
+  }
+}
+
+void test_peer_run_single (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("12351")
+                , certificates
                 );
+}
+
+BOOST_AUTO_TEST_CASE (peer_run_single)
+{
+  test_peer_run_single (boost::none);
+
+  if (test_certificates)
+  {
+    test_peer_run_single (test_certificates);
+  }
 }
 
 namespace
@@ -52,18 +81,20 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (peer_run_two)
+void test_peer_run_two (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
@@ -79,28 +110,52 @@ BOOST_AUTO_TEST_CASE (peer_run_two)
     (std::string (m.data.begin(), m.data.end()), "hello world!");
 }
 
-BOOST_AUTO_TEST_CASE (resolve_peer_names)
+BOOST_AUTO_TEST_CASE (peer_run_two)
+{
+  test_peer_run_two (boost::none);
+
+  if (test_certificates)
+  {
+    test_peer_run_two (test_certificates);
+  }
+}
+
+void test_resolve_peer_names (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 }
 
-BOOST_AUTO_TEST_CASE (peer_loopback)
+BOOST_AUTO_TEST_CASE (resolve_peer_names)
+{
+  test_resolve_peer_names (boost::none);
+
+  if (test_certificates)
+  {
+      test_resolve_peer_names (test_certificates);
+  }
+}
+
+
+void test_peer_loopback (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   p2p::address_t const addr ( peer_1.connect_to ( host (peer_1.local_endpoint())
@@ -114,13 +169,24 @@ BOOST_AUTO_TEST_CASE (peer_loopback)
     }
 }
 
-BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
+BOOST_AUTO_TEST_CASE (peer_loopback)
+{
+  test_peer_loopback (boost::none);
+
+  if (test_certificates)
+  {
+    test_peer_loopback (test_certificates);
+  }
+}
+
+void test_send_to_nonexisting_peer (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   BOOST_CHECK_THROW ( peer_1.connect_to
@@ -129,13 +195,24 @@ BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
                     );
 }
 
-BOOST_AUTO_TEST_CASE (send_large_data)
+BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
+{
+  test_send_to_nonexisting_peer (boost::none);
+
+  if (test_certificates)
+  {
+    test_send_to_nonexisting_peer (test_certificates);
+  }
+}
+
+void test_send_large_data (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_1.send( peer_1.connect_to ( host (peer_1.local_endpoint())
@@ -149,18 +226,30 @@ BOOST_AUTO_TEST_CASE (send_large_data)
     BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }
 
-BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
+BOOST_AUTO_TEST_CASE (send_large_data)
+{
+  test_send_large_data (boost::none);
+
+  if (test_certificates)
+  {
+      test_send_large_data (test_certificates);
+  }
+}
+
+void test_peers_with_fixed_ports (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
@@ -170,18 +259,27 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
              );
 }
 
-BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
+BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
+{
+  test_peers_with_fixed_ports (boost::none);
+  test_peers_with_fixed_ports
+    (boost::filesystem::path (boost::filesystem::current_path()/"certs"));
+}
+
+void test_peers_with_fixed_ports_reuse (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
@@ -191,13 +289,24 @@ BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
               );
 }
 
-BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
+BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
+{
+  test_peers_with_fixed_ports_reuse (boost::none);
+
+  if (test_certificates)
+  {
+    test_peers_with_fixed_ports_reuse (test_certificates);
+  }
+}
+
+void test_two_peers_one_restarts_repeatedly (fhg::com::certificates_t const& certificates)
 {
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("0")
+                , certificates
                 );
 
   bool stop_request (false);
@@ -233,7 +342,7 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
   {
     peer_t peer_2
       ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-      , host (peer_2_endpoint), port (peer_2_endpoint)
+      , host (peer_2_endpoint), port (peer_2_endpoint), certificates
       );
 
     try
@@ -256,4 +365,14 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
   stop_request = true;
 
   sender.join ();
+}
+
+BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
+{
+  test_two_peers_one_restarts_repeatedly (boost::none);
+
+  if (test_certificates)
+  {
+    test_two_peers_one_restarts_repeatedly (test_certificates);
+  }
 }
