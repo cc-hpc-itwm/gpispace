@@ -54,7 +54,9 @@ namespace
       , sdpa::events::ErrorEvent const* event
       ) override
     {
-      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      if ( event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+         || event->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+         )
       {
         //! \note hack? isn't this part of what this test is supposed
         //! to test?
@@ -187,7 +189,6 @@ BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   ( RACE_capabilities_of_children_are_removed_when_disconnected
   , setup_logging
@@ -229,7 +230,6 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
                         , setup_logging
                         )

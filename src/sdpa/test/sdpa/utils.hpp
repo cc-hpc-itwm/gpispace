@@ -409,7 +409,9 @@ namespace utils
     virtual void handleErrorEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* e) override
     {
-      if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      if ( e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+         || e->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+         )
       {
         BOOST_REQUIRE (_accept_workers);
         std::lock_guard<std::mutex> const _ (_mutex_workers_shutdown);
