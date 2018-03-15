@@ -376,3 +376,18 @@ BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
     test_two_peers_one_restarts_repeatedly (test_certificates);
   }
 }
+
+BOOST_AUTO_TEST_CASE (invalid_certificates_directory)
+{
+  using namespace fhg::com;
+
+  BOOST_REQUIRE_THROW
+  (
+    peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                  , host_t("localhost")
+                  , port_t("0")
+                  , boost::filesystem::path (fhg::util::testing::random_string())
+                  );
+  , std::exception
+  );
+}
