@@ -7,36 +7,52 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
-BOOST_FIXTURE_TEST_CASE (testCoallocationWorkflow, setup_logging)
+void testCoallocationWorkflow
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent);
-  const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent, certificates);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (2), orchestrator)
+      (utils::net_with_one_child_requiring_workers (2), orchestrator, certificates)
     , sdpa::status::FINISHED
     );
 }
 
-BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done, setup_logging)
+BOOST_FIXTURE_TEST_CASE (CoallocationWorkflow, setup_logging)
+{
+  testCoallocationWorkflow (_logger, boost::none);
+
+  if (test_certificates)
+  {
+    testCoallocationWorkflow (_logger, test_certificates);
+  }
+}
+
+void test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
 {
   //! \note issue #374
 
   // 0. setup environment orch -> agent.
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   // 1. start worker 1
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
-    ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent);
+    ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
 
   // 2. submit workflow which generates tasks (2) that require 2 workers
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
@@ -51,6 +67,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
       job_submitted_2.notify (j);
     }
     , agent
+    , certificates
     );
 
   // 4. the job is correctly submitted to worker 1 and worker 2
@@ -70,6 +87,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
         BOOST_FAIL ("worker_3 shall never get a job: all other workers are busy");
       }
       , agent
+      , certificates
       );
 
     //! \note Race and sleep! This is ugly, but needed to provoke a
@@ -101,18 +119,34 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_part_of_coallo
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available, setup_logging)
+BOOST_FIXTURE_TEST_CASE
+  (worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done, setup_logging)
+{
+  test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+    (_logger, boost::none);
+
+  if (test_certificates)
+  {
+    test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+      (_logger, test_certificates);
+  }
+}
+
+void test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
-    ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent);
+    ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
@@ -125,6 +159,7 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
       job_submitted_2.notify (j);
     }
     , agent
+    , certificates
     );
 
   const std::string job_name (job_submitted_1.wait());
@@ -137,11 +172,11 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
     //! \note starting _two_ workers, which get the second child job
     fhg::util::thread::event<std::string> job_submitted_3;
     utils::fake_drts_worker_waiting_for_finished_ack worker_3
-      ([&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }, agent);
+      ([&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }, agent, certificates);
 
     fhg::util::thread::event<std::string> job_submitted_4;
     utils::fake_drts_worker_waiting_for_finished_ack worker_4
-      ([&job_submitted_4] (std::string j) { job_submitted_4.notify (j); }, agent);
+      ([&job_submitted_4] (std::string j) { job_submitted_4.notify (j); }, agent, certificates);
 
     const std::string _job_name (job_submitted_3.wait());
     BOOST_REQUIRE_EQUAL (_job_name, job_submitted_4.wait());
@@ -157,14 +192,29 @@ BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated, setup_logging)
+BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available, setup_logging)
+{
+  test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+    (_logger, boost::none);
+
+  if (test_certificates)
+  {
+    test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+      (_logger, test_certificates);
+  }
+}
+
+void test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
 
@@ -179,6 +229,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
     }
     , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -187,6 +238,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent
+    , certificates
     );
 
   {
@@ -195,6 +247,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
     const utils::fake_drts_worker_notifying_module_call_submission worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
       , agent
+      , certificates
       );
 
     std::string job_name (job_submitted_1.wait());
@@ -213,6 +266,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
         BOOST_FAIL ("worker_4 shall never get a job: worker 1 is still canceling");
       }
       , agent
+      , certificates
       );
     utils::fake_drts_worker_notifying_module_call_submission worker_5
       ([] (std::string)
@@ -220,6 +274,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
         BOOST_FAIL ("worker_5 shall never get a job: workers 1 is still canceling");
       }
       , agent
+      , certificates
       );
 
     //! \note Race and sleep! This is ugly, but needed to provoke a
@@ -244,6 +299,7 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
     utils::fake_drts_worker_waiting_for_finished_ack worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
       , agent
+      , certificates
       );
 
     {
@@ -271,12 +327,27 @@ BOOST_FIXTURE_TEST_CASE (worker_shall_not_get_job_after_finishing_and_another_wo
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (reschedule_happens_even_though_all_others_were_success, setup_logging)
+  (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated, setup_logging)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+    (_logger, boost::none);
 
-  utils::client client (orchestrator);
+  if (test_certificates)
+  {
+    test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+      (_logger, test_certificates);
+  }
+}
+
+void test_reschedule_happens_even_though_all_others_were_success
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
+{
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
+
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
@@ -285,6 +356,7 @@ BOOST_FIXTURE_TEST_CASE
     ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_notifying_module_call_submission>
         ( [&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }
         , agent
+        , certificates
         )
     );
 
@@ -294,6 +366,7 @@ BOOST_FIXTURE_TEST_CASE
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent
+    , certificates
     );
 
   std::string cancel_id;
@@ -309,6 +382,7 @@ BOOST_FIXTURE_TEST_CASE
   utils::fake_drts_worker_notifying_module_call_submission worker_3
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
     , agent
+    , certificates
     );
 
   {
@@ -321,4 +395,15 @@ BOOST_FIXTURE_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (reschedule_happens_even_though_all_others_were_success, setup_logging)
+{
+  test_reschedule_happens_even_though_all_others_were_success (_logger, boost::none);
+
+  if (test_certificates)
+  {
+    test_reschedule_happens_even_though_all_others_were_success (_logger, test_certificates);
+  }
 }

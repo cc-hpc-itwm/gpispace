@@ -67,6 +67,7 @@ namespace gspc
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
                 , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , boost::none
                 )
     {}
 

@@ -10,3 +10,5 @@ fhg_add_test (NAME sdpa_job_states
   USE_BOOST
   LIBRARIES fhg-util
 )
+
+file (COPY ${CMAKE_SOURCE_DIR}/src/fhgcom/tests/certs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -17,6 +17,13 @@
 
 namespace
 {
+#ifdef TESTING_WITH_SSL_ENABLED
+  fhg::com::certificates_t const test_certificates
+    (boost::filesystem::current_path()/"certs");
+#else
+  fhg::com::certificates_t const test_certificates;
+#endif
+
   struct wait_for_n_events_strategy
   {
     wait_for_n_events_strategy (unsigned int expected)
@@ -53,7 +60,7 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (perform_test)
+void test_network_strategy (fhg::com::certificates_t const& certificates)
 {
   wait_for_n_events_strategy counter (1);
 
@@ -66,6 +73,7 @@ BOOST_AUTO_TEST_CASE (perform_test)
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
+    , certificates
     );
 
   net.perform<sdpa::events::ErrorEvent>
@@ -80,4 +88,14 @@ BOOST_AUTO_TEST_CASE (perform_test)
     );
 
   counter.wait();
+}
+
+BOOST_AUTO_TEST_CASE (test_strategy)
+{
+  test_network_strategy (boost::none);
+
+  if (test_certificates)
+  {
+    test_network_strategy (test_certificates);
+  }
 }

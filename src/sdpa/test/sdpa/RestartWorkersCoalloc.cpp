@@ -15,9 +15,10 @@ namespace
     fake_drts_worker_waiting_for_cancel
         ( std::function<void (std::string)> announce_job
         , const utils::agent& master_agent
+        , fhg::com::certificates_t const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
-        (announce_job, master_agent)
+        (announce_job, master_agent, certificates)
       , _pending_cancel_requests (0)
     {}
     ~fake_drts_worker_waiting_for_cancel()
@@ -52,12 +53,15 @@ namespace
   };
 }
 
-BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running, setup_logging)
+void test_restart_workers_while_job_requiring_coallocation_is_running
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
@@ -65,7 +69,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_run
 
   fhg::util::thread::event<std::string> job_submitted_0;
   fake_drts_worker_waiting_for_cancel worker_0
-    ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent);
+    ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent, certificates);
 
   {
     fhg::util::thread::event<> job_submitted_1;
@@ -74,6 +78,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_run
       ( worker_id
       , [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
       , agent
+      , certificates
       );
 
     job_submitted_0.wait();
@@ -83,19 +88,32 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_run
   worker_0.wait_for_cancel();
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
-    (worker_id, agent);
+    (worker_id, agent, certificates);
   worker_0.finish (job_submitted_0.wait());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing, setup_logging)
+BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running, setup_logging)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  test_restart_workers_while_job_requiring_coallocation_is_running (_logger, boost::none);
 
-  utils::client client (orchestrator);
+  if (test_certificates)
+  {
+    test_restart_workers_while_job_requiring_coallocation_is_running (_logger, test_certificates);
+  }
+}
+
+void test_restart_workers_while_job_is_running_and_partial_result_is_missing
+  ( fhg::log::Logger& _logger
+  , fhg::com::certificates_t const& certificates
+  )
+{
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
+
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
@@ -103,7 +121,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result
 
   fhg::util::thread::event<std::string> job_submitted_0;
   utils::fake_drts_worker_waiting_for_finished_ack worker_0
-    ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent);
+    ([&job_submitted_0] (std::string j) { job_submitted_0.notify (j); }, agent, certificates);
 
   {
     fhg::util::thread::event<> job_submitted_1;
@@ -112,6 +130,7 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result
       ( worker_id
       , [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
       , agent
+      , certificates
       );
 
     worker_0.finish_and_wait_for_ack (job_submitted_0.wait());
@@ -120,9 +139,19 @@ BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
-    (worker_id, agent);
+    (worker_id, agent, certificates);
   worker_0.finish (job_submitted_0.wait());
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+}
+
+BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing, setup_logging)
+{
+  test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, boost::none);
+
+  if (test_certificates)
+  {
+    test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, test_certificates);
+  }
 }
