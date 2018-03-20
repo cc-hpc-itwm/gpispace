@@ -43,6 +43,7 @@ namespace
     constexpr char const* const master {"master"};
     constexpr char const* const gui_host {"gui-host"};
     constexpr char const* const gui_port {"gui-port"};
+    constexpr char const* const certificates {"certificates"};
   }
 
   void set_numa_socket (std::size_t target_socket)
@@ -171,6 +172,10 @@ int main(int ac, char **av)
           <fhg::util::boost::program_options::positive_integral<unsigned short>>()
       , "port to send gui notifications to"
       )
+      ( option_name::certificates
+      , po::value<boost::filesystem::path>()
+      , "folder containing SSL certificates"
+      )
       ;
 
     po::variables_map vm;
@@ -252,6 +257,13 @@ int main(int ac, char **av)
       set_numa_socket (vm.at (option_name::socket).as<std::size_t>());
     }
 
+    fhg::com::certificates_t certificates;
+
+    if (vm.count (option_name::certificates))
+    {
+      certificates = vm.at (option_name::certificates).as<boost::filesystem::path>();
+    }
+
     DRTSImpl const plugin
       ( request_stop
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -274,6 +286,7 @@ int main(int ac, char **av)
       , vm.at (option_name::backlog_length)
       .as<std::size_t>()
       , logger
+      , certificates
       );
 
     promise.set_result ( { plugin.logger_registration_endpoint().host

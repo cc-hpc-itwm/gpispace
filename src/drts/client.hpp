@@ -9,6 +9,7 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
+#include <boost/optional.hpp>
 
 #include <map>
 #include <string>
@@ -16,6 +17,8 @@
 
 namespace gspc
 {
+  using certificates_t = boost::optional<boost::filesystem::path>;
+
   class workflow : boost::noncopyable
   {
   public:
@@ -40,8 +43,9 @@ namespace gspc
   class client : boost::noncopyable
   {
   public:
+    client (scoped_runtime_system const&, certificates_t const&);
     client (scoped_runtime_system const&);
-    explicit client (information_to_reattach const&);
+    explicit client (information_to_reattach const&m, certificates_t const&);
 
     job_id_t submit
       ( workflow const&
