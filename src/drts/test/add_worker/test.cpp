@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, master.entry_point());
+    (vm, installation, "worker:1", boost::none, master.entry_point(), boost::none);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
@@ -160,7 +160,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                               }
                             );
 
-      drts.add_worker (rifd.entry_points());
+      drts.add_worker (rifd.entry_points(), boost::none);
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 

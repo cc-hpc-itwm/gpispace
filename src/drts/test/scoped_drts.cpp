@@ -53,7 +53,7 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
                                         );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifds.entry_points());
+    (vm, installation, "", scoped_rifds.entry_points(), boost::none);
 }
 
 BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
@@ -102,6 +102,7 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
       , boost::none
       , master.entry_point()
       , info_output_stream
+      , boost::none
       );
   }
 
@@ -214,6 +215,7 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
       , scoped_rifds.entry_points()
       , master.entry_point()
       , info_output_stream
+      , boost::none
       );
   }
 

@@ -74,6 +74,7 @@ namespace gspc
       , installation const& installation
       , std::string const& topology_description
       , std::ostream& info_output
+      , certificates_t const& certificates
       )
     : scoped_runtime_system
         ( vm
@@ -81,6 +82,7 @@ namespace gspc
         , topology_description
         , require_rif_entry_points_file (vm)
         , info_output
+        , certificates
         )
   {}
   scoped_runtime_system::scoped_runtime_system
@@ -89,6 +91,7 @@ namespace gspc
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
     , std::ostream& info_output
+    , certificates_t const& certificates
     )
       : scoped_runtime_system
           ( vm
@@ -108,6 +111,7 @@ namespace gspc
                      };
             }()
           , info_output
+          , certificates
           )
   {}
   scoped_runtime_system::scoped_runtime_system
@@ -117,6 +121,7 @@ namespace gspc
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
+    , certificates_t const& certificates
     )
       : _ (new implementation ( vm
                               , installation
@@ -124,6 +129,7 @@ namespace gspc
                               , entry_points
                               , master
                               , info_output
+                              , certificates
                               )
           )
   {}
@@ -167,6 +173,7 @@ namespace gspc
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , std::ostream& info_output
+      , certificates_t const& certificates
       )
     : _info_output (info_output)
     , _master (master)
@@ -205,12 +212,13 @@ namespace gspc
       , _master_agent_hostinfo
       , _info_output
       , _log_emitters
+      , certificates
       );
 
     if (!rif_entry_points.empty())
     {
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        const failures (add_worker_impl (_worker_descriptions, rif_entry_points));
+        const failures (add_worker_impl (_worker_descriptions, rif_entry_points, certificates));
 
       if (!failures.empty())
       {
@@ -238,15 +246,18 @@ namespace gspc
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker
-      (std::vector<fhg::rif::entry_point> const& entry_points)
+      ( std::vector<fhg::rif::entry_point> const& entry_points
+      , certificates_t const& certificates
+      )
   {
-    return add_worker (_worker_descriptions, entry_points);
+    return add_worker (_worker_descriptions, entry_points, certificates);
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker
       ( std::vector<worker_description> const& worker_descriptions
       , std::vector<fhg::rif::entry_point> const& entry_points
+      , certificates_t const& certificates
       )
   {
     if (_gpi_socket)
@@ -254,13 +265,14 @@ namespace gspc
       throw std::logic_error ("add_worker while vmem is in use");
     }
 
-    return add_worker_impl (worker_descriptions, entry_points);
+    return add_worker_impl (worker_descriptions, entry_points, certificates);
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
       ( std::vector<worker_description> const& worker_descriptions
       , std::vector<fhg::rif::entry_point> const& entry_points
+      , certificates_t const& certificates
       )
   {
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
@@ -286,6 +298,7 @@ namespace gspc
                                                 , _installation_path
                                                 , _info_output
                                                 , _log_emitters
+                                                , certificates
                                                 ).second
           )
       {
@@ -314,6 +327,7 @@ namespace gspc
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
+    , certificates_t const& certificates
     )
       : _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -346,6 +360,7 @@ namespace gspc
             : entry_points->_->_entry_points
           , master._->_entry_point
           , info_output
+          , certificates
           )
       , _logger()
       , _virtual_memory_api
@@ -357,19 +372,20 @@ namespace gspc
   {}
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
-      (rifd_entry_points const& rifd_entry_points)
+      (rifd_entry_points const& rifd_entry_points, certificates_t const& certificates)
   {
     return _started_runtime_system.add_worker
-      (rifd_entry_points._->_entry_points);
+      (rifd_entry_points._->_entry_points, certificates);
   }
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
       ( std::vector<worker_description> const& descriptions
       , rifd_entry_points const& rifd_entry_points
+      , certificates_t const& certificates
       )
   {
     return _started_runtime_system.add_worker
-      (descriptions, rifd_entry_points._->_entry_points);
+      (descriptions, rifd_entry_points._->_entry_points, certificates);
   }
   std::unordered_map< fhg::rif::entry_point
                     , std::pair< std::string /* kind */
@@ -415,11 +431,12 @@ namespace gspc
                     , rifd_entry_point_hash
                     >
     scoped_runtime_system::add_worker
-      (rifd_entry_points const& rifd_entry_points)
+      (rifd_entry_points const& rifd_entry_points, certificates_t const& certificates)
   {
     return add_worker
       ( _->_started_runtime_system._worker_descriptions
       , rifd_entry_points
+      , certificates
       );
   }
 
@@ -430,11 +447,12 @@ namespace gspc
     scoped_runtime_system::add_worker
       ( std::vector<worker_description> const& descriptions
       , rifd_entry_points const& rifd_entry_points
+      , certificates_t const& certificates
       )
   {
     std::unordered_map< fhg::rif::entry_point
                       , std::list<std::exception_ptr>
-                      > const result (_->add_worker (descriptions, rifd_entry_points));
+                      > const result (_->add_worker (descriptions, rifd_entry_points, certificates));
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
                       , rifd_entry_point_hash

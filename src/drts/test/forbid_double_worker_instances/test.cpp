@@ -56,13 +56,13 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "test_worker:1", rifds.entry_points());
+    (vm, installation, "test_worker:1", rifds.entry_points(), boost::none);
 
   std::unordered_map
     < gspc::rifd_entry_point
     , std::list<std::exception_ptr>
     , gspc::rifd_entry_point_hash
-    > const errors (drts.add_worker (rifds.entry_points()));
+    > const errors (drts.add_worker (rifds.entry_points(), boost::none));
 
   BOOST_REQUIRE_EQUAL (rifds.hosts().size(), errors.size());
 

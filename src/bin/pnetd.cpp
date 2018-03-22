@@ -101,7 +101,7 @@ int main (int argc, char** argv) try
   std::string const topology_description ("work:8");
 
   gspc::scoped_runtime_system const drts
-    (vm, gspc::installation (vm), topology_description);
+    (vm, gspc::installation (vm), topology_description, boost::none);
 
   gspc::workflow workflow (input);
 

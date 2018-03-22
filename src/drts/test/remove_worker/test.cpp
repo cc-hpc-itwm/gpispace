@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points(), boost::none);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
