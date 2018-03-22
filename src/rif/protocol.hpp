@@ -5,6 +5,8 @@
 #include <fhglog/level.hpp>
 #include <rpc/function_description.hpp>
 
+#include <drts/drts.fwd.hpp>
+
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/serialization/std/chrono.hpp>
@@ -89,6 +91,7 @@ namespace fhg
             , boost::optional<std::string> gui_host
             , boost::optional<unsigned short> gui_port
             , boost::optional<boost::filesystem::path> gpi_socket
+            , gspc::certificates_t
             , boost::filesystem::path command
             , std::unordered_map<std::string, std::string> environment
             )

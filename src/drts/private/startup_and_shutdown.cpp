@@ -162,6 +162,7 @@ namespace
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
     , std::list<fhg::logging::tcp_endpoint>& log_emitters
+    , gspc::certificates_t const& certificates
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
@@ -175,6 +176,7 @@ namespace
           , gui_host
           , gui_port
           , gpi_socket
+          , certificates
           , installation_path.agent()
           , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
@@ -212,6 +214,7 @@ namespace fhg
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
     , std::list<fhg::logging::tcp_endpoint>& log_emitters
+    , gspc::certificates_t const& certificates
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
@@ -280,6 +283,12 @@ namespace fhg
      {
        arguments.emplace_back ("--socket");
        arguments.emplace_back (std::to_string (description.socket.get()));
+     }
+
+     if (certificates)
+     {
+       arguments.emplace_back ("--certificates");
+       arguments.emplace_back (certificates->string());
      }
 
      std::atomic<std::size_t> num_nodes (0);
@@ -503,6 +512,7 @@ namespace fhg
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
       , std::list<fhg::logging::tcp_endpoint>& log_emitters
+      , gspc::certificates_t const& certificates
       )
     {
       if (log_dir)
@@ -541,13 +551,20 @@ namespace fhg
 
       rif::client master_rif_client (io_service, master);
 
+      std::vector<std::string> orchestrator_options {"-u", "0", "-n", "orchestrator"};
+      if (certificates)
+      {
+        orchestrator_options.push_back ("--ssl-certificates");
+        orchestrator_options.push_back (certificates->string());
+      }
+
       std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
         ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
                 return master_rif_client.execute_and_get_startup_messages
                   ( installation_path.orchestrator()
-                  , std::vector<std::string> {"-u", "0", "-n", "orchestrator"}
+                  , orchestrator_options
                   , logging_environment
                       (log_host, log_port, log_dir, verbose, "orchestrator")
                   ).get();
@@ -699,6 +716,7 @@ namespace fhg
                                           , processes
                                           , info_output
                                           , log_emitters
+                                          , certificates
                                           );
 
       return orchestrator_hostinfo;
