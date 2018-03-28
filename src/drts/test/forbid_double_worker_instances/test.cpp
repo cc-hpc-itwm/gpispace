@@ -14,7 +14,14 @@
 
 #include <boost/range/adaptor/map.hpp>
 
-BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_forbid_double_worker_instances
+  (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -56,7 +63,7 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "test_worker:1", rifds.entry_points(), boost::none);
+    (vm, installation, "test_worker:1", rifds.entry_points(), certificates);
 
   std::unordered_map
     < gspc::rifd_entry_point
@@ -71,4 +78,20 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
     //! \todo do not collect the exceptions but make a longer list
     BOOST_REQUIRE (!exceptions.empty());
   }
+}
+
+BOOST_AUTO_TEST_CASE
+  ( forbid_double_worker_instances
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_forbid_double_worker_instances (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( forbid_double_worker_instances_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_forbid_double_worker_instances (test_certificates);
 }

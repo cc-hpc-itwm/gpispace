@@ -36,7 +36,13 @@
 #include <list>
 #include <vector>
 
-BOOST_AUTO_TEST_CASE (add_worker)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_add_worker (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -118,7 +124,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, master.entry_point(), boost::none);
+    (vm, installation, "worker:1", boost::none, master.entry_point(), certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
@@ -130,7 +136,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   boost::asio::ip::tcp::acceptor acceptor (io_service, {});
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::job_id_t const job_id
     ( client.submit
@@ -160,7 +166,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                               }
                             );
 
-      drts.add_worker (rifd.entry_points(), boost::none);
+      drts.add_worker (rifd.entry_points(), certificates);
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 
@@ -181,6 +187,22 @@ BOOST_AUTO_TEST_CASE (add_worker)
     ( result.find (port_done)->second
     , pnet::type::value::value_type (we::type::literal::control())
     );
+}
+
+BOOST_AUTO_TEST_CASE
+  ( add_worker
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_add_worker (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( add_secure_worker
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_add_worker (test_certificates);
 }
 
 namespace

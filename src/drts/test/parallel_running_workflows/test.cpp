@@ -24,7 +24,14 @@
 #include <future>
 #include <map>
 
-BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_drts_parallel_running_workflows
+  (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -85,14 +92,14 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
+    (vm, installation, "worker:2", rifds.entry_points(), certificates);
 
   auto submit_fun
-    ( [&filename_a, &filename_b, &drts]
+    ( [&filename_a, &filename_b, &drts, &certificates]
       (std::string port, test::make_net_lib_install const& make)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        ( gspc::client (drts).put_and_run
+        ( gspc::client (drts, certificates).put_and_run
           ( gspc::workflow (make.pnet())
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}
@@ -123,4 +130,20 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 
   BOOST_CHECK (wait_then_touch.get());
   BOOST_CHECK (touch_then_wait.get());
+}
+
+BOOST_AUTO_TEST_CASE
+  ( drts_parallel_running_workflows
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_drts_parallel_running_workflows (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( drts_parallel_running_workflows_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_drts_parallel_running_workflows (test_certificates);
 }

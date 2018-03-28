@@ -41,11 +41,12 @@ void test_peer_does_not_hang_when_resolve_throws
 BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
 {
   test_peer_does_not_hang_when_resolve_throws (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_peer_does_not_hang_when_resolve_throws (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (peer_does_not_hang_when_resolve_throws_using_secure_communication)
+{
+  test_peer_does_not_hang_when_resolve_throws (test_certificates);
 }
 
 void test_peer_run_single (fhg::com::certificates_t const& certificates)
@@ -61,11 +62,12 @@ void test_peer_run_single (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (peer_run_single)
 {
   test_peer_run_single (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_peer_run_single (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (peer_run_single_using_secure_communication)
+{
+  test_peer_run_single (test_certificates);
 }
 
 namespace
@@ -113,11 +115,12 @@ void test_peer_run_two (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (peer_run_two)
 {
   test_peer_run_two (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_peer_run_two (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (peer_run_two_using_secure_communication)
+{
+  test_peer_run_two (test_certificates);
 }
 
 void test_resolve_peer_names (fhg::com::certificates_t const& certificates)
@@ -140,13 +143,13 @@ void test_resolve_peer_names (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (resolve_peer_names)
 {
   test_resolve_peer_names (boost::none);
-
-  if (test_certificates)
-  {
-      test_resolve_peer_names (test_certificates);
-  }
 }
 
+BOOST_AUTO_TEST_CASE
+  (resolve_peer_names_using_secure_communication)
+{
+  test_resolve_peer_names (test_certificates);
+}
 
 void test_peer_loopback (fhg::com::certificates_t const& certificates)
 {
@@ -172,11 +175,12 @@ void test_peer_loopback (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (peer_loopback)
 {
   test_peer_loopback (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_peer_loopback (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (peer_loopback_using_secure_communication)
+{
+  test_peer_loopback (test_certificates);
 }
 
 void test_send_to_nonexisting_peer (fhg::com::certificates_t const& certificates)
@@ -198,11 +202,12 @@ void test_send_to_nonexisting_peer (fhg::com::certificates_t const& certificates
 BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
 {
   test_send_to_nonexisting_peer (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_send_to_nonexisting_peer (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (send_to_nonexisting_peer_using_secure_communication)
+{
+  test_send_to_nonexisting_peer (test_certificates);
 }
 
 void test_send_large_data (fhg::com::certificates_t const& certificates)
@@ -229,11 +234,12 @@ void test_send_large_data (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (send_large_data)
 {
   test_send_large_data (boost::none);
+}
 
-  if (test_certificates)
-  {
-      test_send_large_data (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (send_large_data_using_secure_communication)
+{
+  test_send_large_data (test_certificates);
 }
 
 void test_peers_with_fixed_ports (fhg::com::certificates_t const& certificates)
@@ -262,8 +268,12 @@ void test_peers_with_fixed_ports (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
 {
   test_peers_with_fixed_ports (boost::none);
-  test_peers_with_fixed_ports
-    (boost::filesystem::path (boost::filesystem::current_path()/"certs"));
+}
+
+BOOST_AUTO_TEST_CASE
+  (peers_with_fixed_ports_using_secure_communication)
+{
+  test_peers_with_fixed_ports (test_certificates);
 }
 
 void test_peers_with_fixed_ports_reuse (fhg::com::certificates_t const& certificates)
@@ -292,11 +302,12 @@ void test_peers_with_fixed_ports_reuse (fhg::com::certificates_t const& certific
 BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
 {
   test_peers_with_fixed_ports_reuse (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_peers_with_fixed_ports_reuse (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (peers_with_fixed_ports_reuse_using_secure_communication)
+{
+  test_peers_with_fixed_ports_reuse (test_certificates);
 }
 
 void test_two_peers_one_restarts_repeatedly (fhg::com::certificates_t const& certificates)
@@ -370,11 +381,12 @@ void test_two_peers_one_restarts_repeatedly (fhg::com::certificates_t const& cer
 BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
 {
   test_two_peers_one_restarts_repeatedly (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_two_peers_one_restarts_repeatedly (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (two_peers_one_restarts_repeatedly_using_secure_communication)
+{
+  test_two_peers_one_restarts_repeatedly (test_certificates);
 }
 
 BOOST_AUTO_TEST_CASE (invalid_certificates_directory)

@@ -30,7 +30,14 @@
 
 #include <list>
 
-BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_client_implementation_with_ostream_logger
+  (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -108,7 +115,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
                                  );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points(), certificates);
 
   boost::filesystem::path const implementation
     ( vm.at ("implementation")
@@ -123,7 +130,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts).put_and_run
+    ( gspc::client (drts, certificates).put_and_run
       ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
         , {"message", fhg::util::join (lines, '\n').string()}
@@ -134,4 +141,20 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   BOOST_REQUIRE_EQUAL (result.size(), 0);
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     (lines.begin(), lines.end(), logged.begin(), logged.end());
+}
+
+BOOST_AUTO_TEST_CASE
+  ( client_implementation_with_ostream_logger
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_client_implementation_with_ostream_logger (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( client_implementation_with_ostream_logger_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_client_implementation_with_ostream_logger (test_certificates);
 }

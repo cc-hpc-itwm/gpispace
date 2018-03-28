@@ -32,7 +32,13 @@
 
 #include <map>
 
-BOOST_AUTO_TEST_CASE (wait_for_token_put)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_wait_for_token_put (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -92,8 +98,8 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
-  gspc::client client (drts);
+    (vm, installation, "worker:2", rifds.entry_points(), certificates);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -141,4 +147,20 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
   BOOST_REQUIRE_EQUAL (result.find (port_bad)->second, bad);
   BOOST_REQUIRE_EQUAL (result.count (port_good), 1);
   BOOST_REQUIRE_EQUAL (result.find (port_good)->second, good);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( wait_for_token_put
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_wait_for_token_put (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( wait_for_token_put_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_wait_for_token_put (test_certificates);
 }

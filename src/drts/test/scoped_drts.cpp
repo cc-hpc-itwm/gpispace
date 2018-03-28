@@ -20,7 +20,14 @@
 #include <sstream>
 #include <vector>
 
-BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path()/"certs");
+}
+
+void test_scoped_drts_empty_topology
+  (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -53,10 +60,27 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
                                         );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifds.entry_points(), boost::none);
+    (vm, installation, "", scoped_rifds.entry_points(), certificates);
 }
 
-BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
+BOOST_AUTO_TEST_CASE
+  ( scoped_drts_empty_topology
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_scoped_drts_empty_topology (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( scoped_drts_empty_topology_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_scoped_drts_empty_topology (test_certificates);
+}
+
+void test_no_worker_started_on_master
+  (std::string const& worker, gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -98,11 +122,11 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     gspc::scoped_runtime_system const drts
       ( vm
       , installation
-      , "worker:1"
+      , worker + ":1"
       , boost::none
       , master.entry_point()
       , info_output_stream
-      , boost::none
+      , certificates
       );
   }
 
@@ -163,7 +187,25 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     );
 }
 
-BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
+BOOST_AUTO_TEST_CASE
+  ( no_worker_started_on_master
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_no_worker_started_on_master ("worker", boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( no_worker_started_on_master_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_no_worker_started_on_master
+    ("worker_using_secure_communication", test_certificates);
+}
+
+void test_workers_are_started_on_non_master
+  (std::string const& worker, gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -211,11 +253,11 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     gspc::scoped_runtime_system const drts
       ( vm
       , installation
-      , "WORKER:1"
+      , worker + ":1"
       , scoped_rifds.entry_points()
       , master.entry_point()
       , info_output_stream
-      , boost::none
+      , certificates
       );
   }
 
@@ -256,7 +298,7 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     );
 
   std::string const entry_point_worker
-    ([&info_output, &hosts, &entry_point_master]()
+    ([&info_output, &hosts, &entry_point_master, &worker]()
      {
        std::smatch match;
 
@@ -265,12 +307,13 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
            ( info_output[2]
            , match
            , std::regex
-             ( ( boost::format ("I: starting WORKER workers"
+             ( ( boost::format ("I: starting %2% workers"
                                " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
                                " with parent agent-%1%-0"
                                " on rif entry point ((.+) [0-9]+ [0-9]+)"
                                )
                % entry_point_master
+               % worker
                ).str()
              )
            )
@@ -311,4 +354,21 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
                    }
       )
     );
+}
+
+BOOST_AUTO_TEST_CASE
+  ( workers_are_started_on_non_master
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_workers_are_started_on_non_master ("WORKER", boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( workers_are_started_on_non_master_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_workers_are_started_on_non_master
+    ("WORKER_using_secure_communication", test_certificates);
 }

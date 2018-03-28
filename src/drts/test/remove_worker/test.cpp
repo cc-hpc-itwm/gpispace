@@ -23,7 +23,13 @@
 #include <boost/program_options.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-BOOST_AUTO_TEST_CASE (remove_worker)
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_remove_worker (gspc::certificates_t const& certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -72,7 +78,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points(), boost::none);
+    (vm, installation, "worker:1", rifds.entry_points(), certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
@@ -94,7 +100,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                         );
 
   gspc::job_id_t const job_id
-    ( gspc::client (drts).submit
+    ( gspc::client (drts, certificates).submit
         ( gspc::workflow (make.pnet())
         , { {"address", fhg::util::connectable_to_address_string
                           (acceptor.local_endpoint().address())
@@ -118,4 +124,20 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   BOOST_REQUIRE ( errc == boost::asio::error::eof
                 || errc == boost::asio::error::connection_reset
                 );
+}
+
+BOOST_AUTO_TEST_CASE
+  ( remove_worker
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_remove_worker (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( remove_secure_worker
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_remove_worker (test_certificates);
 }

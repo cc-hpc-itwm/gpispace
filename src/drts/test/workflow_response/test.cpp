@@ -38,17 +38,16 @@
 #include <map>
 #include <regex>
 
-BOOST_DATA_TEST_CASE
-  ( workflow_response
-  , boost::unit_test::data::make ( std::vector<std::string>
-                                     { "workflow_response"
-                                     , "workflow_response_expression"
-                                     }
-                                 )
-  ^ boost::unit_test::data::make
-      (std::vector<std::string> {"worker:2", "worker:1"})
-  , name
-  , topology
+namespace
+{
+  gspc::certificates_t const test_certificates
+    (boost::filesystem::current_path().parent_path()/"certs");
+}
+
+void test_workflow_response
+  ( std::string const& name
+  , std::string const& topology
+  , gspc::certificates_t const certificates
   )
 {
   boost::program_options::options_description options_description;
@@ -110,9 +109,9 @@ BOOST_DATA_TEST_CASE
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology, rifds.entry_points());
+    (vm, installation, topology, rifds.entry_points(), certificates);
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -270,7 +269,46 @@ BOOST_DATA_TEST_CASE
                       );
 }
 
-BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
+#if not TESTING_WITH_SSL_ENABLED
+BOOST_DATA_TEST_CASE
+  ( workflow_response
+  , boost::unit_test::data::make ( std::vector<std::string>
+                                     { "workflow_response"
+                                     , "workflow_response_expression"
+                                     }
+                                 )
+  ^ boost::unit_test::data::make
+      (std::vector<std::string> {"worker:2", "worker:1"})
+  , name
+  , topology
+  )
+{
+  std::cout <<"NOT using ssl " << std::endl;
+  test_workflow_response (name, topology, boost::none);
+}
+#endif
+
+#if TESTING_WITH_SSL_ENABLED
+BOOST_DATA_TEST_CASE
+  ( workflow_response_using_secure_communication
+  , boost::unit_test::data::make ( std::vector<std::string>
+                                     { "workflow_response"
+                                     , "workflow_response_expression"
+                                     }
+                                 )
+  ^ boost::unit_test::data::make
+      (std::vector<std::string> {"worker:2", "worker:1"})
+  , name
+  , topology
+  )
+{
+  std::cout <<"Using ssl " << std::endl;
+  test_workflow_response (name, topology, test_certificates);
+}
+#endif
+
+void test_one_response_waits_while_others_are_made
+  (gspc::certificates_t const certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -293,10 +331,14 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
         )
     );
 
-  fhg::util::temporary_path const shared_directory
+  boost::filesystem::path test_directory
     ( test::shared_directory (vm)
     / "workflow_response_one_response_waits_while_others_are_made"
     );
+
+  boost::filesystem::remove_all (test_directory);
+
+  fhg::util::temporary_path const shared_directory (test_directory);
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -333,9 +375,9 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2 management:1", rifds.entry_points());
+    (vm, installation, "work:2 management:1", rifds.entry_points(), certificates);
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -404,7 +446,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   auto&& thread_function
     ( [ &status_updates, &job_id, &drts, &no_longer_do_status_update
-      , &no_longer_do_status_update_guard
+      , &no_longer_do_status_update_guard, &certificates
       ]
       {
         unsigned long updates (0);
@@ -416,7 +458,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
             break;
           }
 
-          gspc::client (drts).synchronous_workflow_response
+          gspc::client (drts, certificates).synchronous_workflow_response
             (job_id, "get_and_update_state_trigger", 1UL);
           ++updates;
         }
@@ -454,7 +496,24 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
+BOOST_AUTO_TEST_CASE
+  ( one_response_waits_while_others_are_made
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_one_response_waits_while_others_are_made (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( one_response_waits_while_others_are_made_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_one_response_waits_while_others_are_made (test_certificates);
+}
+
+void test_response_fails_if_workflow_fails_after_requesting
+  (gspc::certificates_t const certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -477,10 +536,14 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
         )
     );
 
-  fhg::util::temporary_path const shared_directory
+  boost::filesystem::path test_directory
     ( test::shared_directory (vm)
     / "workflow_response_fails_if_workflow_fails_after_requesting"
     );
+
+  boost::filesystem::remove_all (test_directory);
+
+  fhg::util::temporary_path const shared_directory (test_directory);
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -517,9 +580,9 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, installation, "work:1", rifds.entry_points(), certificates);
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -563,4 +626,20 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
      }
     , std::runtime_error ("workflow failed")
     );
+}
+
+BOOST_AUTO_TEST_CASE
+  ( response_fails_if_workflow_fails_after_requesting
+  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_response_fails_if_workflow_fails_after_requesting (boost::none);
+}
+
+BOOST_AUTO_TEST_CASE
+  ( response_fails_if_workflow_fails_after_requesting_using_secure_communication
+  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
+  )
+{
+  test_response_fails_if_workflow_fails_after_requesting (test_certificates);
 }

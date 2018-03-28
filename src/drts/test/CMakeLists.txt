@@ -47,3 +47,5 @@ fhg_add_test (NAME scoped_drts
 
 add_subdirectory (client_implementation_with_ostream_logger)
 add_subdirectory (scoped_rifd_execute)
+
+file (COPY ${CMAKE_SOURCE_DIR}/src/fhgcom/tests/certs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
