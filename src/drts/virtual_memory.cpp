@@ -38,7 +38,7 @@ namespace gspc
       (drts->_->_virtual_memory_api, "vmem_allocation_buffer", size);
 
     char* const content
-      (static_cast<char* const> (drts->_->_virtual_memory_api->ptr (buffer)));
+      (static_cast<char*> (drts->_->_virtual_memory_api->ptr (buffer)));
     std::copy (data, data + size, content);
 
     drts->_->_virtual_memory_api->memcpy_and_wait
