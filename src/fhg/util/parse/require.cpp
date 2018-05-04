@@ -5,6 +5,8 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/position.hpp>
 
+#include <util-generic/unreachable.hpp>
+
 namespace fhg
 {
   namespace util
@@ -194,6 +196,8 @@ namespace fhg
               ++pos;
               return true;
             }
+
+            FHG_UTIL_UNREACHABLE ("other cases excluded before the switch");
 
           case 't':
             ++pos;

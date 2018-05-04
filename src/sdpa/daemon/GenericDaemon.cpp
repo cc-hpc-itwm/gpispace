@@ -563,6 +563,9 @@ void GenericDaemon::handleErrorEvent
       }
     }
     BOOST_FALLTHROUGH;
+#if defined (__GNUC__) && (__GNUC__ >= 7)
+    [[fallthrough]];
+#endif
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
     case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {

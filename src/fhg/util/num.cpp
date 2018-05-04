@@ -325,6 +325,9 @@ namespace fhg
             case '.':
               ++pos;
               BOOST_FALLTHROUGH;
+#if defined (__GNUC__) && (__GNUC__ >= 7)
+              [[fallthrough]];
+#endif
             case 'e':
             case 'E':
               {
