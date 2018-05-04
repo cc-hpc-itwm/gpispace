@@ -106,7 +106,7 @@ namespace fhg
 
       strncpy ( exchange_hostname_and_port_data_send->hostname
               , fhg::util::hostname().c_str()
-              , sizeof (exchange_hostname_and_port_data_send->hostname)
+              , HOST_NAME_MAX
               );
       exchange_hostname_and_port_data_send->port = local_communication_port;
 
