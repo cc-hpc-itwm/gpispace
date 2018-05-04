@@ -307,7 +307,7 @@ namespace gpi
         {
           hdl.offset = m_mmgr.alloc (hdl.id, arena, hdl.local_size).first;
         }
-        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory)
+        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory const&)
         {
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
@@ -316,7 +316,7 @@ namespace gpi
             + " avail = " + std::to_string (m_descriptor.avail)
             );
         }
-        catch (gspc::vmem::error::alloc::insufficient_memory)
+        catch (gspc::vmem::error::alloc::insufficient_memory const&)
         {
           throw std::runtime_error
             ( "not enough memory: requested_size = "
@@ -325,7 +325,7 @@ namespace gpi
             + " avail = " + std::to_string (m_descriptor.avail)
             );
         }
-        catch (gspc::vmem::error::alloc::duplicate_handle)
+        catch (gspc::vmem::error::alloc::duplicate_handle const&)
         {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
