@@ -108,6 +108,7 @@ namespace fhg
               , fhg::util::hostname().c_str()
               , HOST_NAME_MAX
               );
+      exchange_hostname_and_port_data_send->hostname[HOST_NAME_MAX] = '\0';
       exchange_hostname_and_port_data_send->port = local_communication_port;
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());
