@@ -17,6 +17,7 @@
 #include <sdpa/id_generator.hpp>
 
 #include <fhg/util/boost/optional.hpp>
+#include <util-generic/fallthrough.hpp>
 #include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
 #include <util-generic/join.hpp>
@@ -562,10 +563,7 @@ void GenericDaemon::handleErrorEvent
         throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
       }
     }
-    BOOST_FALLTHROUGH;
-#if defined (__GNUC__) && (__GNUC__ >= 7)
-    [[fallthrough]];
-#endif
+    FHG_UTIL_FALLTHROUGH;
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
     case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
