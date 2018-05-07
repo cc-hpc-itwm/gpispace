@@ -97,7 +97,7 @@ namespace gpi
 
         // send
         proto::header_t header;
-        ::memset (&header, 0, sizeof(header));
+        header.clear();
         header.length = data.size();
 
         if ( (fhg::util::syscall::write (m_socket, &header, sizeof(header)) <= 0)

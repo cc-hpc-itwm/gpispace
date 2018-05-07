@@ -42,7 +42,7 @@ namespace we
       std::size_t copy (T* const x) const
       {
         return copy
-          (static_cast<char* const> (static_cast<void* const> (x)), sizeof (*x));
+          (static_cast<char*> (static_cast<void*> (x)), sizeof (*x));
       }
 
       std::string to_string() const;

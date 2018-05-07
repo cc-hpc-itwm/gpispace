@@ -104,7 +104,7 @@ namespace gpi
 
         private:
           std::exception_ptr _exception;
-          type::segment_id_t _segment;
+          type::segment_id_t _segment = 0;
 
           friend class boost::serialization::access;
           template<class Archive>

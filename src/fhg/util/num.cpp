@@ -4,6 +4,8 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/from_string.hpp>
 
+#include <util-generic/fallthrough.hpp>
+
 #include <limits>
 
 #include <iostream>
@@ -324,7 +326,7 @@ namespace fhg
             {
             case '.':
               ++pos;
-              BOOST_FALLTHROUGH;
+              FHG_UTIL_FALLTHROUGH;
             case 'e':
             case 'E':
               {

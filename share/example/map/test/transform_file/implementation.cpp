@@ -65,7 +65,7 @@ void map_process
       );
   }
 
-  char const* const mem_input (static_cast<char const* const> (input.first));
+  char const* const mem_input (static_cast<char const*> (input.first));
   char* const mem_output (static_cast<char*> (output.first));
 
   std::transform ( mem_input, mem_input + input.second

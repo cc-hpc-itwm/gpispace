@@ -19,6 +19,11 @@ namespace fhg
         address_t (std::string const & name);
 
         uint8_t data[16];
+
+        void clear()
+        {
+          memset (data, 0, 16);
+        }
       } __attribute__((packed));
 
       // standard operators
@@ -37,8 +42,8 @@ namespace fhg
           : type_of_msg (0)
           , length (0)
         {
-          memset (&src, 0, sizeof(address_t));
-          memset (&dst, 0, sizeof(address_t));
+          src.clear();
+          dst.clear();
         }
 
         uint32_t type_of_msg;

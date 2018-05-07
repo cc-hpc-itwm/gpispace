@@ -43,7 +43,6 @@ namespace fhg
     signal_handler_manager::~signal_handler_manager()
     {
       std::lock_guard<std::mutex> const _ (GLOBAL_manager_mutex);
-      fhg_assert (GLOBAL_manager == this);
       GLOBAL_manager = nullptr;
 
       for (decltype (_handlers)::value_type const& handler : _handlers)
