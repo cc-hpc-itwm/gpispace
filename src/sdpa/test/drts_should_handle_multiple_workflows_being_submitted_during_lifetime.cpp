@@ -104,17 +104,13 @@ void test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime
 }
 
 BOOST_AUTO_TEST_CASE
-  ( drts_should_handle_multiple_workflows_being_submitted_during_lifetime
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+  (drts_should_handle_multiple_workflows_being_submitted_during_lifetime)
 {
   test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( drts_should_handle_multiple_workflows_being_submitted_during_lifetime_with_ssl
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (drts_should_handle_multiple_workflows_being_submitted_during_lifetime_with_ssl)
 {
   test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime (test_certificates);
 }

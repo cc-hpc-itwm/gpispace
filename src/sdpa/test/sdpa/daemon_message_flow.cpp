@@ -154,11 +154,12 @@ void test_job_finished_ack_fails_with_bad_job_id
 BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
 {
   test_job_finished_ack_fails_with_bad_job_id (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_job_finished_ack_fails_with_bad_job_id (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE
+  (job_finished_ack_fails_with_bad_job_id_using_secure_communication)
+{
+  test_job_finished_ack_fails_with_bad_job_id (test_certificates);
 }
 //! \todo Analyse control flow in all GenericDaemon event handlers
 

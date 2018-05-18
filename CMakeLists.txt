@@ -69,15 +69,6 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
-option (TESTING_WITH_SSL_ENABLED "Enable testing with ssl" OFF)
-if (TESTING_WITH_SSL_ENABLED)
-  MESSAGE (STATUS "Testing with secure communication enabled")
-  add_definitions(-DTESTING_WITH_SSL_ENABLED=1)
-else()
-  MESSAGE (STATUS "Testing with secure communication disabled")
-  add_definitions(-DTESTING_WITH_SSL_ENABLED=0)
-endif()
-
 require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.2)
 
 find_boost (1.59 REQUIRED QUIET COMPONENTS

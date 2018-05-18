@@ -22,9 +22,10 @@ void testInvalidNumberOfWorkersRequired
 BOOST_FIXTURE_TEST_CASE (InvalidNumberOfWorkersRequired, setup_logging)
 {
   testInvalidNumberOfWorkersRequired (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    testInvalidNumberOfWorkersRequired (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (InvalidNumberOfWorkersRequired_using_secure_communication, setup_logging)
+{
+  testInvalidNumberOfWorkersRequired (_logger, test_certificates);
 }

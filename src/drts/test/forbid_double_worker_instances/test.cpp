@@ -80,18 +80,13 @@ void test_forbid_double_worker_instances
   }
 }
 
-BOOST_AUTO_TEST_CASE
-  ( forbid_double_worker_instances
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
 {
   test_forbid_double_worker_instances (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( forbid_double_worker_instances_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (forbid_double_worker_instances_using_secure_communication)
 {
   test_forbid_double_worker_instances (test_certificates);
 }

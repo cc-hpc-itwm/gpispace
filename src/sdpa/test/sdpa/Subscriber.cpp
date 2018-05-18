@@ -23,11 +23,14 @@ void test_execute_workflow_with_subscribed_client
 BOOST_FIXTURE_TEST_CASE (execute_workflow_with_subscribed_client, setup_logging)
 {
   test_execute_workflow_with_subscribed_client (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_execute_workflow_with_subscribed_client (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( execute_workflow_with_subscribed_client_using_secure_communication
+  , setup_logging
+  )
+{
+  test_execute_workflow_with_subscribed_client (_logger, test_certificates);
 }
 
 void test_execute_workflow_and_subscribe_with_second_client
@@ -55,9 +58,13 @@ void test_execute_workflow_and_subscribe_with_second_client
 BOOST_FIXTURE_TEST_CASE (execute_workflow_and_subscribe_with_second_client, setup_logging)
 {
   test_execute_workflow_and_subscribe_with_second_client (_logger, boost::none);
-
-  if (test_certificates)
-  {
-    test_execute_workflow_and_subscribe_with_second_client (_logger, test_certificates);
-  }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( execute_workflow_and_subscribe_with_second_client_using_secure_communication
+  , setup_logging
+  )
+{
+  test_execute_workflow_and_subscribe_with_second_client (_logger, test_certificates);
+}
+

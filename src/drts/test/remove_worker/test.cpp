@@ -126,18 +126,12 @@ void test_remove_worker (gspc::certificates_t const& certificates)
                 );
 }
 
-BOOST_AUTO_TEST_CASE
-  ( remove_worker
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+BOOST_AUTO_TEST_CASE (remove_worker)
 {
   test_remove_worker (boost::none);
 }
 
-BOOST_AUTO_TEST_CASE
-  ( remove_secure_worker
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+BOOST_AUTO_TEST_CASE (remove_secure_worker)
 {
   test_remove_worker (test_certificates);
 }

@@ -51,10 +51,15 @@ void test_remove_workers_in_a_coallocation_job_and_add_them_again
 BOOST_FIXTURE_TEST_CASE
   (remove_workers_in_a_coallocation_job_and_add_them_again, setup_logging)
 {
-  test_remove_workers_in_a_coallocation_job_and_add_them_again (_logger, boost::none);
+  test_remove_workers_in_a_coallocation_job_and_add_them_again
+    (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_remove_workers_in_a_coallocation_job_and_add_them_again (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( remove_workers_in_a_coallocation_job_and_add_them_again_using_secure_communication
+  , setup_logging
+  )
+{
+  test_remove_workers_in_a_coallocation_job_and_add_them_again
+    (_logger, test_certificates);
 }

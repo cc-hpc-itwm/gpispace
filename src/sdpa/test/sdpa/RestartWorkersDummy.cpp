@@ -40,9 +40,10 @@ void test_restart_worker_with_dummy_workflow
 BOOST_FIXTURE_TEST_CASE (restart_worker_with_dummy_workflow, setup_logging)
 {
   test_restart_worker_with_dummy_workflow (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_restart_worker_with_dummy_workflow (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (restart_worker_with_dummy_workflow_using_secure_communication, setup_logging)
+{
+  test_restart_worker_with_dummy_workflow (_logger, test_certificates);
 }

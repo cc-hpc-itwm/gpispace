@@ -122,11 +122,14 @@ void test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_req
 BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests, setup_logging)
 {
   test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests_using_secure_communication
+  , setup_logging
+  )
+{
+  test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests (_logger, test_certificates);
 }
 
 void test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
@@ -190,14 +193,21 @@ void test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_i
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled, setup_logging)
+  ( one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
+  , setup_logging
+  )
 {
-  test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled (_logger, boost::none);
+  test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
+    (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled_using_secure_communication
+  , setup_logging
+  )
+{
+  test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
+    (_logger, test_certificates);
 }
 
 void test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
@@ -262,12 +272,17 @@ void test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled
 BOOST_FIXTURE_TEST_CASE
   (one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled, setup_logging)
 {
-  test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled (_logger, boost::none);
+  test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
+    (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled_using_secure_communication
+  , setup_logging
+  )
+{
+  test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
+    (_logger, test_certificates);
 }
 
 void test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
@@ -327,10 +342,15 @@ void test_one_worker_reports_backlog_full_the_second_activity_terminates_the_fir
 BOOST_FIXTURE_TEST_CASE
   (one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled, setup_logging)
 {
-  test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled (_logger, boost::none);
+  test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
+    (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled_using_secure_communication
+  , setup_logging
+  )
+{
+  test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
+    (_logger, test_certificates);
 }

@@ -28,11 +28,12 @@ void testCoallocationWorkflow
 BOOST_FIXTURE_TEST_CASE (CoallocationWorkflow, setup_logging)
 {
   testCoallocationWorkflow (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    testCoallocationWorkflow (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (CoallocationWorkflow_using_secure_communication, setup_logging)
+{
+  testCoallocationWorkflow (_logger, test_certificates);
 }
 
 void test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
@@ -120,16 +121,21 @@ void test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_whil
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done, setup_logging)
+  ( worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+  , setup_logging
+  )
 {
   test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
     (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
-      (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done_using_secure_communication
+  , setup_logging
+  )
+{
+  test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+    (_logger, test_certificates);
 }
 
 void test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
@@ -192,16 +198,22 @@ void test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE (agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available, setup_logging)
+BOOST_FIXTURE_TEST_CASE
+  ( agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+  , setup_logging
+  )
 {
   test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
     (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
-      (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available_using_secure_communication
+  , setup_logging
+  )
+{
+  test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+    (_logger, test_certificates);
 }
 
 void test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
@@ -327,16 +339,21 @@ void test_worker_shall_not_get_job_after_finishing_and_another_worker_disappeari
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated, setup_logging)
+  ( worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+  , setup_logging
+  )
 {
   test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
     (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
-      (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated_using_secure_communication
+  , setup_logging
+  )
+{
+  test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+    (_logger, test_certificates);
 }
 
 void test_reschedule_happens_even_though_all_others_were_success
@@ -401,9 +418,13 @@ BOOST_FIXTURE_TEST_CASE
   (reschedule_happens_even_though_all_others_were_success, setup_logging)
 {
   test_reschedule_happens_even_though_all_others_were_success (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_reschedule_happens_even_though_all_others_were_success (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( reschedule_happens_even_though_all_others_were_success_using_secure_communication
+  , setup_logging
+  )
+{
+  test_reschedule_happens_even_though_all_others_were_success
+    (_logger, test_certificates);
 }

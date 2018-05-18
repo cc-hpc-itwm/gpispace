@@ -98,11 +98,14 @@ void test_restart_workers_while_job_requiring_coallocation_is_running
 BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running, setup_logging)
 {
   test_restart_workers_while_job_requiring_coallocation_is_running (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_restart_workers_while_job_requiring_coallocation_is_running (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( restart_workers_while_job_requiring_coallocation_is_running_using_secure_communication
+  , setup_logging
+  )
+{
+  test_restart_workers_while_job_requiring_coallocation_is_running (_logger, test_certificates);
 }
 
 void test_restart_workers_while_job_is_running_and_partial_result_is_missing
@@ -149,9 +152,12 @@ void test_restart_workers_while_job_is_running_and_partial_result_is_missing
 BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing, setup_logging)
 {
   test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( restart_workers_while_job_is_running_and_partial_result_is_missing_using_secure_communication
+  , setup_logging
+  )
+{
+  test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, test_certificates);
 }

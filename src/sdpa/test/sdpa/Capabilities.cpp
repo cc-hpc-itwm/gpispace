@@ -131,11 +131,15 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
 {
   test_acquire_capability_from_worker (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_acquire_capability_from_worker (_logger, test_certificates);
-  }
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  ( acquire_capability_from_worker_using_secure_communication
+  , setup_logging
+  )
+{
+  test_acquire_capability_from_worker (_logger, test_certificates);
 }
 
 void test_acquire_capability_from_worker_chain
@@ -162,11 +166,15 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
 {
   test_acquire_capability_from_worker_chain (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_acquire_capability_from_worker_chain (_logger, test_certificates);
-  }
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  ( acquire_capability_from_worker_chain_using_secure_communication
+  , setup_logging
+  )
+{
+  test_acquire_capability_from_worker_chain (_logger, test_certificates);
 }
 
 void test_acquire_capabilities_from_workers
@@ -194,11 +202,14 @@ void test_acquire_capabilities_from_workers
 BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 {
   test_acquire_capabilities_from_workers (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_acquire_capabilities_from_workers (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( acquire_capabilities_from_workers_using_secure_communication
+  , setup_logging
+  )
+{
+  test_acquire_capabilities_from_workers (_logger, test_certificates);
 }
 
 void test_lose_capabilities_after_worker_dies
@@ -232,11 +243,15 @@ BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
 {
   test_lose_capabilities_after_worker_dies (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_lose_capabilities_after_worker_dies (_logger, test_certificates);
-  }
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  ( lose_capabilities_after_worker_dies_using_secure_communication
+  , setup_logging
+  )
+{
+  test_lose_capabilities_after_worker_dies (_logger, test_certificates);
 }
 
 void test_capabilities_of_children_are_removed_when_disconnected
@@ -285,12 +300,17 @@ BOOST_FIXTURE_TEST_CASE
   , setup_logging
   )
 {
-  test_capabilities_of_children_are_removed_when_disconnected (_logger, boost::none);
+  test_capabilities_of_children_are_removed_when_disconnected
+    (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_capabilities_of_children_are_removed_when_disconnected (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( RACE_capabilities_of_children_are_removed_when_disconnected_using_secure_communication
+  , setup_logging
+  )
+{
+  test_capabilities_of_children_are_removed_when_disconnected
+    (_logger, test_certificates);
 }
 
 void test_chain_with_a_lot_of_leafs_different_capabilities
@@ -326,10 +346,14 @@ BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
                         , setup_logging
                         )
 {
-  test_chain_with_a_lot_of_leafs_different_capabilities (_logger, boost::none);
-
-  if (test_certificates)
-  {
-    test_chain_with_a_lot_of_leafs_different_capabilities (_logger, test_certificates);
-  }
+  test_chain_with_a_lot_of_leafs_different_capabilities
+    (_logger, boost::none);
+}
+BOOST_FIXTURE_TEST_CASE
+  ( chain_with_a_lot_of_leafs_different_capabilities_using_secure_communication
+  , setup_logging
+  )
+{
+  test_chain_with_a_lot_of_leafs_different_capabilities
+    (_logger, test_certificates);
 }

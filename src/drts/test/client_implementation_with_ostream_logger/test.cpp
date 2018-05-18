@@ -143,18 +143,13 @@ void test_client_implementation_with_ostream_logger
     (lines.begin(), lines.end(), logged.begin(), logged.end());
 }
 
-BOOST_AUTO_TEST_CASE
-  ( client_implementation_with_ostream_logger
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 {
   test_client_implementation_with_ostream_logger (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( client_implementation_with_ostream_logger_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (client_implementation_with_ostream_logger_using_secure_communication)
 {
   test_client_implementation_with_ostream_logger (test_certificates);
 }

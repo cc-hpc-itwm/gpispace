@@ -161,24 +161,22 @@ namespace
 
 BOOST_FIXTURE_TEST_CASE (discover_worker_job_status, setup_logging)
 {
-  {
-    check_discover_worker_job_status<sdpa::status::FINISHED> (_logger, boost::none);
-    check_discover_worker_job_status<sdpa::status::FAILED> (_logger, boost::none);
-    check_discover_worker_job_status<sdpa::status::CANCELED> (_logger, boost::none);
-    check_discover_worker_job_status<sdpa::status::PENDING> (_logger, boost::none);
-    check_discover_worker_job_status<sdpa::status::RUNNING> (_logger, boost::none);
-    check_discover_worker_job_status<sdpa::status::CANCELING> (_logger, boost::none);
-  }
+  check_discover_worker_job_status<sdpa::status::FINISHED> (_logger, boost::none);
+  check_discover_worker_job_status<sdpa::status::FAILED> (_logger, boost::none);
+  check_discover_worker_job_status<sdpa::status::CANCELED> (_logger, boost::none);
+  check_discover_worker_job_status<sdpa::status::PENDING> (_logger, boost::none);
+  check_discover_worker_job_status<sdpa::status::RUNNING> (_logger, boost::none);
+  check_discover_worker_job_status<sdpa::status::CANCELING> (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    check_discover_worker_job_status<sdpa::status::FINISHED> (_logger, test_certificates);
-    check_discover_worker_job_status<sdpa::status::FAILED> (_logger, test_certificates);
-    check_discover_worker_job_status<sdpa::status::CANCELED> (_logger, test_certificates);
-    check_discover_worker_job_status<sdpa::status::PENDING> (_logger, test_certificates);
-    check_discover_worker_job_status<sdpa::status::RUNNING> (_logger, test_certificates);
-    check_discover_worker_job_status<sdpa::status::CANCELING> (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE (discover_worker_job_status_using_secure_communication, setup_logging)
+{
+  check_discover_worker_job_status<sdpa::status::FINISHED> (_logger, test_certificates);
+  check_discover_worker_job_status<sdpa::status::FAILED> (_logger, test_certificates);
+  check_discover_worker_job_status<sdpa::status::CANCELED> (_logger, test_certificates);
+  check_discover_worker_job_status<sdpa::status::PENDING> (_logger, test_certificates);
+  check_discover_worker_job_status<sdpa::status::RUNNING> (_logger, test_certificates);
+  check_discover_worker_job_status<sdpa::status::CANCELING> (_logger, test_certificates);
 }
 
 void test_discover_discover_inexistent_job
@@ -197,7 +195,12 @@ void test_discover_discover_inexistent_job
 
 BOOST_FIXTURE_TEST_CASE (discover_discover_inexistent_job, setup_logging)
 {
-  test_discover_discover_inexistent_job (_logger, boost::none);
+  test_discover_discover_inexistent_job (_logger, test_certificates);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  (discover_discover_inexistent_job_using_secure_communication, setup_logging)
+{
   test_discover_discover_inexistent_job (_logger, test_certificates);
 }
 
@@ -219,11 +222,14 @@ void test_discover_one_orchestrator_no_agent
 BOOST_FIXTURE_TEST_CASE (discover_one_orchestrator_no_agent, setup_logging)
 {
   test_discover_one_orchestrator_no_agent (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_discover_one_orchestrator_no_agent (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( discover_one_orchestrator_no_agent_using_secure_communication
+  , setup_logging
+  )
+{
+  test_discover_one_orchestrator_no_agent (_logger, test_certificates);
 }
 
 void test_discover_one_orchestrator_one_agent
@@ -247,11 +253,14 @@ void test_discover_one_orchestrator_one_agent
 BOOST_FIXTURE_TEST_CASE (discover_one_orchestrator_one_agent, setup_logging)
 {
   test_discover_one_orchestrator_one_agent (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_discover_one_orchestrator_one_agent (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( discover_one_orchestrator_one_agent_using_secure_communication
+  , setup_logging
+  )
+{
+  test_discover_one_orchestrator_one_agent (_logger, test_certificates);
 }
 
 namespace
@@ -322,43 +331,48 @@ namespace
 BOOST_FIXTURE_TEST_CASE (agent_chain_1, setup_logging)
 {
   verify_child_count_in_agent_chain (1, _logger, boost::none);
-
-  if (test_certificates)
-  {
-    verify_child_count_in_agent_chain (1, _logger, test_certificates);
-  }
 }
+
+BOOST_FIXTURE_TEST_CASE
+  (agent_chain_1_using_secure_communication, setup_logging)
+{
+  verify_child_count_in_agent_chain (1, _logger, test_certificates);
+}
+
 BOOST_FIXTURE_TEST_CASE (agent_chain_2, setup_logging)
 {
   verify_child_count_in_agent_chain (2, _logger, boost::none);
-
-  if (test_certificates)
-  {
-    verify_child_count_in_agent_chain (2, _logger, test_certificates);
-  }
 }
+
+BOOST_FIXTURE_TEST_CASE (agent_chain_2_using_secure_communication, setup_logging)
+{
+  verify_child_count_in_agent_chain (2, _logger, test_certificates);
+}
+
 BOOST_FIXTURE_TEST_CASE (agent_chain_3_to_9, setup_logging)
 {
   for (std::size_t n (3); n < 10; ++n)
   {
     verify_child_count_in_agent_chain (n, _logger, boost::none);
   }
+}
 
-  if (test_certificates)
+BOOST_FIXTURE_TEST_CASE
+  (agent_chain_3_to_9_using_secure_communication, setup_logging)
+{
+  for (std::size_t n (3); n < 10; ++n)
   {
-    for (std::size_t n (3); n < 10; ++n)
-    {
-      verify_child_count_in_agent_chain (n, _logger, test_certificates);
-    }
+    verify_child_count_in_agent_chain (n, _logger, test_certificates);
   }
 }
 //! \note number of open files is the limiting factor
 BOOST_FIXTURE_TEST_CASE (agent_chain_89, setup_logging)
 {
   verify_child_count_in_agent_chain (89, _logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    verify_child_count_in_agent_chain (89, _logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (agent_chain_89_using_secure_communication, setup_logging)
+{
+  verify_child_count_in_agent_chain (89, _logger, test_certificates);
 }

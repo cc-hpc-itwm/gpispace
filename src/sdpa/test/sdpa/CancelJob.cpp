@@ -79,11 +79,14 @@ void test_cancel_no_agent
 BOOST_FIXTURE_TEST_CASE (cancel_no_agent, setup_logging)
 {
   test_cancel_no_agent (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_cancel_no_agent (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( cancel_no_agent_using_secure_communication
+  , setup_logging
+  )
+{
+  test_cancel_no_agent (_logger, test_certificates);
 }
 
 void test_cancel_with_agent
@@ -120,11 +123,12 @@ void test_cancel_with_agent
 BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
 {
   test_cancel_with_agent (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_cancel_with_agent (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (cancel_with_agent_using_secure_communication, setup_logging)
+{
+  test_cancel_with_agent (_logger, test_certificates);
 }
 
 void test_call_cancel_twice_orch
@@ -149,11 +153,12 @@ void test_call_cancel_twice_orch
 BOOST_FIXTURE_TEST_CASE (call_cancel_twice_orch, setup_logging)
 {
   test_call_cancel_twice_orch (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_call_cancel_twice_orch (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (call_cancel_twice_orch_using_secure_communication, setup_logging)
+{
+  test_call_cancel_twice_orch (_logger, test_certificates);
 }
 
 void test_call_cancel_twice_agent
@@ -192,11 +197,12 @@ void test_call_cancel_twice_agent
 BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
 {
   test_call_cancel_twice_agent (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_call_cancel_twice_agent (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (call_cancel_twice_agent_using_secure_communication, setup_logging)
+{
+  test_call_cancel_twice_agent (_logger, test_certificates);
 }
 
 void test_cancel_pending_jobs
@@ -230,11 +236,12 @@ void test_cancel_pending_jobs
 BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
 {
   test_cancel_pending_jobs (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_cancel_pending_jobs (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (cancel_pending_jobs_using_secure_communication, setup_logging)
+{
+  test_cancel_pending_jobs (_logger, test_certificates);
 }
 
 void test_cancel_workflow_with_two_activities
@@ -282,9 +289,12 @@ void test_cancel_workflow_with_two_activities
 BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
 {
   test_cancel_workflow_with_two_activities (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_cancel_workflow_with_two_activities (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  ( cancel_workflow_with_two_activities_using_secure_communication
+  , setup_logging
+  )
+{
+  test_cancel_workflow_with_two_activities (_logger, test_certificates);
 }

@@ -132,18 +132,13 @@ void test_drts_parallel_running_workflows
   BOOST_CHECK (touch_then_wait.get());
 }
 
-BOOST_AUTO_TEST_CASE
-  ( drts_parallel_running_workflows
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 {
   test_drts_parallel_running_workflows (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( drts_parallel_running_workflows_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (drts_parallel_running_workflows_using_secure_communication)
 {
   test_drts_parallel_running_workflows (test_certificates);
 }

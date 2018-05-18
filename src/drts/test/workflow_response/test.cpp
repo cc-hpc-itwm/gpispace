@@ -269,7 +269,6 @@ void test_workflow_response
                       );
 }
 
-#if not TESTING_WITH_SSL_ENABLED
 BOOST_DATA_TEST_CASE
   ( workflow_response
   , boost::unit_test::data::make ( std::vector<std::string>
@@ -283,12 +282,9 @@ BOOST_DATA_TEST_CASE
   , topology
   )
 {
-  std::cout <<"NOT using ssl " << std::endl;
   test_workflow_response (name, topology, boost::none);
 }
-#endif
 
-#if TESTING_WITH_SSL_ENABLED
 BOOST_DATA_TEST_CASE
   ( workflow_response_using_secure_communication
   , boost::unit_test::data::make ( std::vector<std::string>
@@ -302,10 +298,8 @@ BOOST_DATA_TEST_CASE
   , topology
   )
 {
-  std::cout <<"Using ssl " << std::endl;
   test_workflow_response (name, topology, test_certificates);
 }
-#endif
 
 void test_one_response_waits_while_others_are_made
   (gspc::certificates_t const certificates)
@@ -497,17 +491,13 @@ void test_one_response_waits_while_others_are_made
 }
 
 BOOST_AUTO_TEST_CASE
-  ( one_response_waits_while_others_are_made
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+  (one_response_waits_while_others_are_made)
 {
   test_one_response_waits_while_others_are_made (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( one_response_waits_while_others_are_made_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (one_response_waits_while_others_are_made_using_secure_communication)
 {
   test_one_response_waits_while_others_are_made (test_certificates);
 }
@@ -629,17 +619,13 @@ void test_response_fails_if_workflow_fails_after_requesting
 }
 
 BOOST_AUTO_TEST_CASE
-  ( response_fails_if_workflow_fails_after_requesting
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+  (response_fails_if_workflow_fails_after_requesting)
 {
   test_response_fails_if_workflow_fails_after_requesting (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( response_fails_if_workflow_fails_after_requesting_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (response_fails_if_workflow_fails_after_requesting_using_secure_communication)
 {
   test_response_fails_if_workflow_fails_after_requesting (test_certificates);
 }

@@ -17,12 +17,8 @@
 
 namespace
 {
-#ifdef TESTING_WITH_SSL_ENABLED
   fhg::com::certificates_t const test_certificates
     (boost::filesystem::current_path()/"certs");
-#else
-  fhg::com::certificates_t const test_certificates;
-#endif
 
   struct wait_for_n_events_strategy
   {
@@ -93,9 +89,9 @@ void test_network_strategy (fhg::com::certificates_t const& certificates)
 BOOST_AUTO_TEST_CASE (test_strategy)
 {
   test_network_strategy (boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_network_strategy (test_certificates);
-  }
+BOOST_AUTO_TEST_CASE (test_strategy_using_secure_communication)
+{
+  test_network_strategy (test_certificates);
 }

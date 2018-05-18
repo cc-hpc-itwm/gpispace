@@ -64,17 +64,13 @@ void test_scoped_drts_empty_topology
 }
 
 BOOST_AUTO_TEST_CASE
-  ( scoped_drts_empty_topology
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+  (scoped_drts_empty_topology)
 {
   test_scoped_drts_empty_topology (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( scoped_drts_empty_topology_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (scoped_drts_empty_topology_using_secure_communication)
 {
   test_scoped_drts_empty_topology (test_certificates);
 }
@@ -188,17 +184,13 @@ void test_no_worker_started_on_master
 }
 
 BOOST_AUTO_TEST_CASE
-  ( no_worker_started_on_master
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+  (no_worker_started_on_master)
 {
   test_no_worker_started_on_master ("worker", boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( no_worker_started_on_master_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (no_worker_started_on_master_using_secure_communication)
 {
   test_no_worker_started_on_master
     ("worker_using_secure_communication", test_certificates);
@@ -357,17 +349,13 @@ void test_workers_are_started_on_non_master
 }
 
 BOOST_AUTO_TEST_CASE
-  ( workers_are_started_on_non_master
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+  (workers_are_started_on_non_master)
 {
   test_workers_are_started_on_non_master ("WORKER", boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( workers_are_started_on_non_master_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (workers_are_started_on_non_master_using_secure_communication)
 {
   test_workers_are_started_on_non_master
     ("WORKER_using_secure_communication", test_certificates);

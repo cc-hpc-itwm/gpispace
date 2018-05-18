@@ -167,9 +167,10 @@ void test_add_new_workers
 BOOST_FIXTURE_TEST_CASE (add_new_workers, setup_logging)
 {
   test_add_new_workers (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_add_new_workers (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (add_new_workers_using_secure_communication, setup_logging)
+{
+  test_add_new_workers (_logger, test_certificates);
 }

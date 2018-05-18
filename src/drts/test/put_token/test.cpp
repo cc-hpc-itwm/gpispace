@@ -149,18 +149,13 @@ void test_wait_for_token_put (gspc::certificates_t const& certificates)
   BOOST_REQUIRE_EQUAL (result.find (port_good)->second, good);
 }
 
-BOOST_AUTO_TEST_CASE
-  ( wait_for_token_put
-  , *boost::unit_test::enable_if<not TESTING_WITH_SSL_ENABLED>()
-  )
+BOOST_AUTO_TEST_CASE (wait_for_token_put)
 {
   test_wait_for_token_put (boost::none);
 }
 
 BOOST_AUTO_TEST_CASE
-  ( wait_for_token_put_using_secure_communication
-  , *boost::unit_test::enable_if<TESTING_WITH_SSL_ENABLED>()
-  )
+  (wait_for_token_put_using_secure_communication)
 {
   test_wait_for_token_put (test_certificates);
 }

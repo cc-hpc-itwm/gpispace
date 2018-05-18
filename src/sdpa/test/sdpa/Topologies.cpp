@@ -24,11 +24,12 @@ void test_orchestrator_agent_worker
 BOOST_FIXTURE_TEST_CASE (orchestrator_agent_worker, setup_logging)
 {
   test_orchestrator_agent_worker (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_orchestrator_agent_worker (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (orchestrator_agent_worker_using_secure_communication, setup_logging)
+{
+  test_orchestrator_agent_worker (_logger, test_certificates);
 }
 
 void test_chained_agents
@@ -54,11 +55,12 @@ void test_chained_agents
 BOOST_FIXTURE_TEST_CASE (chained_agents, setup_logging)
 {
   test_chained_agents (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_chained_agents (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (chained_agents_using_secure_communication, setup_logging)
+{
+  test_chained_agents (_logger, test_certificates);
 }
 
 void test_two_workers_with_seperate_master_agent
@@ -84,11 +86,12 @@ void test_two_workers_with_seperate_master_agent
 BOOST_FIXTURE_TEST_CASE (two_workers_with_seperate_master_agent, setup_logging)
 {
   test_two_workers_with_seperate_master_agent (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_two_workers_with_seperate_master_agent (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (two_workers_with_seperate_master_agent_using_secure_communication, setup_logging)
+{
+  test_two_workers_with_seperate_master_agent (_logger, test_certificates);
 }
 
 void test_agent_with_multiple_master_agents
@@ -113,9 +116,10 @@ void test_agent_with_multiple_master_agents
 BOOST_FIXTURE_TEST_CASE (agent_with_multiple_master_agents, setup_logging)
 {
   test_agent_with_multiple_master_agents (_logger, boost::none);
+}
 
-  if (test_certificates)
-  {
-    test_agent_with_multiple_master_agents (_logger, test_certificates);
-  }
+BOOST_FIXTURE_TEST_CASE
+  (agent_with_multiple_master_agents_using_secure_communication, setup_logging)
+{
+  test_agent_with_multiple_master_agents (_logger, test_certificates);
 }

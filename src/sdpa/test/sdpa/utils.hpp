@@ -31,12 +31,8 @@
 
 namespace
 {
-#if TESTING_WITH_SSL_ENABLED
   fhg::com::certificates_t const test_certificates
     (boost::filesystem::current_path()/"certs");
-#else
-  fhg::com::certificates_t const test_certificates;
-#endif
 }
 
 struct setup_logging
