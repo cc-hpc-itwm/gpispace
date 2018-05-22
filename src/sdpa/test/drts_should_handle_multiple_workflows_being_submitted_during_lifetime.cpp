@@ -26,7 +26,7 @@
 namespace
 {
   gspc::certificates_t const test_certificates
-    (boost::filesystem::current_path()/"sdpa"/"certs");
+    (GSPC_SSL_CERTIFICATES_FOR_TESTS);
 }
 
 void test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime

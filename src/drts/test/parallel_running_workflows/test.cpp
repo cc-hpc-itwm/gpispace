@@ -26,8 +26,7 @@
 
 namespace
 {
-  gspc::certificates_t const test_certificates
-    (boost::filesystem::current_path().parent_path()/"certs");
+  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
 }
 
 void test_drts_parallel_running_workflows

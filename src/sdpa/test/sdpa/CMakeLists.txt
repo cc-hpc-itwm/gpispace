@@ -118,5 +118,3 @@ fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa fhglog
 )
-
-file (COPY ${CMAKE_SOURCE_DIR}/src/fhgcom/tests/certs DESTINATION ${CMAKE_CURRENT_BINARY_DIR})

@@ -17,8 +17,7 @@
 
 namespace
 {
-  fhg::com::certificates_t const test_certificates
-    (boost::filesystem::current_path()/"certs");
+  fhg::com::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
 
   struct wait_for_n_events_strategy
   {

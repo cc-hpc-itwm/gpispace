@@ -17,7 +17,7 @@
 namespace
 {
   fhg::com::certificates_t const test_certificates
-    (boost::filesystem::current_path()/"certs");
+    (GSPC_SSL_CERTIFICATES_FOR_TESTS);
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
