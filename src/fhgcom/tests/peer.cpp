@@ -400,6 +400,6 @@ BOOST_AUTO_TEST_CASE (invalid_certificates_directory)
                   , port_t("0")
                   , boost::filesystem::path (fhg::util::testing::random_string())
                   );
-  , std::exception
+  , boost::filesystem::filesystem_error
   );
 }
