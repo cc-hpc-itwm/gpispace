@@ -9,7 +9,6 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/filesystem/path.hpp>
-#include <boost/optional.hpp>
 
 #include <map>
 #include <string>
@@ -17,8 +16,6 @@
 
 namespace gspc
 {
-  using certificates_t = boost::optional<boost::filesystem::path>;
-
   class workflow : boost::noncopyable
   {
   public:
