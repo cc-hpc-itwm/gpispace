@@ -382,3 +382,111 @@ care of the rest.
   too huge to actually warrant log rotation. file size limits too
   sound overkill for now. they are an implementation detail of the
   sink though, so can be added later on.
+
+# notes from some long ago meeting
+
+The following condenses the above document a bit and gives some
+decisions and steps.
+
+## infrastructure
+
+- tcp+unix sockets, synchronous
+- not rifd but separate
+- loggers push to sink/tree
+ - actually just register to top level in tree, per node one entity
+   registers to actual taps
+  - topology: implicit, one sink=tap per node, one top level
+    orchestrator equivalent sink=tap for users
+   - use sockets or let kernel do that internally? -> optimize, step 2
+   - bootstrap: semantic difference: worker, logging, setup logging,
+     provide combined and individual. combined may optimize to not be
+     an aggregate of sub-actions but inline information into a single
+     action.
+   - later: allow sink-specific configuration at runtime via rifd
+     channel
+   - later: already configure file sinks higher up (e.g. worker
+     directly into per-worker-file)? can we actually split them by
+     source again on top level to even do per-host.log there?
+     - host
+     - category
+     - worker
+ - throttle by `timeout || backlog_full`
+  - ability to disable backlog
+ - what if `push()` throws? or timeout or anything -> just discard sink
+- gui messages now by category, not separate infrastructure
+- do not expose command channel via rpc globally but via rifd
+ - connect all workers with all log servers
+ - connect log server with parent
+
+## send
+
+- `tap.log (message)` -> `for sinks: sink.log (message)`, i.e. `tap`
+  is just a sink as well
+- convenience
+ - `std::ostream&`
+ - `log_on_scope_exit`
+- category=level per message
+- in pnet
+ - add `emit_trace_events:bool,default=false` to transitions/functions
+ - add `traced_inputs:list<string>,default={}` and
+   `traced_outputs:list<string>,default={}`
+- api shall be public, not just in module call
+
+## receive
+
+- `sink (tap, on_message)`
+- provide sinks as single servers to attach
+ - file
+ - gui
+ - websocket/server (safeclouds)
+
+## unhandled
+
+* call site category filter can be set per logger. we do have a
+  `--log-level` which is currently only verbose/not for the agent and
+  for all categories. since we drop levels, we can change that api to
+  be `--log-categories=agent-info,agent-warn,application`. Top level
+  filtering should be implemented that way directly, log-site
+  filtering is something that I consider low priority and would defer.
+* dirks wish for splitting logs into multiple files per jobs is not
+  handled. this implies dynamic sink reconfiguration on the global
+  level which there is currently no other reason for. since this was a
+  "nice to have", I think one can ignore it for now.
+* #715: is untouched. since bootstrapping is setting up the logging
+  infrastructre to begin with, i don't really have a solution for
+  that. the focus of that issue should probably be not part of this
+  task since it is more about "what do we log to begin with?".
+* #432: is not really having influence on the design since it just is
+  adding more event types and emitting more events. → defer
+* #257
+  - I don't know of a case where we did end up with threading
+    issues yet. I suspect we could say that the log function can just be
+    mutex'd. in current use cases that would never have congestion. in
+    threaded use cases it would avoid the issue.
+  - We decide to not do asynchronous logging since it removes the
+    basic assumption "my messages do show up". with backlog and
+    interval based push we do have asynchronousity on the aggregation
+    side though.
+  - We currently only know of one requirement needing runtime control
+    measures which is the files per aloma job. this is not important
+    enough as of now to invest time in designing a full blown feature
+    and should be omitted imho.
+* #174, #49: adding categories is trivial. loggers and thus log events
+  have a category added.
+* #51: we currently don't really have cases where the log files get
+  too huge to actually warrant log rotation. file size limits too
+  sound overkill for now. they are an implementation detail of the
+  sink though, so can be added later on.
+
+## tickets/steps
+
+- multiple sink: listen as udp like currently, but dispatch to
+  rpc-registered tcp sinks. change gantt/log gui to register as a
+  sink. goal: have two gantts in parallel. -> web server sink
+- file sink for multiple-sink-adapter: goal: log/gantt in file
+- tcp for worker -> sink dispatcher: goal: gutes gefühl
+- sink baum
+ - state im rif
+ - rif als proxy zum bootstrap
+- lazy bootstrap/late connect
+- at any point: tracing in pnet
