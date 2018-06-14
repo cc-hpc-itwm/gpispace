@@ -7,12 +7,26 @@ before_script:
 
   - source "${ci_scripts_dir}/jobs/before"
 
+build (centos 5.7):
+  stage: build
+  script:
+    - source "${ci_scripts_dir}/jobs/build"
+  tags:
+    - centos-5.7
+
 build (centos 6.5):
   stage: build
   script:
     - source "${ci_scripts_dir}/jobs/build"
   tags:
     - centos-6.5
+
+tests (centos 5.7):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test"
+  tags:
+    - centos-5.7
 
 tests (centos 6.5):
   stage: test
@@ -21,12 +35,23 @@ tests (centos 6.5):
   tags:
     - centos-6.5
 
+#! \todo add virtual memory tests on centos 5.7: needs infiniband or
+#        gpi2+eth (requires higher kernel version)
+
 virtual memory tests (centos 6.5):
   stage: test
   script:
     - source "${ci_scripts_dir}/jobs/virtual_memory_test"
   tags:
     - centos-6.5
+
+performance tests (centos 5.7):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/performance_test"
+  allow_failure: true
+  tags:
+    - centos-5.7
 
 performance tests (centos 6.5):
   stage: test
