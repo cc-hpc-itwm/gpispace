@@ -156,3 +156,23 @@ add_subdirectory (util-generic)
 add_subdirectory (util-qt)
 
 add_subdirectory (libssh2_wrapper)
+
+extended_add_library (NAME logging
+  NAMESPACE gspc
+  SOURCES "logging/legacy/emitter.cpp"
+          "logging/legacy/receiver.cpp"
+          "logging/legacy_bridge.cpp"
+          "logging/message.cpp"
+  LIBRARIES fhglog
+            Util::Generic
+            RPC
+            Boost::base
+)
+
+add_unit_test (NAME logging_legacy_bridge
+  SOURCES "logging/test/legacy_bridge.cpp"
+  LIBRARIES fhglog
+            gspc::logging
+            test-utilities
+  USE_BOOST
+)
