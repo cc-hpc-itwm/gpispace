@@ -13,8 +13,9 @@ path source-highlight/3.1.8/bin
 ld_library_path source-highlight/3.1.8/lib
 pkg_config_path GPI2/1.3.0/lib64/pkgconfig
 pkg_config_path hwloc/1.11.1/lib/pkgconfig
-pkg_config_path libssh2/1.7.0+fpic/lib/pkgconfig
-pkg_config_path openssl/1.0.2g+fpic/lib/pkgconfig
+pkg_config_path libssh2/1.8.0+fpic/lib/pkgconfig
+ld_library_path libssh2/1.8.0+fpic/lib/
+pkg_config_path openssl/1.0.2o+fpic/lib/pkgconfig
 
 export CC="${external}/ccache/3.2.4/lib/gcc"
 export CXX="${external}/ccache/3.2.4/lib/g++"
