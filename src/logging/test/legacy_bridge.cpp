@@ -1,6 +1,7 @@
 #include <logging/legacy/emitter.hpp>
 #include <logging/legacy_bridge.hpp>
 #include <logging/message.hpp>
+#include <logging/test/message.hpp>
 
 #include <test/hopefully_free_port.hpp>
 
@@ -18,21 +19,6 @@ namespace fhg
 {
   namespace logging
   {
-    //! \note operator== and operator<< are not in an anonmyous
-    //! namespace for lookup reasons: they are used from a boost
-    //! namespace, so only an anonymous namespace in that boost
-    //! namespace would be used.
-    bool operator== (message const& lhs, message const& rhs)
-    {
-      return std::tie (lhs._content, lhs._category)
-        == std::tie (rhs._content, rhs._category);
-    }
-    std::ostream& operator<< (std::ostream& os, message const& x)
-    {
-      return os << "content=" << x._content << ", "
-                << "category=" << x._category;
-    }
-
     namespace
     {
       std::array<char const* const, 4> const legacy_level_categories
