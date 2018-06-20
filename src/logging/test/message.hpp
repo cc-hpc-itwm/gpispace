@@ -1,5 +1,7 @@
 #pragma once
 
+#include <util-generic/testing/random.hpp>
+
 #include <logging/message.hpp>
 
 #include <ostream>
@@ -22,6 +24,25 @@ namespace fhg
     {
       return os << "content=" << x._content << ", "
                 << "category=" << x._category;
+    }
+  }
+
+  namespace util
+  {
+    namespace testing
+    {
+      namespace detail
+      {
+        template<>
+          struct random_impl<logging::message, void>
+        {
+          logging::message operator()() const
+          {
+            random<std::string> random_string;
+            return {random_string(), random_string()};
+          }
+        };
+      }
     }
   }
 }
