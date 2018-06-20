@@ -26,9 +26,14 @@ namespace fhg
           ( _service_dispatcher
           , util::bind_this (this, &stream_emitter::register_tcp_receiver)
           )
+      , _service_socket_provider (_io_service, _service_dispatcher)
       , _service_tcp_provider (_io_service, _service_dispatcher)
     {}
 
+    socket_endpoint stream_emitter::local_socket_endpoint() const
+    {
+      return _service_socket_provider.local_endpoint();
+    }
     tcp_endpoint stream_emitter::local_tcp_endpoint() const
     {
       return util::connectable_to_address_string

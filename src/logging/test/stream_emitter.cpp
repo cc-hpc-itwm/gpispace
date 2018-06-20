@@ -29,6 +29,13 @@ namespace fhg
       };
 
       template<stream_protocol> struct emitter_endpoint;
+      template<> struct emitter_endpoint<stream_protocol::socket>
+      {
+        static socket_endpoint endpoint (stream_emitter const& emitter)
+        {
+          return emitter.local_socket_endpoint();
+        }
+      };
       template<> struct emitter_endpoint<stream_protocol::tcp>
       {
         static tcp_endpoint endpoint (stream_emitter const& emitter)
@@ -69,7 +76,9 @@ namespace fhg
 
       using all_combinations = boost::mpl::list
         < combination_t<stream_protocol::tcp, stream_protocol::tcp>
+        , combination_t<stream_protocol::tcp, stream_protocol::socket>
         , combination_t<stream_protocol::socket, stream_protocol::tcp>
+        , combination_t<stream_protocol::socket, stream_protocol::socket>
         >;
     }
 
