@@ -1,6 +1,7 @@
 #include <logging/stream_emitter.hpp>
 
 #include <rpc/remote_function.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
 #include <rpc/remote_tcp_endpoint.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
@@ -17,6 +18,10 @@ namespace fhg
   {
     stream_emitter::stream_emitter()
       : _io_service (2)
+      , _register_socket_receiver
+          ( _service_dispatcher
+          , util::bind_this (this, &stream_emitter::register_socket_receiver)
+          )
       , _register_tcp_receiver
           ( _service_dispatcher
           , util::bind_this (this, &stream_emitter::register_tcp_receiver)
@@ -51,6 +56,14 @@ namespace fhg
       }
     }
 
+    void stream_emitter::register_socket_receiver
+      (socket_endpoint const& endpoint)
+    {
+      _receivers.emplace_back
+        ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
+            (_io_service, endpoint)
+        );
+    }
     void stream_emitter::register_tcp_receiver (tcp_endpoint const& endpoint)
     {
       _receivers.emplace_back

@@ -2,6 +2,7 @@
 
 #include <logging/message.hpp>
 #include <logging/protocol.hpp>
+#include <logging/socket_endpoint.hpp>
 #include <logging/tcp_endpoint.hpp>
 
 #include <rpc/remote_endpoint.hpp>
@@ -23,6 +24,7 @@ namespace fhg
     public:
       stream_emitter();
 
+      socket_endpoint local_socket_endpoint() const;
       tcp_endpoint local_tcp_endpoint() const;
 
       void emit (message const&);
@@ -32,6 +34,10 @@ namespace fhg
       util::scoped_boost_asio_io_service_with_threads _io_service;
 
       std::list<std::unique_ptr<rpc::remote_endpoint>> _receivers;
+
+      void register_socket_receiver (socket_endpoint const&);
+      rpc::service_handler<protocol::register_socket_receiver> const
+        _register_socket_receiver;
       void register_tcp_receiver (tcp_endpoint const&);
       rpc::service_handler<protocol::register_tcp_receiver> const
         _register_tcp_receiver;

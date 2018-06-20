@@ -48,7 +48,7 @@ namespace fhg
         using register_function
           = typename std::conditional < receiver == stream_protocol::tcp
                                       , protocol::register_tcp_receiver
-                                      , void //! \todo: add once implemented
+                                      , protocol::register_socket_receiver
                                       >::type;
 
         using registration_method
@@ -58,6 +58,10 @@ namespace fhg
                                       >::type;
       };
 
+      socket_endpoint endpoint (rpc::service_socket_provider const& receiver)
+      {
+        return receiver.local_endpoint();
+      }
       tcp_endpoint endpoint (rpc::service_tcp_provider const& receiver)
       {
         return util::connectable_to_address_string (receiver.local_endpoint());
@@ -65,6 +69,7 @@ namespace fhg
 
       using all_combinations = boost::mpl::list
         < combination_t<stream_protocol::tcp, stream_protocol::tcp>
+        , combination_t<stream_protocol::socket, stream_protocol::tcp>
         >;
     }
 
