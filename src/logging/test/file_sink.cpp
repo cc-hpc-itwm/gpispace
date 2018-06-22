@@ -147,6 +147,27 @@ namespace fhg
       BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), emits);
     }
 
+    BOOST_AUTO_TEST_CASE (flush_interval_of_zero_always_flushes)
+    {
+      util::temporary_path const temporary_sink_dir;
+      boost::filesystem::path const path
+        (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
+
+      auto const emits (util::testing::random<std::size_t>{}() % 134);
+
+      {
+        public_basic_file_sink sink (path, &just_a_newline, 0);
+
+        for (std::size_t i (0); i < emits; ++i)
+        {
+          sink.dispatch_append (util::testing::random<message>{}());
+          BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), i + 1);
+        }
+      }
+
+      BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), emits);
+    }
+
     BOOST_DATA_TEST_CASE
       ( flushing_happens_in_given_interval
       , boost::unit_test::data::make ({1, 2, 3, 5, 6, 13, 31})
