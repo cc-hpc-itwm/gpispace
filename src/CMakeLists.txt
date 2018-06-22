@@ -170,7 +170,7 @@ extended_add_library (NAME logging
             Util::Generic
             RPC
             Boost::base
-            )
+)
 
 add_unit_test (NAME logging_file_sink
   SOURCES "logging/test/file_sink.cpp"
