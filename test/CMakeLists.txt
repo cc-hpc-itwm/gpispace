@@ -1,5 +1,6 @@
 extended_add_library (NAME test-utilities
-  SOURCES "make.cpp"
+  SOURCES "hopefully_free_port.cpp"
+          "make.cpp"
           "scoped_nodefile_from_environment.cpp"
           "shared_directory.cpp"
           "source_directory.cpp"
@@ -8,4 +9,6 @@ extended_add_library (NAME test-utilities
   LIBRARIES fhg-util
             Boost::program_options
             Boost::filesystem
+            Util::Generic
+            RPC
 )
