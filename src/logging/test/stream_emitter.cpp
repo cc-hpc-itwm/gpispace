@@ -10,6 +10,7 @@
 #include <rpc/service_tcp_provider.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/testing/printer/future.hpp>
 #include <util-generic/testing/random.hpp>
 
 #include <boost/mpl/list.hpp>
@@ -113,6 +114,11 @@ namespace fhg
         {client} (endpoint (service_provider));
 
       emitter.emit (sent);
+
+      BOOST_REQUIRE_EQUAL
+        ( received_future.wait_for (std::chrono::milliseconds (200))
+        , std::future_status::ready
+        );
 
       BOOST_REQUIRE_EQUAL (received_future.get(), sent);
     }
