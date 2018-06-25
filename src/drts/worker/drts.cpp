@@ -69,6 +69,7 @@ namespace
       , wfe_task_t& target
       , std::mt19937& engine
       , we::type::activity_t& activity
+      , std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> const& emit_gantt
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
@@ -76,6 +77,7 @@ namespace
       , task (target)
       , _engine (engine)
       , _activity (activity)
+      , _emit_gantt (emit_gantt)
     {}
 
     void operator() (we::type::net_type& net) const
@@ -97,6 +99,7 @@ namespace
                                                   , task
                                                   , _engine
                                                   , *sub
+                                                  , _emit_gantt
                                                   )
                                , sub->transition().data()
                                );
@@ -120,6 +123,7 @@ namespace
                                     , &task.context
                                     , _activity.evaluation_context()
                                     , mod
+                                    , _emit_gantt
                                     )
           );
       }
@@ -148,6 +152,7 @@ namespace
     wfe_task_t& task;
     std::mt19937& _engine;
     we::type::activity_t& _activity;
+    std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> _emit_gantt;
   };
 }
 
@@ -490,22 +495,22 @@ catch (decltype (m_event_queue)::interrupted const&)
 {
 }
 
-void DRTSImpl::emit_gantt
-  (wfe_task_t const& task, sdpa::daemon::NotificationEvent::state_t state)
+void DRTSImpl::emit_gantt ( wfe_task_t const& task
+                          , char const* const step
+                          , sdpa::daemon::NotificationEvent::state_t const state
+                          )
 {
+  std::string const fake_id (task.id + "." + step);
+  sdpa::daemon::NotificationEvent const event
+    ({m_my_name}, fake_id, state, task.activity);
+
   if (_notification_service)
   {
-    _notification_service->notify
-      ( sdpa::daemon::NotificationEvent
-          ({m_my_name}, task.id, state, task.activity)
-      );
+    _notification_service->notify (event);
   }
+
   _log_emitter.emit_message
-    ( { sdpa::daemon::NotificationEvent
-          ({m_my_name}, task.id, state, task.activity).encoded()
-      , sdpa::daemon::gantt_log_category
-      }
-    );
+    ({event.encoded(), sdpa::daemon::gantt_log_category});
 }
 
 fhg::logging::tcp_endpoint DRTSImpl::logger_registration_endpoint() const
@@ -554,8 +559,6 @@ try
       wfe_task_t task
         (job->id, job->activity, m_my_name, job->workers, _logger);
 
-      emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
-
       try
       {
         //! \todo there is a race between putting it into
@@ -568,15 +571,23 @@ try
           _currently_executed_tasks.emplace (job->id, &task);
         }
 
-        boost::apply_visitor ( wfe_exec_context ( m_loader
-                                                , _virtual_memory_api
-                                                , _shared_memory
-                                                , task
-                                                , engine
-                                                , task.activity
-                                                )
-                             , task.activity.transition().data()
-                             );
+        boost::apply_visitor
+          ( wfe_exec_context
+              ( m_loader
+              , _virtual_memory_api
+              , _shared_memory
+              , task
+              , engine
+              , task.activity
+              , [&] ( char const* const step
+                    , sdpa::daemon::NotificationEvent::state_t state
+                    )
+                {
+                  return emit_gantt (task, step, state);
+                }
+              )
+          , task.activity.transition().data()
+          );
       }
       catch (drts::worker::context::cancelled const&)
       {
@@ -613,13 +624,6 @@ try
         LLOG (INFO, _logger, "task canceled: " << task.id);
       }
 
-      emit_gantt ( task
-                 , task.state == wfe_task_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
-                 : task.state == wfe_task_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELED
-                 : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::daemon::NotificationEvent::STATE_FAILED
-                 : task.state == wfe_task_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
-                 : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state)
-                 );
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
                  : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN

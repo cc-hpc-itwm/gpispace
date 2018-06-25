@@ -61,6 +61,8 @@ namespace fhg
         case sdpa::daemon::NotificationEvent::STATE_CANCELED:
         case sdpa::daemon::NotificationEvent::STATE_FAILED:
         case sdpa::daemon::NotificationEvent::STATE_FINISHED:
+        case sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED:
+        case sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED:
           duration (now - timestamp());
           break;
 

@@ -139,7 +139,10 @@ private:
 
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
   fhg::logging::stream_emitter _log_emitter;
-  void emit_gantt (wfe_task_t const&, sdpa::daemon::NotificationEvent::state_t);
+  void emit_gantt ( wfe_task_t const&
+                  , char const* step
+                  , sdpa::daemon::NotificationEvent::state_t
+                  );
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;

@@ -149,6 +149,7 @@ namespace we
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
+      , std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> const& emit_gantt
       )
     {
       unsigned long position (0);
@@ -198,9 +199,13 @@ namespace we
         }
       }
 
+      emit_gantt ("get", sdpa::daemon::NotificationEvent::STATE_STARTED);
+
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input)
                );
+
+      emit_gantt ("get", sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED);
 
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
@@ -208,6 +213,9 @@ namespace we
 
       expr::eval::context out (input);
 
+      emit_gantt ("exec", sdpa::daemon::NotificationEvent::STATE_STARTED);
+
+      try
       {
         drts::worker::redirect_output const clog (context, fhg::log::TRACE, std::clog);
         drts::worker::redirect_output const cout (context, fhg::log::INFO, std::cout);
@@ -216,6 +224,17 @@ namespace we
         loader[module_call.module()].call
           (module_call.function(), context, input, out, pointers);
       }
+      catch (...)
+      {
+        //! \todo HACK HACK HACK: never emits canceled or
+        //! canceled_due_to_worker_shutdown!
+        emit_gantt ("exec", sdpa::daemon::NotificationEvent::STATE_FAILED);
+        throw;
+      }
+
+      emit_gantt ("exec", sdpa::daemon::NotificationEvent::STATE_FINISHED);
+
+      emit_gantt ("put", sdpa::daemon::NotificationEvent::STATE_STARTED);
 
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
@@ -223,6 +242,8 @@ namespace we
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
+
+      emit_gantt ("put", sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED);
 
       return out;
     }
