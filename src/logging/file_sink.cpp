@@ -31,11 +31,11 @@ namespace fhg
                 : &basic_file_sink::append_no_flush
                 )
     {
-      _stream.exceptions (std::ios_base::badbit | std::ios_base::failbit);
+      _stream.exceptions (std::fstream::badbit | std::fstream::failbit);
       try
       {
         _stream.open
-          (target.string(), std::ios_base::app | std::ios_base::binary);
+          (target.string(), std::fstream::app | std::fstream::binary);
       }
       catch (...)
       {
