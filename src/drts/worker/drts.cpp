@@ -69,6 +69,9 @@ namespace
       , wfe_task_t& target
       , std::mt19937& engine
       , we::type::activity_t& activity
+      , sdpa::daemon::NotificationService* service
+      , std::string const& worker_name
+      , std::string const& activity_id
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
@@ -76,6 +79,9 @@ namespace
       , task (target)
       , _engine (engine)
       , _activity (activity)
+      , _service (service)
+      , _worker_name (worker_name)
+      , _activity_id (activity_id)
     {}
 
     void operator() (we::type::net_type& net) const
@@ -120,6 +126,10 @@ namespace
                                     , &task.context
                                     , _activity.evaluation_context()
                                     , mod
+                                    , _service
+                                    , _worker_name
+                                    , _activity_id
+                                    , _activity
                                     )
           );
       }
@@ -148,6 +158,9 @@ namespace
     wfe_task_t& task;
     std::mt19937& _engine;
     we::type::activity_t& _activity;
+    sdpa::daemon::NotificationService* _service;
+    std::string const& _worker_name;
+    std::string const& _activity_id;
   };
 }
 
@@ -545,6 +558,7 @@ try
       wfe_task_t task
         (job->id, job->activity, m_my_name, job->workers, _logger);
 
+      /*
       if (_notification_service)
       {
         using sdpa::daemon::NotificationEvent;
@@ -556,7 +570,7 @@ try
               , task.activity
               )
           );
-      }
+      }*/
 
       try
       {
@@ -576,6 +590,7 @@ try
                                                 , task
                                                 , engine
                                                 , task.activity
+                                                , _notification_service.get(), m_my_name, task.id
                                                 )
                              , task.activity.transition().data()
                              );
@@ -615,6 +630,7 @@ try
         LLOG (INFO, _logger, "task canceled: " << task.id);
       }
 
+      /*
       if (_notification_service)
       {
         using sdpa::daemon::NotificationEvent;
@@ -630,7 +646,7 @@ try
               , task.activity
               )
             );
-        }
+        }*/
 
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
