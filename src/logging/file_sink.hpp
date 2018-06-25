@@ -9,6 +9,7 @@
 #include <fstream>
 #include <functional>
 #include <ostream>
+#include <stdexcept>
 
 namespace fhg
 {
