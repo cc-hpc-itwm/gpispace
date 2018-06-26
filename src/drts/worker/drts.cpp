@@ -103,6 +103,9 @@ namespace
                                                   , task
                                                   , _engine
                                                   , *sub
+                                                  , _service
+                                                  , _worker_name
+                                                  , _activity_id
                                                   )
                                , sub->transition().data()
                                );
