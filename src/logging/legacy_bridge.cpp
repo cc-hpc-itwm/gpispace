@@ -16,7 +16,7 @@ namespace fhg
 
     void legacy_bridge::on_legacy (legacy::event const& event)
     {
-      _emitter.emit (message::from_legacy (event));
+      _emitter.emit_message (message::from_legacy (event));
     }
   }
 }

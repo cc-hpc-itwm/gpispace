@@ -28,7 +28,7 @@ namespace fhg
       socket_endpoint local_socket_endpoint() const;
       tcp_endpoint local_tcp_endpoint() const;
 
-      void emit (message const&);
+      void emit_message (message const&);
 
     private:
       rpc::service_dispatcher _service_dispatcher;
