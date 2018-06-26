@@ -1,7 +1,7 @@
 #pragma once
 
-#include <fhglog/LogMacros.hpp>
-#include <fhglog/remote/server.hpp>
+#include <logging/legacy_bridge.hpp>
+#include <logging/tcp_receiver.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -23,9 +23,12 @@ namespace detail
     QString source;
     QString message;
 
-    fhg::log::LogEvent event;
+    QColor color;
+    int legacy_severity;
 
-    formatted_log_event (const fhg::log::LogEvent& evt);
+    fhg::logging::message _raw;
+
+    formatted_log_event (fhg::logging::message);
   };
 
   class log_table_model : public QAbstractTableModel
@@ -45,8 +48,8 @@ namespace detail
     virtual QVariant
       data (const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    std::vector<fhg::log::LogEvent> data() const;
-    void add (const fhg::log::LogEvent& event);
+    std::vector<fhg::logging::message> data() const;
+    void add (fhg::logging::message);
 
   public slots:
     void clear();
@@ -77,7 +80,7 @@ public slots:
   void save();
 
 private:
-  void append_log_event (const fhg::log::LogEvent &);
+  void append_log_event (fhg::logging::message);
 
   bool _drop_filtered;
   int _filter_level;
@@ -91,8 +94,6 @@ private:
 
   QString _last_saved_filename;
 
-  boost::asio::io_service _io_service;
-  fhg::log::Logger _logger;
-  fhg::log::remote::LogServer _log_server;
-  std::thread _io_thread;
+  fhg::logging::legacy_bridge _log_bridge;
+  fhg::logging::tcp_receiver _log_receiver;
 };
