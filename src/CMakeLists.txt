@@ -187,6 +187,13 @@ add_unit_test (NAME logging_legacy_bridge
   USE_BOOST
 )
 
+add_unit_test (NAME logging_ostream_redirect
+  SOURCES "logging/test/ostream_redirect.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
 add_unit_test (NAME logging_stream_emitter
   SOURCES "logging/test/stream_emitter.cpp"
   LIBRARIES Util::Generic
