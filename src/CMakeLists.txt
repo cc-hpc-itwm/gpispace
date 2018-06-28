@@ -176,7 +176,6 @@ add_unit_test (NAME logging_file_sink
   SOURCES "logging/test/file_sink.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-            test-utilities
   USE_BOOST
 )
 
@@ -192,7 +191,6 @@ add_unit_test (NAME logging_stream_emitter
   SOURCES "logging/test/stream_emitter.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-            test-utilities
   USE_BOOST
 )
 
@@ -200,6 +198,5 @@ add_unit_test (NAME logging_tcp_receiver
   SOURCES "logging/test/tcp_receiver.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-            test-utilities
   USE_BOOST
 )
