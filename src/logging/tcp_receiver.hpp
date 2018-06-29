@@ -19,8 +19,9 @@ namespace fhg
     class tcp_receiver
     {
     public:
+      using endpoint_t = tcp_endpoint;
       using callback_t = std::function<void (message const&)>;
-      tcp_receiver (tcp_endpoint const&, callback_t);
+      tcp_receiver (endpoint_t const&, callback_t);
 
     private:
       callback_t _callback;

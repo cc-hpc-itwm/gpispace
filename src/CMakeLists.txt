@@ -159,7 +159,8 @@ add_subdirectory (libssh2_wrapper)
 
 extended_add_library (NAME logging
   NAMESPACE gspc
-  SOURCES "logging/legacy/emitter.cpp"
+  SOURCES "logging/file_sink.cpp"
+          "logging/legacy/emitter.cpp"
           "logging/legacy/receiver.cpp"
           "logging/legacy_bridge.cpp"
           "logging/message.cpp"
@@ -169,6 +170,14 @@ extended_add_library (NAME logging
             Util::Generic
             RPC
             Boost::base
+)
+
+add_unit_test (NAME logging_file_sink
+  SOURCES "logging/test/file_sink.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+            test-utilities
+  USE_BOOST
 )
 
 add_unit_test (NAME logging_legacy_bridge

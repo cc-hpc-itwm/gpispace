@@ -10,7 +10,7 @@ namespace fhg
   namespace logging
   {
     tcp_receiver::tcp_receiver
-        (tcp_endpoint const& emitter, callback_t callback)
+        (endpoint_t const& emitter, callback_t callback)
       : _callback (std::move (callback))
       , _io_service (1)
       , _receive
