@@ -163,6 +163,8 @@ extended_add_library (NAME logging
           "logging/legacy/receiver.cpp"
           "logging/legacy_bridge.cpp"
           "logging/message.cpp"
+          "logging/stream_emitter.cpp"
+          "logging/tcp_receiver.cpp"
   LIBRARIES fhglog
             Util::Generic
             RPC
@@ -172,6 +174,22 @@ extended_add_library (NAME logging
 add_unit_test (NAME logging_legacy_bridge
   SOURCES "logging/test/legacy_bridge.cpp"
   LIBRARIES fhglog
+            gspc::logging
+            test-utilities
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_stream_emitter
+  SOURCES "logging/test/stream_emitter.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+            test-utilities
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_tcp_receiver
+  SOURCES "logging/test/tcp_receiver.cpp"
+  LIBRARIES Util::Generic
             gspc::logging
             test-utilities
   USE_BOOST
