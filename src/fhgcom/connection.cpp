@@ -230,23 +230,23 @@ namespace fhg
         message_t * m = in_message_;
         in_message_ = nullptr;
 
-            if (m->header.type_of_msg == p2p::HELLO_PACKET)
-            {
-              _handle_hello_message (shared_from_this(), m);
-            }
-            else
-            {
-              _handle_user_data (shared_from_this(), m);
-            }
+        if (m->header.type_of_msg == p2p::HELLO_PACKET)
+        {
+          _handle_hello_message (shared_from_this(), m);
+        }
+        else
+        {
+          _handle_user_data (shared_from_this(), m);
+        }
 
-            in_message_ = new message_t;
+        in_message_ = new message_t;
 
         start_read ();
       }
       else
       {
         in_message_->resize(0);
-            _handle_error (shared_from_this(), ec);
+        _handle_error (shared_from_this(), ec);
       }
     }
 
@@ -298,7 +298,7 @@ namespace fhg
 
         if (d.handler)
         {
-            d.handler (ec);
+          d.handler (ec);
         }
 
         if (! to_send_.empty())

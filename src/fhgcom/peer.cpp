@@ -238,16 +238,16 @@ namespace fhg
 
       // TODO: io_service_->post (...);
 
-        connection_data_t & cd = connections_.at (addr);
-        to_send_t to_send;
-        to_send.message.header.src = my_addr_.get();
-        to_send.message.header.dst = addr;
-        to_send.message.assign (data);
-        to_send.handler = completion_handler;
-        cd.o_queue.push_back (to_send);
+      connection_data_t & cd = connections_.at (addr);
+      to_send_t to_send;
+      to_send.message.header.src = my_addr_.get();
+      to_send.message.header.dst = addr;
+      to_send.message.assign (data);
+      to_send.handler = completion_handler;
+      cd.o_queue.push_back (to_send);
 
-        if (cd.o_queue.size () == 1)
-          start_sender (addr);
+      if (cd.o_queue.size () == 1)
+        start_sender (addr);
     }
 
     void peer_t::TESTING_ONLY_recv (message_t *m)
@@ -484,23 +484,23 @@ namespace fhg
     {
       lock_type lock (mutex_);
 
-        if (backlog_.find (c) == backlog_.end())
-        {
-          handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
-        }
-        else
-        {
-          backlog_.erase (c);
+      if (backlog_.find (c) == backlog_.end())
+      {
+        handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
+      }
+      else
+      {
+        backlog_.erase (c);
 
-          c->local_address (m->header.dst);
-          c->remote_address (m->header.src);
+        c->local_address (m->header.dst);
+        c->remote_address (m->header.src);
 
-          connection_data_t & cd = connections_[m->header.src];
-          if (!cd.connection)
-          {
-            cd.connection = c;
-          }
+        connection_data_t & cd = connections_[m->header.src];
+        if (!cd.connection)
+        {
+          cd.connection = c;
         }
+      }
 
       delete m;
     }
