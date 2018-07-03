@@ -1,11 +1,13 @@
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <condition_variable>
 #include <map>
@@ -107,10 +109,9 @@ namespace
   };
 }
 
-void test_acquire_capability_from_worker
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, acquire_capability_from_worker, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
@@ -128,24 +129,8 @@ void test_acquire_capability_from_worker
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
-{
-  test_acquire_capability_from_worker (_logger, boost::none);
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  ( acquire_capability_from_worker_using_secure_communication
-  , setup_logging
-  )
-{
-  test_acquire_capability_from_worker (_logger, test_certificates);
-}
-
-void test_acquire_capability_from_worker_chain
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, acquire_capability_from_worker_chain, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
@@ -162,25 +147,9 @@ void test_acquire_capability_from_worker_chain
 
  observer.wait_for_capabilities ({});
 }
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
-{
-  test_acquire_capability_from_worker_chain (_logger, boost::none);
-}
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  ( acquire_capability_from_worker_chain_using_secure_communication
-  , setup_logging
-  )
-{
-  test_acquire_capability_from_worker_chain (_logger, test_certificates);
-}
-
-void test_acquire_capabilities_from_workers
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, acquire_capabilities_from_workers, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
@@ -199,23 +168,10 @@ void test_acquire_capabilities_from_workers
 
   observer.wait_for_capabilities ({});
 }
-BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
-{
-  test_acquire_capabilities_from_workers (_logger, boost::none);
-}
 
-BOOST_FIXTURE_TEST_CASE
-  ( acquire_capabilities_from_workers_using_secure_communication
-  , setup_logging
-  )
-{
-  test_acquire_capabilities_from_workers (_logger, test_certificates);
-}
-
-void test_lose_capabilities_after_worker_dies
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, lose_capabilities_after_worker_dies, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
@@ -239,24 +195,11 @@ void test_lose_capabilities_after_worker_dies
   observer.wait_for_capabilities ({});
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
-{
-  test_lose_capabilities_after_worker_dies (_logger, boost::none);
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  ( lose_capabilities_after_worker_dies_using_secure_communication
-  , setup_logging
-  )
-{
-  test_lose_capabilities_after_worker_dies (_logger, test_certificates);
-}
-
-void test_capabilities_of_children_are_removed_when_disconnected
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , capabilities_of_children_are_removed_when_disconnected
+  , certificates_data
+  , certificates
   )
 {
   //! \note race exists due to us not being able to ensure that no
@@ -295,27 +238,11 @@ void test_capabilities_of_children_are_removed_when_disconnected
   }
 }
 
-BOOST_FIXTURE_TEST_CASE
-  ( RACE_capabilities_of_children_are_removed_when_disconnected
-  , setup_logging
-  )
-{
-  test_capabilities_of_children_are_removed_when_disconnected
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( RACE_capabilities_of_children_are_removed_when_disconnected_using_secure_communication
-  , setup_logging
-  )
-{
-  test_capabilities_of_children_are_removed_when_disconnected
-    (_logger, test_certificates);
-}
-
-void test_chain_with_a_lot_of_leafs_different_capabilities
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , chain_with_a_lot_of_leafs_different_capabilities
+  , certificates_data
+  , certificates
   )
 {
   drts_component_observing_capabilities observer (certificates);
@@ -340,20 +267,4 @@ void test_chain_with_a_lot_of_leafs_different_capabilities
   }
 
   observer.wait_for_capabilities ({});
-}
-
-BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
-                        , setup_logging
-                        )
-{
-  test_chain_with_a_lot_of_leafs_different_capabilities
-    (_logger, boost::none);
-}
-BOOST_FIXTURE_TEST_CASE
-  ( chain_with_a_lot_of_leafs_different_capabilities_using_secure_communication
-  , setup_logging
-  )
-{
-  test_chain_with_a_lot_of_leafs_different_capabilities
-    (_logger, test_certificates);
 }

@@ -26,18 +26,27 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <map>
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
-void test_wait_for_token_put (gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (wait_for_token_put, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -146,15 +155,4 @@ void test_wait_for_token_put (gspc::certificates_t const& certificates)
   BOOST_REQUIRE_EQUAL (result.find (port_bad)->second, bad);
   BOOST_REQUIRE_EQUAL (result.count (port_good), 1);
   BOOST_REQUIRE_EQUAL (result.find (port_good)->second, good);
-}
-
-BOOST_AUTO_TEST_CASE (wait_for_token_put)
-{
-  test_wait_for_token_put (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (wait_for_token_put_using_secure_communication)
-{
-  test_wait_for_token_put (test_certificates);
 }

@@ -1,13 +1,13 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <utils.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/optional/optional_io.hpp>
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {
@@ -107,8 +107,12 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE (generic)
 
-void test_job_finished_ack_fails_with_bad_job_id
-  (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , job_finished_ack_fails_with_bad_job_id
+  , certificates_data
+  , certificates
+  )
 {
   const std::string orchestrator_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
@@ -149,17 +153,6 @@ void test_job_finished_ack_fails_with_bad_job_id
   BOOST_REQUIRE_EQUAL
     (event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
   BOOST_REQUIRE_EQUAL (event->job_id(), boost::none);
-}
-
-BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
-{
-  test_job_finished_ack_fails_with_bad_job_id (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (job_finished_ack_fails_with_bad_job_id_using_secure_communication)
-{
-  test_job_finished_ack_fails_with_bad_job_id (test_certificates);
 }
 //! \todo Analyse control flow in all GenericDaemon event handlers
 

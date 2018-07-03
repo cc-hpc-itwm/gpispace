@@ -26,6 +26,7 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -40,7 +41,12 @@
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
 void test_workflow_response
@@ -269,22 +275,6 @@ void test_workflow_response
 }
 
 BOOST_DATA_TEST_CASE
-  ( workflow_response
-  , boost::unit_test::data::make ( std::vector<std::string>
-                                     { "workflow_response"
-                                     , "workflow_response_expression"
-                                     }
-                                 )
-  ^ boost::unit_test::data::make
-      (std::vector<std::string> {"worker:2", "worker:1"})
-  , name
-  , topology
-  )
-{
-  test_workflow_response (name, topology, boost::none);
-}
-
-BOOST_DATA_TEST_CASE
   ( workflow_response_using_secure_communication
   , boost::unit_test::data::make ( std::vector<std::string>
                                      { "workflow_response"
@@ -293,15 +283,17 @@ BOOST_DATA_TEST_CASE
                                  )
   ^ boost::unit_test::data::make
       (std::vector<std::string> {"worker:2", "worker:1"})
+  ^ certificates_data
   , name
   , topology
+  , certificates
   )
 {
-  test_workflow_response (name, topology, test_certificates);
+  test_workflow_response (name, topology, certificates);
 }
 
-void test_one_response_waits_while_others_are_made
-  (gspc::certificates_t const certificates)
+BOOST_DATA_TEST_CASE
+  (one_response_waits_while_others_are_made, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -489,20 +481,11 @@ void test_one_response_waits_while_others_are_made
                       );
 }
 
-BOOST_AUTO_TEST_CASE
-  (one_response_waits_while_others_are_made)
-{
-  test_one_response_waits_while_others_are_made (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (one_response_waits_while_others_are_made_using_secure_communication)
-{
-  test_one_response_waits_while_others_are_made (test_certificates);
-}
-
-void test_response_fails_if_workflow_fails_after_requesting
-  (gspc::certificates_t const certificates)
+BOOST_DATA_TEST_CASE
+  ( response_fails_if_workflow_fails_after_requesting
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -615,16 +598,4 @@ void test_response_fails_if_workflow_fails_after_requesting
      }
     , std::runtime_error ("workflow failed")
     );
-}
-
-BOOST_AUTO_TEST_CASE
-  (response_fails_if_workflow_fails_after_requesting)
-{
-  test_response_fails_if_workflow_fails_after_requesting (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (response_fails_if_workflow_fails_after_requesting_using_secure_communication)
-{
-  test_response_fails_if_workflow_fails_after_requesting (test_certificates);
 }

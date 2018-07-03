@@ -1,12 +1,16 @@
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
-void testInvalidNumberOfWorkersRequired
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , invalid_number_of_workers_required
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -17,15 +21,4 @@ void testInvalidNumberOfWorkersRequired
       (utils::net_with_one_child_requiring_workers (0), orchestrator, certificates)
     , sdpa::status::FAILED
     );
-}
-
-BOOST_FIXTURE_TEST_CASE (InvalidNumberOfWorkersRequired, setup_logging)
-{
-  testInvalidNumberOfWorkersRequired (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (InvalidNumberOfWorkersRequired_using_secure_communication, setup_logging)
-{
-  testInvalidNumberOfWorkersRequired (_logger, test_certificates);
 }

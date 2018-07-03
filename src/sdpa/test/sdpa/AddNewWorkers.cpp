@@ -1,5 +1,9 @@
 #include <utils.hpp>
-#include <boost/test/unit_test.hpp>
+
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 we::type::activity_t net_with_n_children (unsigned int n)
 {
@@ -82,10 +86,8 @@ we::type::activity_t net_with_n_children (unsigned int n)
 // This case tests if each worker added after a user workflow submission
 // gets assigned a task, provided sufficient activities are produced by the
 // workflow engine
-void test_add_new_workers
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, add_new_workers, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
   const utils::agent agent (orchestrator, _logger, certificates);
@@ -162,15 +164,4 @@ void test_add_new_workers
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-}
-
-BOOST_FIXTURE_TEST_CASE (add_new_workers, setup_logging)
-{
-  test_add_new_workers (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (add_new_workers_using_secure_communication, setup_logging)
-{
-  test_add_new_workers (_logger, test_certificates);
 }

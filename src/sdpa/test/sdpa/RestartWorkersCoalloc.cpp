@@ -1,10 +1,12 @@
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <sdpa/events/CancelJobEvent.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {
@@ -53,9 +55,11 @@ namespace
   };
 }
 
-void test_restart_workers_while_job_requiring_coallocation_is_running
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , restart_workers_while_job_requiring_coallocation_is_running
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -95,22 +99,11 @@ void test_restart_workers_while_job_requiring_coallocation_is_running
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_requiring_coallocation_is_running, setup_logging)
-{
-  test_restart_workers_while_job_requiring_coallocation_is_running (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( restart_workers_while_job_requiring_coallocation_is_running_using_secure_communication
-  , setup_logging
-  )
-{
-  test_restart_workers_while_job_requiring_coallocation_is_running (_logger, test_certificates);
-}
-
-void test_restart_workers_while_job_is_running_and_partial_result_is_missing
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , restart_workers_while_job_is_running_and_partial_result_is_missing
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -147,17 +140,4 @@ void test_restart_workers_while_job_is_running_and_partial_result_is_missing
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-}
-
-BOOST_FIXTURE_TEST_CASE (restart_workers_while_job_is_running_and_partial_result_is_missing, setup_logging)
-{
-  test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( restart_workers_while_job_is_running_and_partial_result_is_missing_using_secure_communication
-  , setup_logging
-  )
-{
-  test_restart_workers_while_job_is_running_and_partial_result_is_missing (_logger, test_certificates);
 }

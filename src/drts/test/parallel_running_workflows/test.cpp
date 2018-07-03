@@ -14,23 +14,31 @@
 
 #include <we/type/value.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <future>
 #include <map>
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
-void test_drts_parallel_running_workflows
-  (gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (drts_parallel_running_workflows, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -129,15 +137,4 @@ void test_drts_parallel_running_workflows
 
   BOOST_CHECK (wait_then_touch.get());
   BOOST_CHECK (touch_then_wait.get());
-}
-
-BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
-{
-  test_drts_parallel_running_workflows (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (drts_parallel_running_workflows_using_secure_communication)
-{
-  test_drts_parallel_running_workflows (test_certificates);
 }

@@ -1,8 +1,15 @@
 #include <utils.hpp>
 
-void test_remove_workers_in_a_coallocation_job_and_add_them_again
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
+
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , remove_workers_in_a_coallocation_job_and_add_them_again
+  , certificates_data
+  , certificates
   )
 {
   utils::orchestrator const orchestrator (_logger, certificates);
@@ -46,20 +53,4 @@ void test_remove_workers_in_a_coallocation_job_and_add_them_again
   BOOST_REQUIRE_EQUAL ( client.wait_for_terminal_state_and_cleanup (job_id)
                       , sdpa::status::FINISHED
                       );
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (remove_workers_in_a_coallocation_job_and_add_them_again, setup_logging)
-{
-  test_remove_workers_in_a_coallocation_job_and_add_them_again
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( remove_workers_in_a_coallocation_job_and_add_them_again_using_secure_communication
-  , setup_logging
-  )
-{
-  test_remove_workers_in_a_coallocation_job_and_add_them_again
-    (_logger, test_certificates);
 }

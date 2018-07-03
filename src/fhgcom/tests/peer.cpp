@@ -7,22 +7,29 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <thread>
 
 namespace
 {
-  fhg::com::certificates_t const test_certificates
-    (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { fhg::com::certificates_t{}                                       \
+      , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
+      }                                                                  \
+    )
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-void test_peer_does_not_hang_when_resolve_throws
-  (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (peer_does_not_hang_when_resolve_throws, certificates_data, certificates)
 {
   fhg::util::testing::require_exception
     ( [&certificates]
@@ -38,18 +45,7 @@ void test_peer_does_not_hang_when_resolve_throws
     );
 }
 
-BOOST_AUTO_TEST_CASE (peer_does_not_hang_when_resolve_throws)
-{
-  test_peer_does_not_hang_when_resolve_throws (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (peer_does_not_hang_when_resolve_throws_using_secure_communication)
-{
-  test_peer_does_not_hang_when_resolve_throws (test_certificates);
-}
-
-void test_peer_run_single (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (peer_run_single, certificates_data, certificates)
 {
   using namespace fhg::com;
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -57,17 +53,6 @@ void test_peer_run_single (fhg::com::certificates_t const& certificates)
                 , port_t("12351")
                 , certificates
                 );
-}
-
-BOOST_AUTO_TEST_CASE (peer_run_single)
-{
-  test_peer_run_single (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (peer_run_single_using_secure_communication)
-{
-  test_peer_run_single (test_certificates);
 }
 
 namespace
@@ -83,7 +68,7 @@ namespace
   }
 }
 
-void test_peer_run_two (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (peer_run_two, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -104,26 +89,15 @@ void test_peer_run_two (fhg::com::certificates_t const& certificates)
                                   )
               , "hello world!"
               );
-    message_t m;
-    peer_2.TESTING_ONLY_recv (&m);
+  message_t m;
+  peer_2.TESTING_ONLY_recv (&m);
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
     (std::string (m.data.begin(), m.data.end()), "hello world!");
 }
 
-BOOST_AUTO_TEST_CASE (peer_run_two)
-{
-  test_peer_run_two (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (peer_run_two_using_secure_communication)
-{
-  test_peer_run_two (test_certificates);
-}
-
-void test_resolve_peer_names (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (resolve_peer_names, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -140,18 +114,7 @@ void test_resolve_peer_names (fhg::com::certificates_t const& certificates)
                 );
 }
 
-BOOST_AUTO_TEST_CASE (resolve_peer_names)
-{
-  test_resolve_peer_names (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (resolve_peer_names_using_secure_communication)
-{
-  test_resolve_peer_names (test_certificates);
-}
-
-void test_peer_loopback (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (peer_loopback, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -166,24 +129,14 @@ void test_peer_loopback (fhg::com::certificates_t const& certificates)
                                                 )
                             );
 
-    for (std::size_t i (0); i < 10000; ++i)
-    {
-      peer_1.send(addr, "hello world!");
-    }
+  for (std::size_t i (0); i < 10000; ++i)
+  {
+    peer_1.send(addr, "hello world!");
+  }
 }
 
-BOOST_AUTO_TEST_CASE (peer_loopback)
-{
-  test_peer_loopback (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (peer_loopback_using_secure_communication)
-{
-  test_peer_loopback (test_certificates);
-}
-
-void test_send_to_nonexisting_peer (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (send_to_nonexisting_peer, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -199,18 +152,7 @@ void test_send_to_nonexisting_peer (fhg::com::certificates_t const& certificates
                     );
 }
 
-BOOST_AUTO_TEST_CASE (send_to_nonexisting_peer)
-{
-  test_send_to_nonexisting_peer (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (send_to_nonexisting_peer_using_secure_communication)
-{
-  test_send_to_nonexisting_peer (test_certificates);
-}
-
-void test_send_large_data (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (send_large_data, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -225,24 +167,13 @@ void test_send_large_data (fhg::com::certificates_t const& certificates)
                                  )
              , std::string (2<<25, 'X')
              );
-    message_t r;
-    peer_1.TESTING_ONLY_recv(&r);
+  message_t r;
+  peer_1.TESTING_ONLY_recv(&r);
 
-    BOOST_CHECK_EQUAL(2<<25, r.data.size());
+  BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }
 
-BOOST_AUTO_TEST_CASE (send_large_data)
-{
-  test_send_large_data (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (send_large_data_using_secure_communication)
-{
-  test_send_large_data (test_certificates);
-}
-
-void test_peers_with_fixed_ports (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (peers_with_fixed_ports, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -265,18 +196,8 @@ void test_peers_with_fixed_ports (fhg::com::certificates_t const& certificates)
              );
 }
 
-BOOST_AUTO_TEST_CASE (peers_with_fixed_ports)
-{
-  test_peers_with_fixed_ports (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (peers_with_fixed_ports_using_secure_communication)
-{
-  test_peers_with_fixed_ports (test_certificates);
-}
-
-void test_peers_with_fixed_ports_reuse (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (peers_with_fixed_ports_reuse, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -299,18 +220,8 @@ void test_peers_with_fixed_ports_reuse (fhg::com::certificates_t const& certific
               );
 }
 
-BOOST_AUTO_TEST_CASE (peers_with_fixed_ports_reuse)
-{
-  test_peers_with_fixed_ports_reuse (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (peers_with_fixed_ports_reuse_using_secure_communication)
-{
-  test_peers_with_fixed_ports_reuse (test_certificates);
-}
-
-void test_two_peers_one_restarts_repeatedly (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (two_peers_one_restarts_repeatedly, certificates_data, certificates)
 {
   using namespace fhg::com;
 
@@ -376,17 +287,6 @@ void test_two_peers_one_restarts_repeatedly (fhg::com::certificates_t const& cer
   stop_request = true;
 
   sender.join ();
-}
-
-BOOST_AUTO_TEST_CASE (two_peers_one_restarts_repeatedly)
-{
-  test_two_peers_one_restarts_repeatedly (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (two_peers_one_restarts_repeatedly_using_secure_communication)
-{
-  test_two_peers_one_restarts_repeatedly (test_certificates);
 }
 
 BOOST_AUTO_TEST_CASE (invalid_certificates_directory)

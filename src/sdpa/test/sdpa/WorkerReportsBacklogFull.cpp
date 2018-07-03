@@ -1,11 +1,13 @@
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {
@@ -65,9 +67,11 @@ namespace
   };
 }
 
-void test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -119,22 +123,11 @@ void test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_req
   worker_3.canceled (job_id_3);
 }
 
-BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests, setup_logging)
-{
-  test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests_using_secure_communication
-  , setup_logging
-  )
-{
-  test_one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests (_logger, test_certificates);
-}
-
-void test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -192,27 +185,11 @@ void test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_i
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE
-  ( one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
-  , setup_logging
-  )
-{
-  test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled_using_secure_communication
-  , setup_logging
-  )
-{
-  test_one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
-    (_logger, test_certificates);
-}
-
-void test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -269,25 +246,11 @@ void test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE
-  (one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled, setup_logging)
-{
-  test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled_using_secure_communication
-  , setup_logging
-  )
-{
-  test_one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
-    (_logger, test_certificates);
-}
-
-void test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -337,20 +300,4 @@ void test_one_worker_reports_backlog_full_the_second_activity_terminates_the_fir
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled, setup_logging)
-{
-  test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled_using_secure_communication
-  , setup_logging
-  )
-{
-  test_one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
-    (_logger, test_certificates);
 }

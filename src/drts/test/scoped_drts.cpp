@@ -13,8 +13,11 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/format.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <regex>
 #include <sstream>
@@ -22,11 +25,19 @@
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
-void test_scoped_drts_empty_topology
-  (gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  ( scoped_drts_empty_topology
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -62,20 +73,11 @@ void test_scoped_drts_empty_topology
     (vm, installation, "", scoped_rifds.entry_points(), certificates);
 }
 
-BOOST_AUTO_TEST_CASE
-  (scoped_drts_empty_topology)
-{
-  test_scoped_drts_empty_topology (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (scoped_drts_empty_topology_using_secure_communication)
-{
-  test_scoped_drts_empty_topology (test_certificates);
-}
-
-void test_no_worker_started_on_master
-  (std::string const& worker, gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  ( no_worker_started_on_master
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -117,7 +119,7 @@ void test_no_worker_started_on_master
     gspc::scoped_runtime_system const drts
       ( vm
       , installation
-      , worker + ":1"
+      , "worker:1"
       , boost::none
       , master.entry_point()
       , info_output_stream
@@ -182,21 +184,11 @@ void test_no_worker_started_on_master
     );
 }
 
-BOOST_AUTO_TEST_CASE
-  (no_worker_started_on_master)
-{
-  test_no_worker_started_on_master ("worker", boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (no_worker_started_on_master_using_secure_communication)
-{
-  test_no_worker_started_on_master
-    ("worker_using_secure_communication", test_certificates);
-}
-
-void test_workers_are_started_on_non_master
-  (std::string const& worker, gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  ( workers_are_started_on_non_master
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -239,6 +231,7 @@ void test_workers_are_started_on_non_master
     );
 
   std::ostringstream info_output_stream;
+  std::string const& worker ("WORKER");
 
   {
     gspc::scoped_runtime_system const drts
@@ -345,17 +338,4 @@ void test_workers_are_started_on_non_master
                    }
       )
     );
-}
-
-BOOST_AUTO_TEST_CASE
-  (workers_are_started_on_non_master)
-{
-  test_workers_are_started_on_non_master ("WORKER", boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (workers_are_started_on_non_master_using_secure_communication)
-{
-  test_workers_are_started_on_non_master
-    ("WORKER_using_secure_communication", test_certificates);
 }

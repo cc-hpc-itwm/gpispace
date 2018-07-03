@@ -6,10 +6,13 @@
 #include <sdpa/events/ErrorEvent.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/asio/io_service.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <condition_variable>
 #include <functional>
@@ -17,7 +20,12 @@
 
 namespace
 {
-  fhg::com::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { fhg::com::certificates_t{}                                       \
+      , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
+      }                                                                  \
+    )
 
   struct wait_for_n_events_strategy
   {
@@ -55,7 +63,7 @@ namespace
   };
 }
 
-void test_network_strategy (fhg::com::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
 {
   wait_for_n_events_strategy counter (1);
 
@@ -83,14 +91,4 @@ void test_network_strategy (fhg::com::certificates_t const& certificates)
     );
 
   counter.wait();
-}
-
-BOOST_AUTO_TEST_CASE (test_strategy)
-{
-  test_network_strategy (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE (test_strategy_using_secure_communication)
-{
-  test_network_strategy (test_certificates);
 }

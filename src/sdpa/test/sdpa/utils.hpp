@@ -31,7 +31,12 @@
 
 namespace
 {
-  fhg::com::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { fhg::com::certificates_t{}                                       \
+      , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
+      }                                                                  \
+    )
 }
 
 struct setup_logging

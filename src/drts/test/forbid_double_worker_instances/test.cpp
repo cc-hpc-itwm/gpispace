@@ -11,16 +11,24 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/range/adaptor/map.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
-void test_forbid_double_worker_instances
-  (gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (forbid_double_worker_instances, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -77,15 +85,4 @@ void test_forbid_double_worker_instances
     //! \todo do not collect the exceptions but make a longer list
     BOOST_REQUIRE (!exceptions.empty());
   }
-}
-
-BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
-{
-  test_forbid_double_worker_instances (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (forbid_double_worker_instances_using_secure_communication)
-{
-  test_forbid_double_worker_instances (test_certificates);
 }

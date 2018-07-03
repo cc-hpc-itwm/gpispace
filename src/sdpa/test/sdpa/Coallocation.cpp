@@ -1,16 +1,16 @@
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
-void testCoallocationWorkflow
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
+
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, coallocation_workflow, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
   const utils::agent agent (orchestrator, _logger, certificates);
@@ -25,20 +25,11 @@ void testCoallocationWorkflow
     );
 }
 
-BOOST_FIXTURE_TEST_CASE (CoallocationWorkflow, setup_logging)
-{
-  testCoallocationWorkflow (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (CoallocationWorkflow_using_secure_communication, setup_logging)
-{
-  testCoallocationWorkflow (_logger, test_certificates);
-}
-
-void test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+  , certificates_data
+  , certificates
   )
 {
   //! \note issue #374
@@ -120,27 +111,11 @@ void test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_whil
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE
-  ( worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
-  , setup_logging
-  )
-{
-  test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done_using_secure_communication
-  , setup_logging
-  )
-{
-  test_worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
-    (_logger, test_certificates);
-}
-
-void test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+  , certificates_data
+  , certificates
   )
 {
   //! \note related to issue #374
@@ -198,27 +173,11 @@ void test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE
-  ( agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
-  , setup_logging
-  )
-{
-  test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available_using_secure_communication
-  , setup_logging
-  )
-{
-  test_agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
-    (_logger, test_certificates);
-}
-
-void test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+  , certificates_data
+  , certificates
   )
 {
   //! \note related to issue #374
@@ -338,27 +297,11 @@ void test_worker_shall_not_get_job_after_finishing_and_another_worker_disappeari
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE
-  ( worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
-  , setup_logging
-  )
-{
-  test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
-    (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated_using_secure_communication
-  , setup_logging
-  )
-{
-  test_worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
-    (_logger, test_certificates);
-}
-
-void test_reschedule_happens_even_though_all_others_were_success
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , reschedule_happens_even_though_all_others_were_success
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -412,19 +355,4 @@ void test_reschedule_happens_even_though_all_others_were_success
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (reschedule_happens_even_though_all_others_were_success, setup_logging)
-{
-  test_reschedule_happens_even_though_all_others_were_success (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( reschedule_happens_even_though_all_others_were_success_using_secure_communication
-  , setup_logging
-  )
-{
-  test_reschedule_happens_even_though_all_others_were_success
-    (_logger, test_certificates);
 }

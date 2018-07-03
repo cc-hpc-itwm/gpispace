@@ -19,6 +19,7 @@
 #include <util-generic/join.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
@@ -26,17 +27,24 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <list>
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
-void test_client_implementation_with_ostream_logger
-  (gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (client_implementation_with_ostream_logger, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -140,15 +148,4 @@ void test_client_implementation_with_ostream_logger
   BOOST_REQUIRE_EQUAL (result.size(), 0);
   BOOST_REQUIRE_EQUAL_COLLECTIONS
     (lines.begin(), lines.end(), logged.begin(), logged.end());
-}
-
-BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
-{
-  test_client_implementation_with_ostream_logger (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE
-  (client_implementation_with_ostream_logger_using_secure_communication)
-{
-  test_client_implementation_with_ostream_logger (test_certificates);
 }

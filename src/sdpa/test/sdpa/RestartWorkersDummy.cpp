@@ -1,12 +1,16 @@
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
-void test_restart_worker_with_dummy_workflow
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , restart_worker_with_dummy_workflow
+  , certificates_data
+  , certificates
   )
 {
   const utils::orchestrator orchestrator (_logger, certificates);
@@ -35,15 +39,4 @@ void test_restart_worker_with_dummy_workflow
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-}
-
-BOOST_FIXTURE_TEST_CASE (restart_worker_with_dummy_workflow, setup_logging)
-{
-  test_restart_worker_with_dummy_workflow (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (restart_worker_with_dummy_workflow_using_secure_communication, setup_logging)
-{
-  test_restart_worker_with_dummy_workflow (_logger, test_certificates);
 }

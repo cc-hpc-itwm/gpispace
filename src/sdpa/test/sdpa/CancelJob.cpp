@@ -1,12 +1,14 @@
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <functional>
 
@@ -59,10 +61,8 @@ namespace
   };
 }
 
-void test_cancel_no_agent
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_no_agent, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
 
@@ -76,23 +76,8 @@ void test_cancel_no_agent
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_no_agent, setup_logging)
-{
-  test_cancel_no_agent (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( cancel_no_agent_using_secure_communication
-  , setup_logging
-  )
-{
-  test_cancel_no_agent (_logger, test_certificates);
-}
-
-void test_cancel_with_agent
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_with_agent, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
   const utils::agent agent (orchestrator, _logger, certificates);
@@ -120,21 +105,8 @@ void test_cancel_with_agent
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
-{
-  test_cancel_with_agent (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (cancel_with_agent_using_secure_communication, setup_logging)
-{
-  test_cancel_with_agent (_logger, test_certificates);
-}
-
-void test_call_cancel_twice_orch
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, call_cancel_twice_orch, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
 
@@ -150,21 +122,8 @@ void test_call_cancel_twice_orch
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
-BOOST_FIXTURE_TEST_CASE (call_cancel_twice_orch, setup_logging)
-{
-  test_call_cancel_twice_orch (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (call_cancel_twice_orch_using_secure_communication, setup_logging)
-{
-  test_call_cancel_twice_orch (_logger, test_certificates);
-}
-
-void test_call_cancel_twice_agent
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, call_cancel_twice_agent, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
   const utils::agent agent (orchestrator, _logger, certificates);
@@ -194,21 +153,8 @@ void test_call_cancel_twice_agent
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
-BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
-{
-  test_call_cancel_twice_agent (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (call_cancel_twice_agent_using_secure_communication, setup_logging)
-{
-  test_call_cancel_twice_agent (_logger, test_certificates);
-}
-
-void test_cancel_pending_jobs
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_pending_jobs, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
   const utils::agent agent (orchestrator, _logger, certificates);
@@ -233,21 +179,8 @@ void test_cancel_pending_jobs
     (client.wait_for_terminal_state (job_id_1), sdpa::status::CANCELED);
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
-{
-  test_cancel_pending_jobs (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  (cancel_pending_jobs_using_secure_communication, setup_logging)
-{
-  test_cancel_pending_jobs (_logger, test_certificates);
-}
-
-void test_cancel_workflow_with_two_activities
-  ( fhg::log::Logger& _logger
-  , fhg::com::certificates_t const& certificates
-  )
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_workflow_with_two_activities, certificates_data, certificates)
 {
   const utils::orchestrator orchestrator (_logger, certificates);
   const utils::agent agent (orchestrator, _logger, certificates);
@@ -284,17 +217,4 @@ void test_cancel_workflow_with_two_activities
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
-}
-
-BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
-{
-  test_cancel_workflow_with_two_activities (_logger, boost::none);
-}
-
-BOOST_FIXTURE_TEST_CASE
-  ( cancel_workflow_with_two_activities_using_secure_communication
-  , setup_logging
-  )
-{
-  test_cancel_workflow_with_two_activities (_logger, test_certificates);
 }

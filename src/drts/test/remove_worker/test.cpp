@@ -14,6 +14,8 @@
 #include <util-generic/finally.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -21,14 +23,22 @@
 #include <boost/asio/read.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 namespace
 {
-  gspc::certificates_t const test_certificates (GSPC_SSL_CERTIFICATES_FOR_TESTS);
+#define certificates_data                                                \
+  boost::unit_test::data::make                                           \
+    ( { gspc::certificates_t{}                                           \
+      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+      }                                                                  \
+    )
 }
 
-void test_remove_worker (gspc::certificates_t const& certificates)
+BOOST_DATA_TEST_CASE
+  (remove_worker, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -123,14 +133,4 @@ void test_remove_worker (gspc::certificates_t const& certificates)
   BOOST_REQUIRE ( errc == boost::asio::error::eof
                 || errc == boost::asio::error::connection_reset
                 );
-}
-
-BOOST_AUTO_TEST_CASE (remove_worker)
-{
-  test_remove_worker (boost::none);
-}
-
-BOOST_AUTO_TEST_CASE (remove_secure_worker)
-{
-  test_remove_worker (test_certificates);
 }
