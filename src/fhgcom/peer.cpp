@@ -112,7 +112,7 @@ namespace fhg
 
       if (listen_)
       {
-        listen_->socket_or_next_layer_socket().close ();
+        listen_->socket().close();
       }
 
       // TODO: call pending handlers and delete pending messages
@@ -123,7 +123,7 @@ namespace fhg
         if (cd.connection)
         {
           boost::system::error_code ignore;
-          cd.connection->socket_or_next_layer_socket().cancel (ignore);
+          cd.connection->socket().cancel (ignore);
         }
 
         while (! cd.o_queue.empty())
@@ -185,7 +185,7 @@ namespace fhg
 
       boost::system::error_code ec;
       boost::asio::connect
-        ( cd.connection->socket_or_next_layer_socket()
+        ( cd.connection->socket()
         , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
         , ec
         );
@@ -470,7 +470,7 @@ namespace fhg
           )
         );
       listen_->local_address(my_addr_.get());
-      acceptor_.async_accept ( listen_->socket_or_next_layer_socket()
+      acceptor_.async_accept ( listen_->socket()
                              , strand_.wrap
                                  ( std::bind ( &peer_t::handle_accept
                                              , this
@@ -549,8 +549,8 @@ namespace fhg
         connection_data_t & cd = connections_[c->remote_address()];
 
         boost::system::error_code ignore;
-        c->socket_or_next_layer_socket().cancel (ignore);
-        c->socket_or_next_layer_socket().close (ignore);
+        c->socket().cancel (ignore);
+        c->socket().close (ignore);
 
         // deactivate asynchronous sender
         cd.send_in_progress = false;

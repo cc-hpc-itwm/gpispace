@@ -49,16 +49,14 @@ namespace fhg
 
       ~connection_t ();
 
-      tcp_socket_t& socket_or_next_layer_socket();
-      tcp_socket_t& get_tcp_socket();
-      ssl_stream_t& get_ssl_stream();
+      boost::asio::ip::tcp::socket & socket();
 
       void async_send (const message_t * msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
       {
-        socket_or_next_layer_socket().set_option (o);
+        socket().set_option (o);
       }
 
       void start ();
@@ -129,7 +127,7 @@ namespace fhg
 
       boost::asio::io_service::strand strand_;
       socket_t socket_;
-
+      tcp_socket_t& _raw_socket;
       std::function<void (ptr_t connection, const message_t*)> _handle_hello_message;
       std::function<void (ptr_t connection, const message_t*)> _handle_user_data;
       std::function<void (ptr_t connection, const boost::system::error_code&)> _handle_error;
@@ -139,8 +137,6 @@ namespace fhg
 
       p2p::address_t m_local_addr;
       p2p::address_t m_remote_addr;
-
-      bool ssl_enabled_;
     };
   }
 }
