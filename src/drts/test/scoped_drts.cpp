@@ -122,8 +122,8 @@ BOOST_DATA_TEST_CASE
       , "worker:1"
       , boost::none
       , master.entry_point()
-      , info_output_stream
       , certificates
+      , info_output_stream
       );
   }
 
@@ -240,8 +240,8 @@ BOOST_DATA_TEST_CASE
       , worker + ":1"
       , scoped_rifds.entry_points()
       , master.entry_point()
-      , info_output_stream
       , certificates
+      , info_output_stream
       );
   }
 

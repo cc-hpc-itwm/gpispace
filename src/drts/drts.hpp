@@ -68,15 +68,15 @@ namespace gspc
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
-                          , std::ostream& info_output = std::cerr
                           , certificates_t const& certificates = boost::none
+                          , std::ostream& info_output = std::cerr
                           );
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
-                          , std::ostream& info_output = std::cerr
                           , certificates_t const& certificates = boost::none
+                          , std::ostream& info_output = std::cerr
                           );
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
@@ -84,15 +84,18 @@ namespace gspc
       , std::string const& topology_description
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
-      , std::ostream& info_output = std::cerr
       , certificates_t const& certificates = boost::none
+      , std::ostream& info_output = std::cerr
       );
 
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
                       , rifd_entry_point_hash
                       >
-      add_worker (rifd_entry_points const&, certificates_t const&);
+      add_worker
+        ( rifd_entry_points const&
+        , certificates_t const& certificates = boost::none
+        );
 
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
@@ -101,7 +104,7 @@ namespace gspc
       add_worker
         ( std::vector<worker_description> const&
         , rifd_entry_points const&
-        , certificates_t const&
+        , certificates_t const& certificates = boost::none
         );
 
     std::unordered_map< rifd_entry_point

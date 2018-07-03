@@ -80,9 +80,6 @@ namespace gspc
   client::client (scoped_runtime_system const& drts, certificates_t const& certificates)
     : client (information_to_reattach (drts), certificates)
   {}
-  client::client (scoped_runtime_system const& drts)
-    : client (information_to_reattach (drts), boost::none)
-  {}
   client::client
     ( information_to_reattach const& drts_info
     , certificates_t const& certificates
