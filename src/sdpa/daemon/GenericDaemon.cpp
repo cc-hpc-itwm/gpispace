@@ -395,6 +395,18 @@ std::string GenericDaemon::gen_id()
       }
     }
 
+    void GenericDaemon::emit_gantt ( job_id_t const& id
+                                   , we::type::activity_t const& activity
+                                   , NotificationEvent::state_t state
+                                   )
+    {
+      if (m_guiService)
+      {
+        m_guiService->notify
+          (NotificationEvent ({name()}, id, state, activity));
+      }
+    }
+
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
 {
@@ -440,17 +452,7 @@ void GenericDaemon::handleSubmitJobEvent
       // Should set the workflow_id here, or send it together with the activity
       pJob->Dispatch();
 
-      if (m_guiService)
-      {
-        const sdpa::daemon::NotificationEvent evt_
-          ( {name()}
-          , job_id
-          , NotificationEvent::STATE_STARTED
-          , act
-          );
-
-        m_guiService->notify (evt_);
-      }
+      emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
     }
     catch (...)
     {
@@ -669,15 +671,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   job_finished (pJob, result);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_FINISHED
-                           , pJob->result()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
@@ -688,15 +682,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   job_failed (pJob, reason);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_FAILED
-                           , pJob->activity()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
 }
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)
@@ -705,15 +691,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 
   job_canceled (pJob);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_CANCELED
-                           , pJob->result()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
 
   if (boost::get<job_source_master> (&pJob->source()))
   {

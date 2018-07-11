@@ -266,6 +266,10 @@ namespace sdpa {
       sdpa::capabilities_set_t m_capabilities;
 
       std::unique_ptr<NotificationService> m_guiService;
+      void emit_gantt ( job_id_t const&
+                      , we::type::activity_t const&
+                      , NotificationEvent::state_t
+                      );
 
       std::chrono::seconds _registration_timeout;
 
