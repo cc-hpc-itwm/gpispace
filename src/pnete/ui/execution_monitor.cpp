@@ -295,6 +295,7 @@ namespace fhg
       execution_monitor::execution_monitor
           ( unsigned short port
           , std::list<logging::tcp_endpoint> emitters
+          , boost::optional<boost::filesystem::path> trace_file
           , QWidget* parent
           )
         : QSplitter (Qt::Horizontal, parent)
@@ -310,8 +311,12 @@ namespace fhg
 
         QAbstractItemModel* next (nullptr);
 
-        worker_model* base
-          (new worker_model (port, std::move (emitters), this));
+        worker_model* base ( new worker_model ( port
+                                              , std::move (emitters)
+                                              , std::move (trace_file)
+                                              , this
+                                              )
+                           );
         next = base;
 
         util::qt::mvc::flat_to_tree_proxy* transformed_to_tree

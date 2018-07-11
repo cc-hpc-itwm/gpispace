@@ -17,6 +17,8 @@ extended_add_library (NAME fhglog
           "fhglog/appender/stream.cpp"
           "fhglog/remote/server.cpp"
           "fhglog/remote/appender.cpp"
+          "fhglog/swftrace_event.cpp"
+          "fhglog/appender/swftrace.cpp"
           LIBRARIES fhg-util Boost::filesystem Util::Generic
 )
 add_subdirectory (fhglog/appender/test)

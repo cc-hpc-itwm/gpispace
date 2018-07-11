@@ -5,6 +5,7 @@
 #include <logging/legacy_bridge.hpp>
 #include <logging/tcp_endpoint.hpp>
 #include <logging/tcp_receiver.hpp>
+#include <fhglog/appender/swftrace.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -42,6 +43,7 @@ namespace fhg
 
         worker_model ( unsigned short port
                      , std::list<logging::tcp_endpoint>
+                     , boost::optional<boost::filesystem::path> trace_file
                      , QObject* parent = nullptr
                      );
 
@@ -99,6 +101,11 @@ namespace fhg
         void handle_events();
 
       private:
+        void add_event_to_trace ( value_type const& current_event
+                                , sdpa::daemon::NotificationEvent const&
+                                , std::string const& worker_str
+                                );
+
         QList<QString> _workers;
         QMap<QString, std::vector<value_type>> _worker_containers;
         QDateTime _base_time;
@@ -109,6 +116,8 @@ namespace fhg
 
         logging::legacy_bridge _log_bridge;
         logging::tcp_receiver _log_receiver;
+
+        boost::optional<fhg::log::SWFTraceAppender> trace_appender;
       };
     }
   }

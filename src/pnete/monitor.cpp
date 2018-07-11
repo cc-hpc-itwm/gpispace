@@ -2,9 +2,11 @@
 #include <pnete/ui/log_monitor.hpp>
 
 #include <fhg/revision.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <fhg/util/boost/program_options/generic.hpp>
+#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
 #include <boost/program_options.hpp>
@@ -30,6 +32,9 @@ namespace
     //! Boost.ProgramOptions can only do vectors natively.
     po::option<std::vector<fhg::logging::tcp_endpoint>> const emitters
       {"emitters", "list of tcp emitters"};
+
+    po::option<fhg::util::boost::program_options::nonexisting_path_in_existing_directory> const trace_file
+      {"trace-file", "path to trace file"};
   }
 
   template<typename Container>
@@ -49,6 +54,7 @@ try
     . require (option::gui_port)
     . require (option::log_port)
     . add (option::emitters)
+    . add (option::trace_file)
     . store_and_notify (ac, av)
     );
 
@@ -67,6 +73,10 @@ try
     ( new fhg::pnete::ui::execution_monitor
         ( option::gui_port.get_from (vm)
         , to_list (option::emitters.get_from_or_value (vm, {}))
+        , FHG_UTIL_MAKE_OPTIONAL
+            ( vm.count (option::trace_file.name())
+            , boost::filesystem::path (option::trace_file.get_from (vm))
+            )
         )
     , QObject::tr ("Execution Monitor")
     );

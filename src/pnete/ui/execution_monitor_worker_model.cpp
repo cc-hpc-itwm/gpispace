@@ -8,7 +8,9 @@
 
 #include <QTimer>
 
+#include <chrono>
 #include <functional>
+#include <string>
 
 namespace fhg
 {
@@ -83,10 +85,12 @@ namespace fhg
         }
       }
 
-      worker_model::worker_model ( unsigned short port
-                                 , std::list<logging::tcp_endpoint> emitters
-                                 , QObject* parent
-                                 )
+      worker_model::worker_model
+        ( unsigned short port
+        , std::list<logging::tcp_endpoint> emitters
+        , boost::optional<boost::filesystem::path> const trace_file
+        , QObject* parent
+        )
         : QAbstractItemModel (parent)
         , _workers()
         , _worker_containers()
@@ -98,6 +102,7 @@ namespace fhg
             ( with_appended (std::move (emitters), _log_bridge.local_endpoint())
             , fhg::util::bind_this (this, &worker_model::append_event)
             )
+        , trace_appender (std::move (trace_file))
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
@@ -121,6 +126,37 @@ namespace fhg
                 (timepoint.time_since_epoch())
               .count()
             );
+        }
+      }
+
+      void worker_model::add_event_to_trace
+        ( value_type const& monitor_event
+        , sdpa::daemon::NotificationEvent const& event
+        , std::string const& worker_str
+        )
+      {
+        if (trace_appender)
+        {
+          auto const job_id (std::hash<std::string>{} (event.activity_id()));
+          auto const worker_id (std::hash<std::string>{} (worker_str));
+
+          using msec_duration = std::chrono::duration<double, std::chrono::milliseconds::period>;
+
+          // event timestamp is the duration since _base_time
+          msec_duration const start_ts (monitor_event.timestamp());
+          auto const submission_ts (start_ts);
+          msec_duration const duration (monitor_event.duration().value_or (0));
+          auto const end_ts (start_ts + duration);
+
+          trace_appender->append ( { static_cast<unsigned int> (job_id)
+                                   , submission_ts
+                                   , start_ts
+                                   , end_ts
+                                   , fhg::log::SWFTraceEvent::get_state
+                                       (monitor_event.state())
+                                   , static_cast<unsigned int> (worker_id)
+                                   }
+                                 );
         }
       }
 
@@ -198,6 +234,7 @@ namespace fhg
                 if (!current.duration())
                 {
                   current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
+                  add_event_to_trace (current, event, worker_std);
                 }
               }
 
@@ -213,6 +250,7 @@ namespace fhg
             else
             {
               container.back().state (event.activity_state(), time);
+              add_event_to_trace (container.back(), event, worker_std);
             }
 
             (ul ? br : ul) = index (row, 0);
