@@ -61,7 +61,7 @@ int main (int argc, char **argv)
       ("help,h", "Display this message")
       ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
       ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
-      ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'name%host%port'")
+      ("masters", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'host%port'")
       ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
       ( option_name::vmem_socket
       , boost::program_options::value<validators::nonempty_string>()
@@ -86,22 +86,21 @@ int main (int argc, char **argv)
       vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
     }
 
-    std::vector<std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>> masters;
-    for (std::string const& name_host_port : arrMasterNames)
+    sdpa::master_info_t masters;
+    for (auto const& host_port : arrMasterNames)
     {
       boost::tokenizer<boost::char_separator<char>> const tok
-        (name_host_port, boost::char_separator<char> ("%"));
+        (host_port, boost::char_separator<char> ("%"));
 
       std::vector<std::string> const parts (tok.begin(), tok.end());
 
-      if (parts.size() != 3)
+      if (parts.size() != 2)
       {
         throw std::runtime_error
-          ("invalid master information: has to be of format 'name%host%port'");
+          ("invalid master information: has to be of format 'host%port'");
       }
 
-      masters.emplace_back
-        (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+      masters.emplace_front (parts[0], parts[1]);
     }
 
     boost::asio::io_service gui_io_service;
@@ -110,7 +109,7 @@ int main (int argc, char **argv)
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , vmem_socket
-      , masters
+      , std::move (masters)
       , logger
       , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
       , true

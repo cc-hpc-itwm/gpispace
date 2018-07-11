@@ -280,10 +280,9 @@ namespace utils
   namespace
   {
     template<typename Master>
-      std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>
-        make_master_info_tuple (Master const& master)
+      sdpa::master_network_info make_master_network_info (Master const& master)
     {
-      return std::make_tuple (master.name(), master.host(), master.port());
+      return {master.host(), master.port()};
     }
   }
 
@@ -295,7 +294,9 @@ namespace utils
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
-          , {make_master_info_tuple (master_0), make_master_info_tuple (master_1)}
+          , { make_master_network_info (master_0)
+            , make_master_network_info (master_1)
+            }
           , logger
           , boost::none
           , true
@@ -307,7 +308,7 @@ namespace utils
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
-          , {make_master_info_tuple (master)}
+          , {make_master_network_info (master)}
           , logger
           , boost::none
           , true
@@ -318,7 +319,7 @@ namespace utils
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
-          , {make_master_info_tuple (master)}
+          , {make_master_network_info (master)}
           , logger
           , boost::none
           , true

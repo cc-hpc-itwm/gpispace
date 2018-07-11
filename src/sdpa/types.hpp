@@ -16,9 +16,6 @@ namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::string worker_id_t;
 
-  using name_host_port_tuple
-    = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
-
   namespace daemon
   {
     class GenericDaemon;

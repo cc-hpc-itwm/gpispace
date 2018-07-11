@@ -307,7 +307,7 @@ try
           std::vector<std::string> arguments
             { "-u", "0"
             , "-n", name
-            , "-m", "xx%" + parent.first + "%" + std::to_string (parent.second)
+            , "--masters", parent.first + "%" + std::to_string (parent.second)
             };
           if (gui_host && gui_port)
           {

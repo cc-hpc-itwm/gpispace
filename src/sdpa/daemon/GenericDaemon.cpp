@@ -64,36 +64,18 @@ namespace
   }
 }
 
-    namespace
-    {
-      //! \note templated for convenience of not needing public access
-      //! to master info stuff
-      template<typename InfoMap> InfoMap make_master_info_map
-        (std::vector<name_host_port_tuple> const& masters)
-      {
-        InfoMap ret;
-        for (name_host_port_tuple const& name_host_port : masters)
-        {
-          ret.emplace_front ( std::get<1> (name_host_port)
-                            , std::get<2> (name_host_port)
-                            );
-        }
-        return ret;
-      }
-    }
-
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
-                            , std::vector<name_host_port_tuple> const& masters
+                            , master_info_t masters
                             , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
   : _logger (logger)
   , _name (name)
-  , _master_info (make_master_info_map<master_info_t> (masters))
+  , _master_info (std::move (masters))
   , _subscriptions()
   , _discover_sources()
   , _job_map_mutex()
