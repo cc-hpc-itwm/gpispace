@@ -21,6 +21,7 @@ namespace fhg
         , execute_and_get_startup_messages_and_wait (_endpoint)
         , kill (_endpoint)
         , start_vmem (_endpoint)
+        , start_agent (_endpoint)
       {}
 
     private:
@@ -33,6 +34,7 @@ namespace fhg
         execute_and_get_startup_messages_and_wait;
       rpc::remote_function<protocol::kill> kill;
       rpc::remote_function<protocol::start_vmem> start_vmem;
+      rpc::remote_function<protocol::start_agent> start_agent;
     };
   }
 }

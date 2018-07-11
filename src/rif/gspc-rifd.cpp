@@ -292,6 +292,56 @@ try
         }
       );
 
+  fhg::rpc::service_handler<fhg::rif::protocol::start_agent>
+    start_agent_service
+      ( service_dispatcher
+      , [] ( std::string const& name
+           , fhg::rif::protocol::hostinfo_t const& parent
+           , boost::optional<std::string> const& gui_host
+           , boost::optional<unsigned short> const& gui_port
+           , boost::optional<boost::filesystem::path> const& gpi_socket
+           , boost::filesystem::path const& command
+           , std::unordered_map<std::string, std::string> const& environment
+           )
+        {
+          std::vector<std::string> arguments
+            { "-u", "0"
+            , "-n", name
+            , "-m", "xx%" + parent.first + "%" + std::to_string (parent.second)
+            };
+          if (gui_host && gui_port)
+          {
+            arguments.emplace_back ("-a");
+            arguments.emplace_back
+              (*gui_host + ":" + std::to_string (*gui_port));
+          }
+          if (gpi_socket)
+          {
+            arguments.emplace_back ("--vmem-socket");
+            arguments.emplace_back (gpi_socket->string());
+          }
+
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                (command, arguments, environment)
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 2)
+          {
+            throw std::logic_error ( "could not start agent " + name
+                                   + ": expected 2 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_agent_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.hostinfo
+            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          return result;
+        }
+      );
+
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
   fhg::rpc::service_tcp_provider_with_deferred_start server

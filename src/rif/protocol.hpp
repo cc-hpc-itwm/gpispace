@@ -69,6 +69,26 @@ namespace fhg
                 , std::size_t rank
                 )
         );
+
+      using hostinfo_t = std::pair<std::string, unsigned short>;
+      struct start_agent_result
+      {
+        pid_t pid;
+        hostinfo_t hostinfo;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_agent
+        , start_agent_result
+            ( std::string name
+            , hostinfo_t parent
+            , boost::optional<std::string> gui_host
+            , boost::optional<unsigned short> gui_port
+            , boost::optional<boost::filesystem::path> gpi_socket
+            , boost::filesystem::path command
+            , std::unordered_map<std::string, std::string> environment
+            )
+        );
     }
   }
 }
@@ -125,6 +145,17 @@ namespace boost
         )
     {
       boost::serialization::split_free (ar, t, file_version);
+    }
+
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::protocol::start_agent_result& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
+      ar & result.hostinfo;
     }
   }
 }

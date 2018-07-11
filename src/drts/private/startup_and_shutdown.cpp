@@ -167,43 +167,21 @@ namespace
                 << rif_entry_point
                 << " with parent " << parent_name << "\n";
 
-    std::vector<std::string> agent_startup_arguments
-      { "-u", "0"
-      , "-n", name
-      , "-m", build_parent_with_hostinfo (parent_name, parent_hostinfo)
-      };
-    if (gui_host && gui_port)
-    {
-      agent_startup_arguments.emplace_back ("-a");
-      agent_startup_arguments.emplace_back
-        (*gui_host + ":" + std::to_string (*gui_port));
-    }
-    if (gpi_socket)
-    {
-      agent_startup_arguments.emplace_back ("--vmem-socket");
-      agent_startup_arguments.emplace_back (gpi_socket->string());
-    }
-
-    std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
-      ( rif_client.execute_and_get_startup_messages
-          ( installation_path.agent()
-          , agent_startup_arguments
+    auto const result
+      ( rif_client.start_agent
+          ( name
+          , parent_hostinfo
+          , gui_host
+          , gui_port
+          , gpi_socket
+          , installation_path.agent()
           , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
       );
 
-    if (agent_startup_messages.second.size() != 2)
-    {
-      throw std::logic_error ( "could not start agent " + name
-                             + ": expected 2 lines of startup messages"
-                             );
-    }
+    processes.store (rif_entry_point, name, result.pid);
 
-    processes.store (rif_entry_point, name, agent_startup_messages.first);
-
-    return { agent_startup_messages.second[0]
-           , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
-           };
+    return result.hostinfo;
   }
 }
 
