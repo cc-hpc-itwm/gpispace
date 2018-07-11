@@ -6,6 +6,7 @@
 
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -25,6 +26,8 @@ namespace
       {"gui-port", "gui port"};
     po::option<po::positive_integral<unsigned short>> const log_port
       {"log-port", "log port"};
+    po::option<std::string> const trace_file
+      {"trace-file", "path to trace file"};
   }
 }
 
@@ -35,8 +38,26 @@ try
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
     . require (option::gui_port)
     . require (option::log_port)
+    . add (option::trace_file)
     . store_and_notify (ac, av)
     );
+
+  boost::optional<boost::filesystem::path> const trace_file(
+      vm.count (option::trace_file.name()) > 0,
+          boost::filesystem::path(option::trace_file.get_from (vm))
+
+  );
+
+
+  /*
+  boost::optional<boost::filesystem::path> const trace_file(
+      vm.count (option::trace_file.name()) > 0 ?
+          boost::optional<boost::filesystem::path>
+              (vm.at(option::trace_file.name()).as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>())
+          : boost::none
+  );*/
+
+
 
   QApplication a (ac, av);
 
@@ -50,7 +71,7 @@ try
 
   QTabWidget window;
   window.addTab
-    ( new fhg::pnete::ui::execution_monitor (option::gui_port.get_from (vm))
+    ( new fhg::pnete::ui::execution_monitor (option::gui_port.get_from (vm), trace_file)
     , QObject::tr ("Execution Monitor")
     );
   window.addTab ( new log_monitor (option::log_port.get_from (vm))

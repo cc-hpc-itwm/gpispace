@@ -4,6 +4,7 @@
 
 #include <fhglog/event.hpp>
 #include <fhglog/remote/server.hpp>
+#include <fhglog/appender/swftrace.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -38,7 +39,7 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model (unsigned short port, QObject* parent = nullptr);
+        worker_model (unsigned short port, boost::optional<boost::filesystem::path> const trace_file, QObject* parent = nullptr);
         ~worker_model();
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
@@ -95,6 +96,9 @@ namespace fhg
         void handle_events();
 
       private:
+        void add_event_to_trace(const value_type& current_event,
+                          const std::string& activity_str, const std::string& worker_str);
+
         QList<QString> _workers;
         QMap<QString, std::vector<value_type>> _worker_containers;
         QDateTime _base_time;
@@ -107,6 +111,8 @@ namespace fhg
         fhg::log::Logger _logger;
         log::remote::LogServer _log_server;
         std::thread _io_thread;
+
+        boost::optional<fhg::log::SWFTraceAppender> trace_appender;
       };
     }
   }

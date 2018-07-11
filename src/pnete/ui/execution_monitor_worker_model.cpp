@@ -7,6 +7,9 @@
 #include <QTimer>
 
 #include <functional>
+#include <unordered_set>
+#include <string>
+
 
 namespace fhg
 {
@@ -111,7 +114,7 @@ namespace fhg
         };
       }
 
-      worker_model::worker_model (unsigned short port, QObject* parent)
+      worker_model::worker_model (unsigned short port, boost::optional<boost::filesystem::path> const trace_file, QObject* parent)
         : QAbstractItemModel (parent)
         , _workers()
         , _worker_containers()
@@ -129,6 +132,7 @@ namespace fhg
                       , port
                       )
         , _io_thread ([this] { _io_service.run(); })
+        , trace_appender(trace_file.is_initialized(), fhg::log::SWFTraceAppender(trace_file.value()) )
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
@@ -146,6 +150,24 @@ namespace fhg
       {
         std::lock_guard<std::mutex> guard (_event_queue);
         _queued_events << event;
+      }
+
+      void worker_model::add_event_to_trace(const value_type& current_event,
+          const std::string& activity_str, const std::string& worker_str) {
+
+        if (trace_appender) {
+          unsigned long job_id = std::hash<std::string>{}(activity_str);
+          unsigned long worker_id = std::hash<std::string>{}(worker_str);
+          double ts_s = static_cast<double>(current_event.timestamp()) * 1e-3; // event timestamp is the duration in ms since _base_time
+
+          fhg::log::SWFTraceEvent trace_ev(job_id,
+            ts_s,
+            ts_s,
+            ts_s + static_cast<double>(current_event.duration().value_or(0)) * 1e-3,  // the job duration is in ms
+            fhg::log::SWFTraceEvent::get_state(current_event.state()),
+            worker_id);
+          trace_appender.value().append(trace_ev);
+        }
       }
 
       void worker_model::handle_events()
@@ -222,11 +244,13 @@ namespace fhg
                 if (!current.duration())
                 {
                   current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
+                  add_event_to_trace(container.back(), event.activity_id(), worker_std);
                 }
               }
 
+              // current worker's container is empty - add the first event
               container.push_back
-                ( value_type ( time
+                ( value_type ( time         // duration in ms since the _base_time
                              , boost::none
                              , activity_id
                              , QString::fromStdString (event.activity_name())
@@ -236,7 +260,12 @@ namespace fhg
             }
             else
             {
+              // add new event in the container
               container.back().state (event.activity_state(), time);
+              add_event_to_trace(container.back(), event.activity_id(), worker_std);
+
+             // std::cerr << "act_id=" << event.activity_id() << "   act_name=" << event.activity_name() << "   act_state=" << event.activity_state()
+               //                 << "   act_worker=" << worker_std << "   act_time=" << time << std::endl;
             }
 
             (ul ? br : ul) = index (row, 0);

@@ -1,5 +1,8 @@
 #pragma once
 
+#include <boost/optional.hpp>
+#include <boost/filesystem.hpp>
+
 #include <QSplitter>
 
 namespace fhg
@@ -13,7 +16,9 @@ namespace fhg
         Q_OBJECT
 
       public:
-        execution_monitor (unsigned short port, QWidget* parent = nullptr);
+        execution_monitor (unsigned short port,
+            boost::optional<boost::filesystem::path> const trace_file,
+            QWidget* parent = nullptr);
       };
     }
   }
