@@ -33,7 +33,7 @@ struct wfe_task_t;
 
 class DRTSImpl final : public sdpa::events::EventHandler
 {
-  typedef std::map<std::string, fhg::com::p2p::address_t> map_of_masters_t;
+  using masters_t = std::vector<fhg::com::p2p::address_t>;
 
 public:
   class Job
@@ -49,7 +49,7 @@ public:
     , CANCELED_DUE_TO_WORKER_SHUTDOWN
     };
 
-    using owner_type = map_of_masters_t::const_iterator;
+    using owner_type = masters_t::const_iterator;
 
     Job ( std::string const& jobid
         , we::type::activity_t const& activity_
@@ -79,7 +79,7 @@ private:
 
 public:
 
-  using master_info = std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>;
+  using master_info = std::tuple<fhg::com::host_t, fhg::com::port_t>;
 
   DRTSImpl
     ( std::function<void()> request_stop
@@ -139,7 +139,7 @@ private:
 
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
-  map_of_masters_t m_masters;
+  masters_t m_masters;
 
   fhg::util::interruptible_threadsafe_queue<std::pair< fhg::com::p2p::address_t
                                                      , sdpa::events::SDPAEvent::Ptr

@@ -241,8 +241,7 @@ int main(int ac, char **av)
         throw std::invalid_argument ("master already specified: " + master);
       }
 
-      master_info.emplace_back
-        (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+      master_info.emplace_back (parts[1], parts[2]);
     }
 
     boost::asio::io_service gui_io_service;

@@ -224,11 +224,8 @@ DRTSImpl::DRTSImpl
   for (master_info const& master : masters)
   {
     fhg::com::p2p::address_t const master_address
-      ( m_masters.emplace
-          ( std::get<0> (master)
-          , _peer.connect_to (std::get<1> (master), std::get<2> (master))
-          ).first->second
-      );
+      (_peer.connect_to (std::get<0> (master), std::get<1> (master)));
+    m_masters.emplace_back (master_address);
 
     registration_futures.emplace_back
       ( _registration_responses.emplace
@@ -267,14 +264,8 @@ void DRTSImpl::handle_worker_registration_response
   , sdpa::events::worker_registration_response const* response
   )
 {
-  map_of_masters_t::const_iterator master_it
-    ( std::find_if ( m_masters.cbegin(), m_masters.cend()
-                   , [&source] (map_of_masters_t::value_type const& master)
-                     {
-                       return master.second == source;
-                     }
-                   )
-    );
+  auto const master_it
+    (std::find (m_masters.cbegin(), m_masters.cend(), source));
 
   if (master_it == m_masters.cend())
   {
@@ -296,14 +287,8 @@ void DRTSImpl::handle_worker_registration_response
 void DRTSImpl::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e)
 {
-  map_of_masters_t::const_iterator master
-    ( std::find_if ( m_masters.cbegin(), m_masters.cend()
-                   , [&source] (map_of_masters_t::value_type const& master_)
-                     {
-                       return master_.second == source;
-                     }
-                   )
-    );
+  auto const master
+    (std::find (m_masters.cbegin(), m_masters.cend(), source));
 
   if (master == m_masters.cend())
   {
@@ -365,7 +350,7 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  send_event<sdpa::events::SubmitJobAckEvent> (master->second, job->id);
+  send_event<sdpa::events::SubmitJobAckEvent> (*master, job->id);
   m_jobs.emplace (job->id, job);
 }
 
@@ -381,7 +366,7 @@ void DRTSImpl::handleCancelJobEvent
   {
     throw std::runtime_error ("cancel_job for unknown job");
   }
-  if (job_it->second->owner->second != source)
+  if (*job_it->second->owner != source)
   {
     throw std::runtime_error ("cancel_job for non-owned job");
   }
@@ -391,7 +376,7 @@ void DRTSImpl::handleCancelJobEvent
   {
     LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
     send_event<sdpa::events::CancelJobAckEvent>
-      (job_it->second->owner->second, job_it->second->id);
+      (*job_it->second->owner, job_it->second->id);
   }
   else if (job_state == DRTSImpl::Job::RUNNING)
   {
@@ -429,7 +414,7 @@ void DRTSImpl::handleJobFailedAckEvent
   {
     throw std::runtime_error ("job_failed_ack for unknown job");
   }
-  if (job_it->second->owner->second != source)
+  if (*job_it->second->owner != source)
   {
     throw std::runtime_error ("job_failed_ack for non-owned job");
   }
@@ -447,7 +432,7 @@ void DRTSImpl::handleJobFinishedAckEvent
   {
     throw std::runtime_error ("job_finished_ack for unknown job");
   }
-  if (job_it->second->owner->second != source)
+  if (*job_it->second->owner != source)
   {
     throw std::runtime_error ("job_finished_ack for non-owned job");
   }
@@ -647,17 +632,17 @@ try
     {
     case DRTSImpl::Job::FINISHED:
       send_event<sdpa::events::JobFinishedEvent>
-        (job->owner->second, job->id, job->result);
+        (*job->owner, job->id, job->result);
 
       break;
     case DRTSImpl::Job::FAILED:
       send_event<sdpa::events::JobFailedEvent>
-        (job->owner->second, job->id, job->message);
+        (*job->owner, job->id, job->message);
 
       break;
     case DRTSImpl::Job::CANCELED:
       send_event<sdpa::events::CancelJobAckEvent>
-        (job->owner->second, job->id);
+        (*job->owner, job->id);
 
       break;
 
