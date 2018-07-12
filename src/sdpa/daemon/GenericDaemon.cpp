@@ -102,6 +102,7 @@ GenericDaemon::GenericDaemon( const std::string name
                    (gui_info->first, gui_info->second)
                  : nullptr
                  )
+  , _log_emitter()
   , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
   , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
@@ -405,6 +406,17 @@ std::string GenericDaemon::gen_id()
         m_guiService->notify
           (NotificationEvent ({name()}, id, state, activity));
       }
+      _log_emitter.emit_message
+        ( { NotificationEvent ({name()}, id, state, activity).encoded()
+          , gantt_log_category
+          }
+        );
+    }
+
+    fhg::logging::tcp_endpoint
+      GenericDaemon::logger_registration_endpoint() const
+    {
+      return _log_emitter.local_tcp_endpoint();
     }
 
 void GenericDaemon::handleSubmitJobEvent

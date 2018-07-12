@@ -9,6 +9,8 @@
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/serialization/std/chrono.hpp>
 
+#include <logging/tcp_endpoint.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/optional.hpp>
@@ -75,6 +77,7 @@ namespace fhg
       {
         pid_t pid;
         hostinfo_t hostinfo;
+        fhg::logging::tcp_endpoint logger_registration_endpoint;
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION
@@ -156,6 +159,7 @@ namespace boost
     {
       ar & result.pid;
       ar & result.hostinfo;
+      ar & result.logger_registration_endpoint;
     }
   }
 }

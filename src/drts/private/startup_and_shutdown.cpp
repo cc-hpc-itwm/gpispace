@@ -161,6 +161,7 @@ namespace
     , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
+    , std::list<fhg::logging::tcp_endpoint>& log_emitters
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
@@ -180,6 +181,9 @@ namespace
       );
 
     processes.store (rif_entry_point, name, result.pid);
+
+    log_emitters.emplace_back
+      (std::move (result.logger_registration_endpoint));
 
     return result.hostinfo;
   }
@@ -513,6 +517,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , std::list<fhg::logging::tcp_endpoint>& log_emitters
       )
     {
       if (log_dir)
@@ -708,6 +713,7 @@ namespace fhg
                                           , log_dir
                                           , processes
                                           , info_output
+                                          , log_emitters
                                           );
 
       return orchestrator_hostinfo;

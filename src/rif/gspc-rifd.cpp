@@ -327,10 +327,10 @@ try
             );
           auto const& messages (pid_and_startup_messages.second);
 
-          if (messages.size() != 2)
+          if (messages.size() != 4)
           {
             throw std::logic_error ( "could not start agent " + name
-                                   + ": expected 2 lines of startup messages"
+                                   + ": expected 4 lines of startup messages"
                                    );
           }
 
@@ -338,6 +338,8 @@ try
           result.pid = pid_and_startup_messages.first;
           result.hostinfo
             = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          result.logger_registration_endpoint
+            = {messages[2], boost::lexical_cast<unsigned short> (messages[3])};
           return result;
         }
       );

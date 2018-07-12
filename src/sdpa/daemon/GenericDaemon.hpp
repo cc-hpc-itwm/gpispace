@@ -48,6 +48,7 @@
 #include <util-generic/threadsafe_queue.hpp>
 
 #include <fhglog/LogMacros.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <chrono>
 #include <condition_variable>
@@ -76,6 +77,7 @@ namespace sdpa {
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
+      fhg::logging::tcp_endpoint logger_registration_endpoint() const;
 
     public:
       // WE interface
@@ -266,6 +268,7 @@ namespace sdpa {
       sdpa::capabilities_set_t m_capabilities;
 
       std::unique_ptr<NotificationService> m_guiService;
+      fhg::logging::stream_emitter _log_emitter;
       void emit_gantt ( job_id_t const&
                       , we::type::activity_t const&
                       , NotificationEvent::state_t
