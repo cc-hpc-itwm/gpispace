@@ -132,6 +132,7 @@ private:
   we::loader::loader m_loader;
 
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
+  void emit_gantt (wfe_task_t const&, sdpa::daemon::NotificationEvent::state_t);
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;

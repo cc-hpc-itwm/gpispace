@@ -504,6 +504,18 @@ catch (decltype (m_event_queue)::interrupted const&)
 {
 }
 
+void DRTSImpl::emit_gantt
+  (wfe_task_t const& task, sdpa::daemon::NotificationEvent::state_t state)
+{
+  if (_notification_service)
+  {
+    _notification_service->notify
+      ( sdpa::daemon::NotificationEvent
+          ({m_my_name}, task.id, state, task.activity)
+      );
+  }
+}
+
 void DRTSImpl::job_execution_thread()
 try
 {
@@ -545,18 +557,7 @@ try
       wfe_task_t task
         (job->id, job->activity, m_my_name, job->workers, _logger);
 
-      if (_notification_service)
-      {
-        using sdpa::daemon::NotificationEvent;
-        _notification_service->notify
-          ( NotificationEvent
-              ( {m_my_name}
-              , task.id
-              , NotificationEvent::STATE_STARTED
-              , task.activity
-              )
-          );
-      }
+      emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
       try
       {
@@ -615,23 +616,13 @@ try
         LLOG (INFO, _logger, "task canceled: " << task.id);
       }
 
-      if (_notification_service)
-      {
-        using sdpa::daemon::NotificationEvent;
-        _notification_service->notify
-          ( NotificationEvent
-              ( {m_my_name}
-              , task.id
-              , task.state == wfe_task_t::FINISHED ? NotificationEvent::STATE_FINISHED
-              : task.state == wfe_task_t::CANCELED ? NotificationEvent::STATE_CANCELED
-              : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? NotificationEvent::STATE_FAILED
-              : task.state == wfe_task_t::FAILED ? NotificationEvent::STATE_FAILED
-              : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state)
-              , task.activity
-              )
-            );
-        }
-
+      emit_gantt ( task
+                 , task.state == wfe_task_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
+                 : task.state == wfe_task_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELED
+                 : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::daemon::NotificationEvent::STATE_FAILED
+                 : task.state == wfe_task_t::FAILED ? sdpa::daemon::NotificationEvent::STATE_FAILED
+                 : INVALID_ENUM_VALUE (wfe_task_t::state_t, task.state)
+                 );
       job->state = task.state == wfe_task_t::FINISHED ? DRTSImpl::Job::FINISHED
                  : task.state == wfe_task_t::CANCELED ? DRTSImpl::Job::CANCELED
                  : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN
