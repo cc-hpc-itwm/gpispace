@@ -96,6 +96,7 @@ namespace fhg
       struct start_worker_result
       {
         pid_t pid;
+        fhg::logging::tcp_endpoint logger_registration_endpoint;
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION
@@ -185,6 +186,7 @@ namespace boost
         )
     {
       ar & result.pid;
+      ar & result.logger_registration_endpoint;
     }
   }
 }

@@ -85,6 +85,7 @@ namespace fhg
       , std::vector<boost::filesystem::path> const& app_path
       , gspc::installation_path const&
       , std::ostream& info_output
+      , std::list<fhg::logging::tcp_endpoint>& log_emitters
       );
 
     hostinfo_type startup

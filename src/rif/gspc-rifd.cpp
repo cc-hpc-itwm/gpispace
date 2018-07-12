@@ -365,15 +365,17 @@ try
             );
           auto const& messages (pid_and_startup_messages.second);
 
-          if (messages.size() != 0)
+          if (messages.size() != 2)
           {
             throw std::logic_error ( "could not start worker " + name
-                                   + ": expected no lines of startup messages"
+                                   + ": expected 2 lines of startup messages"
                                    );
           }
 
           fhg::rif::protocol::start_worker_result result;
           result.pid = pid_and_startup_messages.first;
+          result.logger_registration_endpoint
+            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
           return result;
         }
       );

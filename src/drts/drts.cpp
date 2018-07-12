@@ -287,6 +287,7 @@ namespace gspc
                                                 , _app_path
                                                 , _installation_path
                                                 , _info_output
+                                                , _log_emitters
                                                 ).second
           )
       {

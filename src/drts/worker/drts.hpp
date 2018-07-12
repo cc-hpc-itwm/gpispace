@@ -7,6 +7,7 @@
 
 #include <fhgcom/peer.hpp>
 #include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
 
@@ -109,6 +110,8 @@ public:
   virtual void handleDiscoverJobStatesEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
+  fhg::logging::tcp_endpoint logger_registration_endpoint() const;
+
 private:
   void event_thread();
   void job_execution_thread();
@@ -132,6 +135,7 @@ private:
   we::loader::loader m_loader;
 
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
+  fhg::logging::stream_emitter _log_emitter;
   void emit_gantt (wfe_task_t const&, sdpa::daemon::NotificationEvent::state_t);
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;

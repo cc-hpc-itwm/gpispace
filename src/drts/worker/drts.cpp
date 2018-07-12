@@ -203,6 +203,7 @@ DRTSImpl::DRTSImpl
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
   , _notification_service (std::move (gui_notification_service))
+  , _log_emitter()
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)
@@ -499,6 +500,17 @@ void DRTSImpl::emit_gantt
           ({m_my_name}, task.id, state, task.activity)
       );
   }
+  _log_emitter.emit_message
+    ( { sdpa::daemon::NotificationEvent
+          ({m_my_name}, task.id, state, task.activity).encoded()
+      , sdpa::daemon::gantt_log_category
+      }
+    );
+}
+
+fhg::logging::tcp_endpoint DRTSImpl::logger_registration_endpoint() const
+{
+  return _log_emitter.local_tcp_endpoint();
 }
 
 void DRTSImpl::job_execution_thread()

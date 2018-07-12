@@ -275,7 +275,11 @@ int main(int ac, char **av)
       , logger
       );
 
-    promise.set_result ({});
+    promise.set_result ( { plugin.logger_registration_endpoint().first
+                         , std::to_string
+                             (plugin.logger_registration_endpoint().second)
+                         }
+                       );
 
     stop_requested.wait();
 

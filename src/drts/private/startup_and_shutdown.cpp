@@ -211,6 +211,7 @@ namespace fhg
     , std::vector<boost::filesystem::path> const& app_path
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
+    , std::list<fhg::logging::tcp_endpoint>& log_emitters
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
@@ -392,6 +393,9 @@ namespace fhg
                           , "drts-kernel-" + std::get<2> (future)
                           , result.pid
                           );
+
+          log_emitters.emplace_back
+            (std::move (result.logger_registration_endpoint));
         }
         catch (...)
         {
