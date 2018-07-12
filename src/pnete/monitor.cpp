@@ -43,11 +43,11 @@ try
     );
 
   boost::optional<boost::filesystem::path> const trace_file(
-      vm.count (option::trace_file.name()) > 0,
-          boost::filesystem::path(option::trace_file.get_from (vm))
-
+      vm.count (option::trace_file.name()) > 0
+      ? boost::optional<boost::filesystem::path> (
+              vm.at(option::trace_file.name()).as<std::string>())
+      : boost::none
   );
-
 
   /*
   boost::optional<boost::filesystem::path> const trace_file(

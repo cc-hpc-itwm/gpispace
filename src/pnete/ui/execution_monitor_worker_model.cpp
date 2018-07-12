@@ -132,7 +132,7 @@ namespace fhg
                       , port
                       )
         , _io_thread ([this] { _io_service.run(); })
-        , trace_appender(trace_file.is_initialized(), fhg::log::SWFTraceAppender(trace_file.value()) )
+        , trace_appender(trace_file, fhg::log::SWFTraceAppender(trace_file.value()) )
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
