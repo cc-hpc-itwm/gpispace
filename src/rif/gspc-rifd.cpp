@@ -344,6 +344,40 @@ try
         }
       );
 
+  fhg::rpc::service_handler<fhg::rif::protocol::start_worker>
+    start_worker_service
+      ( service_dispatcher
+      , [] ( std::string name
+           , boost::filesystem::path command
+           , std::vector<std::string> arguments
+           , std::unordered_map<std::string, std::string> environment
+           )
+        {
+          arguments.emplace_back ("-n");
+          arguments.emplace_back (name);
+
+          arguments.emplace_back ("--backlog-length");
+          arguments.emplace_back ("1");
+
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                (command, arguments, environment)
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 0)
+          {
+            throw std::logic_error ( "could not start worker " + name
+                                   + ": expected no lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_worker_result result;
+          result.pid = pid_and_startup_messages.first;
+          return result;
+        }
+      );
+
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
   fhg::rpc::service_tcp_provider_with_deferred_start server

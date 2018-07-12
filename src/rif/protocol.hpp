@@ -92,6 +92,21 @@ namespace fhg
             , std::unordered_map<std::string, std::string> environment
             )
         );
+
+      struct start_worker_result
+      {
+        pid_t pid;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_worker
+        , start_worker_result
+            ( std::string name
+            , boost::filesystem::path command
+            , std::vector<std::string> arguments
+            , std::unordered_map<std::string, std::string> environment
+            )
+        );
     }
   }
 }
@@ -160,6 +175,16 @@ namespace boost
       ar & result.pid;
       ar & result.hostinfo;
       ar & result.logger_registration_endpoint;
+    }
+
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::protocol::start_worker_result& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
     }
   }
 }
