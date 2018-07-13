@@ -25,6 +25,26 @@ namespace
       {"gui-port", "gui port"};
     po::option<po::positive_integral<unsigned short>> const log_port
       {"log-port", "log port"};
+
+    //! \note Should be directly using fhg::logging::tcp_endpoint, but
+    //! that's only an alias for a std::pair, so it isn't too clear
+    //! how to implement that without tainting something else. Below
+    //! we also need a std::list instead of a std::vector, but
+    //! Boost.ProgramOptions can only do vectors natively.
+    po::option<std::vector<std::string>> const emitters
+      {"emitters", "list of tcp emitters"};
+  }
+
+  std::list<fhg::logging::tcp_endpoint> parse (std::vector<std::string> raws)
+  {
+    std::list<fhg::logging::tcp_endpoint> result;
+    for (auto& raw : raws)
+    {
+      auto const colon_pos (raw.find (':'));
+      result.emplace_back
+        (raw.substr (0, colon_pos), std::stoi (raw.substr (colon_pos + 1)));
+    }
+    return result;
   }
 }
 
@@ -35,6 +55,7 @@ try
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
     . require (option::gui_port)
     . require (option::log_port)
+    . add (option::emitters)
     . store_and_notify (ac, av)
     );
 
@@ -50,7 +71,10 @@ try
 
   QTabWidget window;
   window.addTab
-    ( new fhg::pnete::ui::execution_monitor (option::gui_port.get_from (vm))
+    ( new fhg::pnete::ui::execution_monitor
+        ( option::gui_port.get_from (vm)
+        , parse (option::emitters.get_from_or_value (vm, {}))
+        )
     , QObject::tr ("Execution Monitor")
     );
   window.addTab ( new log_monitor (option::log_port.get_from (vm))

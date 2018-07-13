@@ -286,7 +286,11 @@ namespace fhg
         }
       }
 
-      execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
+      execution_monitor::execution_monitor
+          ( unsigned short port
+          , std::list<logging::tcp_endpoint> emitters
+          , QWidget* parent
+          )
         : QSplitter (Qt::Horizontal, parent)
       {
         util::qt::mvc::transform_functions_model* available_transform_functions
@@ -300,7 +304,8 @@ namespace fhg
 
         QAbstractItemModel* next (nullptr);
 
-        worker_model* base (new worker_model (port, this));
+        worker_model* base
+          (new worker_model (port, std::move (emitters), this));
         next = base;
 
         util::qt::mvc::flat_to_tree_proxy* transformed_to_tree

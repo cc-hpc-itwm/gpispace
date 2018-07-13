@@ -71,7 +71,20 @@ namespace fhg
         _state = state_;
       }
 
-      worker_model::worker_model (unsigned short port, QObject* parent)
+      namespace
+      {
+        template<typename Container, typename... Args>
+          Container with_appended (Container container, Args&&... args)
+        {
+          container.emplace_back (std::forward<Args> (args)...);
+          return container;
+        }
+      }
+
+      worker_model::worker_model ( unsigned short port
+                                 , std::list<logging::tcp_endpoint> emitters
+                                 , QObject* parent
+                                 )
         : QAbstractItemModel (parent)
         , _workers()
         , _worker_containers()
@@ -80,7 +93,7 @@ namespace fhg
         , _queued_events()
         , _log_bridge (port)
         , _log_receiver
-            ( _log_bridge.local_endpoint()
+            ( with_appended (std::move (emitters), _log_bridge.local_endpoint())
             , fhg::util::bind_this (this, &worker_model::append_event)
             )
       {
