@@ -118,7 +118,7 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
     , "localhost"
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , boost::none
-    , {}
+    , sdpa::master_info_t()
     , logger
     , boost::none
     , false
