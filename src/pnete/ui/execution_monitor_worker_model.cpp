@@ -140,11 +140,17 @@ namespace fhg
           auto const job_id (std::hash<std::string>{} (event.activity_id()));
           auto const worker_id (std::hash<std::string>{} (worker_str));
 
+          using sec_duration = std::chrono::duration<double, std::chrono::seconds::period>;
           using msec_duration = std::chrono::duration<double, std::chrono::milliseconds::period>;
 
           // event timestamp is the duration since _base_time
           msec_duration const start_ts (monitor_event.timestamp());
-          auto const submission_ts (start_ts);
+          msec_duration const base_time (_base_time.toMSecsSinceEpoch());
+          auto const submission_ts
+            ( event.activity_submission_ts()
+            ? sec_duration (event.activity_submission_ts().get()) - base_time
+            : start_ts
+            );
           msec_duration const duration (monitor_event.duration().value_or (0));
           auto const end_ts (start_ts + duration);
 
@@ -154,6 +160,8 @@ namespace fhg
                                    , end_ts
                                    , fhg::log::SWFTraceEvent::get_state
                                        (monitor_event.state())
+                                   , fhg::log::SWFTraceEvent::get_job_type_id
+                                       (event.activity_id())
                                    , static_cast<unsigned int> (worker_id)
                                    }
                                  );

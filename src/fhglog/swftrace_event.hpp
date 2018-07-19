@@ -17,12 +17,14 @@ namespace fhg
                     , sec_duration start_timestamp
                     , sec_duration end_timestamp
                     , int status
+                    , unsigned int job_type_id
                     , unsigned int partition
                     );
 
       friend std::ostream& operator<< (std::ostream&, SWFTraceEvent const&);
 
       static int get_state (const int state);
+      static unsigned int get_job_type_id (std::string activity_id);
 
     private:
       const unsigned int job_id;

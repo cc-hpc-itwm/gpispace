@@ -1,5 +1,7 @@
 #include <fhglog/swftrace_event.hpp>
 
+#include <fhg/util/starts_with.hpp>
+
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <iomanip>
@@ -18,7 +20,6 @@ namespace fhg
       double const DEFAULT_REQ_MEM_KB = -1;
       int const DEFAULT_USER_ID = 1;
       int const DEFAULT_GROUP_ID = 1;
-      int const DEFAULT_JOB_TYPE_ID = 1;
       int const DEFAULT_QUEUE = 1;
       int const DEFAULT_PREC_JOB_ID = -1;
       double const DEFAULT_TIME_AFTER_PREC_JOB_S = -1;
@@ -34,6 +35,15 @@ namespace fhg
         SWFTRACE_STATE_FAILED = 0,
         SWFTRACE_STATE_FINISHED,
         SWFTRACE_STATE_CANCELED,
+      };
+
+      enum swftrace_job_type_t
+      {
+        SWFTRACE_JOB_TYPE_CPU_COMPUTE = 1,
+        SWFTRACE_JOB_TYPE_GPU_COMPUTE,
+        SWFTRACE_JOB_TYPE_IO_GET,
+        SWFTRACE_JOB_TYPE_IO_PUT,
+        SWFTRACE_JOB_TYPE_OTHER,
       };
     }
 
@@ -57,11 +67,30 @@ namespace fhg
       }
     }
 
+    unsigned int SWFTraceEvent::get_job_type_id (std::string activity_id)
+    {
+      if (fhg::util::ends_with ("exec", activity_id))
+      {
+        return SWFTRACE_JOB_TYPE_CPU_COMPUTE;
+      }
+      else if (fhg::util::ends_with ("get", activity_id))
+      {
+        return SWFTRACE_JOB_TYPE_IO_GET;
+      }
+      else if (fhg::util::ends_with ("put", activity_id))
+      {
+        return SWFTRACE_JOB_TYPE_IO_PUT;
+      }
+      return SWFTRACE_JOB_TYPE_OTHER;
+    }
+
+
     SWFTraceEvent::SWFTraceEvent ( unsigned int job_id
                                  , sec_duration submit_timestamp
                                  , sec_duration start_timestamp
                                  , sec_duration end_timestamp
                                  , int status
+                                 , unsigned int job_type_id
                                  , unsigned int partition
                                  )
       : job_id (job_id)
@@ -77,7 +106,7 @@ namespace fhg
       , status (status)
       , user_id (DEFAULT_USER_ID)
       , group_id (DEFAULT_GROUP_ID)
-      , job_type_id (DEFAULT_JOB_TYPE_ID)
+      , job_type_id (job_type_id)
       , queue (DEFAULT_QUEUE)
       , partition (partition)
       , prec_job_id (DEFAULT_PREC_JOB_ID)
