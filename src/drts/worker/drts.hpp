@@ -18,6 +18,8 @@
 #include <sdpa/events/SDPAEvent.hpp>
 
 #include <we/loader/loader.hpp>
+#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
+#include <we/type/activity.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -28,6 +30,7 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 struct wfe_task_t;

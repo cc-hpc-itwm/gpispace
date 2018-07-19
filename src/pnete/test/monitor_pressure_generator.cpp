@@ -9,6 +9,7 @@
 
 #include <sdpa/daemon/NotificationService.hpp>
 
+#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
 #include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 

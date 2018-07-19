@@ -13,6 +13,8 @@
 #include <util/qt/treeview_with_delete.hpp>
 #include <util-qt/variant.hpp>
 
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
 #include <boost/serialization/export.hpp>
 #include <boost/serialization/shared_ptr.hpp>
 
