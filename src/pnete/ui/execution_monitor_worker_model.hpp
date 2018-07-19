@@ -39,7 +39,7 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model (unsigned short port, boost::optional<boost::filesystem::path> const trace_file, QObject* parent = nullptr);
+        worker_model (unsigned short port, boost::optional<boost::filesystem::path> const& trace_file, QObject* parent = nullptr);
         ~worker_model();
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
@@ -97,7 +97,9 @@ namespace fhg
 
       private:
         void add_event_to_trace(const value_type& current_event,
-                          const std::string& activity_str, const std::string& worker_str);
+            const boost::optional<we::type::timestamp_t> activity_submission_ts,
+            const std::string& activity_id_str,
+            const std::string& worker_id_str);
 
         QList<QString> _workers;
         QMap<QString, std::vector<value_type>> _worker_containers;

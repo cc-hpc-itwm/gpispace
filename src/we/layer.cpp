@@ -8,6 +8,7 @@
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/starts_with.hpp>
+#include <fhg/util/now.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
@@ -463,6 +464,9 @@ namespace we
         {
           const id_type child_id (_rts_id_generator());
           _running_jobs.started (activity_data._id, child_id);
+
+          activity.value().add_submission_timestamp(fhg::util::now()); // add timestamp in seconds
+
           _rts_submit (child_id, *activity);
           was_active = true;
         }

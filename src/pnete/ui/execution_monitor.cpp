@@ -290,7 +290,7 @@ namespace fhg
         }
       }
 
-      execution_monitor::execution_monitor (unsigned short port, boost::optional<boost::filesystem::path> const trace_file, QWidget* parent)
+      execution_monitor::execution_monitor (unsigned short port, boost::optional<boost::filesystem::path> const& trace_file, QWidget* parent)
         : QSplitter (Qt::Horizontal, parent)
       {
         util::qt::mvc::transform_functions_model* available_transform_functions
@@ -306,7 +306,6 @@ namespace fhg
 
         worker_model* base (new worker_model (port, trace_file, this));
         next = base;
-
         util::qt::mvc::flat_to_tree_proxy* transformed_to_tree
           (new util::qt::mvc::flat_to_tree_proxy (next, transform_functions, this));
         next = transformed_to_tree;

@@ -6,6 +6,7 @@ namespace fhg
 {
   namespace log
   {
+
     class SWFTraceEvent
     {
     public:
@@ -35,6 +36,7 @@ namespace fhg
                 double start_timestamp,
                 double end_timestamp,
                 int status,
+                unsigned int job_type_id,
                 unsigned int partition,
                 double trace_start_timestamp);
 
@@ -43,10 +45,12 @@ namespace fhg
                 double start_timestamp,
                 double end_timestamp,
                 int status,
+                unsigned int job_type_id,
                 unsigned int partition);
 
       std::string encoded() const;
       static int get_state(const int state);
+      static int get_job_type_id(std::string activity_id);
 
     private:
       const unsigned int job_id;

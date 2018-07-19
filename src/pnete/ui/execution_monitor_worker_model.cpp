@@ -114,7 +114,7 @@ namespace fhg
         };
       }
 
-      worker_model::worker_model (unsigned short port, boost::optional<boost::filesystem::path> const trace_file, QObject* parent)
+      worker_model::worker_model (unsigned short port, boost::optional<boost::filesystem::path> const& trace_file, QObject* parent)
         : QAbstractItemModel (parent)
         , _workers()
         , _worker_containers()
@@ -132,8 +132,11 @@ namespace fhg
                       , port
                       )
         , _io_thread ([this] { _io_service.run(); })
-        , trace_appender(trace_file, fhg::log::SWFTraceAppender(trace_file.value()) )
+        , trace_appender(trace_file
+                          ? boost::optional<fhg::log::SWFTraceAppender>(trace_file.value())
+                          : boost::none)
       {
+
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
         //! \note log::LogEvent::tstamp_t has resolution of seconds
@@ -153,18 +156,27 @@ namespace fhg
       }
 
       void worker_model::add_event_to_trace(const value_type& current_event,
-          const std::string& activity_str, const std::string& worker_str) {
+          const boost::optional<we::type::timestamp_t> activity_submission_ts,
+          const std::string& activity_id_str,
+          const std::string& worker_id_str) {
 
         if (trace_appender) {
-          unsigned long job_id = std::hash<std::string>{}(activity_str);
-          unsigned long worker_id = std::hash<std::string>{}(worker_str);
-          double ts_s = static_cast<double>(current_event.timestamp()) * 1e-3; // event timestamp is the duration in ms since _base_time
+          unsigned long job_id = std::hash<std::string>{}(activity_id_str);
+          unsigned long worker_id = std::hash<std::string>{}(worker_id_str);
+
+          we::type::timestamp_t start_ts_s = static_cast<double>(current_event.timestamp()) * 1e-3; // event timestamp (job start time) is the duration in ms since _base_time
+          we::type::timestamp_t submission_ts_s = start_ts_s;
+
+          if (activity_submission_ts) {
+            submission_ts_s = activity_submission_ts.get() - static_cast<double>(_base_time.toMSecsSinceEpoch()) * 1e-3;
+          }
 
           fhg::log::SWFTraceEvent trace_ev(job_id,
-            ts_s,
-            ts_s,
-            ts_s + static_cast<double>(current_event.duration().value_or(0)) * 1e-3,  // the job duration is in ms
+            submission_ts_s,
+            start_ts_s,
+            start_ts_s + static_cast<double>(current_event.duration().value_or(0)) * 1e-3,  // the job duration is in ms
             fhg::log::SWFTraceEvent::get_state(current_event.state()),
+            fhg::log::SWFTraceEvent::get_job_type_id(activity_id_str),
             worker_id);
           trace_appender.value().append(trace_ev);
         }
@@ -183,7 +195,6 @@ namespace fhg
         for (log::LogEvent log_event : events)
         {
           const sdpa::daemon::NotificationEvent event (log_event.message());
-
           const long time
             ( log_event.tstamp() * 1000.0
             - _base_time.toMSecsSinceEpoch()
@@ -244,7 +255,7 @@ namespace fhg
                 if (!current.duration())
                 {
                   current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
-                  add_event_to_trace(container.back(), event.activity_id(), worker_std);
+                  add_event_to_trace(current, event.activity_submission_ts(), event.activity_id(), worker_std);
                 }
               }
 
@@ -262,10 +273,7 @@ namespace fhg
             {
               // add new event in the container
               container.back().state (event.activity_state(), time);
-              add_event_to_trace(container.back(), event.activity_id(), worker_std);
-
-             // std::cerr << "act_id=" << event.activity_id() << "   act_name=" << event.activity_name() << "   act_state=" << event.activity_state()
-               //                 << "   act_worker=" << worker_std << "   act_time=" << time << std::endl;
+              add_event_to_trace(container.back(), event.activity_submission_ts(), event.activity_id(), worker_std);
             }
 
             (ul ? br : ul) = index (row, 0);

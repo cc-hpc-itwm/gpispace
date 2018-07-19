@@ -31,6 +31,9 @@ namespace we
 {
     namespace type
     {
+
+      typedef double timestamp_t;
+
       class activity_t
       {
       public:
@@ -89,6 +92,9 @@ namespace we
             ;
         }
 
+        boost::optional<timestamp_t> timestamp() const;
+        void add_submission_timestamp(const timestamp_t ts);
+
       private:
         friend class boost::serialization::access;
         template<class Archive>
@@ -98,6 +104,7 @@ namespace we
           ar & BOOST_SERIALIZATION_NVP(_transition_id);
           ar & BOOST_SERIALIZATION_NVP(_input);
           ar & BOOST_SERIALIZATION_NVP(_output);
+          ar & BOOST_SERIALIZATION_NVP(_timestamp_s);
         }
 
       private:
@@ -107,6 +114,7 @@ namespace we
         friend class net_type;
         input_t _input;
         output_t _output;
+        boost::optional<timestamp_t> _timestamp_s;
       };
     }
 }

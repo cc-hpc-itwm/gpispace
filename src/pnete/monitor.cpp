@@ -26,7 +26,7 @@ namespace
       {"gui-port", "gui port"};
     po::option<po::positive_integral<unsigned short>> const log_port
       {"log-port", "log port"};
-    po::option<std::string> const trace_file
+    po::option<fhg::util::boost::program_options::nonexisting_path_in_existing_directory> const trace_file
       {"trace-file", "path to trace file"};
   }
 }
@@ -45,19 +45,9 @@ try
   boost::optional<boost::filesystem::path> const trace_file(
       vm.count (option::trace_file.name()) > 0
       ? boost::optional<boost::filesystem::path> (
-              vm.at(option::trace_file.name()).as<std::string>())
+              vm.at(option::trace_file.name()).as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>())
       : boost::none
   );
-
-  /*
-  boost::optional<boost::filesystem::path> const trace_file(
-      vm.count (option::trace_file.name()) > 0 ?
-          boost::optional<boost::filesystem::path>
-              (vm.at(option::trace_file.name()).as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>())
-          : boost::none
-  );*/
-
-
 
   QApplication a (ac, av);
 

@@ -16,13 +16,13 @@ namespace fhg
    class SWFTraceAppender //: public Appender
    {
    public:
-     SWFTraceAppender(const boost::filesystem::path path);
-     SWFTraceAppender(const SWFTraceAppender& app);
+     SWFTraceAppender(boost::filesystem::path const& path);
+     SWFTraceAppender(SWFTraceAppender const& app);
 
      std::string path() const;
      void flush();
-     void append(const SWFTraceEvent& event);
-     void append_header(const std::string& header);
+     void append(SWFTraceEvent const& event);
+     void append_header(std::string const& header);
 
    private:
      std::string const _path;

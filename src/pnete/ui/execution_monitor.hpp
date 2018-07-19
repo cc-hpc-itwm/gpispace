@@ -17,7 +17,7 @@ namespace fhg
 
       public:
         execution_monitor (unsigned short port,
-            boost::optional<boost::filesystem::path> const trace_file,
+            boost::optional<boost::filesystem::path> const& trace_file,
             QWidget* parent = nullptr);
       };
     }
