@@ -5,6 +5,7 @@
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <iomanip>
+#include <sstream>
 
 namespace fhg
 {
@@ -30,6 +31,12 @@ namespace fhg
         return _;
       }
 
+      std::string const& TRACE_COMMENT()
+      {
+        static std::string const _ ("; ");
+        return _;
+      }
+
       enum swftrace_state_t
       {
         SWFTRACE_STATE_FAILED = 0,
@@ -45,6 +52,28 @@ namespace fhg
         SWFTRACE_JOB_TYPE_IO_PUT,
         SWFTRACE_JOB_TYPE_OTHER,
       };
+
+      std::map<swftrace_state_t, std::string> const& job_states()
+      {
+        static std::map<swftrace_state_t, std::string> const _
+          { {SWFTRACE_STATE_FAILED, "Failed"}
+          , {SWFTRACE_STATE_FINISHED, "Finished successfully"}
+          , {SWFTRACE_STATE_CANCELED, "Cancelled"}
+          };
+        return _;
+      }
+
+      std::map<swftrace_job_type_t, std::string> const& job_types()
+      {
+        static std::map<swftrace_job_type_t, std::string> const _
+          { {SWFTRACE_JOB_TYPE_CPU_COMPUTE, "CPU Computation task"}
+          , {SWFTRACE_JOB_TYPE_GPU_COMPUTE, "GPU Computation task"}
+          , {SWFTRACE_JOB_TYPE_IO_GET, "Data transfer task (input data)"}
+          , {SWFTRACE_JOB_TYPE_IO_PUT, "Data transfer task (output data)"}
+          , {SWFTRACE_JOB_TYPE_OTHER, "Other (e.g., agent)"}
+          };
+        return _;
+      }
     }
 
     int SWFTraceEvent::get_state (const int state)
@@ -83,7 +112,6 @@ namespace fhg
       }
       return SWFTRACE_JOB_TYPE_OTHER;
     }
-
 
     SWFTraceEvent::SWFTraceEvent ( unsigned int job_id
                                  , sec_duration submit_timestamp
@@ -181,6 +209,43 @@ namespace fhg
                 << event.prec_job_id
                 << DELIM()
                 << event.time_after_prec_job_s;
+    }
+
+    std::string SWFTraceEvent::gen_swf_trace_header()
+    {
+      std::ostringstream os;
+      os << TRACE_COMMENT() << "Version: 2.2\n"
+         << TRACE_COMMENT() << '\n'
+         << TRACE_COMMENT() << "Data Fields:\n"
+         << TRACE_COMMENT() << " 1. Task number (unique integer id)\n"
+         << TRACE_COMMENT() << " 2. Submit Time (in seconds, relative to the time when the monitor was started)\n"
+         << TRACE_COMMENT() << " 3. Wait Time (in seconds). The difference between the job's submit time and the time at which it actually began to run.\n"
+         << TRACE_COMMENT() << " 4. Run Time (in seconds). The wall clock time the job was running (end time minus start time)\n"
+         << TRACE_COMMENT() << " 5. Number of Allocated Processors - always equals 1 (each task is allocated to one worker)\n"
+         << TRACE_COMMENT() << " 6. Average CPU Time Used (not used, set to " << DEFAULT_USED_CPU_TIME_S << ")\n"
+         << TRACE_COMMENT() << " 7. Used Memory (not used, set to " << DEFAULT_USED_MEM_KB << ")\n"
+         << TRACE_COMMENT() << " 8. Requested Number of Processors (not used, set to " << DEFAULT_REQ_PROCS << ")\n"
+         << TRACE_COMMENT() << " 9. Requested Time (not used, set to " << DEFAULT_REQ_TIME_S << ")\n"
+         << TRACE_COMMENT() << "10. Requested Memory (not used, set to " << DEFAULT_REQ_MEM_KB << ")\n"
+         << TRACE_COMMENT() << "11. Status: \n";
+      for (auto const& val : job_states())
+      {
+        os << TRACE_COMMENT() << "    - " << val.first << ": " << val.second << '\n';
+      }
+      os << TRACE_COMMENT() << "12. User ID (not used, set to " << DEFAULT_USER_ID << ")\n"
+         << TRACE_COMMENT() << "13. Group ID (not used, set to " << DEFAULT_GROUP_ID << ")\n"
+         << TRACE_COMMENT() << "14. Executable Number -- integer value representing the type of task as follows \n";
+      for (auto const& val : job_types())
+      {
+        os << TRACE_COMMENT() << "    - " << val.first << ": " << val.second << '\n';
+      }
+      os << TRACE_COMMENT() << "15. Queue Number (not used, set to " << DEFAULT_QUEUE << ")\n"
+         << TRACE_COMMENT() << "16. Partition Number -- integer value representing the worker id where the task was executed\n"
+         << TRACE_COMMENT() << "17. Preceding Job Number (not used, set to " << DEFAULT_PREC_JOB_ID << ")\n"
+         << TRACE_COMMENT() << "18. Think Time from Preceding Job (not used, set to " << DEFAULT_TIME_AFTER_PREC_JOB_S << ")\n"
+         << TRACE_COMMENT() << '\n'
+         << TRACE_COMMENT() << '\n';
+      return os.str();
     }
   }
 }

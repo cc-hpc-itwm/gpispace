@@ -107,6 +107,12 @@ namespace fhg
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
         timer->start (100);
+
+        if (trace_appender)
+        {
+          trace_appender->append_header
+            (fhg::log::SWFTraceEvent::gen_swf_trace_header());
+        }
       }
 
       void worker_model::append_event (logging::message event)

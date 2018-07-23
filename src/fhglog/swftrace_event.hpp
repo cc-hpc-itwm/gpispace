@@ -2,6 +2,7 @@
 
 #include <chrono>
 #include <ostream>
+#include <string>
 
 namespace fhg
 {
@@ -25,6 +26,7 @@ namespace fhg
 
       static int get_state (const int state);
       static unsigned int get_job_type_id (std::string activity_id);
+      static std::string gen_swf_trace_header();
 
     private:
       const unsigned int job_id;
