@@ -141,6 +141,10 @@ namespace fhg
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
         //! \note log::LogEvent::tstamp_t has resolution of seconds
         timer->start (100);
+
+        if (trace_appender) {
+          trace_appender.value().append_header(fhg::log::SWFTraceEvent::gen_swf_trace_header());
+        }
       }
 
       worker_model::~worker_model()

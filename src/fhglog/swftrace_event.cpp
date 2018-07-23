@@ -53,10 +53,11 @@ namespace fhg
     static const int DEFAULT_USER_ID = 1;
     static const int DEFAULT_GROUP_ID = 1;
     static const int DEFAULT_QUEUE = 1;
-    static const int PREC_JOB_ID = -1;
+    static const int DEFAULT_PREC_JOB_ID = -1;
     static const double DEFAULT_TIME_AFTER_PREC_JOB_S = -1;
 
     static const std::string DELIM = " ";
+    static const std::string TRACE_COMMENT = "; ";
 
     enum swftrace_state_t
           {
@@ -75,6 +76,20 @@ namespace fhg
       SWFTRACE_JOB_TYPE_IO_GET,
       SWFTRACE_JOB_TYPE_IO_PUT,
       SWFTRACE_JOB_TYPE_OTHER
+    };
+
+    static const std::map<swftrace_job_type_t, std::string> job_types = {
+        {SWFTRACE_JOB_TYPE_CPU_COMPUTE, "CPU Computation task"},
+        {SWFTRACE_JOB_TYPE_GPU_COMPUTE, "GPU Computation task"},
+        {SWFTRACE_JOB_TYPE_IO_GET, "Data transfer task (input data)"},
+        {SWFTRACE_JOB_TYPE_IO_PUT, "Data transfer task (output data)"},
+        {SWFTRACE_JOB_TYPE_OTHER, "Other (e.g., agent)"}
+    };
+
+    static const std::map<swftrace_state_t, std::string> job_states = {
+        {SWFTRACE_STATE_FAILED, "Failed"},
+        {SWFTRACE_STATE_FINISHED, "Finished successfully"},
+        {SWFTRACE_STATE_CANCELED, "Cancelled"}
     };
 
     int SWFTraceEvent::get_job_type_id(std::string activity_id) {
@@ -157,7 +172,7 @@ namespace fhg
         job_type_id,
         DEFAULT_QUEUE,
         partition,
-        PREC_JOB_ID, DEFAULT_TIME_AFTER_PREC_JOB_S,
+        DEFAULT_PREC_JOB_ID, DEFAULT_TIME_AFTER_PREC_JOB_S,
         trace_start_timestamp)
     {}
 
@@ -184,6 +199,41 @@ namespace fhg
       return os.str();
     }
 
+
+
+    std::string SWFTraceEvent::gen_swf_trace_header() {
+      std::ostringstream os;
+      os << TRACE_COMMENT << "Version: 2.2" << std::endl;
+      os << TRACE_COMMENT << std::endl;
+      os << TRACE_COMMENT << "Data Fields:" << std::endl;
+      os << TRACE_COMMENT << " 1. Task number (unique integer id)" << std::endl;
+      os << TRACE_COMMENT << " 2. Submit Time (in seconds, relative to the time when the monitor was started)" << std::endl;
+      os << TRACE_COMMENT << " 3. Wait Time (in seconds). The difference between the job's submit time and the time at which it actually began to run." << std::endl;
+      os << TRACE_COMMENT << " 4. Run Time (in seconds). The wall clock time the job was running (end time minus start time)" << std::endl;
+      os << TRACE_COMMENT << " 5. Number of Allocated Processors - always equals 1 (each task is allocated to one worker)" << std::endl;
+      os << TRACE_COMMENT << " 6. Average CPU Time Used (not used, set to " << DEFAULT_USED_CPU_TIME_S << ")" << std::endl;
+      os << TRACE_COMMENT << " 7. Used Memory (not used, set to " << DEFAULT_USED_MEM_KB << ")" << std::endl;
+      os << TRACE_COMMENT << " 8. Requested Number of Processors (not used, set to " << DEFAULT_REQ_PROCS << ")" << std::endl;
+      os << TRACE_COMMENT << " 9. Requested Time (not used, set to " << DEFAULT_REQ_TIME_S << ")" << std::endl;
+      os << TRACE_COMMENT << "10. Requested Memory (not used, set to " << DEFAULT_REQ_MEM_KB << ")" << std::endl;
+      os << TRACE_COMMENT << "11. Status: " << std::endl;
+      for (auto val : job_states ) {
+        os << TRACE_COMMENT << "    - " << val.first << ": " << val.second << std::endl;
+      }
+      os << TRACE_COMMENT << "12. User ID (not used, set to " << DEFAULT_USER_ID << ")" << std::endl;
+      os << TRACE_COMMENT << "13. Group ID (not used, set to " << DEFAULT_GROUP_ID << ")" << std::endl;
+      os << TRACE_COMMENT << "14. Executable Number -- integer value representing the type of task as follows " << std::endl;
+      for (auto val : job_types ) {
+        os << TRACE_COMMENT << "    - " << val.first << ": " << val.second << std::endl;
+      }
+      os << TRACE_COMMENT << "15. Queue Number (not used, set to " << DEFAULT_QUEUE << ")" << std::endl;
+      os << TRACE_COMMENT << "16. Partition Number -- integer value representing the worker id where the task was executed" << std::endl;
+      os << TRACE_COMMENT << "17. Preceding Job Number (not used, set to " << DEFAULT_PREC_JOB_ID << ")" << std::endl;
+      os << TRACE_COMMENT << "18. Think Time from Preceding Job (not used, set to " << DEFAULT_TIME_AFTER_PREC_JOB_S << ")" << std::endl;
+      os << TRACE_COMMENT << std::endl;
+      os << TRACE_COMMENT << std::endl;
+      return os.str();
+    }
   }
 }
 

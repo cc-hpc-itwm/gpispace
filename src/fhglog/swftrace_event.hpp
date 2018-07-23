@@ -51,6 +51,7 @@ namespace fhg
       std::string encoded() const;
       static int get_state(const int state);
       static int get_job_type_id(std::string activity_id);
+      static std::string gen_swf_trace_header();
 
     private:
       const unsigned int job_id;
