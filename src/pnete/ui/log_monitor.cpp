@@ -89,9 +89,8 @@ namespace
   template<typename Timepoint>
     QString timepoint_to_qstring (Timepoint const& timepoint)
   {
-    std::ostringstream oss;
-    oss << fhg::util::ostream::put_time<typename Timepoint::clock> (timepoint);
-    return QString::fromStdString (oss.str());
+    using put_time = fhg::util::ostream::put_time<typename Timepoint::clock>;
+    return QString::fromStdString (put_time (timepoint).string());
   }
 }
 
