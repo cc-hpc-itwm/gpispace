@@ -5,6 +5,8 @@
 #include <chrono>
 #include <string>
 
+#include <sys/types.h>
+
 namespace fhg
 {
   namespace logging
