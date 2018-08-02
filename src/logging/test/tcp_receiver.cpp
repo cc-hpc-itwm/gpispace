@@ -65,7 +65,7 @@ namespace fhg
       //! endpoint used, but since this is a node-local test, the
       //! hostname at least should be the same, so check that in
       //! addition to the fact it registered at all.
-      BOOST_REQUIRE_EQUAL (received_future.get().first, endpoint.first);
+      BOOST_REQUIRE_EQUAL (received_future.get().host, endpoint.first);
     }
 
     BOOST_AUTO_TEST_CASE (receiver_shall_call_callback_for_a_message)

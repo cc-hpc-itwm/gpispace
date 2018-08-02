@@ -276,9 +276,9 @@ int main(int ac, char **av)
       , logger
       );
 
-    promise.set_result ( { plugin.logger_registration_endpoint().first
+    promise.set_result ( { plugin.logger_registration_endpoint().host
                          , std::to_string
-                             (plugin.logger_registration_endpoint().second)
+                             (plugin.logger_registration_endpoint().port)
                          }
                        );
 
