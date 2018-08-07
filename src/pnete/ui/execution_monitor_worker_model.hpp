@@ -96,9 +96,8 @@ namespace fhg
         void handle_events();
 
       private:
-        void add_event_to_trace(const value_type& current_event,
-            const boost::optional<we::type::timestamp_t> activity_submission_ts,
-            const std::string& activity_id_str,
+        void add_event_to_trace(const value_type&,
+            const sdpa::daemon::NotificationEvent&,
             const std::string& worker_id_str);
 
         QList<QString> _workers;

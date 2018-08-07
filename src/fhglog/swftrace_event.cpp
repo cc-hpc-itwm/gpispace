@@ -51,7 +51,6 @@ namespace fhg
     static const double DEFAULT_REQ_TIME_S = -1;
     static const double DEFAULT_REQ_MEM_KB = -1;
     static const int DEFAULT_USER_ID = 1;
-    static const int DEFAULT_GROUP_ID = 1;
     static const int DEFAULT_QUEUE = 1;
     static const int DEFAULT_PREC_JOB_ID = -1;
     static const double DEFAULT_TIME_AFTER_PREC_JOB_S = -1;
@@ -150,7 +149,7 @@ namespace fhg
         double req_memory_kb,
         int status,
         unsigned int user_id,
-        unsigned int group_id,
+        uint64_t group_id,
         unsigned int job_type_id,
         unsigned int queue,
         unsigned int partition,
@@ -183,6 +182,7 @@ namespace fhg
               double start_timestamp,
               double end_timestamp,
               int status,
+              uint64_t group_id,
               unsigned int job_type_id,
               unsigned int partition,
               double trace_start_timestamp):
@@ -190,7 +190,8 @@ namespace fhg
         DEFAULT_ALLOC_PROCS, DEFAULT_USED_CPU_TIME_S, DEFAULT_USED_MEM_KB,
         DEFAULT_REQ_PROCS, DEFAULT_REQ_TIME_S, DEFAULT_REQ_MEM_KB,
         status,
-        DEFAULT_USER_ID, DEFAULT_GROUP_ID,
+        DEFAULT_USER_ID,
+        group_id,
         job_type_id,
         DEFAULT_QUEUE,
         partition,
@@ -203,10 +204,11 @@ namespace fhg
               double start_timestamp,
               double end_timestamp,
               int status,
+              uint64_t group_id,
               unsigned int job_type_id,
               unsigned int partition):
     SWFTraceEvent(job_id, submit_timestamp, start_timestamp, end_timestamp,
-            status, job_type_id, partition, 0.0)
+            status, group_id, job_type_id, partition, 0.0)
     {}
 
     std::string SWFTraceEvent::string() const
@@ -231,9 +233,7 @@ namespace fhg
     {
       std::ostringstream os;
       auto comment = get_trace_comment();
-      auto job_states = { SWFTRACE_STATE_FAILED, SWFTRACE_STATE_FINISHED,
-          SWFTRACE_STATE_PARTIAL_EXEC_CONT, SWFTRACE_STATE_PARTIAL_EXEC_FINISHED,
-          SWFTRACE_STATE_PARTIAL_EXEC_FAILED, SWFTRACE_STATE_CANCELED };
+      auto job_states = { SWFTRACE_STATE_FAILED, SWFTRACE_STATE_FINISHED, SWFTRACE_STATE_CANCELED };
       auto job_types = {SWFTRACE_JOB_TYPE_CPU_COMPUTE, SWFTRACE_JOB_TYPE_GPU_COMPUTE,
           SWFTRACE_JOB_TYPE_IO_GET, SWFTRACE_JOB_TYPE_IO_PUT, SWFTRACE_JOB_TYPE_OTHER };
 
@@ -257,7 +257,7 @@ namespace fhg
         os << comment << "    - " << val << ": " << get_job_state_name(val) << std::endl;
       }
       os << comment << "12. User ID (not used, set to " << DEFAULT_USER_ID << ")" << std::endl;
-      os << comment << "13. Group ID (not used, set to " << DEFAULT_GROUP_ID << ")" << std::endl;
+      os << comment << "13. Group ID (used to group tasks by transition id)" << std::endl;
       os << comment << "14. Executable Number -- integer value representing the type of task as follows " << std::endl;
       for (auto val : job_types )
       {

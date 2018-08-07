@@ -15,9 +15,6 @@ namespace fhg
       {
         SWFTRACE_STATE_FAILED = 0,
         SWFTRACE_STATE_FINISHED,
-        SWFTRACE_STATE_PARTIAL_EXEC_CONT,
-        SWFTRACE_STATE_PARTIAL_EXEC_FINISHED,
-        SWFTRACE_STATE_PARTIAL_EXEC_FAILED,
         SWFTRACE_STATE_CANCELED
       };
 
@@ -43,7 +40,7 @@ namespace fhg
           double req_memory_kb,
           int status,
           unsigned int user_id,
-          unsigned int group_id,
+          uint64_t group_id,
           unsigned int job_type_id,
           unsigned int queue,
           unsigned int partition,
@@ -57,6 +54,7 @@ namespace fhg
                 double start_timestamp,
                 double end_timestamp,
                 int status,
+                uint64_t group_id,
                 unsigned int job_type_id,
                 unsigned int partition,
                 double trace_start_timestamp);
@@ -66,6 +64,7 @@ namespace fhg
                 double start_timestamp,
                 double end_timestamp,
                 int status,
+                uint64_t group_id,
                 unsigned int job_type_id,
                 unsigned int partition);
 
@@ -89,7 +88,7 @@ namespace fhg
       const double req_memory_kb;             // requested Memory
       const int status;
       const unsigned int user_id;
-      const unsigned int group_id;
+      const uint64_t group_id;            // natural number, between one and the number of task groups (a task group identifies a transaction in a Petri net)
       const unsigned int job_type_id;         // natural number, between one and the number of different applications appearing in the workload
       const unsigned int queue;
       const unsigned int partition;           // number to identify the different partitions in the systems (can be used to identify the machine on which the job was executed)

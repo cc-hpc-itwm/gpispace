@@ -52,7 +52,7 @@ namespace fhg
     void SWFTraceAppender::append(SWFTraceEvent const& event)
     {
       open_file();
-      _stream << event.string();
+      _stream << event.string() << std::endl;
       if (++_event_count >= 5)
       {
         flush();

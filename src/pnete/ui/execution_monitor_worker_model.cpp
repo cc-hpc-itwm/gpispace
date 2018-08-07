@@ -158,9 +158,8 @@ namespace fhg
         _queued_events << event;
       }
 
-      void worker_model::add_event_to_trace(const value_type& current_event,
-          const boost::optional<we::type::timestamp_t> activity_submission_ts,
-          const std::string& activity_id_str,
+      void worker_model::add_event_to_trace(const value_type& monitor_event,
+          const sdpa::daemon::NotificationEvent& event,
           const std::string& worker_id_str)
       {
         if (trace_appender)
@@ -168,25 +167,27 @@ namespace fhg
           using sec_duration = std::chrono::duration<double, std::chrono::seconds::period>;
           using msec_duration = std::chrono::duration<double, std::chrono::milliseconds::period>;
 
-          unsigned long job_id = std::hash<std::string>{}(activity_id_str);
+          unsigned long job_id = std::hash<std::string>{}(event.activity_id());
           unsigned long worker_id = std::hash<std::string>{}(worker_id_str);
+          we::transition_id_type trans_id = event.activity_transition_id().get_value_or(0);
 
-          sec_duration start_ts_s = msec_duration(current_event.timestamp()); // event timestamp (job start time) is the duration in ms since _base_time
-          sec_duration end_ts_s = start_ts_s + msec_duration(current_event.duration().value_or(0));
+          sec_duration start_ts_s = msec_duration(monitor_event.timestamp()); // event timestamp (job start time) is the duration in ms since _base_time
+          sec_duration end_ts_s = start_ts_s + msec_duration(monitor_event.duration().value_or(0));
 
           sec_duration submission_ts_s = start_ts_s;
-          if (activity_submission_ts)
+          if (event.activity_submission_ts())
           {
             // adjust timestamp relative to _base_time
-            submission_ts_s = sec_duration(activity_submission_ts.get()) - msec_duration(_base_time.toMSecsSinceEpoch());
+            submission_ts_s = sec_duration(event.activity_submission_ts().get()) - msec_duration(_base_time.toMSecsSinceEpoch());
           }
 
           fhg::log::SWFTraceEvent trace_ev(job_id,
             submission_ts_s.count(),
             start_ts_s.count(),
             end_ts_s.count(),
-            fhg::log::SWFTraceEvent::get_state(current_event.state()),
-            fhg::log::SWFTraceEvent::get_job_type_id(activity_id_str),
+            fhg::log::SWFTraceEvent::get_state(monitor_event.state()),
+            trans_id.value(),
+            fhg::log::SWFTraceEvent::get_job_type_id(event.activity_id()),
             worker_id);
           trace_appender.value().append(trace_ev);
         }
@@ -265,7 +266,7 @@ namespace fhg
                 if (!current.duration())
                 {
                   current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
-                  add_event_to_trace(current, event.activity_submission_ts(), event.activity_id(), worker_std);
+                  add_event_to_trace(current, event, worker_std);
                 }
               }
 
@@ -283,7 +284,7 @@ namespace fhg
             {
               // add new event in the container
               container.back().state (event.activity_state(), time);
-              add_event_to_trace(container.back(), event.activity_submission_ts(), event.activity_id(), worker_std);
+              add_event_to_trace(container.back(), event, worker_std);
             }
 
             (ul ? br : ul) = index (row, 0);
