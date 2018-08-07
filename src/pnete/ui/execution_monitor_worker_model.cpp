@@ -7,7 +7,6 @@
 #include <QTimer>
 
 #include <functional>
-#include <unordered_set>
 #include <string>
 
 
@@ -162,23 +161,30 @@ namespace fhg
       void worker_model::add_event_to_trace(const value_type& current_event,
           const boost::optional<we::type::timestamp_t> activity_submission_ts,
           const std::string& activity_id_str,
-          const std::string& worker_id_str) {
+          const std::string& worker_id_str)
+      {
+        if (trace_appender)
+        {
+          using sec_duration = std::chrono::duration<double, std::chrono::seconds::period>;
+          using msec_duration = std::chrono::duration<double, std::chrono::milliseconds::period>;
 
-        if (trace_appender) {
           unsigned long job_id = std::hash<std::string>{}(activity_id_str);
           unsigned long worker_id = std::hash<std::string>{}(worker_id_str);
 
-          we::type::timestamp_t start_ts_s = static_cast<double>(current_event.timestamp()) * 1e-3; // event timestamp (job start time) is the duration in ms since _base_time
-          we::type::timestamp_t submission_ts_s = start_ts_s;
+          sec_duration start_ts_s = msec_duration(current_event.timestamp()); // event timestamp (job start time) is the duration in ms since _base_time
+          sec_duration end_ts_s = start_ts_s + msec_duration(current_event.duration().value_or(0));
 
-          if (activity_submission_ts) {
-            submission_ts_s = activity_submission_ts.get() - static_cast<double>(_base_time.toMSecsSinceEpoch()) * 1e-3;
+          sec_duration submission_ts_s = start_ts_s;
+          if (activity_submission_ts)
+          {
+            // adjust timestamp relative to _base_time
+            submission_ts_s = sec_duration(activity_submission_ts.get()) - msec_duration(_base_time.toMSecsSinceEpoch());
           }
 
           fhg::log::SWFTraceEvent trace_ev(job_id,
-            submission_ts_s,
-            start_ts_s,
-            start_ts_s + static_cast<double>(current_event.duration().value_or(0)) * 1e-3,  // the job duration is in ms
+            submission_ts_s.count(),
+            start_ts_s.count(),
+            end_ts_s.count(),
             fhg::log::SWFTraceEvent::get_state(current_event.state()),
             fhg::log::SWFTraceEvent::get_job_type_id(activity_id_str),
             worker_id);

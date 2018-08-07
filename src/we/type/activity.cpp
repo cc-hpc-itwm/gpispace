@@ -217,11 +217,13 @@ namespace we
       }
 
 
-      void activity_t::add_submission_timestamp(const timestamp_t ts) {
+      void activity_t::add_submission_timestamp(const timestamp_t ts)
+      {
         _timestamp_s = ts;
       }
 
-      boost::optional<timestamp_t> activity_t::timestamp() const {
+      boost::optional<timestamp_t> activity_t::timestamp() const
+      {
         return _timestamp_s;
       }
 

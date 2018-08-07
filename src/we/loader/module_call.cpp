@@ -204,7 +204,7 @@ namespace we
 
       if (service)
       {
-        service->notify ( sdpa::daemon::NotificationEvent
+        service->notify (sdpa::daemon::NotificationEvent
                            ( {worker_name}
                            , activity_id + ".get"
                            , sdpa::daemon::NotificationEvent::STATE_STARTED
@@ -307,16 +307,9 @@ namespace we
       );
     }
 
-
     return out;
     }
   }
 }
-
-
-
-
-
-
 
 

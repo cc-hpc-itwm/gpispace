@@ -93,7 +93,7 @@ namespace we
         }
 
         boost::optional<timestamp_t> timestamp() const;
-        void add_submission_timestamp(const timestamp_t ts);
+        void add_submission_timestamp(const timestamp_t);
 
       private:
         friend class boost::serialization::access;

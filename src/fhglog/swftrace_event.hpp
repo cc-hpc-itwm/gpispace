@@ -1,5 +1,7 @@
 #pragma once
 
+#include <util-generic/ostream/modifier.hpp>
+
 #include <sstream>
 
 namespace fhg
@@ -7,8 +9,27 @@ namespace fhg
   namespace log
   {
 
-    class SWFTraceEvent
+    class SWFTraceEvent : public fhg::util::ostream::modifier
     {
+      enum swftrace_state_t
+      {
+        SWFTRACE_STATE_FAILED = 0,
+        SWFTRACE_STATE_FINISHED,
+        SWFTRACE_STATE_PARTIAL_EXEC_CONT,
+        SWFTRACE_STATE_PARTIAL_EXEC_FINISHED,
+        SWFTRACE_STATE_PARTIAL_EXEC_FAILED,
+        SWFTRACE_STATE_CANCELED
+      };
+
+      enum swftrace_job_type_t
+      {
+        SWFTRACE_JOB_TYPE_CPU_COMPUTE = 1,
+        SWFTRACE_JOB_TYPE_GPU_COMPUTE,
+        SWFTRACE_JOB_TYPE_IO_GET,
+        SWFTRACE_JOB_TYPE_IO_PUT,
+        SWFTRACE_JOB_TYPE_OTHER
+      };
+
     public:
       SWFTraceEvent ( unsigned int job_id,
           double submit_timestamp,
@@ -48,7 +69,9 @@ namespace fhg
                 unsigned int job_type_id,
                 unsigned int partition);
 
-      std::string encoded() const;
+      std::string string() const;
+      std::ostream& operator() (std::ostream&) const;
+
       static int get_state(const int state);
       static int get_job_type_id(std::string activity_id);
       static std::string gen_swf_trace_header();
@@ -61,9 +84,9 @@ namespace fhg
       const int n_alloc_procs;
       const double used_cpu_time_s;
       const double used_memory_kb;
-      const int n_req_procs;                  // Requested Number of Processors
-      const double req_time_s;                // Requested Time (e.g., user runtime estimate or upper bound used in backfilling)
-      const double req_memory_kb;             // Requested Memory
+      const int n_req_procs;                  // requested Number of Processors
+      const double req_time_s;                // requested Time (e.g., user runtime estimate or upper bound used in backfilling)
+      const double req_memory_kb;             // requested Memory
       const int status;
       const unsigned int user_id;
       const unsigned int group_id;
@@ -72,21 +95,11 @@ namespace fhg
       const unsigned int partition;           // number to identify the different partitions in the systems (can be used to identify the machine on which the job was executed)
       const int prec_job_id;                  // previous job in the workload (current job can only start after its termination)
       const double time_after_prec_job_s;
+
+      static const std::string get_column_delim();
+      static const std::string get_trace_comment();
+      static const std::string get_job_type_name(const swftrace_job_type_t);
+      static const std::string get_job_state_name(const swftrace_state_t);
     };
   }
 }
-
-std::ostream& operator<< (std::ostream&, fhg::log::SWFTraceEvent const&);
-
-
-
-
-
-
-
-
-
-
-
-
-
