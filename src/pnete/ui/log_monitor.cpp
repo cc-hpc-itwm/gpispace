@@ -50,32 +50,45 @@
 
 namespace
 {
+  struct category_data_t
+  {
+    QColor color;
+    int legacy_level;
+    char legacy_level_identifier;
+  };
+
+  category_data_t category_to_data (std::string const& category)
+  {
+#define ENTRY(name_, color_, level_, identifier_)      \
+      { fhg::logging::legacy::category_level_ ## name_   \
+      , category_data_t {color_, level_, identifier_}    \
+      }
+
+    static std::unordered_map<std::string, category_data_t> const category_data
+      { ENTRY (trace, QColor (205, 183, 158), 0, 'T')
+      , ENTRY (info, QColor (25, 25, 25), 1, 'I')
+      , ENTRY (warn, QColor (255, 140, 0), 2, 'W')
+      , ENTRY (error, QColor (255, 0, 0), 3, 'E')
+      };
+
+#undef ENTRY
+
+    auto it (category_data.find (category));
+    return it != category_data.end() ? it->second
+      : throw std::invalid_argument ("category is not a legacy category");
+  }
+
   QColor category_to_color (std::string const& category)
   {
-    using namespace fhg::logging::legacy;
-    return category == category_level_trace ? QColor (205, 183, 158)
-      : category == category_level_info ? QColor (25, 25, 25)
-      : category == category_level_warn ? QColor (255, 140, 0)
-      : category == category_level_error ? QColor (255, 0, 0)
-      : throw std::invalid_argument ("category is not a legacy category");
+    return category_to_data (category).color;
   }
   int category_to_legacy_level (std::string const& category)
   {
-    using namespace fhg::logging::legacy;
-    return category == category_level_trace ? 0
-      : category == category_level_info ? 1
-      : category == category_level_warn ? 2
-      : category == category_level_error ? 3
-      : throw std::invalid_argument ("category is not a legacy category");
+    return category_to_data (category).legacy_level;
   }
   char category_to_short_legacy_level_identifier (std::string const& category)
   {
-    using namespace fhg::logging::legacy;
-    return category == category_level_trace ? 'T'
-      : category == category_level_info ? 'I'
-      : category == category_level_warn ? 'W'
-      : category == category_level_error ? 'E'
-      : throw std::invalid_argument ("category is not a legacy category");
+    return category_to_data (category).legacy_level_identifier;
   }
 
   enum table_columns
