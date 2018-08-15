@@ -190,14 +190,14 @@ namespace fhg
         , ec
         );
 
-      cd.connection->request_handshake();
-
-      connection_established (addr, ec);
-
       if (ec)
       {
         throw boost::system::system_error (ec);
       }
+
+      cd.connection->request_handshake();
+
+      connection_established (addr, ec);
 
       return addr;
     }
