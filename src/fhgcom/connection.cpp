@@ -145,7 +145,12 @@ namespace fhg
       {
         void operator() (std::unique_ptr<ssl_stream_t>& stream) const
         {
-          stream->handshake (boost::asio::ssl::stream_base::client);
+          boost::system::error_code ec;
+          stream->handshake (boost::asio::ssl::stream_base::client, ec);
+          if (ec)
+          {
+            throw handshake_exception (ec);
+          }
         }
         void operator() (std::unique_ptr<tcp_socket_t>&) const
         {
@@ -161,8 +166,16 @@ namespace fhg
       {
         void operator() (std::unique_ptr<ssl_stream_t>& stream) const
         {
-          stream->async_handshake
-            (boost::asio::ssl::stream_base::server, _handler);
+          boost::system::error_code ec;
+          stream->handshake
+            (boost::asio::ssl::stream_base::server, ec);
+
+          if (ec)
+          {
+            throw handshake_exception (ec);
+          }
+
+          _handler (ec);
         }
         void operator() (std::unique_ptr<tcp_socket_t>&) const
         {

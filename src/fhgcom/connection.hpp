@@ -29,6 +29,14 @@ namespace fhg
     using ssl_stream_t = boost::asio::ssl::stream<tcp_socket_t>;
     using socket_t = boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
 
+    class handshake_exception : public boost::system::system_error
+    {
+    public:
+      handshake_exception (boost::system::error_code const& ec)
+        : boost::system::system_error (ec)
+      {}
+    };
+
     class connection_t : private boost::noncopyable
                        , public boost::enable_shared_from_this<connection_t>
     {
