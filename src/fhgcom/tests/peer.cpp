@@ -6,6 +6,7 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
@@ -15,6 +16,7 @@
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <memory>
 #include <thread>
 
 namespace
@@ -301,5 +303,108 @@ BOOST_AUTO_TEST_CASE (invalid_certificates_directory)
                   , boost::filesystem::path (fhg::util::testing::random_string())
                   );
   , boost::filesystem::filesystem_error
+  );
+}
+
+BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
+{
+  using namespace fhg::com;
+
+  BOOST_REQUIRE_EXCEPTION
+    ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                    , host_t ("localhost")
+                    , port_t ("0")
+                    , fhg::com::certificates_t
+                        {fhg::util::testing::random_string_without("").substr (0,50)}
+                    )
+    , boost::filesystem::filesystem_error
+    , [&] (boost::filesystem::filesystem_error const& exc)
+      {
+        return std::string (exc.what()).find
+          ("No such file or directory") != std::string::npos;
+      }
+    );
+}
+
+BOOST_AUTO_TEST_CASE
+  (when_location_exists_require_to_contain_certificate_files)
+{
+  using namespace fhg::com;
+
+  fhg::util::temporary_path const certificates_directory
+    ("/var/tmp/" + fhg::util::testing::random_identifier().substr (0,50));
+
+  BOOST_REQUIRE_EXCEPTION
+    ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                    , host_t ("localhost")
+                    , port_t ("0")
+                    , fhg::com::certificates_t {certificates_directory}
+                    )
+    , boost::filesystem::filesystem_error
+    , [&] (boost::filesystem::filesystem_error const& exc)
+      {
+        return std::string (exc.what()).find
+          ("No such file or directory") != std::string::npos;
+      }
+    );
+}
+
+BOOST_AUTO_TEST_CASE
+  (using_empty_certificates_throws)
+{
+  using namespace fhg::com;
+
+  fhg::util::temporary_path const certificates_directory
+    ("/var/tmp/" + fhg::util::testing::random_identifier().substr (0,50));
+
+  fhg::util::temporary_path const crt
+    (boost::filesystem::path (certificates_directory) / "server.crt");
+
+  fhg::util::temporary_path const key
+    (boost::filesystem::path (certificates_directory) / "server.key");
+
+  BOOST_REQUIRE_EXCEPTION
+    ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                    , host_t ("localhost")
+                    , port_t ("0")
+                    , fhg::com::certificates_t {certificates_directory}
+                    )
+    , std::runtime_error
+    , [&] (std::runtime_error const& exc)
+      {
+        return std::string (exc.what()).find
+          ("use_certificate_chain_file: no start line") != std::string::npos;
+      }
+    );
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_AUTO_TEST_CASE
+  (client_peer_tries_to_connect_to_secure_peer_using_tcp)
+{
+  using namespace fhg::com;
+
+  peer_t peer_1
+    ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , host_t ("localhost")
+    , port_t ("0")
+    , boost::none
+    );
+
+  peer_t peer_2
+    ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , host_t ("localhost")
+    , port_t ("0")
+    , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}
+    );
+
+  BOOST_REQUIRE_THROW
+  ( { peer_1.connect_to ( host (peer_2.local_endpoint())
+                        , port (peer_2.local_endpoint())
+                        );
+      while (peer_t::handshake_exception() == nullptr);
+      std::rethrow_exception (peer_t::handshake_exception());
+    }
+  , fhg::com::handshake_exception
   );
 }
