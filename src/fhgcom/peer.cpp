@@ -17,8 +17,6 @@ namespace fhg
 {
   namespace com
   {
-    std::exception_ptr peer_t::handshake_exception_ = nullptr;
-
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
@@ -32,6 +30,7 @@ namespace fhg
       , io_service_work_(*io_service_)
       , acceptor_(*io_service_)
       , connections_()
+      , handshake_exception_ (nullptr)
       , _io_thread ( [this]
                      { try
                        {
@@ -39,7 +38,7 @@ namespace fhg
                        }
                        catch (fhg::com::handshake_exception const& exc)
                        {
-                         peer_t::handshake_exception_=std::current_exception();
+                         handshake_exception_=std::current_exception();
                        }
                      }
                    )
@@ -608,7 +607,7 @@ namespace fhg
       }
     }
 
-    std::exception_ptr peer_t::handshake_exception()
+    std::exception_ptr peer_t::handshake_exception() const
     {
       return handshake_exception_;
     }

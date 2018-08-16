@@ -64,7 +64,7 @@ namespace fhg
                        >
         );
       void TESTING_ONLY_recv (message_t *m);
-      static std::exception_ptr handshake_exception();
+      std::exception_ptr handshake_exception() const;
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
@@ -138,7 +138,7 @@ namespace fhg
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
 
-      static std::exception_ptr handshake_exception_;
+      std::exception_ptr handshake_exception_;
       boost::strict_scoped_thread<> _io_thread;
 
       std::unique_ptr<boost::asio::ssl::context> ctx_;

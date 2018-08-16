@@ -402,8 +402,8 @@ BOOST_AUTO_TEST_CASE
   ( { peer_1.connect_to ( host (peer_2.local_endpoint())
                         , port (peer_2.local_endpoint())
                         );
-      while (peer_t::handshake_exception() == nullptr);
-      std::rethrow_exception (peer_t::handshake_exception());
+      while (peer_2.handshake_exception() == nullptr);
+      std::rethrow_exception (peer_2.handshake_exception());
     }
   , fhg::com::handshake_exception
   );
