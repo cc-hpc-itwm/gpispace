@@ -159,8 +159,7 @@ namespace fhg
       boost::apply_visitor (visitor, socket_);
     }
 
-    void connection_t::acknowledge_handshake
-      (std::function <void (const boost::system::error_code&)> handler)
+    void connection_t::acknowledge_handshake()
     {
       struct visitor_t : boost::static_visitor<void>
       {
@@ -169,21 +168,15 @@ namespace fhg
           boost::system::error_code ec;
           stream->handshake
             (boost::asio::ssl::stream_base::server, ec);
-
           if (ec)
           {
             throw handshake_exception (ec);
           }
-
-          _handler (ec);
         }
         void operator() (std::unique_ptr<tcp_socket_t>&) const
         {
-          _handler ({});
         }
-        std::function<void (const boost::system::error_code&)> _handler;
-        visitor_t (decltype (_handler) handler) : _handler (handler) {}
-      } visitor = {strand_.wrap (handler)};
+      } visitor;
       boost::apply_visitor (visitor, socket_);
     }
 

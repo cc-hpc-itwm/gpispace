@@ -455,18 +455,15 @@ namespace fhg
       {
         fhg_assert (listen_);
 
-        listen_->acknowledge_handshake
-          ( [this] (boost::system::error_code const&)
-            {
-              // TODO: work here schedule timeout
-              backlog_.insert (listen_);
+        listen_->acknowledge_handshake();
 
-              // the connection will  call us back when it got the
-              // hello packet or will timeout
-              listen_->start ();
-              accept_new ();
-            }
-          );
+        // TODO: work here schedule timeout
+        backlog_.insert (listen_);
+
+        // the connection will  call us back when it got the
+        // hello packet or will timeout
+        listen_->start();
+        accept_new();
       }
     }
 

@@ -80,8 +80,7 @@ namespace fhg
       }
 
       void request_handshake();
-      void acknowledge_handshake
-        (std::function <void (const boost::system::error_code&)> handler);
+      void acknowledge_handshake();
 
     private:
       struct to_send_t
