@@ -110,7 +110,7 @@ namespace fhg
 
       void accept_new ();
       void handle_accept (const boost::system::error_code &);
-      void connection_established (const p2p::address_t, boost::system::error_code const &);
+      void connection_established (const p2p::address_t);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
 
