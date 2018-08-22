@@ -429,8 +429,8 @@ namespace fhg
             blocks[sdpa::daemon::NotificationEvent::STATE_FINISHED];
             blocks[sdpa::daemon::NotificationEvent::STATE_FAILED];
             blocks[sdpa::daemon::NotificationEvent::STATE_CANCELED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT];
-            blocks[sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET];
+            blocks[sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED];
+            blocks[sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED];
           }
         };
 
@@ -721,8 +721,8 @@ namespace fhg
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
-          case event::STATE_HACK_WAS_PUT: return "was_put";
-          case event::STATE_HACK_WAS_GET: return "was_get";
+          case event::STATE_VMEM_PUT_FINISHED: return "was_put";
+          case event::STATE_VMEM_GET_FINISHED: return "was_get";
           }
 
           INVALID_ENUM_VALUE (worker_model::state_type, state);

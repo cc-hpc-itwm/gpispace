@@ -123,9 +123,9 @@ namespace fhg
       {
       case sdpa::daemon::NotificationEvent::STATE_FINISHED:
         return SWFTRACE_STATE_FINISHED;
-      case sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT:
+      case sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED:
         return SWFTRACE_STATE_FINISHED;
-      case sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET:
+      case sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED:
          return SWFTRACE_STATE_FINISHED;
       case sdpa::daemon::NotificationEvent::STATE_CANCELED:
         return SWFTRACE_STATE_CANCELED;

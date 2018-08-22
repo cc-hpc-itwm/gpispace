@@ -195,8 +195,8 @@ namespace fhg
           case event::STATE_FINISHED: return "finished";
           case event::STATE_FAILED: return "failed";
           case event::STATE_CANCELED: return "canceled";
-          case event::STATE_HACK_WAS_PUT: return "was_put";
-          case event::STATE_HACK_WAS_GET: return "was_get";
+          case event::STATE_VMEM_PUT_FINISHED: return "vmem_put";
+          case event::STATE_VMEM_GET_FINISHED: return "vmem_get";
           }
 
           INVALID_ENUM_VALUE (worker_model::state_type, state);
@@ -232,8 +232,8 @@ namespace fhg
           INIT (FINISHED, QColor (0, 200, 0));
           INIT (FAILED, QColor (255, 0, 0));
           INIT (CANCELED, QColor (165, 42, 42));
-          INIT (HACK_WAS_PUT, QColor (200, 37, 187));
-          INIT (HACK_WAS_GET, QColor (200, 150, 33));
+          INIT (VMEM_PUT_FINISHED, QColor (200, 37, 187));
+          INIT (VMEM_GET_FINISHED, QColor (200, 150, 33));
 
 #undef INIT
 
@@ -447,8 +447,8 @@ namespace fhg
                 , sdpa::daemon::NotificationEvent::STATE_FINISHED
                 , sdpa::daemon::NotificationEvent::STATE_FAILED
                 , sdpa::daemon::NotificationEvent::STATE_CANCELED
-                , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET
-                , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT
+                , sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED
+                , sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED
                 }
               )
           {

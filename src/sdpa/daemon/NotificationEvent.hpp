@@ -23,8 +23,8 @@ namespace sdpa
       , STATE_FINISHED
       , STATE_FAILED
       , STATE_CANCELED
-      , STATE_HACK_WAS_PUT
-      , STATE_HACK_WAS_GET
+      , STATE_VMEM_PUT_FINISHED
+      , STATE_VMEM_GET_FINISHED
       , STATE_MAX = STATE_CANCELED
       };
 

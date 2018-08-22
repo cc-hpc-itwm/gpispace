@@ -222,7 +222,7 @@ namespace we
         service->notify ( sdpa::daemon::NotificationEvent
           ( {worker_name}
           , activity_id + ".get"
-          , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_GET
+          , sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED
           , activity
           )
         );
@@ -301,7 +301,7 @@ namespace we
       service->notify ( sdpa::daemon::NotificationEvent
                       ( {worker_name}
                       , activity_id + ".put"
-                      , sdpa::daemon::NotificationEvent::STATE_HACK_WAS_PUT
+                      , sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED
                       , activity
                       )
       );
