@@ -1,9 +1,6 @@
 #pragma once
 
-#include <util-generic/serialization/by_member.hpp>
-
 #include <boost/any.hpp>
-#include <boost/serialization/utility.hpp>
 
 #include <string>
 #include <utility>
@@ -44,8 +41,3 @@ namespace fhg
       (boost::any&, std::vector<std::string> const&, tcp_endpoint*, int);
   }
 }
-
-FHG_UTIL_SERIALIZATION_BY_MEMBER ( fhg::logging::tcp_endpoint
-                                 , &fhg::logging::tcp_endpoint::host
-                                 , &fhg::logging::tcp_endpoint::port
-                                 );
