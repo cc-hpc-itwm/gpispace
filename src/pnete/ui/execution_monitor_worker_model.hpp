@@ -128,7 +128,7 @@ namespace fhg
         logging::legacy_bridge _log_bridge;
         logging::tcp_receiver _log_receiver;
 
-        boost::optional<fhg::log::SWFTraceAppender> trace_appender;
+        std::unique_ptr<fhg::log::SWFTraceAppender> trace_appender;
       };
     }
   }

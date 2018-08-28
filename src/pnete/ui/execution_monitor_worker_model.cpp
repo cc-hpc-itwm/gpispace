@@ -5,6 +5,7 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/macros.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
 
 #include <QTimer>
@@ -103,7 +104,12 @@ namespace fhg
             ( with_appended (std::move (emitters), _log_bridge.local_endpoint())
             , fhg::util::bind_this (this, &worker_model::append_event)
             )
-        , trace_appender (std::move (trace_file))
+        , trace_appender
+            ( trace_file
+            ? fhg::util::cxx14::make_unique<fhg::log::SWFTraceAppender>
+                (std::move (*trace_file))
+            : nullptr
+            )
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
