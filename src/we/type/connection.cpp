@@ -26,7 +26,7 @@ namespace we
       case TP: return "out";
       }
 
-      INVALID_ENUM_VALUE (we::edge:type, e);
+      INVALID_ENUM_VALUE (we::edge::type, e);
     }
   }
 }

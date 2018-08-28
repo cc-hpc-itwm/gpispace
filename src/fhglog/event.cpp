@@ -140,7 +140,7 @@ namespace
       case fhg::log::ERROR: return 'E';
       }
 
-      INVALID_ENUM_VALUE (fhg::log::level, level);
+      INVALID_ENUM_VALUE (fhg::log::Level, level);
     }
 
     class tstamp
