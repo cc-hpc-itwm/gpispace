@@ -4,6 +4,7 @@
 #include <logging/protocol.hpp>
 #include <logging/socket_endpoint.hpp>
 #include <logging/tcp_endpoint.hpp>
+#include <logging/tcp_endpoint_serialization.hpp>
 
 #include <rpc/remote_endpoint.hpp>
 #include <rpc/service_dispatcher.hpp>
