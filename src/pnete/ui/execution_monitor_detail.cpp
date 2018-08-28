@@ -778,6 +778,12 @@ namespace fhg
               //! casted from int.
               auto const state_index
                 ((event->pos().y() - option.rect.top()) / descr.height);
+              //! \note GCC has a bug where a variable used only in a
+              //! cast to an enum class emits the warning
+              //! -Wunused-but-set-variable. This is fixed in GCC
+              //! 8.1. This no-op "uses" the variable and thus avoids
+              //! the warning. See https://godbolt.org/z/P1fSwx
+              (void)state_index;
               auto const state
                 (static_cast<worker_model::state_type> (state_index));
 
