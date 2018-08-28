@@ -20,7 +20,6 @@ namespace fhg
       double const DEFAULT_REQ_TIME_S = -1;
       double const DEFAULT_REQ_MEM_KB = -1;
       int const DEFAULT_USER_ID = 1;
-      int const DEFAULT_GROUP_ID = 1;
       int const DEFAULT_QUEUE = 1;
       int const DEFAULT_PREC_JOB_ID = -1;
       double const DEFAULT_TIME_AFTER_PREC_JOB_S = -1;
@@ -118,6 +117,7 @@ namespace fhg
                                  , sec_duration start_timestamp
                                  , sec_duration end_timestamp
                                  , int status
+                                 , uint64_t group_id
                                  , unsigned int job_type_id
                                  , unsigned int partition
                                  )
@@ -133,7 +133,7 @@ namespace fhg
       , req_memory_kb (DEFAULT_REQ_MEM_KB)
       , status (status)
       , user_id (DEFAULT_USER_ID)
-      , group_id (DEFAULT_GROUP_ID)
+      , group_id (group_id)
       , job_type_id (job_type_id)
       , queue (DEFAULT_QUEUE)
       , partition (partition)
@@ -233,7 +233,7 @@ namespace fhg
         os << TRACE_COMMENT() << "    - " << val.first << ": " << val.second << '\n';
       }
       os << TRACE_COMMENT() << "12. User ID (not used, set to " << DEFAULT_USER_ID << ")\n"
-         << TRACE_COMMENT() << "13. Group ID (not used, set to " << DEFAULT_GROUP_ID << ")\n"
+         << TRACE_COMMENT() << "13. Group ID (used to group tasks by transition id)\n"
          << TRACE_COMMENT() << "14. Executable Number -- integer value representing the type of task as follows \n";
       for (auto const& val : job_types())
       {

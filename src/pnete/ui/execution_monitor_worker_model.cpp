@@ -145,6 +145,7 @@ namespace fhg
         {
           auto const job_id (std::hash<std::string>{} (event.activity_id()));
           auto const worker_id (std::hash<std::string>{} (worker_str));
+          auto const trans_id (event.activity_transition_id().get_value_or (0));
 
           using sec_duration = std::chrono::duration<double, std::chrono::seconds::period>;
           using msec_duration = std::chrono::duration<double, std::chrono::milliseconds::period>;
@@ -166,6 +167,7 @@ namespace fhg
                                    , end_ts
                                    , fhg::log::SWFTraceEvent::get_state
                                        (monitor_event.state())
+                                   , trans_id.value()
                                    , fhg::log::SWFTraceEvent::get_job_type_id
                                        (event.activity_id())
                                    , static_cast<unsigned int> (worker_id)
