@@ -166,8 +166,7 @@ namespace fhg
                                    , submission_ts
                                    , start_ts
                                    , end_ts
-                                   , fhg::log::SWFTraceEvent::get_state
-                                       (event.activity_state())
+                                   , event.activity_state()
                                    , trans_id.value()
                                    , event.type()
                                    , static_cast<unsigned int> (worker_id)

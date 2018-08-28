@@ -19,7 +19,7 @@ namespace fhg
                     , sec_duration submit_timestamp
                     , sec_duration start_timestamp
                     , sec_duration end_timestamp
-                    , int status
+                    , sdpa::daemon::NotificationEvent::state_t
                     , uint64_t group_id
                     , sdpa::daemon::NotificationEvent::type_t
                     , unsigned int partition
@@ -27,7 +27,6 @@ namespace fhg
 
       friend std::ostream& operator<< (std::ostream&, SWFTraceEvent const&);
 
-      static int get_state (const int state);
       static std::string gen_swf_trace_header();
 
     private:

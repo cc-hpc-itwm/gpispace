@@ -69,26 +69,24 @@ namespace fhg
           };
         return _;
       }
-    }
 
-    int SWFTraceEvent::get_state (const int state)
-    {
-      switch (state)
+      swftrace_state_t get_status
+        (sdpa::daemon::NotificationEvent::state_t const state)
       {
-      case sdpa::daemon::NotificationEvent::STATE_FINISHED:
-        return SWFTRACE_STATE_FINISHED;
-      case sdpa::daemon::NotificationEvent::STATE_CANCELED:
-        return SWFTRACE_STATE_CANCELED;
-      case sdpa::daemon::NotificationEvent::STATE_FAILED:
-        return SWFTRACE_STATE_FAILED;
+        switch (state)
+        {
+        case sdpa::daemon::NotificationEvent::STATE_FINISHED:
+          return SWFTRACE_STATE_FINISHED;
+        case sdpa::daemon::NotificationEvent::STATE_CANCELED:
+          return SWFTRACE_STATE_CANCELED;
+        case sdpa::daemon::NotificationEvent::STATE_FAILED:
+          return SWFTRACE_STATE_FAILED;
 
-      default:
-        throw std::logic_error ("undefined job state");
+        default:
+          throw std::logic_error ("undefined job state");
+        }
       }
-    }
 
-    namespace
-    {
       swftrace_job_type_t get_job_type_id
         (sdpa::daemon::NotificationEvent::type_t const type)
       {
@@ -113,7 +111,7 @@ namespace fhg
                                  , sec_duration submit_timestamp
                                  , sec_duration start_timestamp
                                  , sec_duration end_timestamp
-                                 , int status
+                                 , sdpa::daemon::NotificationEvent::state_t state
                                  , uint64_t group_id
                                  , sdpa::daemon::NotificationEvent::type_t type
                                  , unsigned int partition
@@ -128,7 +126,7 @@ namespace fhg
       , n_req_procs (DEFAULT_REQ_PROCS)
       , req_time_s (DEFAULT_REQ_TIME_S)
       , req_memory_kb (DEFAULT_REQ_MEM_KB)
-      , status (status)
+      , status (get_status (state))
       , user_id (DEFAULT_USER_ID)
       , group_id (group_id)
       , job_type_id (get_job_type_id (type))
