@@ -59,13 +59,13 @@ namespace fhg
         );
 
       return message
-             ( event.message()
-             , category
-             , to_std_timepoint<decltype (_timestamp)> (event.tstamp())
-             , event.host()
-             , event.pid()
-             , event.tid()
-             );
+        ( event.message()
+        , category
+        , to_std_timepoint<decltype (_timestamp)> (event.tstamp())
+        , event.host()
+        , event.pid()
+        , event.tid()
+        );
     }
   }
 }
