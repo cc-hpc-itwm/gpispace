@@ -21,6 +21,7 @@ target_link_libraries (sdpa
   pnet
   Util::Generic
   gspc::logging
+  gspc::tracing
 )
 
 add_subdirectory (test)

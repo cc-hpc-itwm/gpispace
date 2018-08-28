@@ -1,14 +1,20 @@
 #pragma once
 
-#include <we/type/net.hpp> // recursive wrapper of transition_t fails otherwise.
-#include <we/type/activity.hpp>
+#include <we/type/id.hpp>
 
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
 #include <boost/optional.hpp>
 
-#include <sstream>
+#include <list>
 #include <string>
+
+namespace we
+{
+  namespace type
+  {
+    class activity_t;
+    using timestamp_t = double;
+  }
+}
 
 namespace sdpa
 {
@@ -28,49 +34,23 @@ namespace sdpa
       , STATE_MAX = STATE_CANCELED
       };
 
-      NotificationEvent ( const std::list<std::string>& components
-                        , const std::string& activity_id
-                        , const state_t& activity_state
-                        , const we::type::activity_t& activity
-                        )
-        : _components (components)
-        , _activity_id (activity_id)
-        , _activity_name (activity.transition().name())
-        , _activity_state (activity_state)
-        , _activity_transition_id (activity.transition_id())
-        , _activity_submission_ts (activity.timestamp())
-      {}
+      NotificationEvent ( std::list<std::string> components
+                        , std::string activity_id
+                        , state_t activity_state
+                        , we::type::activity_t const& activity
+                        );
 
-      NotificationEvent (const std::string encoded)
-      {
-        std::istringstream stream (encoded);
-        boost::archive::text_iarchive archive (stream);
-        archive & _components;
-        archive & _activity_id;
-        archive & _activity_name;
-        archive & _activity_state;
-        archive & _activity_transition_id;
-        archive & _activity_submission_ts;
-      }
-      std::string encoded() const
-      {
-        std::ostringstream stream;
-        boost::archive::text_oarchive archive (stream);
-        archive & _components;
-        archive & _activity_id;
-        archive & _activity_name;
-        archive & _activity_state;
-        archive & _activity_transition_id;
-        archive & _activity_submission_ts;
-        return stream.str();
-      }
+      NotificationEvent (std::string const& encoded);
+      std::string encoded() const;
 
-      const std::list<std::string>& components() const { return _components; }
-      const std::string &activity_id() const { return _activity_id; }
-      const std::string &activity_name() const { return _activity_name; }
-      const state_t &activity_state() const { return _activity_state; }
-      boost::optional<we::transition_id_type> const& activity_transition_id() const { return _activity_transition_id; }
-      boost::optional<we::type::timestamp_t> const& activity_submission_ts() const { return _activity_submission_ts; }
+      std::list<std::string> const& components() const;
+      std::string const& activity_id() const;
+      std::string const& activity_name() const;
+      state_t const& activity_state() const;
+      boost::optional<we::transition_id_type> const&
+        activity_transition_id() const;
+      boost::optional<we::type::timestamp_t> const&
+        activity_submission_ts() const;
 
     private:
       std::list<std::string> _components;

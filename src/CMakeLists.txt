@@ -159,6 +159,13 @@ add_subdirectory (util-qt)
 
 add_subdirectory (libssh2_wrapper)
 
+extended_add_library (NAME tracing
+  NAMESPACE gspc
+  SOURCES "sdpa/daemon/NotificationEvent.cpp"
+  LIBRARIES Boost::serialization
+            pnet
+)
+
 extended_add_library (NAME logging
   NAMESPACE gspc
   SOURCES "logging/file_sink.cpp"

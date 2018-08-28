@@ -18,6 +18,7 @@ fhg_add_runtime_executable (NAME gspc-monitor
             fhg-util
             fhg_util_qt
             gspc::logging
+            gspc::tracing
   CREATE_BUNDLE_INFO
 )
 
