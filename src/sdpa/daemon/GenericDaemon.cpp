@@ -401,16 +401,13 @@ std::string GenericDaemon::gen_id()
                                    , NotificationEvent::state_t state
                                    )
     {
+      NotificationEvent const event
+        ({name()}, id, state, NotificationEvent::type_t::agent, activity);
       if (m_guiService)
       {
-        m_guiService->notify
-          (NotificationEvent ({name()}, id, state, activity));
+        m_guiService->notify (event);
       }
-      _log_emitter.emit_message
-        ( { NotificationEvent ({name()}, id, state, activity).encoded()
-          , gantt_log_category
-          }
-        );
+      _log_emitter.emit_message ({event.encoded(), gantt_log_category});
     }
 
     fhg::logging::tcp_endpoint

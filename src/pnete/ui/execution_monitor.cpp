@@ -31,7 +31,7 @@
 
 #include <fhg/util/macros.hpp>
 
-Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
+Q_DECLARE_METATYPE (fhg::pnete::ui::worker_model::state_type)
 
 namespace fhg
 {
@@ -189,16 +189,14 @@ namespace fhg
 
         QString to_string (worker_model::state_type state)
         {
-          typedef sdpa::daemon::NotificationEvent event;
-
           switch (state)
           {
-          case event::STATE_STARTED: return "started";
-          case event::STATE_FINISHED: return "finished";
-          case event::STATE_FAILED: return "failed";
-          case event::STATE_CANCELED: return "canceled";
-          case event::STATE_VMEM_PUT_FINISHED: return "vmem_put";
-          case event::STATE_VMEM_GET_FINISHED: return "vmem_get";
+          case worker_model::state_type::STATE_STARTED: return "started";
+          case worker_model::state_type::STATE_FINISHED: return "finished";
+          case worker_model::state_type::STATE_FAILED: return "failed";
+          case worker_model::state_type::STATE_CANCELED: return "canceled";
+          case worker_model::state_type::STATE_VMEM_PUT_FINISHED: return "vmem_put";
+          case worker_model::state_type::STATE_VMEM_GET_FINISHED: return "vmem_get";
           }
 
           INVALID_ENUM_VALUE (worker_model::state_type, state);
@@ -223,12 +221,13 @@ namespace fhg
 
           QMap<worker_model::state_type, QColor> color_for_state;
 
-          typedef sdpa::daemon::NotificationEvent event;
-
-#define INIT(enummed, dflt)                                             \
-          color_for_state[event:: STATE_ ## enummed]                    \
-            = get_or_set_with_default                                   \
-              (settings, to_string (event:: STATE_ ## enummed), dflt)
+#define INIT(enummed, dflt)                                                \
+          color_for_state[worker_model::state_type:: STATE_ ## enummed]    \
+            = get_or_set_with_default                                      \
+                ( settings                                                 \
+                , to_string (worker_model::state_type:: STATE_ ## enummed) \
+                , dflt                                                     \
+                )
 
           INIT (STARTED, QColor (255, 255, 0));
           INIT (FINISHED, QColor (0, 200, 0));
@@ -456,12 +455,12 @@ namespace fhg
           QVBoxLayout* legend_box_layout (new QVBoxLayout (legend_box));
 
           for ( const worker_model::state_type& state
-              : { sdpa::daemon::NotificationEvent::STATE_STARTED
-                , sdpa::daemon::NotificationEvent::STATE_FINISHED
-                , sdpa::daemon::NotificationEvent::STATE_FAILED
-                , sdpa::daemon::NotificationEvent::STATE_CANCELED
-                , sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED
-                , sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED
+              : { worker_model::state_type::STATE_STARTED
+                , worker_model::state_type::STATE_FINISHED
+                , worker_model::state_type::STATE_FAILED
+                , worker_model::state_type::STATE_CANCELED
+                , worker_model::state_type::STATE_VMEM_GET_FINISHED
+                , worker_model::state_type::STATE_VMEM_PUT_FINISHED
                 }
               )
           {

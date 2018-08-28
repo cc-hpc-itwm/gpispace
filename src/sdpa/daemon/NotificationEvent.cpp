@@ -16,12 +16,14 @@ namespace sdpa
         ( std::list<std::string> components
         , std::string activity_id
         , state_t activity_state
+        , type_t type
         , we::type::activity_t const& activity
         )
       : _components (std::move (components))
       , _activity_id (std::move (activity_id))
       , _activity_name (activity.transition().name())
       , _activity_state (std::move (activity_state))
+      , _type (std::move (type))
       , _activity_transition_id (activity.transition_id())
       , _activity_submission_ts (activity.timestamp())
     {}
@@ -34,6 +36,7 @@ namespace sdpa
       archive & _activity_id;
       archive & _activity_name;
       archive & _activity_state;
+      archive & _type;
       archive & _activity_transition_id;
       archive & _activity_submission_ts;
     }
@@ -45,6 +48,7 @@ namespace sdpa
       archive & _activity_id;
       archive & _activity_name;
       archive & _activity_state;
+      archive & _type;
       archive & _activity_transition_id;
       archive & _activity_submission_ts;
       return stream.str();
@@ -65,6 +69,10 @@ namespace sdpa
     NotificationEvent::state_t const& NotificationEvent::activity_state() const
     {
       return _activity_state;
+    }
+    NotificationEvent::type_t const& NotificationEvent::type() const
+    {
+      return _type;
     }
     boost::optional<we::transition_id_type> const&
       NotificationEvent::activity_transition_id() const

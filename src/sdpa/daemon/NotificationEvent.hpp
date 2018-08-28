@@ -29,14 +29,20 @@ namespace sdpa
       , STATE_FINISHED
       , STATE_FAILED
       , STATE_CANCELED
-      , STATE_VMEM_PUT_FINISHED
-      , STATE_VMEM_GET_FINISHED
-      , STATE_MAX = STATE_CANCELED
+      };
+
+      enum class type_t
+      {
+        agent,
+        module_call,
+        vmem_get,
+        vmem_put,
       };
 
       NotificationEvent ( std::list<std::string> components
                         , std::string activity_id
                         , state_t activity_state
+                        , type_t
                         , we::type::activity_t const& activity
                         );
 
@@ -47,6 +53,7 @@ namespace sdpa
       std::string const& activity_id() const;
       std::string const& activity_name() const;
       state_t const& activity_state() const;
+      type_t const& type() const;
       boost::optional<we::transition_id_type> const&
         activity_transition_id() const;
       boost::optional<we::type::timestamp_t> const&
@@ -57,6 +64,7 @@ namespace sdpa
       std::string _activity_id;
       std::string _activity_name;
       state_t _activity_state;
+      type_t _type;
       boost::optional<we::transition_id_type> _activity_transition_id;
       boost::optional<we::type::timestamp_t> _activity_submission_ts;
     };

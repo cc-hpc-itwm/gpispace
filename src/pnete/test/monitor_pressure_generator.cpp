@@ -42,7 +42,12 @@ struct activity
                              , const NotificationService* service_b
                              ) const
   {
-    const NotificationEvent event (_workers, _id, _state, _act);
+    const NotificationEvent event ( _workers
+                                  , _id
+                                  , _state
+                                  , NotificationEvent::type_t::module_call
+                                  , _act
+                                  );
     service_a->notify (event);
     service_b->notify (event);
   }

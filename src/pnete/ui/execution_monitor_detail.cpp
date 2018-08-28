@@ -26,6 +26,7 @@
 #include <QToolTip>
 
 #include <functional>
+#include <map>
 
 namespace fhg
 {
@@ -417,7 +418,7 @@ namespace fhg
             }
             block() = default;
           };
-          QHash<worker_model::state_type, QVector<block>> blocks;
+          std::map<worker_model::state_type, QVector<block>> blocks;
           bool distribute_vertically;
           qreal height;
 
@@ -425,16 +426,14 @@ namespace fhg
             : distribute_vertically (distr)
             , height (h)
           {
-            blocks[sdpa::daemon::NotificationEvent::STATE_STARTED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_FINISHED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_FAILED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_CANCELED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED];
-            blocks[sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED];
+            blocks[worker_model::state_type::STATE_STARTED];
+            blocks[worker_model::state_type::STATE_FINISHED];
+            blocks[worker_model::state_type::STATE_FAILED];
+            blocks[worker_model::state_type::STATE_CANCELED];
+            blocks[worker_model::state_type::STATE_VMEM_PUT_FINISHED];
+            blocks[worker_model::state_type::STATE_VMEM_GET_FINISHED];
           }
         };
-
-        template<typename T> T sorted (T t) { qSort (t); return t; }
 
         bool intersects_or_touches (const QRectF& lhs, const QRectF& rhs)
         {
@@ -500,7 +499,7 @@ namespace fhg
             ( distribute_vertically
             , distribute_vertically
             ? rect.height()
-            / qreal (sdpa::daemon::NotificationEvent::STATE_MAX + 1)
+            / qreal (static_cast<int> (worker_model::state_type::STATE_MAX) + 1)
             : rect.height()
             );
 
@@ -622,13 +621,11 @@ namespace fhg
             paint_description descr
               (prepare_gantt_row (index, option.rect, painter->pen()));
 
-            for ( const worker_model::state_type state
-                : sorted (descr.blocks.keys())
-                )
+            for (auto const& state_and_blocks : descr.blocks)
             {
-              painter->setBrush (color_for_state (state));
+              painter->setBrush (color_for_state (state_and_blocks.first));
 
-              for (const paint_description::block& block : descr.blocks[state])
+              for (auto const& block : state_and_blocks.second)
               {
                 painter->drawRect (shrunken_by_pen (block.rect, painter->pen()));
               }
@@ -661,7 +658,7 @@ namespace fhg
                             : option.palette.text().color()
                             );
 
-            QHash<worker_model::state_type, int> in_state;
+            std::map<worker_model::state_type, int> in_state;
 
             for ( boost::optional<worker_model::value_type> current
                 : current_intervals
@@ -678,10 +675,10 @@ namespace fhg
               (option.rect.adjusted (inset, inset, -inset, -inset));
 
             qreal x_pos (0.0);
-            for (const worker_model::state_type state : sorted (in_state.keys()))
+            for (auto const& state_and_count : in_state)
             {
               x_pos += 3.0;
-              const QString text (QString ("%1").arg (in_state[state]));
+              const QString text (QString ("%1").arg (state_and_count.second));
               const qreal text_width (QFontMetrics (painter->font()).width (text) + 4.0);
               painter->drawText ( QRectF ( rect_with_inset.left() + x_pos
                                          , rect_with_inset.top()
@@ -693,7 +690,7 @@ namespace fhg
                                 );
               x_pos += text_width;
 
-              painter->setBrush (color_for_state (state));
+              painter->setBrush (color_for_state (state_and_count.first));
 
               painter->drawRect ( QRectF ( rect_with_inset.left() + x_pos
                                          , rect_with_inset.top()
@@ -713,16 +710,14 @@ namespace fhg
       {
         QString to_string (worker_model::state_type state)
         {
-          typedef sdpa::daemon::NotificationEvent event;
-
           switch (state)
           {
-          case event::STATE_STARTED: return "started";
-          case event::STATE_FINISHED: return "finished";
-          case event::STATE_FAILED: return "failed";
-          case event::STATE_CANCELED: return "canceled";
-          case event::STATE_VMEM_PUT_FINISHED: return "was_put";
-          case event::STATE_VMEM_GET_FINISHED: return "was_get";
+          case worker_model::state_type::STATE_STARTED: return "started";
+          case worker_model::state_type::STATE_FINISHED: return "finished";
+          case worker_model::state_type::STATE_FAILED: return "failed";
+          case worker_model::state_type::STATE_CANCELED: return "canceled";
+          case worker_model::state_type::STATE_VMEM_PUT_FINISHED: return "was_put";
+          case worker_model::state_type::STATE_VMEM_GET_FINISHED: return "was_get";
           }
 
           INVALID_ENUM_VALUE (worker_model::state_type, state);
@@ -736,7 +731,7 @@ namespace fhg
         , QAbstractItemView* view
         )
       {
-        for (const paint_description::block& block : descr.blocks[state])
+        for (auto const& block : descr.blocks.at (state))
         {
           if ( block.rect.left() <= event->pos().x()
              && event->pos().x() <= block.rect.right()
@@ -779,20 +774,23 @@ namespace fhg
 
             if (descr.distribute_vertically)
             {
-              if ( maybe_show_tooltip
-                   ( descr.blocks.keys().at
-                     ((event->pos().y() - option.rect.top()) / descr.height)
-                   , descr, event, view
-                   )
-                 )
+              //! \note This assumes that keys are linear and can be
+              //! casted from int.
+              auto const state_index
+                ((event->pos().y() - option.rect.top()) / descr.height);
+              auto const state
+                (static_cast<worker_model::state_type> (state_index));
+
+              if (maybe_show_tooltip (state, descr, event, view))
               {
                 return true;
               }
             }
             else
             {
-              for (worker_model::state_type state : descr.blocks.keys())
+              for (auto const& state_and_block : descr.blocks)
               {
+                auto const& state (state_and_block.first);
                 if (maybe_show_tooltip (state, descr, event, view))
                 {
                   return true;

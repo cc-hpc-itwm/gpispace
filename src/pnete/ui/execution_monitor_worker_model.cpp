@@ -3,6 +3,7 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/macros.hpp>
 
 #include <util-generic/this_bound_mem_fn.hpp>
 
@@ -27,7 +28,7 @@ namespace fhg
           , _duration (d)
           , _id (id)
           , _name (name)
-          , _state (sdpa::daemon::NotificationEvent::STATE_STARTED)
+          , _state (state_type::STATE_STARTED)
       {
         state (state_, t);
       }
@@ -60,15 +61,15 @@ namespace fhg
       {
         switch (state_)
         {
-        case sdpa::daemon::NotificationEvent::STATE_CANCELED:
-        case sdpa::daemon::NotificationEvent::STATE_FAILED:
-        case sdpa::daemon::NotificationEvent::STATE_FINISHED:
-        case sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED:
-        case sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED:
+        case state_type::STATE_CANCELED:
+        case state_type::STATE_FAILED:
+        case state_type::STATE_FINISHED:
+        case state_type::STATE_VMEM_PUT_FINISHED:
+        case state_type::STATE_VMEM_GET_FINISHED:
           duration (now - timestamp());
           break;
 
-        case sdpa::daemon::NotificationEvent::STATE_STARTED:
+        case state_type::STATE_STARTED:
           break;
         }
 
@@ -166,13 +167,67 @@ namespace fhg
                                    , start_ts
                                    , end_ts
                                    , fhg::log::SWFTraceEvent::get_state
-                                       (monitor_event.state())
+                                       (event.activity_state())
                                    , trans_id.value()
-                                   , fhg::log::SWFTraceEvent::get_job_type_id
-                                       (event.activity_id())
+                                   , event.type()
                                    , static_cast<unsigned int> (worker_id)
                                    }
                                  );
+        }
+      }
+
+      namespace
+      {
+        worker_model::state_type make_fake_state
+          (sdpa::daemon::NotificationEvent const& event)
+        {
+          switch (event.activity_state())
+          {
+          case sdpa::daemon::NotificationEvent::STATE_STARTED:
+            return worker_model::state_type::STATE_STARTED;
+          case sdpa::daemon::NotificationEvent::STATE_FAILED:
+            return worker_model::state_type::STATE_FAILED;
+          case sdpa::daemon::NotificationEvent::STATE_CANCELED:
+            return worker_model::state_type::STATE_CANCELED;
+
+          case sdpa::daemon::NotificationEvent::STATE_FINISHED:
+            switch (event.type())
+            {
+            case sdpa::daemon::NotificationEvent::type_t::agent:
+              return worker_model::state_type::STATE_FINISHED;
+            case sdpa::daemon::NotificationEvent::type_t::module_call:
+              return worker_model::state_type::STATE_FINISHED;
+            case sdpa::daemon::NotificationEvent::type_t::vmem_get:
+              return worker_model::state_type::STATE_VMEM_GET_FINISHED;
+            case sdpa::daemon::NotificationEvent::type_t::vmem_put:
+              return worker_model::state_type::STATE_VMEM_PUT_FINISHED;
+            }
+
+            INVALID_ENUM_VALUE
+              (sdpa::daemon::NotificationEvent::type_t, event.type());
+          }
+
+          INVALID_ENUM_VALUE
+            (sdpa::daemon::NotificationEvent::state_t, event.activity_state());
+        }
+
+        QString fake_activity_id_suffix
+          (sdpa::daemon::NotificationEvent const& event)
+        {
+          switch (event.type())
+          {
+          case sdpa::daemon::NotificationEvent::type_t::agent:
+            return "";
+          case sdpa::daemon::NotificationEvent::type_t::module_call:
+            return ".exec";
+          case sdpa::daemon::NotificationEvent::type_t::vmem_get:
+            return ".get";
+          case sdpa::daemon::NotificationEvent::type_t::vmem_put:
+            return ".put";
+          }
+
+          INVALID_ENUM_VALUE
+            (sdpa::daemon::NotificationEvent::type_t, event.type());
         }
       }
 
@@ -190,13 +245,17 @@ namespace fhg
         {
           const sdpa::daemon::NotificationEvent event (log_event._content);
 
+          auto const fake_state (make_fake_state (event));
+
           const long time
             ( to_qt (log_event._timestamp).toMSecsSinceEpoch()
             - _base_time.toMSecsSinceEpoch()
             );
 
           const QString activity_id
-            (QString::fromStdString (event.activity_id()));
+            ( QString::fromStdString (event.activity_id())
+            + fake_activity_id_suffix (event)
+            );
 
           for (std::string const& worker_std : event.components())
           {
@@ -249,7 +308,7 @@ namespace fhg
 
                 if (!current.duration())
                 {
-                  current.state (sdpa::daemon::NotificationEvent::STATE_FAILED, time);
+                  current.state (state_type::STATE_FAILED, time);
                   add_event_to_trace (current, event, worker_std);
                 }
               }
@@ -259,13 +318,13 @@ namespace fhg
                              , boost::none
                              , activity_id
                              , QString::fromStdString (event.activity_name())
-                             , event.activity_state()
+                             , fake_state
                              )
                 );
             }
             else
             {
-              container.back().state (event.activity_state(), time);
+              container.back().state (fake_state, time);
               add_event_to_trace (container.back(), event, worker_std);
             }
 

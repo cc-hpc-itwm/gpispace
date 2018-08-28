@@ -69,7 +69,10 @@ namespace
       , wfe_task_t& target
       , std::mt19937& engine
       , we::type::activity_t& activity
-      , std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> const& emit_gantt
+      , std::function < void ( sdpa::daemon::NotificationEvent::type_t
+                             , sdpa::daemon::NotificationEvent::state_t
+                             )
+                      > const& emit_gantt
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
@@ -152,7 +155,10 @@ namespace
     wfe_task_t& task;
     std::mt19937& _engine;
     we::type::activity_t& _activity;
-    std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> _emit_gantt;
+    std::function < void ( sdpa::daemon::NotificationEvent::type_t
+                         , sdpa::daemon::NotificationEvent::state_t
+                         )
+                  > const& _emit_gantt;
   };
 }
 
@@ -496,13 +502,12 @@ catch (decltype (m_event_queue)::interrupted const&)
 }
 
 void DRTSImpl::emit_gantt ( wfe_task_t const& task
-                          , char const* const step
+                          , sdpa::daemon::NotificationEvent::type_t const type
                           , sdpa::daemon::NotificationEvent::state_t const state
                           )
 {
-  std::string const fake_id (task.id + "." + step);
   sdpa::daemon::NotificationEvent const event
-    ({m_my_name}, fake_id, state, task.activity);
+    ({m_my_name}, task.id, state, type, task.activity);
 
   if (_notification_service)
   {
@@ -579,11 +584,11 @@ try
               , task
               , engine
               , task.activity
-              , [&] ( char const* const step
+              , [&] ( sdpa::daemon::NotificationEvent::type_t type
                     , sdpa::daemon::NotificationEvent::state_t state
                     )
                 {
-                  return emit_gantt (task, step, state);
+                  return emit_gantt (task, type, state);
                 }
               )
           , task.activity.transition().data()

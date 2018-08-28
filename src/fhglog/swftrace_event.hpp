@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sdpa/daemon/NotificationEvent.hpp>
+
 #include <chrono>
 #include <ostream>
 #include <string>
@@ -19,14 +21,13 @@ namespace fhg
                     , sec_duration end_timestamp
                     , int status
                     , uint64_t group_id
-                    , unsigned int job_type_id
+                    , sdpa::daemon::NotificationEvent::type_t
                     , unsigned int partition
                     );
 
       friend std::ostream& operator<< (std::ostream&, SWFTraceEvent const&);
 
       static int get_state (const int state);
-      static unsigned int get_job_type_id (std::string activity_id);
       static std::string gen_swf_trace_header();
 
     private:

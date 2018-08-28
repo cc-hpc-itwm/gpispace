@@ -22,7 +22,10 @@ namespace we
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
-      , std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> const& emit_gantt
+      , std::function < void ( sdpa::daemon::NotificationEvent::type_t
+                             , sdpa::daemon::NotificationEvent::state_t
+                             )
+                      > const& emit_gantt
       );
   }
 }

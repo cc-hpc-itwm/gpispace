@@ -140,7 +140,7 @@ private:
   std::unique_ptr<sdpa::daemon::NotificationService> _notification_service;
   fhg::logging::stream_emitter _log_emitter;
   void emit_gantt ( wfe_task_t const&
-                  , char const* step
+                  , sdpa::daemon::NotificationEvent::type_t
                   , sdpa::daemon::NotificationEvent::state_t
                   );
 

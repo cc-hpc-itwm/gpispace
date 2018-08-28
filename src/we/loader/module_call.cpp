@@ -149,7 +149,10 @@ namespace we
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
-      , std::function<void (char const*, sdpa::daemon::NotificationEvent::state_t)> const& emit_gantt
+      , std::function < void ( sdpa::daemon::NotificationEvent::type_t
+                             , sdpa::daemon::NotificationEvent::state_t
+                             )
+                      > const& emit_gantt
       )
     {
       unsigned long position (0);
@@ -199,13 +202,19 @@ namespace we
         }
       }
 
-      emit_gantt ("get", sdpa::daemon::NotificationEvent::STATE_STARTED);
+      using NotificationEvent = sdpa::daemon::NotificationEvent;
+
+      emit_gantt ( NotificationEvent::type_t::vmem_get
+                 , NotificationEvent::STATE_STARTED
+                 );
 
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input)
                );
 
-      emit_gantt ("get", sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED);
+      emit_gantt ( NotificationEvent::type_t::vmem_get
+                 , NotificationEvent::STATE_FINISHED
+                 );
 
       std::list<std::pair<local::range, global::range>> const
         puts_evaluated_before_call
@@ -213,7 +222,9 @@ namespace we
 
       expr::eval::context out (input);
 
-      emit_gantt ("exec", sdpa::daemon::NotificationEvent::STATE_STARTED);
+      emit_gantt ( NotificationEvent::type_t::module_call
+                 , NotificationEvent::STATE_STARTED
+                 );
 
       try
       {
@@ -228,13 +239,19 @@ namespace we
       {
         //! \todo HACK HACK HACK: never emits canceled or
         //! canceled_due_to_worker_shutdown!
-        emit_gantt ("exec", sdpa::daemon::NotificationEvent::STATE_FAILED);
+        emit_gantt ( NotificationEvent::type_t::module_call
+                   , NotificationEvent::STATE_FAILED
+                   );
         throw;
       }
 
-      emit_gantt ("exec", sdpa::daemon::NotificationEvent::STATE_FINISHED);
+      emit_gantt ( NotificationEvent::type_t::module_call
+                 , NotificationEvent::STATE_FINISHED
+                 );
 
-      emit_gantt ("put", sdpa::daemon::NotificationEvent::STATE_STARTED);
+      emit_gantt ( NotificationEvent::type_t::vmem_put
+                 , NotificationEvent::STATE_STARTED
+                 );
 
       transfer ( put_global_data, virtual_memory_api, shared_memory
                , memory_buffer, puts_evaluated_before_call
@@ -243,7 +260,9 @@ namespace we
                , memory_buffer, module_call.puts_evaluated_after_call (out)
                );
 
-      emit_gantt ("put", sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED);
+      emit_gantt ( NotificationEvent::type_t::vmem_put
+                 , NotificationEvent::STATE_FINISHED
+                 );
 
       return out;
     }

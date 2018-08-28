@@ -63,7 +63,18 @@ namespace fhg
 
         typedef long timestamp_type;
         typedef long duration_type;
-        typedef sdpa::daemon::NotificationEvent::state_t state_type;
+        //! \todo Don't abuse states for vmem get/put blocks, use type
+        //! instead. Then remove this duplicated state enum.
+        enum class state_type
+        {
+          STATE_STARTED
+        , STATE_FINISHED
+        , STATE_FAILED
+        , STATE_CANCELED
+        , STATE_VMEM_PUT_FINISHED
+        , STATE_VMEM_GET_FINISHED
+        , STATE_MAX = STATE_CANCELED
+        };
 
         struct value_type
         {

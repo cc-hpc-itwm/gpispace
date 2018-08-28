@@ -1,9 +1,5 @@
 #include <fhglog/swftrace_event.hpp>
 
-#include <fhg/util/starts_with.hpp>
-
-#include <sdpa/daemon/NotificationEvent.hpp>
-
 #include <iomanip>
 #include <sstream>
 
@@ -81,10 +77,6 @@ namespace fhg
       {
       case sdpa::daemon::NotificationEvent::STATE_FINISHED:
         return SWFTRACE_STATE_FINISHED;
-      case sdpa::daemon::NotificationEvent::STATE_VMEM_PUT_FINISHED:
-        return SWFTRACE_STATE_FINISHED;
-      case sdpa::daemon::NotificationEvent::STATE_VMEM_GET_FINISHED:
-        return SWFTRACE_STATE_FINISHED;
       case sdpa::daemon::NotificationEvent::STATE_CANCELED:
         return SWFTRACE_STATE_CANCELED;
       case sdpa::daemon::NotificationEvent::STATE_FAILED:
@@ -95,21 +87,26 @@ namespace fhg
       }
     }
 
-    unsigned int SWFTraceEvent::get_job_type_id (std::string activity_id)
+    namespace
     {
-      if (fhg::util::ends_with ("exec", activity_id))
+      swftrace_job_type_t get_job_type_id
+        (sdpa::daemon::NotificationEvent::type_t const type)
       {
-        return SWFTRACE_JOB_TYPE_CPU_COMPUTE;
+        switch (type)
+        {
+        case sdpa::daemon::NotificationEvent::type_t::agent:
+          return SWFTRACE_JOB_TYPE_OTHER;
+        case sdpa::daemon::NotificationEvent::type_t::module_call:
+          return SWFTRACE_JOB_TYPE_CPU_COMPUTE;
+        case sdpa::daemon::NotificationEvent::type_t::vmem_get:
+          return SWFTRACE_JOB_TYPE_IO_GET;
+        case sdpa::daemon::NotificationEvent::type_t::vmem_put:
+          return SWFTRACE_JOB_TYPE_IO_PUT;
+
+        default:
+          throw std::logic_error ("undefined job type");
+        }
       }
-      else if (fhg::util::ends_with ("get", activity_id))
-      {
-        return SWFTRACE_JOB_TYPE_IO_GET;
-      }
-      else if (fhg::util::ends_with ("put", activity_id))
-      {
-        return SWFTRACE_JOB_TYPE_IO_PUT;
-      }
-      return SWFTRACE_JOB_TYPE_OTHER;
     }
 
     SWFTraceEvent::SWFTraceEvent ( unsigned int job_id
@@ -118,7 +115,7 @@ namespace fhg
                                  , sec_duration end_timestamp
                                  , int status
                                  , uint64_t group_id
-                                 , unsigned int job_type_id
+                                 , sdpa::daemon::NotificationEvent::type_t type
                                  , unsigned int partition
                                  )
       : job_id (job_id)
@@ -134,7 +131,7 @@ namespace fhg
       , status (status)
       , user_id (DEFAULT_USER_ID)
       , group_id (group_id)
-      , job_type_id (job_type_id)
+      , job_type_id (get_job_type_id (type))
       , queue (DEFAULT_QUEUE)
       , partition (partition)
       , prec_job_id (DEFAULT_PREC_JOB_ID)

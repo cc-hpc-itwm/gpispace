@@ -139,8 +139,7 @@ namespace fhg
         QColor color_for_state (worker_model::state_type) const;
 
       signals:
-        void color_for_state_changed
-          (sdpa::daemon::NotificationEvent::state_t, QColor);
+        void color_for_state_changed (worker_model::state_type, QColor);
 
       public slots:
         void color_for_state (worker_model::state_type, QColor);
