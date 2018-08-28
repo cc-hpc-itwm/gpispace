@@ -11,6 +11,7 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
 #include <functional>
+#include <list>
 
 namespace fhg
 {
@@ -21,7 +22,8 @@ namespace fhg
     public:
       using endpoint_t = tcp_endpoint;
       using callback_t = std::function<void (message const&)>;
-      tcp_receiver (endpoint_t const&, callback_t);
+      tcp_receiver (endpoint_t, callback_t);
+      tcp_receiver (std::list<endpoint_t>, callback_t);
 
     private:
       callback_t _callback;

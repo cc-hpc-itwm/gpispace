@@ -113,7 +113,7 @@ namespace fhg
       rpc::sync_remote_function<typename Combination::register_function>
         {client} (endpoint (service_provider));
 
-      emitter.emit (sent);
+      emitter.emit_message (sent);
 
       BOOST_REQUIRE_EQUAL
         ( received_future.wait_for (std::chrono::milliseconds (200))

@@ -165,18 +165,19 @@ extended_add_library (NAME logging
           "logging/legacy_bridge.cpp"
           "logging/message.cpp"
           "logging/stream_emitter.cpp"
+          "logging/tcp_endpoint.cpp"
           "logging/tcp_receiver.cpp"
   LIBRARIES fhglog
             Util::Generic
             RPC
             Boost::base
+            Boost::program_options
 )
 
 add_unit_test (NAME logging_file_sink
   SOURCES "logging/test/file_sink.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-            test-utilities
   USE_BOOST
 )
 
@@ -188,11 +189,24 @@ add_unit_test (NAME logging_legacy_bridge
   USE_BOOST
 )
 
+add_unit_test (NAME logging_ostream_redirect
+  SOURCES "logging/test/ostream_redirect.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
 add_unit_test (NAME logging_stream_emitter
   SOURCES "logging/test/stream_emitter.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-            test-utilities
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_tcp_endpoint
+  SOURCES "logging/test/tcp_endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
   USE_BOOST
 )
 
@@ -200,6 +214,5 @@ add_unit_test (NAME logging_tcp_receiver
   SOURCES "logging/test/tcp_receiver.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-            test-utilities
   USE_BOOST
 )

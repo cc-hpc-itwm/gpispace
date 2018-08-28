@@ -2,8 +2,9 @@
 
 #pragma once
 
-#include <fhglog/event.hpp>
-#include <fhglog/remote/server.hpp>
+#include <logging/legacy_bridge.hpp>
+#include <logging/tcp_endpoint.hpp>
+#include <logging/tcp_receiver.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -16,6 +17,7 @@
 #include <QVector>
 
 #include <functional>
+#include <list>
 #include <mutex>
 #include <thread>
 
@@ -38,8 +40,10 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model (unsigned short port, QObject* parent = nullptr);
-        ~worker_model();
+        worker_model ( unsigned short port
+                     , std::list<logging::tcp_endpoint>
+                     , QObject* parent = nullptr
+                     );
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
         virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
@@ -100,13 +104,11 @@ namespace fhg
         QDateTime _base_time;
 
         std::mutex _event_queue;
-        QVector<log::LogEvent> _queued_events;
-        void append_event (const log::LogEvent&);
+        QVector<logging::message> _queued_events;
+        void append_event (logging::message);
 
-        boost::asio::io_service _io_service;
-        fhg::log::Logger _logger;
-        log::remote::LogServer _log_server;
-        std::thread _io_thread;
+        logging::legacy_bridge _log_bridge;
+        logging::tcp_receiver _log_receiver;
       };
     }
   }

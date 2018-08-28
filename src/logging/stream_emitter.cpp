@@ -40,7 +40,7 @@ namespace fhg
         (_service_tcp_provider.local_endpoint());
     }
 
-    void stream_emitter::emit (message const& forwarded_message)
+    void stream_emitter::emit_message (message const& forwarded_message)
     {
       std::vector<std::future<void>> receiver_results;
 

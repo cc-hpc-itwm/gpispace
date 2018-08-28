@@ -242,7 +242,7 @@ int main(int ac, char **av)
       }
 
       master_info.emplace_back
-        (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+        (fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
     }
 
     boost::asio::io_service gui_io_service;
@@ -276,7 +276,11 @@ int main(int ac, char **av)
       , logger
       );
 
-    promise.set_result ({});
+    promise.set_result ( { plugin.logger_registration_endpoint().host
+                         , std::to_string
+                             (plugin.logger_registration_endpoint().port)
+                         }
+                       );
 
     stop_requested.wait();
 

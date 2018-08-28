@@ -161,49 +161,31 @@ namespace
     , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
+    , std::list<fhg::logging::tcp_endpoint>& log_emitters
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
                 << rif_entry_point
                 << " with parent " << parent_name << "\n";
 
-    std::vector<std::string> agent_startup_arguments
-      { "-u", "0"
-      , "-n", name
-      , "-m", build_parent_with_hostinfo (parent_name, parent_hostinfo)
-      };
-    if (gui_host && gui_port)
-    {
-      agent_startup_arguments.emplace_back ("-a");
-      agent_startup_arguments.emplace_back
-        (*gui_host + ":" + std::to_string (*gui_port));
-    }
-    if (gpi_socket)
-    {
-      agent_startup_arguments.emplace_back ("--vmem-socket");
-      agent_startup_arguments.emplace_back (gpi_socket->string());
-    }
-
-    std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
-      ( rif_client.execute_and_get_startup_messages
-          ( installation_path.agent()
-          , agent_startup_arguments
+    auto const result
+      ( rif_client.start_agent
+          ( name
+          , parent_hostinfo
+          , gui_host
+          , gui_port
+          , gpi_socket
+          , installation_path.agent()
           , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
       );
 
-    if (agent_startup_messages.second.size() != 2)
-    {
-      throw std::logic_error ( "could not start agent " + name
-                             + ": expected 2 lines of startup messages"
-                             );
-    }
+    processes.store (rif_entry_point, name, result.pid);
 
-    processes.store (rif_entry_point, name, agent_startup_messages.first);
+    log_emitters.emplace_back
+      (std::move (result.logger_registration_endpoint));
 
-    return { agent_startup_messages.second[0]
-           , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
-           };
+    return result.hostinfo;
   }
 }
 
@@ -229,6 +211,7 @@ namespace fhg
     , std::vector<boost::filesystem::path> const& app_path
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
+    , std::list<fhg::logging::tcp_endpoint>& log_emitters
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
@@ -256,61 +239,48 @@ namespace fhg
                       )
                  << "\n";
 
-     auto&& kernel_arguments
-       ([&] (std::string const& name)
-        {
-          std::vector<std::string> arguments;
+     std::vector<std::string> arguments;
 
-          arguments.emplace_back ("--master");
-          arguments.emplace_back
-            (build_parent_with_hostinfo (master_name, master_hostinfo));
+     arguments.emplace_back ("--master");
+     arguments.emplace_back
+       (build_parent_with_hostinfo (master_name, master_hostinfo));
 
-          arguments.emplace_back ("--backlog-length");
-          arguments.emplace_back ("1");
+     //! \todo gui is optional in worker
+     if (gui_host && gui_port)
+     {
+       arguments.emplace_back ("--gui-host");
+       arguments.emplace_back (*gui_host);
+       arguments.emplace_back ("--gui-port");
+       arguments.emplace_back (std::to_string (*gui_port));
+     }
 
-          //! \todo gui is optional in worker
-          if (gui_host && gui_port)
-          {
-            arguments.emplace_back ("--gui-host");
-            arguments.emplace_back (*gui_host);
-            arguments.emplace_back ("--gui-port");
-            arguments.emplace_back (std::to_string (*gui_port));
-          }
+     for (boost::filesystem::path const& path : app_path)
+     {
+       arguments.emplace_back ("--library-search-path");
+       arguments.emplace_back (path.string());
+     }
 
-          for (boost::filesystem::path const& path : app_path)
-          {
-            arguments.emplace_back ("--library-search-path");
-            arguments.emplace_back (path.string());
-          }
+     if (description.shm_size)
+     {
+       arguments.emplace_back ("--capability");
+       arguments.emplace_back ("GPI");
+       arguments.emplace_back ("--virtual-memory-socket");
+       arguments.emplace_back (gpi_socket.get().string());
+       arguments.emplace_back ("--shared-memory-size");
+       arguments.emplace_back (std::to_string (description.shm_size));
+     }
 
-          if (description.shm_size)
-          {
-            arguments.emplace_back ("--capability");
-            arguments.emplace_back ("GPI");
-            arguments.emplace_back ("--virtual-memory-socket");
-            arguments.emplace_back (gpi_socket.get().string());
-            arguments.emplace_back ("--shared-memory-size");
-            arguments.emplace_back (std::to_string (description.shm_size));
-          }
+     for (std::string const& capability : description.capabilities)
+     {
+       arguments.emplace_back ("--capability");
+       arguments.emplace_back (capability);
+     }
 
-          for (std::string const& capability : description.capabilities)
-          {
-            arguments.emplace_back ("--capability");
-            arguments.emplace_back (capability);
-          }
-
-          if (description.socket)
-          {
-            arguments.emplace_back ("--socket");
-            arguments.emplace_back (std::to_string (description.socket.get()));
-          }
-
-          arguments.emplace_back ("-n");
-          arguments.emplace_back (name);
-
-          return arguments;
-        }
-       );
+     if (description.socket)
+     {
+       arguments.emplace_back ("--socket");
+       arguments.emplace_back (std::to_string (description.socket.get()));
+     }
 
      std::atomic<std::size_t> num_nodes (0);
 
@@ -338,7 +308,7 @@ namespace fhg
         );
 
       std::vector<std::tuple< fhg::rif::entry_point
-                            , std::future<std::pair<pid_t, std::vector<std::string>>>
+                            , std::future<fhg::rif::protocol::start_worker_result>
                             , std::string
                             >
                  > futures;
@@ -396,9 +366,10 @@ namespace fhg
 
             futures.emplace_back
               ( connection.second
-              , connection.first.execute_and_get_startup_messages
-                  ( installation_path.drts_kernel()
-                  , kernel_arguments (name)
+              , connection.first.start_worker
+                  ( name
+                  , installation_path.drts_kernel()
+                  , arguments
                   , environment
                   )
               , name
@@ -416,19 +387,15 @@ namespace fhg
       {
         try
         {
-          auto const pid_and_startup_messages (std::get<1> (future).get());
-
-          if (!pid_and_startup_messages.second.empty())
-          {
-            throw std::runtime_error ( "could not start " + std::get<2> (future)
-                                     + ": expected no startup messages"
-                                     );
-          }
+          auto const result (std::get<1> (future).get());
 
           processes.store ( std::get<0> (future)
                           , "drts-kernel-" + std::get<2> (future)
-                          , pid_and_startup_messages.first
+                          , result.pid
                           );
+
+          log_emitters.emplace_back
+            (std::move (result.logger_registration_endpoint));
         }
         catch (...)
         {
@@ -535,6 +502,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , std::list<fhg::logging::tcp_endpoint>& log_emitters
       )
     {
       if (log_dir)
@@ -730,6 +698,7 @@ namespace fhg
                                           , log_dir
                                           , processes
                                           , info_output
+                                          , log_emitters
                                           );
 
       return orchestrator_hostinfo;

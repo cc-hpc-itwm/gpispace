@@ -48,6 +48,7 @@
 #include <util-generic/threadsafe_queue.hpp>
 
 #include <fhglog/LogMacros.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <chrono>
 #include <condition_variable>
@@ -67,7 +68,7 @@ namespace sdpa {
                    , const std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
-                   , std::vector<name_host_port_tuple> const& masters
+                   , master_info_t masters
                    , fhg::log::Logger& logger
                    , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                    , bool create_wfe
@@ -76,6 +77,7 @@ namespace sdpa {
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
+      fhg::logging::tcp_endpoint logger_registration_endpoint() const;
 
     public:
       // WE interface
@@ -266,6 +268,11 @@ namespace sdpa {
       sdpa::capabilities_set_t m_capabilities;
 
       std::unique_ptr<NotificationService> m_guiService;
+      fhg::logging::stream_emitter _log_emitter;
+      void emit_gantt ( job_id_t const&
+                      , we::type::activity_t const&
+                      , NotificationEvent::state_t
+                      );
 
       std::chrono::seconds _registration_timeout;
 

@@ -9,6 +9,8 @@
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/serialization/std/chrono.hpp>
 
+#include <logging/tcp_endpoint.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/optional.hpp>
@@ -69,6 +71,43 @@ namespace fhg
                 , std::size_t rank
                 )
         );
+
+      using hostinfo_t = std::pair<std::string, unsigned short>;
+      struct start_agent_result
+      {
+        pid_t pid;
+        hostinfo_t hostinfo;
+        fhg::logging::tcp_endpoint logger_registration_endpoint;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_agent
+        , start_agent_result
+            ( std::string name
+            , hostinfo_t parent
+            , boost::optional<std::string> gui_host
+            , boost::optional<unsigned short> gui_port
+            , boost::optional<boost::filesystem::path> gpi_socket
+            , boost::filesystem::path command
+            , std::unordered_map<std::string, std::string> environment
+            )
+        );
+
+      struct start_worker_result
+      {
+        pid_t pid;
+        fhg::logging::tcp_endpoint logger_registration_endpoint;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_worker
+        , start_worker_result
+            ( std::string name
+            , boost::filesystem::path command
+            , std::vector<std::string> arguments
+            , std::unordered_map<std::string, std::string> environment
+            )
+        );
     }
   }
 }
@@ -125,6 +164,29 @@ namespace boost
         )
     {
       boost::serialization::split_free (ar, t, file_version);
+    }
+
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::protocol::start_agent_result& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
+      ar & result.hostinfo;
+      ar & result.logger_registration_endpoint;
+    }
+
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::protocol::start_worker_result& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
+      ar & result.logger_registration_endpoint;
     }
   }
 }

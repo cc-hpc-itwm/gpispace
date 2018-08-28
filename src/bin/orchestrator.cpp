@@ -64,7 +64,7 @@ int main (int argc, char **argv)
       , orchUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , boost::none
-      , {}
+      , sdpa::master_info_t()
       , logger
       , boost::none
       , false

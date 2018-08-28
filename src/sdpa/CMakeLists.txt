@@ -20,6 +20,7 @@ target_link_libraries (sdpa
   fhg-util
   pnet
   Util::Generic
+  gspc::logging
 )
 
 add_subdirectory (test)

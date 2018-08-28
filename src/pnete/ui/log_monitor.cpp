@@ -2,8 +2,8 @@
 
 #include <we/type/activity.hpp>
 
-#include <fhglog/appender/call.hpp>
-#include <fhglog/format.hpp>
+#include <util-generic/ostream/put_time.hpp>
+#include <util-generic/this_bound_mem_fn.hpp>
 
 #include <util-qt/overload.hpp>
 
@@ -50,29 +50,32 @@
 
 namespace
 {
-  template<typename T>
-    fhg::log::Logger& logger_with
-    ( void (T::* function)(const fhg::log::LogEvent&)
-    , T* that
-    , fhg::log::Logger& logger
-    )
+  QColor category_to_color (std::string const& category)
   {
-    logger.addAppender<fhg::log::appender::call>
-      (std::bind (function, that, std::placeholders::_1));
-
-    return logger;
+    using namespace fhg::logging::legacy;
+    return category == category_level_trace ? QColor (205, 183, 158)
+      : category == category_level_info ? QColor (25, 25, 25)
+      : category == category_level_warn ? QColor (255, 140, 0)
+      : category == category_level_error ? QColor (255, 0, 0)
+      : throw std::invalid_argument ("category is not a legacy category");
   }
-
-  QColor severityToColor (const fhg::log::Level lvl)
+  int category_to_legacy_level (std::string const& category)
   {
-    switch (lvl)
-    {
-    case fhg::log::TRACE: return QColor (205, 183, 158);
-    case fhg::log::INFO: return QColor (25, 25, 25);
-    case fhg::log::WARN: return QColor (255, 140, 0);
-    case fhg::log::ERROR: return QColor (255, 0, 0);
-    default: return QColor (0, 0, 0);
-    }
+    using namespace fhg::logging::legacy;
+    return category == category_level_trace ? 0
+      : category == category_level_info ? 1
+      : category == category_level_warn ? 2
+      : category == category_level_error ? 3
+      : throw std::invalid_argument ("category is not a legacy category");
+  }
+  char category_to_short_legacy_level_identifier (std::string const& category)
+  {
+    using namespace fhg::logging::legacy;
+    return category == category_level_trace ? 'T'
+      : category == category_level_info ? 'I'
+      : category == category_level_warn ? 'W'
+      : category == category_level_error ? 'E'
+      : throw std::invalid_argument ("category is not a legacy category");
   }
 
   enum table_columns
@@ -82,17 +85,29 @@ namespace
     TABLE_COL_MESSAGE,
     TABLE_COLUMN_COUNT,
   };
+
+  template<typename Timepoint>
+    QString timepoint_to_qstring (Timepoint const& timepoint)
+  {
+    std::ostringstream oss;
+    oss << fhg::util::ostream::put_time<typename Timepoint::clock> (timepoint);
+    return QString::fromStdString (oss.str());
+  }
 }
 
 namespace detail
 {
-  formatted_log_event::formatted_log_event (const fhg::log::LogEvent& evt)
-    //! \todo get time from outside?
-    : time (QTime::currentTime().toString())
-    , source (QString ("%1@%2").arg (evt.pid()).arg (evt.host ().c_str()))
-    , message (evt.message().c_str())
-    , event (evt)
-  { }
+  formatted_log_event::formatted_log_event (fhg::logging::message raw)
+    : time (timepoint_to_qstring (raw._timestamp))
+    , source ( QString ("%1@%2")
+               .arg (raw._process_id)
+               .arg (QString::fromStdString (raw._hostname))
+             )
+    , message (QString::fromStdString (raw._content))
+    , color (category_to_color (raw._category))
+    , legacy_severity (category_to_legacy_level (raw._category))
+    , _raw (std::move (raw))
+  {}
 
   log_table_model::log_table_model (QObject* parent)
     : QAbstractTableModel (parent)
@@ -158,33 +173,33 @@ namespace detail
       break;
 
     case Qt::ForegroundRole:
-      return severityToColor (event.event.severity());
+      return event.color;
 
     case Qt::UserRole:
-      return static_cast<int> (event.event.severity());
+      return event.legacy_severity;
     }
 
     return QVariant();
   }
 
-  std::vector<fhg::log::LogEvent> log_table_model::data() const
+  std::vector<fhg::logging::message> log_table_model::data() const
   {
     QMutexLocker lock (&_mutex_data);
 
-    std::vector<fhg::log::LogEvent> result;
+    std::vector<fhg::logging::message> result;
 
     for (const formatted_log_event& event : _data)
     {
-      result.push_back (event.event);
+      result.push_back (event._raw);
     }
 
     return result;
   }
 
-  void log_table_model::add (const fhg::log::LogEvent& event)
+  void log_table_model::add (fhg::logging::message message)
   {
     QMutexLocker lock (&_mutex_pending);
-    _pending_data.push_back (formatted_log_event (event));
+    _pending_data.push_back (std::move (message));
   }
 
   void log_table_model::clear()
@@ -285,14 +300,10 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   //! \todo Do updates in separate thread again?
   // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
-  , _io_service()
-  , _logger()
-  , _log_server
-    ( logger_with (&log_monitor::append_log_event, this, _logger)
-    , _io_service
-    , port
-    )
-  , _io_thread ([this] { _io_service.run(); })
+  , _log_bridge (port)
+  , _log_receiver ( _log_bridge.local_endpoint()
+                  , fhg::util::bind_this (this, &log_monitor::append_log_event)
+                  )
 {
   // _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
@@ -410,19 +421,18 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
 log_monitor::~log_monitor()
 {
-  _io_service.stop();
-  _io_thread.join();
-
   _log_model_update_timer->stop();
   // _log_model_update_thread->quit();
   // _log_model_update_thread->wait();
 }
 
-void log_monitor::append_log_event (const fhg::log::LogEvent & evt)
+void log_monitor::append_log_event (fhg::logging::message message)
 {
-  if (evt.severity() >= _filter_level || !_drop_filtered)
+  if ( category_to_legacy_level (message._category) >= _filter_level
+     || !_drop_filtered
+     )
   {
-    _log_model->add (evt);
+    _log_model->add (std::move (message));
   }
 }
 
@@ -457,11 +467,24 @@ void log_monitor::save ()
   try
   {
     std::ofstream ofs (fname.toStdString ().c_str ());
-    std::vector<fhg::log::LogEvent> data (_log_model->data());
 
-    for (const fhg::log::LogEvent &evt : data)
+    for (auto const& message : _log_model->data())
     {
-      fhg::log::format (ofs, "[%d] %h: pid %R tid %T: %s: %m%n", evt);
+      ofs << "["
+          << fhg::util::ostream::put_time<decltype (message._timestamp)::clock>
+               (message._timestamp)
+          << "] "
+          << message._hostname
+          << ": "
+          << "pid "
+          << message._process_id
+          << " tid"
+          << message._thread_id
+          << ": "
+          << category_to_short_legacy_level_identifier (message._category)
+          << ": "
+          << message._content
+          << "\n";
     }
     _last_saved_filename = fname;
   }

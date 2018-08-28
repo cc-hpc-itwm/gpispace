@@ -217,6 +217,7 @@ namespace gspc
       , _master_agent_name
       , _master_agent_hostinfo
       , _info_output
+      , _log_emitters
       );
 
     if (!rif_entry_points.empty())
@@ -286,6 +287,7 @@ namespace gspc
                                                 , _app_path
                                                 , _installation_path
                                                 , _info_output
+                                                , _log_emitters
                                                 ).second
           )
       {
@@ -452,5 +454,11 @@ namespace gspc
     }
 
     return wrapped;
+  }
+
+  std::list<fhg::logging::tcp_endpoint> const&
+    scoped_runtime_system::log_emitters() const
+  {
+    return _->_started_runtime_system._log_emitters;
   }
 }

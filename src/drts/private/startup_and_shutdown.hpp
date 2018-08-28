@@ -6,6 +6,8 @@
 
 #include <fhg/util/signal_handler_manager.hpp>
 
+#include <logging/tcp_endpoint.hpp>
+
 #include <rif/entry_point.hpp>
 
 #include <boost/filesystem/path.hpp>
@@ -83,6 +85,7 @@ namespace fhg
       , std::vector<boost::filesystem::path> const& app_path
       , gspc::installation_path const&
       , std::ostream& info_output
+      , std::list<fhg::logging::tcp_endpoint>& log_emitters
       );
 
     hostinfo_type startup
@@ -105,6 +108,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , std::list<fhg::logging::tcp_endpoint>& log_emitters
       );
   }
 }

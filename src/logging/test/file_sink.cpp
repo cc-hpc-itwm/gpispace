@@ -236,7 +236,7 @@ namespace fhg
 
         for (std::size_t i (0); i < emit_count; ++i)
         {
-          emitter.emit (message ("", ""));
+          emitter.emit_message (message ("", ""));
         }
       }
 

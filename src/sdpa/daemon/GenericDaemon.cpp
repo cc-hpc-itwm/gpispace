@@ -64,36 +64,18 @@ namespace
   }
 }
 
-    namespace
-    {
-      //! \note templated for convenience of not needing public access
-      //! to master info stuff
-      template<typename InfoMap> InfoMap make_master_info_map
-        (std::vector<name_host_port_tuple> const& masters)
-      {
-        InfoMap ret;
-        for (name_host_port_tuple const& name_host_port : masters)
-        {
-          ret.emplace_front ( std::get<1> (name_host_port)
-                            , std::get<2> (name_host_port)
-                            );
-        }
-        return ret;
-      }
-    }
-
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
-                            , std::vector<name_host_port_tuple> const& masters
+                            , master_info_t masters
                             , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             )
   : _logger (logger)
   , _name (name)
-  , _master_info (make_master_info_map<master_info_t> (masters))
+  , _master_info (std::move (masters))
   , _subscriptions()
   , _discover_sources()
   , _job_map_mutex()
@@ -120,6 +102,7 @@ GenericDaemon::GenericDaemon( const std::string name
                    (gui_info->first, gui_info->second)
                  : nullptr
                  )
+  , _log_emitter()
   , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
   , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
@@ -413,6 +396,29 @@ std::string GenericDaemon::gen_id()
       }
     }
 
+    void GenericDaemon::emit_gantt ( job_id_t const& id
+                                   , we::type::activity_t const& activity
+                                   , NotificationEvent::state_t state
+                                   )
+    {
+      if (m_guiService)
+      {
+        m_guiService->notify
+          (NotificationEvent ({name()}, id, state, activity));
+      }
+      _log_emitter.emit_message
+        ( { NotificationEvent ({name()}, id, state, activity).encoded()
+          , gantt_log_category
+          }
+        );
+    }
+
+    fhg::logging::tcp_endpoint
+      GenericDaemon::logger_registration_endpoint() const
+    {
+      return _log_emitter.local_tcp_endpoint();
+    }
+
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
 {
@@ -458,17 +464,7 @@ void GenericDaemon::handleSubmitJobEvent
       // Should set the workflow_id here, or send it together with the activity
       pJob->Dispatch();
 
-      if (m_guiService)
-      {
-        const sdpa::daemon::NotificationEvent evt_
-          ( {name()}
-          , job_id
-          , NotificationEvent::STATE_STARTED
-          , act
-          );
-
-        m_guiService->notify (evt_);
-      }
+      emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
     }
     catch (...)
     {
@@ -687,15 +683,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   job_finished (pJob, result);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_FINISHED
-                           , pJob->result()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
@@ -706,15 +694,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   job_failed (pJob, reason);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_FAILED
-                           , pJob->activity()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
 }
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)
@@ -723,15 +703,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
 
   job_canceled (pJob);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_CANCELED
-                           , pJob->result()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
 
   if (boost::get<job_source_master> (&pJob->source()))
   {

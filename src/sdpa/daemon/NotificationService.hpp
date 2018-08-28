@@ -41,5 +41,7 @@ namespace sdpa
     private:
       std::unique_ptr<fhg::log::Appender> destination_;
     };
+
+    constexpr char const* const gantt_log_category = "gantt-job-events";
   }
 }

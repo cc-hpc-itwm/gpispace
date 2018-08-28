@@ -6,9 +6,8 @@
 
 #include <drts/private/option.hpp>
 
-#include <fhglog/Logger.hpp>
-#include <fhglog/appender/call.hpp>
-#include <fhglog/remote/server.hpp>
+#include <logging/legacy_bridge.hpp>
+#include <logging/tcp_receiver.hpp>
 
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
@@ -78,21 +77,16 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 
   vm.notify();
 
-  boost::asio::io_service io_service;
-  fhg::log::Logger logger;
-  fhg::log::remote::LogServer const log_server (logger, io_service, log_port);
-
   std::list<std::string> logged;
 
-  logger.addAppender<fhg::log::appender::call>
-    ([&logged] (fhg::log::LogEvent const& event)
-     {
-       logged.emplace_back (event.message());
-     }
+  fhg::logging::legacy_bridge const log_bridge (log_port);
+  fhg::logging::tcp_receiver const log_receiver
+    ( log_bridge.local_endpoint()
+    , [&logged] (fhg::logging::message const& message)
+      {
+        logged.emplace_back (message._content);
+      }
     );
-
-  boost::strict_scoped_thread<> const service_thread
-    ([&io_service] { io_service.run(); });
 
   gspc::installation const installation (vm);
 
@@ -137,8 +131,6 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
         }
       )
     );
-
-  io_service.stop();
 
   BOOST_REQUIRE_EQUAL (result.size(), 0);
   BOOST_REQUIRE_EQUAL_COLLECTIONS

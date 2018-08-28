@@ -25,6 +25,19 @@ namespace
       {"gui-port", "gui port"};
     po::option<po::positive_integral<unsigned short>> const log_port
       {"log-port", "log port"};
+
+    //! \note Below we need a std::list instead of a std::vector, but
+    //! Boost.ProgramOptions can only do vectors natively.
+    po::option<std::vector<fhg::logging::tcp_endpoint>> const emitters
+      {"emitters", "list of tcp emitters"};
+  }
+
+  template<typename Container>
+    std::list<typename Container::value_type> to_list (Container&& values)
+  {
+    return { std::make_move_iterator (std::begin (values))
+           , std::make_move_iterator (std::end (values))
+           };
   }
 }
 
@@ -35,6 +48,7 @@ try
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
     . require (option::gui_port)
     . require (option::log_port)
+    . add (option::emitters)
     . store_and_notify (ac, av)
     );
 
@@ -50,7 +64,10 @@ try
 
   QTabWidget window;
   window.addTab
-    ( new fhg::pnete::ui::execution_monitor (option::gui_port.get_from (vm))
+    ( new fhg::pnete::ui::execution_monitor
+        ( option::gui_port.get_from (vm)
+        , to_list (option::emitters.get_from_or_value (vm, {}))
+        )
     , QObject::tr ("Execution Monitor")
     );
   window.addTab ( new log_monitor (option::log_port.get_from (vm))
