@@ -10,6 +10,7 @@
 #include <util-generic/serialization/std/chrono.hpp>
 
 #include <logging/tcp_endpoint.hpp>
+#include <logging/tcp_endpoint_serialization.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
