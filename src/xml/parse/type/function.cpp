@@ -897,8 +897,6 @@ namespace xml
         stream << "endif"                                          << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
-        stream << "CXXFLAGS += -DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES"
-                                                                   << std::endl;
         stream << "CXXFLAGS += -isystem "
                << installation.include()                           << std::endl;
         stream << "CXXFLAGS += -isystem "
