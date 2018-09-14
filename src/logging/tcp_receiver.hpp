@@ -3,6 +3,7 @@
 #include <logging/message.hpp>
 #include <logging/protocol.hpp>
 #include <logging/tcp_endpoint.hpp>
+#include <logging/tcp_endpoint_serialization.hpp>
 
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>

@@ -216,3 +216,8 @@ add_unit_test (NAME logging_tcp_receiver
             gspc::logging
   USE_BOOST
 )
+
+install (FILES
+  logging/tcp_endpoint.hpp
+  DESTINATION include/logging/
+)
