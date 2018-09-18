@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <iosfwd>
 #include <string>
+#include <utility>
 #include <vector>
 
 namespace we
@@ -19,6 +20,7 @@ namespace we
       void push_back (char c);
 
       bytearray();
+      bytearray (std::vector<char> v) : _v (std::move (v)) {}
       bytearray (const char* const, const std::size_t);
       bytearray (std::string const&);
       std::size_t copy (char* const buf, const std::size_t size) const;
@@ -46,6 +48,7 @@ namespace we
       }
 
       std::string to_string() const;
+      std::vector<char> const& v() const { return _v; }
 
       friend std::ostream& operator<< (std::ostream&, const bytearray&);
       friend std::size_t hash_value (const bytearray&);
