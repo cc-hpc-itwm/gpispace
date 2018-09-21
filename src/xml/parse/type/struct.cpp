@@ -36,25 +36,9 @@ namespace xml
         return _sig;
       }
 
-      namespace
-      {
-        class visitor_get_name
-          : public boost::static_visitor<const std::string&>
-        {
-        public:
-          const std::string&
-            operator() (const std::pair< std::string
-                                       , pnet::type::signature::structure_type
-                                       >& s
-                       ) const
-          {
-            return s.first;
-          }
-        };
-      }
       const std::string& structure_type::name() const
       {
-        return boost::apply_visitor (visitor_get_name(), _sig);
+        return _sig.first;
       }
 
       void structure_type::specialize

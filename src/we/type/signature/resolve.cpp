@@ -35,28 +35,11 @@ namespace pnet
         {
         public:
           resolve_structured (const resolver_type&, std::list<std::string>&);
-          structured_type operator()
-            (const std::pair<std::string, structure_type>&) const;
+          structured_type operator() (const structured_type&) const;
 
         private:
           const resolver_type& _resolver;
           std::list<std::string>& _path;
-        };
-
-        class with_name : public boost::static_visitor<field_type>
-        {
-        public:
-          with_name (const std::string& name)
-            : _name (name)
-          {}
-          field_type operator()
-            (const std::pair<std::string, structure_type>& s) const
-          {
-            return structured_type (std::make_pair (_name, s.second));
-          }
-
-        private:
-          const std::string& _name;
         };
 
         class mk_field : public boost::static_visitor<field_type>
@@ -71,7 +54,7 @@ namespace pnet
           }
           field_type operator() (const structured_type& s) const
           {
-            return boost::apply_visitor (with_name (_name), s);
+            return structured_type (std::make_pair (_name, s.second));
           }
         private:
           const std::string& _name;
@@ -104,9 +87,7 @@ namespace pnet
           }
           field_type operator () (const structured_type& s) const
           {
-            return boost::apply_visitor ( resolve_structured (_resolver, _path)
-                                        , s
-                                        );
+            return resolve_structured (_resolver, _path) (s);
           }
 
         private:
@@ -122,7 +103,7 @@ namespace pnet
           , _path (path)
         {}
         structured_type resolve_structured::operator()
-          (const std::pair<std::string, structure_type>& s) const
+          (const structured_type& s) const
         {
           structure_type l;
 
@@ -147,9 +128,7 @@ namespace pnet
       {
         std::list<std::string> path;
 
-        return boost::apply_visitor ( resolve_structured (resolver, path)
-                                    , signature
-                                    );
+        return resolve_structured (resolver, path) (signature);
       }
     }
   }

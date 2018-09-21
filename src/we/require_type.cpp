@@ -37,7 +37,7 @@ namespace pnet
       const std::string& operator()
         (const type::signature::structured_type& s) const
       {
-        return boost::apply_visitor (visitor_name_structured(), s);
+        return s.first;
       }
     };
 
@@ -140,7 +140,7 @@ namespace pnet
                       , const type::signature::structured_type& s
                       ) const
       {
-        boost::apply_visitor (require_structured (_path, v), s);
+        require_structured (_path, v) (s);
       }
       void operator() ( const type::value::structured_type& v
                       , const std::string& s
