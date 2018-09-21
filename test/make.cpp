@@ -110,9 +110,6 @@ namespace test
 
     namespace gen
     {
-      cxx11::cxx11()
-        : cxx_flag ("--std=c++11")
-      {}
       include::include (boost::filesystem::path const& path)
         : cxx_flag (boost::format ("'-I %1%'") % path)
       {}

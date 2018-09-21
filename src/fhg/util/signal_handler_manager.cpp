@@ -101,7 +101,7 @@ namespace fhg
                          )
       {
         sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
-                               (&(static_cast<ucontext*> (context)->uc_mcontext))
+                               (&(static_cast<ucontext_t*> (context)->uc_mcontext))
                              ));
 
 #if __WORDSIZE == 32
