@@ -222,7 +222,7 @@ namespace expr
 
         void operator() (const child_type& m) const
         {
-          for (const std::pair<char, node_type>& cn : m)
+          for (auto const& cn : m)
           {
             boost::apply_visitor
               ( visitor_names (_names, _prefix + cn.first)
@@ -268,7 +268,7 @@ namespace expr
           }
           else
           {
-            for (const std::pair<char, node_type>& cn : m)
+            for (auto const& cn : m)
               {
                 if (*_tokenizer.pos() == cn.first)
                   {

@@ -16,7 +16,7 @@ namespace gpi
 
       fhg::util::first_then<std::string> const sep ("?", "&");
 
-      for (std::pair<std::string, std::string> const& kv : url.args())
+      for (auto const& kv : url.args())
       {
         os << sep << kv.first << '=' << kv.second;
       }

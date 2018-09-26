@@ -286,7 +286,7 @@ namespace
 
       s << _indent << "subgraph cluster_net_" << id_net << " {";
 
-      for (const std::pair<we::place_id_type, place::type>& ip : net.places())
+      for (auto const& ip : net.places())
       {
         const we::place_id_type& place_id (ip.first);
         const place::type& place (ip.second);
@@ -323,9 +323,7 @@ namespace
              );
       }
 
-      for ( const std::pair<we::transition_id_type,we::type::transition_t>& it
-          : net.transitions()
-          )
+      for (auto const& it : net.transitions())
       {
         const we::transition_id_type& trans_id (it.first);
         const we::type::transition_t& trans (it.second);
