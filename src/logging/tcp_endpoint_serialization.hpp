@@ -9,4 +9,4 @@
 FHG_UTIL_SERIALIZATION_BY_MEMBER ( fhg::logging::tcp_endpoint
                                  , &fhg::logging::tcp_endpoint::host
                                  , &fhg::logging::tcp_endpoint::port
-                                 );
+                                 )

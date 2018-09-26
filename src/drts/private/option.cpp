@@ -314,39 +314,39 @@ namespace gspc
   REQUIRE (_name, _type, validators::positive_integral<_type>)
 
 #define ACCESS_PATH(_name, _as)                 \
-  SET_PATH (_name, _as);                        \
-  GET_PATH (_name, _as);                        \
+  SET_PATH (_name, _as)                         \
+  GET_PATH (_name, _as)                         \
   REQUIRE_PATH (_name, _as)
 #define ACCESS_STRING(_name, _as)               \
-  SET_STRING (_name, _as);                      \
-  GET_STRING (_name, _as);                      \
+  SET_STRING (_name, _as)                       \
+  GET_STRING (_name, _as)                       \
   REQUIRE_STRING (_name, _as)
 #define ACCESS_POSITIVE_INTEGRAL(_name, _type)  \
-  SET_POSITIVE_INTEGRAL (_name, _type);         \
-  GET_POSITIVE_INTEGRAL (_name, _type);         \
+  SET_POSITIVE_INTEGRAL (_name, _type)          \
+  GET_POSITIVE_INTEGRAL (_name, _type)          \
   REQUIRE_POSITIVE_INTEGRAL (_name, _type)
 
 
-  ACCESS_STRING (log_host, validators::nonempty_string);
-  ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short);
-  ACCESS_STRING (log_level, std::string);
-  ACCESS_STRING (gui_host, validators::nonempty_string);
-  ACCESS_POSITIVE_INTEGRAL (gui_port, unsigned short);
+  ACCESS_STRING (log_host, validators::nonempty_string)
+  ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short)
+  ACCESS_STRING (log_level, std::string)
+  ACCESS_STRING (gui_host, validators::nonempty_string)
+  ACCESS_POSITIVE_INTEGRAL (gui_port, unsigned short)
 
-  ACCESS_PATH (log_directory, validators::is_directory_if_exists);
-  ACCESS_PATH (gspc_home, validators::existing_directory);
-  ACCESS_PATH (nodefile, validators::existing_path);
-  ACCESS_PATH (application_search_path, validators::existing_directory);
+  ACCESS_PATH (log_directory, validators::is_directory_if_exists)
+  ACCESS_PATH (gspc_home, validators::existing_directory)
+  ACCESS_PATH (nodefile, validators::existing_path)
+  ACCESS_PATH (application_search_path, validators::existing_directory)
 
   ACCESS_PATH ( virtual_memory_socket
               , validators::nonexisting_path_in_existing_directory
-              );
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
+              )
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short)
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long)
 
-  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file);
-  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short);
-  ACCESS_STRING (rif_strategy, std::string);
+  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file)
+  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short)
+  ACCESS_STRING (rif_strategy, std::string)
 
   GET_MAYBE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)
   REQUIRE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)

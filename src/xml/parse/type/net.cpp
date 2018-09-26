@@ -442,7 +442,7 @@ namespace xml
         }
 
         return pid_of_place;
-      };
+      }
 
       namespace dump
       {

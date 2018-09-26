@@ -18,6 +18,6 @@ namespace fhg
         (register_socket_receiver, void (socket_endpoint));
       FHG_RPC_FUNCTION_DESCRIPTION
         (register_tcp_receiver, void (tcp_endpoint));
-    };
+    }
   }
 }
