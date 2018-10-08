@@ -90,11 +90,7 @@ namespace gspc
                             > const& values_on_ports
              )
     {
-      for ( std::pair< std::string
-                     , pnet::type::value::value_type
-                     > const& value_on_port
-          : values_on_ports
-          )
+      for (auto const& value_on_port : values_on_ports)
       {
         activity.add_input
           ( activity.transition().input_port_by_name (value_on_port.first)
@@ -210,10 +206,7 @@ namespace gspc
 
     std::multimap<std::string, pnet::type::value::value_type> result;
 
-    for ( std::pair<pnet::type::value::value_type, we::port_id_type>
-           const& value_on_port
-        : result_activity.output()
-        )
+    for (auto const& value_on_port: result_activity.output())
     {
       result.emplace
         ( result_activity.transition().ports_output()

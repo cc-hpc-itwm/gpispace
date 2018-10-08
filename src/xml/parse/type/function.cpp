@@ -1378,7 +1378,7 @@ namespace xml
                               > _inc;
             std::string const _suffix;
           };
-        };
+        }
 
         class mk_type : public fhg::util::ostream::modifier
         {

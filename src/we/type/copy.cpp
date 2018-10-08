@@ -57,9 +57,7 @@ namespace we
         transition_id;
       std::unordered_map<place_id_type, place_id_type> place_id;
 
-      for ( std::pair<place_id_type, place::type> const& in_place
-          : input_net.places()
-          )
+      for (auto const& in_place : input_net.places())
       {
         place_id_type const pid_input_net (in_place.first);
         place_id_type const pid_new_net (new_net.add_place (in_place.second));
@@ -89,9 +87,7 @@ namespace we
                             );
       }
 
-      for ( std::pair<transition_id_type, transition_t> const& input_tid_trans
-          : input_net.transitions()
-          )
+      for (auto const& input_tid_trans : input_net.transitions())
       {
         transition_id_type const input_net_tid (input_tid_trans.first);
 
@@ -237,9 +233,7 @@ namespace we
       // handle ports, use std::get<1>(copy_map) to adjust associations
       std::unordered_map<port_id_type, port_id_type> port_id;
 
-      for ( std::pair<port_id_type, port_t> const input_port
-          : input_activity.transition().ports_input()
-          )
+      for (auto const& input_port : input_activity.transition().ports_input())
       {
         port_t const port (input_port.second);
 
@@ -258,9 +252,7 @@ namespace we
           );
       }
 
-      for ( std::pair<port_id_type, port_t> const output_port
-          : input_activity.transition().ports_output()
-          )
+      for (auto const& output_port : input_activity.transition().ports_output())
       {
         port_t const port (output_port.second);
 
@@ -279,9 +271,7 @@ namespace we
           );
       }
 
-      for ( std::pair<port_id_type, port_t> const tunnel_port
-          : input_activity.transition().ports_tunnel()
-          )
+      for (auto const& tunnel_port : input_activity.transition().ports_tunnel())
       {
         port_t const port (tunnel_port.second);
 
@@ -314,16 +304,12 @@ namespace we
 
       activity_t new_activity (new_trans, input_activity.transition_id());
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const& top
-          : input_activity.input()
-          )
+      for (auto const& top : input_activity.input())
       {
         new_activity.add_input (port_id.at (top.second), top.first);
       }
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const& top
-          : input_activity.output()
-          )
+      for (auto const& top : input_activity.output())
       {
         new_activity.add_output (port_id.at (top.second), top.first);
       }
@@ -358,9 +344,7 @@ namespace we
       std::set<port_id_type> removed_port_ids;
 
       // copy ports
-      for ( std::pair<port_id_type, port_t> const input_port
-          : input_transition.ports_input()
-          )
+      for (auto  const& input_port : input_transition.ports_input())
       {
         port_t const in_port (input_port.second);
 
@@ -378,18 +362,14 @@ namespace we
         }
       }
 
-      for ( std::pair<port_id_type, port_t> const output_port
-          : input_transition.ports_output()
-          )
+      for (auto const& output_port : input_transition.ports_output())
       {
         port_t const out_port (output_port.second);
 
         port_id.emplace (output_port.first, new_transition.add_port (out_port));
       }
 
-      for ( std::pair<port_id_type, port_t> const tunnel_port
-          : input_transition.ports_tunnel()
-          )
+      for (auto const& tunnel_port : input_transition.ports_tunnel())
       {
         port_t const tun_port (tunnel_port.second);
 
@@ -419,9 +399,7 @@ namespace we
       place_id_type control_place_id;
 
       // copy all places and tokens but transformed places
-      for ( std::pair<place_id_type, place::type> const& input_place
-          : input_net.places()
-          )
+      for (auto const& input_place : input_net.places())
       {
         place_id_type const pid_input_net (input_place.first);
         place_id_type pid_new_net;
@@ -465,9 +443,7 @@ namespace we
                         > transition_port_id_map;
 
       // copy all transitions, save their port mapping and transformation ports
-      for ( std::pair<transition_id_type, transition_t> const& in_tid_trans
-          : input_net.transitions()
-          )
+      for (auto const& in_tid_trans : input_net.transitions())
       {
         transition_id_type const input_net_tid (in_tid_trans.first);
         transition_t input_net_transition (in_tid_trans.second);
@@ -575,9 +551,7 @@ namespace we
 
       port_id_type control_port_id;
 
-      for ( std::pair<port_id_type, port_t> const input_port
-          : input_activity.transition().ports_input()
-          )
+      for (auto const& input_port : input_activity.transition().ports_input())
       {
         port_t const port (input_port.second);
 
@@ -616,9 +590,7 @@ namespace we
         }
       }
 
-      for ( std::pair<port_id_type, port_t> const output_port
-          : input_activity.transition().ports_output()
-          )
+      for (auto const& output_port : input_activity.transition().ports_output())
       {
         port_t const port (output_port.second);
 
@@ -638,9 +610,7 @@ namespace we
           );
       }
 
-      for ( std::pair<port_id_type, port_t> const tunnel_port
-          : input_activity.transition().ports_tunnel()
-          )
+      for (auto const& tunnel_port : input_activity.transition().ports_tunnel())
       {
         port_t const port (tunnel_port.second);
 
@@ -663,9 +633,7 @@ namespace we
       activity_t new_act (new_transition, input_activity.transition_id());
 
       // copy tokens for ports
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const& input
-          : input_activity.input()
-          )
+      for (auto const& input : input_activity.input())
       {
         if (input.second != control_port_id)
         {
@@ -673,9 +641,7 @@ namespace we
         }
       }
 
-      for ( std::pair<pnet::type::value::value_type, port_id_type> const& output
-          : input_activity.output()
-          )
+      for (auto const& output : input_activity.output())
       {
         new_act.add_output (port_id.at (output.second), output.first);
       }

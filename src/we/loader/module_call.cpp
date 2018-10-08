@@ -156,9 +156,7 @@ namespace we
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
-      for ( std::pair<std::string, std::string> const& buffer_and_size
-          : module_call.memory_buffers()
-          )
+      for (auto const& buffer_and_size : module_call.memory_buffers())
       {
         if (!virtual_memory_api || !shared_memory)
         {

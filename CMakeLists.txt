@@ -13,30 +13,11 @@ add_subdirectory (cmake)
 include (add_macros)
 include (beautify_find_boost)
 include (require_compiler_version)
+include (git)
 include (git_submodules)
 
 set (PROJECT_VERSION "16.04")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
-
-#! \todo move to shared/cmake
-function (determine_git_revision directory output_variable_name)
-  find_package (Git REQUIRED)
-
-  set (command "${GIT_EXECUTABLE}" rev-parse HEAD)
-  execute_process (COMMAND ${command}
-    WORKING_DIRECTORY "${directory}"
-    OUTPUT_VARIABLE output OUTPUT_STRIP_TRAILING_WHITESPACE
-    RESULT_VARIABLE error_code)
-
-  if (NOT ${error_code} EQUAL 0)
-    string (REPLACE ";" " " command_string "${command}")
-    message (FATAL_ERROR "could not discover revision info for '${directory}': "
-      "`${command_string}` failed with error code ${error_code}. "
-      "output: ${output}")
-  endif()
-
-  set (${output_variable_name} "${output}" PARENT_SCOPE)
-endfunction()
 
 determine_git_revision ("${CMAKE_SOURCE_DIR}" PROJECT_REVISION)
 

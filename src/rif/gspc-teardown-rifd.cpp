@@ -122,9 +122,7 @@ try
         )
     );
 
-  for ( std::pair<std::string, std::exception_ptr> const& failure
-      : result.second
-      )
+  for (auto const& failure : result.second)
   {
     std::cout << failure.first << ' ' << entry_points.at (failure.first) << '\n';
     std::cerr << failure.first << ": "

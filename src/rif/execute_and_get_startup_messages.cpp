@@ -132,7 +132,7 @@ namespace fhg
         std::vector<char*> envp;
         envp.reserve (environment.size() + 1);
 
-        for (std::pair<std::string, std::string> const& entry : environment)
+        for (auto const& entry : environment)
         {
           envp.push_back (envp_buffer.data() + envp_pos);
           envp_pos = append (envp_buffer, entry.first, envp_pos);
