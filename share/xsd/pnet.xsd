@@ -152,7 +152,7 @@
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
     <xsd:attribute name="virtual" type="xsd:boolean" use="optional"/>
-    <xsd:attribute name="put_token" type="xsd::boolean" use="optional"/>
+    <xsd:attribute name="put_token" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="port_type">
