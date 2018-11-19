@@ -2,6 +2,8 @@
 
 #include <drts/private/scoped_allocation.hpp>
 
+#include <drts/cache_management/cache_manager.hpp>
+
 #include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
 
@@ -32,6 +34,7 @@
 #include <string>
 #include <unordered_set>
 #include <vector>
+#include <memory>
 
 struct wfe_task_t;
 
@@ -92,6 +95,7 @@ public:
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
+    , drts::cache::cache_manager* cache
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -146,6 +150,7 @@ private:
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;
+  drts::cache::cache_manager* _cache;
 
   fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?

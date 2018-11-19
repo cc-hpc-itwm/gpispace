@@ -25,10 +25,16 @@ namespace xml
         using unique_key_type = std::string;
 
         memory_buffer_type ( const util::position_type&
-                           , const std::string& name
-                           , const std::string& size
-                           , const boost::optional<bool>& read_only
-                           , const we::type::property::type& properties
+                           , const std::string&
+                           , const std::string&
+                           , const boost::optional<bool>&
+                           , const we::type::property::type&
+                           );
+        memory_buffer_type ( const util::position_type&
+                           , const std::string&
+                           , const std::string&
+                           , const std::string&
+                           , const we::type::property::type&
                            );
         memory_buffer_type (memory_buffer_type const&) = default;
         memory_buffer_type (memory_buffer_type&&) = default;
@@ -39,6 +45,7 @@ namespace xml
         const std::string& name() const;
         const std::string& size() const;
         const boost::optional<bool>& read_only() const;
+        const boost::optional<std::string>& data_id() const;
 
         const we::type::property::type& properties() const;
 
@@ -48,6 +55,7 @@ namespace xml
         std::string const _name;
         std::string _size;
         boost::optional<bool> _read_only;
+        boost::optional<std::string> _data_id;
         we::type::property::type _properties;
       };
 

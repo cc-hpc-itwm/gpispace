@@ -35,6 +35,7 @@ namespace
         ( "m"
         , "f"
         , std::unordered_map<std::string, std::string>()
+        , std::unordered_map<std::string, std::string>()
         , std::list<we::type::memory_transfer>()
         , std::list<we::type::memory_transfer>()
         )

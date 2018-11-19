@@ -340,6 +340,28 @@ namespace xml
                     )
       {}
 
+      cached_memory_buffer_without_dataid::cached_memory_buffer_without_dataid
+        ( std::string const& name
+        , util::position_type const& position_of_definition
+        )
+        : generic ( boost::format ("cached-memory-buffer '%1%' without dataid, at %2%")
+                  % name
+                  % position_of_definition
+                  )
+      {}
+
+
+      cached_memory_buffer_without_mem_get::cached_memory_buffer_without_mem_get
+        ( std::string const& name
+        , util::position_type const& position_of_definition
+        )
+        : generic ( boost::format ("cached-memory-buffer '%1%' without memory get, at %2%")
+                  % name
+                  % position_of_definition
+                  )
+      {}
+
+
       namespace
       {
         template<typename T>

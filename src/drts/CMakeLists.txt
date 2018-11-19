@@ -21,6 +21,12 @@ install (FILES
   DESTINATION include/drts/
 )
 
+install (FILES
+   cache_management/cache_manager.hpp
+   cache_management/circular_cache_manager.hpp
+   DESTINATION include/drts/cache_management
+)
+
 extended_add_library (NAME gspc
   TYPE SHARED
   SOURCES "client.cpp"
@@ -32,6 +38,8 @@ extended_add_library (NAME gspc
           "scoped_rifd.cpp"
           "stream.cpp"
           "virtual_memory.cpp"
+          "cache_management/cache_manager.cpp"
+          "cache_management/circular_cache_manager.cpp"
   LIBRARIES sdpa
             pnet
             rif-strategies

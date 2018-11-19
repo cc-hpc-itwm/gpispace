@@ -2,6 +2,8 @@
 
 #include <drts/worker/drts.hpp>
 
+#include <drts/cache_management/circular_cache_manager.hpp>
+
 #include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -36,6 +38,8 @@ namespace
       {"virtual-memory-socket"};
     constexpr char const* const shared_memory_size
       {"shared-memory-size"};
+    constexpr char const* const cache_size
+      {"cache-size"};
     constexpr char const* const capability {"capability"};
     constexpr char const* const backlog_length {"backlog-length"};
     constexpr char const* const library_search_path {"library-search-path"};
@@ -140,7 +144,11 @@ int main(int ac, char **av)
       , po::value<unsigned long>()
       , "size of shared memory associated with the kernel"
       )
-      ( option_name::capability
+      ( option_name::cache_size
+      , po::value<unsigned long>()
+      , "size of the cache associated with the kernel"
+      )
+	  ( option_name::capability
       , po::value<std::vector<std::string>>()
         ->default_value (std::vector<std::string>(), "{}")
       , "capabilities of worker"
@@ -219,6 +227,23 @@ int main(int ac, char **av)
       : nullptr
       );
 
+    if (vm.count(option_name::cache_size) && !vm.count (option_name::shared_memory_size)) {
+      throw std::invalid_argument
+                ("cannot specify a cache size without a shared-memory-size option");
+    }
+
+    std::unique_ptr<drts::cache::cache_manager> worker_cache = nullptr;
+    if (vm.count(option_name::cache_size)) {
+      auto cache_size =  vm.at(option_name::cache_size).as<unsigned long>();
+      if (cache_size <=0 || cache_size > vm.at(option_name::shared_memory_size).as<unsigned long>())
+      {
+        throw std::invalid_argument
+                ("cache-size must be a positive integer smaller than the given shared-memory-size value");
+      }
+
+      worker_cache = fhg::util::cxx14::make_unique<drts::cache::circular_cache_manager>(drts::cache::circular_cache_manager(cache_size));
+    }
+
     std::vector<DRTSImpl::master_info> master_info;
     std::set<std::string> seen_master_names;
     for ( std::string const& master
@@ -266,6 +291,7 @@ int main(int ac, char **av)
       , kernel_name
       , virtual_memory_api.get()
       , shared_memory.get()
+      , worker_cache.get()
       , master_info
       , vm.at (option_name::capability)
       .as<std::vector<std::string>>()

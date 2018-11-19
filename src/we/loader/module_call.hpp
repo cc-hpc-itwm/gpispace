@@ -6,6 +6,7 @@
 
 #include <gpi-space/pc/client/api.hpp>
 #include <drts/private/scoped_allocation.hpp>
+#include <drts/cache_management/cache_manager.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -19,6 +20,7 @@ namespace we
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/*
       , gspc::scoped_allocation /*const*/*
+      , drts::cache::cache_manager* cache
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call

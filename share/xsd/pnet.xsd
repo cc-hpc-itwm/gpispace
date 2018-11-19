@@ -176,6 +176,19 @@
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="read-only" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
+  
+   <xsd:complexType name="cached_memory_buffer_type">
+    <xsd:sequence>
+      <xsd:choice minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="properties" type="property_map_type"/>
+        <xsd:element name="include-properties" type="properties_include_type"/>
+      </xsd:choice>
+      <xsd:element minOccurs="1" maxOccurs="1" name="size" type="xsd:string"/>
+      <xsd:element minOccurs="1" maxOccurs="1" name="dataid" type="xsd:string"/>
+      <xsd:element minOccurs="1" maxOccurs="1" name="memory_get" type="memory_transfer_get_type"/>
+    </xsd:sequence>
+    <xsd:attribute name="name" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
 
   <xsd:complexType name="memory_transfer_get_type">
     <xsd:sequence>
@@ -252,6 +265,7 @@
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="memory-buffer" type="memory_buffer_type"/>
+        <xsd:element name="cached-memory-buffer" type="cached_memory_buffer_type"/>
         <xsd:element name="memory-get" type="memory_transfer_get_type"/>
         <xsd:element name="memory-put" type="memory_transfer_put_type"/>
         <xsd:element name="memory-getput" type="memory_transfer_put_type"/>

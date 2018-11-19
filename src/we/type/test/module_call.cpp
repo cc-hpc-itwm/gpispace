@@ -12,6 +12,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes_no_buffers)
     ( fhg::util::testing::random_identifier()
     , fhg::util::testing::random_identifier()
     , std::unordered_map<std::string, std::string> {}
+    , std::unordered_map<std::string, std::string> {}
     , {}
     , {}
     );
@@ -81,6 +82,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
     ( fhg::util::testing::random_identifier()
     , fhg::util::testing::random_identifier()
     , std::move (memory_buffers)
+    , std::unordered_map<std::string, std::string>()
     , {}
     , {}
     );
@@ -88,3 +90,4 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
   BOOST_REQUIRE (equal (module_call.memory_buffer_sizes (context), expected));
   BOOST_REQUIRE_EQUAL (module_call.memory_buffer_size_total (context), total);
 }
+

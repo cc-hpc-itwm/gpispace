@@ -640,6 +640,103 @@ namespace xml
           );
       }
 
+
+      std::pair<type::memory_buffer_type, type::memory_get>
+      cached_memory_buffer_type_with_transfer ( const xml_node_type* node
+                                              , state::type& state
+                                              )
+      {
+        std::string const name
+        ( validate_name
+            ( validate_prefix
+                ( required ("cached_memory_buffer_type", node, "name", state)
+                    , "cached_memory_buffer"
+                    , state.file_in_progress()
+                )
+                , "cached_memory_buffer"
+                , state.file_in_progress()
+            )
+        );
+
+        boost::optional<std::string> size;
+        boost::optional<std::string> data_id;
+        we::type::property::type properties;
+        boost::optional<type::memory_get> mem_transfer;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "properties")
+            {
+              property_map_type (properties, child, state);
+            }
+            else if (child_name == "include-properties")
+            {
+              util::property::join
+                ( state
+                , properties
+                , properties_include
+                  ( required ("cached_memory_buffer_type", child, "href", state)
+                  , state
+                  )
+                );
+            }
+            else if (child_name == "size")
+            {
+              size = fhg::util::join (parse_cdata (child, state), ';').string();
+            }
+            else if (child_name == "dataid")
+            {
+              data_id = fhg::util::join (parse_cdata (child, state), ';').string();
+            }
+            else if (child_name == "memory-get")
+            {
+              mem_transfer = memory_get (child, state);
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "cached_memory_buffer_type"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        if (!size)
+        {
+          throw error::memory_buffer_without_size
+            (name, state.position (node));
+        }
+        if (!data_id)
+        {
+          throw error::cached_memory_buffer_without_dataid
+            (name, state.position(node));
+        }
+        if (!mem_transfer)
+        {
+          throw error::cached_memory_buffer_without_mem_get
+            (name, state.position(node));
+        }
+        return std::make_pair ( type::memory_buffer_type ( state.position (node)
+                                                         , name
+                                                         , size.get()
+                                                         , data_id.get()
+                                                         , properties
+                                                         )
+                              , mem_transfer.get()
+                              );
+      }
+
+
       type::port_type port_type ( const xml_node_type* node
                                 , state::type& state
                                 , const we::type::PortDirection& direction
@@ -1727,6 +1824,12 @@ namespace xml
             {
               memory_buffers.push<error::duplicate_memory_buffer>
                 (memory_buffer_type (child, state));
+            }
+            else if (child_name == "cached-memory-buffer")
+            {
+              auto cached_mem_info = cached_memory_buffer_type_with_transfer(child, state);
+              memory_buffers.push<error::duplicate_memory_buffer>(cached_mem_info.first);
+              memory_gets.emplace_back (cached_mem_info.second);
             }
             else if (child_name == "memory-get")
             {

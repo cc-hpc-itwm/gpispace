@@ -4,6 +4,8 @@
 #include <we/type/port.hpp>
 #include <we/type/range.hpp>
 #include <we/expr/parse/parser.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/serialize.hpp>
 
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
@@ -27,27 +29,35 @@ namespace we
         (expr::parse::parser (expression).eval_all (context));
     }
 
-    class buffer
+    std::string evaluate_dataid_or_die ( expr::eval::context context
+                                       , std::string const& expression
+                                       )
     {
-    public:
-      buffer (unsigned long position, unsigned long size)
-        : _size (size)
-        , _position (position)
-      {}
+      return //pnet::type::value::to_string
+          std::to_string(boost::get<unsigned long>(expr::parse::parser (expression).eval_all (context)));
+    }
 
-      unsigned long position() const
-      {
-        return _position;
-      }
-      unsigned long size() const
-      {
-        return _size;
-      }
+    class buffer
+	{
+	public:
+    	buffer (unsigned long position, unsigned long size)
+	: _size (size)
+	, _position (position)
+	{}
 
-    private:
-      unsigned long _size;
-      unsigned long _position;
-    };
+    	unsigned long position() const
+    	{
+    		return _position;
+    	}
+    	unsigned long size() const
+    	{
+    		return _size;
+    	}
+
+	private:
+    	unsigned long _size;
+    	unsigned long _position;
+	};
 
     typedef unsigned long fvmAllocHandle_t;
     typedef unsigned long fvmSize_t;
@@ -102,6 +112,7 @@ namespace we
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
       , std::unordered_map<std::string, buffer> const& memory_buffer
+      , std::unordered_map<std::string, std::string> const& cached_dataids
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
     {
@@ -123,19 +134,22 @@ namespace we
            )
         {
           //! \todo specific exception
-          throw std::runtime_error ("local range to large");
+          throw std::runtime_error ("local range too large");
         }
 
         //! \todo check global range, needs knowledge about global memory
 
-        do_transfer
-          ( *virtual_memory_api
-          , *shared_memory
-          , std::stoul (global.handle().name(), nullptr, 16)
-          , global.offset()
-          , local.size()
-          , memory_buffer.at (local.buffer()).position() + local.offset()
-          );
+        if (!cached_dataids.count(local.buffer())) // only perform transfer if the buffer is not already cached
+        {
+          do_transfer
+            ( *virtual_memory_api
+            , *shared_memory
+            , std::stoul (global.handle().name(), nullptr, 16)
+            , global.offset()
+            , local.size()
+            , memory_buffer.at (local.buffer()).position() + local.offset()
+            );
+        }
       }
     }
   }
@@ -146,6 +160,7 @@ namespace we
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
+      , drts::cache::cache_manager* cache
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
@@ -155,50 +170,98 @@ namespace we
                       > const& emit_gantt
       )
     {
-      unsigned long position (0);
+      if (module_call.memory_buffers().size()>0 && (!virtual_memory_api || !shared_memory))
+      {
+        throw std::logic_error
+        ( ( boost::format
+            ( "module call '%1%::%2%' with %3% memory transfers scheduled "
+                "to worker '%4%' that is unable to manage memory"
+            )
+        % module_call.module()
+        % module_call.function()
+        % module_call.memory_buffers().size()
+        % context->worker_name()
+        ).str()
+        );
+      }
+
+      unsigned long position(cache?cache->size():0);
 
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
+      std::unordered_map<std::string, unsigned long> dataid_and_sizes;
+      std::unordered_map<std::string, std::string> buffer_and_dataids;  // save <buffer name, dataid> pairs to avoid re-evaluating dataids
       for ( std::pair<std::string, std::string> const& buffer_and_size
           : module_call.memory_buffers()
-          )
+      )
       {
-        if (!virtual_memory_api || !shared_memory)
-        {
-          throw std::logic_error
-            ( ( boost::format
-                ( "module call '%1%::%2%' with %3% memory transfers scheduled "
-                  "to worker '%4%' that is unable to manage memory"
-                )
-              % module_call.module()
-              % module_call.function()
-              % module_call.memory_buffers().size()
-              % context->worker_name()
-              ).str()
-            );
-        }
-
         char* const local_memory
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
 
         unsigned long const size
-          (evaluate_size_or_die (input, buffer_and_size.second));
+          (evaluate_size_or_die(input, buffer_and_size.second));
 
-        memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
-        pointers.emplace (buffer_and_size.first, local_memory + position);
-
-        position += size;
-
-        if (position > shared_memory->size())
+        if (module_call.memory_buffer_dataids().count(buffer_and_size.first) > 0) // the buffer is a cached one
         {
-          //! \todo specific exception
-          throw std::runtime_error
+          auto dataid = evaluate_dataid_or_die(input, module_call.memory_buffer_dataids().at(buffer_and_size.first));
+
+          dataid_and_sizes.emplace(dataid, size);
+          buffer_and_dataids.emplace(buffer_and_size.first, dataid);
+
+        } else {
+          // no dataid, allocate buffer in the remaining local memory and advance the currently available position
+          memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
+          pointers.emplace (buffer_and_size.first, local_memory + position);
+
+          position += size;
+
+          if (position > shared_memory->size())
+          {
+            //! \todo specific exception
+            throw std::runtime_error
             ( ( boost::format ("not enough local memory: %1% > %2%")
-              % position
-              % shared_memory->size()
-              ).str()
+            % position
+            % shared_memory->size()
+            ).str()
             );
+          }
+        }
+      }
+
+
+      std::unordered_map<std::string, std::string> cached_dataids;
+      if (dataid_and_sizes.size() > 0)
+      {
+        if (!cache)
+        {
+          throw std::runtime_error("the workflow contains cached buffers, but no cache size defined at run-time");
+        }
+
+        auto already_cached_dataids = cache->add_chunk_list_to_cache(dataid_and_sizes);
+
+        // now we are sure all cached buffers have associated offsets
+        // we can add them to the list of local memory pointers
+        for ( std::pair<std::string, std::string> const& buffer_and_size
+            : module_call.memory_buffers()
+            )
+        {
+          char* const local_memory
+          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
+
+          if (buffer_and_dataids.count(buffer_and_size.first) > 0)  // this is a cached buffer
+          {
+            auto dataid = buffer_and_dataids.at(buffer_and_size.first);
+
+            if (already_cached_dataids.count(dataid) > 0)
+            {
+              cached_dataids.emplace(buffer_and_size.first, dataid);
+            }
+            position = cache->offset(dataid);
+            memory_buffer.emplace(buffer_and_size.first, buffer(position, dataid_and_sizes.at(dataid)));
+            pointers.emplace(buffer_and_size.first, local_memory + position);
+
+          }
         }
       }
 
@@ -209,7 +272,7 @@ namespace we
                  );
 
       transfer ( get_global_data, virtual_memory_api, shared_memory
-               , memory_buffer, module_call.gets (input)
+               , memory_buffer, cached_dataids, module_call.gets (input)
                );
 
       emit_gantt ( NotificationEvent::type_t::vmem_get
@@ -254,10 +317,10 @@ namespace we
                  );
 
       transfer ( put_global_data, virtual_memory_api, shared_memory
-               , memory_buffer, puts_evaluated_before_call
+               , memory_buffer, cached_dataids, puts_evaluated_before_call
                );
       transfer ( put_global_data, virtual_memory_api, shared_memory
-               , memory_buffer, module_call.puts_evaluated_after_call (out)
+               , memory_buffer, cached_dataids, module_call.puts_evaluated_after_call (out)
                );
 
       emit_gantt ( NotificationEvent::type_t::vmem_put

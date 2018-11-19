@@ -31,6 +31,7 @@ namespace fhg
       std::size_t num_per_node;
       std::size_t max_nodes;
       std::size_t shm_size;
+      std::size_t local_cache_size;
       boost::optional<std::size_t> socket;
     };
     worker_description parse_capability

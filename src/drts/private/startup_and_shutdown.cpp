@@ -225,7 +225,8 @@ namespace fhg
                     : description.max_nodes == 1 ? "unique"
                     : "global max: " + std::to_string (description.max_nodes)
                     )
-                 << ", " << description.shm_size << " SHM) with parent "
+                 << ", " << description.shm_size << " SHM and "
+                 << description.local_cache_size << " cache ) with parent "
                  << master_name << " on rif entry point "
                  << fhg::util::join
                       ( entry_points
@@ -268,6 +269,12 @@ namespace fhg
        arguments.emplace_back (gpi_socket.get().string());
        arguments.emplace_back ("--shared-memory-size");
        arguments.emplace_back (std::to_string (description.shm_size));
+     }
+
+     if (description.local_cache_size)
+     {
+       arguments.emplace_back ("--cache-size");
+       arguments.emplace_back (std::to_string (description.local_cache_size));
      }
 
      for (std::string const& capability : description.capabilities)
@@ -436,7 +443,7 @@ namespace fhg
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
       static std::regex const cap_spec_regex
-        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?)?$");
+        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?(,([0-9]+))?)?$");
       enum class cap_spec_regex_part
       {
         capabilities = 1,
@@ -444,6 +451,7 @@ namespace fhg
         num_per_node = 5,
         max_nodes = 7,
         shm = 9,
+        cache = 11,
       };
 
       std::smatch cap_spec_match;
@@ -477,6 +485,8 @@ namespace fhg
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::max_nodes)
           .get_value_or (0)
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::shm)
+          .get_value_or (0)
+        , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::cache)
           .get_value_or (0)
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::socket)
         };

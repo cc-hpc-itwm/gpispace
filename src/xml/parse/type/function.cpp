@@ -564,15 +564,17 @@ namespace xml
         we_transition_type operator () (const module_type& mod) const
         {
           std::unordered_map<std::string, std::string> memory_buffers;
+          std::unordered_map<std::string, std::string> memory_buffer_dataids;
 
           for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
           {
-            memory_buffer_type const& memory_buffer
-              (*fun.memory_buffers().get (memory_buffer_name));
+            auto const& memory_buffer = *fun.memory_buffers().get(memory_buffer_name);
 
-            memory_buffers.emplace ( memory_buffer.name()
-                                   , memory_buffer.size()
-                                   );
+            memory_buffers.emplace(memory_buffer_name, memory_buffer.size());
+            if (memory_buffer.data_id())
+            {
+              memory_buffer_dataids.emplace(memory_buffer_name, memory_buffer.data_id().get());
+            }
           }
 
           std::list<we::type::memory_transfer> memory_gets;
@@ -599,6 +601,7 @@ namespace xml
             , we_module_type ( mod.name()
                              , mod.function()
                              , std::move (memory_buffers)
+                             , std::move (memory_buffer_dataids)
                              , std::move (memory_gets)
                              , std::move (memory_puts)
                              )

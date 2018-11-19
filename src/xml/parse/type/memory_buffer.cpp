@@ -23,7 +23,24 @@ namespace xml
         , _name (name)
         , _size (size)
         , _read_only (read_only)
+        , _data_id (boost::none)
         , _properties (properties)
+      {}
+
+
+      memory_buffer_type::memory_buffer_type
+        ( const util::position_type& position_of_definition
+        , const std::string& name
+        , const std::string& size
+        , const std::string& data_id
+        , const we::type::property::type& properties
+        )
+      : with_position_of_definition (position_of_definition)
+      , _name (name)
+      , _size (size)
+      , _read_only (boost::none)
+      , _data_id (data_id)
+      , _properties (properties)
       {}
 
       const std::string& memory_buffer_type::name() const
@@ -37,6 +54,11 @@ namespace xml
       const boost::optional<bool>& memory_buffer_type::read_only() const
       {
         return _read_only;
+      }
+
+      const boost::optional<std::string>& memory_buffer_type::data_id() const
+      {
+        return _data_id;
       }
 
       const we::type::property::type& memory_buffer_type::properties() const

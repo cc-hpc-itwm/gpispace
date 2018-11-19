@@ -3,6 +3,8 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <drts/cache_management/cache_manager.hpp>
+
 #include <util-generic/hostname.hpp>
 
 #include <fhg/util/macros.hpp>
@@ -66,6 +68,7 @@ namespace
       ( we::loader::loader& module_loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
+      , drts::cache::cache_manager* cache
       , wfe_task_t& target
       , std::mt19937& engine
       , we::type::activity_t& activity
@@ -77,6 +80,7 @@ namespace
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
       , _shared_memory (shared_memory)
+      , _cache(cache)
       , task (target)
       , _engine (engine)
       , _activity (activity)
@@ -99,6 +103,7 @@ namespace
           boost::apply_visitor ( wfe_exec_context ( loader
                                                   , _virtual_memory_api
                                                   , _shared_memory
+                                                  , _cache
                                                   , task
                                                   , _engine
                                                   , *sub
@@ -123,6 +128,7 @@ namespace
           ( we::loader::module_call ( loader
                                     , _virtual_memory_api
                                     , _shared_memory
+                                    , _cache
                                     , &task.context
                                     , _activity.evaluation_context()
                                     , mod
@@ -152,6 +158,7 @@ namespace
     we::loader::loader& loader;
     gpi::pc::client::api_t /*const*/* _virtual_memory_api;
     gspc::scoped_allocation /*const*/* _shared_memory;
+    drts::cache::cache_manager* _cache;
     wfe_task_t& task;
     std::mt19937& _engine;
     we::type::activity_t& _activity;
@@ -201,6 +208,7 @@ DRTSImpl::DRTSImpl
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
+    , drts::cache::cache_manager* cache
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -217,6 +225,7 @@ DRTSImpl::DRTSImpl
   , _log_emitter()
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
+  , _cache(cache)
   , m_pending_jobs (backlog_length)
   , _peer ( std::move (peer_io_service)
           , fhg::com::host_t ("*"), fhg::com::port_t ("0")
@@ -581,6 +590,7 @@ try
               ( m_loader
               , _virtual_memory_api
               , _shared_memory
+              , _cache
               , task
               , engine
               , task.activity

@@ -539,6 +539,24 @@ namespace xml
         virtual ~memory_buffer_with_same_name_as_port() throw() = default;
       };
 
+      class cached_memory_buffer_without_dataid : public generic
+      {
+      public:
+        cached_memory_buffer_without_dataid ( std::string const&
+                                            , util::position_type const&
+                                            );
+        virtual ~cached_memory_buffer_without_dataid() throw() = default;
+      };
+
+      class cached_memory_buffer_without_mem_get : public generic
+      {
+      public:
+        cached_memory_buffer_without_mem_get ( std::string const&
+                                            , util::position_type const&
+                                            );
+        virtual ~cached_memory_buffer_without_mem_get() throw() = default;
+      };
+
       // ******************************************************************* //
 
       class property_generic : public generic

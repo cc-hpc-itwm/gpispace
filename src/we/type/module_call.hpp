@@ -41,12 +41,14 @@ namespace we { namespace type {
       ( const std::string & module
       , const std::string & function
       , std::unordered_map<std::string, std::string>&& memory_buffers
+      , std::unordered_map<std::string, std::string>&& cached_memory_buffers_with_dataids
       , std::list<memory_transfer>&& memory_gets
       , std::list<memory_transfer>&& memory_puts
       )
       : module_(module)
       , function_(function)
       , _memory_buffers (memory_buffers)
+      , _cached_memory_buffers_with_dataids(cached_memory_buffers_with_dataids)
       , _memory_gets (memory_gets)
       , _memory_puts (memory_puts)
     {}
@@ -58,6 +60,11 @@ namespace we { namespace type {
     {
       return _memory_buffers;
     }
+    std::unordered_map<std::string, std::string> const& memory_buffer_dataids() const
+    {
+      return _cached_memory_buffers_with_dataids;
+    }
+
     std::list<memory_transfer> const& memory_gets() const
     {
       return _memory_gets;
@@ -96,6 +103,7 @@ namespace we { namespace type {
     std::string module_;
     std::string function_;
     std::unordered_map<std::string, std::string> _memory_buffers;
+    std::unordered_map<std::string, std::string> _cached_memory_buffers_with_dataids;
     std::list<memory_transfer> _memory_gets;
     std::list<memory_transfer> _memory_puts;
 
@@ -106,6 +114,7 @@ namespace we { namespace type {
       ar & BOOST_SERIALIZATION_NVP(module_);
       ar & BOOST_SERIALIZATION_NVP(function_);
       ar & BOOST_SERIALIZATION_NVP (_memory_buffers);
+      ar & BOOST_SERIALIZATION_NVP (_cached_memory_buffers_with_dataids);
       ar & BOOST_SERIALIZATION_NVP (_memory_gets);
       ar & BOOST_SERIALIZATION_NVP (_memory_puts);
     }
