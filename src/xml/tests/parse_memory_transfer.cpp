@@ -147,12 +147,49 @@ BOOST_AUTO_TEST_CASE (memory_getput_is_stored_in_function)
   check_memory_getput_is_stored_in_function (false);
 }
 
+
+BOOST_AUTO_TEST_CASE (cached_memory_get_is_stored_in_function)
+{
+  std::string const global (fhg::util::testing::random_content_string());
+  std::string const local (fhg::util::testing::random_content_string());
+
+  std::string const input
+  ( ( boost::format (R"EOS(
+<defun>
+  <cached-memory-buffer name="%1%">
+    <size>1</size>
+    <dataid>1</dataid>
+    <memory-get><global>%2%</global><local>%3%</local></memory-get>
+    </cached-memory-buffer>
+  <module name="%4%" function="%5%"/>
+</defun>)EOS")
+  % fhg::util::testing::random_identifier()
+  % global
+  % local
+  % fhg::util::testing::random_identifier()
+  % fhg::util::testing::random_identifier()
+  ).str()
+  );
+
+  std::istringstream input_stream (input);
+
+  xml::parse::state::type state;
+  xml::parse::type::function_type const function
+  (xml::parse::just_parse (state, input_stream));
+
+  BOOST_REQUIRE_EQUAL (function.memory_gets().size(), 1);
+  BOOST_REQUIRE_EQUAL (function.memory_gets().begin()->global(), global);
+  BOOST_REQUIRE_EQUAL (function.memory_gets().begin()->local(), local);
+}
+
+
 namespace
 {
   void check_memory_transfers_are_stored_in_function
     ( std::size_t const num_get
     , std::size_t const num_put
     , std::size_t const num_getput
+    , std::size_t const num_cached_get
     )
   {
     std::string input;
@@ -171,6 +208,16 @@ namespace
     {
       input += "<memory-getput><global/><local/></memory-getput>";
     }
+    for (std::size_t _ (0); _ < num_cached_get; ++_)
+    {
+      input += ( boost::format (R"EOS(
+            <cached-memory-buffer name="%1%">
+              <size/><dataid/>
+              <memory-get><global/><local/></memory-get>
+            </cached-memory-buffer>)EOS")
+            % fhg::util::testing::random_identifier_without_leading_underscore()
+            ).str();
+    }
 
     input += ( boost::format (R"EOS(<module name="%1%" function="%2%"/>)EOS")
              % fhg::util::testing::random_identifier()
@@ -185,7 +232,7 @@ namespace
     xml::parse::type::function_type const function
       (xml::parse::just_parse (state, input_stream));
 
-    BOOST_REQUIRE_EQUAL (function.memory_gets().size(), num_get);
+    BOOST_REQUIRE_EQUAL (function.memory_gets().size(), num_get + num_cached_get);
     BOOST_REQUIRE_EQUAL (function.memory_puts().size(), num_put);
     BOOST_REQUIRE_EQUAL (function.memory_getputs().size(), num_getput);
   }
@@ -199,8 +246,11 @@ BOOST_AUTO_TEST_CASE (memory_transfers_are_stored_in_function)
     {
       for (std::size_t num_getput (0); num_getput < 5; ++num_getput)
       {
-        check_memory_transfers_are_stored_in_function
-          (num_get, num_put, num_getput);
+        for (std::size_t num_cached_get (0); num_cached_get < 5; ++num_cached_get)
+        {
+          check_memory_transfers_are_stored_in_function
+            (num_get, num_put, num_getput, num_cached_get);
+        }
       }
     }
   }

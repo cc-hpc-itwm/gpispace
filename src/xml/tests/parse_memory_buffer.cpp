@@ -31,153 +31,262 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
+namespace
 {
-  std::string const name (random_identifier_with_valid_prefix());
+  void test_buffer_without_size(bool is_buf_cached)
+  {
+    std::string const name (random_identifier_with_valid_prefix());
 
-  std::string const input
+    std::string const input
     ( ( boost::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"/>
+  <%1%memory-buffer name="%2%"/>
   <expression/>
 </defun>)EOS")
-      % name
-      ).str()
+    % (is_buf_cached?"cached-":"")
+    % name
+    ).str()
     );
 
     xml::parse::state::type state;
 
     fhg::util::testing::require_exception_with_message
-      <xml::parse::error::memory_buffer_without_size>
-      ( [&state, &input]()
-      { std::istringstream input_stream (input);
+    <xml::parse::error::memory_buffer_without_size>
+    ( [&state, &input]()
+        { std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
+        }
+    , boost::format ("ERROR: memory-buffer '%1%' without size, at %2%")
+    % name
+    % "[<stdin>:3:3]"
+    );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
+{
+  test_buffer_without_size(true);
+  test_buffer_without_size(false);
+}
+
+BOOST_AUTO_TEST_CASE (cached_memory_buffer_without_dataid_throws)
+{
+  std::string const name_memory_buffer (random_identifier_with_valid_prefix());
+
+  std::string const input
+  ( ( boost::format (R"EOS(
+<defun>
+  <cached-memory-buffer name="%1%"><size/></cached-memory-buffer>
+  <expression/>
+</defun>)EOS")
+  % name_memory_buffer
+  ).str()
+  );
+
+  xml::parse::state::type state;
+
+  fhg::util::testing::require_exception_with_message
+  <xml::parse::error::cached_memory_buffer_without_dataid>
+  ( [&state, &input]()
+      { std::istringstream input_stream (input);
+      xml::parse::just_parse (state, input_stream);
       }
-      , boost::format ("ERROR: memory-buffer '%1%' without size, at %2%")
-      % name
-      % "[<stdin>:3:3]"
-      );
+  , boost::format ("ERROR: cached-memory-buffer '%1%' without dataid, at %2%")
+  % name_memory_buffer
+  % "[<stdin>:3:3]"
+  );
+}
+
+BOOST_AUTO_TEST_CASE (cached_memory_buffer_without_memory_get_throws)
+{
+  std::string const name_memory_buffer (random_identifier_with_valid_prefix());
+
+  std::string const input
+  ( ( boost::format (R"EOS(
+<defun>
+  <cached-memory-buffer name="%1%"><size/><dataid/></cached-memory-buffer>
+  <expression/>
+</defun>)EOS")
+  % name_memory_buffer
+  ).str()
+  );
+
+  xml::parse::state::type state;
+
+  fhg::util::testing::require_exception_with_message
+  <xml::parse::error::cached_memory_buffer_without_mem_get>
+  ( [&state, &input]()
+      { std::istringstream input_stream (input);
+      xml::parse::just_parse (state, input_stream);
+      }
+  , boost::format ("ERROR: cached-memory-buffer '%1%' without memory-get, at %2%")
+  % name_memory_buffer
+  % "[<stdin>:3:3]"
+  );
+}
+
+namespace
+{
+  void test_duplicate_memory_buffer(bool is_buf1_cached, bool is_buf2_cached)
+  {
+    std::string const name (random_identifier_with_valid_prefix());
+
+    std::string const input
+    ( ( boost::format (R"EOS(
+<defun>
+  <%2%memory-buffer name="%1%"><size/>%4%</%2%memory-buffer>
+  <%3%memory-buffer name="%1%"><size/>%5%</%3%memory-buffer>
+  <expression/>
+</defun>)EOS")
+    % name
+    % (is_buf1_cached?"cached-":"")
+    % (is_buf2_cached?"cached-":"")
+    % (is_buf1_cached?"<dataid/><memory-get/>":"")
+    % (is_buf2_cached?"<dataid/><memory-get/>":"")
+    ).str()
+    );
+
+    xml::parse::state::type state;
+
+    fhg::util::testing::require_exception_with_message
+    <xml::parse::error::duplicate_memory_buffer>
+    ( [&state, &input]()
+        { std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+        }
+    , boost::format ("ERROR: duplicate memory-buffer '%1%'"
+        " at %2%, earlier definition is at %3%"
+    )
+    % name
+    % "[<stdin>:4:3]"
+    % "[<stdin>:3:3]"
+    );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
 {
-  std::string const name (random_identifier_with_valid_prefix());
+  test_duplicate_memory_buffer(false, false);
+  test_duplicate_memory_buffer(false, true);
+  test_duplicate_memory_buffer(true, false);
+  test_duplicate_memory_buffer(true, true);
+}
 
-  std::string const input
+namespace
+{
+  void test_memory_buffer_is_stored_in_function(bool is_buf_cached)
+  {
+    std::string const name (random_identifier_with_valid_prefix());
+    std::string const size (fhg::util::testing::random_content_string());
+
+    std::string const input
     ( ( boost::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <expression/>
+  <%5%memory-buffer name="%1%"><size>%2%</size>%6%</%5%memory-buffer>
+  <module name="%3%" function="%4%"/>
 </defun>)EOS")
-      % name
-      ).str()
+    % name
+    % size
+    % fhg::util::testing::random_identifier()
+    % fhg::util::testing::random_identifier()
+    % (is_buf_cached?"cached-":"")
+    % (is_buf_cached?"<dataid/><memory-get/>":"")
+    ).str()
     );
 
-    xml::parse::state::type state;
+    std::istringstream input_stream (input);
 
-    fhg::util::testing::require_exception_with_message
-      <xml::parse::error::duplicate_memory_buffer>
-      ( [&state, &input]()
-      { std::istringstream input_stream (input);
-        xml::parse::just_parse (state, input_stream);
-      }
-      , boost::format ("ERROR: duplicate memory-buffer '%1%'"
-                      " at %2%, earlier definition is at %3%"
-                      )
-      % name
-      % "[<stdin>:4:3]"
-      % "[<stdin>:3:3]"
-      );
+    xml::parse::state::type state;
+    xml::parse::type::function_type const function
+    (xml::parse::just_parse (state, input_stream));
+
+    BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 1);
+    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->name()
+        , name
+    );
+    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->size()
+        , size
+    );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
 {
-  std::string const name (random_identifier_with_valid_prefix());
-  std::string const size (fhg::util::testing::random_content_string());
-
-  std::string const input
-    ( ( boost::format (R"EOS(
-<defun>
-  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
-  <module name="%3%" function="%4%"/>
-</defun>)EOS")
-      % name
-      % size
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
-    );
-
-    std::istringstream input_stream (input);
-
-    xml::parse::state::type state;
-    xml::parse::type::function_type const function
-      (xml::parse::just_parse (state, input_stream));
-
-    BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 1);
-    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->name()
-                        , name
-                        );
-    BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->size()
-                        , size
-                        );
+  test_memory_buffer_is_stored_in_function(false);
+  test_memory_buffer_is_stored_in_function(true);
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
+namespace
 {
-  std::string const name_1 (random_identifier_with_valid_prefix());
-  std::string const size_1 (fhg::util::testing::random_content_string());
-  std::string const name_2 (random_identifier_with_valid_prefix());
-  std::string const size_2 (fhg::util::testing::random_content_string());
+  void test_memory_buffer_are_stored_in_function(bool is_buf1_cached, bool is_buf2_cached)
+  {
+    std::string const name_1 (random_identifier_with_valid_prefix());
+    std::string const size_1 (fhg::util::testing::random_content_string());
+    std::string const name_2 (random_identifier_with_valid_prefix());
+    std::string const size_2 (fhg::util::testing::random_content_string());
 
-  std::string const input
+    std::string const input
     ( ( boost::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
-  <memory-buffer name="%3%"><size>%4%</size></memory-buffer>
+  <%7%memory-buffer name="%1%"><size>%2%</size>%9%</%7%memory-buffer>
+  <%8%memory-buffer name="%3%"><size>%4%</size>%10%</%8%memory-buffer>
   <module name="%5%" function="%6%"/>
 </defun>)EOS")
-      % name_1
-      % size_1
-      % name_2
-      % size_2
-      % fhg::util::testing::random_identifier()
-      % fhg::util::testing::random_identifier()
-      ).str()
+    % name_1
+    % size_1
+    % name_2
+    % size_2
+    % fhg::util::testing::random_identifier()
+    % fhg::util::testing::random_identifier()
+    % (is_buf1_cached?"cached-":"")
+    % (is_buf2_cached?"cached-":"")
+    % (is_buf1_cached?"<dataid/><memory-get/>":"")
+    % (is_buf2_cached?"<dataid/><memory-get/>":"")
+    ).str()
     );
 
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
     xml::parse::type::function_type const function
-      (xml::parse::just_parse (state, input_stream));
+    (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 2);
     BOOST_REQUIRE (function.memory_buffers().has (name_1));
     BOOST_REQUIRE (function.memory_buffers().has (name_2));
     BOOST_REQUIRE_EQUAL
-      (function.memory_buffers().get (name_1)->size(), size_1);
+    (function.memory_buffers().get (name_1)->size(), size_1);
     BOOST_REQUIRE_EQUAL
-      (function.memory_buffers().get (name_2)->size(), size_2);
+    (function.memory_buffers().get (name_2)->size(), size_2);
+  }
+}
+
+BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
+{
+  test_memory_buffer_are_stored_in_function(false, false);
+  test_memory_buffer_are_stored_in_function(false, true);
+  test_memory_buffer_are_stored_in_function(true, false);
+  test_memory_buffer_are_stored_in_function(true, true);
 }
 
 namespace
 {
   void test_memory_buffer_for_non_module_call_throws
-    (std::string const& tag)
+    (std::string const& tag, bool is_buf_cached)
   {
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
       ( ( boost::format (R"EOS(
 <defun name="%1%">
-  <memory-buffer name="%3%"><size/></memory-buffer>
+  <%4%memory-buffer name="%3%"><size/>%5%</%4%memory-buffer>
   <%2%/>
 </defun>)EOS")
         % name_function
         % tag
         % random_identifier_with_valid_prefix()
+        % (is_buf_cached?"cached-":"")
+        % (is_buf_cached?"<dataid/><memory-get/>":"")
         ).str()
       );
 
@@ -202,21 +311,26 @@ namespace
       );
   }
 
-  void test_memory_buffers_for_non_module_call_throws (std::string const& tag)
+  void test_memory_buffers_for_non_module_call_throws (std::string const& tag,
+      bool is_buf1_cached, bool is_buf2_cached)
   {
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
       ( ( boost::format (R"EOS(
 <defun name="%1%">
-  <memory-buffer name="%3%"><size/></memory-buffer>
-  <memory-buffer name="%4%"><size/></memory-buffer>
+  <%5%memory-buffer name="%3%"><size/>%7%</%5%memory-buffer>
+  <%6%memory-buffer name="%4%"><size/>%8%</%6%memory-buffer>
   <%2%/>
 </defun>)EOS")
         % name_function
         % tag
         % random_identifier_with_valid_prefix()
         % random_identifier_with_valid_prefix()
+        % (is_buf1_cached?"cached-":"")
+        % (is_buf2_cached?"cached-":"")
+        % (is_buf1_cached?"<dataid/><memory-get/>":"")
+        % (is_buf2_cached?"<dataid/><memory-get/>":"")
         ).str()
       );
 
@@ -255,20 +369,30 @@ namespace
 
 BOOST_AUTO_TEST_CASE (memory_buffer_for_expression_throws)
 {
-  test_memory_buffer_for_non_module_call_throws ("expression");
-  test_memory_buffers_for_non_module_call_throws ("expression");
+  test_memory_buffer_for_non_module_call_throws ("expression", false);
+  test_memory_buffer_for_non_module_call_throws ("expression", true);
+
+  test_memory_buffers_for_non_module_call_throws ("expression", false, false);
+  test_memory_buffers_for_non_module_call_throws ("expression", false, true);
+  test_memory_buffers_for_non_module_call_throws ("expression", true, false);
+  test_memory_buffers_for_non_module_call_throws ("expression", true, true);
 }
 
 BOOST_AUTO_TEST_CASE (memory_buffer_for_net_throws)
 {
-  test_memory_buffer_for_non_module_call_throws ("net");
-  test_memory_buffers_for_non_module_call_throws ("net");
+  test_memory_buffer_for_non_module_call_throws ("net", false);
+  test_memory_buffer_for_non_module_call_throws ("net", true);
+
+  test_memory_buffers_for_non_module_call_throws ("net", false, false);
+  test_memory_buffers_for_non_module_call_throws ("net", false, true);
+  test_memory_buffers_for_non_module_call_throws ("net", true, false);
+  test_memory_buffers_for_non_module_call_throws ("net", true, true);
 }
 
 namespace
 {
   void test_memory_buffer_with_the_same_name_as_a_port_throws
-    (std::string const& port_direction)
+    (std::string const& port_direction, bool is_buf_cached)
   {
     std::string const name_port_and_memory_buffer
       (random_identifier_with_valid_prefix());
@@ -277,13 +401,15 @@ namespace
       ( ( boost::format (R"EOS(
 <defun>
   <%2% name="%1%" type=""/>
-  <memory-buffer name="%1%"><size/></memory-buffer>
+  <%5%memory-buffer name="%1%"><size/>%6%</%5%memory-buffer>
   <module name="%3%" function="%4%"/>
 </defun>)EOS")
         % name_port_and_memory_buffer
         % port_direction
         % fhg::util::testing::random_identifier()
         % fhg::util::testing::random_identifier()
+        % (is_buf_cached?"cached-":"")
+        % (is_buf_cached?"<dataid/><memory-get/>":"")
         ).str()
       );
 
@@ -308,14 +434,17 @@ namespace
 
 BOOST_AUTO_TEST_CASE (memory_buffer_with_the_same_name_as_a_port_throws)
 {
-  test_memory_buffer_with_the_same_name_as_a_port_throws ("in");
-  test_memory_buffer_with_the_same_name_as_a_port_throws ("out");
+  test_memory_buffer_with_the_same_name_as_a_port_throws ("in", false);
+  test_memory_buffer_with_the_same_name_as_a_port_throws ("out", false);
+
+  test_memory_buffer_with_the_same_name_as_a_port_throws ("in", true);
+  test_memory_buffer_with_the_same_name_as_a_port_throws ("out", true);
 }
 
 namespace
 {
   void test_memory_buffer_with_the_same_name_as_a_port_added_later_throws
-    (std::string const& port_direction)
+    (std::string const& port_direction, bool is_buf_cached)
   {
     std::string const name_port_added_earlier
       (random_identifier_with_valid_prefix());
@@ -326,7 +455,7 @@ namespace
       ( ( boost::format (R"EOS(
 <defun>
   <in name="%1%" type=""/>
-  <memory-buffer name="%2%"><size/></memory-buffer>
+  <%6%memory-buffer name="%2%"><size/>%7%</%6%memory-buffer>
   <%3% name="%2%" type=""/>
   <module name="%4%" function="%5%"/>
 </defun>)EOS")
@@ -335,6 +464,8 @@ namespace
         % port_direction
         % fhg::util::testing::random_identifier()
         % fhg::util::testing::random_identifier()
+        % (is_buf_cached?"cached-":"")
+        % (is_buf_cached?"<dataid/><memory-get/>":"")
         ).str()
       );
 
@@ -360,48 +491,65 @@ namespace
 BOOST_AUTO_TEST_CASE
   (memory_buffer_with_the_same_name_as_a_port_added_later_throws)
 {
-  test_memory_buffer_with_the_same_name_as_a_port_added_later_throws ("in");
-  test_memory_buffer_with_the_same_name_as_a_port_added_later_throws ("out");
+  test_memory_buffer_with_the_same_name_as_a_port_added_later_throws ("in", false);
+  test_memory_buffer_with_the_same_name_as_a_port_added_later_throws ("out", false);
+
+  test_memory_buffer_with_the_same_name_as_a_port_added_later_throws ("in", true);
+  test_memory_buffer_with_the_same_name_as_a_port_added_later_throws ("out", true);
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
+namespace
 {
-  std::string const name_memory_buffer (random_identifier_with_valid_prefix());
+  void test_memory_buffer_accepted_as_argument_in_function_signature(bool is_buf_cached)
+  {
+    std::string const name_memory_buffer (random_identifier_with_valid_prefix());
 
-  std::string const input
+    std::string const input
     ( ( boost::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
+  <%3%memory-buffer name="%1%"><size/>%4%</%3%memory-buffer>
   <module name="" function="%2% (%1%)"/>
 </defun>)EOS")
-      % name_memory_buffer
-      % random_identifier_with_valid_prefix()
-      ).str()
+    % name_memory_buffer
+    % random_identifier_with_valid_prefix()
+    % (is_buf_cached?"cached-":"")
+    % (is_buf_cached?"<dataid/><memory-get/>":"")
+    ).str()
     );
 
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
     xml::parse::type::function_type const function
-      (xml::parse::just_parse (state, input_stream));
+    (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.content())
-                  );
+    (function.content())
+    );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
-        (function.content())
-      );
+    ( boost::get<xml::parse::type::module_type>
+    (function.content())
+    );
 
     BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
     BOOST_REQUIRE_EQUAL ( *(module_call.memory_buffer_arg().begin())
-                        , name_memory_buffer
-                        );
+        , name_memory_buffer
+    );
+  }
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
+BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
 {
+  test_memory_buffer_accepted_as_argument_in_function_signature(false);
+  test_memory_buffer_accepted_as_argument_in_function_signature(true);
+}
+
+namespace
+{
+  void test_memory_buffers_accepted_as_arguments_in_function_signature
+    (bool is_buf1_cached, bool is_buf2_cached)
+  {
   std::string const name_memory_buffer_A
     (random_identifier_with_valid_prefix());
   std::string const name_memory_buffer_B
@@ -410,13 +558,17 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
   std::string const input
     ( ( boost::format (R"EOS(
 <defun>
-  <memory-buffer name="%1%"><size/></memory-buffer>
-  <memory-buffer name="%2%"><size/></memory-buffer>
+  <%4%memory-buffer name="%1%"><size/>%6%</%4%memory-buffer>
+  <%5%memory-buffer name="%2%"><size/>%7%</%5%memory-buffer>
   <module name="" function="%3% (%1%, %2%)"/>
 </defun>)EOS")
       % name_memory_buffer_A
       % name_memory_buffer_B
       % fhg::util::testing::random_identifier()
+      % (is_buf1_cached?"cached-":"")
+      % (is_buf2_cached?"cached-":"")
+      % (is_buf1_cached?"<dataid/><memory-get/>":"")
+      % (is_buf2_cached?"<dataid/><memory-get/>":"")
       ).str()
     );
 
@@ -443,49 +595,71 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
       ( *(std::next (module_call.memory_buffer_arg().begin()))
       , name_memory_buffer_B
       );
+  }
 }
 
-BOOST_AUTO_TEST_CASE
-  (memory_buffer_mixed_with_port_accepted_as_argument_in_function_signature)
+BOOST_AUTO_TEST_CASE (memory_buffers_accepted_as_arguments_in_function_signature)
 {
-  std::string const name_port (random_identifier_with_valid_prefix());
-  std::string const name_memory_buffer (random_identifier_with_valid_prefix());
+  test_memory_buffers_accepted_as_arguments_in_function_signature(false, false);
+  test_memory_buffers_accepted_as_arguments_in_function_signature(false, true);
+  test_memory_buffers_accepted_as_arguments_in_function_signature(true, false);
+  test_memory_buffers_accepted_as_arguments_in_function_signature(true, true);
+}
 
-  std::string const input
+
+namespace
+{
+  void test_memory_buffer_mixed_with_port_accepted_as_argument_in_function_signature (bool is_buf_cached)
+  {
+    std::string const name_port (random_identifier_with_valid_prefix());
+    std::string const name_memory_buffer (random_identifier_with_valid_prefix());
+
+    std::string const input
     ( ( boost::format (R"EOS(
 <defun>
   <in name="%1%" type=""/>
-  <memory-buffer name="%2%"><size/></memory-buffer>
+  <%4%memory-buffer name="%2%"><size/>%5%</%4%memory-buffer>
   <module name="" function="%3% (%1%, %2%)"/>
 </defun>)EOS")
-      % name_port
-      % name_memory_buffer
-      % fhg::util::testing::random_identifier()
-      ).str()
+    % name_port
+    % name_memory_buffer
+    % fhg::util::testing::random_identifier()
+    % (is_buf_cached?"cached-":"")
+    % (is_buf_cached?"<dataid/><memory-get/>":"")
+    ).str()
     );
 
     std::istringstream input_stream (input);
 
     xml::parse::state::type state;
     xml::parse::type::function_type const function
-      (xml::parse::just_parse (state, input_stream));
+    (xml::parse::just_parse (state, input_stream));
 
     BOOST_REQUIRE ( fhg::util::boost::is_of_type<xml::parse::type::module_type>
-                    (function.content())
-                  );
+    (function.content())
+    );
 
     xml::parse::type::module_type const& module_call
-      ( boost::get<xml::parse::type::module_type>
-        (function.content())
-      );
+    ( boost::get<xml::parse::type::module_type>
+    (function.content())
+    );
 
     BOOST_REQUIRE_EQUAL (module_call.memory_buffer_arg().size(), 1);
     BOOST_REQUIRE_EQUAL ( *(module_call.memory_buffer_arg().begin())
-                        , name_memory_buffer
-                        );
+        , name_memory_buffer
+    );
     BOOST_REQUIRE_EQUAL (module_call.port_arg().size(), 1);
     BOOST_REQUIRE_EQUAL (*(module_call.port_arg().begin()), name_port);
+  }
 }
+
+BOOST_AUTO_TEST_CASE
+  (memory_buffer_mixed_with_port_accepted_as_argument_in_function_signature)
+{
+  test_memory_buffer_mixed_with_port_accepted_as_argument_in_function_signature(false);
+  test_memory_buffer_mixed_with_port_accepted_as_argument_in_function_signature(true);
+}
+
 
 BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_return_in_function_signature)
 {

@@ -355,7 +355,7 @@ namespace xml
         ( std::string const& name
         , util::position_type const& position_of_definition
         )
-        : generic ( boost::format ("cached-memory-buffer '%1%' without memory get, at %2%")
+        : generic ( boost::format ("cached-memory-buffer '%1%' without memory-get, at %2%")
                   % name
                   % position_of_definition
                   )

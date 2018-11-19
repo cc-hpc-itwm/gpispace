@@ -79,17 +79,35 @@ namespace xml
           , const memory_buffer_type& memory_buffer
           )
         {
-          s.open ("memory-buffer");
-          s.attr ("name", memory_buffer.name());
-          s.attr ("read-only", memory_buffer.read_only());
+          if (!memory_buffer.data_id())
+          {
+            s.open ("memory-buffer");
+            s.attr ("name", memory_buffer.name());
+            s.attr ("read-only", memory_buffer.read_only());
 
-          ::we::type::property::dump::dump (s, memory_buffer.properties());
+            ::we::type::property::dump::dump (s, memory_buffer.properties());
 
-          s.open ("size");
-          s.content (memory_buffer.size());
+            s.open ("size");
+            s.content (memory_buffer.size());
 
-          s.close();
-          s.close();
+            s.close();
+            s.close();
+          }
+          else
+          {
+            s.open ("cached-memory-buffer");
+            s.attr ("name", memory_buffer.name());
+
+            ::we::type::property::dump::dump (s, memory_buffer.properties());
+
+            s.open ("size");
+            s.content (memory_buffer.size());
+            s.close();
+            s.open ("dataid");
+            s.content (memory_buffer.data_id().get());
+            s.close();
+            s.close();
+          }
         }
       }
     }
