@@ -373,7 +373,7 @@ namespace xml
               , fhg::util::ostream::callback::select<T, util::position_type>
                   (&T::position_of_definition)
               );
-        };
+        }
 
         std::string print_memory_transfer_positions_of_definition
           (type::function_type const& function)

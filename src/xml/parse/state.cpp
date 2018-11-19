@@ -770,7 +770,7 @@ namespace xml
            }
           );
 
-        for (boost::filesystem::path const& to_strip : _path_prefixes_to_strip)
+        for (boost::filesystem::path to_strip : _path_prefixes_to_strip)
         {
           boost::optional<boost::filesystem::path> const stripped
             (try_strip (to_strip));

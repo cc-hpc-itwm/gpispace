@@ -16,7 +16,7 @@ namespace gspc
 #define ACCESS(_name, _type)                    \
   SET (_name, _type);                           \
   GET (_name, _type);                           \
-  REQUIRE (_name, _type);
+  REQUIRE (_name, _type)
 
   ACCESS (log_host, std::string);
   ACCESS (log_port, unsigned short);

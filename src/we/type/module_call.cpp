@@ -75,9 +75,7 @@ namespace we
     {
       std::unordered_map<std::string, unsigned long> sizes;
 
-      for ( std::pair<std::string, std::string> const& name_and_expression
-          : memory_buffers()
-          )
+      for (auto const& name_and_expression : memory_buffers())
       {
         expr::eval::context context (input);
 

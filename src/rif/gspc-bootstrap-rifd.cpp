@@ -125,9 +125,7 @@ try
   std::unordered_map<std::string, std::string> const& real_hostnames
     (std::get<2> (result));
 
-  for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
-      : std::get<0> (result)
-      )
+  for (auto const& entry_point : std::get<0> (result))
   {
     std::cout << entry_point.first << ' ' << entry_point.second
               << " (" << real_hostnames.at (entry_point.first) << ')'

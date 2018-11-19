@@ -765,9 +765,7 @@ namespace xml
                 );
             }
 
-            for ( std::pair<we::port_id_type, std::string> const& association
-                : real_place_names
-                )
+            for (auto const& association : real_place_names)
             {
               we::type::property::type properties;
 

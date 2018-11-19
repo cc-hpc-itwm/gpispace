@@ -13,7 +13,7 @@ void swap_bytes(void *a, int n, int nb) {
       cd[j]=cs[nb-1-j];
     bcopy(cd,cs,nb);
   }
-};
+}
 
 int TestByteOrder(void)
 {

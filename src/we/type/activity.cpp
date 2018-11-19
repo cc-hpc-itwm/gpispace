@@ -162,9 +162,7 @@ namespace we
       }
       void activity_t::add_output (expr::eval::context const& output)
       {
-        for ( std::pair<port_id_type, port_t> const& port_by_id
-            : _transition.ports_output()
-            )
+        for (auto const& port_by_id : _transition.ports_output())
         {
           add_output
             (port_by_id.first, output.value ({port_by_id.second.name()}));

@@ -20,6 +20,6 @@ namespace sdpa
       }
     };
 
-    CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD (BacklogNoLongerFullEvent);
+    CONSTRUCT_DATA_DEFS_FOR_EMPTY_MGMTEVENT_OVERLOAD (BacklogNoLongerFullEvent)
   }
 }

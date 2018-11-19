@@ -28,7 +28,7 @@ namespace
                 , std::unordered_map<Key, Value> const& rhs
                 )
   {
-    for (std::pair<Key, Value> const& l : lhs)
+    for (auto const& l : lhs)
     {
       if (!rhs.count (l.first))
       {

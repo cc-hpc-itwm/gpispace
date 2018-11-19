@@ -192,9 +192,8 @@ namespace we
 
       std::unordered_map<std::string, unsigned long> dataid_and_sizes;
       std::unordered_map<std::string, std::string> buffer_and_dataids;  // save <buffer name, dataid> pairs to avoid re-evaluating dataids
-      for ( std::pair<std::string, std::string> const& buffer_and_size
-          : module_call.memory_buffers()
-      )
+
+      for (auto const& buffer_and_size : module_call.memory_buffers())
       {
         char* const local_memory
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
@@ -242,9 +241,7 @@ namespace we
 
         // now we are sure all cached buffers have associated offsets
         // we can add them to the list of local memory pointers
-        for ( std::pair<std::string, std::string> const& buffer_and_size
-            : module_call.memory_buffers()
-            )
+        for (auto const& buffer_and_size : module_call.memory_buffers())
         {
           char* const local_memory
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));

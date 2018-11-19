@@ -894,6 +894,7 @@ namespace xml
 
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -fPIC"                              << std::endl;
+        stream << "CXXFLAGS += --std=c++11"                        << std::endl;
         stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
@@ -1380,7 +1381,7 @@ namespace xml
                               > _inc;
             std::string const _suffix;
           };
-        };
+        }
 
         class mk_type : public fhg::util::ostream::modifier
         {

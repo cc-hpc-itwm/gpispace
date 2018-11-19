@@ -11,21 +11,14 @@ namespace pnet
   {
     namespace signature
     {
-      typedef boost::make_recursive_variant
-              < std::pair
-                < std::string
-                , std::list< boost::variant< std::pair<std::string, std::string>
-                                           , boost::recursive_variant_
-                                           >
-                           >
-                >
-              >::type structured_type;
-
-      typedef boost::variant< std::pair<std::string, std::string>
-                            , structured_type
-                            > field_type;
+      typedef typename boost::make_recursive_variant
+                       < std::pair<std::string, std::string>
+                       , std::pair<std::string, std::list<boost::recursive_variant_>>
+                       >::type field_type;
 
       typedef std::list<field_type> structure_type;
+
+      typedef std::pair<std::string, structure_type> structured_type;
 
       typedef boost::variant<std::string, structured_type> signature_type;
     }

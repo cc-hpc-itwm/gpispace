@@ -121,7 +121,6 @@ BOOST_AUTO_TEST_CASE (share_example_cached_buffer)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add<test::option::gen::cxx11>()
     . add<test::option::gen::include> (test::source_directory (vm))
     );
 

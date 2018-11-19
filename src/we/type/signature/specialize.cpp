@@ -11,22 +11,6 @@ namespace pnet
       namespace
       {
         template<typename P>
-        class apply_field_struct : public boost::static_visitor<>
-        {
-        public:
-          apply_field_struct (P p)
-            : _p (p)
-          {}
-
-          void operator() (std::pair<std::string, structure_type>& s) const
-          {
-            _p._field_struct (s);
-          }
-        private:
-          P _p;
-        };
-
-        template<typename P>
         class apply_field : public boost::static_visitor<>
         {
         public:
@@ -40,22 +24,7 @@ namespace pnet
           }
           void operator() (structured_type& s) const
           {
-            boost::apply_visitor (apply_field_struct<P> (_p), s);
-          }
-        private:
-          P _p;
-        };
-
-        template<typename P>
-        class apply_struct : public boost::static_visitor<>
-        {
-        public:
-          apply_struct (P p)
-            : _p (p)
-          {}
-          void operator() (std::pair<std::string, structure_type>& s) const
-          {
-            _p._struct (s);
+            _p._field_struct (s);
           }
         private:
           P _p;
@@ -67,7 +36,7 @@ namespace pnet
           mapper (const std::unordered_map<std::string, std::string>& m)
             : _m (m)
           {}
-          void _struct (std::pair<std::string, structure_type>& s) const
+          void _struct (structured_type& s) const
           {
             s.first = map (s.first);
 
@@ -80,7 +49,7 @@ namespace pnet
           {
             f.second = map (f.second);
           }
-          void _field_struct (std::pair<std::string, structure_type>& s) const
+          void _field_struct (structured_type& s) const
           {
             _struct (s);
           }
@@ -103,7 +72,7 @@ namespace pnet
         , const std::unordered_map<std::string, std::string>& m
         )
       {
-        boost::apply_visitor (apply_struct<mapper> (mapper (m)), s);
+        mapper(m)._struct(s);
       }
     }
   }

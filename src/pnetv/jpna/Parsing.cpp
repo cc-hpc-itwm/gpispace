@@ -60,9 +60,7 @@ class TransitionVisitor: public boost::static_visitor<void> {
         }
 
         /* Translate transitions. */
-        for ( const std::pair<we::transition_id_type, transition_t>& it
-            : net.transitions()
-            )
+        for (auto const& it : net.transitions())
         {
           const we::transition_id_type& tid (it.first);
           const transition_t& t (it.second);
