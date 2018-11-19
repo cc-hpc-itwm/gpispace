@@ -1,0 +1,17 @@
+
+<structs>
+<struct name="config">
+    <field name="nchunks" type="long"/>
+    <field name="chunksize" type="long"/>
+    <field name="elemsize" type="long"/>
+    <field name="implementation" type="string"/>
+    <field name="wcount" type="long"/>
+    <field name="wchunksize" type="long"/>
+</struct>
+
+<struct name="job_info">
+    <field name="count" type="long"/>
+    <field name="elemsize" type="long"/>
+</struct>
+
+</structs>

@@ -1,0 +1,99 @@
+<defun name="work">
+  <include-structs href="memory/global/range.xpnet" />
+  <include-structs href="cache/config.xpnet" />
+    
+  <in name="config" type="config"/>
+  <in name="can_start_read" type="control"/>
+  <in name="rjob" type="job_info"/>
+  <in name="id" type="long"/>
+  <out name="done_read" type="long"/>
+  <in name="memory" type="global_memory_range"/>
+      
+ 
+  <cached-memory-buffer name="neighbor0">
+    <size>
+      ulong(${rjob.count} * ${rjob.elemsize})
+    </size>
+    <dataid>
+      ulong((${id} + ${config.nchunks} -1L) mod ${config.nchunks})
+    </dataid>
+   
+    <memory-get>
+      <global>
+          ${range.handle} := ${memory.handle};
+          ${range.offset} := ulong(${rjob.elemsize} * ${rjob.count} * (${id} + ${config.nchunks} -1L) mod ${config.nchunks});
+          ${range.size} := ulong(${rjob.count} * ${rjob.elemsize});
+          stack_push (List(), ${range})
+      </global>
+      <local>
+          ${range.buffer} := "neighbor0";
+          ${range.offset} := 0UL;
+          ${range.size} := ulong(${rjob.count} * ${rjob.elemsize});
+          stack_push (List(), ${range})
+      </local>
+    </memory-get>
+  </cached-memory-buffer>
+ 
+ 
+  <cached-memory-buffer name="neighbor1">
+    <size>
+      ulong(${rjob.count} * ${rjob.elemsize})
+    </size>
+    <dataid>
+      ulong((${id} + 1L) mod ${config.nchunks})
+    </dataid>
+   
+    <memory-get>
+      <global>
+          ${range.handle} := ${memory.handle};
+          ${range.offset} := ulong(${rjob.elemsize} * ${rjob.count} * (${id} + 1L) mod ${config.nchunks});
+          ${range.size} := ulong(${rjob.count} * ${rjob.elemsize});
+          stack_push (List(), ${range})
+      </global>
+      <local>
+          ${range.buffer} := "neighbor1";
+          ${range.offset} := 0UL;
+          ${range.size} := ulong(${rjob.count} * ${rjob.elemsize});
+          stack_push (List(), ${range})
+      </local>
+    </memory-get>
+  </cached-memory-buffer>
+ 
+  <module name="cached_buffer" function="read_from_mem ( rjob
+                                              , config
+                                              , id                                             
+                                              , neighbor0                                             
+                                              , neighbor1                                                    
+                                              , memory
+                                              , done_read
+                                              )"
+        >
+        <cinclude href="we/type/literal/control.hpp" />
+        <cinclude href="interface.hpp"/>
+        <cinclude href="fhg/util/dl.hpp"/>
+        <cinclude href="iostream"/>
+
+        <code><![CDATA[           
+          const std::vector<long> indices {
+                (id + config.nchunks -1) % config.nchunks,                 
+                (id + 1) % config.nchunks                 
+                   
+          };
+            
+          const std::vector<long*> data {                                             
+                static_cast<long*>(neighbor0),                                             
+                static_cast<long*>(neighbor1)           
+          };
+                   
+          fhg::util::scoped_dlhandle (config.implementation)
+            .sym<decltype (read_and_validate_neighbor_data)> ("read_and_validate_neighbor_data")
+            (indices, data, id, rjob.count);
+          
+          std::cout << "[CACHE] reading " << indices.size() << " neighbors x " << rjob.count 
+                    << " values from the neighbors of id=" << id
+                    << std::endl;
+
+          done_read = id;
+          ]]></code>
+  </module>
+</defun>

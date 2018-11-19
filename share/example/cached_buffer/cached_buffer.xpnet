@@ -1,0 +1,214 @@
+<defun name="cachetest">
+  <include-structs href="memory/global/range.xpnet" />
+  <include-structs href="cache/config.xpnet" />
+
+  <in name="start" type="control" place="start"/>
+  <in name="num_chunks" type="long" place="config_num_chunks"/>
+  <in name="chunk_size" type="long" place="config_chunk_size"/>
+  <in name="elemsize" type="long" place="config_elemsize"/>
+  <in name="implementation_lib" type="string" place="config_implementation_lib"/>
+  <in name="nwrites" type="long" place="config_nwrites"/>
+  <in name="writechunksize" type="long" place="config_writechunksize"/>
+
+  <in name="memory" type="global_memory_range" place="memory"/>
+  <out name="final_value" type="control" place="done"/>
+
+  <net>
+    <place name="start" type="control"/>
+    <place name="config_num_chunks" type="long"/>
+    <place name="config_chunk_size" type="long" />
+    <place name="config_elemsize" type="long" />
+    <place name="config_implementation_lib" type="string"/>
+    <place name="config_nwrites" type="long" />
+    <place name="config_writechunksize" type="long" />
+    
+    <place name="config" type="config"/>
+    <place name="rjob" type="job_info"/>
+    <place name="wjob" type="job_info"/>
+    <place name="nchunks_write" type="long"/>
+    <place name="nchunks_read" type="long"/>
+    <place name="writeid" type="long"/>
+    <place name="done" type="control"/>
+
+    <place name="nchunks" type="long"/>
+    <place name="nchunks_write_check" type="long"/>
+
+    <!-- init -->
+    <transition name="ini">
+      <defun>
+        <in name="start" type="control"/>
+        <in name="num_chunks" type="long"/>
+        <in name="chunk_size" type="long" />
+        <in name="elemsize" type="long" />
+        <in name="implementation_lib" type="string"/>
+        <in name="nwrites" type="long" />
+        <in name="writechunksize" type="long" />
+        
+        <out name="config" type="config"/>
+        <out name="nchunks_write" type="long"/>
+        <out name="nchunks_read" type="long"/>
+        <out name="rjob" type="job_info"/>
+        <out name="wjob" type="job_info"/>
+        <expression>
+          ${config.nchunks} := ${num_chunks};
+          ${config.chunksize} := ${chunk_size};
+          ${config.elemsize} := ${elemsize};
+          ${config.implementation} := ${implementation_lib};
+          ${config.wcount} := ${nwrites};
+          ${config.wchunksize} := ${writechunksize};
+          
+          ${wjob.count} := ${config.wchunksize};
+          ${wjob.elemsize} := ${config.elemsize};
+
+          ${rjob.count} := ${config.chunksize};   
+          ${rjob.elemsize} := ${config.elemsize};
+
+          ${nchunks_write} := ${config.wcount};
+          ${nchunks_read} := ${config.nchunks};
+        </expression>
+      </defun>
+      <connect-in port="start" place="start"/>
+      <connect-read port="num_chunks" place="config_num_chunks"/>
+      <connect-read port="chunk_size" place="config_chunk_size"/>
+      <connect-read port="elemsize" place="config_elemsize"/>
+      <connect-read port="implementation_lib" place="config_implementation_lib"/>
+      <connect-read port="nwrites" place="config_nwrites"/>
+      <connect-read port="writechunksize" place="config_writechunksize"/>
+      
+      <connect-out port="config" place="config"/>
+      <connect-out port="nchunks_write" place="nchunks_write"/>
+      <connect-out port="nchunks_read" place="nchunks_read"/>
+      <connect-out port="rjob" place="rjob"/>
+      <connect-out port="wjob" place="wjob"/>
+    </transition>
+
+
+    <!-- duplicate number of chunks -->
+    <include-template href="dup.xml"/>
+    <specialize name="dup_ulong" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="dup_nchunks">
+      <use name="dup_ulong"/>
+      <connect-in port="in" place="nchunks_write"/>
+      <connect-out port="one" place="nchunks"/>
+      <connect-out port="two" place="nchunks_write_check"/>
+    </transition>
+
+    <transition name="gen_ntokens" inline="true">
+            <include-function href="sequence.xml"/>
+            <connect-in port="amount" place="nchunks"/>
+            <connect-out port="out" place="writeid"/>
+    </transition>
+
+    <!-- write chunks to memory -->
+    <place name="memory" type="global_memory_range"/>
+    <place name="done_write" type="long"/>
+
+    <transition name="write_to_mem">
+      <defun>
+        <require key="write"/>
+        <in name="wjob" type="job_info"/>
+        <in name="id" type="long"/>
+        <out name="done_write" type="long"/>
+        <in name="memory" type="global_memory_range"/>
+        <memory-buffer name="data">
+          <size>
+            ulong(${wjob.count} * ${wjob.elemsize})
+          </size>
+        </memory-buffer>
+        <memory-put not-modified-in-module-call="true">
+          <global>
+            ${range.handle} := ${memory.handle};
+            ${range.offset} := ulong(${wjob.count} * ${id} * ${wjob.elemsize});
+            ${range.size} := ulong(${wjob.count} * ${wjob.elemsize});
+            stack_push (List(), ${range})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ulong(${wjob.count} * ${wjob.elemsize});
+            stack_push (List(), ${range})
+          </local>
+        </memory-put>
+        <module name="cachetest" function="done_write write_to_mem ( wjob
+                                                              , id
+                                                              , data
+                                                              , memory
+                                                              )"
+        >
+        <cinclude href="iostream"/>
+          <code><![CDATA[
+          long *a (static_cast<long*>(data));
+          for (long i (0); i < wjob.count; ++i, ++a)
+          {
+            *a = i + id * wjob.count;
+          }
+
+          return id;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="id" place="writeid"/>
+      <connect-read port="wjob" place="wjob"/>
+      <connect-read port="memory" place="memory"/>
+      <connect-out port="done_write" place="done_write"/>
+    </transition>
+
+    <!-- wait for the end of the write phase -->
+    <include-template href="wait.xml"/>
+    <specialize name="waitn" use="wait">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <place name="can_start_read" type="control"/>
+    <transition name="wait_write">
+      <use name="waitn"/>
+      <connect-in port="trigger" place="done_write"/>
+      <connect-out port="done" place="can_start_read"/>
+      <place-map virtual="wait" real="nchunks_write_check"/>
+    </transition>
+
+    <!-- read chunks from memory -->
+    <place name="rchunks" type="long"/>
+    <place name="readid" type="long"/>
+    <place name="nchunks_read_check" type="long"/>
+
+    <transition name="dup_nchunks_read">
+      <use name="dup_ulong"/>
+      <connect-in port="in" place="nchunks_read"/>
+      <connect-out port="one" place="rchunks"/>
+      <connect-out port="two" place="nchunks_read_check"/>
+    </transition>
+
+    <transition name="gen_ntokens_read" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="rchunks"/>
+      <connect-out port="out" place="readid"/>
+    </transition>
+
+
+    <place name="done_read" type="long"/>
+
+    <transition name="read_from_mem">
+      <include-function href="work.xpnet"/>
+      <require key="worker"/>
+      <connect-read port="can_start_read" place="can_start_read"/>
+      <connect-in port="id" place="readid"/>
+      <connect-read port="rjob" place="rjob"/>
+      <connect-read port="memory" place="memory"/>
+      <connect-read port="config" place="config"/>
+      <connect-out port="done_read" place="done_read"/>
+    </transition>
+
+    <!-- finalize -->
+    <transition name="wait_read">
+      <use name="waitn"/>
+      <connect-in port="trigger" place="done_read"/>
+      <connect-out port="done" place="done"/>
+      <place-map virtual="wait" real="nchunks_read_check"/>
+    </transition>
+
+  </net>
+</defun>
