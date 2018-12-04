@@ -29,10 +29,5 @@ namespace drts
       {
         throw std::runtime_error("cache_manager::is_cached not implemented");
       }
-
-      void cache_manager::clear()
-      {
-        throw std::runtime_error("cache_manager::clear not implemented");
-      }
   }
 }

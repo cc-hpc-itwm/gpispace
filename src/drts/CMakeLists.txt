@@ -24,6 +24,7 @@ install (FILES
 install (FILES
    cache_management/cache_manager.hpp
    cache_management/circular_cache_manager.hpp
+   cache_management/error.hpp
    DESTINATION include/drts/cache_management
 )
 
@@ -38,6 +39,7 @@ extended_add_library (NAME gspc
           "scoped_rifd.cpp"
           "stream.cpp"
           "virtual_memory.cpp"
+          "cache_management/error.cpp"
           "cache_management/cache_manager.cpp"
           "cache_management/circular_cache_manager.cpp"
   LIBRARIES sdpa

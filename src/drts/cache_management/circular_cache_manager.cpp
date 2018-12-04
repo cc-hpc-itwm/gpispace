@@ -1,7 +1,6 @@
 
 #include <drts/cache_management/circular_cache_manager.hpp>
-
-#include <stdexcept>
+#include <drts/cache_management/error.hpp>
 
 #include <boost/format.hpp>
 
@@ -45,7 +44,7 @@ namespace drts
         {
           if (_offsets_map.size() <= 0)
           {
-            throw std::runtime_error("At least one cached buffer is larger than the cache size");
+            throw drts::cache::error::buffer_larger_than_cache_size(data_size, this->size());
           }
 
           if (_gap_begin_offset + data_size > this->size())
@@ -104,11 +103,8 @@ namespace drts
 
           if (!ready)
           {
-            throw std::runtime_error(( boost::format
-                ( "The cached memory buffers do not fit in cache free=%1%, begin=%2% end=%3%")
-            % std::to_string(_free_offset) %  std::to_string(_gap_begin_offset)
-            %  std::to_string(_gap_end_offset)
-            ).str());
+            throw drts::cache::error::insufficient_space_available_in_cache
+            (this->size(), _free_offset, _gap_begin_offset, _gap_end_offset);
           }
 
           if ((_gap_begin_offset >= _free_offset) || (_gap_end_offset >= _free_offset))
@@ -128,9 +124,7 @@ namespace drts
     {
       if (!is_cached(dataid))
       {
-        throw std::runtime_error(( boost::format
-            ( "The required buffer with id=%1% is not cached")
-            % dataid ).str());
+        throw drts::cache::error::buffer_not_in_cache(dataid);
       }
       return _cache_map.at(dataid).offset();
     }
@@ -139,16 +133,6 @@ namespace drts
      {
        return (_cache_map.count(dataid) > 0);
      }
-
-
-    void circular_cache_manager::clear()
-    {
-      _cache_map.clear();
-      _offsets_map.clear();
-      _free_offset = 0;
-      _gap_begin_offset = 0;
-      _gap_end_offset = 0;
-      _current_position = 0;
-    }
   }
 }
+

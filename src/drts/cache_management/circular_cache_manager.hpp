@@ -42,7 +42,6 @@ namespace drts
       std::unordered_set<Dataid> add_chunk_list_to_cache(std::unordered_map<Dataid, unsigned long> const&) override;
 
       unsigned long offset(Dataid const&) const override;
-      void clear() override;
 
     protected:
       unsigned long _free_offset;

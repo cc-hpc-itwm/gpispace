@@ -21,14 +21,9 @@ namespace drts
       virtual std::unordered_set<Dataid> add_chunk_list_to_cache(std::unordered_map<Dataid, unsigned long> const&);
 
       virtual unsigned long offset(Dataid const&) const;
-      virtual void clear();
 
     private:
       unsigned long _total_size;
-
-      //unsigned long _free_offset;
-      //std::unordered_map<data_id_type, std::string> _cache_map;
-
     };
   }
 }

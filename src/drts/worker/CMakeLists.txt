@@ -3,6 +3,7 @@
 fhg_add_runtime_executable (NAME drts-kernel
   SOURCES "drts-kernel.cpp"
           "drts.cpp"
+          "../cache_management/error.cpp"
           "../cache_management/cache_manager.cpp"
           "../cache_management/circular_cache_manager.cpp"
   LIBRARIES fhg-util

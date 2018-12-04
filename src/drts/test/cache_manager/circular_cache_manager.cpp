@@ -2,9 +2,11 @@
 
 #include <drts/cache_management/cache_manager.hpp>
 #include <drts/cache_management/circular_cache_manager.hpp>
+#include <drts/cache_management/error.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
+#include <util-generic/testing/random.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <unordered_set>
 #include <unordered_map>
@@ -14,22 +16,11 @@ namespace
 {
   drts::cache::Dataid gen_dataid(unsigned long id)
   {
-    return "buf_" + std::to_string(id);
-  }
-
-  std::unordered_set<drts::cache::Dataid> gen_dataid_list
-    ( std::unordered_set<unsigned long> ids)
-  {
-    std::unordered_set<drts::cache::Dataid> dataids;
-    for (auto& id : ids)
-    {
-      dataids.emplace(gen_dataid(id));
-    }
-    return dataids;
+    return std::to_string(id);
   }
 
   std::unordered_map<drts::cache::Dataid, unsigned long> gen_cache_elems_list
-    ( std::unordered_set<unsigned long> ids
+    ( std::vector<unsigned long> ids
     , unsigned long elem_size
     )
   {
@@ -50,10 +41,7 @@ namespace
     )
   {
     auto already_in_cache = cache_man->add_chunk_list_to_cache
-        ( gen_cache_elems_list
-            ( std::unordered_set<unsigned long>({id})
-            , elem_size
-            ));
+        ( gen_cache_elems_list ({id}, elem_size));
 
     BOOST_REQUIRE_EQUAL (already_in_cache.size(), 0);
     BOOST_REQUIRE_EQUAL (cache_man->is_cached(gen_dataid(id)), true);
@@ -62,20 +50,22 @@ namespace
 
   void test_add_to_cache_multiple_elems
     ( drts::cache::cache_manager* const cache_man
-    , std::unordered_map<drts::cache::Dataid, unsigned long> elems_to_add
-    , std::unordered_set<drts::cache::Dataid> expected_already_cached_ids
+    , std::vector<unsigned long> elems_to_add
+    , std::unordered_set<unsigned long> expected_already_cached_ids
+    , unsigned long elem_size
     )
   {
-    auto already_in_cache = cache_man->add_chunk_list_to_cache(elems_to_add);
+    auto already_in_cache = cache_man->add_chunk_list_to_cache(
+        gen_cache_elems_list(elems_to_add, elem_size));
 
     BOOST_REQUIRE_EQUAL (already_in_cache.size(), expected_already_cached_ids.size());
-    for (auto elem : already_in_cache)
+    for (auto elem : expected_already_cached_ids)
     {
-      BOOST_REQUIRE_EQUAL (expected_already_cached_ids.count(elem), 1);
+      BOOST_REQUIRE_EQUAL (already_in_cache.count(gen_dataid(elem)), 1);
     }
     for (auto elem : elems_to_add)
     {
-      BOOST_REQUIRE_EQUAL (cache_man->is_cached(elem.first), true);
+      BOOST_REQUIRE_EQUAL (cache_man->is_cached(gen_dataid(elem)), true);
     }
   }
 }
@@ -83,194 +73,266 @@ namespace
 
 BOOST_AUTO_TEST_CASE (test_simple_add)
 {
-  unsigned long size = 100;
-  unsigned long elem_size = 10;
+  auto size = 100;
+  auto nelems = 10;
+  fhg::util::testing::unique_random<unsigned long> dataid_pool;
   drts::cache::circular_cache_manager cache_man(size);
-
   BOOST_REQUIRE_EQUAL (cache_man.size(), size);
 
   // fill the cache
-  unsigned long expected_offset = 0;
-  for (int i (0); i < 10; ++i)
   {
-    test_add_to_cache_one_new_elem(&cache_man, i, elem_size, expected_offset);
-    expected_offset += elem_size;
+    auto elem_size = size / 10;
+    auto expected_offset = 0;
+    for (auto i(0); i < nelems; ++i)
+    {
+      test_add_to_cache_one_new_elem( &cache_man
+                                    , dataid_pool()
+                                    , elem_size
+                                    , expected_offset);
+      expected_offset += elem_size;
+    }
   }
 
   // reset offset as older cache entries are replaced when the cache is full
-  expected_offset = 0;
-  for (int i (10); i < 20; ++i)
   {
-    test_add_to_cache_one_new_elem(&cache_man, i, elem_size, expected_offset);
-    expected_offset += elem_size;
+    auto elem_size = size / 10;
+    auto expected_offset = 0;
+    for (auto i(0); i < nelems; ++i)
+    {
+      test_add_to_cache_one_new_elem( &cache_man
+                                    , dataid_pool()
+                                    , elem_size
+                                    , expected_offset);
+      expected_offset += elem_size;
+    }
   }
 
   // add larger cache buffer
-  elem_size = 50;
-  expected_offset = 0;
-  test_add_to_cache_one_new_elem(&cache_man, 1000, elem_size, expected_offset);
-
-  // reset offset when older cache entries are evicted
-  elem_size = 10;
-  expected_offset = 50;
-  for (int i (31); i < 37; ++i)
   {
-    test_add_to_cache_one_new_elem(&cache_man, i, elem_size, expected_offset % 100);
-    expected_offset += elem_size;
+    auto elem_size = size / 2;
+    auto expected_offset = 0;
+    test_add_to_cache_one_new_elem( &cache_man
+                                  , dataid_pool()
+                                  , elem_size
+                                  , expected_offset);
   }
 
-  expected_offset = 10;
-  elem_size = 50;
-  test_add_to_cache_one_new_elem(&cache_man, 2000, elem_size, expected_offset);
+  // reset offset when older cache entries are evicted
+  {
+    auto elem_size = size / 10;
+    auto expected_offset = 50;
+    for (auto i (0); i < nelems; ++i)
+    {
+      test_add_to_cache_one_new_elem( &cache_man
+                                    , dataid_pool()
+                                    , elem_size
+                                    , expected_offset);
+      expected_offset = (expected_offset + elem_size) % size;
+    }
+  }
+
+  {
+    auto elem_size = size / 2;
+    auto expected_offset = 50;
+    test_add_to_cache_one_new_elem( &cache_man
+                                  , dataid_pool()
+                                  , elem_size
+                                  , expected_offset);
+  }
 }
 
 
-
-BOOST_AUTO_TEST_CASE (test_exceptions)
+BOOST_AUTO_TEST_CASE (test_exceptions_simple_caching)
 {
-  unsigned long size = 100;
-  unsigned long elem_size = 300;
-  drts::cache::circular_cache_manager  cache_man(size);
+  auto size = 100;
+  auto elem_size = 300;
+  fhg::util::testing::unique_random<unsigned long> dataid_pool;
+  drts::cache::circular_cache_manager cache_man(size);
 
-  unsigned long id = 300;
-  fhg::util::testing::require_exception
+  auto id {dataid_pool()};
+  fhg::util::testing::require_exception_with_message
+    <drts::cache::error::buffer_larger_than_cache_size>
     ([&cache_man, id, elem_size]()
      {
-      cache_man.add_chunk_list_to_cache
-              ( gen_cache_elems_list
-                  ( std::unordered_set<unsigned long>({id})
-                  , elem_size
-                  ));
+      cache_man.add_chunk_list_to_cache (gen_cache_elems_list ({id}, elem_size));
      }
-    , std::runtime_error ("At least one cached buffer is larger than the cache size")
+    , boost::format( "ERROR: Buffer size is larger than the cache size: ! (%1% > %2%)")
+    % elem_size
+    % size
     );
 
-  elem_size = 30;
-  auto elems_to_add = gen_cache_elems_list
-      ( std::unordered_set<unsigned long>({0, 1, 2, 3})
-      , elem_size
-      );
 
-  fhg::util::testing::require_exception
-    ([&cache_man, &elems_to_add]()
+  fhg::util::testing::require_exception_with_message
+    <drts::cache::error::buffer_not_in_cache>
+    ([&cache_man, id]()
      {
-      cache_man.add_chunk_list_to_cache(elems_to_add);
+      cache_man.offset (gen_dataid(id));
      }
-    , std::runtime_error (( boost::format
-        ( "The cached memory buffers do not fit in cache free=%1%, begin=%2% end=%3%")
-        % std::to_string(90) %  std::to_string(0)
-        %  std::to_string(0)
-    ).str())
+    , boost::format( "ERROR: The required buffer with id=%1% is not cached")
+    % gen_dataid(id)
     );
 
-  unsigned long expected_offset = 0;
-  elem_size = 50;
-  id = 2000;
+  {
+    auto elem_size = 30;
+    auto nelems = 4;
+    auto elems_to_add = gen_cache_elems_list
+        ( fhg::util::testing::randoms< std::vector<unsigned long>
+                                     , fhg::util::testing::unique_random
+                                     > (nelems)
+        , elem_size
+        );
 
-  cache_man.clear();
+    fhg::util::testing::require_exception_with_message
+      <drts::cache::error::insufficient_space_available_in_cache>
+      ([&cache_man, &elems_to_add]()
+       {
+        cache_man.add_chunk_list_to_cache(elems_to_add);
+       }
+      , boost::format (
+          "ERROR: The cached memory buffers do not fit in cache (cache_size=%1%, offset_free=%2%, gap_begin=%3%, gap_end=%4%)")
+      % std::to_string(size)
+      % std::to_string(90)
+      % std::to_string(0)
+      % std::to_string(0)
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (test_exceptions_cache_after_eviction)
+{
+  auto size = 100;
+  fhg::util::testing::unique_random<unsigned long> dataid_pool;
+  drts::cache::circular_cache_manager cache_man(size);
+
+  auto expected_offset = 0;
+  auto elem_size = 50;
+  auto id {dataid_pool()};
+
   test_add_to_cache_one_new_elem(&cache_man, id, elem_size, expected_offset);
   BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(id)), true);
 
-  elem_size = 30;
-  elems_to_add = gen_cache_elems_list
-      ( std::unordered_set<unsigned long>({11, 12, 13})
-      , elem_size
-      );
+  {
+    auto nelems = 3;
+    auto elem_size = 30;
+    auto elems_to_add = gen_cache_elems_list
+        ( fhg::util::testing::randoms< std::vector<unsigned long>
+                                     , fhg::util::testing::unique_random
+                                     > (nelems)
+        , elem_size
+        );
 
-  fhg::util::testing::require_exception
-    ([&cache_man, &elems_to_add]()
-     {
-      cache_man.add_chunk_list_to_cache(elems_to_add);
-     }
-    , std::runtime_error (( boost::format
-        ( "The cached memory buffers do not fit in cache free=%1%, begin=%2% end=%3%")
-        % std::to_string(80) %  std::to_string(0)
-        %  std::to_string(0)
-    ).str())
-    );
+    fhg::util::testing::require_exception_with_message
+    <drts::cache::error::insufficient_space_available_in_cache>
+      ([&cache_man, &elems_to_add]()
+       {
+        cache_man.add_chunk_list_to_cache(elems_to_add);
+       }
+      , boost::format ( "ERROR: The cached memory buffers do not fit in cache (cache_size=%1%, offset_free=%2%, gap_begin=%3%, gap_end=%4%)")
+      % std::to_string(size)
+      % std::to_string(80)
+      % std::to_string(0)
+      % std::to_string(0)
+      );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (test_already_cached_elems)
 {
-  unsigned long size = 80;
-  unsigned long elem_size = 10;
+  auto size = 80;
+  auto elem_size = 10;
   drts::cache::circular_cache_manager cache_man(size);
+
+  auto nelems = 15;
+  auto ids { fhg::util::testing::randoms< std::vector<unsigned long>
+                                        , fhg::util::testing::unique_random
+                                        > (nelems)
+           };
 
   test_add_to_cache_multiple_elems
     ( &cache_man
-    , gen_cache_elems_list(std::unordered_set<unsigned long>({0, 1, 2, 3}), elem_size)
-    , {});
+    , {ids[0], ids[1], ids[2], ids[3]}
+    , {}
+    , elem_size);
   // cached elements now: 0, 1, 2, 3
 
   test_add_to_cache_multiple_elems
     ( &cache_man
-    , gen_cache_elems_list(std::unordered_set<unsigned long>({1, 3, 4, 5, 6}), elem_size)
-    , gen_dataid_list({1, 3}));
+    , {ids[1], ids[3], ids[4], ids[5], ids[6]}
+    , {ids[1], ids[3]}
+    , elem_size);
   // cached elements now: 0, 1, 2, 3, 4, 5, 6
-
-  test_add_to_cache_multiple_elems
-    ( &cache_man
-    , gen_cache_elems_list(std::unordered_set<unsigned long>({0, 2, 3, 4, 5, 6, 7, 8}), elem_size)
-    , gen_dataid_list({0, 2, 3, 4, 5, 6}));
-  // cached elements now: 0, 2, 3, 4, 5, 6, 7, 8
 
   // the cache is full, it is not known which elements will be evicted,
   // unless only one can be evicted for a given list
-  // replace elem 4 with 100
+  // replace elem 1 with 8
   test_add_to_cache_multiple_elems
     ( &cache_man
-    , gen_cache_elems_list(std::unordered_set<unsigned long>({0, 2, 3, 5, 6, 7, 8, 100}), elem_size)
-    , gen_dataid_list({0, 2, 3, 5, 6, 7, 8}));
+    , {ids[0], ids[2], ids[3], ids[4], ids[5], ids[6], ids[7], ids[8]}
+    , {ids[0], ids[2], ids[3], ids[4], ids[5], ids[6]}
+    , elem_size);
+  // cached elements now: 0, 2, 3, 4, 5, 6, 7, 8
 
-  // replace elem 0 with 101
+  // replace elem 4 with 9
   test_add_to_cache_multiple_elems
     ( &cache_man
-    , gen_cache_elems_list(std::unordered_set<unsigned long>({2, 3, 5, 6, 7, 8, 100, 101}), elem_size)
-    , gen_dataid_list({100, 2, 3, 5, 6, 7, 8}));
+    , {ids[0], ids[2], ids[3], ids[5], ids[6], ids[7], ids[8], ids[9]}
+    , {ids[0], ids[2], ids[3], ids[5], ids[6], ids[7], ids[8]}
+    , elem_size);
 
+  // replace elem 0 with 10
   test_add_to_cache_multiple_elems
     ( &cache_man
-    , gen_cache_elems_list(std::unordered_set<unsigned long>({10, 11, 12}), elem_size)
-    , {});
+    , {ids[2], ids[3], ids[5], ids[6], ids[7], ids[8], ids[9], ids[10]}
+    , {ids[2], ids[3], ids[5], ids[6], ids[7], ids[8], ids[9]}
+    , elem_size);
+
+  // add more new elements
+  test_add_to_cache_multiple_elems
+    ( &cache_man
+    , {ids[11], ids[12], ids[13], ids[14]}
+    , {}
+    , elem_size);
 }
 
 BOOST_AUTO_TEST_CASE (test_multiple_sizes)
 {
-  unsigned long size = 90;
-  unsigned long elem_size = 300;
+  auto size = 90;
   drts::cache::circular_cache_manager cache_man(size);
 
-  unsigned long expected_offset = 0;
-  unsigned long id = 1000;
-  elem_size = 50;
+  auto nelems = 8;
+  auto ids{ fhg::util::testing::randoms< std::vector<unsigned long>
+                                       , fhg::util::testing::unique_random
+                                       > (nelems)
+          };
 
-  test_add_to_cache_one_new_elem(&cache_man, id, elem_size, expected_offset);
+  auto elem_size = 50;
+  test_add_to_cache_one_new_elem(&cache_man, ids[0], elem_size, 0);
 
   elem_size = 30;
-  test_add_to_cache_one_new_elem(&cache_man, 0, elem_size, 50);
-  test_add_to_cache_one_new_elem(&cache_man, 1, elem_size, 0);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(0)), true);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(1)), true);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(id)), false);
+  test_add_to_cache_one_new_elem(&cache_man, ids[1], elem_size, 50);
+  test_add_to_cache_one_new_elem(&cache_man, ids[2], elem_size, 0);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[1])), true);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[2])), true);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[0])), false);
 
   elem_size = 15;
-  test_add_to_cache_one_new_elem(&cache_man, 2000, elem_size, 30);
+  test_add_to_cache_one_new_elem(&cache_man, ids[3], elem_size, 30);
   elem_size = 7;
-  test_add_to_cache_one_new_elem(&cache_man, 2001, elem_size, 80);
+  test_add_to_cache_one_new_elem(&cache_man, ids[4], elem_size, 80);
   elem_size = 4;
-  test_add_to_cache_one_new_elem(&cache_man, 2002, elem_size, 45);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(0)), true);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(1)), true);
+  test_add_to_cache_one_new_elem(&cache_man, ids[5], elem_size, 45);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[1])), true);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[2])), true);
 
   elem_size = 4;
-  test_add_to_cache_one_new_elem(&cache_man, 2003, elem_size, 49);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(0)), false);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(1)), true);
+  test_add_to_cache_one_new_elem(&cache_man, ids[6], elem_size, 49);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[1])), false);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[2])), true);
 
   elem_size = 4;
-  test_add_to_cache_one_new_elem(&cache_man, 2004, elem_size, 53);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(0)), false);
-  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(1)), true);
+  test_add_to_cache_one_new_elem(&cache_man, ids[7], elem_size, 53);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[1])), false);
+  BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(ids[2])), true);
 }
 
 
