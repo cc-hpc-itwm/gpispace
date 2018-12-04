@@ -149,7 +149,7 @@ BOOST_AUTO_TEST_CASE (test_exceptions_simple_caching)
   fhg::util::testing::unique_random<unsigned long> dataid_pool;
   drts::cache::circular_cache_manager cache_man(size);
 
-  auto id {dataid_pool()};
+  auto id = dataid_pool();
   fhg::util::testing::require_exception_with_message
     <drts::cache::error::buffer_larger_than_cache_size>
     ([&cache_man, id, elem_size]()
@@ -206,7 +206,7 @@ BOOST_AUTO_TEST_CASE (test_exceptions_cache_after_eviction)
 
   auto expected_offset = 0;
   auto elem_size = 50;
-  auto id {dataid_pool()};
+  auto id = dataid_pool();
 
   test_add_to_cache_one_new_elem(&cache_man, id, elem_size, expected_offset);
   BOOST_REQUIRE_EQUAL (cache_man.is_cached(gen_dataid(id)), true);
@@ -243,15 +243,14 @@ BOOST_AUTO_TEST_CASE (test_already_cached_elems)
   drts::cache::circular_cache_manager cache_man(size);
 
   auto nelems = 15;
-  auto ids { fhg::util::testing::randoms< std::vector<unsigned long>
+  auto ids = fhg::util::testing::randoms< std::vector<unsigned long>
                                         , fhg::util::testing::unique_random
-                                        > (nelems)
-           };
+                                        > (nelems);
 
   test_add_to_cache_multiple_elems
     ( &cache_man
     , {ids[0], ids[1], ids[2], ids[3]}
-    , {}
+    , std::unordered_set<unsigned long>()
     , elem_size);
   // cached elements now: 0, 1, 2, 3
 
@@ -290,7 +289,7 @@ BOOST_AUTO_TEST_CASE (test_already_cached_elems)
   test_add_to_cache_multiple_elems
     ( &cache_man
     , {ids[11], ids[12], ids[13], ids[14]}
-    , {}
+    , std::unordered_set<unsigned long>()
     , elem_size);
 }
 
@@ -300,10 +299,9 @@ BOOST_AUTO_TEST_CASE (test_multiple_sizes)
   drts::cache::circular_cache_manager cache_man(size);
 
   auto nelems = 8;
-  auto ids{ fhg::util::testing::randoms< std::vector<unsigned long>
+  auto ids = fhg::util::testing::randoms< std::vector<unsigned long>
                                        , fhg::util::testing::unique_random
-                                       > (nelems)
-          };
+                                       > (nelems);
 
   auto elem_size = 50;
   test_add_to_cache_one_new_elem(&cache_man, ids[0], elem_size, 0);
