@@ -225,8 +225,7 @@ namespace fhg
                     : description.max_nodes == 1 ? "unique"
                     : "global max: " + std::to_string (description.max_nodes)
                     )
-                 << ", " << description.shm_size << " SHM and "
-                 << description.local_cache_size << " cache ) with parent "
+                 << ", " << description.shm_size << " SHM) with parent "
                  << master_name << " on rif entry point "
                  << fhg::util::join
                       ( entry_points
