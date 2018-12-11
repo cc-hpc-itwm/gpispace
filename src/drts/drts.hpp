@@ -7,6 +7,7 @@
 #include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.fwd.hpp>
+#include <drts/worker_description.hpp>
 
 #include <logging/tcp_endpoint.hpp>
 

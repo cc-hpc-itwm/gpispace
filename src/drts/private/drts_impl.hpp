@@ -51,7 +51,7 @@ namespace gspc
                              , boost::optional<boost::filesystem::path> const& log_dir
                              , bool delete_logfiles
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
-                             , std::vector<fhg::drts::worker_description> worker_descriptions
+                             , std::vector<worker_description> worker_descriptions
                              , boost::optional<unsigned short> vmem_port
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& master
@@ -80,7 +80,7 @@ namespace gspc
       std::vector<boost::filesystem::path> _app_path;
       installation_path _installation_path;
       boost::optional<boost::filesystem::path> _log_dir;
-      std::vector<fhg::drts::worker_description> _worker_descriptions;
+      std::vector<worker_description> _worker_descriptions;
 
       fhg::drts::processes_storage _processes_storage;
 

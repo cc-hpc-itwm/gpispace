@@ -134,10 +134,10 @@ namespace gspc
 
   namespace
   {
-    std::vector<fhg::drts::worker_description> parse_worker_descriptions
+    std::vector<worker_description> parse_worker_descriptions
       (std::string const& descriptions)
     {
-      std::vector<fhg::drts::worker_description> worker_descriptions;
+      std::vector<worker_description> worker_descriptions;
       for ( std::string const& description
           : fhg::util::split<std::string, std::string> (descriptions, ' ')
           )
@@ -163,7 +163,7 @@ namespace gspc
       , boost::optional<boost::filesystem::path> const& log_dir
       , bool delete_logfiles
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , std::vector<fhg::drts::worker_description> worker_descriptions
+      , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
@@ -256,7 +256,7 @@ namespace gspc
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
       failures;
 
-    for ( fhg::drts::worker_description const& description
+    for ( worker_description const& description
         : _worker_descriptions
         )
     {
