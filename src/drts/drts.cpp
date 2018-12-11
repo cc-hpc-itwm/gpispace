@@ -210,8 +210,8 @@ namespace gspc
 
     if (!rif_entry_points.empty())
     {
-       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-         const failures (add_worker_impl (rif_entry_points));
+      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+        const failures (add_worker_impl (rif_entry_points));
 
       if (!failures.empty())
       {
@@ -251,7 +251,7 @@ namespace gspc
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
-    (std::vector<fhg::rif::entry_point> const& entry_points)
+      (std::vector<fhg::rif::entry_point> const& entry_points)
   {
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
       failures;
