@@ -96,7 +96,7 @@ namespace gspc
                       , rifd_entry_point_hash
                       >
       add_worker
-        ( worker_description const&
+        ( std::vector<worker_description> const&
         , rifd_entry_points const&
         );
 

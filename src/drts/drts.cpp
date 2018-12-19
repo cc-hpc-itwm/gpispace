@@ -210,7 +210,7 @@ namespace gspc
     if (!rif_entry_points.empty())
     {
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        const failures (add_worker_impl (rif_entry_points));
+        const failures (add_worker_impl (_worker_descriptions, rif_entry_points));
 
       if (!failures.empty())
       {
@@ -245,12 +245,12 @@ namespace gspc
       throw std::logic_error ("add_worker while vmem is in use");
     }
 
-    return add_worker_impl (entry_points);
+    return add_worker_impl (_worker_descriptions, entry_points);
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker
-      ( worker_description const& description
+      ( std::vector<worker_description> const& worker_descriptions
       , std::vector<fhg::rif::entry_point> const& entry_points
       )
   {
@@ -259,43 +259,20 @@ namespace gspc
       throw std::logic_error ("add_worker while vmem is in use");
     }
 
-    std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-      failures;
-
-    for (auto const& fail : start_workers_for ( entry_points
-                                              , _master_agent_name
-                                              , _master_agent_hostinfo
-                                              , description
-                                              , _verbose
-                                              , _gui_host
-                                              , _gui_port
-                                              , _log_host
-                                              , _log_port
-                                              , _processes_storage
-                                              , _log_dir
-                                              , _gpi_socket
-                                              , _app_path
-                                              , _installation_path
-                                              , _info_output
-                                              , _log_emitters
-                                              ).second
-        )
-    {
-      failures[fail.first].emplace_back (fail.second);
-    }
-
-    return failures;
+    return add_worker_impl (worker_descriptions, entry_points);
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
-      (std::vector<fhg::rif::entry_point> const& entry_points)
+      ( std::vector<worker_description> const& worker_descriptions
+      , std::vector<fhg::rif::entry_point> const& entry_points
+      )
   {
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
       failures;
 
     for ( worker_description const& description
-        : _worker_descriptions
+        : worker_descriptions
         )
     {
       for (auto const& fail : start_workers_for ( entry_points
@@ -392,12 +369,12 @@ namespace gspc
   }
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
-      ( worker_description const& description
+      ( std::vector<worker_description> const& descriptions
       , rifd_entry_points const& rifd_entry_points
       )
   {
     return _started_runtime_system.add_worker
-      (description, rifd_entry_points._->_entry_points);
+      (descriptions, rifd_entry_points._->_entry_points);
   }
   std::unordered_map< fhg::rif::entry_point
                     , std::pair< std::string /* kind */
@@ -467,13 +444,13 @@ namespace gspc
                     , rifd_entry_point_hash
                     >
     scoped_runtime_system::add_worker
-      ( worker_description const& description
+      ( std::vector<worker_description> const& descriptions
       , rifd_entry_points const& rifd_entry_points
       )
   {
     std::unordered_map< fhg::rif::entry_point
                       , std::list<std::exception_ptr>
-                      > const result (_->add_worker (description, rifd_entry_points));
+                      > const result (_->add_worker (descriptions, rifd_entry_points));
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
                       , rifd_entry_point_hash
