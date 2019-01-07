@@ -240,12 +240,7 @@ namespace gspc
     scoped_runtime_system::implementation::started_runtime_system::add_worker
       (std::vector<fhg::rif::entry_point> const& entry_points)
   {
-    if (_gpi_socket)
-    {
-      throw std::logic_error ("add_worker while vmem is in use");
-    }
-
-    return add_worker_impl (_worker_descriptions, entry_points);
+    return add_worker (_worker_descriptions, entry_points);
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
@@ -422,21 +417,10 @@ namespace gspc
     scoped_runtime_system::add_worker
       (rifd_entry_points const& rifd_entry_points)
   {
-    std::unordered_map< fhg::rif::entry_point
-                      , std::list<std::exception_ptr>
-                      > const result (_->add_worker (rifd_entry_points));
-    std::unordered_map< rifd_entry_point
-                      , std::list<std::exception_ptr>
-                      , rifd_entry_point_hash
-                      > wrapped;
-
-    for (auto const& x : result)
-    {
-      wrapped.emplace
-        (new rifd_entry_point::implementation (x.first), x.second);
-    }
-
-    return wrapped;
+    return add_worker
+      ( _->_started_runtime_system._worker_descriptions
+      , rifd_entry_points
+      );
   }
 
   std::unordered_map< rifd_entry_point
