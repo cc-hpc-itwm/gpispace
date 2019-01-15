@@ -46,6 +46,12 @@
           <cinclude href="test_callback.hpp"/>
           <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
           <code><![CDATA[
+            // Note: the test checks the exact identity of the worker executing
+            // a task that requires a specific capability. For this purpose, the worker 
+            // sends to the user a notification containing the worker name.
+            // However, i.o. to be independent from the user namig convention,
+            // it is sufficient to send a notification containing the capability 
+            // of the worker executing the task, only (in all modules).
             const std::set<std::string> workers (_pnetc_context->workers());
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);

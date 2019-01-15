@@ -202,6 +202,11 @@ namespace
   }
 }
 
+// Note: this test checks the exact identity of the worker executing
+// a task that requires a specific capability. However, for the purpose of
+// this test it is sufficient to test only if a worker with a given capability
+// executed a task requiring that capability. This would make the test
+// invariant to subsequent changes in the worker naming convention.
 BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
 {
   boost::program_options::options_description options_description;
