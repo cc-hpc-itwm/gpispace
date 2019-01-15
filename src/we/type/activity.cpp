@@ -235,6 +235,25 @@ namespace we
 
           return boost::get<T> (expression.ast().eval_all (context));
         }
+
+        boost::optional<std::string> eval_dynamic_requirement
+          ( transition_t const& transition
+          , expr::eval::context context
+          )
+        {
+          boost::optional<const property::value_type&> expression_value
+            (transition.prop().get ({"fhg", "drts", "require", "dynamic requirement"}));
+
+          if (!expression_value)
+          {
+            return boost::none;
+          }
+
+          expression_t const expression
+            (boost::get<std::string> (expression_value.get()));
+
+          return boost::get<std::string> (expression.ast().eval_all (context));
+        }
       }
 
       schedule_data activity_t::get_schedule_data() const
@@ -242,6 +261,21 @@ namespace we
         return { eval_schedule_data<unsigned long>
                    (_transition, evaluation_context(), "num_worker")
                };
+      }
+
+      std::list<we::type::requirement_t> const activity_t::requirements() const
+      {
+        std::list<we::type::requirement_t> requirements (_transition.requirements());
+
+        boost::optional<std::string> dynamic_requirement
+          (eval_dynamic_requirement (_transition, evaluation_context()));
+
+        if (dynamic_requirement)
+        {
+          requirements.emplace_back (dynamic_requirement.get(), true);
+        }
+
+        return requirements;
       }
     }
 }
