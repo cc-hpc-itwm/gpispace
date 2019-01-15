@@ -210,7 +210,7 @@ std::string GenericDaemon::gen_id()
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
       job_requirements_t requirements
-        { activity.transition().requirements()
+        { activity.requirements()
         , activity.get_schedule_data()
         , [&]
           {
