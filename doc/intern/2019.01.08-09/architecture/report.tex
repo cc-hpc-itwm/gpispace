@@ -17,7 +17,34 @@
 \usepackage[mode=buildnew]{standalone}
 \usepackage{microtype}
 %\usepackage[binary-units]{siunitx}
+\usepackage{xcolor}
 \usepackage{listings}
+\lstloadlanguages{C++}
+\lstset{
+    language=C++,
+    numbers=left,
+    numberstyle=\footnotesize,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=1,
+    captionpos=b,
+    breaklines=true,
+    breakatwhitespace=false,
+    escapeinside={(*@}{@*)},
+    morekeywords={andnot, function, var, to, step, cmpgt, cmplt, if,
+        then, else, endif, wenn, solange, wahr, falsch, sonst},
+    basicstyle=\ttfamily,
+    commentstyle=\itshape\color{blue},
+%    keywordstyle=\bfseries\color{darkblue},
+    stringstyle=\color{darkred},
+    literate={:=}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1
+    {!=}{{$\neq$}}1 {*}{{$\cdot$}}1,
+    mathescape=true,
+    texcl=true
+    %xleftmargin=1cm
+}
 
 %\usepackage{tikz}
 %\usetikzlibrary{shapes.geometric,arrows,calc,decorations.pathreplacing}
@@ -74,12 +101,18 @@ and on the interaction between components.
 
 
 \section{Architecture}
-The main components are described as follows, together with a set of definitions that will be used in this document.
+The main components shown in Figure~\ref{fig:architecture} are described as follows, together with a set of definitions that will be used in this document.
+\begin{figure}[t]
+    \centering
+    \includegraphics[width=.9\linewidth]{./api_overview.jpg}
+    \caption{GSPC19 Architecture}
+    \label{fig:architecture}
+\end{figure}
 %
 \begin{table}[ht]
     \centering
     \caption{Terms used in this document}
-    \label{tab:rts}
+    \label{tab:terms}
     \bgroup
     \setlength{\tabcolsep}{2em}
     \begin{tabular}{ll}
@@ -175,6 +208,8 @@ It interacts with the following components:
     specific workers (e.g., socket workers)
     \item [\rts:] The \rts manages all the communication with all the \rif
     daemons in the system, and forwards the worker information to the user
+    \item [\iml:] Currently, the \rif initializes the \iml on the node it is 
+    responsible for
 \end{description}
 %
 \begin{table}[ht]
@@ -189,8 +224,10 @@ It interacts with the following components:
         \midrule
         \rts & ctor/run \\
         \rts & dtor/stop \\
-        \rts & \rdagrep add(\dag)  \\
-        \rts & \rdagrep remove(\dag) \\
+        \rts & \rdagrep add(\rdag)  \\
+        \rts & \rdagrep remove(\rdag) \\
+        \midrule
+        \rts & start\_iml() // current implementation \\
         \bottomrule
     \end{tabular}
     \egroup
@@ -270,8 +307,8 @@ In the case of scheduling with preferences, we define the following types:
         \toprule
         Caller & Method \\
         \midrule
-        \rts & add(\dag<\res\id>) \\
-        \rts & remove(\dag<\res\id>) \\
+        \rts & add(\rdag<\res\id>) \\
+        \rts & remove(\rdag<\res\id>) \\
         \sched & acquire(\js\id, \rc) // blocking, return \res\id  \\
         \sched & release(\js\id, \res\id) \\ 
         \sched & release(\js\id, [\res\id]) \\
@@ -419,13 +456,15 @@ Interactions:
 \subsection{IML -- Independent Memory Layer}
 The \iml handles the distributed global memory that spans over multiple 
 physical machines.
+Currently, the memory layer is not completely independent, as its 
+initialization is handled by the \rif daemons. 
 
 Interactions:
 \begin{description}
     \item [\user:] The user is in charge of allocating memory ranges in the
     \iml; it can also require information about data partitioning, that is the
-    mapping between allocated memory and physical machine hostnames where the data
-    is actually located
+    mapping between allocated memory and physical machine hostnames where the 
+    data is actually located
     \item [\worker:] Workers need access to the \iml to trigger
     incoming/outgoing data transfers
 \end{description}
@@ -440,7 +479,7 @@ Interactions:
         \toprule
         Caller & Method \\
         \midrule
-        \user & allocation alloc(size, offset) \\
+        \user & allocation alloc(size, data) \\
         \user & map<hostname,[range]> partition(allocation) \\
         \user & void free(allocation)  \\
         \worker & get() \\
@@ -465,15 +504,19 @@ in depending on the application requirements.
 \subsection{Base Scheduler}
 The implementation should provide a basic scheduler class with the following
 simple functionality:
-\begin{itemize}
-    \item Extract new task T from the Workflow engine
-    \item Acquire resources for T
-    \item Submit task T to the assigned worker(s) 
-    \item When the task is completed successfully, the scheduler should
-    \emph{inject} the results back into the workflow
-    \item Repeat until there are no more running tasks and no new tasks can 
-    be extracted from the \we
-\end{itemize}
+\begin{lstlisting}
+task_id = (*@\we.@*)next()     // Extract new task from the Workflow Engine
+res_id = (*@\rman.@*)acquire((*@\js@*), task_id::class)    //  Acquire resources for the class that the task belongs to
+
+worker = res_id_to_worker(res_id)   // retrieve assigned worker(s)
+worker.submit((*@\we.@*)extract(task_id))
+Repeat until no more running tasks and no new tasks can be extracted from the (*@\we.@*)
+
+// in the finished callback (called by the workers)
+if (reason == Finished)
+    (*@\we.@*)inject(task_id, workflow_response)
+endif
+\end{lstlisting}
 
 \subsection{Rescheduling}
 Failed tasks can be handled through a rescheduling mechanism that performs
@@ -488,12 +531,15 @@ look-ahead scheduler should be able to extract multiple (or all) available tasks
 and update this list dynamically when other tasks become available.
 
 For instance, such a look-ahead mechanism is essential to avoid \emph{class
-    conflict} issues by extracting multiple tasks and acquiring resources based on
+conflict} issues by extracting multiple tasks and acquiring resources based on
 their classes.
 Additionally, resource pre-assignment and work stealing can be implemented by
 maintaining task queues for each resource, acquiring resources only once and
 dynamically distributing extracted tasks to the queues, instead of the default
 acquire-submit loop.
+
+
+
 
 \subsection{Co-allocation Scheduler}
 This type of scheduler addresses the problem of having tasks that require
@@ -534,7 +580,10 @@ If an Independent Memory Layer (IML) is available, a special scheduler that
 takes into account the cost of memory transfers can be devised.
 Thus, the scheduler needs access to the list of hostnames associated with the
 available resources, as well as to the mapping between memory ranges in the IML
-and the hostnames where they are stored.
+and the hostnames where they are stored. This information (resource hostnames 
+and memory range hostnames) is obtained beforehand by the user from the \rts 
+and the \iml, respectively, and forwarded to the scheduler.
+
 When requesting resources for a given task, the scheduler can provide the RM
 with a preference list including only resources located on the same physical
 machines as the needed memory ranges.
@@ -548,23 +597,25 @@ the application startup binary, or as standalone binaries.
 Initializes the Run-Time System and publishes connection information so that 
 multiple users/application can access it simultaneously.
 Implementation:
-\begin{itemize}
-    \item Create \rman
-    \item Create \rts(\rman)
-    \item Create RPC server
-    \item Publish connection info for \rman
-    \item Publish connection info for \rts
-    \item Publish connection info for RPC
-\end{itemize}
+\begin{lstlisting}
+rm = Create (*@\rman()@*)
+rts = Create (*@\rts(rm)@*)
+rpc = Create RPC server()
+Publish connection info(*@\rman()@*)
+Publish connection info(*@\rts()@*)
+Publish connection info(RPC)
+\end{lstlisting}
+
+
 
 \subsection{IML.exe}
 Initializes the memory layer and makes it available for the applications that 
 need to store data in the global memory.
 Implementation:
-\begin{itemize}
-    \item Create \iml
-    \item Publish connection info for \iml
-\end{itemize}
+\begin{lstlisting}
+Create (*@\iml@*)
+Publish connection info for (*@\iml@*)
+\end{lstlisting}
 
 \subsection{JobServer.exe}
 The JobServer implements the main application execution steps, such as defining
@@ -584,17 +635,15 @@ A basic implementation of the JobServer needs to instantiate an existing
 Scheduler, to start a workflow engine, to execute the user-supplied workflow
 (potentially after applying some transformations), and collect results.
 The main steps the JobServer has to perform can be summarized as follows:
-\begin{itemize}
-    \item Obtain the connection information of a running \rman
-    \item Create workflow engine with the used provided workflow
-    \begin{itemize}
-        \item Apply automatic transformations to the user provided workflow
-        (e.g., termination transitions) before submitting it tot the workflow engine
-    \end{itemize}
-    \item Initialize scheduler with the \rman and Workflow engine
-    \item (Optional) Create and publish application-specific RPC server
-    \item Wait for the scheduler to execute the workflow
-\end{itemize}
+\begin{lstlisting}
+Get connection information for (*@\rman@*)
+Get the user-provided app_workflow 
+(Optional) Apply automatic transformations to app_workflow (e.g., termination transitions) before submitting it to the workflow engine
+(*@\we@*)(app_workflow) // Create workflow engine with the user provided workflow
+s = (*@\sched,@*)((*@\rman,@*) (*@\we@*)) // Initialize scheduler
+(Optional) Create and publish application-specific RPC server
+s.wait()    // Wait for the scheduler to execute the workflow
+\end{lstlisting}
 
 
 \subsubsection{Cloud Job Server}
@@ -612,14 +661,15 @@ performance can be improved by executing tasks close to the nodes that store the
 data they access. To this end, a scheduler that can take into account the cost
 of data transfers is required.
 Such a JobServer is outlined below:
-\begin{itemize}
-    \item Get connection information for \rman, \iml, and \rts
-    \item Allocate memory in the \iml: $a = \text{\iml}.alloc(\text{size}, \text{data})$
-    \item Create \we using allocation $a$
-    \item Retrieve resource locations from the Run-Time System: $\text{htr} = \text{\rts}.host\_to\_resource()$
-    \item Initialize data transfer-aware scheduler: $s = SWT(\text{\rman}, \text{\we}, \text{htr}, \text{\iml}.partition(a))$
-    \item Wait for the workflow execution $s.wait()$
-\end{itemize}
+\begin{lstlisting}
+Get connection information for (*@\rman@*)
+Get connection information for (*@\iml@*)
+Get connection information for (*@\rts@*)
+a = (*@\iml.@*)alloc(size, data)    // Allocate global memory
+htr = (*@\rts.@*)host_to_resource()   // Retrieve resource locations 
+s = SWT((*@\rman,@*) (*@\we,@*) htr, (*@\iml.@*)partition(a)) // Initialize data transfer-aware scheduler
+s.wait()    // Wait for the workflow execution
+\end{lstlisting}
 
 
 \section{Implementation plan}
