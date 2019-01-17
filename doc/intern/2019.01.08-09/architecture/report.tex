@@ -237,7 +237,7 @@ It interacts with the following components:
 \subsection{Worker}
 The \worker is the component that executes workflow tasks on compute nodes. A
 \worker is a process/thread associated with a specific resource ID and can only
-execute tasks defined for that type of resource.
+execute tasks requiring that type of resource.
 
 Instead of executing a single task at a given moment, a worker may be
 implemented to overlap communication (incoming data transfers, outgoing data
@@ -245,7 +245,7 @@ transfers) with the computation phase of another task.
 Thus it needs to keep track of the three tasks that may run concurrently, and to
 synchronize their phases.
 Furthermore, the failure of one of these running tasks should  trigger the
-failure of the others.
+failure/cancellation of the others.
 
 \workers interact with the following components:
 \begin{description}
@@ -286,7 +286,7 @@ The Resource Manager is the component that keeps track of all existing resources
 
 Interactions:
 \begin{description}
-    \item [\sched:] The scheduler is the only component that can acquire/release resources. The \rm provides a means to mark resources that are in use, while taking into account resource hierarchies; this is done in a transparent manner relative to the scheduler, which only needs to keep track of the class of resource it needs, without any knowledge of dependent resources
+    \item [\sched:] The scheduler is the only component that can acquire/release resources (but the system should allow for multiple schedulers to use the same \rman, for instance to have multiple applications running on the same physical machines). The \rm provides a means to mark resources that are in use, while taking into account resource hierarchies; this is done in a transparent manner relative to the scheduler, which only needs to keep track of the class of resource it needs, without any knowledge of dependent resources
     \item [\rts:] The \rts can add and remove resource hierarchies (DAGs) from the \rm
 \end{description}
 
@@ -691,6 +691,9 @@ GPISpace.
         \item separate functionality from that of the \emph{worker manager},
         which should be converted into the \rman in the new architecture
     \end{itemize}     
+    
+    \item Discuss/address potential issues such as races, cancellation, 
+    starvation
     
     \item Separate the functionalities of the JobServer, \rts and \rman within
     the existing \emph{agent}; try to switch to the new API for each of them.
