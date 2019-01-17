@@ -136,12 +136,12 @@ It interacts with the following components:
         \toprule
         Caller & Method \\
         \midrule
-        \rts & \rts(\rman\conn) \\
-        \rif & \rif\id bootstrap(hostname, strategy) \\
-        \sched & \rif\id teardown(\rif\id)    // ret: toredown \\
+        \user & \rts(\rman\conn) \\
+        \user & \rif\id bootstrap(hostname, strategy) \\
+        \user & \rif\id teardown(\rif\id)    // ret: toredown \\
         \user & \rdagrep add(\rif\id, \rdag) // ret: started \\
-        \worker & \rdagrep remove(\rif\id, \rdag) // ret: removed \\
-        \iml & map<hostname, [\res\id]> host\_to\_resource() \\
+        \user & \rdagrep remove(\rif\id, \rdag) // ret: removed \\
+        \user & map<hostname, [\res\id]> host\_to\_resource() \\
         \midrule
         & Data members \\        
         \midrule
