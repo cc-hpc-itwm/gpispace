@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE (transition_has_dynamic_requirements)
   std::string const value (fhg::util::testing::random_identifier());
 
   we::type::property::type properties;
-  properties.set ( {"fhg", "drts", "require", "dynamic requirement"}
+  properties.set ( {"fhg", "drts", "require", "dynamic_requirement"}
                  , "${" + port + "}"
                  );
 

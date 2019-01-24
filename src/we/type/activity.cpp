@@ -242,7 +242,7 @@ namespace we
           )
         {
           boost::optional<const property::value_type&> expression_value
-            (transition.prop().get ({"fhg", "drts", "require", "dynamic requirement"}));
+            (transition.prop().get ({"fhg", "drts", "require", "dynamic_requirement"}));
 
           if (!expression_value)
           {
