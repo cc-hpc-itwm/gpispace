@@ -7,3 +7,9 @@ extended_add_library (NAME StencilCache
   LIBRARIES Util::Generic
             Boost::base
 )
+
+install (FILES
+  stencil_cache/types.hpp
+  stencil_cache/callback.hpp
+  DESTINATION include/gspc/stencil_cache/
+)
