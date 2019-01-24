@@ -1,0 +1,639 @@
+<defun name="stencil">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+
+  <include-structs href="memory/global/range.xpnet"/>
+
+  <struct name="Coordinate">
+    <field name="value" type="long"/>
+  </struct>
+  <struct name="Slot">
+    <field name="value" type="unsigned long"/>
+  </struct>
+  <struct name="Callback">
+    <field name="path" type="string"/>
+  </struct>
+
+  <in name="X" type="Coordinate" place="X"/>
+  <in name="Y" type="Coordinate" place="Y"/>
+  <in name="B" type="long" place="B"/>
+
+  <in name="input_size" type="unsigned long" place="input_size"/>
+  <in name="input_memory" type="global_memory_range" place="input_memory"/>
+
+  <in name="neighbors" type="Callback" place="neighbors"/>
+
+  <in name="cache_id" type="unsigned long" place="cache_id"/>
+
+  <out name="done" type="control" place="done"/>
+  <out name="loads" type="unsigned long" place="loads"/>
+  <out name="gets" type="unsigned long" place="gets"/>
+
+  <net>
+    <place name="X" type="Coordinate"/>
+    <place name="Y" type="Coordinate"/>
+    <place name="B" type="long"/>
+
+    <place name="input_size" type="unsigned long"/>
+    <place name="input_memory" type="global_memory_range"/>
+
+    <place name="neighbors" type="Callback"/>
+
+    <place name="cache_id" type="unsigned long"/>
+
+    <place name="done" type="control"/>
+
+    <place name="loads" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="gets" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="add_to_loads" type="unsigned long"/>
+    <place name="add_to_gets" type="unsigned long"/>
+
+    <transition name="add_to_loads">
+      <defun>
+        <inout name="sum" type="unsigned long"/>
+        <in name="add" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${add};
+        </expression>
+      </defun>
+      <connect-inout port="sum" place="loads"/>
+      <connect-in port="add" place="add_to_loads"/>
+    </transition>
+    <transition name="add_to_gets">
+      <defun>
+        <inout name="sum" type="unsigned long"/>
+        <in name="add" type="unsigned long"/>
+        <expression>
+          ${sum} := ${sum} + ${add};
+        </expression>
+      </defun>
+      <connect-inout port="sum" place="gets"/>
+      <connect-in port="add" place="add_to_gets"/>
+    </transition>
+
+    <struct name="Stencil">
+      <field name="value" type="long"/>
+    </struct>
+    <struct name="Prepare">
+      <field name="slot" type="Slot"/>
+      <field name="coordinate" type="Coordinate"/>
+    </struct>
+    <struct name="Assigned">
+      <field name="slot" type="Slot"/>
+      <field name="coordinate" type="Coordinate"/>
+    </struct>
+    <struct name="Assignment">
+      <field name="assigned" type="list"/> <!-- list<Assigned> -->
+    </struct>
+    <struct name="Ready">
+      <field name="stencil" type="Stencil"/>
+      <field name="assignment" type="Assignment"/>
+      <field name="memory_gets" type="list"/>
+    </struct>
+
+    <place name="prepare" type="Prepare" put_token="true"/>
+    <place name="prepared" type="Coordinate"/>
+    <place name="ready" type="Ready" put_token="true"/>
+    <place name="used" type="Assignment"/>
+
+    <struct name="SCache">
+      <field name="id" type="unsigned long"/>
+    </struct>
+
+    <place name="stencil_cache_for_alloc" type="SCache"/>
+    <place name="stencil_cache_for_prepared" type="SCache"/>
+    <place name="stencil_cache_for_free" type="SCache"/>
+
+    <place name="N" type="unsigned long"/>
+    <place name="computed" type="Stencil"/>
+    <place name="freed" type="control"/>
+
+    <transition name="stencil_cache_initialize">
+      <defun>
+        <properties name="fhg">
+          <properties name="we">
+            <property key="stencil_cache"/>
+          </properties>
+        </properties>
+        <in name="X" type="Coordinate"/>
+        <in name="Y" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <in name="neighbors" type="Callback"/>
+        <in name="memory" type="global_memory_range"/>
+        <in name="size" type="unsigned long"/>
+        <in name="id" type="unsigned long"/>
+        <out name="alloc" type="SCache"/>
+        <out name="prepared" type="SCache"/>
+        <out name="free" type="SCache"/>
+        <out name="N" type="unsigned long"/>
+        <out name="x" type="long"/>
+        <out name="y" type="long"/>
+        <out name="b" type="long"/>
+        <out name="YB" type="long"/>
+        <out name="yr" type="long"/>
+        <expression>
+          ${place.prepare} := "prepare";
+          ${place.ready} := "ready";
+          ${begin.value} := 0L;
+          ${end.value} := ${X.value} * ${Y.value};
+          ${operation} := "INIT";
+
+          ${alloc.id} := ${id};
+          ${prepared.id} := ${id};
+          ${free.id} := ${id};
+          ${N} := ulong (${end.value} - ${begin.value});
+          ${x} := 0L;
+          ${y} := 0L;
+          ${b} := 0L;
+          ${YB} := div (${Y.value}, ${B});
+          ${yr} := ${B} * ${YB};
+        </expression>
+      </defun>
+      <condition>
+        (${X.value} * ${Y.value}) :ge: 0L
+      </condition>
+      <connect-in port="id" place="cache_id"/>
+      <connect-in port="neighbors" place="neighbors"/>
+      <connect-read port="memory" place="input_memory"/>
+      <connect-read port="size" place="input_size"/>
+      <connect-read port="X" place="X"/>
+      <connect-read port="Y" place="Y"/>
+      <connect-read port="B" place="B"/>
+      <connect-out port="alloc" place="stencil_cache_for_alloc"/>
+      <connect-out port="prepared" place="stencil_cache_for_prepared"/>
+      <connect-out port="free" place="stencil_cache_for_free"/>
+      <connect-out port="N" place="N"/>
+      <connect-out port="x" place="x"/>
+      <connect-out port="y" place="y"/>
+      <connect-out port="b" place="b"/>
+      <connect-out port="YB" place="YB"/>
+      <connect-out port="yr" place="yr"/>
+    </transition>
+
+    <place name="stencil" type="Stencil"/>
+
+    <place name="co_alloc" type="control"/>
+    <place name="co_generate" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <place name="x" type="long"/>
+    <place name="y" type="long"/>
+    <place name="b" type="long"/>
+    <place name="YB" type="long"/>
+    <place name="yr" type="long"/>
+
+    <transition name="co_generate_done">
+      <defun>
+        <in name="co" type="control"/>
+        <in name="X" type="Coordinate"/>
+        <in name="Y" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <in name="YB" type="long"/>
+        <in name="cache" type="SCache"/>
+        <in name="x" type="long"/>
+        <in name="y" type="long"/>
+        <in name="b" type="long"/>
+        <in name="yr" type="long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${b} :ge: ${B}
+      </condition>
+      <condition>
+        ${x} :ge: ${X.value}
+      </condition>
+      <connect-read port="co" place="co_generate"/>
+      <connect-in port="X" place="X"/>
+      <connect-in port="Y" place="Y"/>
+      <connect-in port="B" place="B"/>
+      <connect-in port="YB" place="YB"/>
+      <connect-in port="x" place="x"/>
+      <connect-in port="y" place="y"/>
+      <connect-in port="b" place="b"/>
+      <connect-in port="yr" place="yr"/>
+      <connect-in port="cache" place="stencil_cache_for_alloc"/>
+    </transition>
+
+    <transition name="co_generate_rest_step_y">
+      <defun>
+        <in name="X" type="Coordinate"/>
+        <in name="Y" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <in name="b" type="long"/>
+        <in name="x" type="long"/>
+        <inout name="yr" type="long"/>
+        <out name="stencil" type="Stencil"/>
+        <inout name="co" type="control"/>
+        <expression>
+          ${stencil.value} := ${yr} + (${Y.value} * ${x});
+          ${yr} := ${yr} + 1L;
+        </expression>
+      </defun>
+      <condition>
+        ${b} :ge: ${B}
+      </condition>
+      <condition>
+        ${x} :lt: ${X.value}
+      </condition>
+      <condition>
+        ${yr} :lt: ${Y.value}
+      </condition>
+      <connect-read port="X" place="X"/>
+      <connect-read port="Y" place="Y"/>
+      <connect-read port="B" place="B"/>
+      <connect-read port="b" place="b"/>
+      <connect-read port="x" place="x"/>
+      <connect-inout port="yr" place="yr"/>
+      <connect-out port="stencil" place="stencil"/>
+      <connect-in port="co" place="co_generate"/>
+      <connect-out port="co" place="co_alloc"/>
+    </transition>
+
+    <transition name="co_generate_rest_step_x">
+      <defun>
+        <in name="X" type="Coordinate"/>
+        <in name="Y" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <in name="YB" type="long"/>
+        <in name="b" type="long"/>
+        <inout name="x" type="long"/>
+        <inout name="yr" type="long"/>
+        <in name="co" type="control"/>
+        <expression>
+          ${yr} := ${B} * ${YB};
+          ${x} := ${x} + 1L;
+        </expression>
+      </defun>
+      <condition>
+        ${b} :ge: ${B}
+      </condition>
+      <condition>
+        ${x} :lt: ${X.value}
+      </condition>
+      <condition>
+        ${yr} :ge: ${Y.value}
+      </condition>
+      <connect-read port="X" place="X"/>
+      <connect-read port="Y" place="Y"/>
+      <connect-read port="B" place="B"/>
+      <connect-read port="YB" place="YB"/>
+      <connect-read port="b" place="b"/>
+      <connect-inout port="x" place="x"/>
+      <connect-inout port="yr" place="yr"/>
+      <connect-read port="co" place="co_generate"/>
+    </transition>
+
+    <transition name="co_generate_block_step_y">
+      <defun>
+        <in name="X" type="Coordinate"/>
+        <in name="Y" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <in name="YB" type="long"/>
+        <in name="b" type="long"/>
+        <in name="x" type="long"/>
+        <inout name="y" type="long"/>
+        <out name="stencil" type="Stencil"/>
+        <inout name="co" type="control"/>
+        <expression>
+          ${stencil.value} := (${b} * ${YB}) + ${y} + (${Y.value} * ${x});
+          ${y} := ${y} + 1L;
+        </expression>
+      </defun>
+      <condition>
+        ${b} :lt: ${B}
+      </condition>
+      <condition>
+        ${x} :lt: ${X.value}
+      </condition>
+      <condition>
+        ${y} :lt: ${YB}
+      </condition>
+      <connect-read port="X" place="X"/>
+      <connect-read port="Y" place="Y"/>
+      <connect-read port="B" place="B"/>
+      <connect-read port="YB" place="YB"/>
+      <connect-read port="b" place="b"/>
+      <connect-read port="x" place="x"/>
+      <connect-inout port="y" place="y"/>
+      <connect-out port="stencil" place="stencil"/>
+      <connect-in port="co" place="co_generate"/>
+      <connect-out port="co" place="co_alloc"/>
+    </transition>
+
+    <transition name="co_generate_block_step_x">
+      <defun>
+        <in name="X" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <in name="YB" type="long"/>
+        <in name="b" type="long"/>
+        <inout name="x" type="long"/>
+        <inout name="y" type="long"/>
+        <in name="co" type="control"/>
+        <expression>
+          ${y} := 0L;
+          ${x} := ${x} + 1L;
+        </expression>
+      </defun>
+      <condition>
+        ${b} :lt: ${B}
+      </condition>
+      <condition>
+        ${x} :lt: ${X.value}
+      </condition>
+      <condition>
+        ${y} :ge: ${YB}
+      </condition>
+      <connect-read port="X" place="X"/>
+      <connect-read port="B" place="B"/>
+      <connect-read port="YB" place="YB"/>
+      <connect-read port="b" place="b"/>
+      <connect-inout port="x" place="x"/>
+      <connect-inout port="y" place="y"/>
+      <connect-read port="co" place="co_generate"/>
+    </transition>
+
+    <transition name="co_generate_block_step_b">
+      <defun>
+        <in name="X" type="Coordinate"/>
+        <in name="B" type="long"/>
+        <inout name="b" type="long"/>
+        <inout name="x" type="long"/>
+        <inout name="y" type="long"/>
+        <in name="co" type="control"/>
+        <expression>
+          ${y} := 0L;
+          ${x} := 0L;
+          ${b} := ${b} + 1L;
+        </expression>
+      </defun>
+      <condition>
+        ${b} :lt: ${B}
+      </condition>
+      <condition>
+        ${x} :ge: ${X.value}
+      </condition>
+      <connect-read port="X" place="X"/>
+      <connect-read port="B" place="B"/>
+      <connect-inout port="b" place="b"/>
+      <connect-inout port="x" place="x"/>
+      <connect-inout port="y" place="y"/>
+      <connect-read port="co" place="co_generate"/>
+    </transition>
+
+    <transition name="co_alloc">
+      <defun>
+        <properties name="fhg">
+          <properties name="we">
+            <property key="stencil_cache"/>
+          </properties>
+        </properties>
+        <inout name="co" type="control"/>
+        <in name="stencil" type="Stencil"/>
+        <inout name="cache" type="SCache"/>
+        <expression>
+          ${operation} := "ALLOC"
+        </expression>
+      </defun>
+      <connect-inout port="cache" place="stencil_cache_for_alloc"/>
+      <connect-in port="stencil" place="stencil"/>
+      <connect-in port="co" place="co_alloc"/>
+      <connect-out port="co" place="co_generate"/>
+    </transition>
+
+    <transition name="stencil_cache_prepared">
+      <defun>
+        <properties name="fhg">
+          <properties name="we">
+            <property key="stencil_cache"/>
+          </properties>
+        </properties>
+        <in name="prepared" type="Coordinate"/>
+        <inout name="cache" type="SCache"/>
+        <expression>
+          ${operation} := "PREPARED"
+        </expression>
+      </defun>
+      <connect-inout port="cache" place="stencil_cache_for_prepared"/>
+      <connect-in port="prepared" place="prepared"/>
+    </transition>
+
+    <transition name="stencil_cache_free">
+      <defun>
+        <properties name="fhg">
+          <properties name="we">
+            <property key="stencil_cache"/>
+          </properties>
+        </properties>
+        <in name="assignment" type="Assignment"/>
+        <inout name="cache" type="SCache"/>
+        <out name="freed" type="control"/>
+        <expression>
+          ${operation} := "FREE";
+
+          ${freed} := []
+        </expression>
+      </defun>
+      <connect-inout port="cache" place="stencil_cache_for_free"/>
+      <connect-in port="assignment" place="used"/>
+      <connect-out port="freed" place="freed"/>
+    </transition>
+
+    <transition name="load">
+      <defun>
+        <require key="load" mandatory="true"/>
+        <in name="memory" type="global_memory_range"/>
+        <in name="size" type="unsigned long"/>
+        <in name="prepare" type="Prepare"/>
+        <out name="prepared" type="Coordinate"/>
+        <out name="add_to_loads" type="unsigned long"/>
+        <memory-buffer name="buffer">
+          <size>
+            ${size}
+          </size>
+        </memory-buffer>
+        <memory-put not-modified-in-module-call="true">
+          <local>
+            ${range.buffer} := "buffer";
+            ${range.offset} := 0UL;
+            ${range.size} := ${size};
+            stack_push (List(), ${range})
+          </local>
+          <global>
+            ${range.handle} := ${memory.handle};
+            ${range.offset} := ${memory.offset}
+                             + ${prepare.slot.value} * ${size};
+            ${range.size} := ${size};
+            stack_push (List(), ${range})
+          </global>
+        </memory-put>
+        <module name="stencil2D"
+                function="prepared load ( prepare
+                                        , buffer
+                                        , size
+                                        , add_to_loads
+                                        )
+                                        "
+        >
+          <cinclude href="utility"/>
+          <code><![CDATA[
+          using P = std::pair<long, std::size_t>;
+
+          P* data (static_cast<P*> (buffer));
+
+          for (long i {0}; i < size / sizeof (P); ++i, ++data)
+          {
+            data->first = prepare.coordinate.value;
+            data->second = i;
+          }
+
+          add_to_loads = 1UL;
+
+          return prepare.coordinate;
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-read port="memory" place="input_memory"/>
+      <connect-read port="size" place="input_size"/>
+      <connect-in port="prepare" place="prepare"/>
+      <connect-out port="prepared" place="prepared"/>
+      <connect-out port="add_to_loads" place="add_to_loads"/>
+    </transition>
+
+    <transition name="compute">
+      <defun>
+        <require key="compute" mandatory="true"/>
+        <in name="input_memory" type="global_memory_range"/>
+        <in name="input_size" type="unsigned long"/>
+        <in name="ready" type="Ready"/>
+        <out name="computed" type="Stencil"/>
+        <out name="used" type="Assignment"/>
+        <out name="add_to_gets" type="unsigned long"/>
+        <memory-buffer name="inputs">
+          <size>
+            stack_size (${ready.assignment.assigned}) * ${input_size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            ${ready.memory_gets}
+          </global>
+          <local>
+            ${range.buffer} := "inputs";
+            ${range.offset} := 0UL;
+            ${range.size} :=
+              stack_size (${ready.assignment.assigned}) * ${input_size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <module name="stencil2D"
+                function="used compute ( ready
+                                       , inputs
+                                       , input_size
+                                       , computed
+                                       , add_to_gets
+                                       )
+                         "
+        >
+          <cinclude href="we/type/value/peek.hpp"/>
+          <cinclude href="boost/format.hpp"/>
+          <cinclude href="stdexcept"/>
+          <cinclude href="utility"/>
+          <code><![CDATA[
+          using P = std::pair<long, std::size_t>;
+
+          P const* data (static_cast<P*> (inputs));
+
+          for (auto const& assigned : ready.assignment.assigned)
+          {
+            using pnet::type::value::peek;
+
+            auto const coordinate
+              (boost::get<long> (peek ("coordinate", assigned).get()));
+
+            for (long i {0}; i < input_size / sizeof (P); ++i, ++data)
+            {
+              if (data->first != coordinate || data->second != i)
+              {
+                throw std::logic_error
+                ( ( boost::format ("(%1%, %2%) != (%3%,%4%) in %5%.")
+                  % coordinate
+                  % i
+                  % data->first
+                  % data->second
+                  % ready
+                  ).str()
+                );
+              }
+            }
+          }
+
+          computed = ready.stencil;
+          add_to_gets = ready.assignment.assigned.size();
+
+          return ready.assignment;
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-read port="input_memory" place="input_memory"/>
+      <connect-read port="input_size" place="input_size"/>
+      <connect-in port="ready" place="ready"/>
+      <connect-out port="used" place="used"/>
+      <connect-out port="computed" place="computed"/>
+      <connect-out port="add_to_gets" place="add_to_gets"/>
+    </transition>
+
+    <transition name="tick">
+      <defun>
+        <inout name="N" type="unsigned long"/>
+        <in name="computed" type="Stencil"/>
+        <in name="freed" type="control"/>
+        <expression>
+          ${N} := ${N} - 1UL;
+        </expression>
+      </defun>
+      <condition>
+        ${N} :gt: 0UL
+      </condition>
+      <connect-inout port="N" place="N"/>
+      <connect-in port="computed" place="computed"/>
+      <connect-in port="freed" place="freed"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <properties name="fhg">
+          <properties name="we">
+            <property key="stencil_cache"/>
+          </properties>
+        </properties>
+        <in name="N" type="unsigned long"/>
+        <in name="input_size" type="unsigned long"/>
+        <in name="input_memory" type="global_memory_range"/>
+        <in name="stencil_cache_for_prepared" type="SCache"/>
+        <in name="cache" type="SCache"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${operation} := "DESTROY";
+          ${done} := []
+        </expression>
+      </defun>
+      <condition>
+        ${N} :le: 0UL
+      </condition>
+      <connect-in port="N" place="N"/>
+      <connect-in port="input_size" place="input_size"/>
+      <connect-in port="input_memory" place="input_memory"/>
+      <connect-in port="stencil_cache_for_prepared" place="stencil_cache_for_prepared"/>
+      <connect-in port="cache" place="stencil_cache_for_free"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>
