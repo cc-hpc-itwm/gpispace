@@ -418,6 +418,7 @@ namespace we
       while (true)
       {
         activity_data_type activity_data (_nets_to_extract_from.get());
+        auto const id (activity_data._id);
 
         bool was_active (false);
 
@@ -444,6 +445,24 @@ namespace we
                                             , get_response_id (description)
                                             , value
                                             );
+                        }
+                      , _stencil_caches
+                      , [this, id]
+                          ( std::string place_name
+                          , pnet::type::value::value_type value
+                          )
+                        {
+                          _nets_to_extract_from.apply
+                            ( id
+                            , [place_name, value]
+                                (activity_data_type& ad)
+                              {
+                                boost::get<we::type::net_type>
+                                  (ad._activity->transition().data())
+                                  .put_token (place_name, value)
+                                  ;
+                              }
+                            );
                         }
                       );
               }

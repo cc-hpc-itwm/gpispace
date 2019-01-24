@@ -511,6 +511,8 @@ namespace we
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
+      , we::type::stencil_caches& stencil_caches
+      , we::type::stencil_cache::PutToken put_token
       )
     {
       expr::eval::context context;
@@ -519,6 +521,11 @@ namespace we
         (do_extract (tid, context_bind (context, transition)));
 
       transition.expression()->ast().eval_all (context);
+
+      if (!!transition.prop().get ({"fhg", "we", "stencil_cache"}))
+      {
+        stencil_caches (context, std::move (put_token));
+      }
 
       std::list<to_be_updated_type> pending_updates;
 
