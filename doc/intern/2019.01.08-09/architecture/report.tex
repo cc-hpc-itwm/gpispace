@@ -99,9 +99,9 @@
 This document describes the new architecture for GSPC19, focusing on scheduling
 and on the interaction between components.
 
-
 \section{Architecture}
-The main components shown in Figure~\ref{fig:architecture} are described as follows, together with a set of definitions that will be used in this document.
+The main components shown in Figure~\ref{fig:architecture} are described as follows, 
+together with a set of definitions that will be used in this document.
 \begin{figure}[t]
     \centering
     \includegraphics[width=.9\linewidth]{./api_overview.jpg}
@@ -195,7 +195,11 @@ that type of resource.
 Upon receiving a resource description (DAG describing the resource hierarchy for
 the node), the \rif daemon is in charge of starting a worker for each resource
 in the DAG, and return the connection information for each worker back to the
-user.
+user. 
+The workers can be implemented either as processes or as threads. The decision
+here should consider the fact that thread failures in task computations can
+affect other workers, which may need to be canceled.
+
 The \rif should provide transparent access to workers to the \rts, that is it
 should make connection information available for each resource it manages. The
 \rif could then act as a proxy and forward tasks to the right worker or allow
@@ -286,8 +290,14 @@ The Resource Manager is the component that keeps track of all existing resources
 
 Interactions:
 \begin{description}
-    \item [\sched:] The scheduler is the only component that can acquire/release resources (but the system should allow for multiple schedulers to use the same \rman, for instance to have multiple applications running on the same physical machines). The \rm provides a means to mark resources that are in use, while taking into account resource hierarchies; this is done in a transparent manner relative to the scheduler, which only needs to keep track of the class of resource it needs, without any knowledge of dependent resources
     \item [\rts:] The \rts can add and remove resource hierarchies (DAGs) from the \rm
+    \item [\sched:] The scheduler is the only component that can acquire/release
+    resources (but the system should allow for multiple schedulers to use the same
+    \rman, for instance to have multiple applications running on the same physical
+    machines). The \rm provides a means to mark resources that are in use, while
+    taking into account resource hierarchies; this is done in a transparent manner
+    relative to the scheduler, which only needs to keep track of the class of
+    resource it needs, without any knowledge of dependent resources
 \end{description}
 
 In the case of scheduling with preferences, we define the following types:
@@ -330,14 +340,52 @@ In the case of scheduling with preferences, we define the following types:
 \end{table}
 %
 
+
+\subsubsection{Dealing with Resource Hierarchies}
+The \rman finds out about resources in the system only when a \emph{resource 
+    description} is provided by the \rts through an \emph{add} operation. The
+received resource \rdag is then recorded and each resource \res\id in the graph
+is added to a class-specific FIFO queue of available resources.
+Any incoming \emph{acquire} call only interacts with a specific resource queue
+by requesting a resource class (and possibly even a set of resource IDs of that
+type).
+
+When no resource hierarchy is defined (i.e., all resources represent
+independent cores), the \rman becomes a round-robin scheduler that serves
+resources from a single queue.
+In the case of a hierarchy defined by nodes, sockets and cores, the \rman will
+maintain three resource queues, one for each resource class.
+
+When a core is \emph{acquired}, it is removed from its queue, and the parent
+socket and its parent node are also removed from their respective queues. If
+there are other cores in the core queue  (or other sockets) belonging to the
+same node, they are unaffected and can be assigned to other workers.
+When a node is acquired, all the depending resources are also removed from their
+queues, i.e., all the node's sockets and cores.
+
+A \emph{release} operation on a core will add it back to the available cores
+queue, as well as its parent socket and node to their respective queues.
+
+Resources can be removed from the system at the request of the \rts through the
+\emph{remove} call.
+The \rts is triggered either by the user (add/remove)  or by the RIF (remove
+after crash).
+At the \rman level, the removal will affect the queues in the same way as an
+acquire would.
+Depending on the policy, a \emph{remove} operation 
+can ignore the resources that ar missing from the queues (i.e., this means they
+are already acquired), and rely on the scheduler to detect that the associated
+tasks have failed and re-schedule them on different nodes. 
+
+\subsubsection{Possible Issues}
 Possible issues with the acquire/release blocking interface of the Resource
 Manager:
 \begin{description}
-    \item [Deadlock] Can occur when acquiring a set of resources in a single
+    \item [Deadlock:] Can occur when acquiring a set of resources in a single
     call 
-    \item [Livelock] Similar to the deadlock situation, in the case of requiring
+    \item [Livelock:] Similar to the deadlock situation, in the case of requiring
     multiple resources within the same blocking acquire
-    \item [Class conflict] Starvation may occur in the following cases
+    \item [Class conflict:] Starvation may occur in the following cases
     Resources from different classes are required by concurrent
     \emph{acquire} calls, e.g., nodes and cores are requested in the same time.
     Fulfilling the request for \emph{cores} may result in never having a \emph{node}
@@ -353,9 +401,33 @@ Manager:
     However, since the number of available IO workers is limited, the
     scheduler may block in an IO \emph{acquire} call and only start processing the
     Calc tasks when all the IO tasks are done.
-    Such behavior may be avoided by implementing class-aware task
-    generation at the workflow engine level or class-aware scheduling.
+    Such behavior may be avoided by implementing one or both of the following 
+    mechanisms:
+    \begin{itemize}
+        \item class-aware task generation at the workflow engine level
+        \item class-aware scheduling, for example implementing one \emph{acquire} 
+        thread per resource class, instead of one thread per task in the scheduler
+    \end{itemize}
     
+     \item [Queue fragmentation with mixed-class acquires:]
+     This issue can occur in the following scenario: 
+     
+     Assuming we have first $n$ requests for cores and serve them by allocating 
+     $n$ cores from $n$ (all) different sockets. Now $n$ sockets are used even 
+     though just $n/C$ are needed ($C$ being the number of cores per socket).     
+     An additional \emph{acquire} for a socket will be blocked until a core task 
+     is done.
+     
+     Such a scenario can be mitigated by relying on a ``well-behaved'' client, 
+     which creates complete resource descriptions, i.e., adds entire nodes (with 
+     all their sockets and cores) to the system at once, thus inserting related 
+     cores in order into the queues. This would mean that consecutive 
+     \emph{acquire} calls for a core will most likely obtain cores from the 
+     same socket/node.
+     
+     Releasing the resources at different times will still cause fragmentation 
+     and potential delays for jobs that use mixed-class tasks. 
+     
 \end{description}
 
 
@@ -502,6 +574,7 @@ The proposed architecture enables different scheduling policies to be plugged
 in depending on the application requirements.
 
 \subsection{Base Scheduler}
+\label{sec:basesched}
 The implementation should provide a basic scheduler class with the following
 simple functionality:
 \begin{lstlisting}
@@ -538,7 +611,24 @@ maintaining task queues for each resource, acquiring resources only once and
 dynamically distributing extracted tasks to the queues, instead of the default
 acquire-submit loop.
 
+The \emph{look-ahead} mechanism is not expensive to implement.
+It requires a list of task queues, in which each element corresponds to the 
+resource class that the task requires. The types of queues do not need to be 
+known in advance, they can be dynamically added to the list when a new resource 
+type is generated by the workflow.
+A look-ahead thread will generate task ids and classify them by the type of 
+resources they need by executing the following loop:
+\begin{lstlisting}
+t = (*@\we.@*)next()
+if (!class_queues.contains(resource_class(t)))
+    class_queues[resource_class(t)] = queue()
+endif 
+class_queues[resource_class(t)].push(t)
+\end{lstlisting}
 
+Finally, the basic scheduling loop in Section~\ref{sec:basesched} is applied 
+for each entry in the \texttt{class\_queues} list (from separated threads or by using 
+coroutines and yielding on \emph{acquire} and \texttt{class\_queues.get()}).
 
 
 \subsection{Co-allocation Scheduler}
