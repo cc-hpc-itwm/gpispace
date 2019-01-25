@@ -28,7 +28,7 @@ namespace gspc
         template<typename T>
           T UnorderedSet<T>::pop()
         {
-          auto x {*_.begin()};
+          auto x (*_.begin());
           _.erase (_.begin());
 
           return x;

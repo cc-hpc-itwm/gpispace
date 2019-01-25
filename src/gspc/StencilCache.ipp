@@ -60,31 +60,31 @@ namespace gspc
 
     for (auto i : is)
     {
-      auto const allocation {Base::_alloc (i, lock)};
+      auto const allocation (Base::_alloc (i, lock));
 
       if (allocation.state != Base::Allocation::Remembered)
       {
-        auto input {_inputs.find (i)};
+        auto input (_inputs.find (i));
 
         if (input == _inputs.end())
         {
           INVALID_ARGUMENT (boost::format ("Unknown %1%") % i);
         }
 
-        auto& input_entry {input->second};
+        auto& input_entry (input->second);
 
         input_entry.triggers (o);
       }
 
       {
-        auto output {_outputs.find (o)};
+        auto output (_outputs.find (o));
 
         if (output == _outputs.end())
         {
           INCONSISTENCY ("Unknown");
         }
 
-        auto& output_entry {output->second};
+        auto& output_entry (output->second);
 
         output_entry.assigned (allocation.id, i);
 
@@ -130,25 +130,25 @@ namespace gspc
       throw interrupted();
     }
 
-    auto input {_inputs.find (i)};
+    auto input (_inputs.find (i));
 
     if (input == _inputs.end())
     {
       INVALID_ARGUMENT ("Unknown");
     }
 
-    auto& input_entry {input->second};
+    auto& input_entry (input->second);
 
     for (auto o : input_entry.waiting())
     {
-      auto output {_outputs.find (o)};
+      auto output (_outputs.find (o));
 
       if (output == _outputs.end())
       {
         INCONSISTENCY (boost::format ("Missing output %1%") % o);
       }
 
-      auto& output_entry {output->second};
+      auto& output_entry (output->second);
 
       if (output_entry.prepared())
       {
@@ -181,7 +181,7 @@ namespace gspc
       throw interrupted();
     }
 
-    auto input {_inputs.find (i)};
+    auto input (_inputs.find (i));
 
     if (input == _inputs.end())
     {
@@ -190,7 +190,7 @@ namespace gspc
 
     Base::_free (i, _);
 
-    auto& input_entry {input->second};
+    auto& input_entry (input->second);
 
     if (input_entry.free())
     {

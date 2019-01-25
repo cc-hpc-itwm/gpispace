@@ -19,7 +19,7 @@ namespace gspc
       template<typename Output, typename Counter>
         bool InputEntry<Output, Counter>::free()
       {
-        auto const not_in_use {_references.decrement()};
+        auto const not_in_use (_references.decrement());
 
         if (not_in_use && !_waiting.empty())
         {

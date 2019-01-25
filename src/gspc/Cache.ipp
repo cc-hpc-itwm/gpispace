@@ -101,11 +101,11 @@ namespace gspc
   {
     if (!_interrupted)
     {
-      auto known {_known.find (value)};
+      auto known (_known.find (value));
 
       if (known != _known.end())
       {
-        auto& entry {known->second};
+        auto& entry (known->second);
 
         if (entry.is_first_use())
         {
@@ -141,7 +141,7 @@ namespace gspc
 
     if (_next < _max)
     {
-      auto id {_next++};
+      auto id (_next++);
 
       if (!_known.emplace (value, id).second)
       {
@@ -153,7 +153,7 @@ namespace gspc
 
     if (!_empty.empty())
     {
-      auto id {_empty.pop()};
+      auto id (_empty.pop());
 
       if (!_known.emplace (value, id).second)
       {
@@ -167,14 +167,14 @@ namespace gspc
     {
       auto to_evict (_unused.pop());
 
-      auto known {_known.find (to_evict)};
+      auto known (_known.find (to_evict));
 
       if (known == _known.end())
       {
         INCONSISTENCY (boost::format ("Unused and unknown %1%") % to_evict);
       }
 
-      auto id {known->second.id()};
+      auto id (known->second.id());
 
       _known.erase (known);
 
@@ -200,14 +200,14 @@ namespace gspc
       throw interrupted();
     }
 
-    auto known {_known.find (value)};
+    auto known (_known.find (value));
 
     if (known == _known.end())
     {
       INVALID_ARGUMENT ("Unknown");
     }
 
-    auto& entry {known->second};
+    auto& entry (known->second);
 
     if (entry.is_last_use())
     {
@@ -238,14 +238,14 @@ namespace gspc
       throw interrupted();
     }
 
-    auto known {_known.find (value)};
+    auto known (_known.find (value));
 
     if (known == _known.end())
     {
       INVALID_ARGUMENT ("Unknown");
     }
 
-    auto& entry {known->second};
+    auto& entry (known->second);
 
     return entry.remember();
   }
@@ -261,14 +261,14 @@ namespace gspc
       throw interrupted();
     }
 
-    auto known {_known.find (value)};
+    auto known (_known.find (value));
 
     if (known == _known.end())
     {
       return false;
     }
 
-    auto const& entry {known->second};
+    auto const& entry (known->second);
 
     if (!entry.remembered())
     {

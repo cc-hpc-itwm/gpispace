@@ -21,7 +21,7 @@ namespace gspc
         template<typename ID>
           ID Stack<ID>::pop()
         {
-          auto x {_.top()};
+          auto x (_.top());
           _.pop();
 
           return x;

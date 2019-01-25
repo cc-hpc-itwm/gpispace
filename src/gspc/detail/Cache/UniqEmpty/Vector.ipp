@@ -21,7 +21,7 @@ namespace gspc
         template<typename ID>
           ID Vector<ID>::pop()
         {
-          auto x {_.back()};
+          auto x (_.back());
           _.pop_back();
 
           return x;

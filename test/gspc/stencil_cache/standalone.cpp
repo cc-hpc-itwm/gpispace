@@ -41,16 +41,16 @@ namespace test
 
       Point to_point (Coordinate Y, Stencil c)
       {
-        auto const x {c / Y};
-        auto const y {c % Y};
+        auto const x (c / Y);
+        auto const y (c % Y);
 
         return Point {x, y};
       }
 
       Coordinate to_coordinate (Coordinate Y, Point point)
       {
-        auto const x {point.first};
-        auto const y {point.second};
+        auto const x (point.first);
+        auto const y (point.second);
 
         return y + Y * x;
       }
@@ -62,13 +62,13 @@ namespace test
 
         for (Coordinate dx {-R}; dx < R + Coordinate {1}; ++dx)
         {
-          auto const x {p.first + dx};
+          auto const x (p.first + dx);
 
           if (0 <= x && x < X)
           {
             for (Coordinate dy {Coordinate {1} - R}; dy < R; ++dy)
             {
-              auto const y {p.second + dy};
+              auto const y (p.second + dy);
 
               if (0 <= y && y < Y)
               {
@@ -100,8 +100,8 @@ namespace test
         {
           for (Coordinate y {0}; y < Y; ++y)
           {
-            auto const point {Point {x, y}};
-            auto const ns {neighbors (X, Y, R, point)};
+            auto const point (Point {x, y});
+            auto const ns (neighbors (X, Y, R, point));
 
             sum += ns.size();
             max = std::max (max, ns.size());
@@ -165,15 +165,15 @@ namespace test
             )
           );
 
-        auto const X {option::X.get_from (vm)};
-        auto const Y {option::Y.get_from (vm)};
-        auto const R {option::R.get_from (vm)};
-        auto const M {option::M.get_from (vm)};
-        auto const Parallel_Compute {option::C.get_from (vm)};
-        auto const Parallel_Load {option::L.get_from (vm)};
+        auto const X (option::X.get_from (vm));
+        auto const Y (option::Y.get_from (vm));
+        auto const R (option::R.get_from (vm));
+        auto const M (option::M.get_from (vm));
+        auto const Parallel_Compute (option::C.get_from (vm));
+        auto const Parallel_Load (option::L.get_from (vm));
 
         auto const parameter
-          { ( boost::format ("X %1% Y %2% R %3% M %4% C %5% L %6%")
+          ( ( boost::format ("X %1% Y %2% R %3% M %4% C %5% L %6%")
             % X
             % Y
             % R
@@ -181,7 +181,7 @@ namespace test
             % Parallel_Compute
             % Parallel_Load
             )
-          };
+          );
         fhg::util::default_application_timer out
           {(boost::format ("Stencil2D %1%") % parameter).str()};
 
@@ -261,7 +261,7 @@ namespace test
 
                   while (true)
                   {
-                    auto to_prepare {prepare.get()};
+                    auto to_prepare (prepare.get());
 
                     ++number_of_load;
 
@@ -289,10 +289,10 @@ namespace test
 
                   while (true)
                   {
-                    auto to_compute {ready.get()};
+                    auto to_compute (ready.get());
 
-                    auto const stencil {to_compute.first};
-                    auto const assignment {to_compute.second};
+                    auto const stencil (to_compute.first);
+                    auto const assignment (to_compute.second);
 
                     computations.count_down();
 
@@ -311,8 +311,8 @@ namespace test
 
                     for (auto slot_and_coordinate : assignment)
                     {
-                      auto const slot {slot_and_coordinate.first};
-                      auto const value {memory.at (slot)};
+                      auto const slot (slot_and_coordinate.first);
+                      auto const value (memory.at (slot));
 
                       in_memory.emplace (value);
 
@@ -326,8 +326,8 @@ namespace test
                       used.put (value);
                     }
 
-                    auto const point {to_point (Y, stencil)};
-                    auto assigned {assignment.cbegin()};
+                    auto const point (to_point (Y, stencil));
+                    auto assigned (assignment.cbegin());
 
                     for (auto value : neighbors (X, Y, R, point))
                     {
@@ -418,17 +418,17 @@ namespace test
         out.section ("Execute");
 
         auto alloc
-          { [&] (Point point)
+          ( [&] (Point point)
             {
-              auto const stencil {to_coordinate (Y, point)};
+              auto const stencil (to_coordinate (Y, point));
 
               cache.alloc (stencil, neighbors (X, Y, R, point));
             }
-          };
+          );
 
-        auto const H {2 * (R - 1) + 1};
+        auto const H (2 * (R - 1) + 1);
         Coordinate const B ((Y * H + M) / M);
-        auto const YB {Y/B};
+        auto const YB (Y/B);
 
         for (Coordinate b {0}; b < B; ++b)
         for (Coordinate x {0}; x < X; ++x)

@@ -36,15 +36,15 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (all_slots_can_be_allocated_once)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
     std::unordered_set<Slot> slots;
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
-      auto const allocation {cache.alloc (data)};
+      auto const allocation (cache.alloc (data));
 
       BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
 
@@ -62,10 +62,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (all_slots_can_be_allocated_twice)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -76,7 +76,7 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      auto const allocation {cache.alloc (data)};
+      auto const allocation (cache.alloc (data));
 
       BOOST_TEST (allocation.state == TestCache::Allocation::Assigned);
 
@@ -94,10 +94,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (assigned_is_sticky)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -109,10 +109,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (remember_can_be_stated_after_first_alloc)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -124,10 +124,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (remember_can_be_stated_after_second_alloc)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -140,10 +140,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (free_before_remember_empties)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -155,10 +155,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (remember_is_sticky)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -171,10 +171,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (remember_is_sticky_over_free)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -187,10 +187,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (remember_is_sticky_over_late_free)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -205,8 +205,8 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (free_unknown_throws)
   {
-    TestCache cache {some_slots()};
-    auto const data {random<Data>{}()};
+    TestCache cache (some_slots());
+    auto const data (random<Data>{}());
 
     fhg::util::testing::require_exception
       ( [&]
@@ -226,8 +226,8 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (remember_unknown_throws)
   {
-    TestCache cache {some_slots()};
-    auto const data {random<Data>{}()};
+    TestCache cache (some_slots());
+    auto const data (random<Data>{}());
 
     fhg::util::testing::require_exception
       ( [&]
@@ -247,10 +247,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (second_remember_throws)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -276,10 +276,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (second_free_before_remember_throws_unknown)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -305,10 +305,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (second_free_after_remember_throws)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -335,10 +335,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (counter_overflow_is_signalled)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -366,10 +366,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (unused_data_is_evicted)
   {
-    auto const N {some_slots()};
-    TestCache cache {N + 1};
+    auto const N (some_slots());
+    TestCache cache (N + 1);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N + 2)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
 
     std::unordered_map<Data, Slot> slot;
 
@@ -379,12 +379,12 @@ namespace gspc
       cache.remember (datas.at (i));
     }
 
-    auto const index {random<std::size_t>{}() % (N + 1)};
+    auto const index (random<std::size_t>{}() % (N + 1));
 
     cache.free (datas.at (index));
 
     {
-      auto const allocation {cache.alloc (datas.back())};
+      auto const allocation (cache.alloc (datas.back()));
 
       BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
@@ -393,7 +393,7 @@ namespace gspc
     cache.free (datas.back());
 
     {
-      auto const allocation {cache.alloc (datas.at (index))};
+      auto const allocation (cache.alloc (datas.at (index)));
 
       BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
@@ -402,7 +402,7 @@ namespace gspc
     cache.free (datas.at (index));
 
     {
-      auto const allocation {cache.alloc (datas.back())};
+      auto const allocation (cache.alloc (datas.back()));
 
       BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
@@ -412,7 +412,7 @@ namespace gspc
     cache.free (datas.back());
 
     {
-      auto const allocation {cache.alloc (datas.at (index))};
+      auto const allocation (cache.alloc (datas.at (index)));
 
       BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
@@ -421,10 +421,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (forget_unknown_is_possible_and_returns_false)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N + 1)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N + 1));
 
     for (std::size_t i {0}; i < N; ++i)
     {
@@ -436,10 +436,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (forget_when_not_remembered_throws)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -464,10 +464,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (forget_when_in_use_throws)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -493,10 +493,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (forget_known_entry_forgets)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N));
 
     for (auto const data : datas)
     {
@@ -512,10 +512,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (forget_evicted_entry_returns_false)
   {
-    auto const N {some_slots()};
-    TestCache cache {N + 1};
+    auto const N (some_slots());
+    TestCache cache (N + 1);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N + 2)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
 
     for (std::size_t i {0}; i < N + 1; ++i)
     {
@@ -523,7 +523,7 @@ namespace gspc
       cache.remember (datas.at (i));
     }
 
-    auto const index {random<std::size_t>{}() % (N + 1)};
+    auto const index (random<std::size_t>{}() % (N + 1));
 
     cache.free (datas.at (index));
 
@@ -534,10 +534,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (alloc_blocks_until_something_has_been_freed)
   {
-    auto const N {some_slots()};
-    TestCache cache {N + 1};
+    auto const N (some_slots());
+    TestCache cache (N + 1);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N + 2)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
 
     std::unordered_map<Data, Slot> slot;
 
@@ -546,7 +546,7 @@ namespace gspc
       slot.emplace (datas.at (i), cache.alloc (datas.at (i)).id);
     }
 
-    auto const index {random<std::size_t>{}() % (N + 1)};
+    auto const index (random<std::size_t>{}() % (N + 1));
 
     fhg::util::latch running (1);
 
@@ -555,7 +555,7 @@ namespace gspc
         {
           running.count_down();
 
-          auto allocation {cache.alloc (datas.back())};
+          auto allocation (cache.alloc (datas.back()));
 
           BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
           BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
@@ -573,10 +573,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (alloc_can_be_interrupted)
   {
-    auto const N {some_slots()};
-    TestCache cache {N + 1};
+    auto const N (some_slots());
+    TestCache cache (N + 1);
 
-    auto const datas {randoms<std::vector<Data>, unique_random> (N + 2)};
+    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
 
     for (std::size_t i {0}; i < N + 1; ++i)
     {
@@ -608,10 +608,10 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (interrupt_is_sticky_and_interrupts_all_accesses)
   {
-    auto const N {some_slots()};
-    TestCache cache {N};
+    auto const N (some_slots());
+    TestCache cache (N);
 
-    auto const data {random<Data>{}()};
+    auto const data (random<Data>{}());
 
     cache.interrupt();
 
@@ -625,14 +625,14 @@ namespace gspc
   {
     fhg::util::default_application_timer out ("cache_bigger_example");
 
-    auto const N {1 << 20};
+    auto const N (1 << 20);
 
     out.section ("Create cache of size " + std::to_string (N));
 
-    TestCache cache {N};
+    TestCache cache (N);
 
     auto allocate
-      { [&] (typename TestCache::Allocation::State expected)
+      ( [&] (typename TestCache::Allocation::State expected)
         {
           out.section ("Allocate " + std::to_string (N) + " slots");
 
@@ -641,9 +641,9 @@ namespace gspc
             BOOST_TEST (cache.alloc (i).state == expected);
           }
         }
-      };
+      );
     auto remember
-      { [&]
+      ( [&]
         {
           out.section ("Remember " + std::to_string (N) + " slots");
 
@@ -652,9 +652,9 @@ namespace gspc
             cache.remember (i);
           }
         }
-      };
+      );
     auto free
-      { [&]
+      ( [&]
         {
           out.section ("Free " + std::to_string (N) + " slots");
 
@@ -663,9 +663,9 @@ namespace gspc
             cache.free (i);
           }
         }
-      };
+      );
     auto forget
-      { [&]
+      ( [&]
         {
           out.section ("Forget " + std::to_string (N) + " slots");
 
@@ -674,7 +674,7 @@ namespace gspc
             BOOST_REQUIRE (cache.forget (i));
           }
         }
-      };
+      );
 
     allocate (TestCache::Allocation::Empty);
       allocate (TestCache::Allocation::Assigned);
