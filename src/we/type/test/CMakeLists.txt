@@ -56,3 +56,9 @@ fhg_add_test (NAME we_type_get_schedule_data
   USE_BOOST
   LIBRARIES pnet
 )
+
+fhg_add_test (NAME we_type_dynamic_requirements
+  SOURCES dynamic_requirements.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)

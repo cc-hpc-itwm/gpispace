@@ -89,6 +89,8 @@ namespace we
             ;
         }
 
+        std::list<we::type::requirement_t> const requirements() const;
+
       private:
         friend class boost::serialization::access;
         template<class Archive>
