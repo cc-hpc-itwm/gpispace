@@ -49,7 +49,11 @@ namespace
       const job_t job (_jobs.at (name));
       _jobs.erase (name);
 
-      _network.perform<sdpa::events::CancelJobAckEvent> (job._owner, job._id);
+      _network.perform<sdpa::events::JobFinishedEvent>
+        ( job._owner
+        , job._id
+        , sdpa::task_canceled_reason_t{}
+        );
     }
 
   private:

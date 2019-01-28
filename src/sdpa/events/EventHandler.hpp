@@ -15,8 +15,6 @@ namespace sdpa
     class DeleteJobAckEvent;
     class DeleteJobEvent;
     class ErrorEvent;
-    class JobFailedAckEvent;
-    class JobFailedEvent;
     class JobFinishedAckEvent;
     class JobFinishedEvent;
     class JobResultsReplyEvent;
@@ -50,10 +48,6 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: DeleteJob"); }
       virtual void handleErrorEvent (fhg::com::p2p::address_t const&, const ErrorEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: ErrorEvent"); }
-      virtual void handleJobFailedAckEvent (fhg::com::p2p::address_t const&, const JobFailedAckEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobFailedAck"); }
-      virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, const JobFailedEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobFailed"); }
       virtual void handleJobFinishedAckEvent (fhg::com::p2p::address_t const&, const JobFinishedAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobFinishedAck"); }
       virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, const JobFinishedEvent*)

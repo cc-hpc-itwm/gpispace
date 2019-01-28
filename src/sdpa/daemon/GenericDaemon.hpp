@@ -4,12 +4,10 @@
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 
-#include <sdpa/events/CancelJobAckEvent.hpp>
+//#include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
-#include <sdpa/events/JobFailedAckEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
@@ -81,19 +79,16 @@ namespace sdpa {
 
     public:
       // WE interface
-      void submit( const we::layer::id_type & id, const we::type::activity_t&);
+      void submit(const sdpa::job_id_t & wf_id, const we::layer::id_type & id, const we::type::activity_t&);
       void cancel(const we::layer::id_type & id);
-      void finished(const we::layer::id_type & id, const we::type::activity_t& result);
-      void failed( const we::layer::id_type& wfId, std::string const& reason);
-      void canceled(const we::layer::id_type& id);
+      void finished(const we::layer::id_type & id, sdpa::finished_reason_t const& reason);
+      void failed( const we::layer::id_type& id, std::string const& reason);
       void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
       void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
       void token_put
-        (std::string put_token_id, boost::optional<std::exception_ptr>);
+        ( std::string put_token_id, boost::optional<std::exception_ptr>);
       void workflow_response_response
-        ( std::string workflow_response_id
-        , boost::variant<std::exception_ptr, pnet::type::value::value_type>
-        );
+        ( std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>);
 
       void addCapability(const capability_t& cpb);
 
@@ -130,7 +125,6 @@ namespace sdpa {
       virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
       virtual void handleDeleteJobEvent (fhg::com::p2p::address_t const&, events::DeleteJobEvent const*) override;
       virtual void handleErrorEvent(fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* ) override;
-      virtual void handleJobFailedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent* ) override;
       virtual void handleJobFinishedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent* ) override;
       //virtual void handleJobResultsReplyEvent (fhg::com::p2p::address_t const& source, const sdpa::events::JobResultsReplyEvent *) ?!
       virtual void handleSubmitJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobAckEvent* ) override;
@@ -174,16 +168,17 @@ namespace sdpa {
       void request_registration_soon (master_network_info&);
 
       // workflow engine
-      const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
-      bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
+      bool hasWorkflowEngine() const
+      {
+        return _has_workflow_engine;
+      }
 
       void handle_job_termination (Job*);
-      virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, events::JobFailedEvent const*) override;
       virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, events::JobFinishedEvent const*) override;
-      virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, events::CancelJobAckEvent const*) override;
+    //  virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, events::CancelJobAckEvent const*) override;
 
       //! \todo aggregated results for coallocation jobs and sub jobs
-      void job_finished (Job*, we::type::activity_t const&);
+      void job_finished (Job*, sdpa::finished_reason_t const&);
       void job_failed (Job*, std::string const& reason);
       void job_canceled (Job*);
 
@@ -192,13 +187,16 @@ namespace sdpa {
 
       // jobs
       std::string gen_id();
+      std::string gen_wfid();
 
       Job* addJob ( const sdpa::job_id_t& job_id
+                  , const sdpa::job_id_t&
                   , we::type::activity_t
                   , job_source
                   , job_handler
                   );
       Job* addJob ( const sdpa::job_id_t& job_id
+                  , const sdpa::job_id_t&
                   , we::type::activity_t
                   , job_source
                   , job_handler
@@ -243,6 +241,7 @@ namespace sdpa {
 
       mutable std::mutex _job_map_mutex;
       job_map_t job_map_;
+      bool _has_workflow_engine;
       struct cleanup_job_map_on_dtor_helper
       {
         cleanup_job_map_on_dtor_helper (GenericDaemon::job_map_t&);
@@ -286,7 +285,66 @@ namespace sdpa {
 
       sdpa::com::NetworkStrategy _network_strategy;
 
-      std::unique_ptr<we::layer> ptr_workflow_engine_;
+      struct locked_wfe_container
+      {
+        locked_wfe_container(GenericDaemon* d)
+        : _daemon(d)
+        {}
+
+        void add (job_id_t job_id, const we::type::activity_t& activity)
+        {
+          std::lock_guard<std::mutex> const lk(_wfe_container_guard);
+          job_id_t workflow_id(job_id);
+
+          _wfe_list.emplace
+            ( workflow_id
+            , new we::layer
+                ( [this, workflow_id] (we::layer::id_type id, we::type::activity_t act)
+                    {
+                      _daemon->submit(workflow_id, id, act);
+                    }
+                , [this] (const we::layer::id_type& id)
+                    {
+                      _daemon->cancel(id);
+                    }
+                , [this, workflow_id] (sdpa::finished_reason_t const& reason)
+                    {
+                      _daemon->finished(workflow_id, reason);
+                    }
+                , [this] (std::string put_token_id, boost::optional<std::exception_ptr> error)
+                    {
+                      _daemon->token_put(put_token_id, error);
+                    }
+                , [this] (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type> result)
+                    {
+                      _daemon->workflow_response_response(workflow_response_id, result);
+                    }
+                , [this] (){ return _daemon->gen_id();}
+                , _daemon->_random_extraction_engine.get()
+                , activity
+                )
+            );
+        }
+
+        we::layer*  get (we::layer::id_type workflow_id)
+        {
+          std::lock_guard<std::mutex> const lk(_wfe_container_guard);
+
+          auto const& wf_it = _wfe_list.find(workflow_id);
+          if (wf_it != _wfe_list.end())
+          {
+            return wf_it->second;
+          }
+          return nullptr;
+        }
+
+      private:
+        GenericDaemon* _daemon;
+        mutable std::mutex _wfe_container_guard;
+        std::unordered_map <we::layer::id_type, we::layer*> _wfe_list;
+      };
+      locked_wfe_container _workflow_engines;
+
 
       fhg::thread::set _registration_threads;
 
@@ -349,9 +407,9 @@ namespace sdpa {
         void notify_shutdown() const;
 
         void job_failed (job_id_t, std::string error_message) const;
-        void job_finished (job_id_t, we::type::activity_t) const;
+        void job_finished (job_id_t, sdpa::finished_reason_t) const;
 
-        void cancel_job_ack (job_id_t) const;
+        //void cancel_job_ack (job_id_t) const;
         //! \todo Client only. Move to client_proxy?
         void delete_job_ack (job_id_t) const;
         void submit_job_ack (job_id_t) const;

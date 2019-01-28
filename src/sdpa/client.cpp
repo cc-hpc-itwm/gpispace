@@ -1,6 +1,5 @@
 #include <sdpa/client.hpp>
 
-#include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
@@ -157,28 +156,27 @@ namespace sdpa
         {
           throw std::runtime_error ("got status change for different job");
         }
-        return sdpa::status::FINISHED;
-      }
-      else if ( sdpa::events::JobFailedEvent* const job_failed
-              = dynamic_cast<sdpa::events::JobFailedEvent*> (reply.get())
-              )
-      {
-        if (job_failed->job_id() != id)
+
+        struct
         {
-          throw std::runtime_error ("got status change for different job");
-        }
-        job_info.error_message = job_failed->error_message();
-        return sdpa::status::FAILED;
-      }
-      else if ( sdpa::events::CancelJobAckEvent* const cancel_ack
-              = dynamic_cast<sdpa::events::CancelJobAckEvent*> (reply.get())
-              )
-      {
-        if (cancel_ack->job_id() != id)
-        {
-          throw std::runtime_error ("got status change for different job");
-        }
-        return sdpa::status::CANCELED;
+          using result_type = sdpa::status::code;
+          sdpa::status::code operator() (sdpa::task_completed_reason_t const&)
+          {
+            return sdpa::status::FINISHED;
+          }
+          sdpa::status::code operator() (sdpa::task_failed_reason_t const& error)
+          {
+            _job_info.error_message = error;
+            return sdpa::status::FAILED;
+          }
+          sdpa::status::code operator() (sdpa::task_canceled_reason_t const&)
+          {
+            return sdpa::status::CANCELED;
+          }
+          job_info_t& _job_info;
+        } visitor{job_info};
+
+        return boost::apply_visitor (visitor, job_finished->reason());
       }
 
       handle_error_and_unexpected_event (reply);
@@ -205,8 +203,9 @@ namespace sdpa
 
     void Client::cancelJob(const job_id_t &jid)
     {
-      send_and_wait_for_reply<sdpa::events::CancelJobAckEvent>
+      send_and_wait_for_reply<sdpa::events::JobFinishedEvent>
         (sdpa::events::CancelJobEvent (jid));
+      //  check the reason to make sure it's cancelled
     }
 
     sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)

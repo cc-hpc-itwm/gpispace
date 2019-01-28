@@ -26,18 +26,13 @@ namespace
   }
 
   void finished_fake ( volatile bool* finished
-                     , we::layer::id_type
-                     , we::type::activity_t
+                     , sdpa::finished_reason_t const&
                      )
   {
     *finished = true;
   }
 
   void cancel (we::layer::id_type){}
-  void failed (we::layer::id_type, std::string){}
-  void canceled (we::layer::id_type){}
-  void discover (we::layer::id_type, we::layer::id_type){}
-  void discovered (we::layer::id_type, sdpa::discovery_info_t){}
   void token_put (std::string, boost::optional<std::exception_ptr>){}
   void workflow_response_response (std::string, boost::variant<std::exception_ptr, pnet::type::value::value_type>){}
 
@@ -53,7 +48,6 @@ namespace
 BOOST_AUTO_TEST_CASE
   (performance_finished_shall_be_called_after_finished_N_childs)
 {
-  const std::size_t num_activities (10);
   const std::size_t num_child_per_activity (250);
 
   we::type::activity_t activity_input;
@@ -64,7 +58,7 @@ BOOST_AUTO_TEST_CASE
     = activity_with_child (num_child_per_activity);
 
   std::vector<we::layer::id_type> child_ids;
-  child_ids.reserve (num_child_per_activity * num_activities);
+  child_ids.reserve (num_child_per_activity);
 
   bool finished (false);
 
@@ -73,24 +67,16 @@ BOOST_AUTO_TEST_CASE
   we::layer layer
     ( std::bind (&submit_fake, &child_ids, std::placeholders::_1, std::placeholders::_2)
     , std::bind (&cancel, std::placeholders::_1)
-    , std::bind (&finished_fake, &finished, std::placeholders::_1, std::placeholders::_2)
-    , &failed
-    , &canceled
-    , &discover
-    , &discovered
+    , std::bind (&finished_fake, &finished, std::placeholders::_1)
     , &token_put
     , &workflow_response_response
     , &generate_id
     , _random_engine
+    , activity_input
     );
 
   fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
     const maxmimum_running_time (1);
-
-  for (std::size_t i (0); i < num_activities; ++i)
-  {
-    layer.submit (generate_id(), activity_input);
-  }
 
   //! \todo Don't busy wait
   while (child_ids.size() != child_ids.capacity())
@@ -108,4 +94,5 @@ BOOST_AUTO_TEST_CASE
   {
     std::this_thread::yield();
   }
+
 }

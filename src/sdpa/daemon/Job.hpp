@@ -147,6 +147,7 @@ namespace sdpa
     {
     public:
       Job ( const job_id_t id
+          , const job_id_t wf_id
           , we::type::activity_t
           , job_source
           , job_handler
@@ -158,6 +159,7 @@ namespace sdpa
         return _activity;
       }
       const job_id_t& id() const;
+      const job_id_t& workflow_id() const;
       job_source const& source() const;
       job_handler const& handler() const { return _handler; }
       job_requirements_t requirements() const;
@@ -170,14 +172,14 @@ namespace sdpa
       void CancelJob();
       void CancelJobAck();
       void Dispatch();
-      void JobFailed (std::string error_message);
-      void JobFinished (we::type::activity_t);
+      void JobFinished (sdpa::finished_reason_t );
       void Reschedule();
 
     private:
       mutable std::mutex mtx_;
       we::type::activity_t _activity;
       job_id_t id_;
+      job_id_t _wf_id;
       job_source _source;
       job_handler _handler;
       job_requirements_t _requirements;

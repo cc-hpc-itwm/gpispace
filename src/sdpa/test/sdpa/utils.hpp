@@ -741,7 +741,8 @@ namespace utils
       const fhg::com::p2p::address_t master (_cancels.at (job_id));
       _cancels.erase (job_id);
 
-      _network.perform<sdpa::events::CancelJobAckEvent> (master, job_id);
+      _network.perform<sdpa::events::JobFinishedEvent> (master, job_id
+          , sdpa::task_canceled_reason_t{});
     }
 
   private:

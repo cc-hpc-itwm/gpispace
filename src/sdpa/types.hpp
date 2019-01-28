@@ -1,6 +1,7 @@
 #pragma once
 
 #include <sdpa/job_states.hpp>
+#include <we/type/activity.hpp>
 
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
@@ -15,6 +16,15 @@
 namespace sdpa {
 	typedef std::string job_id_t;
 	typedef std::string worker_id_t;
+
+  typedef we::type::activity_t task_completed_reason_t;
+  typedef std::string task_failed_reason_t;
+  typedef int task_canceled_reason_t;
+
+  typedef  boost::variant < task_completed_reason_t // results for finished  tasks
+                          , task_failed_reason_t    // error code/message for failed jobs
+                          , task_canceled_reason_t
+                          > finished_reason_t;
 
   namespace daemon
   {

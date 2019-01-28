@@ -1,6 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
 #include <we/layer.hpp>
+#include <we/type/value/show.hpp>
 
 #include <fhg/assert.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
@@ -16,857 +17,522 @@
 
 namespace we
 {
-    layer::layer
+
+  namespace
+  {
+    std::string wrapped_activity_prefix()
+    {
+      return "_wrap_";
+    }
+
+    std::string wrapped_name (we::type::port_t const& port)
+    {
+      return (port.is_output() ? "_out_" : "_in_") + port.name();
+    }
+
+    type::activity_t wrap (type::activity_t const& activity)
+    {
+      we::type::net_type net;
+
+      we::transition_id_type const transition_id
+        (net.add_transition (activity.transition()));
+
+      fhg_assert (activity.transition().ports_tunnel().size() == 0);
+
+      std::unordered_map<std::string, we::place_id_type> place_ids;
+
+      for ( we::type::transition_t::port_map_t::value_type const& p
+          : activity.transition().ports_input()
+           )
+      {
+        we::place_id_type const place_id
+          (net.add_place (place::type ( wrapped_name (p.second)
+                                      , p.second.signature()
+                                      , boost::none
+                                      )
+                         )
+          );
+
+        net.add_connection ( we::edge::PT
+                           , transition_id
+                           , place_id
+                           , p.first
+                           , we::type::property::type()
+                           );
+
+        place_ids.emplace (wrapped_name (p.second), place_id);
+      }
+      for ( we::type::transition_t::port_map_t::value_type const& p
+          : activity.transition().ports_output()
+          )
+      {
+        we::place_id_type const place_id
+          (net.add_place (place::type ( wrapped_name (p.second)
+                                      , p.second.signature()
+                                      , boost::none
+                                      )
+                         )
+          );
+
+        net.add_connection ( we::edge::TP
+                           , transition_id
+                           , place_id
+                           , p.first
+                           , we::type::property::type()
+                           );
+
+        place_ids.emplace (wrapped_name (p.second), place_id);
+      }
+
+      for (const type::activity_t::input_t::value_type& top : activity.input())
+      {
+        we::type::port_t const& port
+          (activity.transition().ports_input().at (top.second));
+
+        net.put_value
+          (place_ids.find (wrapped_name (port))->second, top.first);
+      }
+
+      //! \todo copy output too
+
+      we::type::transition_t const
+        transition_net_wrapper ( wrapped_activity_prefix()
+                               + activity.transition().name()
+                               , net
+                               , boost::none
+                               , we::type::property::type()
+                               , we::priority_type()
+                               );
+
+      return type::activity_t
+        (transition_net_wrapper, activity.transition_id());
+    }
+
+    type::activity_t unwrap (type::activity_t const& activity)
+    {
+      we::type::net_type const& net (*activity.transition().net());
+
+      type::activity_t activity_inner
+        (net.transitions().begin()->second, activity.transition_id());
+
+      for ( we::type::transition_t::port_map_t::value_type const& p
+          : activity_inner.transition().ports_output()
+          )
+      {
+        we::place_id_type const place_id
+          ( net.port_to_place().at (net.transitions().begin()->first)
+          . at (p.first).first
+          );
+
+        for ( const pnet::type::value::value_type& token
+            : net.get_token (place_id) | boost::adaptors::map_values
+            )
+        {
+          activity_inner.add_output (p.first, token);
+        }
+      }
+
+      //! \todo copy input too
+      return activity_inner;
+    }
+  }
+
+
+  layer::layer
         ( std::function<void (id_type, type::activity_t)> rts_submit
         , std::function<void (id_type)> rts_cancel
-        , std::function<void (id_type, type::activity_t)> rts_finished
-        , std::function<void (id_type, std::string)> rts_failed
-        , std::function<void (id_type)> rts_canceled
-        , std::function<void (id_type, id_type)> rts_discover
-        , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
+        , std::function<void (sdpa::finished_reason_t const&)> rts_finished
         , std::function<void (std::string, boost::optional<std::exception_ptr>)> rts_token_put
         , std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
         , std::function<id_type()> rts_id_generator
         , std::mt19937& random_extraction_engine
+        , const type::activity_t& wf
         )
       : _rts_submit (rts_submit)
       , _rts_cancel (rts_cancel)
       , _rts_finished (rts_finished)
-      , _rts_failed (rts_failed)
-      , _rts_canceled (rts_canceled)
-      , _rts_discover (rts_discover)
-      , _rts_discovered (rts_discovered)
       , _rts_token_put (rts_token_put)
       , _rts_workflow_response (rts_workflow_response)
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
+      , _workflow (wf.transition().net() ? wf : wrap (wf))
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
-      , _stop_extracting ([this] { _nets_to_extract_from.interrupt(); })
+      , _wf_state(RUNNING)
     {}
 
-    namespace
-    {
-      std::string wrapped_activity_prefix()
-      {
-        return "_wrap_";
-      }
 
-      std::string wrapped_name (we::type::port_t const& port)
-      {
-        return (port.is_output() ? "_out_" : "_in_") + port.name();
-      }
-
-      type::activity_t wrap (type::activity_t const& activity)
-      {
-        we::type::net_type net;
-
-        we::transition_id_type const transition_id
-          (net.add_transition (activity.transition()));
-
-        fhg_assert (activity.transition().ports_tunnel().size() == 0);
-
-        std::unordered_map<std::string, we::place_id_type> place_ids;
-
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity.transition().ports_input()
-            )
+  void layer::finished_correctly(id_type id, sdpa::task_completed_reason_t const& result)
+  {
+    try {
+      _command_queue.put
+        ( [this, id, result] ()
         {
-          we::place_id_type const place_id
-            (net.add_place (place::type ( wrapped_name (p.second)
-                                        , p.second.signature()
-                                        , boost::none
-                                        )
-                           )
-            );
+          _running_tasks.erase(id);
 
-          net.add_connection ( we::edge::PT
-                             , transition_id
-                             , place_id
-                             , p.first
-                             , we::type::property::type()
-                             );
-
-          place_ids.emplace (wrapped_name (p.second), place_id);
-        }
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity.transition().ports_output()
-            )
-        {
-          we::place_id_type const place_id
-            (net.add_place (place::type ( wrapped_name (p.second)
-                                        , p.second.signature()
-                                        , boost::none
-                                        )
-                           )
-            );
-
-          net.add_connection ( we::edge::TP
-                             , transition_id
-                             , place_id
-                             , p.first
-                             , we::type::property::type()
-                             );
-
-          place_ids.emplace (wrapped_name (p.second), place_id);
-        }
-
-        for (const type::activity_t::input_t::value_type& top : activity.input())
-        {
-          we::type::port_t const& port
-            (activity.transition().ports_input().at (top.second));
-
-          net.put_value
-            (place_ids.find (wrapped_name (port))->second, top.first);
-        }
-
-        //! \todo copy output too
-
-        we::type::transition_t const
-          transition_net_wrapper ( wrapped_activity_prefix()
-                                 + activity.transition().name()
-                                 , net
-                                 , boost::none
-                                 , we::type::property::type()
-                                 , we::priority_type()
-                                 );
-
-        return type::activity_t
-          (transition_net_wrapper, activity.transition_id());
-      }
-
-      type::activity_t unwrap (type::activity_t const& activity)
-      {
-        we::type::net_type const& net (*activity.transition().net());
-
-        type::activity_t activity_inner
-          (net.transitions().begin()->second, activity.transition_id());
-
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity_inner.transition().ports_output()
-            )
-        {
-            we::place_id_type const place_id
-              ( net.port_to_place().at (net.transitions().begin()->first)
-              . at (p.first).first
-              );
-
-            for ( const pnet::type::value::value_type& token
-                : net.get_token (place_id) | boost::adaptors::map_values
-                )
+          boost::get<we::type::net_type>(_workflow.transition().data()).inject
+          ( result
+          , [this] ( pnet::type::value::value_type const& description
+                   , pnet::type::value::value_type const& value
+                   )
             {
-              activity_inner.add_output (p.first, token);
+              workflow_response (get_response_id (description), value);
             }
+          );
         }
-
-        //! \todo copy input too
-
-        return activity_inner;
-      }
+    );
     }
-
-    void layer::submit (id_type id, type::activity_t act)
+    catch (queue_interrupted const&)
     {
-      _nets_to_extract_from.put
-        ( activity_data_type ( id
-                             , fhg::util::cxx14::make_unique<type::activity_t>
-                                 (act.transition().net() ? act : wrap (act))
-                             )
-        , true
-        );
-    }
-
-    void layer::finished (id_type id, type::activity_t result)
-    {
-      boost::optional<id_type> const parent (_running_jobs.parent (id));
-      fhg_assert (parent);
-
-      //! \todo Don't forget that this child actually finished and
-      //! inject result.
-      if (_finalize_job_cancellation.count (*parent))
+      if (_wf_state == RUNNING)
       {
-        canceled (id);
-        return;
+        // internal error
+        throw std::logic_error ( "task finished after the workflow has finished");
       }
 
-      _nets_to_extract_from.apply
-        ( *parent
-        , [this, parent, result, id] (activity_data_type& activity_data)
-        {
-          activity_data.child_finished
-            ( result
-            , [this, parent] ( pnet::type::value::value_type const& description
-                             , pnet::type::value::value_type const& value
-                             )
-              {
-                workflow_response ( *parent
-                                  , get_response_id (description)
-                                  , value
-                                  );
-              }
-            );
-          _running_jobs.terminated (*parent, id);
-        }
-        );
+      // ignore task finished after the workflow failed/was canceled
     }
-
-    void layer::cancel (id_type id)
+    catch (...)
     {
-      _nets_to_extract_from.remove_and_apply
-        ( id
-        , [this, id] (activity_data_type const& activity_data)
-        {
-          const std::function<void()> after
-            ([this, id]() { rts_canceled_and_forget (id); });
+      throw std::runtime_error ("error in layer::finished_correctly");
+    }
+  }
 
-          //! \note Not a race: nobody can insert new running jobs as
-          //! we have ownership of activity
-          if (!_running_jobs.contains (activity_data._id))
+  void layer::finished_failure(id_type id, sdpa::task_failed_reason_t const& error)
+  {
+    try
+    {
+      _command_queue.put
+        ( [this, id, error] ()
+        {
+          _running_tasks.erase(id);
+          if (_wf_state != CANCELED)
           {
-            after();
-          }
-          else
-          {
-            _finalize_job_cancellation.emplace (activity_data._id, after);
-            _running_jobs.apply
-              (activity_data._id, std::bind (_rts_cancel, std::placeholders::_1));
+            _error = error;
+            _wf_state = ERROR;
+            cancel_remaining_tasks();
           }
         }
         );
     }
-
-    void layer::failed (id_type id, std::string reason)
+    catch (queue_interrupted const&)
     {
-      boost::optional<id_type> const parent (_running_jobs.parent (id));
-      fhg_assert (parent);
-
-      //! \todo Don't forget that this child actually failed and
-      //! store reason.
-      if (_finalize_job_cancellation.count (*parent))
+      if (_wf_state == RUNNING)
       {
-        canceled (id);
-        return;
+        // internal error
+        throw std::logic_error ( "task failed after the workflow has finished");
       }
 
-      _nets_to_extract_from.remove_and_apply
-        ( *parent
-        , [this, id, reason] (activity_data_type const& parent_activity)
-        {
-          id_type const parent_activity_id (parent_activity._id);
-          const std::function<void()> after
-            ([this, parent_activity_id, reason]()
-            { rts_failed_and_forget (parent_activity_id, reason); }
-            );
+      // ignore task failed after the workflow failed/was canceled
+    }
+    catch (...)
+    {
+      throw std::runtime_error ("error in layer::finished_failure");
+    }
+  }
 
-          if (_running_jobs.terminated (parent_activity._id, id))
+  void layer::finished_canceled(id_type id, sdpa::task_canceled_reason_t const& reason)
+  {
+    try
+    {
+      _command_queue.put
+        ( [this, id, reason] ()
+        {
+          _running_tasks.erase(id);
+        }
+        );
+    }
+    catch (queue_interrupted const&)
+    {
+      if (_wf_state == RUNNING)
+      {
+        // internal error
+        throw std::logic_error ( "task canceled after the workflow has finished");
+      }
+      // ignore task canceled after the workflow failed/was canceled
+    }
+    catch (...)
+    {
+      throw std::runtime_error ("error in layer::canceled");
+    }
+  }
+
+  void layer::finished (id_type id, sdpa::finished_reason_t reason)
+  {
+    struct
+    {
+      using result_type = void;
+      void operator() (sdpa::task_completed_reason_t const& result) const
+      {
+        _this->finished_correctly(_id, result);
+      }
+      void operator() (sdpa::task_failed_reason_t const& error) const
+      {
+        _this->finished_failure(_id, error);
+      }
+      void operator() (sdpa::task_canceled_reason_t const& error) const
+      {
+        _this->finished_canceled(_id, error);
+      }
+
+      layer* _this;
+      id_type _id;
+    } visitor = {this, id};
+    boost::apply_visitor (visitor, reason);
+  }
+
+  void layer::cancel (id_type)
+  {
+    try
+    {
+      _command_queue.put
+        ( [this] ()
+        {
+          if (_wf_state != ERROR) // nothing to do if workflow already failed
           {
-            after();
-          }
-          else
-          {
-            _finalize_job_cancellation.emplace (parent_activity._id, after);
-            _running_jobs.apply
-              (parent_activity._id, std::bind (_rts_cancel, std::placeholders::_1));
+            _wf_state = CANCELED;
+            cancel_remaining_tasks();
           }
         }
         );
     }
-
-    void layer::canceled (id_type child)
+    catch (queue_interrupted const&)
     {
-      boost::optional<id_type> const parent (_running_jobs.parent (child));
-
-      if (!parent)
+      if (_wf_state == RUNNING)
       {
-        return;
+        // logic error
+        throw std::logic_error ("cancel called after the workflow has finished");
       }
-
-      if (_running_jobs.terminated (*parent, child))
-      {
-        std::unordered_map<id_type, std::function<void()>>::iterator
-          const pos (_finalize_job_cancellation.find (*parent));
-
-        pos->second();
-        _finalize_job_cancellation.erase (pos);
-      }
+      // ignore task cancel after the workflow failed/was canceled
     }
-
-    void layer::discover (id_type discover_id, id_type id)
+    catch (...)
     {
-      _nets_to_extract_from.apply
-        ( id
-        , [this, discover_id] (activity_data_type& activity_data)
-        {
-          const id_type a_id (activity_data._id);
-
-          std::lock_guard<std::mutex> const _ (_discover_state_mutex);
-          fhg_assert (_discover_state.find (discover_id) == _discover_state.end());
-
-          std::pair<std::size_t, sdpa::discovery_info_t > state
-            (0, sdpa::discovery_info_t(a_id, boost::none, sdpa::discovery_info_set_t()));
-
-          _running_jobs.apply ( a_id
-                              , [this, &discover_id, &state] (id_type child)
-                              {
-                                ++state.first;
-                                _rts_discover (discover_id, child);
-                              }
-                              );
-
-          //! \note Not a race: discovered can't be called in parallel
-          if (state.first == std::size_t (0))
-          {
-            _rts_discovered (discover_id, state.second);
-          }
-          else
-          {
-            _discover_state.emplace (discover_id, state);
-          }
-        }
-        );
+      throw std::runtime_error ("error in layer::cancel");
     }
-
-    void layer::discovered
-      (id_type discover_id, sdpa::discovery_info_t result)
-    {
-      std::lock_guard<std::mutex> const _ (_discover_state_mutex);
-      fhg_assert (_discover_state.find (discover_id) != _discover_state.end());
-
-      std::pair<std::size_t, sdpa::discovery_info_t >& state
-        (_discover_state.find (discover_id)->second);
-
-      state.second.add_child_info (result);
-
-      --state.first;
-
-      if (state.first == std::size_t (0))
-      {
-        _rts_discovered (discover_id, state.second);
-
-        _discover_state.erase (discover_id);
-      }
-    }
-
-    void layer::put_token ( id_type id
-                          , std::string put_token_id
-                          , std::string place_name
-                          , pnet::type::value::value_type value
-                          )
-    {
-      _nets_to_extract_from.apply
-        ( id
-        , [this, put_token_id, place_name, value]
-          (activity_data_type& activity_data)
-        {
-          boost::get<we::type::net_type>
-            (activity_data._activity->transition().data())
-            .put_token (place_name, value);
-
-          _rts_token_put (put_token_id, boost::none);
-        }
-        , std::bind (_rts_token_put, put_token_id, std::placeholders::_1)
-        );
-    }
+  }
 
   void layer::request_workflow_response
-    ( id_type id
+    ( id_type
     , std::string workflow_response_id
     , std::string place_name
     , pnet::type::value::value_type value
     )
   {
+    try
     {
-      std::lock_guard<std::mutex> const _ (_outstanding_responses_guard);
-      _outstanding_responses[id].emplace (workflow_response_id);
+      _command_queue.put
+        ( [this, workflow_response_id, place_name, value] ()
+        {
+          _outstanding_responses.emplace(workflow_response_id);
+          if (_wf_state == RUNNING)
+          {
+            try
+            {
+              boost::get<we::type::net_type>(_workflow.transition().data()).put_token
+                  ( place_name
+                  , make_response_description(workflow_response_id, value)
+                  );
+            }
+            catch (...)
+            {
+              workflow_response ( workflow_response_id, std::current_exception());
+            }
+          }
+          else
+          {
+            workflow_response ( workflow_response_id, "workflow failed");
+          }
+        }
+        );
     }
-    _nets_to_extract_from.apply
-      ( id
-      , [workflow_response_id, place_name, value]
-          (activity_data_type& activity_data)
+    catch (queue_interrupted const&)
+    {
+      // ill-behaved client
+      throw std::logic_error ("response request after workflow finished");
+    }
+    catch (...)
+    {
+      _rts_workflow_response ( workflow_response_id, "workflow failed");
+    }
+  }
+
+  void layer::put_token ( id_type
+                        , std::string put_token_id
+                        , std::string place_name
+                        , pnet::type::value::value_type value
+                        )
+  {
+    try
+    {
+      _command_queue.put
+        ( [this, put_token_id, place_name, value] ()
         {
-          boost::get<we::type::net_type>
-            (activity_data._activity->transition().data())
-            .put_token ( place_name
-                       , make_response_description
-                           (workflow_response_id, value)
-                       );
+          boost::get<we::type::net_type>( _workflow.transition().data())
+              .put_token (place_name, value);
+          _rts_token_put (put_token_id, boost::none);
         }
-      , [this, id, workflow_response_id] (std::exception_ptr error)
-        {
-          workflow_response (id, workflow_response_id, error);
-        }
-      );
+        );
+    }
+    catch (queue_interrupted const&)
+    {
+      // ill-behaved client
+      throw std::logic_error ("put token after workflow finished");
+    }
+    catch (...)
+    {
+      throw std::runtime_error ("error in put_token");
+    }
   }
 
   void layer::workflow_response
-    ( id_type id
-    , std::string const& response_id
+    ( std::string const& response_id
     , boost::variant<std::exception_ptr, pnet::type::value::value_type> const& response
     )
   {
     _rts_workflow_response (response_id, response);
-    std::lock_guard<std::mutex> const _ (_outstanding_responses_guard);
-    _outstanding_responses.at (id).erase (response_id);
-    if (_outstanding_responses.at (id).empty())
-    {
-      _outstanding_responses.erase (id);
-    }
+    _outstanding_responses.erase (response_id);
   }
-
-    void layer::extract_from_nets()
-    try
-    {
-      while (true)
-      {
-        activity_data_type activity_data (_nets_to_extract_from.get());
-
-        bool was_active (false);
-
-        //! \todo How to cancel if the net is inside
-        //! fire_expression_and_extract_activity_random (endless loop
-        //! in expressions)?
-
-        boost::optional<type::activity_t> activity;
-        try
-        {
-          fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                //! \note We wrap all input activites in a net.
-                activity = boost::get<we::type::net_type>
-                  (activity_data._activity->transition().data())
-                  . fire_expressions_and_extract_activity_random
-                      ( _random_extraction_engine
-                      , [this, &activity_data] ( pnet::type::value::value_type const& description
-                                               , pnet::type::value::value_type const& value
-                                               )
-                        {
-                          workflow_response ( activity_data._id
-                                            , get_response_id (description)
-                                            , value
-                                            );
-                        }
-                      );
-              }
-            , "workflow interpretation"
-            );
-        }
-        catch (...)
-        {
-          rts_failed_and_forget
-            ( activity_data._id
-            , fhg::util::current_exception_printer (": ").string()
-            );
-          continue;
-        }
-
-        if (activity)
-        {
-          const id_type child_id (_rts_id_generator());
-          _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity);
-          was_active = true;
-        }
-
-        if (  _running_jobs.contains (activity_data._id)
-           || ( activity_data._activity->transition().prop()
-              . is_true ({"drts", "wait_for_output"})
-              && activity_data._activity->output_missing()
-              )
-           )
-        {
-          id_type const id (activity_data._id);
-
-          try
-          {
-            fhg::util::nest_exceptions<std::runtime_error>
-              ( [&]
-                {
-                  _nets_to_extract_from.put
-                    (std::move (activity_data), was_active);
-                }
-              , "waiting for further events to continue workflow interpretation"
-              );
-          }
-          catch (...)
-          {
-            rts_failed_and_forget
-              ( id
-              , fhg::util::current_exception_printer (": ").string()
-              );
-          }
-        }
-        else
-        {
-          rts_finished_and_forget
-            ( activity_data._id
-            , fhg::util::starts_with
-              ( wrapped_activity_prefix()
-              , activity_data._activity->transition().name()
-              )
-            ? unwrap (*activity_data._activity)
-            : *activity_data._activity
-            );
-        }
-      }
-    }
-    catch (async_remove_queue::interrupted const&)
-    {
-    }
-
-    void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
-    {
-      _nets_to_extract_from.forget (id);
-      cancel_outstanding_responses (id, "workflow finished");
-      _rts_finished (id, activity);
-    }
-    void layer::rts_failed_and_forget (id_type id, std::string message)
-    {
-      _nets_to_extract_from.forget (id);
-      cancel_outstanding_responses (id, "workflow failed");
-      _rts_failed (id, message);
-    }
-    void layer::rts_canceled_and_forget (id_type id)
-    {
-      _nets_to_extract_from.forget (id);
-      cancel_outstanding_responses (id, "workflow was canceled");
-      _rts_canceled (id);
-    }
 
   void layer::cancel_outstanding_responses
-    (id_type id, std::string const& reason)
+    (std::string const& reason)
   {
-    std::lock_guard<std::mutex> const _ (_outstanding_responses_guard);
-    auto responses (_outstanding_responses.find (id));
-    if (responses != _outstanding_responses.end())
+    for (std::string const& response_id : _outstanding_responses)
     {
-      for (std::string const& response_id : responses->second)
-      {
-        _rts_workflow_response
-          ( response_id
-          , std::make_exception_ptr (std::runtime_error (reason))
-          );
-      }
-
-      _outstanding_responses.erase (responses);
+      _rts_workflow_response( response_id
+                            , std::make_exception_ptr (std::runtime_error (reason))
+                            );
     }
+    _outstanding_responses.clear();
   }
 
-    // list_with_id_lookup
-
-    layer::activity_data_type
-      layer::async_remove_queue::list_with_id_lookup::get_front()
+  void layer::extract_from_nets()
+  try
+  {
+    while(true)
     {
-      activity_data_type activity_data (std::move (_container.front()));
-
-      _container.pop_front();
-      _position_in_container.erase (activity_data._id);
-
-      return activity_data;
-    }
-    void layer::async_remove_queue::list_with_id_lookup::push_back
-      (activity_data_type activity_data)
-    {
-      //! \note not a temporary but projected out before move
-      id_type const activity_data_id (activity_data._id);
-      _position_in_container.emplace
-        ( activity_data_id
-        , _container.insert (_container.end(), std::move (activity_data))
-        );
-    }
-    layer::async_remove_queue::list_with_id_lookup::iterator
-      layer::async_remove_queue::list_with_id_lookup::find (id_type id)
-    {
-      return _position_in_container.find (id);
-    }
-    layer::async_remove_queue::list_with_id_lookup::iterator
-      layer::async_remove_queue::list_with_id_lookup::end()
-    {
-      return _position_in_container.end();
-    }
-    void layer::async_remove_queue::list_with_id_lookup::erase (iterator pos)
-    {
-      _container.erase (pos->second);
-      _position_in_container.erase (pos);
-    }
-    bool layer::async_remove_queue::list_with_id_lookup::empty() const
-    {
-      return _container.empty();
-    }
-
-
-    // async_remove_queue
-
-    layer::activity_data_type layer::async_remove_queue::get()
-    {
-      std::unique_lock<std::recursive_mutex> lock (_container_mutex);
-
-      _condition_not_empty_or_interrupted.wait
-        (lock, [this] { return !_container.empty() || _interrupted; });
-
-      if (_interrupted)
+      boost::optional<type::activity_t> activity;
+      try
       {
-        throw interrupted();
+        fhg::util::nest_exceptions<std::runtime_error>
+        ( [&]
+          {
+            //! \note We wrap all input activites in a net.
+            activity = boost::get<we::type::net_type>
+                        ( _workflow.transition().data())
+                        . fire_expressions_and_extract_activity_random
+                          ( _random_extraction_engine
+                          , [this] ( pnet::type::value::value_type const& description
+                                   , pnet::type::value::value_type const& value
+                                   )
+                              {
+                                workflow_response ( get_response_id (description)
+                                                  , value
+                                                  );
+                              }
+                          );
+          }
+        , "workflow interpretation"
+        );
+      }
+      catch (...)
+      {
+        rts_workflow_finished (fhg::util::current_exception_printer (": ").string());
+        break;
       }
 
-      return _container.get_front();
-    }
-
-    void layer::async_remove_queue::put
-      (activity_data_type activity_data, bool active)
-    {
-      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
-
-      bool do_put (true);
-
-      to_be_removed_type::iterator const pos
-        (_to_be_removed.find (activity_data._id));
-
-      if (pos != _to_be_removed.end())
+      if (activity)
       {
-        to_be_removed_type::mapped_type::iterator fun_and_do_put_it
-          (pos->second.begin());
-
-        while (fun_and_do_put_it != pos->second.end())
-        {
-          std::tuple< std::function<void (activity_data_type&)>
-                    , std::function<void (std::exception_ptr)>
-                    , bool
-                    > fun_and_do_put (*fun_and_do_put_it);
-          fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
-
-          try
-          {
-            std::get<0> (fun_and_do_put) (activity_data);
-          }
-          catch (...)
-          {
-            std::get<1> (fun_and_do_put) (std::current_exception());
-          }
-          do_put = do_put && (active = std::get<2> (fun_and_do_put));
-
-          if (!active)
-          {
-            break;
-          }
-        }
-
-        if ( _to_be_removed.find (activity_data._id) != _to_be_removed.end()
-           && _to_be_removed.find (activity_data._id)->second.empty()
+        const id_type child_id (_rts_id_generator());
+        _rts_submit (child_id, *activity);
+        _running_tasks.emplace(child_id);
+      }
+      else
+      {
+        if (_wf_state == RUNNING && _running_tasks.empty()
+           && ( !_workflow.transition().prop().is_true ({"drts", "wait_for_output"})
+              ||!_workflow.output_missing()
+              )
            )
         {
-          _to_be_removed.erase (activity_data._id);
-        }
-      }
-
-      if (do_put)
-      {
-        if (active)
-        {
-          _container.push_back (std::move (activity_data));
-
-          _condition_not_empty_or_interrupted.notify_one();
-        }
-        else
-        {
-          _container_inactive.push_back (std::move (activity_data));
-        }
-      }
-    }
-
-    void layer::async_remove_queue::remove_and_apply
-      ( id_type id
-      , std::function<void (activity_data_type const&)> fun
-      , std::function<void (std::exception_ptr)> on_error
-      )
-    {
-      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
-
-      list_with_id_lookup::iterator const pos_container (_container.find (id));
-      list_with_id_lookup::iterator const pos_container_inactive
-        (_container_inactive.find (id));
-
-      if (pos_container != _container.end())
-      {
-        try
-        {
-          fun (std::move (*pos_container->second));
-        }
-        catch (...)
-        {
-          on_error (std::current_exception());
-        }
-        _container.erase (pos_container);
-      }
-      else if (pos_container_inactive != _container_inactive.end())
-      {
-        try
-        {
-          fun (std::move (*pos_container_inactive->second));
-        }
-        catch (...)
-        {
-          on_error (std::current_exception());
-        }
-        _container_inactive.erase (pos_container_inactive);
-      }
-      else
-      {
-        _to_be_removed[id].emplace_back (fun, on_error, false);
-      }
-    }
-
-    void layer::async_remove_queue::apply
-      ( id_type id
-      , std::function<void (activity_data_type&)> fun
-      , std::function<void (std::exception_ptr)> on_error
-      )
-    {
-      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
-
-      list_with_id_lookup::iterator const pos_container (_container.find (id));
-      list_with_id_lookup::iterator const pos_container_inactive
-        (_container_inactive.find (id));
-
-      if (pos_container != _container.end())
-      {
-        try
-        {
-          fun (*pos_container->second);
-        }
-        catch (...)
-        {
-          on_error (std::current_exception());
-        }
-      }
-      else if (pos_container_inactive != _container_inactive.end())
-      {
-        activity_data_type activity_data
-          (std::move (*pos_container_inactive->second));
-        _container_inactive.erase (pos_container_inactive);
-        try
-        {
-          fun (activity_data);
-        }
-        catch (...)
-        {
-          on_error (std::current_exception());
-        }
-        _container.push_back (std::move (activity_data));
-
-        _condition_not_empty_or_interrupted.notify_one();
-      }
-      else
-      {
-        _to_be_removed[id].emplace_back (fun, on_error, true);
-      }
-    }
-
-    void layer::async_remove_queue::forget (id_type id)
-    {
-      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
-
-      to_be_removed_type::iterator const pos
-        (_to_be_removed.find (id));
-
-      if (pos != _to_be_removed.end())
-      {
-        for (auto const& info : pos->second)
-        {
-          try
-          {
-            std::get<1> (info)
-              ( std::make_exception_ptr
-                  (std::runtime_error ("activity was terminated"))
+          rts_workflow_finished ( fhg::util::starts_with
+              ( wrapped_activity_prefix()
+              , _workflow.transition().name()
+              )
+              ? unwrap (_workflow)
+              : _workflow
               );
-          }
-          catch (...)
-          {
-            //! \todo instead have two handlers? before, on_error was
-            //! always doing nothing on forget, but throwing on
-            //! applying. to keep applying, most functions use
-            //! std::rethrow_exception, which would break forget()
-          }
+          _command_queue.interrupt(queue_interrupted());
+        }
+        else if (_wf_state == CANCELED && _running_tasks.empty())
+        {
+          _command_queue.interrupt(queue_interrupted());
+          rts_workflow_finished(sdpa::task_canceled_reason_t{});
+        }
+        else  if (_wf_state == ERROR && _running_tasks.empty())
+        {
+          _command_queue.interrupt(queue_interrupted());
+          rts_workflow_finished(_error);
         }
 
-        _to_be_removed.erase (pos);
+        try
+        {
+          _command_queue.get()();
+        }
+        catch(queue_interrupted const&)
+        {
+          // queue was interrupted and all commands received before the interruption were processed
+          // can exit the thread
+          break;
+        }
+        catch(std::runtime_error& )
+        {
+          rts_workflow_finished (fhg::util::current_exception_printer (": ").string());
+          break;
+        }
       }
     }
+  }
+  catch (...)
+  {
+    rts_workflow_finished (_error);
+  }
 
-    void layer::async_remove_queue::interrupt()
+
+  void layer::rts_workflow_finished (sdpa::finished_reason_t const& reason)
+  {
+    struct
     {
-      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
-
-      _interrupted = true;
-      _condition_not_empty_or_interrupted.notify_all();
-    }
-
-    // activity_data_type
-
-    void layer::activity_data_type::child_finished
-      ( type::activity_t child
-      , we::workflow_response_callback const& workflow_response
-      )
-    {
-      //! \note We wrap all input activites in a net.
-      boost::get<we::type::net_type> (_activity->transition().data())
-        .inject (child, workflow_response);
-    }
-
-
-    // locked_parent_child_relation_type
-
-    void layer::locked_parent_child_relation_type::started
-      (id_type parent, id_type child)
-    {
-      std::lock_guard<std::mutex> const _ (_relation_mutex);
-
-      _relation.insert (relation_type::value_type (parent, child));
-    }
-
-    bool layer::locked_parent_child_relation_type::terminated
-      (id_type parent, id_type child)
-    {
-      std::lock_guard<std::mutex> const _ (_relation_mutex);
-
-      _relation.erase (relation_type::value_type (parent, child));
-
-      return _relation.left.find (parent) == _relation.left.end();
-    }
-
-    boost::optional<layer::id_type>
-      layer::locked_parent_child_relation_type::parent (id_type child)
-    {
-      std::lock_guard<std::mutex> const _ (_relation_mutex);
-
-      relation_type::right_map::const_iterator const pos
-        (_relation.right.find (child));
-
-      if (pos != _relation.right.end())
+      using result_type = void;
+      void operator() (sdpa::task_completed_reason_t const& result) const
       {
-        return pos->second;
+        _this->cancel_outstanding_responses ("workflow finished");
+        _this->_rts_finished (result);
       }
-
-      return boost::none;
-    }
-
-    bool layer::locked_parent_child_relation_type::contains
-      (id_type parent) const
-    {
-      std::lock_guard<std::mutex> const _ (_relation_mutex);
-
-      return _relation.left.find (parent) != _relation.left.end();
-    }
-
-    void layer::locked_parent_child_relation_type::apply
-      (id_type parent, std::function<void (id_type)> fun) const
-    {
-      std::lock_guard<std::mutex> const _ (_relation_mutex);
-
-      for ( id_type child
-          : _relation.left.equal_range (parent) | boost::adaptors::map_values
-          )
+      void operator() (sdpa::task_failed_reason_t const& error) const
       {
-        fun (child);
+        _this->cancel_outstanding_responses ("workflow failed");
+        _this->_rts_finished (error);
+      }
+      void operator() (sdpa::task_canceled_reason_t const& reason) const
+      {
+        _this->cancel_outstanding_responses ("workflow canceled");
+        _this->_rts_finished (reason);
+      }
+
+      layer* _this;
+    } visitor = {this};
+    boost::apply_visitor (visitor, reason);
+  }
+
+  void layer::cancel_remaining_tasks()
+  {
+    for (auto& task_id : _running_tasks)
+    {
+      if (_canceling_tasks.count(task_id)==0)
+      {
+        _rts_cancel(task_id);
+        _canceling_tasks.emplace(task_id);
       }
     }
+  }
 }
+

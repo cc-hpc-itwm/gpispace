@@ -60,6 +60,14 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
   std::condition_variable finished_changed;
   bool finished (false);
 
+  xml::parse::state::type parser_state;
+  xml::parse::type::function_type parsed
+    (xml::parse::just_parse (parser_state, xpnet_path));
+  xml::parse::post_processing_passes (parsed, &parser_state);
+  we::type::activity_t activity
+    (xml::parse::xml_to_we (parsed, parser_state));
+  activity.add_input (activity.transition().input_port_by_name ("n"), N);
+
   we::layer layer
     ( [&current_state_guard, &current_activity, &current_activity_changed]
         (we::layer::id_type id, we::type::activity_t activity)
@@ -71,16 +79,12 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
       }
     , std::bind (&disallow, "cancel")
     , [&finished_guard, &finished_changed, &finished]
-        (we::layer::id_type, we::type::activity_t)
+        ( sdpa::finished_reason_t )
       {
         std::lock_guard<std::mutex> const _ (finished_guard);
         finished = true;
         finished_changed.notify_one();
       }
-    , std::bind (&disallow, "failed")
-    , std::bind (&disallow, "canceled")
-    , std::bind (&disallow, "discover")
-    , std::bind (&disallow, "discovered")
     , std::bind (&disallow, "token_put")
     , std::bind (&disallow, "workflow_response")
     , [&current_id]
@@ -88,18 +92,8 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
         return std::to_string (++current_id);
       }
     , random_extraction_engine
+    , activity
     );
-
-  {
-    xml::parse::state::type parser_state;
-    xml::parse::type::function_type parsed
-      (xml::parse::just_parse (parser_state, xpnet_path));
-    xml::parse::post_processing_passes (parsed, &parser_state);
-    we::type::activity_t activity
-      (xml::parse::xml_to_we (parsed, parser_state));
-    activity.add_input (activity.transition().input_port_by_name ("n"), N);
-    layer.submit (we::layer::id_type(), activity);
-  }
 
   std::array<std::string, 2> const names {{"ping", "pong"}};
   std::size_t current (0);
@@ -129,4 +123,5 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     std::unique_lock<std::mutex> lock (finished_guard);
     finished_changed.wait (lock, [&] { return finished; });
   }
+
 }

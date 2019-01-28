@@ -103,8 +103,6 @@ public:
     (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e) override;
   virtual void handleCancelJobEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e) override;
-  virtual void handleJobFailedAckEvent
-    (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e) override;
   virtual void handleJobFinishedAckEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent

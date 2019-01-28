@@ -28,8 +28,8 @@ namespace
     void handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* pEvt) override
     {
-      _network.perform<sdpa::events::CancelJobAckEvent>
-        (source, pEvt->job_id());
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (source, pEvt->job_id(), sdpa::task_canceled_reason_t{});
 
       std::lock_guard<std::mutex> const _ (_mtx_cancel);
       ++_pending_cancel_requests;

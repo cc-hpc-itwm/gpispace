@@ -46,21 +46,21 @@ fhg_add_test (NAME sdpa_daemon_message_flow
   LIBRARIES sdpa
 )
 
-fhg_add_test (NAME sdpa_DiscoverJobStates
-  SOURCES DiscoverJobStates.cpp
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa
-            fhglog
-)
+#fhg_add_test (NAME sdpa_DiscoverJobStates
+#  SOURCES DiscoverJobStates.cpp
+#  USE_BOOST
+#  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+#  LIBRARIES sdpa
+#            fhglog
+#)
 
-fhg_add_test (NAME sdpa_InvalidNbWorkersReq
-  SOURCES InvalidNbWorkersReq.cpp
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa
-            fhglog
-)
+#fhg_add_test (NAME sdpa_InvalidNbWorkersReq
+#  SOURCES InvalidNbWorkersReq.cpp
+#  USE_BOOST
+#  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+#  LIBRARIES sdpa
+#            fhglog
+#)
 
 fhg_add_test (NAME sdpa_RestartWorkersCoalloc
   SOURCES RestartWorkersCoalloc.cpp

@@ -5,6 +5,7 @@ namespace sdpa
   namespace daemon
   {
     Job::Job ( const job_id_t id
+             , const job_id_t wf_id
              , we::type::activity_t activity
              , job_source source
              , job_handler handler
@@ -12,6 +13,7 @@ namespace sdpa
              )
       : _activity (std::move (activity))
       , id_ (id)
+      , _wf_id(wf_id)
       , _source (std::move (source))
       , _handler (std::move (handler))
       , _requirements (std::move (requirements))
@@ -24,6 +26,10 @@ namespace sdpa
     const job_id_t & Job::id() const
     {
       return id_;
+    }
+    const job_id_t & Job::workflow_id() const
+    {
+      return _wf_id;
     }
     job_source const& Job::source() const
     {
@@ -56,27 +62,42 @@ namespace sdpa
       std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_begin_cancel());
     }
-    void Job::CancelJobAck()
-    {
-      std::lock_guard<std::mutex> const _ (mtx_);
-      process_event (e_canceled());
-    }
+ //   void Job::CancelJobAck()
+ //   {
+   //   std::lock_guard<std::mutex> const _ (mtx_);
+   //   process_event (e_canceled());
+ //   }
     void Job::Dispatch()
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_dispatch());
     }
-    void Job::JobFailed (std::string error_message)
+    void Job::JobFinished (sdpa::finished_reason_t reason)
     {
       std::lock_guard<std::mutex> const _ (mtx_);
-      process_event (e_failed());
-      m_error_message = error_message;
-    }
-    void Job::JobFinished (we::type::activity_t result)
-    {
-      std::lock_guard<std::mutex> const _ (mtx_);
-      process_event (e_finished());
-      result_ = result;
+
+      struct
+       {
+         using result_type = void;
+         void operator() (sdpa::task_completed_reason_t const& result) const
+         {
+           _this->process_event (e_finished());
+           _this->result_ = result;
+         }
+         void operator() (sdpa::task_failed_reason_t const& error) const
+         {
+           _this->process_event (e_failed());
+           _this->m_error_message = error;
+         }
+         void operator() (sdpa::task_canceled_reason_t const& ) const
+         {
+           _this->process_event (e_canceled());
+         }
+
+         Job* _this;
+       } visitor = {this};
+       boost::apply_visitor (visitor, reason);
+
     }
     void Job::Reschedule()
     {

@@ -9,8 +9,6 @@
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/JobFailedAckEvent.hpp>
-#include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
@@ -86,8 +84,6 @@ namespace sdpa
         REGISTER (DeleteJobAckEvent, JobEvent);
         REGISTER (DeleteJobEvent, JobEvent);
         REGISTER (ErrorEvent, MgmtEvent);
-        REGISTER (JobFailedAckEvent, JobEvent);
-        REGISTER (JobFailedEvent, JobEvent);
         REGISTER (JobFinishedAckEvent, JobEvent);
         REGISTER (JobFinishedEvent, JobEvent);
         REGISTER (JobResultsReplyEvent, JobEvent);

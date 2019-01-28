@@ -11,7 +11,6 @@
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
@@ -376,8 +375,8 @@ void DRTSImpl::handleCancelJobEvent
   if (job_it->second->state.compare_exchange_strong (job_state, Job::CANCELED))
   {
     LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
-    send_event<sdpa::events::CancelJobAckEvent>
-      (*job_it->second->owner, job_it->second->id);
+    send_event<sdpa::events::JobFinishedEvent>
+      (*job_it->second->owner, job_it->second->id, sdpa::task_canceled_reason_t{});
   }
   else if (job_state == DRTSImpl::Job::RUNNING)
   {
@@ -403,24 +402,6 @@ void DRTSImpl::handleCancelJobEvent
   {
     LLOG (TRACE, _logger, "cancel_job for finished job");
   }
-}
-
-void DRTSImpl::handleJobFailedAckEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e)
-{
-  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-  map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
-
-  if (job_it == m_jobs.end())
-  {
-    throw std::runtime_error ("job_failed_ack for unknown job");
-  }
-  if (*job_it->second->owner != source)
-  {
-    throw std::runtime_error ("job_failed_ack for non-owned job");
-  }
-
-  m_jobs.erase (job_it);
 }
 
 void DRTSImpl::handleJobFinishedAckEvent
@@ -648,13 +629,13 @@ try
 
       break;
     case DRTSImpl::Job::FAILED:
-      send_event<sdpa::events::JobFailedEvent>
+      send_event<sdpa::events::JobFinishedEvent>
         (*job->owner, job->id, job->message);
 
       break;
     case DRTSImpl::Job::CANCELED:
-      send_event<sdpa::events::CancelJobAckEvent>
-        (*job->owner, job->id);
+      send_event<sdpa::events::JobFinishedEvent>
+        (*job->owner, job->id, sdpa::task_canceled_reason_t{});
 
       break;
 

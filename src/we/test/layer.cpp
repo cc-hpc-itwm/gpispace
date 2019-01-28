@@ -16,6 +16,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random/string.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/lexical_cast.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
@@ -98,18 +99,6 @@ struct daemon
 {
   daemon()
     : _cnt()
-    , layer ( std::bind (&daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::cancel, this, std::placeholders::_1)
-            , std::bind (&daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::canceled, this, std::placeholders::_1)
-            , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::token_put, this, std::placeholders::_1)
-            , std::bind (&daemon::workflow_response, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::generate_id, this)
-            , _random_engine
-            )
     , _in_progress_jobs_rts()
     , _in_progress_jobs_layer()
     , _in_progress_replies()
@@ -136,8 +125,8 @@ struct daemon
     BOOST_REQUIRE (_to_finished.empty());
     BOOST_REQUIRE (_to_failed.empty());
     BOOST_REQUIRE (_to_canceled.empty());
-    BOOST_REQUIRE (_to_discover.empty());
-    BOOST_REQUIRE (_to_discovered.empty());
+//    BOOST_REQUIRE (_to_discover.empty());
+//    BOOST_REQUIRE (_to_discovered.empty());
     BOOST_REQUIRE (_to_token_put.empty());
     BOOST_REQUIRE (_to_workflow_response.empty());
   }
@@ -183,7 +172,6 @@ struct daemon
     (we::layer::id_type id, we::type::activity_t act)
   {
     INC_IN_PROGRESS (jobs_rts);
-
     std::list<expect_submit*>::iterator const e
       ( boost::find_if ( _to_submit
                        , std::bind (&expect_submit::eq, std::placeholders::_1, &id, act)
@@ -208,7 +196,6 @@ struct daemon
   void cancel (we::layer::id_type id)
   {
     ADD_CANCEL_IN_PROGRESS (id);
-
     std::list<expect_cancel*>::iterator const e
       ( boost::find_if ( _to_cancel
                        , std::bind (&expect_cancel::eq, std::placeholders::_1, id)
@@ -219,22 +206,10 @@ struct daemon
 
     (*e)->happened();
     _to_cancel.erase (e);
+
   }
 
-
-  DECLARE_EXPECT_CLASS ( finished
-                       , we::layer::id_type id
-        BOOST_PP_COMMA() we::type::activity_t act
-                       , _id (id)
-        BOOST_PP_COMMA() _act (act)
-                       , we::layer::id_type _id
-                       ; we::type::activity_t _act
-                       , _id == id && _act == act
-                       );
-
-  void finished ( we::layer::id_type id
-                , we::type::activity_t act
-                )
+  void finished_correctly ( we::layer::id_type id, sdpa::task_completed_reason_t act)
   {
     std::list<expect_finished*>::iterator const e
       ( boost::find_if ( _to_finished
@@ -251,17 +226,7 @@ struct daemon
     REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
-  DECLARE_EXPECT_CLASS ( failed
-                       , we::layer::id_type id
-        BOOST_PP_COMMA() std::string message
-                       , _id (id)
-        BOOST_PP_COMMA() _message (message)
-                       , we::layer::id_type _id
-                       ; std::string _message
-                       , _id == id && _message == message
-                       );
-
-  void failed (we::layer::id_type id, std::string message)
+  void finished_failure (we::layer::id_type id, sdpa::task_failed_reason_t message)
   {
     std::list<expect_failed*>::iterator const e
       ( boost::find_if ( _to_failed
@@ -277,6 +242,67 @@ struct daemon
     DEC_IN_PROGRESS (jobs_layer);
     REMOVE_CANCEL_IN_PROGRESS (id);
   }
+
+  void finished_canceled (we::layer::id_type id)
+  {
+    std::list<expect_canceled*>::iterator const e
+      ( boost::find_if ( _to_canceled
+                       , std::bind (&expect_canceled::eq, std::placeholders::_1, id)
+                       )
+      );
+
+    BOOST_REQUIRE (e != _to_canceled.end());
+
+    (*e)->happened();
+    _to_canceled.erase (e);
+
+    DEC_IN_PROGRESS (jobs_layer);
+    REMOVE_CANCEL_IN_PROGRESS (id);
+  }
+
+  void finished ( we::layer::id_type id, sdpa::finished_reason_t reason)
+  {
+    struct
+    {
+      using result_type = void;
+      void operator() (sdpa::task_completed_reason_t const& result) const
+      {
+        _d->finished_correctly(_id, result);
+      }
+      void operator() (sdpa::task_failed_reason_t const& error) const
+      {
+        _d->finished_failure(_id, error);
+      }
+      void operator() (sdpa::task_canceled_reason_t const& ) const
+      {
+        _d->finished_canceled(_id);
+      }
+
+      daemon* _d;
+      we::layer::id_type _id;
+    } visitor = {this, id};
+    boost::apply_visitor (visitor, reason);
+  }
+
+  DECLARE_EXPECT_CLASS ( finished
+                       , we::layer::id_type id
+        BOOST_PP_COMMA() sdpa::task_completed_reason_t const& act
+                       , _id (id)
+        BOOST_PP_COMMA() _act (act)
+                       , we::layer::id_type _id
+                       ; sdpa::task_completed_reason_t const& _act
+                       , _id == id  && _act == act
+                       );
+
+  DECLARE_EXPECT_CLASS ( failed
+                       , we::layer::id_type id
+        BOOST_PP_COMMA() sdpa::task_failed_reason_t reason
+                       , _id (id)
+        BOOST_PP_COMMA() _reason (reason)
+                       , we::layer::id_type _id
+                       ; sdpa::task_failed_reason_t _reason
+                       , _id == id && _reason == reason
+                       );
 
   DECLARE_EXPECT_CLASS ( canceled
                        , we::layer::id_type id
@@ -372,7 +398,7 @@ struct daemon
                        )
       );
 
-    BOOST_REQUIRE (e != _to_token_put.end());
+     BOOST_REQUIRE (e != _to_token_put.end());
 
     (*e)->happened();
     _to_token_put.erase (e);
@@ -414,8 +440,16 @@ struct daemon
                  )
   {
     INC_IN_PROGRESS (jobs_layer);
-
-    layer.submit (id, act);
+    _workflow_engine = fhg::util::cxx14::make_unique<we::layer>
+                               ( std::bind (&daemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+                               , std::bind (&daemon::cancel, this, std::placeholders::_1)
+                               , std::bind (&daemon::finished, this, id, std::placeholders::_1)
+                               , std::bind (&daemon::token_put, this, std::placeholders::_1)
+                               , std::bind (&daemon::workflow_response, this, std::placeholders::_1, std::placeholders::_2)
+                               , std::bind (&daemon::generate_id, this)
+                               , _random_engine
+                               , act
+                             );
   }
 
   void do_finished ( we::layer::id_type id
@@ -425,14 +459,13 @@ struct daemon
     DEC_IN_PROGRESS (jobs_rts);
     REMOVE_CANCEL_IN_PROGRESS (id);
 
-    layer.finished (id, act);
+    _workflow_engine.get()->finished (id, act);
   }
 
   void do_cancel (we::layer::id_type id)
   {
     ADD_CANCEL_IN_PROGRESS (id);
-
-    layer.cancel (id);
+    _workflow_engine.get()->cancel (id);
   }
 
   void do_failed (we::layer::id_type id, std::string message)
@@ -440,30 +473,29 @@ struct daemon
     DEC_IN_PROGRESS (jobs_rts);
     REMOVE_CANCEL_IN_PROGRESS (id);
 
-    layer.failed (id, message);
+    _workflow_engine.get()->finished (id, message);
   }
 
   void do_canceled (we::layer::id_type id)
   {
     DEC_IN_PROGRESS (jobs_rts);
     REMOVE_CANCEL_IN_PROGRESS (id);
-
-    layer.canceled (id);
+    _workflow_engine.get()->finished (id, sdpa::task_canceled_reason_t{});
   }
 
   void do_discover
-    (we::layer::id_type discover_id, we::layer::id_type id)
+    (we::layer::id_type , we::layer::id_type )
   {
     INC_IN_PROGRESS (replies);
 
-    layer.discover (discover_id, id);
+//    layer.discover (discover_id, id);
   }
   void do_discovered
-    (we::layer::id_type discover_id, sdpa::discovery_info_t result)
+    (we::layer::id_type , sdpa::discovery_info_t )
   {
     DEC_IN_PROGRESS (replies);
 
-    layer.discovered (discover_id, result);
+ //   layer.discovered (discover_id, result);
   }
 
   void do_put_token ( we::layer::id_type id
@@ -474,7 +506,7 @@ struct daemon
   {
     INC_IN_PROGRESS (replies);
 
-    layer.put_token (id, put_token_id, place_name, value);
+    _workflow_engine.get()->put_token (id, put_token_id, place_name, value);
   }
 
   void do_workflow_response ( we::layer::id_type id
@@ -485,7 +517,7 @@ struct daemon
   {
     INC_IN_PROGRESS (replies);
 
-    layer.request_workflow_response
+    _workflow_engine.get()->request_workflow_response
       (id, workflow_response_id, place_name, value);
   }
 
@@ -499,12 +531,14 @@ struct daemon
 
   std::mt19937 _random_engine;
   mutable std::mutex _in_progress_mutex;
-  we::layer layer;
+  std::unique_ptr<we::layer> _workflow_engine;
   std::condition_variable _in_progress_condition;
   unsigned long _in_progress_jobs_rts;
   unsigned long _in_progress_jobs_layer;
   unsigned long _in_progress_replies;
 };
+
+
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
@@ -724,6 +758,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+/*
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
   (two_interleaving_jobs_shall_be_properly_handled, daemon)
@@ -772,6 +807,7 @@ BOOST_FIXTURE_TEST_CASE
     do_finished (child_id_0_1, activity_result);
   }
 }
+*/
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
@@ -1100,122 +1136,6 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  (discovered_shall_be_called_after_discover_one_child, daemon)
-{
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (1);
-
-  we::layer::id_type const id (generate_id());
-
-  we::layer::id_type child_id;
-  {
-    expect_submit _ (this, &child_id, activity_child);
-
-    do_submit (id, activity_input);
-  }
-
-  const we::layer::id_type discover_id
-    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
-  {
-    expect_discover _ (this, discover_id, child_id);
-
-    do_discover (discover_id, id);
-  }
-
-  sdpa::discovery_info_t discover_result_child( child_id
-                                                , sdpa::status::PENDING
-                                                , sdpa::discovery_info_set_t());
-
-  sdpa::discovery_info_set_t child_disc_set;
-  child_disc_set.insert(discover_result_child);
-  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
-
-  {
-    expect_discovered _ (this, discover_id, discover_result);
-
-    do_discovered (discover_id, discover_result_child);
-  }
-
-  {
-    expect_finished const _ (this, id, activity_output);
-
-    do_finished (child_id, activity_result);
-  }
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  (discovered_shall_be_called_after_discover_two_childs, daemon)
-{
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (2);
-
-  we::layer::id_type const id (generate_id());
-
-  we::layer::id_type child_id_a;
-  we::layer::id_type child_id_b;
-  {
-    expect_submit _a (this, &child_id_a, activity_child);
-    expect_submit _b (this, &child_id_b, activity_child);
-
-    do_submit (id, activity_input);
-  }
-
-  const we::layer::id_type discover_id
-    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
-  {
-    expect_discover _a (this, discover_id, child_id_a);
-    expect_discover _b (this, discover_id, child_id_b);
-
-    do_discover (discover_id, id);
-  }
-
-  using pnet::type::value::poke;
-
-  sdpa::discovery_info_t discover_result_child_a( child_id_a
-                                                  , sdpa::status::PENDING
-                                                  , sdpa::discovery_info_set_t());
-
-  sdpa::discovery_info_t discover_result_child_b( child_id_b
-                                                  , sdpa::status::PENDING
-                                                  , sdpa::discovery_info_set_t());
-
-  sdpa::discovery_info_set_t child_disc_set;
-  child_disc_set.insert(discover_result_child_a);
-  child_disc_set.insert(discover_result_child_b);
-  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
-
-  do_discovered (discover_id, discover_result_child_a);
-
-  {
-    expect_discovered _ (this, discover_id, discover_result);
-
-    //! \note There is a race here where layer may call rts_discovered
-    //! before do_discovered, but this is checked by comparing the
-    //! result: if it would finish discovering before the second child
-    //! was discovered, there would be a child entry missing.
-
-    do_discovered (discover_id, discover_result_child_b);
-  }
-
-  {
-    expect_finished const _ (this, id, activity_output);
-
-    do_finished (child_id_a, activity_result);
-    do_finished (child_id_b, activity_result);
-  }
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
 {
   we::type::activity_t activity_input;
@@ -1440,6 +1360,7 @@ namespace
   }
 }
 
+
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
 {
@@ -1462,7 +1383,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
 
   {
     std::string const workflow_response_id
-      (fhg::util::testing::random_string());
+      (fhg::util::testing::random_identifier());
     expect_workflow_response const workflow_response
       ( this
       , workflow_response_id
@@ -1476,7 +1397,6 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
 
     do_workflow_response (id, workflow_response_id, "NONEXISTING_PLACE", 0L);
   }
-
   {
     std::string const workflow_response_id
       (fhg::util::testing::random_string());
@@ -1515,11 +1435,12 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
     (fhg::util::testing::random_string());
   do_workflow_response (id, workflow_response_id, "request", value);
 
+
   {
     expect_finished const finished (this, id, activity_output);
 
     expect_workflow_response const workflow_response
-      (this, workflow_response_id, value + 1);
+        (this, workflow_response_id, value + 1);
 
     do_finished (child_id_a, activity_result);
   }
@@ -1555,6 +1476,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
       ( this
       , workflow_response_id
       , std::make_exception_ptr (std::runtime_error ("workflow failed"))
+
       );
 
     do_failed (child_id, fail_reason);
@@ -1660,6 +1582,7 @@ namespace
       );
   }
 
+
   void disallow (std::string what)
   {
     throw std::runtime_error ("disallowed function called: " + what);
@@ -1668,31 +1591,30 @@ namespace
   class wfe_and_counter_of_submitted_requirements
   {
   public:
-    wfe_and_counter_of_submitted_requirements (unsigned int expected_activities)
+    wfe_and_counter_of_submitted_requirements
+      ( unsigned int expected_activities
+      , const we::type::activity_t& wf)
       : _expected_activities (expected_activities)
       , _received_requirements()
       , _random_extraction_engine()
       , _cnt (0)
-      , _layer ( std::bind
-               (&wfe_and_counter_of_submitted_requirements::submit, this, std::placeholders::_2)
+      , _layer ( std::bind (&wfe_and_counter_of_submitted_requirements::submit, this
+                           , std::placeholders::_1, std::placeholders::_2)
                , std::bind (&disallow, "cancel")
-               , std::bind (&disallow, "finished")
-               , std::bind (&disallow, "failed")
-               , std::bind (&disallow, "canceled")
-               , std::bind (&disallow, "discover")
-               , std::bind (&disallow, "discovered")
+               , std::bind (&wfe_and_counter_of_submitted_requirements::finished, this
+                           , std::placeholders::_1)
                , std::bind (&disallow, "token_put")
                , std::bind (&disallow, "workflow_response")
-               , std::bind
-                 (&wfe_and_counter_of_submitted_requirements::generate_id, this)
+               , std::bind (&wfe_and_counter_of_submitted_requirements::generate_id, this)
                , _random_extraction_engine
+               , wf
                )
     {}
 
-    void submit (const we::type::activity_t& activity)
+    void submit (we::layer::id_type id, we::type::activity_t act)
     {
       const std::list<we::type::requirement_t> list_req
-        (activity.transition().requirements());
+        (act.transition().requirements());
 
       BOOST_REQUIRE_EQUAL (list_req.size(), 1);
 
@@ -1700,6 +1622,9 @@ namespace
       ++_received_requirements[list_req.front()];
       --_expected_activities;
       _cond_submitted.notify_one();
+
+      // task needs to be finished to make sure the layer exits cleanly
+      _layer.finished (id, act);
     }
 
     void wait_all_submitted()
@@ -1707,6 +1632,10 @@ namespace
       std::unique_lock<std::mutex> lock (_mtx_submitted);
       _cond_submitted.wait (lock, [this]() { return !_expected_activities; });
     }
+
+    void finished (sdpa::finished_reason_t)
+    {}
+
 
   private:
     std::mutex _mtx_submitted;
@@ -1730,24 +1659,24 @@ namespace
 
   public:
     we::layer _layer;
+
   };
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
-  wfe_and_counter_of_submitted_requirements helper (30);
-
   const we::type::requirement_t req_a ("A", true);
   const we::type::requirement_t req_b ("B", true);
 
-  helper._layer.submit
-    ( fhg::util::testing::random_string()
-    , net_with_two_childs_that_require_capabilities (req_a, 20, req_b, 10)
-    );
+  wfe_and_counter_of_submitted_requirements helper (30
+      , net_with_two_childs_that_require_capabilities (req_a, 20, req_b, 10)
+      );
   helper.wait_all_submitted();
 
   BOOST_REQUIRE_EQUAL (helper._received_requirements.size(), 2);
   BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_a), 20);
   BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_b), 10);
 }
+
+
