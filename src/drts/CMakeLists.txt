@@ -18,6 +18,7 @@ install (FILES
   information_to_reattach.hpp
   virtual_memory.fwd.hpp
   virtual_memory.hpp
+  worker_description.hpp
   DESTINATION include/drts/
 )
 

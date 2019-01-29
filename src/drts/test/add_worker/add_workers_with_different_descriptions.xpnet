@@ -1,0 +1,144 @@
+<defun name="add_workers_with_different_descriptions">
+  <in name="start" type="bool" place="start"/>
+  <in name="host" type="string" place="host"/>
+  <in name="port" type="unsigned int" place="port"/>
+  <out name="all_done" type="control" place="all_done"/>
+   
+  <net>
+    <place name="start" type="bool"/>
+    <place name="trigger_A" type="bool"/>
+    <place name="trigger_B" type="bool"/>
+    <place name="trigger_C" type="bool"/>
+
+    <include-template href="triple.xml"/>
+    <specialize name="triple_bool" use="triple">
+      <type-map replace="T" with="bool"/>
+    </specialize>
+   
+    <transition name="trigger_all" inline="true">
+      <use name="triple_bool"/>
+      <connect-in port="in" place="start"/>
+      <connect-out port="one" place="trigger_A"/>
+      <connect-out port="two" place="trigger_B"/>
+      <connect-out port="three" place="trigger_C"/>
+    </transition>
+
+    <place name="all_done" type="control"/>
+    <place name="done_A" type="control"/>
+    <place name="done_B" type="control"/>
+    <place name="done_C" type="control"/>
+        
+    <place name="host" type="string"/>
+    <place name="port" type="unsigned int"/>
+    
+	<transition name="run_task_requiring_capability_A">
+      <defun>
+        <in name="trigger_A" type="bool"/>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <out name="done_A" type="control"/>
+        <require key="A" mandatory="true"/>
+        <module name="task_A" 
+                function="task_A (host, port, trigger_A, done_A)" 
+                pass_context="true">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            // Note: the test checks the exact identity of the worker executing
+            // a task that requires a specific capability. For this purpose, the worker 
+            // sends to the user a notification containing the worker name.
+            // However, i.o. to be independent from the user namig convention,
+            // it is sufficient to send a notification containing the capability 
+            // of the worker executing the task, only (in all modules).
+            const std::set<std::string> workers (_pnetc_context->workers());
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="trigger_A" place="trigger_A"/>
+      <connect-read port="host" place="host"/>
+      <connect-read port="port" place="port"/>
+      <connect-out port="done_A" place="done_A"/>
+    </transition>
+    
+	<transition name="run_task_requiring_capability_B">
+      <defun>
+        <in name="trigger_B" type="bool"/>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <out name="done_B" type="control"/>
+        <require key="B" mandatory="true"/>
+        <module name="task_B" 
+                function="task_B (host, port, trigger_B, done_B)" 
+                pass_context="true">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            const std::set<std::string> workers (_pnetc_context->workers());
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="trigger_B" place="trigger_B"/>
+      <connect-read port="host" place="host"/>
+      <connect-read port="port" place="port"/>
+      <connect-out port="done_B" place="done_B"/>
+    </transition>
+    
+	<transition name="run_task_requiring_capability_C">
+      <defun>
+        <in name="trigger_C" type="bool"/>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <out name="done_C" type="control"/>
+        <require key="C" mandatory="true"/>
+        <module name="task_C" 
+                function="task_C (host, port, trigger_C, done_C)" 
+                pass_context="true">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            const std::set<std::string> workers (_pnetc_context->workers());
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="trigger_C" place="trigger_C"/>
+      <connect-read port="host" place="host"/>
+      <connect-read port="port" place="port"/>
+      <connect-out port="done_C" place="done_C"/>
+    </transition>
+    
+	<transition name="finalize">
+      <defun>  
+        <in name="done_A" type="control"/>
+        <in name="done_B" type="control"/>
+        <in name="done_C" type="control"/>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <out name="all_done" type="control"/>
+        <expression>
+          ${all_done} := [];       
+        </expression>
+      </defun>
+      <connect-in port="done_A" place="done_A"/>
+      <connect-in port="done_B" place="done_B"/>
+      <connect-in port="done_C" place="done_C"/>
+      <connect-in port="host" place="host"/>
+      <connect-in port="port" place="port"/>
+      <connect-out port="all_done" place="all_done"/>
+	</transition>
+  </net>
+</defun>

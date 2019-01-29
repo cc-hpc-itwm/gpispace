@@ -199,7 +199,7 @@ namespace fhg
     ( std::vector<fhg::rif::entry_point> const& entry_points
     , std::string master_name
     , fhg::drts::hostinfo_type master_hostinfo
-    , fhg::drts::worker_description const& description
+    , gspc::worker_description const& description
     , bool verbose
     , boost::optional<std::string> const& gui_host
     , boost::optional<unsigned short> const& gui_port
@@ -432,7 +432,7 @@ namespace fhg
       return results;
     }
 
-    worker_description parse_capability
+    gspc::worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
       static std::regex const cap_spec_regex

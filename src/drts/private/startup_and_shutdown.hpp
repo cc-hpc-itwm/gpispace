@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include <drts/worker_description.hpp>
+
 #include <installation_path.hpp>
 
 #include <fhg/util/signal_handler_manager.hpp>
@@ -25,15 +27,7 @@ namespace fhg
 {
   namespace drts
   {
-    struct worker_description
-    {
-      std::vector<std::string> capabilities;
-      std::size_t num_per_node;
-      std::size_t max_nodes;
-      std::size_t shm_size;
-      boost::optional<std::size_t> socket;
-    };
-    worker_description parse_capability
+    gspc::worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec);
 
     using hostinfo_type = std::pair<std::string, unsigned short>;
@@ -73,7 +67,7 @@ namespace fhg
       ( std::vector<fhg::rif::entry_point> const& entry_points
       , std::string master_name
       , fhg::drts::hostinfo_type master_hostinfo
-      , fhg::drts::worker_description const& description
+      , gspc::worker_description const& description
       , bool verbose
       , boost::optional<std::string> const& gui_host
       , boost::optional<unsigned short> const& gui_port
