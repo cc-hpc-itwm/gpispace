@@ -13,6 +13,7 @@
   </struct>
   <struct name="Callback">
     <field name="path" type="string"/>
+    <field name="data" type="bytearray"/>
   </struct>
 
   <in name="X" type="Coordinate" place="X"/>

@@ -16,7 +16,7 @@
 #include <test/source_directory.hpp>
 #include <test/virtual_memory_socket_name_for_localhost.hpp>
 
-#include <test/gspc/stencil_cache/workflow/size.hpp>
+#include <test/gspc/stencil_cache/workflow/Neighborhood.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 
@@ -46,6 +46,9 @@ namespace test
           , boost::program_options::value<ExistingPath>()->required()
           , "path to implementation of neighbors"
           )
+          ("X", boost::program_options::value<long>()->required(), "X")
+          ("Y", boost::program_options::value<long>()->required(), "Y")
+          ("R", boost::program_options::value<long>()->required(), "R")
           ;
         options_description.add (::test::options::shared_directory());
         options_description.add (::test::options::source_directory());
@@ -96,8 +99,8 @@ namespace test
                                          , installation
                                          );
 
-        unsigned long const memory_per_node (3UL << 30UL);
-        unsigned long const input_size (10UL << 20UL);
+        unsigned long const memory_per_node (1UL << 30UL);
+        unsigned long const input_size (4UL << 20UL);
         unsigned long const compute_worker_per_node (4);
         unsigned long const load_worker_per_node (3);
 
@@ -106,9 +109,9 @@ namespace test
         unsigned long const communication_buffer_size (4 << 20);
         unsigned long const communication_buffer_per_node (8);
 
-        long const X (workflow::size::X());
-        long const Y (workflow::size::Y());
-        long const R (workflow::size::R());
+        long const X (vm.at ("X").as<long>());
+        long const Y (vm.at ("Y").as<long>());
+        long const R (vm.at ("R").as<long>());
         long const H (2 * (R - 1) + 1);
         long const S (H * H);
 
@@ -182,10 +185,15 @@ namespace test
             }
           );
         auto Callback
-          ( [] (boost::filesystem::path path)
+          ( [&]
             {
               pnet::type::value::value_type value;
-              pnet::type::value::poke ("path", value, path.string());
+              pnet::type::value::poke ("path", value, neighbors.string());
+              pnet::type::value::poke
+                ( "data"
+                , value
+                , we::type::bytearray (workflow::Neighborhood {X, Y, R}.data())
+                );
               return value;
             }
           );
@@ -198,7 +206,7 @@ namespace test
               , {"B", B}
               , {"input_size", input_size}
               , {"input_memory", allocation_input.global_memory_range()}
-              , {"neighbors", Callback (neighbors.string())}
+              , {"neighbors", Callback()}
               , {"cache_id", 0UL}
               }
             )

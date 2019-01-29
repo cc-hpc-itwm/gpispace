@@ -15,11 +15,27 @@
 #include <thread>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 namespace we
 {
   namespace type
   {
+    struct scoped_neighbors_callback
+    {
+      scoped_neighbors_callback (std::string, std::vector<char> const&);
+      ~scoped_neighbors_callback();
+
+      using Coordinate = gspc::stencil_cache::Coordinate;
+
+      std::list<Coordinate> operator() (Coordinate) const;
+
+    private:
+      fhg::util::scoped_dlhandle _implementation;
+      void* _state;
+      decltype (gspc_stencil_cache_callback_neighbors)* _neighbors;
+    };
+
     struct stencil_cache
     {
       using SCache = gspc::StencilCache< gspc::stencil_cache::Stencil
@@ -48,7 +64,7 @@ namespace we
       unsigned long _input_size;
       gspc::stencil_cache::Slot _M;
       PutToken _put_token;
-      fhg::util::scoped_dlhandle _neighbors_implementation;
+      scoped_neighbors_callback _neighbors;
       SCache _scache;
       QAllocate _queue_allocate;
       std::thread _allocate;

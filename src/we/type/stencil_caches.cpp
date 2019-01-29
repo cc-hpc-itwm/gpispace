@@ -43,7 +43,7 @@ namespace we
 
       stencil_cache::SCache::InputEntries input_entries
         ( expr::eval::context const& context
-        , fhg::util::scoped_dlhandle& _neighbors_implementation
+        , scoped_neighbors_callback& _neighbors
         , gspc::stencil_cache::Slot M
         )
       {
@@ -56,18 +56,13 @@ namespace we
               (peek ("value", context.value ({"end"})))
           );
 
-        auto neighbors
-          ( FHG_UTIL_SCOPED_DLHANDLE_SYMBOL
-              (_neighbors_implementation, gspc_stencil_cache_callback_neighbors)
-          );
-
         stencil_cache::SCache::InputEntries input_entries;
 
         std::size_t max {0};
 
         for (gspc::stencil_cache::Coordinate c {begin}; c < end; ++c)
         {
-          std::list<gspc::stencil_cache::Coordinate> ns; neighbors (c, ns);
+          std::list<gspc::stencil_cache::Coordinate> const ns (_neighbors (c));
 
           max = std::max (max, ns.size());
 
@@ -91,6 +86,34 @@ namespace we
       }
     }
 
+    scoped_neighbors_callback::scoped_neighbors_callback
+      ( std::string implementation
+      , std::vector<char> const& data
+      )
+        : _implementation (implementation)
+        , _state ( FHG_UTIL_SCOPED_DLHANDLE_SYMBOL
+                   (_implementation, gspc_stencil_cache_callback_init) (data)
+                 )
+        , _neighbors ( FHG_UTIL_SCOPED_DLHANDLE_SYMBOL
+                       (_implementation, gspc_stencil_cache_callback_neighbors)
+                     )
+    {}
+    scoped_neighbors_callback::~scoped_neighbors_callback()
+    {
+      FHG_UTIL_SCOPED_DLHANDLE_SYMBOL
+        (_implementation, gspc_stencil_cache_callback_destroy) (_state);
+    }
+
+    std::list<scoped_neighbors_callback::Coordinate>
+      scoped_neighbors_callback::operator() (Coordinate c) const
+    {
+      std::list<Coordinate> ns;
+
+      _neighbors (_state, c, ns);
+
+      return ns;
+    }
+
     stencil_cache::stencil_cache ( expr::eval::context const& context
                                  , PutToken put_token
                                  )
@@ -103,9 +126,12 @@ namespace we
       , _M
         (boost::get<unsigned long> (peek ("size", _input_memory)) / _input_size)
       , _put_token (std::move (put_token))
-      , _neighbors_implementation
-        (boost::get<std::string> (peek ("path", context.value ({"neighbors"}))))
-      , _scache ( input_entries (context, _neighbors_implementation, _M)
+      , _neighbors
+        ( boost::get<std::string> (peek ("path", context.value ({"neighbors"})))
+        , boost::get<we::type::bytearray>
+            (peek ("data", context.value ({"neighbors"}))).v()
+        )
+      , _scache ( input_entries (context, _neighbors, _M)
                 , [this]
                     ( gspc::stencil_cache::Slot slot
                     , gspc::stencil_cache::Coordinate coordinate
@@ -197,15 +223,7 @@ namespace we
             (peek ("value", context.value ({"stencil"})))
         );
 
-      auto neighbors
-        ( FHG_UTIL_SCOPED_DLHANDLE_SYMBOL
-            (_neighbors_implementation, gspc_stencil_cache_callback_neighbors)
-        );
-
-      std::list<gspc::stencil_cache::Coordinate> inputs;
-      neighbors (stencil, inputs);
-
-      _queue_allocate.put (Allocate {stencil, std::move (inputs)});
+      _queue_allocate.put (Allocate {stencil, _neighbors (stencil)});
     }
 
     void stencil_cache::prepared (expr::eval::context const& context)
