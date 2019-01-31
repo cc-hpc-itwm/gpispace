@@ -161,7 +161,6 @@ namespace we
                     std::list<value_type> puts {global_range (slot)};
 
                     value_type v;
-                    poke (Path {"slot", "value"}, v, slot);
                     poke (Path {"coordinate", "value"}, v, coordinate);
                     poke (Path {"memory_put"}, v, std::move (puts));
 
@@ -182,7 +181,6 @@ namespace we
                     for (auto const& assigned : assignment)
                     {
                       value_type v;
-                      poke (Path {"slot"}, v, assigned.first);
                       poke (Path {"coordinate"}, v, assigned.second);
                       wrapped.emplace_back (std::move (v));
 

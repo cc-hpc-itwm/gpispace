@@ -8,9 +8,6 @@
   <struct name="Coordinate">
     <field name="value" type="long"/>
   </struct>
-  <struct name="Slot">
-    <field name="value" type="unsigned long"/>
-  </struct>
   <struct name="Callback">
     <field name="path" type="string"/>
     <field name="data" type="bytearray"/>
@@ -83,12 +80,10 @@
       <field name="value" type="long"/>
     </struct>
     <struct name="Prepare">
-      <field name="slot" type="Slot"/>
       <field name="coordinate" type="Coordinate"/>
       <field name="memory_put" type="list"/>
     </struct>
     <struct name="Assigned">
-      <field name="slot" type="Slot"/>
       <field name="coordinate" type="Coordinate"/>
     </struct>
     <struct name="Assignment">
