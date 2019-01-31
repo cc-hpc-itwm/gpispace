@@ -85,6 +85,7 @@
     <struct name="Prepare">
       <field name="slot" type="Slot"/>
       <field name="coordinate" type="Coordinate"/>
+      <field name="memory_put" type="list"/>
     </struct>
     <struct name="Assigned">
       <field name="slot" type="Slot"/>
@@ -165,7 +166,7 @@
       <connect-in port="neighbors" place="neighbors"/>
       <connect-read port="memory" place="input_memory"/>
       <connect-read port="input_size" place="input_size"/>
-      <connect-read port="block_size" place="block_size"/>
+      <connect-in port="block_size" place="block_size"/>
       <connect-read port="X" place="X"/>
       <connect-read port="Y" place="Y"/>
       <connect-read port="B" place="B"/>
@@ -454,7 +455,6 @@
         <require key="load" mandatory="true"/>
         <in name="memory" type="global_memory_range"/>
         <in name="input_size" type="unsigned long"/>
-        <in name="block_size" type="unsigned long"/>
         <in name="prepare" type="Prepare"/>
         <out name="prepared" type="Coordinate"/>
         <out name="add_to_loads" type="unsigned long"/>
@@ -471,11 +471,7 @@
             stack_push (List(), ${range})
           </local>
           <global>
-            ${range.handle} := ${memory.handle};
-            ${range.offset} := ${memory.offset}
-                             + ${prepare.slot.value} * ${block_size};
-            ${range.size} := ${input_size};
-            stack_push (List(), ${range})
+            ${prepare.memory_put}
           </global>
         </memory-put>
         <module name="stencil2D"
@@ -507,7 +503,6 @@
       </defun>
       <connect-read port="memory" place="input_memory"/>
       <connect-read port="input_size" place="input_size"/>
-      <connect-read port="block_size" place="block_size"/>
       <connect-in port="prepare" place="prepare"/>
       <connect-out port="prepared" place="prepared"/>
       <connect-out port="add_to_loads" place="add_to_loads"/>
@@ -623,7 +618,6 @@
         </properties>
         <in name="N" type="unsigned long"/>
         <in name="input_size" type="unsigned long"/>
-        <in name="block_size" type="unsigned long"/>
         <in name="input_memory" type="global_memory_range"/>
         <in name="stencil_cache_for_prepared" type="SCache"/>
         <in name="cache" type="SCache"/>
@@ -638,7 +632,6 @@
       </condition>
       <connect-in port="N" place="N"/>
       <connect-in port="input_size" place="input_size"/>
-      <connect-in port="block_size" place="block_size"/>
       <connect-in port="input_memory" place="input_memory"/>
       <connect-in port="stencil_cache_for_prepared" place="stencil_cache_for_prepared"/>
       <connect-in port="cache" place="stencil_cache_for_free"/>

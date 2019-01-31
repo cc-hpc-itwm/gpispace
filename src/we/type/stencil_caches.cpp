@@ -114,6 +114,21 @@ namespace we
       return ns;
     }
 
+    pnet::type::value::value_type
+      stencil_cache::global_range (gspc::stencil_cache::Slot slot) const
+    {
+      using pnet::type::value::value_type;
+      using pnet::type::value::poke;
+      using Path = std::list<std::string>;
+
+      value_type range;
+      poke (Path {"handle"}, range, _handle);
+      poke (Path {"offset"}, range, _base + slot * _block_size);
+      poke (Path {"size"}, range, _input_size);
+
+      return range;
+    }
+
     stencil_cache::stencil_cache ( expr::eval::context const& context
                                  , PutToken put_token
                                  )
@@ -121,11 +136,12 @@ namespace we
         (boost::get<std::string> (context.value ({"place", "prepare"})))
       , _place_ready
         (boost::get<std::string> (context.value ({"place", "ready"})))
-      , _input_memory (context.value ({"memory"}))
+      , _memory (context.value ({"memory"}))
+      , _handle (peek ("handle", _memory))
+      , _base (boost::get<unsigned long> (peek ("offset", _memory)))
       , _input_size (boost::get<unsigned long> (context.value ({"input_size"})))
       , _block_size (boost::get<unsigned long> (context.value ({"block_size"})))
-      , _M
-        (boost::get<unsigned long> (peek ("size", _input_memory)) / _block_size)
+      , _M (boost::get<unsigned long> (peek ("size", _memory)) / _block_size)
       , _put_token (std::move (put_token))
       , _neighbors
         ( boost::get<std::string> (peek ("path", context.value ({"neighbors"})))
@@ -142,9 +158,12 @@ namespace we
                     using pnet::type::value::poke;
                     using Path = std::list<std::string>;
 
+                    std::list<value_type> puts {global_range (slot)};
+
                     value_type v;
                     poke (Path {"slot", "value"}, v, slot);
                     poke (Path {"coordinate", "value"}, v, coordinate);
+                    poke (Path {"memory_put"}, v, std::move (puts));
 
                     _put_token (_place_prepare, std::move (v));
                   }
@@ -160,12 +179,6 @@ namespace we
                     std::list<value_type> wrapped;
                     std::list<value_type> gets;
 
-                    auto const handle (peek ("handle", _input_memory));
-                    auto const base
-                      ( boost::get<unsigned long>
-                          (peek ("offset", _input_memory))
-                      );
-
                     for (auto const& assigned : assignment)
                     {
                       value_type v;
@@ -173,11 +186,7 @@ namespace we
                       poke (Path {"coordinate"}, v, assigned.second);
                       wrapped.emplace_back (std::move (v));
 
-                      value_type g;
-                      poke (Path {"handle"}, g, handle);
-                      poke (Path {"offset"}, g, base + assigned.first * _block_size);
-                      poke (Path {"size"}, g, _input_size);
-                      gets.emplace_back (std::move (g));
+                      gets.emplace_back (global_range (assigned.first));
                     }
 
                     value_type v;

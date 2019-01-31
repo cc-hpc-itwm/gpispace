@@ -60,7 +60,9 @@ namespace we
 
       std::string _place_prepare;
       std::string _place_ready;
-      pnet::type::value::value_type _input_memory;
+      pnet::type::value::value_type _memory;
+      pnet::type::value::value_type _handle;
+      unsigned long _base;
       unsigned long _input_size;
       unsigned long _block_size;
       gspc::stencil_cache::Slot _M;
@@ -69,6 +71,9 @@ namespace we
       SCache _scache;
       QAllocate _queue_allocate;
       std::thread _allocate;
+
+      pnet::type::value::value_type
+        global_range (gspc::stencil_cache::Slot) const;
     };
 
     struct stencil_caches
