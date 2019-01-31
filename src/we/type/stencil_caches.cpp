@@ -122,9 +122,10 @@ namespace we
       , _place_ready
         (boost::get<std::string> (context.value ({"place", "ready"})))
       , _input_memory (context.value ({"memory"}))
-      , _input_size (boost::get<unsigned long> (context.value ({"size"})))
+      , _input_size (boost::get<unsigned long> (context.value ({"input_size"})))
+      , _block_size (boost::get<unsigned long> (context.value ({"block_size"})))
       , _M
-        (boost::get<unsigned long> (peek ("size", _input_memory)) / _input_size)
+        (boost::get<unsigned long> (peek ("size", _input_memory)) / _block_size)
       , _put_token (std::move (put_token))
       , _neighbors
         ( boost::get<std::string> (peek ("path", context.value ({"neighbors"})))
@@ -174,7 +175,7 @@ namespace we
 
                       value_type g;
                       poke (Path {"handle"}, g, handle);
-                      poke (Path {"offset"}, g, base + assigned.first * _input_size);
+                      poke (Path {"offset"}, g, base + assigned.first * _block_size);
                       poke (Path {"size"}, g, _input_size);
                       gets.emplace_back (std::move (g));
                     }

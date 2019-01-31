@@ -62,6 +62,7 @@ namespace we
       std::string _place_ready;
       pnet::type::value::value_type _input_memory;
       unsigned long _input_size;
+      unsigned long _block_size;
       gspc::stencil_cache::Slot _M;
       PutToken _put_token;
       scoped_neighbors_callback _neighbors;

@@ -101,6 +101,7 @@ namespace test
 
         unsigned long const memory_per_node (1UL << 30UL);
         unsigned long const input_size (4UL << 20UL);
+        unsigned long const block_size (input_size + (256UL << 10UL));
         unsigned long const compute_worker_per_node (4);
         unsigned long const load_worker_per_node (3);
 
@@ -161,11 +162,12 @@ namespace test
                        )
           );
 
-        auto const M (allocation_input.size() / input_size);
+        auto const M (allocation_input.size() / block_size);
         long const B ((Y * H + M) / M);
 
         out << "memory size " << allocation_input.size() << '\n';
         out << "input size " << input_size << '\n';
+        out << "block size " << block_size << '\n';
         out << "X " << X
             << " Y " << Y
             << " R " << R
@@ -206,6 +208,7 @@ namespace test
               , {"B", B}
               , {"input_size", input_size}
               , {"input_memory", allocation_input.global_memory_range()}
+              , {"block_size", block_size}
               , {"neighbors", Callback()}
               , {"cache_id", 0UL}
               }
