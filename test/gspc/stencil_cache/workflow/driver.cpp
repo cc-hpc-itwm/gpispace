@@ -113,7 +113,7 @@ namespace test
         long const X (vm.at ("X").as<long>());
         long const Y (vm.at ("Y").as<long>());
         long const R (vm.at ("R").as<long>());
-        long const H (2 * (R - 1) + 1);
+        long const H (2 * R + 1);
         long const S (H * H);
 
         auto const worker_memory_per_node

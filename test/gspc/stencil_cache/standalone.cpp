@@ -66,7 +66,7 @@ namespace test
 
           if (0 <= x && x < X)
           {
-            for (Coordinate dy {Coordinate {1} - R}; dy < R; ++dy)
+            for (Coordinate dy {-R}; dy < R + Coordinate {1}; ++dy)
             {
               auto const y (p.second + dy);
 

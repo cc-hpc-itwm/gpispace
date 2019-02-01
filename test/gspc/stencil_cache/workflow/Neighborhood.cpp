@@ -31,8 +31,8 @@ namespace test
 
           neighbors.clear();
 
-          for (long x {std::max (0L, px - R + 1L)}; x < std::min (X, px + R); ++x)
-          for (long y {std::max (0L, py - R + 1L)}; y < std::min (Y, py + R); ++y)
+          for (long x {std::max (0L, px - R)}; x < std::min (X, px + R + 1L); ++x)
+          for (long y {std::max (0L, py - R)}; y < std::min (Y, py + R + 1L); ++y)
           {
             neighbors.emplace_back (y + Y * x);
           }
