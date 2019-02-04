@@ -103,7 +103,7 @@ namespace we
         ( Engine& engine
         , we::workflow_response_callback const& workflow_response
         , we::type::stencil_caches& stencil_caches
-        , we::type::stencil_cache::PutToken put_token
+        , we::type::stencil_cache::PutToken const& put_token
         )
       {
         while (!_enabled.empty())
@@ -121,7 +121,7 @@ namespace we
                             , transition
                             , workflow_response
                             , stencil_caches
-                            , std::move (put_token)
+                            , put_token
                             );
           }
           else
@@ -211,7 +211,7 @@ namespace we
         , we::type::transition_t const&
         , we::workflow_response_callback const&
         , we::type::stencil_caches&
-        , we::type::stencil_cache::PutToken
+        , we::type::stencil_cache::PutToken const&
         );
 
       typedef std::pair<place_id_type, token_id_type> token_to_be_deleted_type;

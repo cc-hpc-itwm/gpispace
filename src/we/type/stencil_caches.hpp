@@ -47,7 +47,7 @@ namespace we
       using PutToken =
         std::function<void (std::string, pnet::type::value::value_type)>;
 
-      stencil_cache (expr::eval::context const&, PutToken);
+      stencil_cache (expr::eval::context const&, PutToken const&);
       ~stencil_cache();
 
       void alloc (expr::eval::context const&);
@@ -78,7 +78,9 @@ namespace we
 
     struct stencil_caches
     {
-      void operator() (expr::eval::context const&, stencil_cache::PutToken);
+      void operator() ( expr::eval::context const&
+                      , stencil_cache::PutToken const&
+                      );
 
     private:
       std::unordered_map<unsigned long, stencil_cache> _;

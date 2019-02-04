@@ -130,7 +130,7 @@ namespace we
     }
 
     stencil_cache::stencil_cache ( expr::eval::context const& context
-                                 , PutToken put_token
+                                 , PutToken const& put_token
                                  )
       : _place_prepare
         (boost::get<std::string> (context.value ({"place", "prepare"})))
@@ -142,7 +142,7 @@ namespace we
       , _input_size (boost::get<unsigned long> (context.value ({"input_size"})))
       , _block_size (boost::get<unsigned long> (context.value ({"block_size"})))
       , _M (boost::get<unsigned long> (peek ("size", _memory)) / _block_size)
-      , _put_token (std::move (put_token))
+      , _put_token (put_token)
       , _neighbors
         ( boost::get<std::string> (peek ("path", context.value ({"neighbors"})))
         , boost::get<we::type::bytearray>
@@ -263,7 +263,7 @@ namespace we
     }
 
     void stencil_caches::operator() ( expr::eval::context const& context
-                                    , stencil_cache::PutToken put_token
+                                    , stencil_cache::PutToken const& put_token
                                     )
     {
       auto const operation
@@ -276,7 +276,7 @@ namespace we
         if ( ! _.emplace
                ( std::piecewise_construct
                , std::forward_as_tuple (id)
-               , std::forward_as_tuple (context, std::move (put_token))
+               , std::forward_as_tuple (context, put_token)
                ).second
            )
         {
