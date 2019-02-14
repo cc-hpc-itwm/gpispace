@@ -223,8 +223,6 @@ namespace gspc
 
       _grown_or_interrupted.notify_one();
     }
-
-    return;
   }
 
   TEMPLATE

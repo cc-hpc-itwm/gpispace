@@ -21,8 +21,6 @@ namespace gspc
           {
             INVALID_ARGUMENT ("UniqUnused::push: Duplicate.");
           }
-
-          return;
         }
 
         template<typename T>

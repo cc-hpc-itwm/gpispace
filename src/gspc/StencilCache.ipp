@@ -104,8 +104,6 @@ namespace gspc
         _prepare (allocation.id, i);
       }
     }
-
-    return;
   }
   catch (typename STENCILCACHE::Base::interrupted)
   {
@@ -198,8 +196,6 @@ namespace gspc
 
       Base::_forget (i, _);
     }
-
-    return;
   }
   catch (typename STENCILCACHE::Base::interrupted)
   {

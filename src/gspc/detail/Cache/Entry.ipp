@@ -38,8 +38,6 @@ namespace gspc
         }
 
         _remembered = true;
-
-        return;
       }
 
       template<typename ID, typename Counter>
