@@ -17,8 +17,8 @@ GSPC_STENCIL_CACHE_CALLBACK (void, destroy)
   ( void*
   );
 
-GSPC_STENCIL_CACHE_CALLBACK (void, neighbors)
+GSPC_STENCIL_CACHE_CALLBACK
+  (std::list<gspc::stencil_cache::Coordinate>, neighbors)
   ( void*
   , gspc::stencil_cache::Stencil
-  , std::list<gspc::stencil_cache::Coordinate>&
   );

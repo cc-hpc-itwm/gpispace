@@ -17,7 +17,7 @@ namespace test
 
           Neighborhood (Coordinate, Coordinate, Coordinate);
 
-          void operator() (Coordinate, std::list<Coordinate>&) const;
+          std::list<Coordinate> operator() (Coordinate) const;
 
           Neighborhood (std::vector<char> const&);
           std::vector<char> data() const;

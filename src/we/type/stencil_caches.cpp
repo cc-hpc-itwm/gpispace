@@ -107,11 +107,7 @@ namespace we
     std::list<scoped_neighbors_callback::Coordinate>
       scoped_neighbors_callback::operator() (Coordinate c) const
     {
-      std::list<Coordinate> ns;
-
-      _neighbors (_state, c, ns);
-
-      return ns;
+      return _neighbors (_state, c);
     }
 
     pnet::type::value::value_type

@@ -12,11 +12,11 @@ GSPC_STENCIL_CACHE_CALLBACK (void, destroy) (void* neighborhood)
   delete static_cast<N*> (neighborhood);
 }
 
-GSPC_STENCIL_CACHE_CALLBACK (void, neighbors)
+GSPC_STENCIL_CACHE_CALLBACK
+  (std::list<gspc::stencil_cache::Coordinate>, neighbors)
   ( void* neighborhood
   , gspc::stencil_cache::Stencil coordinate
-  , std::list<gspc::stencil_cache::Coordinate>& neighbors
   )
 {
-  static_cast<N*> (neighborhood)->operator() (coordinate, neighbors);
+  return static_cast<N*> (neighborhood)->operator() (coordinate);
 }

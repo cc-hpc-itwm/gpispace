@@ -23,19 +23,21 @@ namespace test
           , R (std::move (r))
         {}
 
-        void Neighborhood::operator()
-          (Coordinate coordinate, std::list<Coordinate>& neighbors) const
+        std::list<Neighborhood::Coordinate> Neighborhood::operator()
+          (Coordinate coordinate) const
         {
+          std::list<Coordinate> neighbors;
+
           auto const px (coordinate / Y);
           auto const py (coordinate % Y);
-
-          neighbors.clear();
 
           for (long x {std::max (0L, px - R)}; x < std::min (X, px + R + 1L); ++x)
           for (long y {std::max (0L, py - R)}; y < std::min (Y, py + R + 1L); ++y)
           {
             neighbors.emplace_back (y + Y * x);
           }
+
+          return neighbors;
         }
 
         namespace
