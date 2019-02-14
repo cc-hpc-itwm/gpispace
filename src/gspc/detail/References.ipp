@@ -1,5 +1,3 @@
-#include <gspc/detail/counter/in_use.hpp>
-#include <gspc/detail/counter/zero.hpp>
 #include <gspc/exception.hpp>
 
 #include <limits>
@@ -8,35 +6,47 @@ namespace gspc
 {
   namespace detail
   {
-    template<typename Counter>
-      References<Counter>::References()
-        : _ {counter::zero<Counter>()}
+
+#define TEMPLATE template<typename Counter>
+#define REFERENCES References<Counter>
+
+    TEMPLATE Counter REFERENCES::zero()
+    {
+      return Counter{};
+    }
+    TEMPLATE bool REFERENCES::in_use (Counter c)
+    {
+      return c != zero();
+    }
+
+    TEMPLATE REFERENCES::References()
+        : _ {zero()}
     {}
 
-    template<typename Counter>
-      bool References<Counter>::in_use() const
+    TEMPLATE bool REFERENCES::in_use() const
     {
-      return counter::in_use (_);
+      return in_use (_);
     }
-    template<typename Counter>
-      bool References<Counter>::increment()
+    TEMPLATE bool REFERENCES::increment()
     {
       if (_ == std::numeric_limits<Counter>::max())
       {
         LOGIC_ERROR ("References::increment: Overflow");
       }
 
-      return !counter::in_use (_++);
+      return !in_use (_++);
     }
-    template<typename Counter>
-      bool References<Counter>::decrement()
+    TEMPLATE bool REFERENCES::decrement()
     {
       if (!in_use())
       {
         LOGIC_ERROR ("References::decrement: Not in use");
       }
 
-      return !counter::in_use (--_);
+      return !in_use (--_);
     }
+
+#undef REFERENCES
+#undef TEMPLATE
   }
 }

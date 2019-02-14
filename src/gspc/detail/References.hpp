@@ -14,6 +14,9 @@ namespace gspc
       bool decrement();       // returns: "is not in_use now"
 
     private:
+      static Counter zero();
+      static bool in_use (Counter);
+
       Counter _;
     };
   }
