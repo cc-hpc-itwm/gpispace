@@ -8,6 +8,8 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/show.hpp>
 
+#include <util-generic/this_bound_mem_fn.hpp>
+
 #include <boost/format.hpp>
 
 #include <algorithm>
@@ -140,72 +142,11 @@ namespace we
             (peek ("data", context.value ({"neighbors"}))).v()
         )
       , _scache ( input_entries (context, _neighbors, _M)
-                , [this]
-                    ( gspc::stencil_cache::Slot slot
-                    , gspc::stencil_cache::Coordinate coordinate
-                    )
-                  {
-                    using pnet::type::value::value_type;
-                    using pnet::type::value::poke;
-                    using Path = std::list<std::string>;
-
-                    std::list<value_type> puts {global_range (slot)};
-
-                    value_type v;
-                    poke (Path {"coordinate", "value"}, v, coordinate);
-                    poke (Path {"memory_put"}, v, std::move (puts));
-
-                    _put_token (_place_prepare, std::move (v));
-                  }
-                , [this]
-                    ( gspc::stencil_cache::Stencil stencil
-                    , SCache::Assignment assignment
-                    )
-                  {
-                    using pnet::type::value::value_type;
-                    using pnet::type::value::poke;
-                    using Path = std::list<std::string>;
-
-                    std::list<value_type> wrapped;
-                    std::list<value_type> gets;
-
-                    for (auto const& assigned : assignment)
-                    {
-                      value_type v;
-                      poke (Path {"coordinate"}, v, assigned.second);
-                      wrapped.emplace_back (std::move (v));
-
-                      gets.emplace_back (global_range (assigned.first));
-                    }
-
-                    value_type v;
-                    poke (Path {"stencil", "value"}, v, stencil);
-                    poke (Path {"assignment", "assigned"}, v, std::move (wrapped));
-                    poke (Path {"memory_gets"}, v, std::move (gets));
-
-                    _put_token (_place_ready, std::move (v));
-                  }
+                , fhg::util::bind_this (this, &stencil_cache::prepare)
+                , fhg::util::bind_this (this, &stencil_cache::ready)
                 , _M
                 )
-      , _allocate ( [this] ()
-                    {
-                      try
-                      {
-                        while (true)
-                        {
-                          _scache.alloc (_queue_allocate.get());
-                        }
-                      }
-                      catch (QAllocate::interrupted)
-                      {
-                        return;
-                      }
-                      catch (SCache::interrupted)
-                      {
-                        return;
-                      }
-                    }
-                  )
+      , _allocate (fhg::util::bind_this (this, &stencil_cache::allocate))
     {}
 
     stencil_cache::~stencil_cache()
@@ -213,6 +154,23 @@ namespace we
       _queue_allocate.interrupt();
       _allocate.join();
       _scache.interrupt();
+    }
+
+    void stencil_cache::allocate()
+    try
+    {
+      while (true)
+      {
+        _scache.alloc (_queue_allocate.get());
+      }
+    }
+    catch (QAllocate::interrupted)
+    {
+      return;
+    }
+    catch (SCache::interrupted)
+    {
+      return;
     }
 
     void stencil_cache::alloc (expr::eval::context const& context)
@@ -225,6 +183,23 @@ namespace we
       _queue_allocate.put (Allocate {stencil, _neighbors (stencil)});
     }
 
+    void stencil_cache::prepare ( gspc::stencil_cache::Slot slot
+                                , gspc::stencil_cache::Coordinate coordinate
+                                ) const
+    {
+      using pnet::type::value::value_type;
+      using pnet::type::value::poke;
+      using Path = std::list<std::string>;
+
+      std::list<value_type> puts {global_range (slot)};
+
+      value_type v;
+      poke (Path {"coordinate", "value"}, v, coordinate);
+      poke (Path {"memory_put"}, v, std::move (puts));
+
+      _put_token (_place_prepare, std::move (v));
+    }
+
     void stencil_cache::prepared (expr::eval::context const& context)
     {
       auto const coordinate
@@ -233,6 +208,34 @@ namespace we
         );
 
       _scache.prepared (coordinate);
+    }
+
+    void stencil_cache::ready ( gspc::stencil_cache::Stencil stencil
+                              , SCache::Assignment assignment
+                              ) const
+    {
+      using pnet::type::value::value_type;
+      using pnet::type::value::poke;
+      using Path = std::list<std::string>;
+
+      std::list<value_type> wrapped;
+      std::list<value_type> gets;
+
+      for (auto const& assigned : assignment)
+      {
+        value_type v;
+        poke (Path {"coordinate"}, v, assigned.second);
+        wrapped.emplace_back (std::move (v));
+
+        gets.emplace_back (global_range (assigned.first));
+      }
+
+      value_type v;
+      poke (Path {"stencil", "value"}, v, stencil);
+      poke (Path {"assignment", "assigned"}, v, std::move (wrapped));
+      poke (Path {"memory_gets"}, v, std::move (gets));
+
+      _put_token (_place_ready, std::move (v));
     }
 
     void stencil_cache::free (expr::eval::context const& context)

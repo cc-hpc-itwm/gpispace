@@ -72,6 +72,10 @@ namespace we
       QAllocate _queue_allocate;
       std::thread _allocate;
 
+      void ready (gspc::stencil_cache::Stencil, SCache::Assignment) const;
+      void prepare (gspc::stencil_cache::Slot, gspc::stencil_cache::Coordinate) const;
+      void allocate();
+
       pnet::type::value::value_type
         global_range (gspc::stencil_cache::Slot) const;
     };
