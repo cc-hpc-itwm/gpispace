@@ -98,16 +98,11 @@ namespace we
                        (_implementation, gspc_stencil_cache_callback_neighbors)
                      )
     {}
-    scoped_neighbors_callback::~scoped_neighbors_callback()
-    {
-      FHG_UTIL_SCOPED_DLHANDLE_SYMBOL
-        (_implementation, gspc_stencil_cache_callback_destroy) (_state);
-    }
 
     std::list<scoped_neighbors_callback::Coordinate>
       scoped_neighbors_callback::operator() (Coordinate c) const
     {
-      return _neighbors (_state, c);
+      return _neighbors (_state.get(), c);
     }
 
     pnet::type::value::value_type

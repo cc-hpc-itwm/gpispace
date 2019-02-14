@@ -11,6 +11,7 @@
 #include <util-generic/threadsafe_queue.hpp>
 
 #include <functional>
+#include <memory>
 #include <string>
 #include <thread>
 #include <unordered_map>
@@ -24,7 +25,6 @@ namespace we
     struct scoped_neighbors_callback
     {
       scoped_neighbors_callback (std::string, std::vector<char> const&);
-      ~scoped_neighbors_callback();
 
       using Coordinate = gspc::stencil_cache::Coordinate;
 
@@ -32,7 +32,7 @@ namespace we
 
     private:
       fhg::util::scoped_dlhandle _implementation;
-      void* _state;
+      std::shared_ptr<void> _state;
       decltype (gspc_stencil_cache_callback_neighbors)* _neighbors;
     };
 
