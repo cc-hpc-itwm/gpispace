@@ -11,11 +11,6 @@ add_unit_test (NAME gspc_stencil_cache_2D_standalone
 )
 extended_add_library (NAME stencil_cache_workflow_neighbors_callback
   TYPE SHARED
-  SOURCES "workflow/neighbors.cpp"
-  LIBRARIES stencil_cache_workflow_Neighborhood
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
-)
-extended_add_library (NAME stencil_cache_workflow_Neighborhood
   SOURCES "workflow/Neighborhood.cpp"
   LIBRARIES Boost::iostreams
             Boost::serialization
