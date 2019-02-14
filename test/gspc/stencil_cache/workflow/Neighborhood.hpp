@@ -1,4 +1,4 @@
-#include <gspc/stencil_cache/types.hpp>
+#include <gspc/stencil_cache/callback.hpp>
 
 #include <list>
 #include <vector>

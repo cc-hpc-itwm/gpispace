@@ -1,10 +1,17 @@
 #pragma once
 
-#include <gspc/stencil_cache/types.hpp>
-
 #include <list>
 #include <memory>
 #include <vector>
+
+namespace gspc
+{
+  namespace stencil_cache
+  {
+    using Coordinate = long;
+    using Stencil = long;
+  }
+}
 
 #define GSPC_STENCIL_CACHE_CALLBACK(_ret,_name) \
   extern "C" [[gnu::visibility ("default")]]    \

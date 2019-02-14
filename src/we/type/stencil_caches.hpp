@@ -2,7 +2,6 @@
 
 #include <gspc/StencilCache.hpp>
 #include <gspc/stencil_cache/callback.hpp>
-#include <gspc/stencil_cache/types.hpp>
 
 #include <we/expr/eval/context.hpp>
 #include <we/type/value.hpp>
@@ -38,10 +37,13 @@ namespace we
 
     struct stencil_cache
     {
+      using Slot = unsigned long;
+      using Counter = unsigned int;
+
       using SCache = gspc::StencilCache< gspc::stencil_cache::Stencil
                                        , gspc::stencil_cache::Coordinate
-                                       , gspc::stencil_cache::Slot
-                                       , gspc::stencil_cache::Counter
+                                       , Slot
+                                       , Counter
                                        >;
 
       using PutToken =
@@ -65,7 +67,7 @@ namespace we
       unsigned long _base;
       unsigned long _input_size;
       unsigned long _block_size;
-      gspc::stencil_cache::Slot _M;
+      Slot _M;
       PutToken _put_token;
       scoped_neighbors_callback _neighbors;
       SCache _scache;
@@ -73,11 +75,10 @@ namespace we
       std::thread _allocate;
 
       void ready (gspc::stencil_cache::Stencil, SCache::Assignment) const;
-      void prepare (gspc::stencil_cache::Slot, gspc::stencil_cache::Coordinate) const;
+      void prepare (Slot, gspc::stencil_cache::Coordinate) const;
       void allocate();
 
-      pnet::type::value::value_type
-        global_range (gspc::stencil_cache::Slot) const;
+      pnet::type::value::value_type global_range (Slot) const;
     };
 
     struct stencil_caches

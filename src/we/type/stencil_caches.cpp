@@ -1,4 +1,3 @@
-#include <gspc/stencil_cache/types.hpp>
 #include <gspc/stencil_cache/callback.hpp>
 
 #include <we/type/stencil_caches.hpp>
@@ -46,7 +45,7 @@ namespace we
       stencil_cache::SCache::InputEntries input_entries
         ( expr::eval::context const& context
         , scoped_neighbors_callback& _neighbors
-        , gspc::stencil_cache::Slot M
+        , stencil_cache::Slot M
         )
       {
         auto const begin
@@ -108,7 +107,7 @@ namespace we
     }
 
     pnet::type::value::value_type
-      stencil_cache::global_range (gspc::stencil_cache::Slot slot) const
+      stencil_cache::global_range (stencil_cache::Slot slot) const
     {
       using pnet::type::value::value_type;
       using pnet::type::value::poke;
@@ -183,9 +182,8 @@ namespace we
       _queue_allocate.put (Allocate {stencil, _neighbors (stencil)});
     }
 
-    void stencil_cache::prepare ( gspc::stencil_cache::Slot slot
-                                , gspc::stencil_cache::Coordinate coordinate
-                                ) const
+    void stencil_cache::prepare
+      (Slot slot, gspc::stencil_cache::Coordinate coordinate) const
     {
       using pnet::type::value::value_type;
       using pnet::type::value::poke;

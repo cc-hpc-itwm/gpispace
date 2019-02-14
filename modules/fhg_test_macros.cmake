@@ -32,7 +32,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/position.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/require.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/gspc/stencil_cache/callback.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/gspc/stencil_cache/types.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/tcp_endpoint.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/process/process.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/rif/started_process_promise.hpp"
