@@ -1,5 +1,4 @@
 #include <gspc/exception.hpp>
-#include <gspc/detail/Cache/Entry.hpp>
 
 #include <boost/format.hpp>
 
@@ -14,6 +13,25 @@ namespace gspc
                          , template<typename> class UniqUnused          \
                          >
 #define CACHE Cache<ID, T, Counter, UniqEmpty, UniqUnused>
+
+  TEMPLATE struct CACHE::Entry
+  {
+    Entry (ID);
+
+    ID id() const;
+
+    bool remembered() const;
+    void remember();
+
+    bool in_use() const;
+    bool is_first_use();
+    bool is_last_use();
+
+  private:
+    ID _id;
+    bool _remembered;
+    detail::References<Counter> _references;
+  };
 
   TEMPLATE CACHE::Cache (ID n)
     : _max {std::move (n)}
@@ -283,6 +301,60 @@ namespace gspc
     _unused.erase (value);
 
     return true;
+  }
+
+
+  TEMPLATE CACHE::Entry::Entry (ID id)
+    : _id {std::move (id)}
+    , _remembered {false}
+    , _references{}
+  {
+    _references.increment();
+  }
+
+  TEMPLATE ID CACHE::Entry::id() const
+  {
+    return _id;
+  }
+
+  TEMPLATE bool CACHE::Entry::remembered() const
+  {
+    return _remembered;
+  }
+
+  TEMPLATE void CACHE::Entry::remember()
+  {
+    if (remembered())
+    {
+      LOGIC_ERROR ("Entry::remember: Already remembered");
+    }
+
+    _remembered = true;
+  }
+
+  TEMPLATE bool CACHE::Entry::in_use() const
+  {
+    return _references.in_use();
+  }
+
+  TEMPLATE bool CACHE::Entry::is_first_use()
+  {
+    if (_references.increment())
+    {
+      if (!_remembered)
+      {
+        INCONSISTENCY ("Not in use and not remembered");
+      }
+
+      return true;
+    }
+
+    return false;
+  }
+
+  TEMPLATE bool CACHE::Entry::is_last_use()
+  {
+    return _references.decrement();
   }
 
 #undef CACHE

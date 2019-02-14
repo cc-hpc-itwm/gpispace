@@ -1,8 +1,8 @@
 #pragma once
 
-#include <gspc/detail/Cache/Entry.fwd.hpp>
 #include <gspc/detail/Cache/UniqEmpty/UnorderedSet.hpp>
 #include <gspc/detail/Cache/UniqUnused/UnorderedSet.hpp>
+#include <gspc/detail/References.hpp>
 
 #include <condition_variable>
 #include <mutex>
@@ -57,7 +57,9 @@ namespace gspc
     ID _next {0};
     UniqEmpty<ID> _empty;
     UniqUnused<T> _unused;
-    std::unordered_map<T, detail::Cache::Entry<ID, Counter>> _known;
+
+    struct Entry;
+    std::unordered_map<T, Entry> _known;
   };
 }
 
