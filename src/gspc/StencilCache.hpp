@@ -1,12 +1,12 @@
 #pragma once
 
 #include <gspc/Cache.hpp>
-#include <gspc/detail/StencilCache/InputEntry.fwd.hpp>
-#include <gspc/detail/StencilCache/OutputEntry.fwd.hpp>
+#include <gspc/detail/References.hpp>
 
 #include <functional>
 #include <list>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 
 namespace gspc
@@ -21,7 +21,22 @@ namespace gspc
     struct StencilCache
       : private Cache<Slot, Input, Counter, UniqEmpty, UniqUnused>
   {
-    using InputEntry = detail::StencilCache::InputEntry<Output, Counter>;
+    struct InputEntry
+    {
+      void increment();
+
+    private:
+      friend StencilCache;
+
+      bool free();
+      std::unordered_set<Output> const& waiting() const;
+      void triggers (Output);
+      void prepared();
+
+      std::unordered_set<Output> _waiting;
+      detail::References<Counter> _references;
+    };
+
     using InputEntries = std::unordered_map<Input, InputEntry>;
     using Assigned = std::pair<Slot, Input>;
     using Assignment = std::list<Assigned>;
@@ -45,8 +60,7 @@ namespace gspc
 
   private:
     using Base = Cache<Slot, Input, Counter, UniqEmpty, UniqUnused>;
-    using OutputEntry =
-      detail::StencilCache::OutputEntry<Output, Input, Slot, Counter>;
+    struct OutputEntry;
 
     Prepare _prepare;
     Ready _ready;

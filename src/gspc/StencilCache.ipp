@@ -1,5 +1,3 @@
-#include <gspc/detail/StencilCache/InputEntry.hpp>
-#include <gspc/detail/StencilCache/OutputEntry.hpp>
 #include <gspc/exception.hpp>
 
 #include <util-generic/print_container.hpp>
@@ -21,6 +19,24 @@ namespace gspc
   StencilCache<Output, Input, Slot, Counter, UniqEmpty, UniqUnused>
 
 
+  TEMPLATE struct STENCILCACHE::OutputEntry
+  {
+    using Assigned = std::pair<Slot, Input>;
+    using Assignment = std::list<Assigned>;
+
+    OutputEntry (Counter);
+
+    bool prepared();
+    Assignment const& assignment() const;
+    void assigned (Slot, Input);
+
+  private:
+    bool all_inputs_prepared() const;
+
+    Counter _count_down;
+    Assignment _assignment;
+  };
+
   TEMPLATE STENCILCACHE::StencilCache
     ( InputEntries inputs
     , Prepare prepare
@@ -30,7 +46,7 @@ namespace gspc
       : Base {std::move (slot)}
       , _prepare {std::move (prepare)}
       , _ready {std::move (ready)}
-      , _inputs {std::move (inputs)}
+      , _inputs {inputs.begin(), inputs.end()}
   {}
 
   TEMPLATE void STENCILCACHE::interrupt()
@@ -204,6 +220,80 @@ namespace gspc
   catch (...)
   {
     NESTED_RUNTIME_ERROR (boost::format ("StencilCache::free (%1%)") % i);
+  }
+
+  TEMPLATE void STENCILCACHE::InputEntry::increment()
+  {
+    _references.increment();
+  }
+
+  TEMPLATE bool STENCILCACHE::InputEntry::free()
+  {
+    auto const not_in_use (InputEntry::_references.decrement());
+
+    if (not_in_use && !_waiting.empty())
+    {
+      INCONSISTENCY
+        ( boost::format ("InputEntry::free: orphan waiters %1%")
+        % fhg::util::print_container ("{", ", ", "}", _waiting)
+        );
+    }
+
+    return not_in_use;
+  }
+
+  TEMPLATE std::unordered_set<Output> const&
+    STENCILCACHE::InputEntry::waiting() const
+  {
+    return _waiting;
+  }
+
+  TEMPLATE void STENCILCACHE::InputEntry::triggers (Output o)
+  {
+    if (!_waiting.emplace (std::move (o)).second)
+    {
+      INVALID_ARGUMENT ("Duplicate");
+    }
+    //! \todo throw INVALID_ARGUMENT if too many waiters (would
+    //! lead to orhpans later though)
+  }
+
+  TEMPLATE void STENCILCACHE::InputEntry::prepared()
+  {
+    _waiting.clear();
+  }
+
+  TEMPLATE STENCILCACHE::OutputEntry::OutputEntry (Counter counter)
+    : _count_down {std::move (counter)}
+  {
+    if (all_inputs_prepared())
+    {
+      INVALID_ARGUMENT ("OutputEntry with no contributors");
+    }
+  }
+  TEMPLATE bool STENCILCACHE::OutputEntry::prepared()
+  {
+    if (all_inputs_prepared())
+    {
+      LOGIC_ERROR ("OutputEntry::prepared() for already completed entry");
+    }
+
+    --_count_down;
+
+    return all_inputs_prepared();
+  }
+  TEMPLATE bool STENCILCACHE::OutputEntry::all_inputs_prepared() const
+  {
+    return _count_down == 0;
+  }
+  TEMPLATE auto STENCILCACHE::OutputEntry::assignment() const
+    -> Assignment const&
+  {
+    return _assignment;
+  }
+  TEMPLATE void STENCILCACHE::OutputEntry::assigned (Slot slot, Input i)
+  {
+    _assignment.emplace_back (Assigned {slot, i});
   }
 
 #undef STENCILCACHE
