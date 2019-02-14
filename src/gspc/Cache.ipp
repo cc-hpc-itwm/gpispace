@@ -1,7 +1,7 @@
-#include <gspc/exception.hpp>
-
 #include <boost/format.hpp>
 
+#include <exception>
+#include <stdexcept>
 #include <utility>
 
 namespace gspc
@@ -46,6 +46,19 @@ namespace gspc
     _grown_or_interrupted.notify_all();
   }
 
+#define RETHROW_INTERRUPTED_OR_NEST(fun_)                               \
+  catch (interrupted)                                                   \
+  {                                                                     \
+    throw;                                                              \
+  }                                                                     \
+  catch (...)                                                           \
+  {                                                                     \
+    std::throw_with_nested                                              \
+      ( std::runtime_error                                              \
+          (str (boost::format ("Cache::" fun_ " (%1%)") % value))       \
+      );                                                                \
+  }
+
   TEMPLATE typename CACHE::Allocation CACHE::alloc (T value)
   try
   {
@@ -53,14 +66,7 @@ namespace gspc
 
     return _alloc (value, lock);
   }
-  catch (interrupted)
-  {
-    throw;
-  }
-  catch (...)
-  {
-    NESTED_RUNTIME_ERROR (boost::format ("Cache::alloc (%1%)") % value);
-  }
+  RETHROW_INTERRUPTED_OR_NEST ("alloc")
 
   TEMPLATE void CACHE::free (T value)
   try
@@ -69,14 +75,7 @@ namespace gspc
 
     return _free (value, _);
   }
-  catch (interrupted)
-  {
-    throw;
-  }
-  catch (...)
-  {
-    NESTED_RUNTIME_ERROR (boost::format ("Cache::free (%1%)") % value);
-  }
+  RETHROW_INTERRUPTED_OR_NEST ("free")
 
   TEMPLATE void CACHE::remember (T value)
   try
@@ -85,14 +84,7 @@ namespace gspc
 
     return _remember (value, _);
   }
-  catch (interrupted)
-  {
-    throw;
-  }
-  catch (...)
-  {
-    NESTED_RUNTIME_ERROR (boost::format ("Cache::remember (%1%)") % value);
-  }
+  RETHROW_INTERRUPTED_OR_NEST ("remember")
 
   TEMPLATE bool CACHE::forget (T value)
   try
@@ -101,14 +93,9 @@ namespace gspc
 
     return _forget (value, _);
   }
-  catch (interrupted)
-  {
-    throw;
-  }
-  catch (...)
-  {
-    NESTED_RUNTIME_ERROR (boost::format ("Cache::forget (%1%)") % value);
-  }
+  RETHROW_INTERRUPTED_OR_NEST ("forget")
+
+#undef RETHROW_INTERRUPTED_OR_NEST
 
   TEMPLATE
     typename CACHE::Allocation
@@ -163,7 +150,7 @@ namespace gspc
 
       if (!_known.emplace (value, id).second)
       {
-        INCONSISTENCY ("Unknown and known (next)");
+        throw std::logic_error ("Unknown and known (next)");
       }
 
       return Allocation {id, Allocation::Empty};
@@ -175,7 +162,7 @@ namespace gspc
 
       if (!_known.emplace (value, id).second)
       {
-        INCONSISTENCY ("Unknown and known (empty)");
+        throw std::logic_error ("Unknown and known (empty)");
       }
 
       return Allocation {id, Allocation::Empty};
@@ -189,7 +176,8 @@ namespace gspc
 
       if (known == _known.end())
       {
-        INCONSISTENCY (boost::format ("Unused and unknown %1%") % to_evict);
+        throw std::logic_error
+          (str (boost::format ("Unused and unknown %1%") % to_evict));
       }
 
       auto id (known->second.id());
@@ -198,13 +186,13 @@ namespace gspc
 
       if (!_known.emplace (value, id).second)
       {
-        INCONSISTENCY ("Unknown and known (unused)");
+        throw std::logic_error ("Unknown and known (unused)");
       }
 
       return Allocation {id, Allocation::Empty};
     }
 
-    INCONSISTENCY ("Full");
+    throw std::logic_error ("Full");
   }
 
   TEMPLATE
@@ -222,7 +210,7 @@ namespace gspc
 
     if (known == _known.end())
     {
-      INVALID_ARGUMENT ("Unknown");
+      throw std::invalid_argument ("Unknown");
     }
 
     auto& entry (known->second);
@@ -258,7 +246,7 @@ namespace gspc
 
     if (known == _known.end())
     {
-      INVALID_ARGUMENT ("Unknown");
+      throw std::invalid_argument ("Unknown");
     }
 
     auto& entry (known->second);
@@ -288,12 +276,12 @@ namespace gspc
 
     if (!entry.remembered())
     {
-      INVALID_ARGUMENT ("Not remembered");
+      throw std::invalid_argument ("Not remembered");
     }
 
     if (entry.in_use())
     {
-      INVALID_ARGUMENT ("In use");
+      throw std::invalid_argument ("In use");
     }
 
     _empty.push (entry.id());
@@ -326,7 +314,7 @@ namespace gspc
   {
     if (remembered())
     {
-      LOGIC_ERROR ("Entry::remember: Already remembered");
+      throw std::logic_error ("Entry::remember: Already remembered");
     }
 
     _remembered = true;
@@ -343,7 +331,7 @@ namespace gspc
     {
       if (!_remembered)
       {
-        INCONSISTENCY ("Not in use and not remembered");
+        throw std::logic_error ("Not in use and not remembered");
       }
 
       return true;

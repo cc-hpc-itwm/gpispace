@@ -1,6 +1,5 @@
-#include <gspc/exception.hpp>
-
 #include <limits>
+#include <stdexcept>
 
 namespace gspc
 {
@@ -31,7 +30,7 @@ namespace gspc
     {
       if (_ == std::numeric_limits<Counter>::max())
       {
-        LOGIC_ERROR ("References::increment: Overflow");
+        throw std::logic_error ("References::increment: Overflow");
       }
 
       return !in_use (_++);
@@ -40,7 +39,7 @@ namespace gspc
     {
       if (!in_use())
       {
-        LOGIC_ERROR ("References::decrement: Not in use");
+        throw std::logic_error ("References::decrement: Not in use");
       }
 
       return !in_use (--_);

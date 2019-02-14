@@ -1,4 +1,5 @@
-#include <gspc/exception.hpp>
+#include <stdexcept>
+#include <utility>
 
 namespace gspc
 {
@@ -19,7 +20,7 @@ namespace gspc
         {
           if (!_.emplace (std::move (x)).second)
           {
-            INVALID_ARGUMENT ("UniqUnused::push: Duplicate.");
+            throw std::invalid_argument ("UniqUnused::push: Duplicate.");
           }
         }
 
@@ -37,7 +38,7 @@ namespace gspc
         {
           if (_.erase (x) != 1)
           {
-            INVALID_ARGUMENT ("UniqUnused::erase: Unknown.");
+            throw std::invalid_argument ("UniqUnused::erase: Unknown.");
           }
         }
       }

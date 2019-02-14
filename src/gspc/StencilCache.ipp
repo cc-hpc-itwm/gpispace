@@ -1,10 +1,10 @@
-#include <gspc/exception.hpp>
-
 #include <util-generic/print_container.hpp>
 
 #include <boost/format.hpp>
 
-#include <utility>
+#include <exception>
+#include <mutex>
+#include <stdexcept>
 
 namespace gspc
 {
@@ -18,6 +18,8 @@ namespace gspc
 #define STENCILCACHE                                                    \
   StencilCache<Output, Input, Slot, Counter, UniqEmpty, UniqUnused>
 
+#define NESTED_RUNTIME_ERROR(what...)                                   \
+  std::throw_with_nested (std::runtime_error (str (what)))
 
   TEMPLATE struct STENCILCACHE::OutputEntry
   {
@@ -71,7 +73,7 @@ namespace gspc
 
     if (!_outputs.emplace (o, is.size()).second)
     {
-      INVALID_ARGUMENT ("Duplicate");
+      throw std::invalid_argument ("Duplicate");
     }
 
     for (auto i : is)
@@ -84,7 +86,8 @@ namespace gspc
 
         if (input == _inputs.end())
         {
-          INVALID_ARGUMENT (boost::format ("Unknown %1%") % i);
+          throw std::invalid_argument
+            (str (boost::format ("Unknown %1%") % i));
         }
 
         auto& input_entry (input->second);
@@ -97,7 +100,7 @@ namespace gspc
 
         if (output == _outputs.end())
         {
-          INCONSISTENCY ("Unknown");
+          throw std::logic_error ("Unknown");
         }
 
         auto& output_entry (output->second);
@@ -148,7 +151,7 @@ namespace gspc
 
     if (input == _inputs.end())
     {
-      INVALID_ARGUMENT ("Unknown");
+      throw std::invalid_argument ("Unknown");
     }
 
     auto& input_entry (input->second);
@@ -159,7 +162,7 @@ namespace gspc
 
       if (output == _outputs.end())
       {
-        INCONSISTENCY (boost::format ("Missing output %1%") % o);
+        throw std::logic_error (str (boost::format ("Missing output %1%") % o));
       }
 
       auto& output_entry (output->second);
@@ -199,7 +202,7 @@ namespace gspc
 
     if (input == _inputs.end())
     {
-      INVALID_ARGUMENT ("Unknown");
+      throw std::invalid_argument ("Unknown");
     }
 
     Base::_free (i, _);
@@ -233,9 +236,10 @@ namespace gspc
 
     if (not_in_use && !_waiting.empty())
     {
-      INCONSISTENCY
-        ( boost::format ("InputEntry::free: orphan waiters %1%")
-        % fhg::util::print_container ("{", ", ", "}", _waiting)
+      throw std::logic_error
+        ( str ( boost::format ("InputEntry::free: orphan waiters %1%")
+              % fhg::util::print_container ("{", ", ", "}", _waiting)
+              )
         );
     }
 
@@ -252,9 +256,9 @@ namespace gspc
   {
     if (!_waiting.emplace (std::move (o)).second)
     {
-      INVALID_ARGUMENT ("Duplicate");
+      throw std::invalid_argument ("Duplicate");
     }
-    //! \todo throw INVALID_ARGUMENT if too many waiters (would
+    //! \todo throw std::invalid_argument if too many waiters (would
     //! lead to orhpans later though)
   }
 
@@ -268,14 +272,15 @@ namespace gspc
   {
     if (all_inputs_prepared())
     {
-      INVALID_ARGUMENT ("OutputEntry with no contributors");
+      throw std::invalid_argument ("OutputEntry with no contributors");
     }
   }
   TEMPLATE bool STENCILCACHE::OutputEntry::prepared()
   {
     if (all_inputs_prepared())
     {
-      LOGIC_ERROR ("OutputEntry::prepared() for already completed entry");
+      throw std::logic_error
+        ("OutputEntry::prepared() for already completed entry");
     }
 
     --_count_down;
@@ -296,6 +301,7 @@ namespace gspc
     _assignment.emplace_back (Assigned {slot, i});
   }
 
+#undef NESTED_RUNTIME_ERROR
 #undef STENCILCACHE
 #undef TEMPLATE
 }
