@@ -564,6 +564,8 @@ namespace gspc
 
     running.wait();
 
+    //! \note Race in the test here: free() may be called before
+    //! alloc(). This sleep tries to make the race less likely.
     std::this_thread::sleep_for (std::chrono::milliseconds (300));
 
     cache.free (datas.at (index));
@@ -599,6 +601,8 @@ namespace gspc
 
     running.wait();
 
+    //! \note Race in the test here: interrupt() may be called before
+    //! alloc(). This sleep tries to make the race less likely.
     std::this_thread::sleep_for (std::chrono::milliseconds (300));
 
     cache.interrupt();
