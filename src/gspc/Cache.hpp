@@ -30,10 +30,11 @@ namespace gspc
 
     struct Allocation
     {
-      enum State {Empty, Assigned, Remembered};
-
       ID id;
-      State state;
+      //! \note including "this" allocation, i.e. always >= 1 when
+      //! returned from alloc()
+      Counter reference_count;
+      bool was_remembered;
     };
 
     Allocation alloc (T);     // O(max {Epo,Uer,Upo}), maybe blocking

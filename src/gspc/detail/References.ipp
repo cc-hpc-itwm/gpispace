@@ -26,14 +26,14 @@ namespace gspc
     {
       return in_use (_);
     }
-    TEMPLATE bool REFERENCES::increment()
+    TEMPLATE Counter REFERENCES::increment()
     {
       if (_ == std::numeric_limits<Counter>::max())
       {
         throw std::logic_error ("References::increment: Overflow");
       }
 
-      return !in_use (_++);
+      return ++_;
     }
     TEMPLATE bool REFERENCES::decrement()
     {

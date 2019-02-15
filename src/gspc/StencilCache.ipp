@@ -80,7 +80,7 @@ namespace gspc
     {
       auto const allocation (Base::_alloc (i, lock));
 
-      if (allocation.state != Base::Allocation::Remembered)
+      if (!allocation.was_remembered)
       {
         auto input (_inputs.find (i));
 
@@ -107,7 +107,7 @@ namespace gspc
 
         output_entry.assigned (allocation.id, i);
 
-        if (allocation.state == Base::Allocation::Remembered)
+        if (allocation.was_remembered)
         {
           if (output_entry.prepared())
           {
@@ -118,7 +118,7 @@ namespace gspc
         }
       }
 
-      if (allocation.state == Base::Allocation::Empty)
+      if (allocation.reference_count == 1 && !allocation.was_remembered)
       {
         _prepare (allocation.id, i);
       }

@@ -24,7 +24,7 @@ namespace gspc
     void remember();
 
     bool in_use() const;
-    bool increment();      // returns: was first use
+    Counter increment();   // returns: reference count *including* this
     bool decrement();      // returns: was last use
 
   private:
@@ -112,18 +112,13 @@ namespace gspc
       {
         auto& entry (known->second);
 
-        if (entry.increment())
+        auto const refcount (entry.increment());
+        if (refcount == 1)
         {
           _unused.erase (value);
-
-          return Allocation {entry.id(), Allocation::Remembered};
         }
 
-        return Allocation { entry.id()
-                          , entry.remembered()
-                          ? Allocation::Remembered
-                          : Allocation::Assigned
-                          };
+        return Allocation {entry.id(), refcount, entry.remembered()};
       }
     }
 
@@ -153,7 +148,7 @@ namespace gspc
         throw std::logic_error ("Unknown and known (next)");
       }
 
-      return Allocation {id, Allocation::Empty};
+      return Allocation {id, 1, false};
     }
 
     if (!_empty.empty())
@@ -165,7 +160,7 @@ namespace gspc
         throw std::logic_error ("Unknown and known (empty)");
       }
 
-      return Allocation {id, Allocation::Empty};
+      return Allocation {id, 1, false};
     }
 
     if (!_unused.empty())
@@ -189,7 +184,7 @@ namespace gspc
         throw std::logic_error ("Unknown and known (unused)");
       }
 
-      return Allocation {id, Allocation::Empty};
+      return Allocation {id, 1, false};
     }
 
     throw std::logic_error ("Full");
@@ -325,19 +320,15 @@ namespace gspc
     return _references.in_use();
   }
 
-  TEMPLATE bool CACHE::Entry::increment()
+  TEMPLATE Counter CACHE::Entry::increment()
   {
-    if (_references.increment())
+    auto const refcount (_references.increment());
+    if (refcount == 1 && !_remembered)
     {
-      if (!_remembered)
-      {
-        throw std::logic_error ("Not in use and not remembered");
-      }
-
-      return true;
+      throw std::logic_error ("Not in use and not remembered");
     }
 
-    return false;
+    return refcount;
   }
 
   TEMPLATE bool CACHE::Entry::decrement()

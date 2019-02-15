@@ -34,6 +34,15 @@ namespace gspc
     }
   }
 
+#define REQUIRE_ALLOCATION(what_, refcount_, remembered_)      \
+  do                                                           \
+  {                                                            \
+    auto const to_check (what_);                               \
+    BOOST_TEST (to_check.reference_count == refcount_);        \
+    BOOST_TEST (to_check.was_remembered == remembered_);       \
+  }                                                            \
+  while (false)
+
   BOOST_AUTO_TEST_CASE (all_slots_can_be_allocated_once)
   {
     auto const N (some_slots());
@@ -46,7 +55,7 @@ namespace gspc
     {
       auto const allocation (cache.alloc (data));
 
-      BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (allocation, 1, false);
 
       BOOST_REQUIRE (slots.emplace (allocation.id).second);
     }
@@ -78,7 +87,7 @@ namespace gspc
     {
       auto const allocation (cache.alloc (data));
 
-      BOOST_TEST (allocation.state == TestCache::Allocation::Assigned);
+      REQUIRE_ALLOCATION (allocation, 2, false);
 
       BOOST_REQUIRE (slots.emplace (allocation.id).second);
     }
@@ -101,9 +110,9 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Assigned);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Assigned);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
+      REQUIRE_ALLOCATION (cache.alloc (data), 2, false);
+      REQUIRE_ALLOCATION (cache.alloc (data), 3, false);
     }
   }
 
@@ -116,9 +125,9 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
       cache.remember (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
+      REQUIRE_ALLOCATION (cache.alloc (data), 2, true);
     }
   }
 
@@ -131,10 +140,10 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Assigned);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
+      REQUIRE_ALLOCATION (cache.alloc (data), 2, false);
       cache.remember (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
+      REQUIRE_ALLOCATION (cache.alloc (data), 3, true);
     }
   }
 
@@ -147,9 +156,9 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
       cache.free (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
     }
   }
 
@@ -162,10 +171,10 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
       cache.remember (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
+      REQUIRE_ALLOCATION (cache.alloc (data), 2, true);
+      REQUIRE_ALLOCATION (cache.alloc (data), 3, true);
     }
   }
 
@@ -178,10 +187,10 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
       cache.remember (data);
       cache.free (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, true);
     }
   }
 
@@ -194,12 +203,12 @@ namespace gspc
 
     for (auto const data : datas)
     {
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
       cache.remember (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
+      REQUIRE_ALLOCATION (cache.alloc (data), 2, true);
       cache.free (data);
       cache.free (data);
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Remembered);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, true);
     }
   }
 
@@ -386,7 +395,7 @@ namespace gspc
     {
       auto const allocation (cache.alloc (datas.back()));
 
-      BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (allocation, 1, false);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
     }
 
@@ -395,7 +404,7 @@ namespace gspc
     {
       auto const allocation (cache.alloc (datas.at (index)));
 
-      BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (allocation, 1, false);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
     }
 
@@ -404,7 +413,7 @@ namespace gspc
     {
       auto const allocation (cache.alloc (datas.back()));
 
-      BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (allocation, 1, false);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
     }
 
@@ -414,7 +423,7 @@ namespace gspc
     {
       auto const allocation (cache.alloc (datas.at (index)));
 
-      BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (allocation, 1, false);
       BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
     }
   }
@@ -506,7 +515,7 @@ namespace gspc
 
       BOOST_REQUIRE (cache.forget (data));
 
-      BOOST_TEST (cache.alloc (data).state == TestCache::Allocation::Empty);
+      REQUIRE_ALLOCATION (cache.alloc (data), 1, false);
     }
   }
 
@@ -557,7 +566,7 @@ namespace gspc
 
           auto allocation (cache.alloc (datas.back()));
 
-          BOOST_TEST (allocation.state == TestCache::Allocation::Empty);
+          REQUIRE_ALLOCATION (allocation, 1, false);
           BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
         }
       };
@@ -636,14 +645,15 @@ namespace gspc
     TestCache cache (N);
 
 
-#define allocate(expected_)                                             \
+#define allocate(expected_refcount_, expected_remembered_)              \
     do                                                                  \
     {                                                                   \
       out.section ("Allocate " + std::to_string (N) + " slots");        \
                                                                         \
       for (Data i {0}; i < N; ++i)                                      \
       {                                                                 \
-        BOOST_TEST (cache.alloc (i).state == expected_);                \
+        REQUIRE_ALLOCATION                                              \
+          (cache.alloc (i), expected_refcount_, expected_remembered_);  \
       }                                                                 \
     }                                                                   \
     while (false)
@@ -681,36 +691,36 @@ namespace gspc
     }                                                                   \
     while (false)
 
-    allocate (TestCache::Allocation::Empty);
-      allocate (TestCache::Allocation::Assigned);
-        allocate (TestCache::Allocation::Assigned);
+    allocate (1, false);
+      allocate (2, false);
+        allocate (3, false);
         free();
       free();
     free();
 
-    allocate (TestCache::Allocation::Empty);
-      allocate (TestCache::Allocation::Assigned);
+    allocate (1, false);
+      allocate (2, false);
         remember();
       free();
-      allocate (TestCache::Allocation::Remembered);
-      allocate (TestCache::Allocation::Remembered);
+      allocate (2, true);
+      allocate (3, true);
         free();
       free();
     free();
-    allocate (TestCache::Allocation::Remembered);
+    allocate (1, true);
     free();
 
     forget();
 
-    allocate (TestCache::Allocation::Empty);
+    allocate (1, false);
       remember();
-      allocate (TestCache::Allocation::Remembered);
+      allocate (2, true);
       free();
     free();
 
     forget();
 
-    allocate (TestCache::Allocation::Empty);
+    allocate (1, false);
     free();
   }
 }

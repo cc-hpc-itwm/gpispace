@@ -10,7 +10,7 @@ namespace gspc
       References();
 
       bool in_use() const;
-      bool increment();       // returns: "was not in_use before"
+      Counter increment();    // returns: reference count *including* this
       bool decrement();       // returns: "is not in_use now"
 
     private:
