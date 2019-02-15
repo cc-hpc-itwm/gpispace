@@ -24,8 +24,8 @@ namespace gspc
     void remember();
 
     bool in_use() const;
-    bool is_first_use();
-    bool is_last_use();
+    bool increment();      // returns: was first use
+    bool decrement();      // returns: was last use
 
   private:
     ID _id;
@@ -112,7 +112,7 @@ namespace gspc
       {
         auto& entry (known->second);
 
-        if (entry.is_first_use())
+        if (entry.increment())
         {
           _unused.erase (value);
 
@@ -215,7 +215,7 @@ namespace gspc
 
     auto& entry (known->second);
 
-    if (entry.is_last_use())
+    if (entry.decrement())
     {
       if (!entry.remembered())
       {
@@ -325,7 +325,7 @@ namespace gspc
     return _references.in_use();
   }
 
-  TEMPLATE bool CACHE::Entry::is_first_use()
+  TEMPLATE bool CACHE::Entry::increment()
   {
     if (_references.increment())
     {
@@ -340,7 +340,7 @@ namespace gspc
     return false;
   }
 
-  TEMPLATE bool CACHE::Entry::is_last_use()
+  TEMPLATE bool CACHE::Entry::decrement()
   {
     return _references.decrement();
   }
