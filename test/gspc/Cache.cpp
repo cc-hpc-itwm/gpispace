@@ -635,50 +635,51 @@ namespace gspc
 
     TestCache cache (N);
 
-    auto allocate
-      ( [&] (typename TestCache::Allocation::State expected)
-        {
-          out.section ("Allocate " + std::to_string (N) + " slots");
 
-          for (Data i {0}; i < N; ++i)
-          {
-            BOOST_TEST (cache.alloc (i).state == expected);
-          }
-        }
-      );
-    auto remember
-      ( [&]
-        {
-          out.section ("Remember " + std::to_string (N) + " slots");
-
-          for (Data i {0}; i < N; ++i)
-          {
-            cache.remember (i);
-          }
-        }
-      );
-    auto free
-      ( [&]
-        {
-          out.section ("Free " + std::to_string (N) + " slots");
-
-          for (Data i {0}; i < N; ++i)
-          {
-            cache.free (i);
-          }
-        }
-      );
-    auto forget
-      ( [&]
-        {
-          out.section ("Forget " + std::to_string (N) + " slots");
-
-          for (Data i {0}; i < N; ++i)
-          {
-            BOOST_REQUIRE (cache.forget (i));
-          }
-        }
-      );
+#define allocate(expected_)                                             \
+    do                                                                  \
+    {                                                                   \
+      out.section ("Allocate " + std::to_string (N) + " slots");        \
+                                                                        \
+      for (Data i {0}; i < N; ++i)                                      \
+      {                                                                 \
+        BOOST_TEST (cache.alloc (i).state == expected_);                \
+      }                                                                 \
+    }                                                                   \
+    while (false)
+#define remember()                                                      \
+    do                                                                  \
+    {                                                                   \
+      out.section ("Remember " + std::to_string (N) + " slots");        \
+                                                                        \
+      for (Data i {0}; i < N; ++i)                                      \
+      {                                                                 \
+        cache.remember (i);                                             \
+      }                                                                 \
+    }                                                                   \
+    while (false)
+#define free()                                                          \
+    do                                                                  \
+    {                                                                   \
+      out.section ("Free " + std::to_string (N) + " slots");            \
+                                                                        \
+      for (Data i {0}; i < N; ++i)                                      \
+      {                                                                 \
+        cache.free (i);                                                 \
+      }                                                                 \
+    }                                                                   \
+    while (false)
+#define forget()                                                        \
+    do                                                                  \
+    {                                                                   \
+      out.section ("Forget " + std::to_string (N) + " slots");          \
+                                                                        \
+      for (Data i {0}; i < N; ++i)                                      \
+      {                                                                 \
+        BOOST_REQUIRE (cache.forget (i));                               \
+      }                                                                 \
+    }                                                                   \
+    while (false)
 
     allocate (TestCache::Allocation::Empty);
       allocate (TestCache::Allocation::Assigned);
