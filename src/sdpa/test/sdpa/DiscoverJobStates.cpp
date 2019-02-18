@@ -8,11 +8,11 @@
 
 #include <we/layer.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random/string.hpp>
 
 #include <boost/optional/optional_io.hpp>
-#include <boost/ptr_container/ptr_list.hpp>
 
 namespace
 {
@@ -231,19 +231,21 @@ namespace
     (const std::size_t num_agents, fhg::log::Logger& logger)
   {
     const utils::orchestrator orchestrator (logger);
-    boost::ptr_list<utils::agent> agents;
-    agents.push_back (new utils::agent (orchestrator, logger));
+    std::list<std::unique_ptr<utils::agent>> agents;
+    agents.emplace_front
+      (fhg::util::cxx14::make_unique<utils::agent> (orchestrator, logger));
 
     for (std::size_t counter (1); counter < num_agents; ++counter)
     {
-      agents.push_back (new utils::agent (agents.back(), logger));
+      agents.emplace_front
+        (fhg::util::cxx14::make_unique<utils::agent> (*agents.front(), logger));
     }
 
     fhg::util::thread::event<std::string> job_submitted;
 
     fake_drts_worker_discovering<sdpa::status::RUNNING> worker
       ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
-      , agents.back()
+      , *agents.front()
       );
 
     const std::string activity_name (fhg::util::testing::random_string());
