@@ -41,7 +41,7 @@ namespace test
       std::list<Coordinate> neighbors
         (Extent X, Extent Y, Radius R, Point);
 
-      Point to_point (Radius Y, Stencil c)
+      Point to_point (Extent Y, Stencil c)
       {
         auto const x (c / Y);
         auto const y (c % Y);
