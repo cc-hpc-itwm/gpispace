@@ -6,6 +6,7 @@
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
+#include <we/type/stencil_caches.hpp>
 #include <we/type/transition.fwd.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
@@ -20,8 +21,11 @@
 
 #include <forward_list>
 #include <functional>
+#include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 namespace we
 {
@@ -98,6 +102,8 @@ namespace we
       fire_expressions_and_extract_activity_random
         ( Engine& engine
         , we::workflow_response_callback const& workflow_response
+        , we::type::stencil_caches& stencil_caches
+        , we::type::stencil_cache::PutToken const& put_token
         )
       {
         while (!_enabled.empty())
@@ -111,7 +117,12 @@ namespace we
 
           if (transition.expression())
           {
-            fire_expression (transition_id, transition, workflow_response);
+            fire_expression ( transition_id
+                            , transition
+                            , workflow_response
+                            , stencil_caches
+                            , put_token
+                            );
           }
           else
           {
@@ -120,6 +131,25 @@ namespace we
         }
 
         return boost::none;
+      }
+
+      template<typename Engine>
+        boost::optional<we::type::activity_t>
+          fire_expressions_and_extract_activity_random
+            ( Engine& engine
+            , we::workflow_response_callback const& workflow_response
+            )
+      {
+        we::type::stencil_caches stencil_caches;
+        return fire_expressions_and_extract_activity_random
+          ( engine
+          , workflow_response
+          , stencil_caches
+          , [] (std::string, pnet::type::value::value_type)
+            {
+              throw std::logic_error ("Unexpected call to put_token.");
+            }
+          );
       }
 
       void inject ( activity_t const&
@@ -180,6 +210,8 @@ namespace we
         ( transition_id_type
         , we::type::transition_t const&
         , we::workflow_response_callback const&
+        , we::type::stencil_caches&
+        , we::type::stencil_cache::PutToken const&
         );
 
       typedef std::pair<place_id_type, token_id_type> token_to_be_deleted_type;

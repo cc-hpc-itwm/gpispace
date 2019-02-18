@@ -73,6 +73,7 @@ extended_add_library (NAME pnet
           "we/type/signature/resolve.cpp"
           "we/type/signature/show.cpp"
           "we/type/signature/specialize.cpp"
+          "we/type/stencil_caches.cpp"
           "we/type/transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
@@ -156,6 +157,8 @@ add_subdirectory (util-generic)
 add_subdirectory (util-qt)
 
 add_subdirectory (libssh2_wrapper)
+
+add_subdirectory (gspc)
 
 extended_add_library (NAME logging
   NAMESPACE gspc
