@@ -33,13 +33,15 @@ namespace test
       using Slot = unsigned long;
       using Stencil = long;
       using Counter = unsigned int;
+      using Extent = long;
+      using Radius = long;
 
-      Point to_point (Coordinate Y, Stencil);
-      Coordinate to_coordinate (Coordinate Y, Point);
+      Point to_point (Extent Y, Stencil);
+      Coordinate to_coordinate (Extent Y, Point);
       std::list<Coordinate> neighbors
-        (Coordinate X, Coordinate Y, Coordinate R, Point);
+        (Extent X, Extent Y, Radius R, Point);
 
-      Point to_point (Coordinate Y, Stencil c)
+      Point to_point (Radius Y, Stencil c)
       {
         auto const x (c / Y);
         auto const y (c % Y);
@@ -47,7 +49,7 @@ namespace test
         return Point {x, y};
       }
 
-      Coordinate to_coordinate (Coordinate Y, Point point)
+      Coordinate to_coordinate (Extent Y, Point point)
       {
         auto const x (point.first);
         auto const y (point.second);
@@ -56,17 +58,17 @@ namespace test
       }
 
       std::list<Coordinate> neighbors
-        (Coordinate X, Coordinate Y, Coordinate R, Point p)
+        (Extent X, Extent Y, Radius R, Point p)
       {
         std::list<Coordinate> points;
 
-        for (Coordinate dx {-R}; dx < R + Coordinate {1}; ++dx)
+        for (Coordinate dx {-R}; dx < R + Radius {1}; ++dx)
         {
           auto const x (p.first + dx);
 
           if (0 <= x && x < X)
           {
-            for (Coordinate dy {-R}; dy < R + Coordinate {1}; ++dy)
+            for (Coordinate dy {-R}; dy < R + Radius {1}; ++dy)
             {
               auto const y (p.second + dy);
 
@@ -81,12 +83,12 @@ namespace test
         return points;
       }
 
-      using SCache = ::gspc::StencilCache<Stencil, Coordinate, Slot, Counter>;
+      using SCache = ::gspc::StencilCache<Stencil, Radius, Slot, Counter>;
 
       SCache::InputEntries input_entries
-        ( Coordinate X
-        , Coordinate Y
-        , Coordinate R
+        ( Extent X
+        , Extent Y
+        , Radius R
         , Slot M
         , std::size_t& max
         , std::size_t& sum
@@ -130,10 +132,10 @@ namespace test
       {
         namespace po = fhg::util::boost::program_options;
 
-        po::option<po::positive_integral<Coordinate>> const X {"X", "X"};
-        po::option<po::positive_integral<Coordinate>> const Y {"Y", "Y"};
+        po::option<po::positive_integral<Extent>> const X {"X", "X"};
+        po::option<po::positive_integral<Extent>> const Y {"Y", "Y"};
 
-        po::option<po::positive_integral<Coordinate>> const R {"R", "R"};
+        po::option<po::positive_integral<Radius>> const R {"R", "R"};
 
         po::option<po::positive_integral<Slot>> const M {"M", "M"};
 
