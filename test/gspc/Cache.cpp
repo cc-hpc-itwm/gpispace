@@ -58,14 +58,7 @@ namespace gspc
       REQUIRE_ALLOCATION (allocation, 1, false);
 
       BOOST_REQUIRE (slots.emplace (allocation.id).second);
-    }
-
-    BOOST_REQUIRE_EQUAL (slots.size(), N);
-
-    while (!slots.empty())
-    {
-      BOOST_REQUIRE_LT (*slots.begin(), N);
-      slots.erase (slots.begin());
+      BOOST_REQUIRE_LT (allocation.id, N);
     }
   }
 
@@ -90,14 +83,7 @@ namespace gspc
       REQUIRE_ALLOCATION (allocation, 2, false);
 
       BOOST_REQUIRE (slots.emplace (allocation.id).second);
-    }
-
-    BOOST_REQUIRE_EQUAL (slots.size(), N);
-
-    while (!slots.empty())
-    {
-      BOOST_REQUIRE_LT (*slots.begin(), N);
-      slots.erase (slots.begin());
+      BOOST_REQUIRE_LT (allocation.id, N);
     }
   }
 
