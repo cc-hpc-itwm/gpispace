@@ -1,5 +1,7 @@
 #pragma once
 
+#include <util-generic/warning.hpp>
+
 #include <list>
 #include <memory>
 #include <vector>
@@ -13,9 +15,11 @@ namespace gspc
   }
 }
 
-#define GSPC_STENCIL_CACHE_CALLBACK(_ret,_name) \
-  extern "C" [[gnu::visibility ("default")]]    \
-    _ret gspc_stencil_cache_callback_ ## _name
+#define GSPC_STENCIL_CACHE_CALLBACK(_ret,_name)         \
+  DISABLE_WARNING_CLANG("-Wreturn-type-c-linkage")      \
+  extern "C" [[gnu::visibility ("default")]]            \
+    _ret gspc_stencil_cache_callback_ ## _name          \
+  RESTORE_WARNING_CLANG("-Wreturn-type-c-linkage")
 
 GSPC_STENCIL_CACHE_CALLBACK (std::shared_ptr<void>, init)
   ( std::vector<char> const&
