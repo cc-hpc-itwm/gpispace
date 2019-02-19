@@ -153,6 +153,7 @@ namespace test
             % (S * input_size)
             ).str()
           , rifds.entry_points()
+          , boost::none
           , out
           );
 
