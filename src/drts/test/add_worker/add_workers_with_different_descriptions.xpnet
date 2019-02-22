@@ -56,6 +56,7 @@
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
             fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+            done_A = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
@@ -84,6 +85,7 @@
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
             fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+            done_B = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
@@ -112,6 +114,7 @@
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
             fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+            done_C = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
