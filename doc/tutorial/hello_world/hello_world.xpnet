@@ -3,7 +3,7 @@
   <in name="in" type="control"/>
   <out name="out" type="control"/>
 
-  <module name="hello_world" function="out call_hello_world (in)">
+  <module name="hello_world" function="out call_hello_world()">
 
     <cinclude href="hello_world.hpp"/> <!-- cpp library -->
 

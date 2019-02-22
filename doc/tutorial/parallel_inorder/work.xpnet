@@ -20,7 +20,7 @@
           <out name="wl" type="with_length"/>
           <in name="n" type="long"/>
           <in name="config" type="T"/>
-          <module name="work" function="wl work (v, n, config)">
+          <module name="work" function="wl work (v, n)">
             <cinclude href="iostream"/>
             <cinclude href="stdlib.h"/>
             <code><![CDATA[
