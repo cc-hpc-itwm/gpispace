@@ -1570,10 +1570,26 @@ namespace xml
           s << ns::open (indent, mod.name());
 
           s << indent << "static void " << mod.function();
-          s << deeper (indent) << "( drts::worker::context *_pnetc_context";
-          s << deeper (indent) << ", const expr::eval::context& _pnetc_input";
-          s << deeper (indent) << ", expr::eval::context& _pnetc_output";
-          s << deeper (indent) << ", std::map<std::string, void*> const& _pnetc_memory_buffer";
+          s << deeper (indent) << "( drts::worker::context *";
+          if (mod.pass_context())
+          {
+            s << "_pnetc_context";
+          }
+          s << deeper (indent) << ", const expr::eval::context&";
+          if (!ports_const.empty() || !ports_mutable.empty())
+          {
+            s << "_pnetc_input";
+          }
+          s << deeper (indent) << ", expr::eval::context&";
+          if (port_return || !ports_mutable.empty() || !ports_out.empty())
+          {
+            s << "_pnetc_output";
+          }
+          s << deeper (indent) << ", std::map<std::string, void*> const&";
+          if (!mod.memory_buffer_arg().empty())
+          {
+            s << "_pnetc_memory_buffer";
+          }
           s << deeper (indent) << ")";
           s << block::open (indent);
 
