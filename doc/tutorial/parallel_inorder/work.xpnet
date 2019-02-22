@@ -103,7 +103,7 @@
             output_file.exceptions (std::fstream::failbit | std::fstream::badbit);
             output_file.seekp (wo.offset);
 
-            for (size_t i = 0 ; i < wo.wl.length ; ++i)
+            for (long i = 0 ; i < wo.wl.length ; ++i)
             {
                output_file.put (static_cast<char> (wo.wl.v.id));
             }
