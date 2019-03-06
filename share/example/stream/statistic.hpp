@@ -37,8 +37,6 @@ namespace fhg
         _sum += delta;
         _sqsum += delta * delta;
         _count += 1;
-
-        double const avg (_sum / _count);
       }
 
       double min() const

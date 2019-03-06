@@ -66,7 +66,7 @@ namespace test
       std::ostringstream command;
 
       command
-        << "make "
+        << "CXXFLAGS=\"-Wall -Wextra -Werror\" make "
         << " LIB_DESTDIR=" << lib_destdir.get()
         << " -C " << wrapper_directory
         << " install"

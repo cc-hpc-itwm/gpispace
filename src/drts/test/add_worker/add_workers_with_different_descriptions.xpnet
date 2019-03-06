@@ -38,8 +38,8 @@
         <in name="port" type="unsigned int"/>
         <out name="done_A" type="control"/>
         <require key="A" mandatory="true"/>
-        <module name="task_A" 
-                function="task_A (host, port, trigger_A, done_A)" 
+        <module name="task_A"
+                function="task_A (host, port, done_A)"
                 pass_context="true">
           <cinclude href="rpc/remote_function.hpp"/>
           <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
@@ -56,6 +56,7 @@
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
             fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+            done_A = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
@@ -72,8 +73,8 @@
         <in name="port" type="unsigned int"/>
         <out name="done_B" type="control"/>
         <require key="B" mandatory="true"/>
-        <module name="task_B" 
-                function="task_B (host, port, trigger_B, done_B)" 
+        <module name="task_B"
+                function="task_B (host, port, done_B)"
                 pass_context="true">
           <cinclude href="rpc/remote_function.hpp"/>
           <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
@@ -84,6 +85,7 @@
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
             fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+            done_B = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
@@ -100,8 +102,8 @@
         <in name="port" type="unsigned int"/>
         <out name="done_C" type="control"/>
         <require key="C" mandatory="true"/>
-        <module name="task_C" 
-                function="task_C (host, port, trigger_C, done_C)" 
+        <module name="task_C"
+                function="task_C (host, port, done_C)"
                 pass_context="true">
           <cinclude href="rpc/remote_function.hpp"/>
           <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
@@ -112,6 +114,7 @@
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
             fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
             fhg::rpc::sync_remote_function<protocol::callback> {endpoint}(*workers.begin());
+            done_C = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
