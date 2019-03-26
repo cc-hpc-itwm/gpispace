@@ -37,10 +37,8 @@ namespace gspc
   PIMPL_DTOR (workflow)
 
   workflow::workflow (workflow&& other)
-    : _ (other._)
-  {
-    other._ = nullptr;
-  }
+    : _ (std::move (other._))
+  {}
 
   void workflow::set_wait_for_output()
   {
