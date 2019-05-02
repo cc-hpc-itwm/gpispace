@@ -105,7 +105,7 @@ try
 
     if (pos == std::string::npos)
     {
-      std::logic_error ("Failed to parse entry_points_file");
+      throw std::logic_error ("Failed to parse entry_points_file");
     }
 
     entry_points.emplace ( line.substr (0, pos)
