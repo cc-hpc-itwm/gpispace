@@ -84,13 +84,6 @@ BOOST_AUTO_TEST_CASE (string)
   OKAY (ERROR, "ERROR");
 
 #undef OKAY
-
-  BOOST_REQUIRE_THROW ( fhg::log::string ((fhg::log::Level)-1)
-                      , std::runtime_error
-                      );
-  BOOST_REQUIRE_THROW ( fhg::log::string ((fhg::log::Level)6)
-                      , std::runtime_error
-                      );
 }
 
 BOOST_AUTO_TEST_CASE (from_string_string_id)
