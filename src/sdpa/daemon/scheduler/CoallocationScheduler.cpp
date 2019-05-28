@@ -30,24 +30,6 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
-    double CoallocationScheduler::compute_reservation_cost
-      ( const job_id_t& job_id
-      , const std::set<worker_id_t>& workers
-      , const double computational_cost
-      ) const
-    {
-      return std::accumulate
-        ( workers.begin()
-        , workers.end()
-        , 0.0
-        , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
-          {
-            return total
-              + _job_requirements (job_id).transfer_cost()
-                  (_worker_manager.host_INDICATES_A_RACE (wid));
-          }
-        ) + computational_cost;
-    }
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
@@ -66,17 +48,10 @@ namespace sdpa
         jobs_to_schedule.pop_front();
 
         const job_requirements_t requirements (_job_requirements (jobId));
-        const std::set<worker_id_t> matching_workers
-          (_worker_manager.find_assignment
-            ( requirements
-            , [this] (const job_id_t& job_id) -> double
-              {
-                return allocation_table_.at (job_id)->cost();
-              }
-            )
-          );
+        const boost::optional<worker_id_t>  matching_worker
+          {_worker_manager.find_assignment( requirements)};
 
-        if (!matching_workers.empty())
+        if (matching_worker)
         {
           if (allocation_table_.find (jobId) != allocation_table_.end())
           {
@@ -85,31 +60,18 @@ namespace sdpa
 
           try
           {
-            for (worker_id_t const& worker : matching_workers)
-            {
-              _worker_manager.assign_job_to_worker (jobId, worker);
-            }
+             _worker_manager.assign_job_to_worker (jobId, *matching_worker);
 
-            Reservation* const pReservation
-              (new Reservation ( matching_workers
-                               , compute_reservation_cost ( jobId
-                                                          , matching_workers
-                                                          , requirements.computational_cost()
-                                                          )
-                               )
-              );
+             Reservation* const pReservation
+                        (new Reservation ( {*matching_worker})
+                        );
 
             allocation_table_.emplace (jobId, pReservation);
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
           {
-            for (const worker_id_t& wid : matching_workers)
-            {
-              _worker_manager.delete_job_from_worker (jobId, wid);
-            }
-
-            jobs_to_schedule.push_front (jobId);
+           jobs_to_schedule.push_front (jobId);
           }
         }
         else
@@ -122,16 +84,6 @@ namespace sdpa
       _jobs_to_schedule.push (nonmatching_jobs_queue);
     }
 
-    void CoallocationScheduler::steal_work()
-    {
-      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      _worker_manager.steal_work<Reservation>
-        ( [this] (job_id_t const& job)
-          {
-            return allocation_table_.at (job);
-          }
-        );
-    }
 
     void CoallocationScheduler::reschedule_worker_jobs
        ( worker_id_t const& worker
@@ -169,7 +121,7 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void (std::set<worker_id_t> const&, const job_id_t&)> serve_job)
+      (std::function<void (worker_id_t const&, const job_id_t&)> serve_job)
     {
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;
@@ -178,7 +130,7 @@ namespace sdpa
       {
         std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-             (job_id, workers, serve_job)
+             (job_id, *workers.begin(), serve_job)
            )
         {
           jobs_started.insert (job_id);

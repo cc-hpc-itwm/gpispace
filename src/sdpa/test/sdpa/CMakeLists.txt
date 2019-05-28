@@ -22,13 +22,13 @@ fhg_add_test (NAME sdpa_Capabilities
             fhglog
 )
 
-fhg_add_test (NAME sdpa_Coallocation
-  SOURCES Coallocation.cpp
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa
-            fhglog
-)
+#fhg_add_test (NAME sdpa_Coallocation
+#  SOURCES Coallocation.cpp
+#  USE_BOOST
+#  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+#  LIBRARIES sdpa
+#            fhglog
+#)
 
 fhg_add_test (NAME sdpa_CoallocationScheduler
   SOURCES CoallocationScheduler.cpp
@@ -62,14 +62,14 @@ fhg_add_test (NAME sdpa_daemon_message_flow
 #            fhglog
 #)
 
-fhg_add_test (NAME sdpa_RestartWorkersCoalloc
-  SOURCES RestartWorkersCoalloc.cpp
-  NAME restart_workers_with_coallocation_workflow
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa
-            fhglog
-)
+#fhg_add_test (NAME sdpa_RestartWorkersCoalloc
+#  SOURCES RestartWorkersCoalloc.cpp
+#  NAME restart_workers_with_coallocation_workflow
+#  USE_BOOST
+#  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+#  LIBRARIES sdpa
+#            fhglog
+#)
 
 fhg_add_test (NAME sdpa_RestartWorkersDummy
   SOURCES RestartWorkersDummy.cpp
@@ -104,17 +104,17 @@ fhg_add_test (NAME sdpa_WorkerManager
             fhglog
 )
 
-fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
-  SOURCES WorkerReportsBacklogFull.cpp
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa
-            fhglog
-)
+#fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
+#  SOURCES WorkerReportsBacklogFull.cpp
+#  USE_BOOST
+#  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+#  LIBRARIES sdpa
+#            fhglog
+#)
 
-fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
-  SOURCES remove_workers_in_a_coallocation_job.cpp
-  USE_BOOST
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa fhglog
-)
+#fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
+#  SOURCES remove_workers_in_a_coallocation_job.cpp
+#  USE_BOOST
+#  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+#  LIBRARIES sdpa fhglog
+#)

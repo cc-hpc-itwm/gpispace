@@ -164,20 +164,16 @@ const std::string& GenericDaemon::name() const
       return _network_strategy.local_endpoint();
     }
 
-void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
+void GenericDaemon::serveJob(worker_id_t const& worker_id, const job_id_t& jobId)
 {
   //take a job from the workers' queue and serve it
   Job const* const ptrJob = findJob(jobId);
   if(ptrJob)
   {
-      // create a SubmitJobEvent for the job job_id serialize and attach description
-      //LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers: {"<< fhg::util::join (workers, ", ") << '}');
-
-      for (const worker_id_t& worker_id : workers)
-      {
-        child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->activity(), workers);
-      }
+    // create a SubmitJobEvent for the job job_id serialize and attach description
+    child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
+          .submit_job ( ptrJob->id(), ptrJob->activity()
+                      , {worker_id});
   }
 }
 
@@ -816,8 +812,6 @@ void GenericDaemon::finished
         }
         void operator() (sdpa::task_failed_reason_t const& error) const
         {
-          LLOG(TRACE, _logger, "Job failed id=" << _job->id());
-
           _this->_scheduler.store_result
             ( _this->_worker_manager.worker_by_address (source).get()->second
             , _job->id()
@@ -1555,7 +1549,6 @@ namespace sdpa
         std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
 
         _scheduler.assignJobsToWorkers();
-        _scheduler.steal_work();
         _scheduler.start_pending_jobs
           (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
       }

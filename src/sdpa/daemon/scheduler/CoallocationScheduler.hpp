@@ -36,7 +36,7 @@ namespace sdpa
       // used by daemon and self and test
       void releaseReservation (const sdpa::job_id_t&);
       void assignJobsToWorkers();
-      void steal_work();
+     // void steal_work();
 
       void reschedule_worker_jobs
         ( worker_id_t const&
@@ -46,15 +46,10 @@ namespace sdpa
         );
 
       std::set<job_id_t> start_pending_jobs
-        (std::function<void (std::set<worker_id_t> const&, const job_id_t&)>);
+        (std::function<void (worker_id_t const&, const job_id_t&)>);
 
       bool reservation_canceled (job_id_t const&) const;
     private:
-      double compute_reservation_cost
-        ( const job_id_t&
-        , const std::set<worker_id_t>&
-        , const double computational_cost
-        ) const;
 
       std::function<job_requirements_t (const sdpa::job_id_t&)>
         _job_requirements;
@@ -79,9 +74,8 @@ namespace sdpa
       class Reservation : boost::noncopyable
       {
       public:
-        Reservation (std::set<worker_id_t> workers, double cost)
+        Reservation (std::set<worker_id_t> workers)
           : _workers (workers)
-          , _cost (cost)
         {}
 
         void replace_worker (worker_id_t const& w1, worker_id_t w2)
@@ -100,11 +94,8 @@ namespace sdpa
           return _workers;
         }
 
-        double cost() const {return _cost;}
-
       private:
         std::set<worker_id_t> _workers;
-        double _cost;
 
       public:
         //! \todo move to job statemachine instead: is duplicated

@@ -45,9 +45,10 @@ namespace sdpa
       bool isReserved() const;
       bool backlog_full() const;
       void set_backlog_full (bool);
+      bool is_agent() const;
 
       // cost
-      double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
+      double cost_assigned_jobs (void) const;
 
       bool stealing_allowed() const;
 

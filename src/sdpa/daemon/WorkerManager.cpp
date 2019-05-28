@@ -200,8 +200,10 @@ namespace sdpa
       ) const
     {
       std::lock_guard<std::mutex> const lock_worker_map (mtx_);
+      unsigned long num_workers = 1;  // only consider jobs spanning on node
 
-      if (worker_map_.size() < job_reqs.numWorkers())
+      fhg_assert(num_workers == job_reqs.numWorkers());
+      if (worker_map_.size() < num_workers)
       {
         return {};
       }
@@ -219,10 +221,13 @@ namespace sdpa
         if ( job_reqs.shared_memory_amount_required()
            > worker.second._allocated_shared_memory_size
            )
+        {
           continue;
-
+        }
         if (worker.second.backlog_full())
+        {
           continue;
+        }
 
         const boost::optional<double>
           matchingDeg (matchRequirements (worker.second, job_reqs));
@@ -236,136 +241,133 @@ namespace sdpa
                                                                    , worker.second._last_time_idle
                                                                    )
                                            );
+          break;
         }
       }
 
       return mmap_match_deg_worker_id;
     }
 
-    std::set<worker_id_t> WorkerManager::find_assignment
-      ( const job_requirements_t& requirements
-      , const std::function<double (job_id_t const&)> cost_reservation
-      ) const
-    {
-      std::lock_guard<std::mutex> const _(mtx_);
+    // return first matching worker instead of a set of workers
+    boost::optional<worker_id_t> WorkerManager::find_assignment
+         ( const job_requirements_t& requirements
+         ) const
+       {
+         std::lock_guard<std::mutex> const _(mtx_);
 
-      if (worker_map_.size() < requirements.numWorkers())
-      {
-        return {};
-      }
+         if (worker_map_.size() < requirements.numWorkers())
+         {
+           return boost::none;
+         }
 
-      mmap_match_deg_worker_id_t mmap_matching_workers;
+         mmap_match_deg_worker_id_t mmap_matching_workers;
 
-      // note: the multimap container maintains the elements
-      // sorted according to the specified comparison criteria
-      // (here std::greater<int>, i.e. in the descending order of the matching degrees).
-      // Searching and insertion operations have logarithmic complexity, as the
-      // multimaps are implemented as binary search trees
+         // note: the multimap container maintains the elements
+         // sorted according to the specified comparison criteria
+         // (here std::greater<int>, i.e. in the descending order of the matching degrees).
+         // Searching and insertion operations have logarithmic complexity, as the
+         // multimaps are implemented as binary search trees
 
-      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
-      {
-        if ( requirements.shared_memory_amount_required()
-           > worker.second._allocated_shared_memory_size
-           )
-          {continue;}
+         for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
+         {
+           if ( requirements.shared_memory_amount_required()
+              > worker.second._allocated_shared_memory_size
+              )
+             {continue;}
 
-        if (worker.second.backlog_full())
-          {continue;}
+           if ( worker.second.backlog_full())
+             {continue;}
 
-        const boost::optional<double>
-        matching_degree (matchRequirements (worker.second, requirements));
+           if (  !worker.second.is_agent()
+              && ( worker.second.has_running_jobs()
+                 || worker.second.has_pending_jobs()
+                 )
+              )
+             {continue;}
 
-        if (matching_degree)
-        {
-          mmap_matching_workers.emplace
-            ( matching_degree.get()
-            , worker_id_host_info_t ( worker.first
-                                    , worker.second._hostname
-                                    , worker.second._allocated_shared_memory_size
-                                    , worker.second._last_time_idle
-                                    )
-            );
-        }
-      }
+           const boost::optional<double>
+           matching_degree (matchRequirements (worker.second, requirements));
 
-      return find_job_assignment_minimizing_total_cost
-        ( mmap_matching_workers
-        , requirements
-        , cost_reservation
-        );
-    }
+           if (matching_degree)
+           {
+             mmap_matching_workers.emplace
+               ( matching_degree.get()
+               , worker_id_host_info_t ( worker.first
+                                       , worker.second._hostname
+                                       , worker.second._allocated_shared_memory_size
+                                       , worker.second._last_time_idle
+                                       )
+               );
+           }
+         }
 
-    std::set<worker_id_t> WorkerManager::find_job_assignment_minimizing_total_cost
-      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-      , const job_requirements_t& requirements
-      , const std::function<double (job_id_t const&)> cost_reservation
-      ) const
-    {
-      const size_t n_req_workers (requirements.numWorkers());
+         return find_job_assignment_minimizing_total_cost
+           ( mmap_matching_workers
+           , requirements
+           );
+       }
 
-      if (mmap_matching_workers.size() < n_req_workers)
-        return {};
+       boost::optional<worker_id_t> WorkerManager::find_job_assignment_minimizing_total_cost
+         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+         , const job_requirements_t& requirements
+         ) const
+       {
+         const size_t n_req_workers (requirements.numWorkers());
 
-      bounded_priority_queue_t bpq (n_req_workers);
+         if (mmap_matching_workers.size() < n_req_workers)
+           return boost::none;
 
-      for ( std::pair<double const, worker_id_host_info_t> const& it
-          : mmap_matching_workers
-          )
-      {
-        const worker_id_host_info_t& worker_info = it.second;
-        double const cost_preassigned_jobs
-          (worker_map_.at (worker_info.worker_id()).cost_assigned_jobs
-             (cost_reservation)
-          );
+         bounded_priority_queue_t bpq (n_req_workers);
 
-        double const total_cost
-          ( requirements.transfer_cost() (worker_info.worker_host())
-          + requirements.computational_cost()
-          + cost_preassigned_jobs
-          );
+         for ( std::pair<double const, worker_id_host_info_t> const& it
+             : mmap_matching_workers
+             )
+         {
+           const worker_id_host_info_t& worker_info = it.second;
+           double const cost_preassigned_jobs
+             (worker_map_.at (worker_info.worker_id()).cost_assigned_jobs()
+             );
 
-        bpq.emplace ( total_cost
-                    , -1.0*it.first
-                    , worker_info.shared_memory_size()
-                    , worker_info.last_time_idle()
-                    , worker_info.worker_id()
-                    );
-      }
+//           double const total_cost
+//             ( requirements.transfer_cost() (worker_info.worker_host())
+//             + requirements.computational_cost()
+//             + cost_preassigned_jobs
+//             );
 
-      return bpq.assigned_workers();
-    }
+           bpq.emplace ( cost_preassigned_jobs
+                       , -1.0*it.first
+                       , worker_info.shared_memory_size()
+                       , worker_info.last_time_idle()
+                       , worker_info.worker_id()
+                       );
+         }
+
+
+         std::set<worker_id_t> assigned_workers(bpq.assigned_workers());
+
+         return boost::make_optional( assigned_workers.size()>0
+                                    , *assigned_workers.begin());
+       }
+
 
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const& job_id
-      , std::set<worker_id_t> const& workers
-      , std::function<void ( std::set<worker_id_t> const&
+      , boost::optional<worker_id_t> const& worker_id
+      , std::function<void ( worker_id_t const&
                            , const job_id_t&
                            )
                      > const& serve_job
       )
     {
       std::lock_guard<std::mutex> const _(mtx_);
-      bool const can_start
-        ( std::all_of ( std::begin(workers)
-                      , std::end(workers)
-                      , [this] (const worker_id_t& worker_id)
-                        {
-                          return worker_map_.count (worker_id)
-                            && !worker_map_.at (worker_id).isReserved();
-                        }
-                      )
-        );
+      bool const can_start = worker_id && worker_map_.count (*worker_id)
+                            && !worker_map_.at (*worker_id).isReserved();
 
       if (can_start)
       {
-        for (worker_id_t const& worker_id : workers)
-        {
-          submit_job_to_worker (job_id, worker_id);
-        }
-
-        serve_job (workers, job_id);
+        submit_job_to_worker (job_id, *worker_id);
+        serve_job (*worker_id, job_id);
       }
-
       return can_start;
     }
 
@@ -399,15 +401,19 @@ namespace sdpa
       return workers_to_cancel;
     }
 
+    // throws std::out_of_range
     void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
       std::lock_guard<std::mutex> const _(mtx_);
+
       Worker& worker (worker_map_.at (worker_id));
       worker.assign (job_id);
+
       worker_equiv_classes_.at
         (worker.capability_names_).inc_pending_jobs (1);
     }
 
+    // throws std::out_of_range
     void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
     {
       Worker& worker (worker_map_.at (worker_id));
@@ -416,6 +422,7 @@ namespace sdpa
 
       equivalence_class.dec_pending_jobs (1);
       equivalence_class.inc_running_jobs (1);
+
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id

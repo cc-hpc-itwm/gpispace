@@ -172,6 +172,7 @@ BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
     (client.wait_for_terminal_state (job_id_1), sdpa::status::CANCELED);
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
 {
   const utils::orchestrator orchestrator (_logger);
@@ -208,3 +209,5 @@ BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
+*/
+

@@ -4,6 +4,9 @@
 #include <sdpa/job_requirements.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 
+#include <fhglog/LogMacros.hpp>
+#include <logging/stream_emitter.hpp>
+
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/noncopyable.hpp>
@@ -49,12 +52,6 @@ namespace sdpa
         void add_worker_entry (worker_map_t::const_iterator);
         void remove_worker_entry (worker_map_t::const_iterator);
 
-        template <typename Reservation>
-        void steal_work
-          ( std::function<Reservation* (job_id_t const&)>
-          , worker_map_t&
-          );
-
       private:
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;
@@ -82,26 +79,23 @@ namespace sdpa
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY (const job_requirements_t&) const;
-      std::set<worker_id_t> find_job_assignment_minimizing_total_cost
-        ( const mmap_match_deg_worker_id_t&
-        , const job_requirements_t&
-        , const std::function<double (job_id_t const&)>
-        ) const;
 
-      std::set<worker_id_t> find_assignment
-        ( const job_requirements_t&
-        , const std::function<double (job_id_t const&)>
-        ) const;
+      boost::optional<worker_id_t> find_assignment
+        ( const job_requirements_t& ) const;
 
-      template <typename Reservation>
-      void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const&, std::set<worker_id_t> const&
-      , std::function<void ( std::set<worker_id_t> const&
+      ( job_id_t const&, boost::optional<worker_id_t> const&
+      , std::function<void ( worker_id_t const&
                            , const job_id_t&
                            )> const& serve_job
       );
+
+
+    boost::optional<worker_id_t> find_job_assignment_minimizing_total_cost
+      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+      , const job_requirements_t& requirements
+      ) const;
 
     bool all_workers_busy_and_have_pending_jobs() const;
 
@@ -152,120 +146,6 @@ namespace sdpa
       mutable std::mutex mtx_;
     };
 
-    template <typename Reservation>
-    void WorkerManager::steal_work
-      (std::function<Reservation* (job_id_t const&)> reservation)
-    {
-      std::lock_guard<std::mutex> const _(mtx_);
-      for (WorkerEquivalenceClass& weqc : worker_equiv_classes_
-                                        | boost::adaptors::map_values
-          )
-      {
-        weqc.steal_work (reservation, worker_map_);
-      }
-    }
-
-    template <typename Reservation>
-    void WorkerManager::WorkerEquivalenceClass::steal_work
-      ( std::function<Reservation* (job_id_t const&)> reservation
-      , worker_map_t& worker_map
-      )
-    {
-      if (n_running_jobs() == n_workers())
-      {
-        return;
-      }
-
-      if (n_pending_jobs() == 0)
-      {
-        return;
-      }
-
-      std::function<double (job_id_t const& job_id)> const cost
-        { [&reservation] (job_id_t const& job_id)
-          {
-            return reservation (job_id)->cost();
-          }
-        };
-
-      using worker_ptr = worker_map_t::iterator;
-
-      std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp { [&cost] (worker_ptr const& lhs, worker_ptr const& rhs)
-               {
-                 return lhs->second.cost_assigned_jobs (cost)
-                   < rhs->second.cost_assigned_jobs (cost);
-               }
-             };
-
-      std::priority_queue < worker_ptr
-                          , std::vector<worker_ptr>
-                          , decltype (comp)
-                          > to_steal_from (comp);
-
-      std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp_idles { [] (worker_ptr const& lhs, worker_ptr const& rhs)
-                     {
-                       return lhs->second._last_time_idle
-                         > rhs->second._last_time_idle;
-                     }
-                   };
-
-      std::priority_queue < worker_ptr
-                          , std::vector<worker_ptr>
-                          , decltype (comp_idles)
-                          > idles (comp_idles);
-
-      for (worker_id_t const& w : _worker_ids)
-      {
-        worker_ptr const& worker_ptr (worker_map.find (w));
-        fhg_assert (worker_ptr != worker_map.end());
-        Worker const& worker (worker_ptr->second);
-
-        if (worker.stealing_allowed())
-        {
-          to_steal_from.emplace (worker_ptr);
-        }
-        else if (!worker.has_running_jobs() && !worker.has_pending_jobs())
-        {
-          idles.emplace (worker_ptr);
-        }
-      }
-
-      while (!(idles.empty() || to_steal_from.empty()))
-      {
-        worker_ptr const richest (to_steal_from.top());
-        worker_ptr const& thief (idles.top());
-        Worker& richest_worker (richest->second);
-
-        auto it_job (std::max_element ( richest_worker.pending_.begin()
-                                      , richest_worker.pending_.end()
-                                      , [&reservation] ( job_id_t const& r
-                                                       , job_id_t const& l
-                                                       )
-                                        {
-                                          return reservation (r)->cost()
-                                            < reservation (l)->cost();
-                                        }
-                                      )
-                    );
-
-        fhg_assert (it_job != richest_worker.pending_.end());
-
-        reservation (*it_job)->replace_worker (richest->first, thief->first);
-
-        thief->second.assign (*it_job);
-        richest_worker.pending_.erase (*it_job);
-
-        idles.pop();
-        to_steal_from.pop();
-
-        if (richest_worker.stealing_allowed())
-        {
-          to_steal_from.emplace (richest);
-        }
-      }
-    }
 
     template <typename T>
     std::unordered_set<sdpa::job_id_t> WorkerManager::delete_or_cancel_worker_jobs

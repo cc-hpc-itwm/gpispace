@@ -4,7 +4,6 @@
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 
-//#include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
@@ -175,7 +174,6 @@ namespace sdpa {
 
       void handle_job_termination (Job*);
       virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, events::JobFinishedEvent const*) override;
-    //  virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, events::CancelJobAckEvent const*) override;
 
       //! \todo aggregated results for coallocation jobs and sub jobs
       void job_finished (Job*, sdpa::finished_reason_t const&);
@@ -183,7 +181,7 @@ namespace sdpa {
       void job_canceled (Job*);
 
       // workers
-      void serveJob(std::set<worker_id_t> const&, const job_id_t&);
+      void serveJob(worker_id_t const&, const job_id_t&);
 
       // jobs
       std::string gen_id();
@@ -409,7 +407,6 @@ namespace sdpa {
         void job_failed (job_id_t, std::string error_message) const;
         void job_finished (job_id_t, sdpa::finished_reason_t) const;
 
-        //void cancel_job_ack (job_id_t) const;
         //! \todo Client only. Move to client_proxy?
         void delete_job_ack (job_id_t) const;
         void submit_job_ack (job_id_t) const;

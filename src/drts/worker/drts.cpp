@@ -419,6 +419,7 @@ void DRTSImpl::handleJobFinishedAckEvent
     throw std::runtime_error ("job_finished_ack for non-owned job");
   }
 
+  // what if just canceled ????
   m_jobs.erase (job_it);
 }
 

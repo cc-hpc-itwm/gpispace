@@ -87,6 +87,14 @@ namespace sdpa
       }
     }
 
+    double Worker::cost_assigned_jobs (void) const
+    {
+      if (_children_allowed) {
+        return 0;
+      }
+      return pending_.size() + submitted_.size() + acknowledged_.size();
+    }
+
     bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )
     {
 
@@ -133,39 +141,14 @@ namespace sdpa
       return reserved_;
     }
 
-    double Worker::cost_assigned_jobs
-      (std::function<double (job_id_t job_id)> cost_reservation) const
-    {
-      return ( std::accumulate ( pending_.begin()
-                               , pending_.end()
-                               , 0.0
-                               , [&cost_reservation] (double total_cost, job_id_t job_id)
-                                 {
-                                   return total_cost + cost_reservation (job_id);
-                                 }
-                               )
-             + std::accumulate ( submitted_.begin()
-                               , submitted_.end()
-                               , 0.0
-                               , [&cost_reservation] (double total_cost, job_id_t job_id)
-                                 {
-                                   return total_cost + cost_reservation (job_id);
-                                 }
-                               )
-             + std::accumulate ( acknowledged_.begin()
-                               , acknowledged_.end()
-                               , 0.0
-                               , [&cost_reservation] (double total_cost, job_id_t job_id)
-                                 {
-                                   return total_cost + cost_reservation (job_id);
-                                 }
-                               )
-             );
-    }
-
     bool Worker::backlog_full() const
     {
       return backlog_full_;
+    }
+
+    bool Worker::is_agent() const
+    {
+      return _children_allowed;
     }
 
     void Worker::set_backlog_full (bool backlog_full)
@@ -173,11 +156,5 @@ namespace sdpa
       backlog_full_ = backlog_full;
     }
 
-    bool Worker::stealing_allowed() const
-    {
-      return ( (has_pending_jobs() && has_running_jobs())
-            || (pending_.size() > 1)
-             );
-    }
   }
 }

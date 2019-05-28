@@ -19,7 +19,7 @@
 namespace
 {
   std::string (&random_job_id)(void) = utils::random_peer_name;
-  auto serve_job = [] (std::set<sdpa::worker_id_t> const&, const sdpa::job_id_t&) {};
+  auto serve_job = [] (sdpa::worker_id_t const&, const sdpa::job_id_t&) {};
 
   unsigned long random_ulong()
   {
@@ -206,7 +206,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
 
   {
     _scheduler.assignJobsToWorkers();
-    _scheduler.steal_work();
+  //  _scheduler.steal_work();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 2);
@@ -222,7 +222,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
 
   {
     _scheduler.assignJobsToWorkers();
-    _scheduler.steal_work();
+    //_scheduler.steal_work();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 1);
@@ -257,7 +257,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
 
   {
     _scheduler.assignJobsToWorkers();
-    _scheduler.steal_work();
+   // _scheduler.steal_work();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 2);
@@ -267,7 +267,7 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
 
   {
     _scheduler.assignJobsToWorkers();
-    _scheduler.steal_work();
+   // _scheduler.steal_work();
     auto const assignment (get_current_assignment());
 
     BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 1);
@@ -641,6 +641,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_c
                       );
 }
 
+/*
 struct fixture_minimal_cost_assignment
 {
   fixture_minimal_cost_assignment()
@@ -997,6 +998,9 @@ struct serve_job_and_check_for_minimal_cost_assignement
   }
 };
 
+*/
+
+/*
 BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                         , serve_job_and_check_for_minimal_cost_assignement
                         )
@@ -1055,6 +1059,8 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
   // require the job to be scheduled
   BOOST_REQUIRE_EQUAL (_scheduler.delete_job (job_id), 0);
 }
+*/
+
 
 BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_not_all_workers_are_leaves
                         , fixture_scheduler_and_requirements
@@ -1500,7 +1506,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
   BOOST_REQUIRE_EQUAL (assignment.at (job_id_0), expected_assignment);
   BOOST_REQUIRE_EQUAL (assignment.at (job_id_1), expected_assignment);
 }
-
+/*
 BOOST_FIXTURE_TEST_CASE ( work_stealing
                         , fixture_scheduler_and_requirements
                         )
@@ -1566,7 +1572,7 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
                  && assignment.at (job_2) != std::set<sdpa::worker_id_t>({"worker_2"})
                   );
   }
-  _scheduler.steal_work();
+  //_scheduler.steal_work();
 
   {
     auto const assignment (get_current_assignment());
@@ -1586,7 +1592,8 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
     BOOST_REQUIRE (assignment.at (job_1) != assignment.at (job_2));
   }
 }
-
+*/
+/*
 BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                         , fixture_scheduler_and_requirements
                         )
@@ -1659,7 +1666,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                   );
   }
 
-  _scheduler.steal_work();
+  //_scheduler.steal_work();
 
   {
     auto const assignment (get_current_assignment());
@@ -1678,6 +1685,7 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
     BOOST_REQUIRE_EQUAL (jobs_started.size(), 1);
   }
 }
+*/
 
 struct fixture_add_new_workers
 {
@@ -1778,7 +1786,7 @@ struct fixture_add_new_workers
   void request_scheduling()
   {
     _scheduler.assignJobsToWorkers();
-    _scheduler.steal_work();
+   // _scheduler.steal_work();
   }
 
   std::set<sdpa::worker_id_t> get_workers_with_assigned_jobs
@@ -1878,6 +1886,7 @@ struct fixture_add_new_workers
   }
 };
 
+/*
 BOOST_FIXTURE_TEST_CASE
   ( add_new_workers_and_steal_work
   , fixture_add_new_workers
@@ -1912,7 +1921,8 @@ BOOST_FIXTURE_TEST_CASE
 
   check_work_stealing (initial_workers, new_workers, old_assignment, jobs.size());
 }
-
+*/
+/*
 BOOST_FIXTURE_TEST_CASE
   ( add_new_workers_with_capabilities_and_steal_work_repeatedly
   , fixture_add_new_workers
@@ -2141,6 +2151,7 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 2);
   BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_1_job, assignment), 0);
 }
+*/
 
 BOOST_FIXTURE_TEST_CASE
   ( the_worker_that_is_longer_idle_gets_first_the_job
@@ -2198,8 +2209,8 @@ BOOST_FIXTURE_TEST_CASE
 
     _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( *worker_jobs.cbegin()
-      , {worker}
-      , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+      , worker
+      , [] (sdpa::worker_id_t const&, sdpa::job_id_t const&) {}
       );
 
     _scheduler.releaseReservation (*worker_jobs.begin());
@@ -2262,6 +2273,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
+/*
 BOOST_FIXTURE_TEST_CASE
   ( request_arbitrary_number_of_workers_and_finish_arbitrary_number_of_jobs
   , fixture_add_new_workers
@@ -2289,7 +2301,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 
   _scheduler.assignJobsToWorkers();
-  _scheduler.steal_work();
+ // _scheduler.steal_work();
 
   auto assignment (get_current_assignment());
 
@@ -2337,9 +2349,12 @@ BOOST_FIXTURE_TEST_CASE
     }
 
     _scheduler.assignJobsToWorkers();
-    _scheduler.steal_work();
+   // _scheduler.steal_work();
     assignment = get_current_assignment();
   }
 
   BOOST_REQUIRE_EQUAL (started_jobs, n_jobs);
 }
+*/
+
+
