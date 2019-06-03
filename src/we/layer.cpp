@@ -230,12 +230,12 @@ namespace we
     }
   }
 
-  void layer::finished_canceled(id_type id, sdpa::task_canceled_reason_t const& reason)
+  void layer::finished_canceled(id_type id, sdpa::task_canceled_reason_t const& )
   {
     try
     {
       _command_queue.put
-        ( [this, id, reason] ()
+        ( [this, id] ()
         {
           _running_tasks.erase(id);
         }
@@ -453,6 +453,7 @@ namespace we
               )
            )
         {
+          _command_queue.interrupt(queue_interrupted());
           rts_workflow_finished ( fhg::util::starts_with
               ( wrapped_activity_prefix()
               , _workflow.transition().name()
@@ -460,7 +461,6 @@ namespace we
               ? unwrap (_workflow)
               : _workflow
               );
-          _command_queue.interrupt(queue_interrupted());
         }
         else if (_wf_state == CANCELED && _running_tasks.empty())
         {
@@ -493,7 +493,7 @@ namespace we
   }
   catch (...)
   {
-    rts_workflow_finished (_error);
+    std::rethrow_exception(std::current_exception());
   }
 
 

@@ -713,10 +713,6 @@ void GenericDaemon::finished
     }
     void operator() (sdpa::task_canceled_reason_t const& ) const
     {
-      if (boost::get<job_source_master> (&_job->source()))
-      {
-        _this->deleteJob (_job_id);
-      }
       _this->emit_gantt ( _job->id(), _job->result()
                         , NotificationEvent::STATE_CANCELED);
     }

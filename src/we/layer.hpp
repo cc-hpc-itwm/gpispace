@@ -112,7 +112,7 @@ namespace we
       public:
         queue_interrupted()
           : std::runtime_error ("command queue interrupted")
-          {};
+          {}
       };
 
     };
