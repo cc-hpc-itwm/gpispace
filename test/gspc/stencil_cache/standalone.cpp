@@ -299,11 +299,13 @@ namespace test
                     computations.count_down();
 
                     {
-                      std::lock_guard<std::mutex> const _ {_guard_computed};
+                      std::lock_guard<std::mutex> const lock_computed
+                        {_guard_computed};
 
                       if (!computed.emplace (stencil).second)
                       {
-                        std::lock_guard<std::mutex> const _ {_guard_ERROR};
+                        std::lock_guard<std::mutex> const lock_error
+                          {_guard_ERROR};
 
                         ERROR_duplicated_computation.emplace_back (to_compute);
                       }

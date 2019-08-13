@@ -48,7 +48,7 @@ namespace
 
     if (!data)
     {
-      std::runtime_error
+      throw std::runtime_error
         ((boost::format ("Could not open '%1%'") % data_file).str());
     }
 
