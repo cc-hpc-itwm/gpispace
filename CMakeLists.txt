@@ -1,4 +1,5 @@
 cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
+project (gspc VERSION 16.04 LANGUAGES CXX)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -16,7 +17,6 @@ include (require_compiler_version)
 include (git)
 include (git_submodules)
 
-set (PROJECT_VERSION "16.04")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 
 determine_git_revision ("${CMAKE_SOURCE_DIR}" PROJECT_REVISION)
