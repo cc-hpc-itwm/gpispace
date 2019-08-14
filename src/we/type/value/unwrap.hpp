@@ -3,9 +3,6 @@
 #include <we/type/value.hpp>
 #include <we/type/value/from_value.hpp>
 
-#include <boost/foreach.hpp>
-#include <boost/preprocessor/punctuation/comma.hpp>
-
 namespace pnet
 {
   namespace type
@@ -17,7 +14,7 @@ namespace pnet
       {
         std::list<T> lt;
 
-        BOOST_FOREACH (value_type const &v, lv)
+        for (auto const &v : lv)
         {
           lt.emplace_back (from_value<T> (v));
         }
@@ -30,7 +27,7 @@ namespace pnet
       {
         std::set<T> st;
 
-        BOOST_FOREACH (value_type const &v, sv)
+        for (auto const &v : sv)
         {
           st.emplace (from_value<T> (v));
         }
@@ -43,11 +40,7 @@ namespace pnet
       {
         std::map<K, V> mkv;
 
-        BOOST_FOREACH
-          ( std::map<value_type BOOST_PP_COMMA() value_type>::value_type const&
-            kv
-          , mvv
-          )
+        for (auto const& kv : mvv)
         {
           mkv.emplace ( from_value<K> (kv.first)
                       , from_value<V> (kv.second)
