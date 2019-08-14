@@ -1,9 +1,9 @@
 #pragma once
 
-#include <boost/function.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/vector.hpp>
 
+#include <functional>
 #include <iosfwd>
 #include <set>
 #include <vector>
@@ -24,7 +24,7 @@ namespace bitsetofint
     bool is_element (const unsigned long&) const;
     std::size_t count() const;
     void list (std::ostream&) const;
-    void list (const boost::function<void (const unsigned long&)>&) const;
+    void list (const std::function<void (const unsigned long&)>&) const;
     std::set<unsigned long> elements() const;
 
     friend type operator| (const type&, const type&);

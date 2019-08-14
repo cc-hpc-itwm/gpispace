@@ -4,7 +4,7 @@
 
 #include <fhglog/Logger.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 #include <mutex>
 #include <list>
@@ -27,7 +27,7 @@ namespace fhg
       friend struct scoped_signal_handler;
 
       mutable std::mutex _handler_mutex;
-      using functions = std::list<boost::function<void (int, siginfo_t*, void*)>>;
+      using functions = std::list<std::function<void (int, siginfo_t*, void*)>>;
       std::map<int, std::pair<struct sigaction, functions>> _handlers;
     };
 
@@ -35,7 +35,7 @@ namespace fhg
     {
       scoped_signal_handler ( signal_handler_manager&
                             , int sig_num
-                            , boost::function<void (int, siginfo_t*, void*)>
+                            , std::function<void (int, siginfo_t*, void*)>
                             );
       ~scoped_signal_handler();
 
@@ -51,7 +51,7 @@ namespace fhg
         (signal_handler_manager&, fhg::log::Logger&);
 
     private:
-      boost::function<void (int, siginfo_t*, void*)> const _handler;
+      std::function<void (int, siginfo_t*, void*)> const _handler;
       scoped_signal_handler const _segv;
       scoped_signal_handler const _bus;
       scoped_signal_handler const _abrt;

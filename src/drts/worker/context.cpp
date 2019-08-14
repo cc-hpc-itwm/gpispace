@@ -45,10 +45,10 @@ namespace drts
       _->module_call_do_cancel();
     }
     void context::execute_and_kill_on_cancel
-      ( boost::function<void()> fun
-      , boost::function<void()> on_cancel
-      , boost::function<void (int)> on_signal
-      , boost::function<void (int)> on_exit
+      ( std::function<void()> fun
+      , std::function<void()> on_cancel
+      , std::function<void (int)> on_signal
+      , std::function<void (int)> on_exit
       )
     {
       _->execute_and_kill_on_cancel (fun, on_cancel, on_signal, on_exit);
@@ -90,7 +90,7 @@ namespace drts
       return w.substr (host_start, host_end-host_start);
     }
     void context::implementation::set_module_call_do_cancel
-      (boost::function<void()> fun)
+      (std::function<void()> fun)
     {
       _module_call_do_cancel = fun;
       if (_cancelled)
@@ -113,10 +113,10 @@ namespace drts
     //! \todo factor out channel_from_child_to_parent, see
     //! execute_and_get_startup_messages, process::execute
     void context::implementation::execute_and_kill_on_cancel
-      ( boost::function<void()> fun
-      , boost::function<void()> on_cancel
-      , boost::function<void (int)> on_signal
-      , boost::function<void (int)> on_exit
+      ( std::function<void()> fun
+      , std::function<void()> on_cancel
+      , std::function<void (int)> on_signal
+      , std::function<void (int)> on_exit
       )
     {
       int pipe_fds[2];

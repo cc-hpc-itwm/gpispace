@@ -55,7 +55,7 @@ namespace fhg
       (int sig_num, siginfo_t* info, void* context) const
     {
       std::lock_guard<std::mutex> const _ (_handler_mutex);
-      for ( const boost::function<void (int, siginfo_t*, void*)>& fun
+      for ( const std::function<void (int, siginfo_t*, void*)>& fun
           : _handlers.find (sig_num)->second.second
           )
       {
@@ -66,7 +66,7 @@ namespace fhg
     scoped_signal_handler::scoped_signal_handler
         ( signal_handler_manager& manager
         , int sig_num
-        , boost::function<void (int, siginfo_t*, void*)> fun
+        , std::function<void (int, siginfo_t*, void*)> fun
         )
       : _manager (manager)
       , _sig_num (sig_num)

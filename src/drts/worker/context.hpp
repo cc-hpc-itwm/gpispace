@@ -2,11 +2,10 @@
 
 #include <drts/worker/context_fwd.hpp>
 
+#include <functional>
 #include <set>
 #include <stdexcept>
 #include <string>
-
-#include <boost/function.hpp>
 
 namespace drts
 {
@@ -39,15 +38,15 @@ namespace drts
       void module_call_do_cancel() const;
 
       void execute_and_kill_on_cancel
-        ( boost::function<void()> fun
-        , boost::function<void()> on_cancel
-        , boost::function<void (int)> on_signal
-        , boost::function<void (int)> on_exit
+        ( std::function<void()> fun
+        , std::function<void()> on_cancel
+        , std::function<void (int)> on_signal
+        , std::function<void (int)> on_exit
         );
 
       void execute_and_kill_on_cancel
-        ( boost::function<void()> fun
-        , boost::function<void()> on_cancel
+        ( std::function<void()> fun
+        , std::function<void()> on_cancel
         )
       {
         execute_and_kill_on_cancel
@@ -60,7 +59,7 @@ namespace drts
 
       struct cancelled : public std::exception {};
 
-      void execute_and_kill_on_cancel (boost::function<void()> fun)
+      void execute_and_kill_on_cancel (std::function<void()> fun)
       {
         execute_and_kill_on_cancel
           ( fun
