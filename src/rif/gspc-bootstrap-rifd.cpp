@@ -110,9 +110,11 @@ try
               )
           , vm.count (option::port)
           ? boost::make_optional<unsigned short>
+            ( static_cast<unsigned long>
               ( vm.at (option::port)
               . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
               )
+            )
           : boost::none
           , boost::filesystem::canonical
               (fhg::util::executable_path().parent_path() / INSTALLATION_HOME)
