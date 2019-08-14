@@ -79,7 +79,6 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
   program_options
   random
   serialization
-  signals
   system
   test_exec_monitor
   thread
