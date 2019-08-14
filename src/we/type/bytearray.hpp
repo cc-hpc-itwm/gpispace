@@ -1,12 +1,11 @@
 #pragma once
 
 #include <boost/serialization/vector.hpp>
-#include <boost/type_traits/is_pointer.hpp>
-#include <boost/utility/enable_if.hpp>
 
 #include <algorithm>
 #include <iosfwd>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -34,7 +33,7 @@ namespace we
       template<typename T>
         explicit bytearray
           ( T const& x
-          , typename boost::enable_if_c<not boost::is_pointer<T>::value>::type* = 0
+          , typename std::enable_if<not std::is_pointer<T>::value>::type* = 0
           )
         : _v ( static_cast<const char*> (static_cast<const void*> (&x))
              , static_cast<const char*> (static_cast<const void*> (&x)) + sizeof (x)
