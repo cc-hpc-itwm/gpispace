@@ -18,7 +18,6 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/variant.hpp>
-#include <boost/function.hpp>
 
 namespace xml
 {
