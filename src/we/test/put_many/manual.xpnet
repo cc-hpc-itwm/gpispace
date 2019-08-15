@@ -1,0 +1,68 @@
+<defun name="put_many_manual">
+  <in name="N" type="unsigned long" place="N"/>
+  <out name="S" type="unsigned long" place="S"/>
+  <net>
+    <place name="N" type="unsigned long"/>
+    <place name="S" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+
+    <place name="i" type="unsigned long"/>
+    <transition name="generate">
+      <defun>
+        <in name="N" type="unsigned long"/>
+        <out name="out" type="list"/>
+        <module name="manual" function="generate (N, out)">
+          <code><![CDATA[
+          for (unsigned long i (0); i <= N; ++i)
+          {
+            out.emplace_back (i);
+          }
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-in port="N" place="N"/>
+      <connect-out port="out" place="is"/>
+    </transition>
+
+    <place name="is" type="list"/>
+    <transition name="empty">
+      <defun>
+        <in name="is" type="list"/>
+        <expression/>
+      </defun>
+      <condition>
+        stack_empty (${is})
+      </condition>
+      <connect-in port="is" place="is"/>
+    </transition>
+    <transition name="cons">
+      <defun>
+        <inout name="is" type="list"/>
+        <out name="i" type="unsigned long"/>
+        <expression>
+          ${i} := stack_top (${is});
+          ${is} := stack_pop (${is})
+        </expression>
+      </defun>
+      <condition>
+        !stack_empty (${is})
+      </condition>
+      <connect-inout port="is" place="is"/>
+      <connect-out port="i" place="i"/>
+    </transition>
+
+    <transition name="sum">
+      <defun>
+        <in name="i" type="unsigned long"/>
+        <inout name="S" type="unsigned long"/>
+        <expression>
+          ${S} := ${S} + ${i}
+        </expression>
+      </defun>
+      <connect-in port="i" place="i"/>
+      <connect-inout port="S" place="S"/>
+    </transition>
+  </net>
+</defun>
