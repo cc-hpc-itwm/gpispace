@@ -25,15 +25,15 @@ namespace gspc
 {
   struct workflow::implementation
   {
-    implementation (we::type::activity_t activity)
+    implementation (::we::type::activity_t activity)
       : _activity (activity)
     {}
 
-    we::type::activity_t _activity;
+    ::we::type::activity_t _activity;
   };
 
   workflow::workflow (boost::filesystem::path workflow)
-    : _ (new implementation (we::type::activity_t (workflow)))
+    : _ (new implementation (::we::type::activity_t (workflow)))
   {}
   PIMPL_DTOR (workflow)
 
@@ -83,7 +83,7 @@ namespace gspc
 
   namespace
   {
-    void put ( we::type::activity_t& activity
+    void put ( ::we::type::activity_t& activity
              , std::multimap< std::string
                             , pnet::type::value::value_type
                             > const& values_on_ports
@@ -140,12 +140,12 @@ namespace gspc
       }
     }
 
-    we::type::activity_t wait_and_delete_job
+    ::we::type::activity_t wait_and_delete_job
       (job_id_t job_id, sdpa::client::Client& client)
     {
       wait_for_terminal_state (job_id, client);
 
-      we::type::activity_t const result_activity
+      ::we::type::activity_t const result_activity
         (client.retrieveResults (job_id));
 
       client.deleteJob (job_id);
@@ -161,7 +161,7 @@ namespace gspc
 
     for (unsigned long i (0); i < number_of_steps; i++)
     {
-      put (workflow._->_activity, {{"_STEP", we::type::literal::control()}});
+      put (workflow._->_activity, {{"_STEP", ::we::type::literal::control()}});
     }
 
     job_id_t const job_id (submit (workflow, {}));
@@ -178,7 +178,7 @@ namespace gspc
     workflow._->_activity =
       copy (workflow._->_activity, std::string ("_CONTROL"), transition_names);
 
-    put (workflow._->_activity, {{"_CONTROL", we::type::literal::control()}});
+    put (workflow._->_activity, {{"_CONTROL", ::we::type::literal::control()}});
 
     job_id_t const job_id (submit (workflow, {}));
 
@@ -200,7 +200,7 @@ namespace gspc
   std::multimap<std::string, pnet::type::value::value_type>
     client::extract_result_and_forget_job (job_id_t job_id)
   {
-    we::type::activity_t const result_activity
+    ::we::type::activity_t const result_activity
       (wait_and_delete_job (job_id, _->_client));
 
     std::multimap<std::string, pnet::type::value::value_type> result;
