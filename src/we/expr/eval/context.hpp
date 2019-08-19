@@ -2,6 +2,7 @@
 
 #include <we/type/value.hpp>
 
+#include <iosfwd>
 #include <list>
 #include <string>
 #include <unordered_map>
@@ -24,6 +25,8 @@ namespace expr
                                   > ref_container_type;
 
       ref_container_type _ref_container;
+
+      friend std::ostream& operator<< (std::ostream&, context const&);
 
     public:
       void bind_ref (const std::string&, const pnet::type::value::value_type&);
