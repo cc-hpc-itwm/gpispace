@@ -7,6 +7,7 @@
 #include <drts/private/pimpl.hpp>
 #include <drts/private/information_to_reattach.hpp>
 
+#include <we/type/activity.hpp>
 #include <we/type/value.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
