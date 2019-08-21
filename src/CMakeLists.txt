@@ -89,6 +89,9 @@ extended_add_library (NAME pnet
           "we/type/value/serialize.cpp"
           "we/type/value/dump.cpp"
 
+          "we/plugin/Plugin.cpp"
+          "we/plugin/Plugins.cpp"
+
           "we/loader/Module.cpp"
           "we/workflow_response.cpp"
 

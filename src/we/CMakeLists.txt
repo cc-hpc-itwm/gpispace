@@ -76,9 +76,15 @@ install (FILES
   type/literal/control.hpp
   DESTINATION include/we/type/literal
 )
+install (FILES
+  plugin/Base.hpp
+  type/value/path/join.hpp
+  DESTINATION include/we/plugin/Base.hpp
+)
 
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)
 add_subdirectory (loader/test)
+add_subdirectory (plugin/test)
 add_subdirectory (test)
 add_subdirectory (type/test)
