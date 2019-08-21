@@ -1,0 +1,91 @@
+<defun name="echo">
+  <in name="plugin_path" type="string" place="plugin_path"/>
+  <in name="log_path" type="string" place="log_path"/>
+  <in name="before" type="long" place="before"/>
+  <in name="after" type="long" place="after"/>
+  <out name="done" type="unsigned long" place="done"/>
+  <net>
+    <place name="plugin_path" type="string"/>
+    <place name="log_path" type="string"/>
+    <place name="before" type="long"/>
+    <place name="after" type="long"/>
+    <place name="done" type="unsigned long"/>
+
+    <transition name="create_plugin">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="create"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_path" type="string"/>
+        <in name="log_path" type="string"/>
+        <out name="plugin_id" type="unsigned long"/>
+        <expression>
+          ${plugin.Log.file} := ${log_path}
+        </expression>
+      </defun>
+      <connect-in port="plugin_path" place="plugin_path"/>
+      <connect-in port="log_path" place="log_path"/>
+      <connect-out port="plugin_id" place="plugin_id"/>
+    </transition>
+
+    <place name="plugin_id" type="unsigned long"/>
+
+    <transition name="echo">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="call_before_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
+          </properties>
+        </properties>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="call_after_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
+          </properties>
+        </properties>
+        <inout name="plugin_id" type="unsigned long"/>
+        <in name="x" type="long"/>
+        <in name="y" type="long"/>
+        <expression>
+          ${x} := ${y}
+        </expression>
+      </defun>
+      <connect-in port="x" place="before"/>
+      <connect-in port="y" place="after"/>
+      <connect-in port="plugin_id" place="plugin_id"/>
+      <connect-out port="plugin_id" place="please_destroy"/>
+    </transition>
+
+    <place name="please_destroy" type="unsigned long"/>
+
+    <transition name="destroy">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="destroy"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_id" type="unsigned long"/>
+        <out name="done" type="unsigned long"/>
+        <expression>
+          ${done} := ${plugin_id}
+        </expression>
+      </defun>
+      <connect-in port="plugin_id" place="please_destroy"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>
