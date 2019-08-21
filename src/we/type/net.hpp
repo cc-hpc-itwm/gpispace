@@ -7,7 +7,6 @@
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-#include <we/type/stencil_caches.hpp>
 #include <we/type/transition.fwd.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
@@ -103,7 +102,6 @@ namespace we
       fire_expressions_and_extract_activity_random
         ( Engine& engine
         , we::workflow_response_callback const& workflow_response
-        , we::type::stencil_caches& stencil_caches
         , gspc::we::plugin::Plugins& plugins
         , gspc::we::plugin::PutToken put_token
         )
@@ -122,7 +120,6 @@ namespace we
             fire_expression ( transition_id
                             , transition
                             , workflow_response
-                            , stencil_caches
                             , plugins
                             , put_token
                             );
@@ -143,12 +140,10 @@ namespace we
             , we::workflow_response_callback const& workflow_response
             )
       {
-        we::type::stencil_caches stencil_caches;
         gspc::we::plugin::Plugins plugins;
         return fire_expressions_and_extract_activity_random
           ( engine
           , workflow_response
-          , stencil_caches
           , plugins
           , [] (std::string, pnet::type::value::value_type)
             {
@@ -215,7 +210,6 @@ namespace we
         ( transition_id_type
         , we::type::transition_t const&
         , we::workflow_response_callback const&
-        , we::type::stencil_caches&
         , gspc::we::plugin::Plugins&
         , gspc::we::plugin::PutToken
         );

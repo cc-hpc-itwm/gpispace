@@ -525,7 +525,6 @@ namespace we
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
-      , we::type::stencil_caches& stencil_caches
       , gspc::we::plugin::Plugins& plugins
       , gspc::we::plugin::PutToken put_token
       )
@@ -609,11 +608,6 @@ namespace we
             }
           }
         }
-      }
-
-      if (!!transition.prop().get ({"fhg", "we", "stencil_cache"}))
-      {
-        stencil_caches (context, put_token);
       }
 
       std::list<to_be_updated_type> pending_updates;

@@ -446,7 +446,6 @@ namespace we
                                             , value
                                             );
                         }
-                      , _stencil_caches
                       , _plugins
                       , [this, id]
                           ( std::string place_name

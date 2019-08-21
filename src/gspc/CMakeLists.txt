@@ -8,7 +8,7 @@ extended_add_library (NAME StencilCache
             Boost::base
 )
 
-#! \todo This is actually tied to src/we/type/stencil_caches.cpp
+#! \todo This is actually tied to src/we/type/stencil_cache.cpp
 #! rather than this folder and in fact completely unused here. Move
 #! there?
 install (FILES

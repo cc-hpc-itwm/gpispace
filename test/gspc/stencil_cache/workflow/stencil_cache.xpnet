@@ -13,6 +13,8 @@
     <field name="data" type="bytearray"/>
   </struct>
 
+  <in name="plugin_path" type="string" place="plugin_path"/>
+
   <in name="X" type="Coordinate" place="X"/>
   <in name="Y" type="Coordinate" place="Y"/>
   <in name="B" type="long" place="B"/>
@@ -23,13 +25,14 @@
 
   <in name="neighbors" type="Callback" place="neighbors"/>
 
-  <in name="cache_id" type="unsigned long" place="cache_id"/>
-
   <out name="done" type="control" place="done"/>
   <out name="loads" type="unsigned long" place="loads"/>
   <out name="gets" type="unsigned long" place="gets"/>
 
   <net>
+    <place name="plugin_path" type="string"/>
+    <place name="plugin_id" type="unsigned long"/>
+
     <place name="X" type="Coordinate"/>
     <place name="Y" type="Coordinate"/>
     <place name="B" type="long"/>
@@ -39,8 +42,6 @@
     <place name="block_size" type="unsigned long"/>
 
     <place name="neighbors" type="Callback"/>
-
-    <place name="cache_id" type="unsigned long"/>
 
     <place name="done" type="control"/>
 
@@ -100,13 +101,27 @@
     <place name="ready" type="Ready" put_token="true"/>
     <place name="used" type="Assignment"/>
 
-    <struct name="SCache">
-      <field name="id" type="unsigned long"/>
-    </struct>
+    <place name="stencil_cache_for_alloc" type="unsigned long"/>
+    <place name="stencil_cache_for_prepared" type="unsigned long"/>
+    <place name="stencil_cache_for_free" type="unsigned long"/>
 
-    <place name="stencil_cache_for_alloc" type="SCache"/>
-    <place name="stencil_cache_for_prepared" type="SCache"/>
-    <place name="stencil_cache_for_free" type="SCache"/>
+    <transition name="multiplex_plugin_id">
+      <defun>
+        <in name="x" type="unsigned long"/>
+        <out name="a" type="unsigned long"/>
+        <out name="b" type="unsigned long"/>
+        <out name="c" type="unsigned long"/>
+        <expression>
+          ${a} := ${x};
+          ${b} := ${x};
+          ${c} := ${x};
+        </expression>
+      </defun>
+      <connect-in port="x" place="plugin_id"/>
+      <connect-out port="a" place="stencil_cache_for_alloc"/>
+      <connect-out port="b" place="stencil_cache_for_prepared"/>
+      <connect-out port="c" place="stencil_cache_for_free"/>
+    </transition>
 
     <place name="N" type="unsigned long"/>
     <place name="computed" type="Stencil"/>
@@ -114,9 +129,11 @@
 
     <transition name="stencil_cache_initialize">
       <defun>
-        <properties name="fhg">
+        <properties name="gspc">
           <properties name="we">
-            <property key="stencil_cache"/>
+            <properties name="plugin">
+              <property key="create"/>
+            </properties>
           </properties>
         </properties>
         <in name="X" type="Coordinate"/>
@@ -126,10 +143,8 @@
         <in name="memory" type="global_memory_range"/>
         <in name="input_size" type="unsigned long"/>
         <in name="block_size" type="unsigned long"/>
-        <in name="id" type="unsigned long"/>
-        <out name="alloc" type="SCache"/>
-        <out name="prepared" type="SCache"/>
-        <out name="free" type="SCache"/>
+        <in name="plugin_path" type="string"/>
+        <out name="plugin_id" type="unsigned long"/>
         <out name="N" type="unsigned long"/>
         <out name="x" type="long"/>
         <out name="y" type="long"/>
@@ -141,11 +156,7 @@
           ${place.ready} := "ready";
           ${begin.value} := 0L;
           ${end.value} := ${X.value} * ${Y.value};
-          ${operation} := "INIT";
 
-          ${alloc.id} := ${id};
-          ${prepared.id} := ${id};
-          ${free.id} := ${id};
           ${N} := ulong (${end.value} - ${begin.value});
           ${x} := 0L;
           ${y} := 0L;
@@ -157,7 +168,6 @@
       <condition>
         (${X.value} * ${Y.value}) :ge: 0L
       </condition>
-      <connect-in port="id" place="cache_id"/>
       <connect-in port="neighbors" place="neighbors"/>
       <connect-read port="memory" place="input_memory"/>
       <connect-read port="input_size" place="input_size"/>
@@ -165,15 +175,14 @@
       <connect-read port="X" place="X"/>
       <connect-read port="Y" place="Y"/>
       <connect-read port="B" place="B"/>
-      <connect-out port="alloc" place="stencil_cache_for_alloc"/>
-      <connect-out port="prepared" place="stencil_cache_for_prepared"/>
-      <connect-out port="free" place="stencil_cache_for_free"/>
       <connect-out port="N" place="N"/>
       <connect-out port="x" place="x"/>
       <connect-out port="y" place="y"/>
       <connect-out port="b" place="b"/>
       <connect-out port="YB" place="YB"/>
       <connect-out port="yr" place="yr"/>
+      <connect-in port="plugin_path" place="plugin_path"/>
+      <connect-out port="plugin_id" place="plugin_id"/>
     </transition>
 
     <place name="stencil" type="Stencil"/>
@@ -196,7 +205,7 @@
         <in name="Y" type="Coordinate"/>
         <in name="B" type="long"/>
         <in name="YB" type="long"/>
-        <in name="cache" type="SCache"/>
+        <in name="cache" type="unsigned long"/>
         <in name="x" type="long"/>
         <in name="y" type="long"/>
         <in name="b" type="long"/>
@@ -389,19 +398,23 @@
 
     <transition name="co_alloc">
       <defun>
-        <properties name="fhg">
+        <properties name="gspc">
           <properties name="we">
-            <property key="stencil_cache"/>
+            <properties name="plugin">
+              <property key="call_after_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
           </properties>
         </properties>
         <inout name="co" type="control"/>
         <in name="stencil" type="Stencil"/>
-        <inout name="cache" type="SCache"/>
+        <inout name="plugin_id" type="unsigned long"/>
         <expression>
           ${operation} := "ALLOC"
         </expression>
       </defun>
-      <connect-inout port="cache" place="stencil_cache_for_alloc"/>
+      <connect-inout port="plugin_id" place="stencil_cache_for_alloc"/>
       <connect-in port="stencil" place="stencil"/>
       <connect-in port="co" place="co_alloc"/>
       <connect-out port="co" place="co_generate"/>
@@ -409,38 +422,46 @@
 
     <transition name="stencil_cache_prepared">
       <defun>
-        <properties name="fhg">
+        <properties name="gspc">
           <properties name="we">
-            <property key="stencil_cache"/>
+            <properties name="plugin">
+              <property key="call_after_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
           </properties>
         </properties>
         <in name="prepared" type="Coordinate"/>
-        <inout name="cache" type="SCache"/>
+        <inout name="plugin_id" type="unsigned long"/>
         <expression>
           ${operation} := "PREPARED"
         </expression>
       </defun>
-      <connect-inout port="cache" place="stencil_cache_for_prepared"/>
+      <connect-inout port="plugin_id" place="stencil_cache_for_prepared"/>
       <connect-in port="prepared" place="prepared"/>
     </transition>
 
     <transition name="stencil_cache_free">
       <defun>
-        <properties name="fhg">
+        <properties name="gspc">
           <properties name="we">
-            <property key="stencil_cache"/>
+            <properties name="plugin">
+              <property key="call_after_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
           </properties>
         </properties>
         <in name="assignment" type="Assignment"/>
-        <inout name="cache" type="SCache"/>
         <out name="freed" type="control"/>
+        <inout name="plugin_id" type="unsigned long"/>
         <expression>
           ${operation} := "FREE";
 
           ${freed} := []
         </expression>
       </defun>
-      <connect-inout port="cache" place="stencil_cache_for_free"/>
+      <connect-inout port="plugin_id" place="stencil_cache_for_free"/>
       <connect-in port="assignment" place="used"/>
       <connect-out port="freed" place="freed"/>
     </transition>
@@ -606,19 +627,20 @@
 
     <transition name="done">
       <defun>
-        <properties name="fhg">
+        <properties name="gspc">
           <properties name="we">
-            <property key="stencil_cache"/>
+            <properties name="plugin">
+              <property key="destroy"/>
+            </properties>
           </properties>
         </properties>
         <in name="N" type="unsigned long"/>
         <in name="input_size" type="unsigned long"/>
         <in name="input_memory" type="global_memory_range"/>
-        <in name="stencil_cache_for_prepared" type="SCache"/>
-        <in name="cache" type="SCache"/>
+        <in name="stencil_cache_for_prepared" type="unsigned long"/>
+        <in name="plugin_id" type="unsigned long"/>
         <out name="done" type="control"/>
         <expression>
-          ${operation} := "DESTROY";
           ${done} := []
         </expression>
       </defun>
@@ -629,7 +651,7 @@
       <connect-in port="input_size" place="input_size"/>
       <connect-in port="input_memory" place="input_memory"/>
       <connect-in port="stencil_cache_for_prepared" place="stencil_cache_for_prepared"/>
-      <connect-in port="cache" place="stencil_cache_for_free"/>
+      <connect-in port="plugin_id" place="stencil_cache_for_free"/>
       <connect-out port="done" place="done"/>
     </transition>
   </net>

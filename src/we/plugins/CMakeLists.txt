@@ -7,6 +7,15 @@ extended_add_library (NAME Log
   INSTALL
   INSTALL_DESTINATION "plugin"
 )
+extended_add_library (NAME StencilCache
+  NAMESPACE Plugin
+  SOURCES "StencilCache.cpp"
+  POSITION_INDEPENDENT
+  TYPE SHARED
+  LIBRARIES pnet
+  INSTALL
+  INSTALL_DESTINATION "plugin"
+)
 
 function (test_Log case)
   fhg_add_test (NAME plugin_Log_${case}
