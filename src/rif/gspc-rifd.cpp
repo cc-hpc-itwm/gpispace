@@ -36,6 +36,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <fstream>
+#include <stdexcept>
 
 namespace
 {
@@ -133,6 +134,11 @@ try
         )
     : boost::none
     );
+
+  if (port)
+  {
+    throw std::logic_error ("NYI: gspc-rifd ignores given ports.");
+  }
 
   std::string const register_host
     (vm.at (option::register_host).as<std::string>());
