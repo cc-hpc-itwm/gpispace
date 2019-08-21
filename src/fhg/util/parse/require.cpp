@@ -216,7 +216,7 @@ namespace fhg
 
         void list ( position& pos
                   , const char open, const char sep, const char close
-                  , const boost::function<void (position&)>& f
+                  , const std::function<void (position&)>& f
                   , const bool skip_space_before_element
                   , const bool skip_space_after_element
                   )

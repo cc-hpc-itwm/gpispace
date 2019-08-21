@@ -18,7 +18,6 @@
 #include <fhglog/Configuration.hpp>
 
 #include <boost/asio/io_service.hpp>
-#include <boost/ref.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/scoped_thread.hpp>
 

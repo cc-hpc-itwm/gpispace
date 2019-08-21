@@ -4,8 +4,6 @@
 #include <util-generic/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/date_time/posix_time/posix_time.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>

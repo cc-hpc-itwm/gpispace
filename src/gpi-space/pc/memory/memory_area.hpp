@@ -4,7 +4,6 @@
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/signals2.hpp>
 
 #include <fhglog/Logger.hpp>
 

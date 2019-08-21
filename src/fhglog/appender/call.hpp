@@ -4,7 +4,7 @@
 
 #include <fhglog/Appender.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -15,7 +15,7 @@ namespace fhg
      class call : public Appender
      {
      public:
-       typedef boost::function<void (const LogEvent&)> handler_t;
+       typedef std::function<void (const LogEvent&)> handler_t;
 
        call (const handler_t& handler)
        : _handler (handler)

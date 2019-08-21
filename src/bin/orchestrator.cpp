@@ -20,8 +20,6 @@
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/tokenizer.hpp>
-
 #include <functional>
 
 namespace bfs = boost::filesystem;
