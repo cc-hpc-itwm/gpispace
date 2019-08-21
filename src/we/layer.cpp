@@ -447,6 +447,7 @@ namespace we
                                             );
                         }
                       , _stencil_caches
+                      , _plugins
                       , [this, id]
                           ( std::string place_name
                           , pnet::type::value::value_type value
