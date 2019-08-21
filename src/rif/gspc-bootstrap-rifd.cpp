@@ -110,7 +110,7 @@ try
               )
           , vm.count (option::port)
           ? boost::make_optional<unsigned short>
-            ( static_cast<unsigned long>
+            ( static_cast<unsigned short>
               ( vm.at (option::port)
               . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
               )
