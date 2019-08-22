@@ -101,28 +101,6 @@
     <place name="ready" type="Ready" put_token="true"/>
     <place name="used" type="Assignment"/>
 
-    <place name="stencil_cache_for_alloc" type="unsigned long"/>
-    <place name="stencil_cache_for_prepared" type="unsigned long"/>
-    <place name="stencil_cache_for_free" type="unsigned long"/>
-
-    <transition name="multiplex_plugin_id">
-      <defun>
-        <in name="x" type="unsigned long"/>
-        <out name="a" type="unsigned long"/>
-        <out name="b" type="unsigned long"/>
-        <out name="c" type="unsigned long"/>
-        <expression>
-          ${a} := ${x};
-          ${b} := ${x};
-          ${c} := ${x};
-        </expression>
-      </defun>
-      <connect-in port="x" place="plugin_id"/>
-      <connect-out port="a" place="stencil_cache_for_alloc"/>
-      <connect-out port="b" place="stencil_cache_for_prepared"/>
-      <connect-out port="c" place="stencil_cache_for_free"/>
-    </transition>
-
     <place name="N" type="unsigned long"/>
     <place name="computed" type="Stencil"/>
     <place name="freed" type="control"/>
@@ -205,7 +183,6 @@
         <in name="Y" type="Coordinate"/>
         <in name="B" type="long"/>
         <in name="YB" type="long"/>
-        <in name="cache" type="unsigned long"/>
         <in name="x" type="long"/>
         <in name="y" type="long"/>
         <in name="b" type="long"/>
@@ -227,7 +204,6 @@
       <connect-in port="y" place="y"/>
       <connect-in port="b" place="b"/>
       <connect-in port="yr" place="yr"/>
-      <connect-in port="cache" place="stencil_cache_for_alloc"/>
     </transition>
 
     <transition name="co_generate_rest_step_y">
@@ -409,12 +385,12 @@
         </properties>
         <inout name="co" type="control"/>
         <in name="stencil" type="Stencil"/>
-        <inout name="plugin_id" type="unsigned long"/>
+        <in name="plugin_id" type="unsigned long"/>
         <expression>
           ${operation} := "ALLOC"
         </expression>
       </defun>
-      <connect-inout port="plugin_id" place="stencil_cache_for_alloc"/>
+      <connect-read port="plugin_id" place="plugin_id"/>
       <connect-in port="stencil" place="stencil"/>
       <connect-in port="co" place="co_alloc"/>
       <connect-out port="co" place="co_generate"/>
@@ -432,12 +408,12 @@
           </properties>
         </properties>
         <in name="prepared" type="Coordinate"/>
-        <inout name="plugin_id" type="unsigned long"/>
+        <in name="plugin_id" type="unsigned long"/>
         <expression>
           ${operation} := "PREPARED"
         </expression>
       </defun>
-      <connect-inout port="plugin_id" place="stencil_cache_for_prepared"/>
+      <connect-read port="plugin_id" place="plugin_id"/>
       <connect-in port="prepared" place="prepared"/>
     </transition>
 
@@ -454,14 +430,14 @@
         </properties>
         <in name="assignment" type="Assignment"/>
         <out name="freed" type="control"/>
-        <inout name="plugin_id" type="unsigned long"/>
+        <in name="plugin_id" type="unsigned long"/>
         <expression>
           ${operation} := "FREE";
 
           ${freed} := []
         </expression>
       </defun>
-      <connect-inout port="plugin_id" place="stencil_cache_for_free"/>
+      <connect-read port="plugin_id" place="plugin_id"/>
       <connect-in port="assignment" place="used"/>
       <connect-out port="freed" place="freed"/>
     </transition>
@@ -637,7 +613,6 @@
         <in name="N" type="unsigned long"/>
         <in name="input_size" type="unsigned long"/>
         <in name="input_memory" type="global_memory_range"/>
-        <in name="stencil_cache_for_prepared" type="unsigned long"/>
         <in name="plugin_id" type="unsigned long"/>
         <out name="done" type="control"/>
         <expression>
@@ -650,8 +625,7 @@
       <connect-in port="N" place="N"/>
       <connect-in port="input_size" place="input_size"/>
       <connect-in port="input_memory" place="input_memory"/>
-      <connect-in port="stencil_cache_for_prepared" place="stencil_cache_for_prepared"/>
-      <connect-in port="plugin_id" place="stencil_cache_for_free"/>
+      <connect-in port="plugin_id" place="plugin_id"/>
       <connect-out port="done" place="done"/>
     </transition>
   </net>
