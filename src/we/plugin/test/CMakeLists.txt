@@ -33,5 +33,10 @@ fhg_add_test (NAME Plugins
        $<TARGET_FILE:PluginTest::B>
        $<TARGET_FILE:PluginTest::C>
        $<TARGET_FILE:PluginTest::D>
-  LIBRARIES gspc Util::Generic
+  LIBRARIES gspc
+            Util::Generic
+  DEPENDS PluginTest::A
+          PluginTest::B
+          PluginTest::C
+          PluginTest::D
 )
