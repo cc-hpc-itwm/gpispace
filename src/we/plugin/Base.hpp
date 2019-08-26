@@ -15,14 +15,26 @@ namespace gspc
     namespace plugin
     {
       using Context = ::expr::eval::context;
-      using PutToken =
-        std::function<void (std::string, ::pnet::type::value::value_type)>;
+      using PlaceName = std::string;
+      using Value = ::pnet::type::value::value_type;
 
+      //! Calls to put_token will not block, however, the execution
+      //! will happen asynchronously.
+      using PutToken = std::function<void (PlaceName, Value)>;
+
+      //! All methods including constructor and destructor shall not
+      //! block.
       struct Base
       {
-        //! \note created via Plugin::Plugin (Context const&, PutToken);
+        //! executed after expression has been evaluated
+        //! The callback is guaranteed to be valid during object lift
+        //! time.
+        //! Plugin::Plugin (Context const&, PutToken);
 
+        //! executed after expression input has been bound
         virtual void before_eval (Context const&) = 0;
+
+        //! executed after expression has been evaluated
         virtual void after_eval (Context const&) = 0;
 
         virtual ~Base() = default;
