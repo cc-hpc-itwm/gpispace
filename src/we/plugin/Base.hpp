@@ -18,9 +18,10 @@ namespace gspc
       using PlaceName = std::string;
       using Value = ::pnet::type::value::value_type;
 
+      //! It is safe to use a temporary for the place name.
       //! Calls to put_token will not block, however, the execution
       //! will happen asynchronously.
-      using PutToken = std::function<void (PlaceName, Value)>;
+      using PutToken = std::function<void (PlaceName const&, Value)>;
 
       //! All methods including constructor and destructor shall not
       //! block.
