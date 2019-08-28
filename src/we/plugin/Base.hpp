@@ -28,7 +28,7 @@ namespace gspc
       struct Base
       {
         //! executed after expression has been evaluated
-        //! The callback is guaranteed to be valid during object lift
+        //! The callback is guaranteed to be valid during object life
         //! time.
         //! Plugin::Plugin (Context const&, PutToken);
 
