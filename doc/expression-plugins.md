@@ -104,7 +104,7 @@ namespace gspc
     {
       struct Count : public Base
       {
-        GSPC_WE_PLUGIN_CONSTRUCTOR (Count, context, put_token)
+        Count (Context const& context, PutToken put_token)
           : _ (boost::get<std::string> (context.value ({"plugin", "count", "place"})))
           , _put_token (std::move (put_token))
         {}
