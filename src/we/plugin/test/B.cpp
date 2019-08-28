@@ -11,7 +11,7 @@ namespace gspc
     {
       struct B : public Base
       {
-        GSPC_WE_PLUGIN_CONSTRUCTOR (B, context, put_token)
+        B (Context const& context, PutToken put_token)
           : _ (boost::get<std::string> (context.value ({"B"})))
           , _put_token (std::move (put_token))
         {}

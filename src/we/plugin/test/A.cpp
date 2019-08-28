@@ -4,7 +4,9 @@
 
 struct A : public ::gspc::we::plugin::Base
 {
-  GSPC_WE_PLUGIN_CONSTRUCTOR (A,,put_token)
+  A ( ::gspc::we::plugin::Context const&
+    , ::gspc::we::plugin::PutToken put_token
+    )
     : _put_token (std::move (put_token))
   {}
 

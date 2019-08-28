@@ -11,7 +11,7 @@ namespace gspc
     {
       struct Log : public Base
       {
-        GSPC_WE_PLUGIN_CONSTRUCTOR (Log, context,)
+        Log (Context const& context, PutToken)
           : _out
             ( boost::get<std::string>
                 (context.value ({"plugin", "Log", "file"}))

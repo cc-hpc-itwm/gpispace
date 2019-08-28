@@ -6,7 +6,7 @@
 
 struct D : public gspc::we::plugin::Base
 {
-  GSPC_WE_PLUGIN_CONSTRUCTOR (D,,)
+  D (::gspc::we::plugin::Context const&, ::gspc::we::plugin::PutToken)
   {
     throw std::runtime_error ("D::D()");
   }

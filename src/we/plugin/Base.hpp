@@ -65,11 +65,6 @@ GSPC_WE_PLUGIN_CREATE_SIGNATURE();
       (new _plugin (context, std::move (put_token)));   \
   }
 
-#define GSPC_WE_PLUGIN_CONSTRUCTOR(_plugin,_context,_put_token) \
-  _plugin ( ::gspc::we::plugin::Context const& _context         \
-          , ::gspc::we::plugin::PutToken _put_token      \
-          )
-
 #if defined(__clang__)
   #pragma clang diagnostic pop
 #endif
