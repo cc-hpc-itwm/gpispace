@@ -1,5 +1,7 @@
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
 
 #include <we/require_type.hpp>
@@ -11,7 +13,19 @@
 
 #include <boost/format.hpp>
 
+#include <list>
 #include <stdexcept>
+
+namespace gspc
+{
+  namespace we
+  {
+    namespace plugin
+    {
+      FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ALLOW_CONVERSION (ID, unsigned long);
+    }
+  }
+}
 
 namespace we
 {
@@ -511,20 +525,89 @@ namespace we
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
-      , we::type::stencil_caches& stencil_caches
-      , we::type::stencil_cache::PutToken const& put_token
+      , gspc::we::plugin::Plugins& plugins
+      , gspc::we::plugin::PutToken put_token
       )
     {
+      using pnet::type::value::peek;
+      using values = std::list<pnet::type::value::value_type>;
+
       expr::eval::context context;
 
       std::forward_list<token_to_be_deleted_type> const tokens_to_be_deleted
         (do_extract (tid, context_bind (context, transition)));
 
+      auto const plugin_commands
+        (transition.prop().get ({"gspc", "we", "plugin"}));
+
+      if (plugin_commands)
+      {
+        {
+          auto const call_before_eval
+            (peek ("call_before_eval", plugin_commands.get()));
+
+          if (call_before_eval)
+          {
+            expression_t const expression
+              (boost::get<std::string> (call_before_eval.get()));
+            auto const pids (expression.ast().eval_all (context));
+
+            for (auto const& pid : boost::get<values> (pids))
+            {
+              plugins.before_eval
+                ( gspc::we::plugin::ID {boost::get<unsigned long> (pid)}
+                , context
+                );
+            }
+          }
+        }
+
+        if (peek ("destroy", plugin_commands.get()))
+        {
+          plugins.destroy
+            ( gspc::we::plugin::ID
+                {boost::get<unsigned long> (context.value ({"plugin_id"}))}
+            );
+        }
+      }
+
       transition.expression()->ast().eval_all (context);
 
-      if (!!transition.prop().get ({"fhg", "we", "stencil_cache"}))
+      if (plugin_commands)
       {
-        stencil_caches (context, put_token);
+        if (peek ("create", plugin_commands.get()))
+        {
+          context.bind_and_discard_ref
+            ( {"plugin_id"}
+            , static_cast<unsigned long>
+              ( plugins.create
+                ( boost::get<std::string> (context.value ({"plugin_path"}))
+                , context
+                , std::move (put_token)
+                )
+              )
+            );
+        }
+
+        {
+          auto const call_after_eval
+            (peek ("call_after_eval", plugin_commands.get()));
+
+          if (call_after_eval)
+          {
+            expression_t const expression
+              (boost::get<std::string> (call_after_eval.get()));
+            auto const pids (expression.ast().eval_all (context));
+
+            for (auto const& pid : boost::get<values> (pids))
+            {
+              plugins.after_eval
+                ( gspc::we::plugin::ID {boost::get<unsigned long> (pid)}
+                , context
+                );
+            }
+          }
+        }
       }
 
       std::list<to_be_updated_type> pending_updates;

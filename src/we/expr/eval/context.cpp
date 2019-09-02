@@ -91,5 +91,19 @@ namespace expr
 
       throw pnet::exception::missing_binding (key);
     }
+
+    std::ostream& operator<< (std::ostream& os, context const& c)
+    {
+      for (auto const& kr : c._ref_container)
+      {
+        os << kr.first << " ~> " << pnet::type::value::show (*kr.second) << '\n';
+      }
+      for (auto const& kv : c._container)
+      {
+        os << kv.first << " -> " << pnet::type::value::show (kv.second) << '\n';
+      }
+
+      return os;
+    }
   }
 }

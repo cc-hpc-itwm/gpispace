@@ -34,6 +34,7 @@ fhg_add_test (NAME gspc_stencil_cache_2D_workflow
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --X 30 --Y 30 --R 2
+       --plugin-path "${CMAKE_INSTALL_PREFIX}/plugin/$<TARGET_FILE_NAME:Plugin::StencilCache>"
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF

@@ -4,11 +4,11 @@
 
 #include <util-generic/finally.hpp>
 
+#include <we/plugin/Plugins.hpp>
 #include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
-#include <we/type/stencil_caches.hpp>
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
 
@@ -118,7 +118,7 @@ namespace we
       std::unordered_map <id_type, std::unordered_set<std::string>>
         _outstanding_responses;
 
-      we::type::stencil_caches _stencil_caches;
+      gspc::we::plugin::Plugins _plugins;
 
 
       struct activity_data_type

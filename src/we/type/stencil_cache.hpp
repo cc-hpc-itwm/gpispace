@@ -80,15 +80,5 @@ namespace we
 
       pnet::type::value::value_type global_range (Slot) const;
     };
-
-    struct stencil_caches
-    {
-      void operator() ( expr::eval::context const&
-                      , stencil_cache::PutToken const&
-                      );
-
-    private:
-      std::unordered_map<unsigned long, stencil_cache> _;
-    };
   }
 }

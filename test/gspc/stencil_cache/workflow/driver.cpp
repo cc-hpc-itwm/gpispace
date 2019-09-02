@@ -49,6 +49,10 @@ namespace test
           ("X", boost::program_options::value<long>()->required(), "X")
           ("Y", boost::program_options::value<long>()->required(), "Y")
           ("R", boost::program_options::value<long>()->required(), "R")
+          ( "plugin-path"
+          , boost::program_options::value<std::string>()->required()
+          , "plugin path"
+          )
           ;
         options_description.add (::test::options::shared_directory());
         options_description.add (::test::options::source_directory());
@@ -210,7 +214,7 @@ namespace test
               , {"input_memory", allocation_input.global_memory_range()}
               , {"block_size", block_size}
               , {"neighbors", Callback()}
-              , {"cache_id", 0UL}
+              , {"plugin_path", vm.at ("plugin-path").as<std::string>()}
               }
             )
           );

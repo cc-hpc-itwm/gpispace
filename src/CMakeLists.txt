@@ -73,7 +73,7 @@ extended_add_library (NAME pnet
           "we/type/signature/resolve.cpp"
           "we/type/signature/show.cpp"
           "we/type/signature/specialize.cpp"
-          "we/type/stencil_caches.cpp"
+          "we/type/stencil_cache.cpp"
           "we/type/transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
@@ -88,6 +88,9 @@ extended_add_library (NAME pnet
           "we/type/value/show.cpp"
           "we/type/value/serialize.cpp"
           "we/type/value/dump.cpp"
+
+          "we/plugin/Plugin.cpp"
+          "we/plugin/Plugins.cpp"
 
           "we/loader/Module.cpp"
           "we/workflow_response.cpp"

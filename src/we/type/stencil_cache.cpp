@@ -1,6 +1,6 @@
 #include <gspc/stencil_cache/callback.hpp>
 
-#include <we/type/stencil_caches.hpp>
+#include <we/type/stencil_cache.hpp>
 #include <we/expr/eval/context.hpp>
 
 #include <we/type/value/peek.hpp>
@@ -76,7 +76,7 @@ namespace we
         if (M < max)
         {
           throw std::invalid_argument
-            ( ( boost::format ("stencil_caches: Not enough memory (%1% < %2%)")
+            ( ( boost::format ("stencil_cache: Not enough memory (%1% < %2%)")
               % M
               % max
               ).str()
@@ -251,68 +251,6 @@ namespace we
           );
 
         _scache.free (coordinate);
-      }
-    }
-
-    void stencil_caches::operator() ( expr::eval::context const& context
-                                    , stencil_cache::PutToken const& put_token
-                                    )
-    {
-      auto const operation
-        (boost::get<std::string> (context.value ({"operation"})));
-
-      if ("INIT" == operation)
-      {
-        auto const id (boost::get<unsigned long> (context.value ({"id"})));
-
-        if ( ! _.emplace
-               ( std::piecewise_construct
-               , std::forward_as_tuple (id)
-               , std::forward_as_tuple (context, put_token)
-               ).second
-           )
-        {
-          throw std::invalid_argument
-            ((boost::format ("stencil_caches: Duplicate id %1%") % id).str());
-        }
-
-        return;
-      }
-
-      auto const id
-        (boost::get<unsigned long> (peek ("id", context.value ({"cache"}))));
-
-      auto cache (_.find (id));
-
-      if (cache == _.end())
-      {
-        throw std::invalid_argument
-          ((boost::format ("Unknown cache %1% (%2%)") % id % operation).str());
-      }
-
-      if ("ALLOC" == operation)
-      {
-        cache->second.alloc (context);
-      }
-      else if ("PREPARED" == operation)
-      {
-        cache->second.prepared (context);
-      }
-      else if ("FREE" == operation)
-      {
-        cache->second.free (context);
-      }
-      else if ("DESTROY" == operation)
-      {
-        _.erase (cache);
-      }
-      else
-      {
-        throw std::invalid_argument
-          ( ( boost::format ("stencil_caches: Unknown operation %1%")
-            % operation
-            ).str()
-          );
       }
     }
   }
