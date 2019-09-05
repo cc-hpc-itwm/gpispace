@@ -41,7 +41,7 @@ namespace
     static std::string const external ("dimgray");
     static std::string const modcall ("yellow");
     static std::string const expression ("white");
-    static std::string const stencil_cache ("tan");
+    static std::string const plugin ("tan");
     static std::string const node ("white");
     static std::string const put_token ("lightblue");
   }
@@ -538,8 +538,8 @@ namespace
     }
 
     s << fhg::util::deeper (indent)
-      << bgcolor ( t.expression() ? ( !!t.prop().get ({"fhg","we","stencil_cache"})
-                                    ? color::stencil_cache
+      << bgcolor ( t.expression() ? ( !!t.prop().get ({"gspc","we","plugin"})
+                                    ? color::plugin
                                     : color::expression
                                     )
                  : t.module_call() ? color::modcall
