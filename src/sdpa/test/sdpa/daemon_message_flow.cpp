@@ -13,7 +13,7 @@ namespace
 {
   struct network_strategy
   {
-    network_strategy (fhg::com::certificates_t const& certificates)
+    network_strategy (fhg::com::Certificates const& certificates)
       : _event_received()
       , _network
         ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)

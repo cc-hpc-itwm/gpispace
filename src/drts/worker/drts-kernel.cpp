@@ -257,7 +257,7 @@ int main(int ac, char **av)
       set_numa_socket (vm.at (option_name::socket).as<std::size_t>());
     }
 
-    fhg::com::certificates_t certificates;
+    fhg::com::Certificates certificates;
 
     if (vm.count (option_name::certificates))
     {

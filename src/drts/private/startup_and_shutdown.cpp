@@ -162,7 +162,7 @@ namespace
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
     , std::list<fhg::logging::tcp_endpoint>& log_emitters
-    , gspc::certificates_t const& certificates
+    , gspc::Certificates const& certificates
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
@@ -214,7 +214,7 @@ namespace fhg
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
     , std::list<fhg::logging::tcp_endpoint>& log_emitters
-    , gspc::certificates_t const& certificates
+    , gspc::Certificates const& certificates
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
@@ -512,7 +512,7 @@ namespace fhg
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
       , std::list<fhg::logging::tcp_endpoint>& log_emitters
-      , gspc::certificates_t const& certificates
+      , gspc::Certificates const& certificates
       )
     {
       if (log_dir)

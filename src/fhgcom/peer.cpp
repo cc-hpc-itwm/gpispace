@@ -20,7 +20,7 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
-                   , certificates_t const& certificates
+                   , Certificates const& certificates
                    )
       : stopping_ (false)
       , host_(host)

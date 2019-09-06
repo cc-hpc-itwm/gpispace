@@ -7,5 +7,5 @@ namespace gspc
 {
   class installation;
   class scoped_runtime_system;
-  using certificates_t = boost::optional<boost::filesystem::path>;
+  using Certificates = boost::optional<boost::filesystem::path>;
 }

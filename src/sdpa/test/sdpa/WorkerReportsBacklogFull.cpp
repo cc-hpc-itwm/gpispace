@@ -18,7 +18,7 @@ namespace
     fake_drts_worker_reporting_backlog_full
       ( std::function<void (std::string)> announce_job
       , utils::agent const& master
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master, certificates)
     {}

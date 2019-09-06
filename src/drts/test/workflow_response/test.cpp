@@ -43,8 +43,8 @@ namespace
 {
 #define certificates_data                                                \
   boost::unit_test::data::make                                           \
-    ( { gspc::certificates_t{}                                           \
-      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+    ( { gspc::Certificates{}                                           \
+      , gspc::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
       }                                                                  \
     )
 }
@@ -52,7 +52,7 @@ namespace
 void test_workflow_response
   ( std::string const& name
   , std::string const& topology
-  , gspc::certificates_t const certificates
+  , gspc::Certificates const certificates
   )
 {
   boost::program_options::options_description options_description;

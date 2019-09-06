@@ -52,7 +52,7 @@ int main (int argc, char **argv)
     std::vector<std::string> arrMasterNames;
     std::string appGuiUrl;
     boost::optional<bfs::path> vmem_socket;
-    fhg::com::certificates_t ssl_certificates;
+    fhg::com::Certificates ssl_certificates;
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;

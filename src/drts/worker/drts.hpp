@@ -94,7 +94,7 @@ public:
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
     , fhg::log::Logger&
-    , fhg::com::certificates_t const& certificates
+    , fhg::com::Certificates const& certificates
     );
   ~DRTSImpl();
 

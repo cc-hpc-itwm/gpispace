@@ -72,7 +72,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
-                            , fhg::com::certificates_t const& certificates
+                            , fhg::com::Certificates const& certificates
                             )
   : _logger (logger)
   , _name (name)

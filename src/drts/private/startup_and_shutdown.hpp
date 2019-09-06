@@ -81,7 +81,7 @@ namespace fhg
       , gspc::installation_path const&
       , std::ostream& info_output
       , std::list<fhg::logging::tcp_endpoint>& log_emitters
-      , gspc::certificates_t const& certificates
+      , gspc::Certificates const& certificates
       );
 
     hostinfo_type startup
@@ -105,7 +105,7 @@ namespace fhg
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
       , std::list<fhg::logging::tcp_endpoint>& log_emitters
-      , gspc::certificates_t const& certificates
+      , gspc::Certificates const& certificates
       );
   }
 }

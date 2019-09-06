@@ -23,15 +23,15 @@ namespace gspc
                    , boost::optional<rifd_entry_points> const& entry_points
                    , rifd_entry_point const& master
                    , std::ostream& info_output
-                   , certificates_t const& certificates
+                   , Certificates const& certificates
                    );
 
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-      add_worker (rifd_entry_points const&, certificates_t const&);
+      add_worker (rifd_entry_points const&, Certificates const&);
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
       add_worker ( std::vector<worker_description> const&
                  , rifd_entry_points const&
-                 , certificates_t const&
+                 , Certificates const&
                  );
     std::unordered_map< fhg::rif::entry_point
                       , std::pair< std::string /* kind */
@@ -62,22 +62,22 @@ namespace gspc
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& master
                              , std::ostream& info_output
-                             , certificates_t const& certificates
+                             , Certificates const& certificates
                              );
 
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
         add_worker_impl
           ( std::vector<worker_description> const&
           , std::vector<fhg::rif::entry_point> const&
-          , certificates_t const&
+          , Certificates const&
           );
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        add_worker (std::vector<fhg::rif::entry_point> const&, certificates_t const&);
+        add_worker (std::vector<fhg::rif::entry_point> const&, Certificates const&);
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
         add_worker
           ( std::vector<gspc::worker_description> const&
           , std::vector<fhg::rif::entry_point> const&
-          , certificates_t const&
+          , Certificates const&
           );
       std::unordered_map
         < fhg::rif::entry_point

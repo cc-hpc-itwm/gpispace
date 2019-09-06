@@ -22,8 +22,8 @@ namespace
 {
 #define certificates_data                                                \
   boost::unit_test::data::make                                           \
-    ( { fhg::com::certificates_t{}                                       \
-      , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
+    ( { fhg::com::Certificates{}                                       \
+      , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
       }                                                                  \
     )
 

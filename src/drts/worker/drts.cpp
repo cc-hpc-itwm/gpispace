@@ -195,7 +195,7 @@ DRTSImpl::DRTSImpl
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
     , fhg::log::Logger& logger
-    , fhg::com::certificates_t const& certificates
+    , fhg::com::Certificates const& certificates
     )
   : _logger (logger)
   , _request_stop (request_stop)

@@ -33,8 +33,8 @@ namespace
 {
 #define certificates_data                                                \
   boost::unit_test::data::make                                           \
-    ( { fhg::com::certificates_t{}                                       \
-      , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
+    ( { fhg::com::Certificates{}                                       \
+      , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
       }                                                                  \
     )
 }
@@ -262,7 +262,7 @@ namespace utils
   {
     orchestrator
       ( fhg::log::Logger& logger
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -306,7 +306,7 @@ namespace utils
       ( const T& master_0
       , const U& master_1
       , fhg::log::Logger& logger
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
@@ -325,7 +325,7 @@ namespace utils
       agent
       ( const T& master
       , fhg::log::Logger& logger
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
@@ -341,7 +341,7 @@ namespace utils
     agent
       ( const agent& master
       , fhg::log::Logger& logger
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
@@ -375,7 +375,7 @@ namespace utils
     basic_drts_component
       ( std::string name
       , bool accept_workers
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : _name (name)
       , _master (boost::none)
@@ -396,7 +396,7 @@ namespace utils
                          , utils::agent const& master
                          , sdpa::capabilities_set_t capabilities
                          , bool accept_workers
-                         , fhg::com::certificates_t const& certificates
+                         , fhg::com::Certificates const& certificates
                          )
       : basic_drts_component (name, accept_workers, certificates)
     {
@@ -536,7 +536,7 @@ namespace utils
     public:
       basic_drts_worker
         ( utils::agent const& master
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
         : basic_drts_component
            ( random_peer_name()
@@ -549,7 +549,7 @@ namespace utils
       basic_drts_worker
         ( std::string name
         , utils::agent const& master
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
         : basic_drts_component
             ( name
@@ -563,7 +563,7 @@ namespace utils
         ( std::string name
         , utils::agent const& master
         , sdpa::capabilities_set_t capabilities
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
         : basic_drts_component
             ( name
@@ -582,7 +582,7 @@ namespace utils
       fake_drts_worker_notifying_module_call_submission
           ( std::function<void (std::string)> announce_job
           , utils::agent const& master
-          , fhg::com::certificates_t const& certificates
+          , fhg::com::Certificates const& certificates
           )
         : basic_drts_worker (master, certificates)
         , _announce_job (announce_job)
@@ -591,7 +591,7 @@ namespace utils
           ( std::string name
           , std::function<void (std::string)> announce_job
           , utils::agent const& master
-          , fhg::com::certificates_t const& certificates
+          , fhg::com::Certificates const& certificates
           )
         : basic_drts_worker (name, master, certificates)
         , _announce_job (announce_job)
@@ -664,7 +664,7 @@ namespace utils
       fake_drts_worker_waiting_for_finished_ack
         ( std::function<void (std::string)> announce_job
         , const utils::agent& master_agent
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
         : no_thread::fake_drts_worker_notifying_module_call_submission
             (announce_job, master_agent, certificates)
@@ -692,16 +692,16 @@ namespace utils
 
   struct basic_drts_worker final : public no_thread::basic_drts_worker
   {
-    basic_drts_worker (utils::agent const& master, fhg::com::certificates_t const& certificates)
+    basic_drts_worker (utils::agent const& master, fhg::com::Certificates const& certificates)
       : no_thread::basic_drts_worker (master, certificates)
     {}
-    basic_drts_worker (std::string name, utils::agent const& master, fhg::com::certificates_t const& certificates)
+    basic_drts_worker (std::string name, utils::agent const& master, fhg::com::Certificates const& certificates)
       : no_thread::basic_drts_worker (std::move (name), master, certificates)
     {}
     basic_drts_worker ( std::string name
                       , utils::agent const& master
                       , sdpa::capabilities_set_t capabilities
-                      , fhg::com::certificates_t const& certificates
+                      , fhg::com::Certificates const& certificates
                       )
       : no_thread::basic_drts_worker (std::move (name), master, std::move (capabilities), certificates)
     {}
@@ -714,7 +714,7 @@ namespace utils
     fake_drts_worker_notifying_module_call_submission
       ( std::function<void (std::string)> announce_job
       , utils::agent const& master
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master, certificates)
     {}
@@ -722,7 +722,7 @@ namespace utils
       ( std::string name
       , std::function<void (std::string)> announce_job
       , utils::agent const& master
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : no_thread::fake_drts_worker_notifying_module_call_submission (name, announce_job, master, certificates)
     {}
@@ -735,13 +735,13 @@ namespace utils
   {
     fake_drts_worker_directly_finishing_jobs
       ( utils::agent const& master
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : no_thread::basic_drts_worker (master, certificates)
     {}
     fake_drts_worker_directly_finishing_jobs
       ( std::string name, utils::agent const& master
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : no_thread::basic_drts_worker (std::move (name), master, certificates)
     {}
@@ -769,7 +769,7 @@ namespace utils
     fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job
       , const utils::agent& master_agent
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
     : no_thread::fake_drts_worker_waiting_for_finished_ack
         (std::move (announce_job), master_agent, certificates)
@@ -785,7 +785,7 @@ namespace utils
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
       , const utils::agent& master_agent
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : no_thread::fake_drts_worker_waiting_for_finished_ack
           (announce_job, master_agent, certificates)
@@ -832,7 +832,7 @@ namespace utils
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
       , const utils::agent& master_agent
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : no_thread::fake_drts_worker_waiting_for_finished_ack
           (announce_job, master_agent, certificates)
@@ -856,7 +856,7 @@ namespace utils
   {
     client
       ( orchestrator const& orch
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
       : _ ( orch.host()
           , orch.port()
@@ -932,7 +932,7 @@ namespace utils
 
     static sdpa::status::code submit_job_and_wait_for_termination
       ( we::type::activity_t workflow, const orchestrator& orch
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
     {
       client c (orch, certificates);
@@ -943,7 +943,7 @@ namespace utils
 
     static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
       ( we::type::activity_t workflow, const orchestrator& orch
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
     {
       client c (orch, certificates);
@@ -955,7 +955,7 @@ namespace utils
     {
       submitted_job
         ( we::type::activity_t workflow, orchestrator const& orch
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
         : _client (new client (orch, certificates))
         , _job_id (_client->submit_job (workflow))

@@ -40,8 +40,8 @@ namespace gspc
   class client : boost::noncopyable
   {
   public:
-    client (scoped_runtime_system const&, certificates_t const& = boost::none);
-    explicit client (information_to_reattach const&, certificates_t const& = boost::none);
+    client (scoped_runtime_system const&, Certificates const& = boost::none);
+    explicit client (information_to_reattach const&, Certificates const& = boost::none);
 
     job_id_t submit
       ( workflow const&

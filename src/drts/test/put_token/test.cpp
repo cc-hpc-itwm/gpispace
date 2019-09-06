@@ -39,8 +39,8 @@ namespace
 {
 #define certificates_data                                                \
   boost::unit_test::data::make                                           \
-    ( { gspc::certificates_t{}                                           \
-      , gspc::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
+    ( { gspc::Certificates{}                                           \
+      , gspc::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
       }                                                                  \
     )
 }
