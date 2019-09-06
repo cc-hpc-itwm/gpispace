@@ -231,7 +231,7 @@ BOOST_DATA_TEST_CASE
     );
 
   std::ostringstream info_output_stream;
-  std::string const& worker ("WORKER");
+  std::string const worker ("WORKER");
 
   {
     gspc::scoped_runtime_system const drts
