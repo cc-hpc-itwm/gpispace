@@ -65,7 +65,7 @@ namespace gspc
   {
     implementation
       ( gspc::host_and_port_type const& orchestrator_endpoint
-      , certificates_t const& certificates
+      , Certificates const& certificates
       )
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
@@ -77,12 +77,12 @@ namespace gspc
     sdpa::client::Client _client;
   };
 
-  client::client (scoped_runtime_system const& drts, certificates_t const& certificates)
+  client::client (scoped_runtime_system const& drts, Certificates const& certificates)
     : client (information_to_reattach (drts), certificates)
   {}
   client::client
     ( information_to_reattach const& drts_info
-    , certificates_t const& certificates
+    , Certificates const& certificates
     )
     : _ (new implementation (drts_info._->endpoint(), certificates))
   {}

@@ -22,7 +22,7 @@ namespace sdpa
                       , std::unique_ptr<boost::asio::io_service> peer_io_service
                       , fhg::com::host_t const & host
                       , fhg::com::port_t const & port
-                      , fhg::com::certificates_t const& certificates
+                      , fhg::com::Certificates const& certificates
                       );
       ~NetworkStrategy();
 

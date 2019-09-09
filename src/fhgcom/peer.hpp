@@ -22,7 +22,7 @@ namespace fhg
 {
   namespace com
   {
-    using certificates_t = boost::optional<boost::filesystem::path>;
+    using Certificates = boost::optional<boost::filesystem::path>;
 
     /*!
       This class abstracts from an endpoint
@@ -35,7 +35,7 @@ namespace fhg
       peer_t ( std::unique_ptr<boost::asio::io_service>
              , host_t const& host
              , port_t const& port
-             , certificates_t const& certificates
+             , Certificates const& certificates
              );
 
       virtual ~peer_t ();

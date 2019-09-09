@@ -68,14 +68,14 @@ namespace gspc
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
-                          , certificates_t const& certificates = boost::none
+                          , Certificates const& certificates = boost::none
                           , std::ostream& info_output = std::cerr
                           );
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
-                          , certificates_t const& certificates = boost::none
+                          , Certificates const& certificates = boost::none
                           , std::ostream& info_output = std::cerr
                           );
     scoped_runtime_system
@@ -84,7 +84,7 @@ namespace gspc
       , std::string const& topology_description
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
-      , certificates_t const& certificates = boost::none
+      , Certificates const& certificates = boost::none
       , std::ostream& info_output = std::cerr
       );
 
@@ -94,7 +94,7 @@ namespace gspc
                       >
       add_worker
         ( rifd_entry_points const&
-        , certificates_t const& certificates = boost::none
+        , Certificates const& certificates = boost::none
         );
 
     std::unordered_map< rifd_entry_point
@@ -104,7 +104,7 @@ namespace gspc
       add_worker
         ( std::vector<worker_description> const&
         , rifd_entry_points const&
-        , certificates_t const& certificates = boost::none
+        , Certificates const& certificates = boost::none
         );
 
     std::unordered_map< rifd_entry_point

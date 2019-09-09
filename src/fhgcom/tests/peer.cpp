@@ -23,8 +23,8 @@ namespace
 {
 #define certificates_data                                                \
   boost::unit_test::data::make                                           \
-    ( { fhg::com::certificates_t{}                                       \
-      , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
+    ( { fhg::com::Certificates{}                                       \
+      , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
       }                                                                  \
     )
 }
@@ -314,7 +314,7 @@ BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
     ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
-                    , fhg::com::certificates_t
+                    , fhg::com::Certificates
                         {fhg::util::testing::random_string_without("").substr (0,50)}
                     )
     , boost::filesystem::filesystem_error
@@ -338,7 +338,7 @@ BOOST_AUTO_TEST_CASE
     ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
-                    , fhg::com::certificates_t {certificates_directory}
+                    , fhg::com::Certificates {certificates_directory}
                     )
     , boost::filesystem::filesystem_error
     , [&] (boost::filesystem::filesystem_error const& exc)
@@ -350,7 +350,7 @@ BOOST_AUTO_TEST_CASE
 }
 
 BOOST_AUTO_TEST_CASE
-  (using_empty_certificates_throws)
+  (using_empty_Certificateshrows)
 {
   using namespace fhg::com;
 
@@ -367,7 +367,7 @@ BOOST_AUTO_TEST_CASE
     ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
-                    , fhg::com::certificates_t {certificates_directory}
+                    , fhg::com::Certificates {certificates_directory}
                     )
     , std::runtime_error
     , [&] (std::runtime_error const& exc)
@@ -395,7 +395,7 @@ BOOST_AUTO_TEST_CASE
     ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , host_t ("localhost")
     , port_t ("0")
-    , fhg::com::certificates_t {GSPC_SSL_CERTIFICATES_FOR_TESTS}
+    , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}
     );
 
   BOOST_REQUIRE_THROW

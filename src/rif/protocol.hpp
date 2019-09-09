@@ -91,7 +91,7 @@ namespace fhg
             , boost::optional<std::string> gui_host
             , boost::optional<unsigned short> gui_port
             , boost::optional<boost::filesystem::path> gpi_socket
-            , gspc::certificates_t
+            , gspc::Certificates
             , boost::filesystem::path command
             , std::unordered_map<std::string, std::string> environment
             )

@@ -17,7 +17,7 @@ namespace
     fake_drts_worker_waiting_for_cancel
         ( std::function<void (std::string)> announce_job
         , const utils::agent& master_agent
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master_agent, certificates)

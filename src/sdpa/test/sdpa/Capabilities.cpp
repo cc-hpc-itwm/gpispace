@@ -18,7 +18,7 @@ namespace
   class drts_component_observing_capabilities final : public utils::basic_drts_component
   {
   public:
-    drts_component_observing_capabilities (fhg::com::certificates_t const& certificates)
+    drts_component_observing_capabilities (fhg::com::Certificates const& certificates)
       : utils::basic_drts_component (utils::random_peer_name(), true, certificates)
     {}
 

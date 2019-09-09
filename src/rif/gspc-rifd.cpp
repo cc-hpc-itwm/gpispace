@@ -308,7 +308,7 @@ try
            , boost::optional<std::string> const& gui_host
            , boost::optional<unsigned short> const& gui_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
-           , gspc::certificates_t const& certificates
+           , gspc::Certificates const& certificates
            , boost::filesystem::path const& command
            , std::unordered_map<std::string, std::string> const& environment
            )

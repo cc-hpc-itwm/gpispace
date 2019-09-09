@@ -82,7 +82,7 @@ namespace
     fake_drts_worker_discovering
         ( std::function<void (std::string)> announce_job
         , utils::agent const& master
-        , fhg::com::certificates_t const& certificates
+        , fhg::com::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master, certificates)
@@ -129,7 +129,7 @@ namespace
   template<sdpa::status::code reply>
     void check_discover_worker_job_status
       ( fhg::log::Logger& logger
-      , fhg::com::certificates_t const& certificates
+      , fhg::com::Certificates const& certificates
       )
   {
     const utils::orchestrator orchestrator (logger, certificates);
@@ -252,7 +252,7 @@ namespace
   void verify_child_count_in_agent_chain
     ( const std::size_t num_agents
     , fhg::log::Logger& logger
-    , fhg::com::certificates_t const& certificates
+    , fhg::com::Certificates const& certificates
     )
   {
     const utils::orchestrator orchestrator (logger, certificates);
