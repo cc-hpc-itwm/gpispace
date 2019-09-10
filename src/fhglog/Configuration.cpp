@@ -170,5 +170,11 @@ namespace fhg
 
       conf.configure (remote_log_io_service, logger);
     }
+
+    void configure_to_stderr (Logger& logger)
+    {
+      logger.addAppender<StreamAppender> (std::cerr, default_format::SHORT());
+      logger.setLevel (TRACE);
+    }
   }
 }

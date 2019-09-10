@@ -33,12 +33,10 @@
 
 struct setup_logging
 {
-  boost::asio::io_service io_service;
   setup_logging()
     : _logger()
   {
-    fhg::util::syscall::setenv ("FHGLOG_level", "TRACE", true);
-    fhg::log::configure (io_service, _logger);
+    fhg::log::configure_to_stderr (_logger);
   }
   fhg::log::Logger _logger;
 };

@@ -20,5 +20,10 @@ namespace fhg
      */
 
     void configure (boost::asio::io_service& remote_log_io_service, Logger&);
+
+    // - level = trace
+    // - to_console = stderr
+    // - remainder unset
+    void configure_to_stderr (Logger&);
   }
 }

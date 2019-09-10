@@ -70,9 +70,8 @@ BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
 
-  boost::asio::io_service io_service;
   fhg::log::Logger logger;
-  fhg::log::configure (io_service, logger);
+  fhg::log::configure_to_stderr (logger);
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -110,9 +109,8 @@ BOOST_AUTO_TEST_CASE (call_local)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  boost::asio::io_service io_service;
   fhg::log::Logger logger;
-  fhg::log::configure (io_service, logger);
+  fhg::log::configure_to_stderr (logger);
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -131,9 +129,8 @@ BOOST_AUTO_TEST_CASE (call_lib)
 {
   we::loader::Module m ("./libanswer.so");
 
-  boost::asio::io_service io_service;
   fhg::log::Logger logger;
-  fhg::log::configure (io_service, logger);
+  fhg::log::configure_to_stderr (logger);
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
