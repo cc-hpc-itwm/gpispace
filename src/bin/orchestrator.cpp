@@ -10,6 +10,7 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <rif/started_process_promise.hpp>
@@ -45,7 +46,13 @@ int main (int argc, char **argv)
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::log::configure
+      ( logger
+      , remote_log_io_service
+      , fhg::util::getenv ("FHGLOG_level").get()
+      , fhg::util::getenv ("FHGLOG_to_file")
+      , fhg::util::getenv ("FHGLOG_to_server")
+      );
 
     po::options_description desc("Allowed options");
     desc.add_options()

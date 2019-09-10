@@ -6,6 +6,7 @@
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -121,7 +122,13 @@ int main(int ac, char **av)
   {
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::log::configure
+      ( logger
+      , remote_log_io_service
+      , fhg::util::getenv ("FHGLOG_level").get()
+      , fhg::util::getenv ("FHGLOG_to_file")
+      , fhg::util::getenv ("FHGLOG_to_server")
+      );
 
     namespace po = boost::program_options;
 

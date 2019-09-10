@@ -11,6 +11,7 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -172,7 +173,13 @@ int main (int argc, char** argv)
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::log::configure
+      ( logger
+      , remote_log_io_service
+      , fhg::util::getenv ("FHGLOG_level").get()
+      , fhg::util::getenv ("FHGLOG_to_file")
+      , fhg::util::getenv ("FHGLOG_to_server")
+      );
 
     fhg::util::signal_handler_manager signal_handler;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
