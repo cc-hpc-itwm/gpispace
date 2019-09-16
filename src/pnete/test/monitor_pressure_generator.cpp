@@ -2,18 +2,26 @@
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
 #include <fhglog/LogMacros.hpp>
-#include <util-generic/print_exception.hpp>
-#include <cstdlib>
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <sdpa/daemon/NotificationService.hpp>
 
 #include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 
-#include <chrono>
+#include <util-generic/print_exception.hpp>
+#include <util-generic/syscall.hpp>
+
+#include <boost/format.hpp>
+#include <boost/optional.hpp>
+
+#include <algorithm>
+#include <iostream>
+#include <list>
+#include <map>
+#include <string>
 #include <thread>
+#include <vector>
 
 using namespace sdpa::daemon;
 
@@ -39,11 +47,13 @@ struct activity
 
   void send_out_notification ( const NotificationService* service_a
                              , const NotificationService* service_b
+                             , fhg::logging::stream_emitter& emitter
                              ) const
   {
     const NotificationEvent event (_workers, _id, _state, _act);
     service_a->notify (event);
     service_b->notify (event);
+    emitter.emit_message ({event.encoded(), sdpa::daemon::gantt_log_category});
   }
 
   bool next_state()
@@ -81,7 +91,7 @@ std::string worker_gen()
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
   const unsigned long r (lrand48() % sizeof(names)/sizeof(*names));
-  return (boost::format ("%1%-ip-127-0-0-1 22001 50501-%2%") % names[r] % ++ids[r]).str();
+  return (boost::format ("%1%-ip-127-0-0-1 %3% 50501-%2%") % names[r] % ++ids[r] % fhg::util::syscall::getpid()).str();
 }
 
 int main(int ac, char **av)
@@ -101,6 +111,8 @@ try
 
   boost::asio::io_service io_service;
 
+  fhg::logging::stream_emitter emitter;
+
   const NotificationService service_a
     ((boost::format ("localhost:%1%") % port_a).str(), io_service);
   const NotificationService service_b
@@ -108,6 +120,8 @@ try
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
+
+  std::cout << emitter.local_tcp_endpoint().port << "\n";
 
   std::map<std::string, boost::optional<activity>> workers;
 
@@ -120,7 +134,7 @@ try
       workers[worker] = activity (worker);
     }
 
-    workers[worker]->send_out_notification (&service_a, &service_b);
+    workers[worker]->send_out_notification (&service_a, &service_b, emitter);
 
     if (!workers[worker]->next_state())
     {
