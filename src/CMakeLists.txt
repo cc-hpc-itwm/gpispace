@@ -182,6 +182,13 @@ extended_add_library (NAME logging
             Boost::program_options
 )
 
+extended_add_executable (NAME gspc-logging-to-stdout
+  SOURCES "logging/gspc-logging-to-stdout.cpp"
+  LIBRARIES gspc::logging
+            Util::Generic
+  INSTALL INSTALL_DESTINATION "bin"
+)
+
 add_unit_test (NAME logging_file_sink
   SOURCES "logging/test/file_sink.cpp"
   LIBRARIES Util::Generic
