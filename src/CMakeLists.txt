@@ -172,6 +172,7 @@ extended_add_library (NAME logging
           "logging/legacy/receiver.cpp"
           "logging/legacy_bridge.cpp"
           "logging/message.cpp"
+          "logging/socket_endpoint.cpp"
           "logging/stream_emitter.cpp"
           "logging/tcp_endpoint.cpp"
           "logging/tcp_receiver.cpp"
@@ -206,6 +207,13 @@ add_unit_test (NAME logging_legacy_bridge
 
 add_unit_test (NAME logging_ostream_redirect
   SOURCES "logging/test/ostream_redirect.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_socket_endpoint
+  SOURCES "logging/test/socket_endpoint.cpp"
   LIBRARIES Util::Generic
             gspc::logging
   USE_BOOST

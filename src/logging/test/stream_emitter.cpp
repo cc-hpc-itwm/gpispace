@@ -32,9 +32,9 @@ namespace fhg
       template<stream_protocol> struct emitter_endpoint;
       template<> struct emitter_endpoint<stream_protocol::socket>
       {
-        static socket_endpoint endpoint (stream_emitter const& emitter)
+        static socket_endpoint::Socket endpoint (stream_emitter const& emitter)
         {
-          return emitter.local_socket_endpoint();
+          return emitter.local_socket_endpoint().socket;
         }
       };
       template<> struct emitter_endpoint<stream_protocol::tcp>

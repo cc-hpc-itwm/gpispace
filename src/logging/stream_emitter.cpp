@@ -66,7 +66,7 @@ namespace fhg
     {
       _receivers.emplace_back
         ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
-            (_io_service, endpoint)
+            (_io_service, endpoint.socket)
         );
     }
     void stream_emitter::register_tcp_receiver (tcp_endpoint const& endpoint)

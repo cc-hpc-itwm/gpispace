@@ -18,6 +18,7 @@ namespace fhg
       };
     }
 
+    //! \todo Actually part of fhg::rpc.
     struct tcp_endpoint
     {
       std::string host;
