@@ -12,9 +12,9 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
 #include <functional>
-#include <list>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace fhg
 {
@@ -27,9 +27,9 @@ namespace fhg
       using callback_t = std::function<void (message const&)>;
       tcp_receiver (callback_t);
       tcp_receiver (endpoint_t, callback_t);
-      tcp_receiver (std::list<endpoint_t>, callback_t);
+      tcp_receiver (std::vector<endpoint_t>, callback_t);
 
-      void add_emitters (std::list<endpoint_t>);
+      void add_emitters (std::vector<endpoint_t>);
 
     private:
       callback_t _callback;

@@ -8,7 +8,9 @@
 
 #include <QTimer>
 
-#include <functional>
+#include <algorithm>
+#include <string>
+#include <utility>
 
 namespace fhg
 {
@@ -82,7 +84,7 @@ namespace fhg
       }
 
       worker_model::worker_model ( unsigned short port
-                                 , std::list<logging::tcp_endpoint> emitters
+                                 , std::vector<logging::tcp_endpoint> emitters
                                  , QObject* parent
                                  )
         : QAbstractItemModel (parent)

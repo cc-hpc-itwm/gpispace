@@ -7,22 +7,23 @@
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <future>
+#include <list>
 
 namespace fhg
 {
   namespace logging
   {
     tcp_receiver::tcp_receiver (callback_t callback)
-      : tcp_receiver (std::list<endpoint_t>(), std::move (callback))
+      : tcp_receiver (std::vector<endpoint_t>(), std::move (callback))
     {}
 
     tcp_receiver::tcp_receiver (endpoint_t emitter, callback_t callback)
-      : tcp_receiver ( std::list<endpoint_t> {std::move (emitter)}
+      : tcp_receiver ( std::vector<endpoint_t> {std::move (emitter)}
                      , std::move (callback)
                      )
     {}
 
-    tcp_receiver::tcp_receiver ( std::list<endpoint_t> emitters
+    tcp_receiver::tcp_receiver ( std::vector<endpoint_t> emitters
                                , callback_t callback
                                )
       : _callback (std::move (callback))
@@ -39,7 +40,7 @@ namespace fhg
       add_emitters (std::move (emitters));
     }
 
-    void tcp_receiver::add_emitters (std::list<endpoint_t> emitters)
+    void tcp_receiver::add_emitters (std::vector<endpoint_t> emitters)
     {
       std::list<rpc::remote_tcp_endpoint> endpoints;
       std::vector<std::future<void>> futures;

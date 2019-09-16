@@ -24,6 +24,8 @@
 #include <list>
 #include <string>
 #include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace gpi
 {
@@ -133,7 +135,7 @@ namespace gspc
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
 
-    std::list<fhg::logging::tcp_endpoint> const& log_emitters() const;
+    std::vector<fhg::logging::tcp_endpoint> const& log_emitters() const;
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;

@@ -81,7 +81,7 @@ namespace fhg
       , std::vector<boost::filesystem::path> const& app_path
       , gspc::installation_path const&
       , std::ostream& info_output
-      , std::list<fhg::logging::tcp_endpoint>& log_emitters
+      , std::vector<fhg::logging::tcp_endpoint>& log_emitters
       , gspc::Certificates const& certificates
       );
 
@@ -105,7 +105,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
-      , std::list<fhg::logging::tcp_endpoint>& log_emitters
+      , std::vector<fhg::logging::tcp_endpoint>& log_emitters
       , gspc::Certificates const& certificates
       );
   }

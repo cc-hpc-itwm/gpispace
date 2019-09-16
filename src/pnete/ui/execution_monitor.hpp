@@ -4,7 +4,7 @@
 
 #include <QSplitter>
 
-#include <list>
+#include <vector>
 
 namespace fhg
 {
@@ -18,7 +18,7 @@ namespace fhg
 
       public:
         execution_monitor ( unsigned short port
-                          , std::list<logging::tcp_endpoint>
+                          , std::vector<logging::tcp_endpoint>
                           , QWidget* parent = nullptr
                           );
       };

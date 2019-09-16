@@ -17,9 +17,8 @@
 #include <QVector>
 
 #include <functional>
-#include <list>
 #include <mutex>
-#include <thread>
+#include <vector>
 
 namespace fhg
 {
@@ -41,7 +40,7 @@ namespace fhg
         };
 
         worker_model ( unsigned short port
-                     , std::list<logging::tcp_endpoint>
+                     , std::vector<logging::tcp_endpoint>
                      , QObject* parent = nullptr
                      );
 

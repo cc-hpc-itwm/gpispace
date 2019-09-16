@@ -3,6 +3,8 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 #include <pnete/ui/execution_monitor_detail.hpp>
 
+#include <fhg/util/macros.hpp>
+
 #include <util/qt/dual_list_selector.hpp>
 #include <util-qt/widget/mini_button.hpp>
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
@@ -26,8 +28,8 @@
 #include <QVBoxLayout>
 
 #include <functional>
-
-#include <fhg/util/macros.hpp>
+#include <sstream>
+#include <utility>
 
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
 
@@ -288,7 +290,7 @@ namespace fhg
 
       execution_monitor::execution_monitor
           ( unsigned short port
-          , std::list<logging::tcp_endpoint> emitters
+          , std::vector<logging::tcp_endpoint> emitters
           , QWidget* parent
           )
         : QSplitter (Qt::Horizontal, parent)
