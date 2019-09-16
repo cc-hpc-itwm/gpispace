@@ -64,6 +64,11 @@ namespace fhg
       : tcp_endpoint (std::move (pair.first), pair.second)
     {}
 
+    std::string tcp_endpoint::to_string() const
+    {
+      return host + ":" + std::to_string (port);
+    }
+
     tcp_endpoint::operator std::pair<std::string, unsigned short>() const
     {
       return {host, port};

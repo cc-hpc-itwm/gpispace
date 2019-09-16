@@ -27,6 +27,8 @@ namespace fhg
       tcp_endpoint (std::string const& host_and_port);
       tcp_endpoint (std::pair<std::string, unsigned short> host_and_port);
 
+      std::string to_string() const;
+
       tcp_endpoint() = default;
       tcp_endpoint (tcp_endpoint const&) = default;
       tcp_endpoint (tcp_endpoint&&) = default;
