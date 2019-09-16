@@ -13,6 +13,8 @@
 
 #include <functional>
 #include <list>
+#include <string>
+#include <utility>
 
 namespace fhg
 {
@@ -23,8 +25,11 @@ namespace fhg
     public:
       using endpoint_t = tcp_endpoint;
       using callback_t = std::function<void (message const&)>;
+      tcp_receiver (callback_t);
       tcp_receiver (endpoint_t, callback_t);
       tcp_receiver (std::list<endpoint_t>, callback_t);
+
+      void add_emitters (std::list<endpoint_t>);
 
     private:
       callback_t _callback;
@@ -33,6 +38,7 @@ namespace fhg
       util::scoped_boost_asio_io_service_with_threads _io_service;
       rpc::service_handler<protocol::receive> const _receive;
       rpc::service_tcp_provider const _service_provider;
+      std::pair<std::string, unsigned short> const _local_endpoint;
     };
   }
 }

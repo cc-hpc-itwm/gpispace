@@ -6,13 +6,16 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <algorithm>
-#include <vector>
+#include <future>
 
 namespace fhg
 {
   namespace logging
   {
+    tcp_receiver::tcp_receiver (callback_t callback)
+      : tcp_receiver (std::list<endpoint_t>(), std::move (callback))
+    {}
+
     tcp_receiver::tcp_receiver (endpoint_t emitter, callback_t callback)
       : tcp_receiver ( std::list<endpoint_t> {std::move (emitter)}
                      , std::move (callback)
@@ -29,22 +32,22 @@ namespace fhg
           , [this] (message const& message) { return _callback (message); }
           )
       , _service_provider (_io_service, _service_dispatcher)
+      , _local_endpoint ( util::connectable_to_address_string
+                            (_service_provider.local_endpoint())
+                        )
+    {
+      add_emitters (std::move (emitters));
+    }
+
+    void tcp_receiver::add_emitters (std::list<endpoint_t> emitters)
     {
       std::list<rpc::remote_tcp_endpoint> endpoints;
+      std::vector<std::future<void>> futures;
       for (auto& emitter : emitters)
       {
-        endpoints.emplace_back (_io_service, std::move (emitter));
-      }
-
-      auto const local_endpoint ( util::connectable_to_address_string
-                                    (_service_provider.local_endpoint())
-                                );
-
-      std::vector<std::future<void>> futures;
-      for (auto& endpoint : endpoints)
-      {
         using function = rpc::remote_function<protocol::register_tcp_receiver>;
-        futures.emplace_back (function {endpoint} (local_endpoint));
+        endpoints.emplace_back (_io_service, std::move (emitter));
+        futures.emplace_back (function {endpoints.back()} (_local_endpoint));
       }
 
       util::wait_and_collect_exceptions (futures);
