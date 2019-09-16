@@ -19,8 +19,8 @@
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
-#include <sdpa/job_requirements.hpp>
 #include <sdpa/master_network_info.hpp>
+#include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
@@ -197,7 +197,7 @@ namespace sdpa {
                   , we::type::activity_t
                   , job_source
                   , job_handler
-                  , job_requirements_t
+                  , Requirements_and_preferences
                   );
 
       Job* findJob(const sdpa::job_id_t& job_id ) const;

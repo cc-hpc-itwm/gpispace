@@ -71,15 +71,18 @@ namespace sdpa
   }
 }
 
-struct fixture_scheduler_and_requirements
+struct fixture_scheduler_and_requirements_and_preferences
 {
   typedef std::set<sdpa::worker_id_t> set_workers_t;
   typedef std::set<sdpa::job_id_t> set_jobs_t;
 
-  fixture_scheduler_and_requirements()
+  fixture_scheduler_and_requirements_and_preferences()
     : _worker_manager()
     , _scheduler
-      ( std::bind (&fixture_scheduler_and_requirements::requirements, this, std::placeholders::_1)
+      ( std::bind ( &fixture_scheduler_and_requirements_and_preferences::requirements_and_preferences
+                  , this
+                  , std::placeholders::_1
+                  )
       , _worker_manager
       )
     , _access_allocation_table (_scheduler)
@@ -89,7 +92,7 @@ struct fixture_scheduler_and_requirements
   sdpa::daemon::CoallocationScheduler _scheduler;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;
 
-  ~fixture_scheduler_and_requirements()
+  ~fixture_scheduler_and_requirements_and_preferences()
   {
   }
 
@@ -98,20 +101,22 @@ struct fixture_scheduler_and_requirements
     return _access_allocation_table.get_current_assignment();
   }
 
-  void add_job (const sdpa::job_id_t& job_id, const job_requirements_t& reqs)
+  void add_job ( const sdpa::job_id_t& job_id
+               , const Requirements_and_preferences& reqs_and_prefs
+               )
   {
-    if (!_requirements.emplace (job_id, reqs).second)
+    if (!_requirements_and_preferences.emplace (job_id, reqs_and_prefs).second)
     {
       throw std::runtime_error ("added job twice");
     }
   }
 
-  job_requirements_t requirements (sdpa::job_id_t id)
+  Requirements_and_preferences requirements_and_preferences (sdpa::job_id_t id)
   {
-    return _requirements.find (id)->second;
+    return _requirements_and_preferences.find (id)->second;
   }
 
-  std::map<sdpa::job_id_t, job_requirements_t> _requirements;
+  std::map<sdpa::job_id_t, Requirements_and_preferences> _requirements_and_preferences;
 
   unsigned long count_assigned_jobs
     ( std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> assignment
@@ -139,28 +144,55 @@ namespace
 {
   const double computational_cost = 1.0;
 
-  job_requirements_t require (std::string name_1)
+  Requirements_and_preferences require (std::string name_1)
   {
-    return {{we::type::requirement_t (name_1, true)}, we::type::schedule_data(), null_transfer_cost, computational_cost, 0};
+    return { {we::type::requirement_t (name_1, true)}
+           , we::type::schedule_data()
+           , null_transfer_cost
+           , computational_cost
+           , 0
+           , {}
+           };
   }
 
-  job_requirements_t require (std::string name, unsigned long workers)
+  Requirements_and_preferences require (std::string name, unsigned long workers)
   {
-    return {{we::type::requirement_t (name, true)}, we::type::schedule_data (workers), null_transfer_cost, computational_cost, 0};
+    return { {we::type::requirement_t (name, true)}
+           , we::type::schedule_data (workers)
+           , null_transfer_cost
+           , computational_cost
+           , 0
+           , {}
+           };
   }
 
-  job_requirements_t require (unsigned long workers)
+  Requirements_and_preferences require (unsigned long workers)
   {
-    return {{}, we::type::schedule_data (workers), null_transfer_cost, computational_cost, 0};
+    return { {}
+           , we::type::schedule_data (workers)
+           , null_transfer_cost
+           , computational_cost
+           , 0
+           , {}
+           };
   }
 
-  job_requirements_t no_requirements()
+  Requirements_and_preferences no_requirements_and_preferences()
   {
-    return {{}, we::type::schedule_data(), null_transfer_cost, computational_cost, 0};
+    return { {}
+           , we::type::schedule_data()
+           , null_transfer_cost
+           , computational_cost
+           , 0
+           , {}
+           };
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE
+  ( load_balancing
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   _worker_manager.addWorker ( "worker_0"
                                         , {}
@@ -184,7 +216,7 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
 
   for (sdpa::job_id_t job_id : job_ids)
   {
-    add_job (job_id, no_requirements());
+    add_job (job_id, no_requirements_and_preferences());
     _scheduler.enqueueJob (job_id);
   }
 
@@ -201,7 +233,10 @@ BOOST_FIXTURE_TEST_CASE (load_balancing, fixture_scheduler_and_requirements)
                 );
 }
 
-BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE
+  ( tesLBOneWorkerJoinsLater
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   _worker_manager.addWorker ( "worker_0"
                                         , {}
@@ -211,8 +246,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
                                         , fhg::util::testing::random_string()
                                         );
 
-  add_job ("job_0", no_requirements());
-  add_job ("job_1", no_requirements());
+  add_job ("job_0", no_requirements_and_preferences());
+  add_job ("job_1", no_requirements_and_preferences());
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -244,7 +279,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerJoinsLater, fixture_scheduler_and_require
 }
 
 
-BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE
+  ( tesLBOneWorkerGainsCpbLater
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   _worker_manager.addWorker ( "worker_0"
                             , {sdpa::capability_t ("C", "worker_0")}
@@ -288,7 +326,10 @@ BOOST_FIXTURE_TEST_CASE (tesLBOneWorkerGainsCpbLater, fixture_scheduler_and_requ
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE
+  ( testCoallocSched
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   _worker_manager.addWorker ( "A0"
                                         , {sdpa::capability_t ("A", "A0")}
@@ -349,7 +390,10 @@ BOOST_FIXTURE_TEST_CASE (testCoallocSched, fixture_scheduler_and_requirements)
   }
 }
 
-BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE
+  ( tesLBStopRestartWorker
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   _worker_manager.addWorker ( "worker_0"
                             , {}
@@ -366,8 +410,8 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requireme
                             , fhg::util::testing::random_string()
                             );
 
-  add_job ("job_0", no_requirements());
-  add_job ("job_1", no_requirements());
+  add_job ("job_0", no_requirements_and_preferences());
+  add_job ("job_1", no_requirements_and_preferences());
 
   _scheduler.enqueueJob ("job_0");
   _scheduler.enqueueJob ("job_1");
@@ -411,7 +455,9 @@ BOOST_FIXTURE_TEST_CASE (tesLBStopRestartWorker, fixture_scheduler_and_requireme
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (not_schedulable_job_does_not_block_others, fixture_scheduler_and_requirements)
+  ( not_schedulable_job_does_not_block_others
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   _worker_manager.addWorker ( "worker"
                             , {}
@@ -449,7 +495,9 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (multiple_job_submissions_no_requirements, fixture_scheduler_and_requirements)
+  ( multiple_job_submissions_no_requirements_and_preferences
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
@@ -462,7 +510,7 @@ BOOST_FIXTURE_TEST_CASE
                             );
 
   sdpa::job_id_t const job_id_0 (random_job_id());
-  add_job (job_id_0, no_requirements());
+  add_job (job_id_0, no_requirements_and_preferences());
   _scheduler.enqueueJob (job_id_0);
 
   {
@@ -479,7 +527,7 @@ BOOST_FIXTURE_TEST_CASE
                       );
 
   sdpa::job_id_t const job_id_1 (random_job_id());
-  add_job (job_id_1, no_requirements());
+  add_job (job_id_1, no_requirements_and_preferences());
   _scheduler.enqueueJob (job_id_1);
 
   {
@@ -497,7 +545,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
-                        , fixture_scheduler_and_requirements
+                        , fixture_scheduler_and_requirements_and_preferences
                         )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
@@ -511,7 +559,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
                                         );
 
   sdpa::job_id_t const job_id_0 (random_job_id());
-  add_job (job_id_0, no_requirements());
+  add_job (job_id_0, no_requirements_and_preferences());
   _scheduler.enqueueJob (job_id_0);
 
   {
@@ -528,7 +576,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
                       );
 
   sdpa::job_id_t const job_id_1 (random_job_id());
-  add_job (job_id_1, no_requirements());
+  add_job (job_id_1, no_requirements_and_preferences());
   _scheduler.enqueueJob (job_id_1);
 
   {
@@ -550,7 +598,9 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (multiple_worker_job_submissions_with_requirements, fixture_scheduler_and_requirements)
+  ( multiple_worker_job_submissions_with_requirements_and_preferences
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
@@ -599,9 +649,10 @@ BOOST_FIXTURE_TEST_CASE
                       );
 }
 
-BOOST_FIXTURE_TEST_CASE ( multiple_worker_job_submissions_with_requirements_no_children_allowed
-                        , fixture_scheduler_and_requirements
-                        )
+BOOST_FIXTURE_TEST_CASE
+  ( multiple_worker_job_submissions_with_requirements_and_preferences_no_children_allowed
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
@@ -659,7 +710,7 @@ struct fixture_minimal_cost_assignment
   fixture_minimal_cost_assignment()
   : _worker_manager()
   , _scheduler
-      ( [](const sdpa::job_id_t&) {return no_requirements();}
+      ( [](const sdpa::job_id_t&) {return no_requirements_and_preferences();}
       , _worker_manager
       )
   {
@@ -709,17 +760,19 @@ struct fixture_minimal_cost_assignment
        {return map_host_transfer_cost.count (host_id) ? map_host_transfer_cost.at (host_id) : max_cost + 1;}
       };
 
-    const job_requirements_t requirements ( {}
-                                          , we::type::schedule_data (n_req_workers)
-                                          , transfer_cost
-                                          , 1.0
-                                          , 100
-                                          );
+    const Requirements_and_preferences requirements_and_preferences
+      ( {}
+      , we::type::schedule_data (n_req_workers)
+      , transfer_cost
+      , 1.0
+      , 100
+      , {}
+      );
 
     const std::set<sdpa::worker_id_t> set_assigned_workers
       (_worker_manager.find_job_assignment_minimizing_total_cost
         ( mmap_match_deg_worker
-        , requirements
+        , requirements_and_preferences
         , [] (sdpa::job_id_t const&) {return 1.0;}
         )
       );
@@ -1036,12 +1089,14 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
   sdpa::daemon::CoallocationScheduler
     _scheduler (  [&test_transfer_cost] (const sdpa::job_id_t&)
                   {
-                    return job_requirements_t ( {}
-                                              , we::type::schedule_data (n_req_workers)
-                                              , test_transfer_cost
-                                              , computational_cost
-                                              , 0
-                                              );
+                    return Requirements_and_preferences
+                      ( {}
+                      , we::type::schedule_data (n_req_workers)
+                      , test_transfer_cost
+                      , computational_cost
+                      , 0
+                      , {}
+                      );
                   }
                , _worker_manager
                );
@@ -1069,9 +1124,10 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
   BOOST_REQUIRE_EQUAL (_scheduler.delete_job (job_id), 0);
 }
 
-BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_not_all_workers_are_leaves
-                        , fixture_scheduler_and_requirements
-                        )
+BOOST_FIXTURE_TEST_CASE
+  ( no_coallocation_job_with_requirements_and_preferences_is_assigned_if_not_all_workers_are_leaves
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
 
@@ -1103,9 +1159,10 @@ BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_with_requirements_is_assigned_if_n
   BOOST_REQUIRE (_scheduler.delete_job (job_id_0));
 }
 
-BOOST_FIXTURE_TEST_CASE ( no_coallocation_job_without_requirements_is_assigned_if_not_all_workers_are_leaves
-                        , fixture_scheduler_and_requirements
-                        )
+BOOST_FIXTURE_TEST_CASE
+  ( no_coallocation_job_without_requirements_and_preferences_is_assigned_if_not_all_workers_are_leaves
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
   _worker_manager.addWorker ( agent_id
@@ -1185,12 +1242,14 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   sdpa::daemon::CoallocationScheduler
     _scheduler ( [&test_transfer_cost, &_computational_cost] (const sdpa::job_id_t&)
                  {
-                   return job_requirements_t ( {}
-                                             , we::type::schedule_data (n_req_workers)
-                                             , test_transfer_cost
-                                             , _computational_cost
-                                             , 0
-                                             );
+                   return Requirements_and_preferences
+                     ( {}
+                     , we::type::schedule_data (n_req_workers)
+                     , test_transfer_cost
+                     , _computational_cost
+                     , 0
+                     , {}
+                     );
                  }
                , _worker_manager
                );
@@ -1237,27 +1296,32 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                    );
 }
 
-BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_and_requirements)
+BOOST_FIXTURE_TEST_CASE
+  ( no_assignment_if_not_enough_memory
+  , fixture_scheduler_and_requirements_and_preferences
+  )
 {
   unsigned long avail_mem (random_ulong());
   if (avail_mem > 0) avail_mem--;
 
   _worker_manager.addWorker ( "worker_0"
-                                        , {}
-                                        , avail_mem
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+                            , {}
+                            , avail_mem
+                            , false
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
 
   const sdpa::job_id_t job_id;
 
-  add_job (job_id, job_requirements_t ( {}
-                                      , we::type::schedule_data()
-                                      , null_transfer_cost
-                                      , computational_cost
-                                      , avail_mem + 1
-                                      )
+  add_job ( job_id
+          , Requirements_and_preferences ( {}
+                                         , we::type::schedule_data()
+                                         , null_transfer_cost
+                                         , computational_cost
+                                         , avail_mem + 1
+                                         , {}
+                                         )
           );
 
   _scheduler.enqueueJob (job_id);
@@ -1266,8 +1330,8 @@ BOOST_FIXTURE_TEST_CASE (no_assignment_if_not_enough_memory, fixture_scheduler_a
   BOOST_REQUIRE (get_current_assignment().empty());
 }
 
-BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_requirements
-                        , fixture_scheduler_and_requirements
+BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_requirements_and_preferences
+                        , fixture_scheduler_and_requirements_and_preferences
                         )
 {
   unsigned int size_0 (1000);
@@ -1303,21 +1367,25 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
   const sdpa::job_id_t job_id_0 ("job_0");
   const sdpa::job_id_t job_id_1 ("job_1");
 
-  add_job (job_id_0, job_requirements_t ( {}
-                                        , we::type::schedule_data()
-                                        , null_transfer_cost
-                                        , computational_cost
-                                        , size_0
-                                        )
+  add_job ( job_id_0
+          , Requirements_and_preferences ( {}
+                                         , we::type::schedule_data()
+                                         , null_transfer_cost
+                                         , computational_cost
+                                         , size_0
+                                         , {}
+                                         )
           );
 
-  add_job (job_id_1, job_requirements_t ( {}
+  add_job ( job_id_1
+          , Requirements_and_preferences ( {}
                                          , we::type::schedule_data()
                                          , null_transfer_cost
                                          , computational_cost
                                          , size_1
+                                         , {}
                                          )
-           );
+          );
 
 
   _scheduler.enqueueJob (job_id_0);
@@ -1355,8 +1423,8 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
 }
 
 BOOST_FIXTURE_TEST_CASE
-  ( assign_job_without_requirements_to_worker_with_least_capabilities
-  , fixture_scheduler_and_requirements
+  ( assign_job_without_requirements_and_preferences_to_worker_with_least_capabilities
+  , fixture_scheduler_and_requirements_and_preferences
   )
 {
   std::string const name_worker_0 {"0" + fhg::util::testing::random_string()};
@@ -1381,7 +1449,7 @@ BOOST_FIXTURE_TEST_CASE
 
   sdpa::job_id_t const job_id {fhg::util::testing::random_string()};
 
-  add_job (job_id, no_requirements());
+  add_job (job_id, no_requirements_and_preferences());
   _scheduler.enqueueJob (job_id);
 
   _scheduler.assignJobsToWorkers();
@@ -1395,7 +1463,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabilities_when_same_costs
-                        , fixture_scheduler_and_requirements
+                        , fixture_scheduler_and_requirements_and_preferences
                         )
 {
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
@@ -1444,7 +1512,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
 }
 
 BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
-                        , fixture_scheduler_and_requirements
+                        , fixture_scheduler_and_requirements_and_preferences
                         )
 {
   std::string const name_worker_0 {"worker_0_" + fhg::util::testing::random_string()};
@@ -1484,21 +1552,25 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                          }
                        );
 
-  add_job (job_id_0, job_requirements_t ( {}
-                                        , we::type::schedule_data()
-                                        , test_transfer_cost
-                                        , 1.0
-                                        , 100
-                                        )
+  add_job ( job_id_0
+          , Requirements_and_preferences ( {}
+                                         , we::type::schedule_data()
+                                         , test_transfer_cost
+                                         , 1.0
+                                         , 100
+                                         , {}
+                                         )
           );
 
-  add_job (job_id_1, job_requirements_t ( {}
+  add_job ( job_id_1
+          , Requirements_and_preferences ( {}
                                          , we::type::schedule_data()
                                          , test_transfer_cost
                                          , 1.0
                                          , 200
+                                         , {}
                                          )
-           );
+          );
 
 
   _scheduler.enqueueJob (job_id_0);
@@ -1515,7 +1587,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
 }
 
 BOOST_FIXTURE_TEST_CASE ( work_stealing
-                        , fixture_scheduler_and_requirements
+                        , fixture_scheduler_and_requirements_and_preferences
                         )
 {
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
@@ -1601,7 +1673,7 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
 }
 
 BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
-                        , fixture_scheduler_and_requirements
+                        , fixture_scheduler_and_requirements_and_preferences
                         )
 {
   _worker_manager.addWorker ( "worker_0"
@@ -1697,7 +1769,10 @@ struct fixture_add_new_workers
   fixture_add_new_workers()
     : _worker_manager()
     , _scheduler
-       ( std::bind (&fixture_add_new_workers::requirements, this, std::placeholders::_1)
+       ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
+                   , this
+                   , std::placeholders::_1
+                   )
        , _worker_manager
        )
     , _access_allocation_table (_scheduler)
@@ -1712,20 +1787,23 @@ struct fixture_add_new_workers
     return _access_allocation_table.get_current_assignment();
   }
 
-  void add_job (const sdpa::job_id_t& job_id, const job_requirements_t& reqs)
+  void add_job ( const sdpa::job_id_t& job_id
+               , const Requirements_and_preferences& reqs
+               )
   {
-    if (!_requirements.emplace (job_id, reqs).second)
+    if (!_requirements_and_preferences.emplace (job_id, reqs).second)
     {
       throw std::runtime_error ("added job twice");
     }
   }
 
-  job_requirements_t requirements (sdpa::job_id_t id)
+  Requirements_and_preferences requirements_and_preferences (sdpa::job_id_t id)
   {
-    return _requirements.find (id)->second;
+    return _requirements_and_preferences.find (id)->second;
   }
 
-  std::map<sdpa::job_id_t, job_requirements_t> _requirements;
+  std::map<sdpa::job_id_t, Requirements_and_preferences>
+    _requirements_and_preferences;
 
   std::vector<sdpa::worker_id_t> add_new_workers
     ( std::unordered_set<std::string> const& cpbnames
@@ -1781,7 +1859,9 @@ struct fixture_add_new_workers
              , a.end()
              , [this, &reqname] (sdpa::job_id_t job)
                {
-                 add_job (job, reqname ? require (reqname.get()) : no_requirements());
+                 add_job (job, reqname ? require (reqname.get())
+                                       : no_requirements_and_preferences()
+                         );
                  _scheduler.enqueueJob (job);
                  request_scheduling();
                }
@@ -2306,9 +2386,12 @@ BOOST_FIXTURE_TEST_CASE
 
   auto assignment (get_current_assignment());
 
-  for (auto const& req : _requirements)
+  for (auto const& req : _requirements_and_preferences)
   {
-    BOOST_REQUIRE_EQUAL (assignment.at (req.first).size(), req.second.numWorkers());
+    BOOST_REQUIRE_EQUAL
+      ( assignment.at (req.first).size()
+      , req.second.numWorkers()
+      );
   }
 
   unsigned int started_jobs (0);
@@ -2323,7 +2406,10 @@ BOOST_FIXTURE_TEST_CASE
               , sdpa::job_id_t const& job
               )
           {
-            BOOST_REQUIRE_EQUAL (assignment.at (job).size(), _requirements.at (job).numWorkers());
+            BOOST_REQUIRE_EQUAL
+              ( assignment.at (job).size()
+              , _requirements_and_preferences.at (job).numWorkers()
+              );
             BOOST_REQUIRE_EQUAL (assignment.at (job), workers);
 
             ++started_jobs;

@@ -87,19 +87,23 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                            , fhg::util::testing::random_string()
                            );
 
-  const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
-                                     , we::type::requirement_t ("B", false)
-                                     , we::type::requirement_t ("C", false)
-                                     }
-                                    , we::type::schedule_data()
-                                    , null_transfer_cost
-                                    , computational_cost
-                                    , 0
-                                    }
-                                   );
+  const Requirements_and_preferences requirements_and_preferences
+    ({{ we::type::requirement_t ("A", true)
+      , we::type::requirement_t ("B", false)
+      , we::type::requirement_t ("C", false)
+      }
+     , we::type::schedule_data()
+     , null_transfer_cost
+     , computational_cost
+     , 0
+     , {}
+     }
+    );
 
   auto const mmap_match_deg_worker_id
-    (worker_manager.getMatchingDegreesAndWorkers_TESTING_ONLY (job_req));
+    (worker_manager.getMatchingDegreesAndWorkers_TESTING_ONLY
+       (requirements_and_preferences)
+    );
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
   auto it (mmap_match_deg_worker_id.begin());

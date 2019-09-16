@@ -83,7 +83,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _worker_manager()
   , _scheduler ( [this] (job_id_t job_id)
                  {
-                   return findJob (job_id)->requirements();
+                   return findJob (job_id)->requirements_and_preferences();
                  }
                , _worker_manager
                )
@@ -208,7 +208,7 @@ std::string GenericDaemon::gen_id()
     {
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
-      job_requirements_t requirements
+      Requirements_and_preferences requirements_and_preferences
         { activity.requirements()
         , activity.get_schedule_data()
         , [&]
@@ -243,13 +243,14 @@ std::string GenericDaemon::gen_id()
           }()
         , computational_cost
         , activity.memory_buffer_size_total()
+        , {} //Empty preferences. To be later replaced with activity preferences
         };
 
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
                     , std::move (handler)
-                    , std::move (requirements)
+                    , std::move (requirements_and_preferences)
                     );
     }
 
@@ -258,7 +259,7 @@ std::string GenericDaemon::gen_id()
                                , we::type::activity_t activity
                                , job_source source
                                , job_handler handler
-                               , job_requirements_t requirements
+                               , Requirements_and_preferences requirements_and_preferences
                                )
     {
       Job* pJob = new Job
@@ -266,7 +267,7 @@ std::string GenericDaemon::gen_id()
         , std::move (activity)
         , std::move (source)
         , std::move (handler)
-        , std::move (requirements)
+        , std::move (requirements_and_preferences)
         );
 
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
@@ -439,7 +440,7 @@ void GenericDaemon::handleSubmitJobEvent
                           , hasWorkflowEngine()
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
-                          , {{}, {}, null_transfer_cost, 1.0, 0}
+                          , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
                           )
                   );
 

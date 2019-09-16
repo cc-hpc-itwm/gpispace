@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sdpa/daemon/Worker.hpp>
-#include <sdpa/job_requirements.hpp>
+#include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 
 #include <boost/bimap.hpp>
@@ -109,15 +109,16 @@ namespace sdpa
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
-      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY (const job_requirements_t&) const;
+      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY
+        (const Requirements_and_preferences&) const;
       std::set<worker_id_t> find_job_assignment_minimizing_total_cost
         ( const mmap_match_deg_worker_id_t&
-        , const job_requirements_t&
+        , const Requirements_and_preferences&
         , const std::function<double (job_id_t const&)>
         ) const;
 
       std::set<worker_id_t> find_assignment
-        ( const job_requirements_t&
+        ( const Requirements_and_preferences&
         , const std::function<double (job_id_t const&)>
         ) const;
 
@@ -168,9 +169,9 @@ namespace sdpa
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
       void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
 
-      boost::optional<double> matchRequirements
+      boost::optional<double> match_requirements_and_preferences
         ( Worker const&
-        , const job_requirements_t& job_req_set
+        , const Requirements_and_preferences&
         ) const;
 
       worker_map_t  worker_map_;

@@ -167,17 +167,19 @@ namespace sdpa
       }
     }
 
-    boost::optional<double> WorkerManager::matchRequirements
+    boost::optional<double> WorkerManager::match_requirements_and_preferences
       ( Worker const& worker
-      , const job_requirements_t& job_req_set
+      , const Requirements_and_preferences& requirements_and_preferences
       ) const
     {
       std::size_t matchingDeg (0);
-      if (job_req_set.numWorkers()>1 && worker._children_allowed)
+      if (requirements_and_preferences.numWorkers()>1 && worker._children_allowed)
       {
         return boost::none;
       }
-      for (we::type::requirement_t const& req : job_req_set.getReqList())
+      for ( we::type::requirement_t const& req
+          : requirements_and_preferences.requirements()
+          )
       {
         if (worker.hasCapability (req.value()))
         {
@@ -196,12 +198,12 @@ namespace sdpa
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
-      ( const job_requirements_t& job_reqs
+      ( const Requirements_and_preferences& requirements_and_preferences
       ) const
     {
       std::lock_guard<std::mutex> const lock_worker_map (mtx_);
 
-      if (worker_map_.size() < job_reqs.numWorkers())
+      if (worker_map_.size() < requirements_and_preferences.numWorkers())
       {
         return {};
       }
@@ -216,7 +218,7 @@ namespace sdpa
 
       for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
-        if ( job_reqs.shared_memory_amount_required()
+        if ( requirements_and_preferences.shared_memory_amount_required()
            > worker.second._allocated_shared_memory_size
            )
           continue;
@@ -225,7 +227,7 @@ namespace sdpa
           continue;
 
         const boost::optional<double>
-          matchingDeg (matchRequirements (worker.second, job_reqs));
+          matchingDeg (match_requirements_and_preferences (worker.second, requirements_and_preferences));
 
         if (matchingDeg)
         {
@@ -243,13 +245,13 @@ namespace sdpa
     }
 
     std::set<worker_id_t> WorkerManager::find_assignment
-      ( const job_requirements_t& requirements
+      ( const Requirements_and_preferences& requirements_and_preferences
       , const std::function<double (job_id_t const&)> cost_reservation
       ) const
     {
       std::lock_guard<std::mutex> const _(mtx_);
 
-      if (worker_map_.size() < requirements.numWorkers())
+      if (worker_map_.size() < requirements_and_preferences.numWorkers())
       {
         return {};
       }
@@ -264,7 +266,7 @@ namespace sdpa
 
       for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
-        if ( requirements.shared_memory_amount_required()
+        if ( requirements_and_preferences.shared_memory_amount_required()
            > worker.second._allocated_shared_memory_size
            )
           {continue;}
@@ -272,8 +274,10 @@ namespace sdpa
         if (worker.second.backlog_full())
           {continue;}
 
-        const boost::optional<double>
-        matching_degree (matchRequirements (worker.second, requirements));
+        const boost::optional<double> matching_degree
+          (match_requirements_and_preferences
+             (worker.second, requirements_and_preferences)
+          );
 
         if (matching_degree)
         {
@@ -290,18 +294,18 @@ namespace sdpa
 
       return find_job_assignment_minimizing_total_cost
         ( mmap_matching_workers
-        , requirements
+        , requirements_and_preferences
         , cost_reservation
         );
     }
 
     std::set<worker_id_t> WorkerManager::find_job_assignment_minimizing_total_cost
       ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-      , const job_requirements_t& requirements
+      , const Requirements_and_preferences& requirements_and_preferences
       , const std::function<double (job_id_t const&)> cost_reservation
       ) const
     {
-      const size_t n_req_workers (requirements.numWorkers());
+      const size_t n_req_workers (requirements_and_preferences.numWorkers());
 
       if (mmap_matching_workers.size() < n_req_workers)
         return {};
@@ -319,8 +323,9 @@ namespace sdpa
           );
 
         double const total_cost
-          ( requirements.transfer_cost() (worker_info.worker_host())
-          + requirements.computational_cost()
+          ( requirements_and_preferences.transfer_cost()
+              (worker_info.worker_host())
+          + requirements_and_preferences.computational_cost()
           + cost_preassigned_jobs
           );
 

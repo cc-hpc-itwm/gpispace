@@ -18,7 +18,7 @@ namespace sdpa
     {
     public:
       CoallocationScheduler
-        ( std::function<job_requirements_t (const sdpa::job_id_t&)>
+        ( std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
         , WorkerManager&
         );
 
@@ -56,8 +56,8 @@ namespace sdpa
         , const double computational_cost
         ) const;
 
-      std::function<job_requirements_t (const sdpa::job_id_t&)>
-        _job_requirements;
+      std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
+        _requirements_and_preferences;
 
       WorkerManager& _worker_manager;
 

@@ -13,10 +13,10 @@ namespace sdpa
   namespace daemon
   {
     CoallocationScheduler::CoallocationScheduler
-      ( std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
+      ( std::function<Requirements_and_preferences (const sdpa::job_id_t&)> requirements_and_preferences
       , WorkerManager& worker_manager
       )
-      : _job_requirements (job_requirements)
+      : _requirements_and_preferences (requirements_and_preferences)
       , _worker_manager (worker_manager)
     {}
 
@@ -43,7 +43,7 @@ namespace sdpa
         , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
           {
             return total
-              + _job_requirements (job_id).transfer_cost()
+              + _requirements_and_preferences (job_id).transfer_cost()
                   (_worker_manager.host_INDICATES_A_RACE (wid));
           }
         ) + computational_cost;
@@ -65,10 +65,11 @@ namespace sdpa
         sdpa::job_id_t const jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const job_requirements_t requirements (_job_requirements (jobId));
+        const Requirements_and_preferences requirements_and_preferences
+          (_requirements_and_preferences (jobId));
         const std::set<worker_id_t> matching_workers
           (_worker_manager.find_assignment
-            ( requirements
+            ( requirements_and_preferences
             , [this] (const job_id_t& job_id) -> double
               {
                 return allocation_table_.at (job_id)->cost();
@@ -91,12 +92,14 @@ namespace sdpa
             }
 
             Reservation* const pReservation
-              (new Reservation ( matching_workers
-                               , compute_reservation_cost ( jobId
-                                                          , matching_workers
-                                                          , requirements.computational_cost()
-                                                          )
-                               )
+              (new Reservation
+                 ( matching_workers
+                 , compute_reservation_cost
+                     ( jobId
+                     , matching_workers
+                     , requirements_and_preferences.computational_cost()
+                     )
+                 )
               );
 
             allocation_table_.emplace (jobId, pReservation);
