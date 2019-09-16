@@ -27,9 +27,8 @@ int main (int ac, char **av)
       . store_and_notify (ac, av)
       );
 
-    promise.set_result ({ option::option.get_from (vm)
-                        , fhg::util::hostname()
-                        }
+    promise.set_result ( option::option.get_from (vm)
+                       , fhg::util::hostname()
                        );
 
     return 0;

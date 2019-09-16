@@ -219,7 +219,7 @@ int main (int argc, char** argv)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handler, SIGINT, std::bind (request_stop));
 
-    promise.set_result ({});
+    promise.set_result();
 
     stop_requested.wait();
 

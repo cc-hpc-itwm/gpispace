@@ -15,6 +15,8 @@ namespace fhg
       ~started_process_promise();
 
       void set_result (std::vector<std::string> messages);
+      template<typename... String>
+        void set_result (String... messages);
       void set_exception (std::exception_ptr exception);
 
       static std::string end_sentinel_value() { return "DONE"; }
@@ -30,3 +32,5 @@ namespace fhg
     };
   }
 }
+
+#include <rif/started_process_promise.ipp>

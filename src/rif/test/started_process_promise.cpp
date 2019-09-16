@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (setting_result_writes_something_ending_with_sentinel_value
 
   {
     fhg::rif::started_process_promise promise (argc, argv);
-    promise.set_result ({});
+    promise.set_result();
 
     check_something_with_sentinel_was_written (pipefd[0]);
   }

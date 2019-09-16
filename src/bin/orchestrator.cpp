@@ -107,11 +107,10 @@ int main (int argc, char **argv)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handlers, SIGINT, std::bind (request_stop));
 
-    promise.set_result ( { fhg::util::connectable_to_address_string
-                             (orchestrator.peer_local_endpoint().address())
-                         , std::to_string
-                             (orchestrator.peer_local_endpoint().port())
-                         }
+    promise.set_result ( fhg::util::connectable_to_address_string
+                           (orchestrator.peer_local_endpoint().address())
+                       , std::to_string
+                           (orchestrator.peer_local_endpoint().port())
                        );
 
     stop_requested.wait();
