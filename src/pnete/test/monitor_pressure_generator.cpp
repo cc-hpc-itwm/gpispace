@@ -121,7 +121,7 @@ try
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
 
-  std::cout << emitter.local_tcp_endpoint().port << "\n";
+  std::cout << emitter.local_endpoint().to_string() << "\n";
 
   std::map<std::string, boost::optional<activity>> workers;
 

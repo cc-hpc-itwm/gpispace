@@ -175,8 +175,8 @@ extended_add_library (NAME logging
           "logging/message.cpp"
           "logging/socket_endpoint.cpp"
           "logging/stream_emitter.cpp"
+          "logging/stream_receiver.cpp"
           "logging/tcp_endpoint.cpp"
-          "logging/tcp_receiver.cpp"
   LIBRARIES fhglog
             Util::Generic
             RPC
@@ -234,15 +234,15 @@ add_unit_test (NAME logging_stream_emitter
   USE_BOOST
 )
 
-add_unit_test (NAME logging_tcp_endpoint
-  SOURCES "logging/test/tcp_endpoint.cpp"
+add_unit_test (NAME logging_stream_receiver
+  SOURCES "logging/test/stream_receiver.cpp"
   LIBRARIES Util::Generic
             gspc::logging
   USE_BOOST
 )
 
-add_unit_test (NAME logging_tcp_receiver
-  SOURCES "logging/test/tcp_receiver.cpp"
+add_unit_test (NAME logging_tcp_endpoint
+  SOURCES "logging/test/tcp_endpoint.cpp"
   LIBRARIES Util::Generic
             gspc::logging
   USE_BOOST

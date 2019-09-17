@@ -1,6 +1,6 @@
 #pragma once
 
-#include <logging/tcp_endpoint.hpp>
+#include <logging/endpoint.hpp>
 
 #include <QSplitter>
 
@@ -18,7 +18,7 @@ namespace fhg
 
       public:
         execution_monitor ( unsigned short port
-                          , std::vector<logging::tcp_endpoint>
+                          , std::vector<logging::endpoint>
                           , QWidget* parent = nullptr
                           );
       };

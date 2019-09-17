@@ -290,7 +290,7 @@ namespace fhg
 
       execution_monitor::execution_monitor
           ( unsigned short port
-          , std::vector<logging::tcp_endpoint> emitters
+          , std::vector<logging::endpoint> emitters
           , QWidget* parent
           )
         : QSplitter (Qt::Horizontal, parent)

@@ -2,7 +2,7 @@
 
 #include <logging/legacy/receiver.hpp>
 #include <logging/stream_emitter.hpp>
-#include <logging/tcp_receiver.hpp>
+#include <logging/stream_receiver.hpp>
 
 namespace fhg
 {
@@ -13,9 +13,9 @@ namespace fhg
     public:
       legacy_bridge (unsigned short legacy_port);
 
-      tcp_endpoint local_endpoint() const;
+      endpoint local_endpoint() const;
 
-      using receiver = tcp_receiver;
+      using receiver = stream_receiver;
 
     private:
       virtual void on_legacy (legacy::event const&) override;

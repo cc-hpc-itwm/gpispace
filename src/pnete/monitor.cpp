@@ -25,7 +25,7 @@ namespace
       {"gui-port", "gui port"};
     po::option<po::positive_integral<unsigned short>> const log_port
       {"log-port", "log port"};
-    po::option<std::vector<fhg::logging::tcp_endpoint>> const emitters
+    po::option<std::vector<fhg::logging::endpoint>> const emitters
       {"emitters", "list of tcp emitters"};
   }
 }

@@ -7,7 +7,7 @@
 #include <drts/private/option.hpp>
 
 #include <logging/legacy_bridge.hpp>
-#include <logging/tcp_receiver.hpp>
+#include <logging/stream_receiver.hpp>
 
 #include <test/certificates_data.hpp>
 #include <test/make.hpp>
@@ -84,7 +84,7 @@ BOOST_DATA_TEST_CASE
   std::list<std::string> logged;
 
   fhg::logging::legacy_bridge const log_bridge (log_port);
-  fhg::logging::tcp_receiver const log_receiver
+  fhg::logging::stream_receiver const log_receiver
     ( log_bridge.local_endpoint()
     , [&logged] (fhg::logging::message const& message)
       {

@@ -24,30 +24,17 @@ namespace fhg
           ( _service_dispatcher
           , util::bind_this (this, &stream_emitter::register_receiver)
           )
-      , _register_socket_receiver
-          ( _service_dispatcher
-          , util::bind_this (this, &stream_emitter::register_socket_receiver)
-          )
-      , _register_tcp_receiver
-          ( _service_dispatcher
-          , util::bind_this (this, &stream_emitter::register_tcp_receiver)
-          )
       , _service_socket_provider (_io_service, _service_dispatcher)
       , _service_tcp_provider (_io_service, _service_dispatcher)
+      , _local_endpoint ( util::connectable_to_address_string
+                            (_service_tcp_provider.local_endpoint())
+                        , _service_socket_provider.local_endpoint()
+                        )
     {}
 
     endpoint stream_emitter::local_endpoint() const
     {
-      return {local_tcp_endpoint(), local_socket_endpoint()};
-    }
-    socket_endpoint stream_emitter::local_socket_endpoint() const
-    {
-      return _service_socket_provider.local_endpoint();
-    }
-    tcp_endpoint stream_emitter::local_tcp_endpoint() const
-    {
-      return util::connectable_to_address_string
-        (_service_tcp_provider.local_endpoint());
+      return _local_endpoint;
     }
 
     void stream_emitter::emit_message (message const& forwarded_message)
@@ -73,30 +60,22 @@ namespace fhg
 
     void stream_emitter::register_receiver (endpoint const& endpoint)
     {
-      util::visit<void> ( endpoint.best (util::hostname())
-                        , [&] (socket_endpoint const& as_socket)
-                          {
-                            register_socket_receiver (as_socket);
-                          }
-                        , [&] (tcp_endpoint const& as_tcp)
-                          {
-                            register_tcp_receiver (as_tcp);
-                          }
-                        );
-    }
-    void stream_emitter::register_socket_receiver
-      (socket_endpoint const& endpoint)
-    {
-      _receivers.emplace_back
-        ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
-            (_io_service, endpoint.socket)
-        );
-    }
-    void stream_emitter::register_tcp_receiver (tcp_endpoint const& endpoint)
-    {
-      _receivers.emplace_back
-        ( util::cxx14::make_unique<rpc::remote_tcp_endpoint>
-            (_io_service, endpoint)
+      util::visit<void>
+        ( endpoint.best (_local_endpoint.as_socket->host)
+        , [&] (socket_endpoint const& as_socket)
+          {
+            _receivers.emplace_back
+              ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
+                  (_io_service, as_socket.socket)
+              );
+          }
+        , [&] (tcp_endpoint const& as_tcp)
+          {
+            _receivers.emplace_back
+              ( util::cxx14::make_unique<rpc::remote_tcp_endpoint>
+                  (_io_service, as_tcp)
+              );
+          }
         );
     }
   }

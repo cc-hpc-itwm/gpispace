@@ -84,7 +84,7 @@ namespace fhg
       }
 
       worker_model::worker_model ( unsigned short port
-                                 , std::vector<logging::tcp_endpoint> emitters
+                                 , std::vector<logging::endpoint> emitters
                                  , QObject* parent
                                  )
         : QAbstractItemModel (parent)

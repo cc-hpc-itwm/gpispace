@@ -19,6 +19,14 @@ namespace fhg
 {
   namespace logging
   {
+    namespace
+    {
+      //! \note file_sink always tries to subscribe, so the endpoint
+      //! needs to be valid.
+      stream_emitter const dummy_emitter;
+      endpoint const dummy_endpoint (dummy_emitter.local_endpoint());
+    }
+
     BOOST_AUTO_TEST_CASE (constructor_throws_if_file_not_writable)
     {
       boost::filesystem::path const non_existing_path
@@ -29,10 +37,11 @@ namespace fhg
       util::testing::require_exception
         ( [&]
           {
-            basic_file_sink sink ( target
-                                 , [] (std::ostream&, message const&) {}
-                                 , boost::none
-                                 );
+            file_sink sink ( dummy_endpoint
+                           , target
+                           , [] (std::ostream&, message const&) {}
+                           , boost::none
+                           );
           }
         , error::unable_to_write_to_file (target)
         );
@@ -40,10 +49,10 @@ namespace fhg
 
     namespace
     {
-      struct public_basic_file_sink : public basic_file_sink
+      struct public_file_sink : public file_sink
       {
-        using basic_file_sink::basic_file_sink;
-        using basic_file_sink::dispatch_append;
+        using file_sink::file_sink;
+        using file_sink::dispatch_append;
       };
 
       std::vector<std::string> assemble_comparison_file
@@ -70,8 +79,9 @@ namespace fhg
         (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
 
       {
-        public_basic_file_sink sink
-          ( sink_path
+        public_file_sink sink
+          ( dummy_endpoint
+          , sink_path
           , [&] (std::ostream& os, message const&)
             {
               os << sentinel << '\n';
@@ -107,7 +117,7 @@ namespace fhg
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
       {
-        public_basic_file_sink sink (path, &just_a_newline, boost::none);
+        public_file_sink sink (dummy_endpoint, path, &just_a_newline, boost::none);
 
         for (std::size_t i (0); i < emits; ++i)
         {
@@ -128,8 +138,9 @@ namespace fhg
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
       {
-        public_basic_file_sink sink
-          ( path
+        public_file_sink sink
+          ( dummy_endpoint
+          , path
           , [&] (std::ostream& os, message const&)
             {
               os << std::endl;
@@ -156,7 +167,7 @@ namespace fhg
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
       {
-        public_basic_file_sink sink (path, &just_a_newline, 0);
+        public_file_sink sink (dummy_endpoint, path, &just_a_newline, 0);
 
         for (std::size_t i (0); i < emits; ++i)
         {
@@ -182,7 +193,7 @@ namespace fhg
       std::size_t expected_lines (0);
 
       {
-        public_basic_file_sink sink (path, &just_a_newline, interval);
+        public_file_sink sink (dummy_endpoint, path, &just_a_newline, interval);
 
         auto const emit
           ([&] { sink.dispatch_append (util::testing::random<message>{}()); });
@@ -212,7 +223,7 @@ namespace fhg
       BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), expected_lines);
     }
 
-    BOOST_AUTO_TEST_CASE (tcp_file_sink_actually_registers_and_receives)
+    BOOST_AUTO_TEST_CASE (file_sink_actually_registers_and_receives)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
       auto const sentinel (util::testing::random<std::string>{}());
@@ -224,8 +235,8 @@ namespace fhg
         (static_cast<boost::filesystem::path> (temporary_sink_dir) / "log");
 
       {
-        tcp_file_sink const sink
-          ( emitter.local_tcp_endpoint()
+        file_sink const sink
+          ( emitter.local_endpoint()
           , path
           , [&] (std::ostream& os, message const&)
             {

@@ -9,9 +9,9 @@ namespace fhg
       , _emitter()
     {}
 
-    tcp_endpoint legacy_bridge::local_endpoint() const
+    endpoint legacy_bridge::local_endpoint() const
     {
-      return _emitter.local_tcp_endpoint();
+      return _emitter.local_endpoint();
     }
 
     void legacy_bridge::on_legacy (legacy::event const& event)

@@ -1,5 +1,5 @@
-#include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_receiver.hpp>
+#include <logging/endpoint.hpp>
+#include <logging/stream_receiver.hpp>
 
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <util-generic/ostream/put_time.hpp>
@@ -18,8 +18,8 @@ try
   fhg::util::syscall::process_signal_block const signal_block (signals);
 
   namespace po = fhg::util::boost::program_options;
-  po::option<std::vector<fhg::logging::tcp_endpoint>> const emitters
-    {"emitters", "list of tcp emitters"};
+  po::option<std::vector<fhg::logging::endpoint>> const emitters
+    {"emitters", "list of emitters"};
 
   boost::program_options::variables_map const vm
     ( po::options ("GPI-Space Logging to stdout")
@@ -27,7 +27,7 @@ try
     . store_and_notify (argc, argv)
     );
 
-  fhg::logging::tcp_receiver receiver
+  fhg::logging::stream_receiver receiver
     ( emitters.get_from (vm)
     , [] (fhg::logging::message const& message)
       {

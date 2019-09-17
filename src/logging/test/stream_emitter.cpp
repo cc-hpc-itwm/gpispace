@@ -34,14 +34,14 @@ namespace fhg
       {
         static socket_endpoint::Socket endpoint (stream_emitter const& emitter)
         {
-          return emitter.local_socket_endpoint().socket;
+          return emitter.local_endpoint().as_socket->socket;
         }
       };
       template<> struct emitter_endpoint<stream_protocol::tcp>
       {
         static tcp_endpoint endpoint (stream_emitter const& emitter)
         {
-          return emitter.local_tcp_endpoint();
+          return *emitter.local_endpoint().as_tcp;
         }
       };
 
@@ -52,11 +52,6 @@ namespace fhg
           = typename std::conditional < receiver == stream_protocol::tcp
                                       , rpc::service_tcp_provider
                                       , rpc::service_socket_provider
-                                      >::type;
-        using register_function
-          = typename std::conditional < receiver == stream_protocol::tcp
-                                      , protocol::register_tcp_receiver
-                                      , protocol::register_socket_receiver
                                       >::type;
 
         using registration_method
@@ -110,7 +105,7 @@ namespace fhg
 
       typename Combination::registration_method client
         (io_service, Combination::endpoint (emitter));
-      rpc::sync_remote_function<typename Combination::register_function>
+      rpc::sync_remote_function<protocol::register_receiver>
         {client} (get_endpoint (service_provider));
 
       emitter.emit_message (sent);
