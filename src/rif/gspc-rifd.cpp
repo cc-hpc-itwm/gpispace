@@ -23,11 +23,13 @@
 #include <rif/protocol.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/future.hpp>
 #include <rpc/remote_function.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>
+#include <rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -396,6 +398,43 @@ try
 
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
+
+  std::unordered_map<pid_t, fhg::rpc::remote_socket_endpoint>
+    add_emitters_endpoints;
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_logging_demultiplexer>
+    start_logging_demultiplexer_service
+      ( service_dispatcher
+      , [&add_emitters_endpoints, &io_service] (boost::filesystem::path exe)
+        {
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                (exe, {}, std::unordered_map<std::string, std::string>())
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 2)
+          {
+            throw std::logic_error ( "could not start logging-demultiplexer "
+                                     ": expected 2 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_logging_demultiplexer_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.sink_endpoint = messages[0];
+
+          add_emitters_endpoints.emplace
+            ( std::piecewise_construct
+            , std::forward_as_tuple (result.pid)
+            , std::forward_as_tuple
+                (io_service, fhg::logging::socket_endpoint (messages[1]).socket)
+            );
+
+          return result;
+        }
+      );
+
   fhg::rpc::service_tcp_provider_with_deferred_start server
     (io_service, service_dispatcher);
 

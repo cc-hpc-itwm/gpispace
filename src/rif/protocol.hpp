@@ -18,7 +18,9 @@
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <boost/serialization/string.hpp>
 #include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <chrono>
 #include <exception>
@@ -111,6 +113,17 @@ namespace fhg
             , std::unordered_map<std::string, std::string> environment
             )
         );
+
+      struct start_logging_demultiplexer_result
+      {
+        pid_t pid;
+        fhg::logging::endpoint sink_endpoint;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_logging_demultiplexer
+        , start_logging_demultiplexer_result (boost::filesystem::path exe)
+        );
     }
   }
 }
@@ -190,6 +203,17 @@ namespace boost
     {
       ar & result.pid;
       ar & result.logger_registration_endpoint;
+    }
+
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::protocol::start_logging_demultiplexer_result& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
+      ar & result.sink_endpoint;
     }
   }
 }

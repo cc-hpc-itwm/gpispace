@@ -8,10 +8,15 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
-#include <chrono>
+#include <algorithm>
+#include <exception>
 #include <list>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace gspc
 {
@@ -62,6 +67,7 @@ namespace gspc
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& master
                              , std::ostream& info_output
+                             , boost::optional<fhg::rif::entry_point> log_rif_entry_point
                              , Certificates const& certificates
                              );
 
@@ -97,6 +103,9 @@ namespace gspc
       std::vector<boost::filesystem::path> _app_path;
       installation_path _installation_path;
       boost::optional<boost::filesystem::path> _log_dir;
+      boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
+      boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
+        _logging_rif_info;
       std::vector<worker_description> _worker_descriptions;
 
       fhg::drts::processes_storage _processes_storage;
@@ -106,8 +115,6 @@ namespace gspc
 
       std::string _orchestrator_host;
       unsigned short _orchestrator_port;
-
-      std::vector<fhg::logging::endpoint> _log_emitters;
     } _started_runtime_system;
     fhg::log::Logger _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;

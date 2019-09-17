@@ -13,6 +13,7 @@
 #include <logging/endpoint.hpp>
 
 #include <rif/entry_point.hpp>
+#include <rif/protocol.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
@@ -34,7 +35,14 @@ namespace fhg
 
     using hostinfo_type = std::pair<std::string, unsigned short>;
 
-    enum class component_type {vmem, orchestrator, agent, worker};
+    enum class component_type
+    {
+      vmem,
+      orchestrator,
+      agent,
+      worker,
+      logging_demultiplexer,
+    };
 
     struct processes_storage : boost::noncopyable
     {
@@ -81,11 +89,18 @@ namespace fhg
       , std::vector<boost::filesystem::path> const& app_path
       , gspc::installation_path const&
       , std::ostream& info_output
-      , std::vector<fhg::logging::endpoint>& log_emitters
+      , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
       , gspc::Certificates const& certificates
       );
 
-    hostinfo_type startup
+    struct startup_result
+    {
+      hostinfo_type orchestrator;
+      boost::optional<rif::protocol::start_logging_demultiplexer_result>
+        top_level_logging_demultiplexer;
+    };
+
+    startup_result startup
       ( boost::optional<std::string> const& gui_host
       , boost::optional<unsigned short> const& gui_port
       , boost::optional<std::string> const& log_host
@@ -105,7 +120,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
-      , std::vector<fhg::logging::endpoint>& log_emitters
+      , boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , gspc::Certificates const& certificates
       );
   }

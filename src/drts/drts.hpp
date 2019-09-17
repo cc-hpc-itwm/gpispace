@@ -135,7 +135,7 @@ namespace gspc
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
 
-    std::vector<fhg::logging::endpoint> const& log_emitters() const;
+    fhg::logging::endpoint top_level_log_demultiplexer() const;
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;

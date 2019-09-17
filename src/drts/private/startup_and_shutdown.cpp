@@ -3,6 +3,7 @@
 #include <drts/private/drts_impl.hpp>
 
 #include <util-generic/join.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
@@ -23,6 +24,7 @@
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/utility/in_place_factory.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -161,7 +163,7 @@ namespace
     , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
-    , std::vector<fhg::logging::endpoint>& log_emitters
+    , boost::optional<std::pair<fhg::rif::client&, pid_t>>
     , gspc::Certificates const& certificates
     )
   {
@@ -184,8 +186,6 @@ namespace
 
     processes.store (rif_entry_point, name, result.pid);
 
-    log_emitters.emplace_back
-      (std::move (result.logger_registration_endpoint));
 
     return result.hostinfo;
   }
@@ -213,7 +213,7 @@ namespace fhg
     , std::vector<boost::filesystem::path> const& app_path
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
-    , std::vector<fhg::logging::endpoint>& log_emitters
+    , boost::optional<std::pair<fhg::rif::entry_point, pid_t>>
     , gspc::Certificates const& certificates
     )
   {
@@ -392,6 +392,8 @@ namespace fhg
         }
       }
 
+      std::vector<fhg::logging::endpoint> log_emitters;
+
       for (auto& future : futures)
       {
         try
@@ -491,7 +493,7 @@ namespace fhg
         };
     }
 
-    hostinfo_type startup
+    startup_result startup
       ( boost::optional<std::string> const& gui_host
       , boost::optional<unsigned short> const& gui_port
       , boost::optional<std::string> const& log_host
@@ -511,7 +513,7 @@ namespace fhg
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
-      , std::vector<fhg::logging::endpoint>& log_emitters
+      , boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , gspc::Certificates const& certificates
       )
     {
@@ -550,6 +552,30 @@ namespace fhg
         (std::max (1UL, std::min (64UL, rif_entry_points.size())));
 
       rif::client master_rif_client (io_service, master);
+
+      boost::optional<rif::client> logging_rif_client;
+      boost::optional<rif::protocol::start_logging_demultiplexer_result>
+        logging_rif_info;
+      if (log_rif_entry_point)
+      {
+        logging_rif_client = boost::in_place
+          (std::ref (io_service), *log_rif_entry_point);
+
+        info_output << "I: starting top level gspc logging demultiplexer on "
+                    << log_rif_entry_point->hostname << "\n";
+
+        logging_rif_info
+          = logging_rif_client->start_logging_demultiplexer
+              (installation_path.logging_demultiplexer()).get();
+
+
+        info_output << "   => accepting registration on '"
+                    << logging_rif_info->sink_endpoint.to_string()
+                    << "'\n";
+
+        processes.store
+          (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
+      }
 
       std::vector<std::string> orchestrator_options {"-u", "0", "-n", "orchestrator"};
       if (certificates)
@@ -715,11 +741,17 @@ namespace fhg
                                           , log_dir
                                           , processes
                                           , info_output
-                                          , log_emitters
+                                          , FHG_UTIL_MAKE_OPTIONAL
+                                              ( !!logging_rif_client
+                                              , std::make_pair
+                                                  ( std::ref (*logging_rif_client)
+                                                  , logging_rif_info->pid
+                                                  )
+                                              )
                                           , certificates
                                           );
 
-      return orchestrator_hostinfo;
+      return {orchestrator_hostinfo, logging_rif_info};
     }
 
     namespace
@@ -741,6 +773,7 @@ namespace fhg
           : component == component_type::agent ? "agent"
           : component == component_type::orchestrator ? "orchestrator"
           : component == component_type::vmem ? "vmem"
+          : component == component_type::logging_demultiplexer ? "logging-demultiplexer"
           : throw std::logic_error ("invalid enum value")
           );
 
@@ -926,6 +959,7 @@ namespace fhg
           , component_type::agent
           , component_type::vmem
           , component_type::orchestrator
+          , component_type::logging_demultiplexer
           }
         , [this] (component_type component)
           {
