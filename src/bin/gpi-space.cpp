@@ -159,7 +159,7 @@ int main (int argc, char** argv)
 
     boost::optional<std::string> log_server;
     boost::optional<char const*> log_server_raw;
-    if (log_host || log_port)
+    if (log_host && log_port)
     {
       log_server = (boost::format ("%1%:%2%") % *log_host % *log_port).str();
       log_server_raw = log_server->c_str();
