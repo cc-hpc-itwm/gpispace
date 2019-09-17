@@ -111,7 +111,7 @@ public:
   virtual void handleDiscoverJobStatesEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
-  fhg::logging::tcp_endpoint logger_registration_endpoint() const;
+  fhg::logging::endpoint logger_registration_endpoint() const;
 
 private:
   void event_thread();

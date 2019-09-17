@@ -509,9 +509,9 @@ void DRTSImpl::emit_gantt
     );
 }
 
-fhg::logging::tcp_endpoint DRTSImpl::logger_registration_endpoint() const
+fhg::logging::endpoint DRTSImpl::logger_registration_endpoint() const
 {
-  return _log_emitter.local_tcp_endpoint();
+  return _log_emitter.local_endpoint();
 }
 
 void DRTSImpl::job_execution_thread()

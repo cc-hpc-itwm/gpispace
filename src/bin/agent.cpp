@@ -151,9 +151,7 @@ int main (int argc, char **argv)
                            (agent.peer_local_endpoint().address())
                        , std::to_string
                            (agent.peer_local_endpoint().port())
-                       , agent.logger_registration_endpoint().host
-                       , std::to_string
-                           (agent.logger_registration_endpoint().port)
+                       , agent.logger_registration_endpoint().to_string()
                        );
 
     stop_requested.wait();

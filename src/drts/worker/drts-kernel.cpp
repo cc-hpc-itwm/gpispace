@@ -296,10 +296,7 @@ int main(int ac, char **av)
       , certificates
       );
 
-    promise.set_result ( plugin.logger_registration_endpoint().host
-                       , std::to_string
-                           (plugin.logger_registration_endpoint().port)
-                       );
+    promise.set_result (plugin.logger_registration_endpoint().to_string());
 
     stop_requested.wait();
 

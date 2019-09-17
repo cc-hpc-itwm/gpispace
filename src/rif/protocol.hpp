@@ -11,8 +11,7 @@
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/serialization/std/chrono.hpp>
 
-#include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_endpoint_serialization.hpp>
+#include <logging/endpoint.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
@@ -80,7 +79,7 @@ namespace fhg
       {
         pid_t pid;
         hostinfo_t hostinfo;
-        fhg::logging::tcp_endpoint logger_registration_endpoint;
+        fhg::logging::endpoint logger_registration_endpoint;
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION
@@ -100,7 +99,7 @@ namespace fhg
       struct start_worker_result
       {
         pid_t pid;
-        fhg::logging::tcp_endpoint logger_registration_endpoint;
+        fhg::logging::endpoint logger_registration_endpoint;
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION

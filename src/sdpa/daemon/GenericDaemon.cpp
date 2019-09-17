@@ -415,10 +415,9 @@ std::string GenericDaemon::gen_id()
         );
     }
 
-    fhg::logging::tcp_endpoint
-      GenericDaemon::logger_registration_endpoint() const
+    fhg::logging::endpoint GenericDaemon::logger_registration_endpoint() const
     {
-      return _log_emitter.local_tcp_endpoint();
+      return _log_emitter.local_endpoint();
     }
 
 void GenericDaemon::handleSubmitJobEvent

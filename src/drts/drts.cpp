@@ -497,7 +497,7 @@ namespace gspc
     return wrapped;
   }
 
-  std::vector<fhg::logging::tcp_endpoint> const&
+  std::vector<fhg::logging::endpoint> const&
     scoped_runtime_system::log_emitters() const
   {
     return _->_started_runtime_system._log_emitters;

@@ -6,6 +6,8 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/functor_visitor.hpp>
+#include <util-generic/hostname.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -18,6 +20,10 @@ namespace fhg
   {
     stream_emitter::stream_emitter()
       : _io_service (2)
+      , _register_receiver
+          ( _service_dispatcher
+          , util::bind_this (this, &stream_emitter::register_receiver)
+          )
       , _register_socket_receiver
           ( _service_dispatcher
           , util::bind_this (this, &stream_emitter::register_socket_receiver)
@@ -30,6 +36,10 @@ namespace fhg
       , _service_tcp_provider (_io_service, _service_dispatcher)
     {}
 
+    endpoint stream_emitter::local_endpoint() const
+    {
+      return {local_tcp_endpoint(), local_socket_endpoint()};
+    }
     socket_endpoint stream_emitter::local_socket_endpoint() const
     {
       return _service_socket_provider.local_endpoint();
@@ -61,6 +71,19 @@ namespace fhg
       }
     }
 
+    void stream_emitter::register_receiver (endpoint const& endpoint)
+    {
+      util::visit<void> ( endpoint.best (util::hostname())
+                        , [&] (socket_endpoint const& as_socket)
+                          {
+                            register_socket_receiver (as_socket);
+                          }
+                        , [&] (tcp_endpoint const& as_tcp)
+                          {
+                            register_tcp_receiver (as_tcp);
+                          }
+                        );
+    }
     void stream_emitter::register_socket_receiver
       (socket_endpoint const& endpoint)
     {

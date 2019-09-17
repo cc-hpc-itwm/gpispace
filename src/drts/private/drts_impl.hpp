@@ -107,7 +107,7 @@ namespace gspc
       std::string _orchestrator_host;
       unsigned short _orchestrator_port;
 
-      std::vector<fhg::logging::tcp_endpoint> _log_emitters;
+      std::vector<fhg::logging::endpoint> _log_emitters;
     } _started_runtime_system;
     fhg::log::Logger _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;

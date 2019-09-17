@@ -9,7 +9,7 @@
 #include <drts/virtual_memory.fwd.hpp>
 #include <drts/worker_description.hpp>
 
-#include <logging/tcp_endpoint.hpp>
+#include <logging/endpoint.hpp>
 
 #include <we/type/value.hpp>
 
@@ -135,7 +135,7 @@ namespace gspc
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
 
-    std::vector<fhg::logging::tcp_endpoint> const& log_emitters() const;
+    std::vector<fhg::logging::endpoint> const& log_emitters() const;
 
     scoped_runtime_system (scoped_runtime_system const&) = delete;
     scoped_runtime_system& operator= (scoped_runtime_system const&) = delete;

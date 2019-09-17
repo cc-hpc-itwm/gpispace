@@ -343,10 +343,10 @@ try
             );
           auto const& messages (pid_and_startup_messages.second);
 
-          if (messages.size() != 4)
+          if (messages.size() != 3)
           {
             throw std::logic_error ( "could not start agent " + name
-                                   + ": expected 4 lines of startup messages"
+                                   + ": expected 3 lines of startup messages"
                                    );
           }
 
@@ -354,8 +354,7 @@ try
           result.pid = pid_and_startup_messages.first;
           result.hostinfo
             = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
-          result.logger_registration_endpoint
-            = {messages[2], boost::lexical_cast<unsigned short> (messages[3])};
+          result.logger_registration_endpoint = messages[2];
           return result;
         }
       );
@@ -381,17 +380,16 @@ try
             );
           auto const& messages (pid_and_startup_messages.second);
 
-          if (messages.size() != 2)
+          if (messages.size() != 1)
           {
             throw std::logic_error ( "could not start worker " + name
-                                   + ": expected 2 lines of startup messages"
+                                   + ": expected 1 line of startup messages"
                                    );
           }
 
           fhg::rif::protocol::start_worker_result result;
           result.pid = pid_and_startup_messages.first;
-          result.logger_registration_endpoint
-            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          result.logger_registration_endpoint = messages[0];
           return result;
         }
       );

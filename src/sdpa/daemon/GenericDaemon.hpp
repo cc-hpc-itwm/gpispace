@@ -78,7 +78,7 @@ namespace sdpa {
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
-      fhg::logging::tcp_endpoint logger_registration_endpoint() const;
+      fhg::logging::endpoint logger_registration_endpoint() const;
 
     public:
       // WE interface
