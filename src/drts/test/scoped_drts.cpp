@@ -117,61 +117,64 @@ BOOST_DATA_TEST_CASE
       );
   }
 
-  std::vector<std::string> const info_output
-    ( fhg::util::split<std::string, std::string, std::vector<std::string>>
-        (info_output_stream.str(), '\n')
-    );
+  {
+    std::vector<std::string> const info_output
+      ( fhg::util::split<std::string, std::string, std::vector<std::string>>
+          (info_output_stream.str(), '\n')
+      );
 
-  BOOST_REQUIRE_EQUAL (info_output.size(), 4);
+    BOOST_TEST_CONTEXT (info_output_stream.str())
+    BOOST_REQUIRE_EQUAL (info_output.size(), 4);
 
-  std::string const entry_point_master
-    ([&info_output, &hosts]()
-     {
-       std::smatch match;
+    std::string const entry_point_master
+      ([&info_output, &hosts]()
+       {
+         std::smatch match;
 
-       BOOST_REQUIRE
-         ( std::regex_match
-           ( info_output[0]
-           , match
-           , std::regex
-             ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
-           )
-         );
-       BOOST_REQUIRE_EQUAL (match.size(), 3);
-       BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
+         BOOST_REQUIRE
+           ( std::regex_match
+             ( info_output[0]
+             , match
+             , std::regex
+               ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
+             )
+           );
+         BOOST_REQUIRE_EQUAL (match.size(), 3);
+         BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
 
-       return match[1].str();
-     }()
-    );
+         return match[1].str();
+       }()
+      );
 
-  BOOST_REQUIRE_EQUAL
-    ( info_output[1]
-    , ( boost::format ("I: starting agent: agent-%1%-0"
-                      " on rif entry point %1% with parent orchestrator"
-                      )
-      % entry_point_master
-      ).str()
-    );
+    BOOST_REQUIRE_EQUAL
+      ( info_output[1]
+      , ( boost::format ("I: starting agent: agent-%1%-0"
+                        " on rif entry point %1% with parent orchestrator"
+                        )
+        % entry_point_master
+        ).str()
+      );
 
-  BOOST_REQUIRE
-    ( std::regex_match
-      ( info_output[2]
-      , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
-      )
-    );
+    BOOST_REQUIRE
+      ( std::regex_match
+        ( info_output[2]
+        , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
+                       % entry_point_master
+                       ).str()
+                     }
+        )
+      );
 
-  BOOST_REQUIRE
-    ( std::regex_match
-      ( info_output[3]
-      , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
-      )
-    );
+    BOOST_REQUIRE
+      ( std::regex_match
+        ( info_output[3]
+        , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
+                       % entry_point_master
+                       ).str()
+                     }
+        )
+      );
+  }
 }
 
 BOOST_DATA_TEST_CASE
@@ -235,97 +238,100 @@ BOOST_DATA_TEST_CASE
       );
   }
 
-  std::vector<std::string> const info_output
-    ( fhg::util::split<std::string, std::string, std::vector<std::string>>
-        (info_output_stream.str(), '\n')
-    );
+  {
+    std::vector<std::string> const info_output
+      ( fhg::util::split<std::string, std::string, std::vector<std::string>>
+          (info_output_stream.str(), '\n')
+      );
 
-  BOOST_REQUIRE_EQUAL (info_output.size(), 6);
+    BOOST_TEST_CONTEXT (info_output_stream.str())
+    BOOST_REQUIRE_EQUAL (info_output.size(), 6);
 
-  std::string const entry_point_master
-    ([&info_output, &hosts]()
-     {
-       std::smatch match;
+    std::string const entry_point_master
+      ([&info_output, &hosts]()
+       {
+         std::smatch match;
 
-       BOOST_REQUIRE
-         ( std::regex_match
-           ( info_output[0]
-           , match
-           , std::regex
-             ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
-           )
-         );
-       BOOST_REQUIRE_EQUAL (match.size(), 3);
-       BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
-
-       return match[1].str();
-     }()
-    );
-
-  BOOST_REQUIRE_EQUAL
-    ( info_output[1]
-    , ( boost::format ("I: starting agent: agent-%1%-0"
-                      " on rif entry point %1% with parent orchestrator"
-                      )
-      % entry_point_master
-      ).str()
-    );
-
-  std::string const entry_point_worker
-    ([&info_output, &hosts, &entry_point_master, &worker]()
-     {
-       std::smatch match;
-
-       BOOST_REQUIRE
-         ( std::regex_match
-           ( info_output[2]
-           , match
-           , std::regex
-             ( ( boost::format ("I: starting %2% workers"
-                               " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
-                               " with parent agent-%1%-0"
-                               " on rif entry point ((.+) [0-9]+ [0-9]+)"
-                               )
-               % entry_point_master
-               % worker
-               ).str()
+         BOOST_REQUIRE
+           ( std::regex_match
+             ( info_output[0]
+             , match
+             , std::regex
+               ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
              )
-           )
-         );
-       BOOST_REQUIRE_EQUAL (match.size(), 3);
-       BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
+           );
+         BOOST_REQUIRE_EQUAL (match.size(), 3);
+         BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
 
-       return match[1].str();
-     }()
-    );
+         return match[1].str();
+       }()
+      );
 
-  BOOST_REQUIRE
-    ( std::regex_match
-      ( info_output[3]
-      , std::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
-                     % entry_point_worker
-                     ).str()
-                   }
-      )
-    );
+    BOOST_REQUIRE_EQUAL
+      ( info_output[1]
+      , ( boost::format ("I: starting agent: agent-%1%-0"
+                        " on rif entry point %1% with parent orchestrator"
+                        )
+        % entry_point_master
+        ).str()
+      );
 
-  BOOST_REQUIRE
-    ( std::regex_match
-      ( info_output[4]
-      , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
-      )
-    );
+    std::string const entry_point_worker
+      ([&info_output, &hosts, &entry_point_master, &worker]()
+       {
+         std::smatch match;
 
-  BOOST_REQUIRE
-    ( std::regex_match
-      ( info_output[5]
-      , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                     % entry_point_master
-                     ).str()
-                   }
-      )
-    );
+         BOOST_REQUIRE
+           ( std::regex_match
+             ( info_output[2]
+             , match
+             , std::regex
+               ( ( boost::format ("I: starting %2% workers"
+                                 " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
+                                 " with parent agent-%1%-0"
+                                 " on rif entry point ((.+) [0-9]+ [0-9]+)"
+                                 )
+                 % entry_point_master
+                 % worker
+                 ).str()
+               )
+             )
+           );
+         BOOST_REQUIRE_EQUAL (match.size(), 3);
+         BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
+
+         return match[1].str();
+       }()
+      );
+
+    BOOST_REQUIRE
+      ( std::regex_match
+        ( info_output[3]
+        , std::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
+                       % entry_point_worker
+                       ).str()
+                     }
+        )
+      );
+
+    BOOST_REQUIRE
+      ( std::regex_match
+        ( info_output[4]
+        , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
+                       % entry_point_master
+                       ).str()
+                     }
+        )
+      );
+
+    BOOST_REQUIRE
+      ( std::regex_match
+        ( info_output[5]
+        , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
+                       % entry_point_master
+                       ).str()
+                     }
+        )
+      );
+  }
 }
