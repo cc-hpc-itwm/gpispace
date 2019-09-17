@@ -167,7 +167,8 @@ add_subdirectory (gspc)
 
 extended_add_library (NAME logging
   NAMESPACE gspc
-  SOURCES "logging/file_sink.cpp"
+  SOURCES "logging/endpoint.cpp"
+          "logging/file_sink.cpp"
           "logging/legacy/emitter.cpp"
           "logging/legacy/receiver.cpp"
           "logging/legacy_bridge.cpp"
@@ -188,6 +189,13 @@ extended_add_executable (NAME gspc-logging-to-stdout
   LIBRARIES gspc::logging
             Util::Generic
   INSTALL INSTALL_DESTINATION "bin"
+)
+
+add_unit_test (NAME logging_endpoint
+  SOURCES "logging/test/endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
 )
 
 add_unit_test (NAME logging_file_sink

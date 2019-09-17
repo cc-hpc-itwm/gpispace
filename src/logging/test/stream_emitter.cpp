@@ -66,11 +66,11 @@ namespace fhg
                                       >::type;
       };
 
-      socket_endpoint endpoint (rpc::service_socket_provider const& receiver)
+      socket_endpoint get_endpoint (rpc::service_socket_provider const& receiver)
       {
         return receiver.local_endpoint();
       }
-      tcp_endpoint endpoint (rpc::service_tcp_provider const& receiver)
+      tcp_endpoint get_endpoint (rpc::service_tcp_provider const& receiver)
       {
         return util::connectable_to_address_string (receiver.local_endpoint());
       }
@@ -111,7 +111,7 @@ namespace fhg
       typename Combination::registration_method client
         (io_service, Combination::endpoint (emitter));
       rpc::sync_remote_function<typename Combination::register_function>
-        {client} (endpoint (service_provider));
+        {client} (get_endpoint (service_provider));
 
       emitter.emit_message (sent);
 
