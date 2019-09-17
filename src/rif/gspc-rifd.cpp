@@ -18,6 +18,7 @@
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
 #include <fhglog/level_io.hpp>
+#include <logging/protocol.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
@@ -433,6 +434,30 @@ try
 
           return result;
         }
+      );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::add_emitter_to_logging_demultiplexer>
+    add_emitter_to_logging_demultiplexer_service
+      ( service_dispatcher
+      , [&add_emitters_endpoints]
+          ( boost::asio::yield_context yield
+          , pid_t pid
+          , std::vector<fhg::logging::endpoint> emitters
+          )
+        {
+          auto const it (add_emitters_endpoints.find (pid));
+          if (it == add_emitters_endpoints.end())
+          {
+            throw std::invalid_argument
+              ("unknown log demultiplexer: " + std::to_string (pid));
+          }
+
+          fhg::rpc::sync_remote_function
+            < fhg::logging::protocol::logging_demultiplexer::add_emitters
+            , fhg::rpc::future
+            > {it->second} (yield, std::move (emitters));
+        }
+      , fhg::rpc::yielding
       );
 
   fhg::rpc::service_tcp_provider_with_deferred_start server

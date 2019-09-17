@@ -124,6 +124,11 @@ namespace fhg
         ( start_logging_demultiplexer
         , start_logging_demultiplexer_result (boost::filesystem::path exe)
         );
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( add_emitter_to_logging_demultiplexer
+        , void (pid_t, std::vector<logging::endpoint>)
+        );
     }
   }
 }

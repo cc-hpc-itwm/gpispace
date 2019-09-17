@@ -163,7 +163,7 @@ namespace
     , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
-    , boost::optional<std::pair<fhg::rif::client&, pid_t>>
+    , boost::optional<std::pair<fhg::rif::client&, pid_t>> top_level_log
     , gspc::Certificates const& certificates
     )
   {
@@ -186,6 +186,14 @@ namespace
 
     processes.store (rif_entry_point, name, result.pid);
 
+    if (top_level_log)
+    {
+      top_level_log->first.add_emitter_to_logging_demultiplexer
+        ( top_level_log->second
+        , std::vector<fhg::logging::endpoint>
+            {result.logger_registration_endpoint}
+        ).get();
+    }
 
     return result.hostinfo;
   }
@@ -213,7 +221,7 @@ namespace fhg
     , std::vector<boost::filesystem::path> const& app_path
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
-    , boost::optional<std::pair<fhg::rif::entry_point, pid_t>>
+    , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
     , gspc::Certificates const& certificates
     )
   {
@@ -438,6 +446,13 @@ namespace fhg
         {
           results.second.emplace (connection.second, std::current_exception());
         }
+      }
+
+      if (top_level_log)
+      {
+        fhg::rif::client (io_service, top_level_log->first)
+          .add_emitter_to_logging_demultiplexer
+            (top_level_log->second, log_emitters).get();
       }
 
       return results;
