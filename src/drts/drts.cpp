@@ -191,29 +191,30 @@ namespace gspc
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
-    std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
-      ( _gui_host
-      , _gui_port
-      , _log_host
-      , _log_port
-      , gpi_enabled
-      , _verbose
-      , _gpi_socket
-      , _installation_path
-      , delete_logfiles
-      , signal_handler_manager
-      , vmem_startup_timeout
-      , vmem_port
-      , rif_entry_points
-      , _master
-      , _log_dir
-      , _processes_storage
-      , _master_agent_name
-      , _master_agent_hostinfo
-      , _info_output
-      , _log_emitters
-      , certificates
-      );
+    std::tie (_orchestrator_host, _orchestrator_port)
+      = fhg::drts::startup
+          ( _gui_host
+          , _gui_port
+          , _log_host
+          , _log_port
+          , gpi_enabled
+          , _verbose
+          , _gpi_socket
+          , _installation_path
+          , delete_logfiles
+          , signal_handler_manager
+          , vmem_startup_timeout
+          , vmem_port
+          , rif_entry_points
+          , _master
+          , _log_dir
+          , _processes_storage
+          , _master_agent_name
+          , _master_agent_hostinfo
+          , _info_output
+          , _log_emitters
+          , certificates
+          );
 
     if (!rif_entry_points.empty())
     {
@@ -282,24 +283,26 @@ namespace gspc
         : worker_descriptions
         )
     {
-      for (auto const& fail : start_workers_for ( entry_points
-                                                , _master_agent_name
-                                                , _master_agent_hostinfo
-                                                , description
-                                                , _verbose
-                                                , _gui_host
-                                                , _gui_port
-                                                , _log_host
-                                                , _log_port
-                                                , _processes_storage
-                                                , _log_dir
-                                                , _gpi_socket
-                                                , _app_path
-                                                , _installation_path
-                                                , _info_output
-                                                , _log_emitters
-                                                , certificates
-                                                ).second
+      for ( auto const& fail
+          : start_workers_for
+              ( entry_points
+              , _master_agent_name
+              , _master_agent_hostinfo
+              , description
+              , _verbose
+              , _gui_host
+              , _gui_port
+              , _log_host
+              , _log_port
+              , _processes_storage
+              , _log_dir
+              , _gpi_socket
+              , _app_path
+              , _installation_path
+              , _info_output
+              , _log_emitters
+              , certificates
+              ).second
           )
       {
         failures[fail.first].emplace_back (fail.second);
