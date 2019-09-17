@@ -5,6 +5,8 @@
 
 #include <rpc/function_description.hpp>
 
+#include <boost/serialization/vector.hpp>
+
 namespace fhg
 {
   namespace logging
@@ -13,6 +15,12 @@ namespace fhg
     {
       FHG_RPC_FUNCTION_DESCRIPTION (receive, void (message));
       FHG_RPC_FUNCTION_DESCRIPTION (register_receiver, void (endpoint));
+
+      namespace logging_demultiplexer
+      {
+        FHG_RPC_FUNCTION_DESCRIPTION
+          (add_emitters, void (std::vector<endpoint>));
+      }
     }
   }
 }

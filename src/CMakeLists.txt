@@ -167,7 +167,8 @@ add_subdirectory (gspc)
 
 extended_add_library (NAME logging
   NAMESPACE gspc
-  SOURCES "logging/endpoint.cpp"
+  SOURCES "logging/demultiplexer.cpp"
+          "logging/endpoint.cpp"
           "logging/file_sink.cpp"
           "logging/legacy/emitter.cpp"
           "logging/legacy/receiver.cpp"
@@ -182,6 +183,14 @@ extended_add_library (NAME logging
             RPC
             Boost::base
             Boost::program_options
+)
+
+extended_add_executable (NAME gspc-logging-demultiplexer
+  SOURCES "logging/gspc-logging-demultiplexer.cpp"
+  LIBRARIES gspc::logging
+            Util::Generic
+            rif-started_process_promise
+  INSTALL INSTALL_DESTINATION "libexec/gspc"
 )
 
 extended_add_executable (NAME gspc-logging-to-stdout
