@@ -14,8 +14,8 @@ namespace fhg
       ( Logger& logger
       , boost::asio::io_service& remote_log_io_service
       , std::string level
-      , boost::optional<char const*> to_file
-      , boost::optional<char const*> to_server
+      , boost::optional<char const*> const& to_file
+      , boost::optional<char const*> const& to_server
       )
     {
       if (to_file)
