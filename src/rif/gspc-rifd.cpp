@@ -310,8 +310,6 @@ try
       ( service_dispatcher
       , [] ( std::string const& name
            , fhg::rif::protocol::hostinfo_t const& parent
-           , boost::optional<std::string> const& gui_host
-           , boost::optional<unsigned short> const& gui_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
            , boost::filesystem::path const& command
@@ -323,12 +321,6 @@ try
             , "-n", name
             , "--masters", parent.first + "%" + std::to_string (parent.second)
             };
-          if (gui_host && gui_port)
-          {
-            arguments.emplace_back ("-a");
-            arguments.emplace_back
-              (*gui_host + ":" + std::to_string (*gui_port));
-          }
           if (gpi_socket)
           {
             arguments.emplace_back ("--vmem-socket");

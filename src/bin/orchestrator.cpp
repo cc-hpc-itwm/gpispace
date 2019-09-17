@@ -89,7 +89,6 @@ int main (int argc, char **argv)
       , boost::none
       , sdpa::master_info_t()
       , logger
-      , boost::none
       , false
       , ssl_certificates
       );

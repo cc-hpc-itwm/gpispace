@@ -153,8 +153,6 @@ namespace
     , std::string const& name
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
-    , boost::optional<std::string> const& gui_host
-    , boost::optional<unsigned short> const& gui_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
@@ -175,8 +173,6 @@ namespace
       ( rif_client.start_agent
           ( name
           , parent_hostinfo
-          , gui_host
-          , gui_port
           , gpi_socket
           , certificates
           , installation_path.agent()
@@ -211,8 +207,6 @@ namespace fhg
     , fhg::drts::hostinfo_type master_hostinfo
     , gspc::worker_description const& description
     , bool verbose
-    , boost::optional<std::string> const& gui_host
-    , boost::optional<unsigned short> const& gui_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , fhg::drts::processes_storage& processes
@@ -255,15 +249,6 @@ namespace fhg
      arguments.emplace_back ("--master");
      arguments.emplace_back
        (build_parent_with_hostinfo (master_name, master_hostinfo));
-
-     //! \todo gui is optional in worker
-     if (gui_host && gui_port)
-     {
-       arguments.emplace_back ("--gui-host");
-       arguments.emplace_back (*gui_host);
-       arguments.emplace_back ("--gui-port");
-       arguments.emplace_back (std::to_string (*gui_port));
-     }
 
      for (boost::filesystem::path const& path : app_path)
      {
@@ -509,9 +494,7 @@ namespace fhg
     }
 
     startup_result startup
-      ( boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
+      ( boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
@@ -555,11 +538,6 @@ namespace fhg
       {
         info_output << "I: sending log events to: "
                     << *log_host << ":" << *log_port << "\n";
-      }
-      if (gui_host && gui_port)
-      {
-        info_output << "I: sending execution events to: "
-                    << *gui_host << ":" << *gui_port << "\n";
       }
 
       //! \todo let thread count be a parameter
@@ -746,8 +724,6 @@ namespace fhg
                                           , master_agent_name
                                           , "orchestrator"
                                           , orchestrator_hostinfo
-                                          , gui_host
-                                          , gui_port
                                           , log_host
                                           , log_port
                                           , gpi_socket

@@ -50,9 +50,7 @@ namespace gspc
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<std::string> const& gui_host
-                             , boost::optional<unsigned short> const& gui_port
-                             , boost::optional<std::string> const& log_host
+      started_runtime_system ( boost::optional<std::string> const& log_host
                              , boost::optional<unsigned short> const& log_port
                              , bool gpi_enabled
                              , bool verbose
@@ -94,8 +92,6 @@ namespace gspc
 
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
-      boost::optional<std::string> _gui_host;
-      boost::optional<unsigned short> _gui_port;
       boost::optional<std::string> _log_host;
       boost::optional<unsigned short> _log_port;
       bool _verbose;

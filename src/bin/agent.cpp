@@ -51,7 +51,6 @@ int main (int argc, char **argv)
     std::string agentName;
     std::string agentUrl;
     std::vector<std::string> arrMasterNames;
-    std::string appGuiUrl;
     boost::optional<bfs::path> vmem_socket;
     fhg::com::Certificates ssl_certificates;
 
@@ -71,7 +70,6 @@ int main (int argc, char **argv)
       ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
       ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
       ("masters", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'host%port'")
-      ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
       ( option_name::vmem_socket
       , po::value<validators::nonempty_string>()
       , "socket file to communicate with the virtual memory manager"
@@ -121,7 +119,6 @@ int main (int argc, char **argv)
       masters.emplace_front (parts[0], parts[1]);
     }
 
-    boost::asio::io_service gui_io_service;
     const sdpa::daemon::GenericDaemon agent
       ( agentName
       , agentUrl
@@ -129,7 +126,6 @@ int main (int argc, char **argv)
       , vmem_socket
       , std::move (masters)
       , logger
-      , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
       , true
       , ssl_certificates
       );

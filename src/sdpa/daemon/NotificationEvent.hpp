@@ -67,5 +67,7 @@ namespace sdpa
       std::string _activity_name;
       state_t _activity_state;
     };
+
+    constexpr char const* const gantt_log_category = "gantt-job-events";
   }
 }

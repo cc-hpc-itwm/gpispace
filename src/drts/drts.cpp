@@ -155,9 +155,7 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
+      ( boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
@@ -177,8 +175,6 @@ namespace gspc
       )
     : _info_output (info_output)
     , _master (master)
-    , _gui_host (gui_host)
-    , _gui_port (gui_port)
     , _log_host (log_host)
     , _log_port (log_port)
     , _verbose (verbose)
@@ -194,9 +190,7 @@ namespace gspc
 
     auto const startup_result
       ( fhg::drts::startup
-          ( _gui_host
-          , _gui_port
-          , _log_host
+          ( _log_host
           , _log_port
           , gpi_enabled
           , _verbose
@@ -295,8 +289,6 @@ namespace gspc
               , _master_agent_hostinfo
               , description
               , _verbose
-              , _gui_host
-              , _gui_port
               , _log_host
               , _log_port
               , _processes_storage
@@ -349,9 +341,7 @@ namespace gspc
         : boost::none
         )
       , _started_runtime_system
-          ( get_gui_host (vm)
-          , get_gui_port (vm)
-          , get_log_host (vm)
+          ( get_log_host (vm)
           , get_log_port (vm)
           , !!_virtual_memory_socket
           //! \todo configurable: verbose logging

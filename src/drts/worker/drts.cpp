@@ -5,6 +5,8 @@
 
 #include <util-generic/hostname.hpp>
 
+#include <fhglog/LogMacros.hpp>
+
 #include <fhg/util/macros.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -186,7 +188,6 @@ namespace
 DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
-    , std::unique_ptr<sdpa::daemon::NotificationService> gui_notification_service
     , std::string const& kernel_name
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -203,7 +204,6 @@ DRTSImpl::DRTSImpl
   , m_my_name (kernel_name)
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
-  , _notification_service (std::move (gui_notification_service))
   , _log_emitter()
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
@@ -494,13 +494,6 @@ catch (decltype (m_event_queue)::interrupted const&)
 void DRTSImpl::emit_gantt
   (wfe_task_t const& task, sdpa::daemon::NotificationEvent::state_t state)
 {
-  if (_notification_service)
-  {
-    _notification_service->notify
-      ( sdpa::daemon::NotificationEvent
-          ({m_my_name}, task.id, state, task.activity)
-      );
-  }
   _log_emitter.emit_message
     ( { sdpa::daemon::NotificationEvent
           ({m_my_name}, task.id, state, task.activity).encoded()

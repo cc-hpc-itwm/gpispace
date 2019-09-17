@@ -21,8 +21,6 @@ namespace gspc
   ACCESS (log_host, std::string);
   ACCESS (log_port, unsigned short);
   ACCESS (log_level, std::string);
-  ACCESS (gui_host, std::string);
-  ACCESS (gui_port, unsigned short);
 
   ACCESS (log_directory, boost::filesystem::path);
   GET (gspc_home, boost::filesystem::path);

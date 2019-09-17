@@ -21,8 +21,6 @@ namespace
   {
     namespace po = fhg::util::boost::program_options;
 
-    po::option<po::positive_integral<unsigned short>> const gui_port
-      {"gui-port", "gui port"};
     po::option<po::positive_integral<unsigned short>> const log_port
       {"log-port", "log port"};
     po::option<std::vector<fhg::logging::endpoint>> const emitters
@@ -35,7 +33,6 @@ try
 {
   boost::program_options::variables_map const vm
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
-    . require (option::gui_port)
     . require (option::log_port)
     . add (option::emitters)
     . store_and_notify (ac, av)
@@ -54,9 +51,7 @@ try
   QTabWidget window;
   window.addTab
     ( new fhg::pnete::ui::execution_monitor
-        ( option::gui_port.get_from (vm)
-        , option::emitters.get_from_or_value (vm, {})
-        )
+        (option::emitters.get_from_or_value (vm, {}))
     , QObject::tr ("Execution Monitor")
     );
   window.addTab ( new log_monitor (option::log_port.get_from (vm))

@@ -17,8 +17,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        execution_monitor ( unsigned short port
-                          , std::vector<logging::endpoint>
+        execution_monitor ( std::vector<logging::endpoint>
                           , QWidget* parent = nullptr
                           );
       };

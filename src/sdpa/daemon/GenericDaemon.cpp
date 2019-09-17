@@ -70,7 +70,6 @@ GenericDaemon::GenericDaemon( const std::string name
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , master_info_t masters
                             , fhg::log::Logger& logger
-                            , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
                             , fhg::com::Certificates const& certificates
                             )
@@ -98,11 +97,6 @@ GenericDaemon::GenericDaemon( const std::string name
   , mtx_subscriber_()
   , mtx_cpb_()
   , m_capabilities()
-  , m_guiService ( gui_info && !gui_info->first.empty()
-                 ? fhg::util::cxx14::make_unique<NotificationService>
-                   (gui_info->first, gui_info->second)
-                 : nullptr
-                 )
   , _log_emitter()
   , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
@@ -403,11 +397,6 @@ std::string GenericDaemon::gen_id()
                                    , NotificationEvent::state_t state
                                    )
     {
-      if (m_guiService)
-      {
-        m_guiService->notify
-          (NotificationEvent ({name()}, id, state, activity));
-      }
       _log_emitter.emit_message
         ( { NotificationEvent ({name()}, id, state, activity).encoded()
           , gantt_log_category

@@ -259,7 +259,6 @@ namespace utils
           , boost::none
           , sdpa::master_info_t()
           , logger
-          , boost::none
           , false
           , certificates
           )
@@ -306,7 +305,6 @@ namespace utils
             , make_master_network_info (master_1)
             }
           , logger
-          , boost::none
           , true
           , certificates
           )
@@ -323,7 +321,6 @@ namespace utils
           , boost::none
           , {make_master_network_info (master)}
           , logger
-          , boost::none
           , true
           , certificates
           )
@@ -339,7 +336,6 @@ namespace utils
           , boost::none
           , {make_master_network_info (master)}
           , logger
-          , boost::none
           , true
           , certificates
           )

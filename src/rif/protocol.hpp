@@ -89,8 +89,6 @@ namespace fhg
         , start_agent_result
             ( std::string name
             , hostinfo_t parent
-            , boost::optional<std::string> gui_host
-            , boost::optional<unsigned short> gui_port
             , boost::optional<boost::filesystem::path> gpi_socket
             , gspc::Certificates
             , boost::filesystem::path command

@@ -29,8 +29,6 @@ namespace gspc
       constexpr char const* const log_host {"log-host"};
       constexpr char const* const log_port {"log-port"};
       constexpr char const* const log_level {"log-level"};
-      constexpr char const* const gui_host {"gui-host"};
-      constexpr char const* const gui_port {"gui-port"};
 
       constexpr char const* const log_directory {"log-directory"};
       constexpr char const* const gspc_home {"gspc-home"};
@@ -78,15 +76,6 @@ namespace gspc
         ( name::log_directory
         , boost::program_options::value<validators::is_directory_if_exists>()
         , "directory where to store drts runtime log information"
-        )
-        ( name::gui_host
-        , boost::program_options::value<validators::nonempty_string>()
-        , "name of gui host"
-        )
-        ( name::gui_port
-        , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()
-        , "port on gui-host to send to"
         )
         ;
 
@@ -330,8 +319,6 @@ namespace gspc
   ACCESS_STRING (log_host, validators::nonempty_string)
   ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short)
   ACCESS_STRING (log_level, std::string)
-  ACCESS_STRING (gui_host, validators::nonempty_string)
-  ACCESS_POSITIVE_INTEGRAL (gui_port, unsigned short)
 
   ACCESS_PATH (log_directory, validators::is_directory_if_exists)
   ACCESS_PATH (gspc_home, validators::existing_directory)

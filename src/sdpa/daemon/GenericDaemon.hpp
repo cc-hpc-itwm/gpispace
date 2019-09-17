@@ -33,7 +33,7 @@
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <sdpa/daemon/NotificationService.hpp>
+#include <sdpa/daemon/NotificationEvent.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/job_requirements.hpp>
 #include <sdpa/types.hpp>
@@ -70,7 +70,6 @@ namespace sdpa {
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , master_info_t masters
                    , fhg::log::Logger& logger
-                   , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                    , bool create_wfe
                    , fhg::com::Certificates const& certificates
                    );
@@ -268,7 +267,6 @@ namespace sdpa {
 
       sdpa::capabilities_set_t m_capabilities;
 
-      std::unique_ptr<NotificationService> m_guiService;
       fhg::logging::stream_emitter _log_emitter;
       void emit_gantt ( job_id_t const&
                       , we::type::activity_t const&

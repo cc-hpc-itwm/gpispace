@@ -79,8 +79,6 @@ namespace fhg
       , fhg::drts::hostinfo_type master_hostinfo
       , gspc::worker_description const& description
       , bool verbose
-      , boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
       , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , fhg::drts::processes_storage& processes
@@ -101,9 +99,7 @@ namespace fhg
     };
 
     startup_result startup
-      ( boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
+      ( boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
