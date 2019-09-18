@@ -46,7 +46,7 @@ namespace fhg
         {
           path = util::testing::random_string_without_zero();
         }
-        while (path.size() > sizeof (sockaddr_un::sun_path) || path.empty());
+        while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
         return {util::testing::random_string_without (":"), path};
       }

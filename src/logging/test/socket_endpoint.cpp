@@ -15,14 +15,16 @@ namespace fhg
   {
     namespace
     {
-      std::string random_socket()
+      std::string random_socket (std::size_t chop_off = 0)
       {
         std::string result;
         do
         {
           result = util::testing::random_string_without_zero();
         }
-        while (result.size() > sizeof (sockaddr_un::sun_path) || result.empty());
+        while ( result.size() >= sizeof (sockaddr_un::sun_path) - chop_off
+             || result.empty()
+              );
         return result;
       }
     }
@@ -62,7 +64,7 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (auto_generated_sockets_use_explicit_null_char)
     {
-      auto const path (random_socket());
+      auto const path (random_socket (1));
       socket_endpoint::Socket const raw (std::string (1, '\0') + path);
 
       std::string const host (fhg::util::hostname());
