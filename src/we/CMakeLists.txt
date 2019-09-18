@@ -78,8 +78,7 @@ install (FILES
 )
 install (FILES
   plugin/Base.hpp
-  type/value/path/join.hpp
-  DESTINATION include/we/plugin/Base.hpp
+  DESTINATION include/we/plugin
 )
 
 add_subdirectory (expr/parse/test)
