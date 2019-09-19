@@ -189,6 +189,7 @@ DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
+    , unsigned short comm_port
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
@@ -209,7 +210,9 @@ DRTSImpl::DRTSImpl
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)
   , _peer ( std::move (peer_io_service)
-          , fhg::com::host_t ("*"), fhg::com::port_t ("0"), certificates
+          , fhg::com::host_t ("*")
+          , fhg::com::port_t (std::to_string (comm_port))
+          , certificates
           )
   , m_event_thread (&DRTSImpl::event_thread, this)
   , _interrupt_event_thread (m_event_queue)
