@@ -57,6 +57,12 @@ namespace fhg
         //! from list to avoid endless errors?
       }
     }
+    void stream_emitter::emit ( decltype (message::_content) content
+                              , decltype (message::_category) category
+                              )
+    {
+      return emit_message ({std::move (content), std::move (category)});
+    }
 
     void stream_emitter::register_receiver (endpoint const& endpoint)
     {
