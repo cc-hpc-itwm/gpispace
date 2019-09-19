@@ -212,9 +212,6 @@ namespace sdpa {
       void cancel_worker_handled_job (we::layer::id_type const&);
       void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
 
-      // data members
-      fhg::log::Logger& _logger;
-
       std::string _name;
 
       master_info_t _master_info;

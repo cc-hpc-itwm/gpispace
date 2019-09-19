@@ -73,8 +73,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , bool create_wfe
                             , fhg::com::Certificates const& certificates
                             )
-  : _logger (logger)
-  , _name (name)
+  : _name (name)
   , _master_info (std::move (masters))
   , _subscriptions()
   , _discover_sources()
@@ -140,7 +139,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _virtual_memory_api
     ( vmem_socket
     ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        (_logger, vmem_socket->string())
+        (logger, vmem_socket->string())
     : nullptr
     )
   , _event_handler_thread (&GenericDaemon::handle_events, this)
@@ -181,7 +180,11 @@ void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_
   if(ptrJob)
   {
       // create a SubmitJobEvent for the job job_id serialize and attach description
-      LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers: {"<< fhg::util::join (workers, ", ") << '}');
+    _log_emitter.emit ( "The job " + ptrJob->id()
+                      + " was assigned the following workers: {"
+                      + fhg::util::join (workers, ", ").string() + '}'
+                      , fhg::logging::legacy::category_level_trace
+                      );
 
       for (const worker_id_t& worker_id : workers)
       {
@@ -459,7 +462,11 @@ void GenericDaemon::handleSubmitJobEvent
     catch (...)
     {
       fhg::util::current_exception_printer const error (": ");
-      LLOG (ERROR, _logger, "Exception occurred: " << error << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
+      _log_emitter.emit ( "Exception occurred: " + error.string()
+                        + ". Failed to submit the job " + job_id
+                        + " to the workflow engine!"
+                        , fhg::logging::legacy::category_level_error
+                        );
 
       failed (job_id, error.string());
     }
@@ -599,9 +606,11 @@ void GenericDaemon::handleErrorEvent
     }
     default:
     {
-      LLOG ( ERROR, _logger
-           , "Unhandled error (" << error.error_code() << ") :" << error.reason()
-           );
+      _log_emitter.emit ( "Unhandled error ("
+                        + std::to_string (error.error_code()) + "): "
+                        + error.reason()
+                        , fhg::logging::legacy::category_level_error
+                        );
     }
   }
 }
@@ -1149,11 +1158,11 @@ void GenericDaemon::handleSubmitJobAckEvent
   Job* const ptrJob = findJob(pEvent->job_id());
   if(!ptrJob)
   {
-    LLOG (ERROR, _logger,  "job " << pEvent->job_id()
-                        << " could not be acknowledged:"
-                        << " the job " <<  pEvent->job_id()
-                        << " not found!"
-                        );
+    _log_emitter.emit ( "job " + pEvent->job_id()
+                      + " could not be acknowledged: the job "
+                      + pEvent->job_id() + " not found!"
+                      , fhg::logging::legacy::category_level_error
+                      );
 
     throw std::runtime_error
       ("Could not acknowledge job: " + pEvent->job_id() + " not found");
