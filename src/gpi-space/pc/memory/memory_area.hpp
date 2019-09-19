@@ -5,7 +5,7 @@
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
@@ -138,7 +138,7 @@ namespace gpi
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( fhg::log::Logger&
+        area_t ( fhg::logging::stream_emitter&
                , const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
@@ -212,7 +212,7 @@ namespace gpi
         void internal_alloc (gpi::pc::type::handle::descriptor_t &);
 
       protected:
-        fhg::log::Logger& _logger;
+        fhg::logging::stream_emitter& _logger;
 
       private:
         mutable mutex_type m_mutex;

@@ -3,7 +3,6 @@
 #include <utility>
 
 #include <fhg/assert.hpp>
-#include <fhglog/LogMacros.hpp>
 #include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/global/topology.hpp>
@@ -11,6 +10,7 @@
 #include <gpi-space/pc/url.hpp>
 
 #include <util-generic/divru.hpp>
+#include <util-generic/print_exception.hpp>
 
 #include <we/type/range.hpp>
 
@@ -25,7 +25,7 @@ namespace gpi
   {
     namespace memory
     {
-      gaspi_area_t::gaspi_area_t ( fhg::log::Logger& logger
+      gaspi_area_t::gaspi_area_t ( fhg::logging::stream_emitter& logger
                                  , const gpi::pc::type::process_id_t creator
                                  , const std::string & name
                                  , const gpi::pc::type::flags_t flags
@@ -83,13 +83,13 @@ namespace gpi
 
             ++num_buffers_allocated;
           }
-          catch (std::exception const & ex)
+          catch (...)
           {
-            LLOG (WARN, _logger
-                 , "could not allocate communication buffer "
-                 << (num_buffers_allocated+1)
-                 << ": " << ex.what ()
-                 );
+            _logger.emit ( "could not allocate communication buffer "
+                         + std::to_string (num_buffers_allocated + 1) + ": "
+                         + fhg::util::current_exception_printer().string()
+                         , fhg::logging::legacy::category_level_warn
+                         );
             break;
           }
         }
@@ -104,11 +104,10 @@ namespace gpi
         }
         else if (descriptor().avail == 0)
         {
-          LLOG ( WARN
-               , _logger
-              ,  "communication buffers consumed all your precious memory,"
-              << " this might not be what you wanted!"
-              );
+          _logger.emit ( "communication buffers consumed all your precious "
+                         "memory, this might not be what you wanted!"
+                       , fhg::logging::legacy::category_level_warn
+                       );
         }
       }
 
@@ -283,7 +282,7 @@ namespace gpi
         }
 
         static
-        void do_send ( fhg::log::Logger& logger
+        void do_send ( fhg::logging::stream_emitter& logger
                      , area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gaspi_area_t & dst_area
@@ -309,10 +308,10 @@ namespace gpi
 
             if (0 == read_bytes)
             {
-              LLOG ( WARN
-                   , logger
-                   , "could not read from src area - premature end-of-file?"
-                   );
+              logger.emit ( "could not read from src area - premature "
+                            "end-of-file?"
+                          , fhg::logging::legacy::category_level_warn
+                          );
               break;
             }
 
@@ -334,7 +333,7 @@ namespace gpi
         }
 
         static
-        void do_recv ( fhg::log::Logger& logger
+        void do_recv ( fhg::logging::stream_emitter& logger
                      , area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gaspi_area_t & src_area
@@ -368,10 +367,10 @@ namespace gpi
 
             if (written_bytes != buf.used ())
             {
-              LLOG ( WARN
-                   , logger
-                   , "could not write to dst area - premature end-of-file?"
-                   );
+              logger.emit ( "could not write to dst area - premature "
+                            "end-of-file?"
+                          , fhg::logging::legacy::category_level_warn
+                          );
               break;
             }
 
@@ -450,7 +449,7 @@ namespace gpi
       }
 
       area_ptr_t gaspi_area_t::create
-        ( fhg::log::Logger& logger
+        ( fhg::logging::stream_emitter& logger
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator

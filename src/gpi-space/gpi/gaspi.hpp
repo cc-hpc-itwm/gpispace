@@ -1,6 +1,6 @@
 #pragma once
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <gpi-space/types.hpp>
 
@@ -30,7 +30,7 @@ namespace gpi
     {
     public:
       gaspi_t ( fhg::vmem::gaspi_context&
-              , fhg::log::Logger&
+              , fhg::logging::stream_emitter&
               , const unsigned long long per_node_size
               , fhg::vmem::gaspi_timeout&
               );
@@ -71,7 +71,7 @@ namespace gpi
 
       fhg::vmem::gaspi_context& _gaspi_context;
 
-      fhg::log::Logger& _logger;
+      fhg::logging::stream_emitter& _logger;
       size_t _per_node_size;
       void *m_dma;
       fhg::vmem::gaspi_context::reserved_segment_id _segment_id;

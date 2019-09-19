@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <cstring>
 
-#include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
@@ -113,7 +112,7 @@ namespace gpi
         };
       }
 
-      beegfs_area_t::beegfs_area_t ( fhg::log::Logger& logger
+      beegfs_area_t::beegfs_area_t ( fhg::logging::stream_emitter& logger
                                    , const gpi::pc::type::process_id_t creator
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
@@ -152,7 +151,9 @@ namespace gpi
         }
         catch (...)
         {
-          LLOG (ERROR, _logger, fhg::util::current_exception_printer());
+          _logger.emit ( fhg::util::current_exception_printer().string()
+                       , fhg::logging::legacy::category_level_error
+                       );
         }
       }
 
@@ -293,12 +294,10 @@ namespace gpi
             (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
         }
 
-        LLOG ( TRACE
-             , _logger
-             , "BEEGFS memory created:"
-             << " path: " << m_path
-             << " size: " << size()
-             );
+        _logger.emit ( "BEEGFS memory created: path: " + m_path.string()
+                     + " size: " + std::to_string (size())
+                     , fhg::logging::legacy::category_level_trace
+                     );
 
         succeeded = true;
       }
@@ -424,7 +423,7 @@ namespace gpi
       }
 
       area_ptr_t beegfs_area_t::create
-        ( fhg::log::Logger& logger
+        ( fhg::logging::stream_emitter& logger
         , std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator

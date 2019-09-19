@@ -14,7 +14,7 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
 
-        shm_area_t ( fhg::log::Logger&
+        shm_area_t ( fhg::logging::stream_emitter&
                    , const gpi::pc::type::process_id_t creator
                    , type::name_t const&
                    , const gpi::pc::type::size_t size

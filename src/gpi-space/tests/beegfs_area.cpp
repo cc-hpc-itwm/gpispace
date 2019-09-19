@@ -48,7 +48,7 @@ struct setup_and_cleanup_shared_file
 
   boost::filesystem::path path_to_shared_file;
 
-  fhg::log::Logger _logger;
+  fhg::logging::stream_emitter _logger;
 };
 
 BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)

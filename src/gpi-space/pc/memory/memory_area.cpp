@@ -2,7 +2,6 @@
 
 #include <stack>
 
-#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <boost/format.hpp>
@@ -24,7 +23,7 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( fhg::log::Logger& logger
+      area_t::area_t ( fhg::logging::stream_emitter& logger
                      , const gpi::pc::type::segment::segment_type type
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
@@ -395,12 +394,10 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          LLOG( WARN
-              , _logger
-             , "handle still in use:"
-             << " handle = " << hdl
-             << " nref = " << desc.nref
-             );
+          _logger.emit ( "handle still in use: handle = " + std::to_string (hdl)
+                       + " nref = " + std::to_string (desc.nref)
+                       , fhg::logging::legacy::category_level_warn
+                       );
         }
 
         gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));

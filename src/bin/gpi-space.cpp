@@ -183,6 +183,8 @@ int main (int argc, char** argv)
       , log_server_raw
       );
 
+    fhg::logging::stream_emitter log_emitter;
+
     fhg::util::signal_handler_manager signal_handler;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
       crit_error_handler (signal_handler, logger);
@@ -203,7 +205,7 @@ int main (int argc, char** argv)
       );
 
     const gpi::pc::container::manager_t container_manager
-      ( logger
+      ( log_emitter
       , socket_path.string()
       , gaspi_context
       , topology_io_service

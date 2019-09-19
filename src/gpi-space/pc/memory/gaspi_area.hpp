@@ -29,7 +29,7 @@ namespace gpi
 
         typedef fhg::thread::queue<handle_buffer_t> handle_pool_t;
 
-        static area_ptr_t create ( fhg::log::Logger&
+        static area_ptr_t create ( fhg::logging::stream_emitter&
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
@@ -38,7 +38,7 @@ namespace gpi
                                  );
 
       protected:
-        gaspi_area_t ( fhg::log::Logger&
+        gaspi_area_t ( fhg::logging::stream_emitter&
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::flags_t flags

@@ -92,6 +92,7 @@ public:
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
+    , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     );
   ~DRTSImpl();
@@ -108,8 +109,6 @@ public:
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
   virtual void handleDiscoverJobStatesEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
-
-  fhg::logging::endpoint logger_registration_endpoint() const;
 
 private:
   void event_thread();
@@ -131,7 +130,7 @@ private:
 
   we::loader::loader m_loader;
 
-  fhg::logging::stream_emitter _log_emitter;
+  fhg::logging::stream_emitter& _log_emitter;
   void emit_gantt (wfe_task_t const&, sdpa::daemon::NotificationEvent::state_t);
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;

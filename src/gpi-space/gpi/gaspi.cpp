@@ -1,6 +1,5 @@
 #include <gpi-space/gpi/gaspi.hpp>
 
-#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
@@ -53,7 +52,7 @@ namespace gpi
     }
 
     gaspi_t::gaspi_t ( fhg::vmem::gaspi_context& gaspi_context
-                     , fhg::log::Logger& logger
+                     , fhg::logging::stream_emitter& logger
                      , const unsigned long long per_node_size
                      , fhg::vmem::gaspi_timeout& time_left
                      )
@@ -78,11 +77,12 @@ namespace gpi
       }
       else if (sys::get_avail_memory_size() < _per_node_size)
       {
-        LLOG( WARN
-            , _logger
-           , "requested memory size (" << _per_node_size << ")"
-           <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
-           );
+        _logger.emit ( "requested memory size ("
+                     + std::to_string (_per_node_size) + ") exceeds available"
+                     + " memory size ("
+                     + std::to_string (sys::get_avail_memory_size()) + ")"
+                     , fhg::logging::legacy::category_level_warn
+                     );
       }
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create

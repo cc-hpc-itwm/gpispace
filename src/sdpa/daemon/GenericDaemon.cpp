@@ -69,7 +69,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
                             , master_info_t masters
-                            , fhg::log::Logger& logger
+                            , fhg::log::Logger&
                             , bool create_wfe
                             , fhg::com::Certificates const& certificates
                             )
@@ -139,7 +139,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _virtual_memory_api
     ( vmem_socket
     ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        (logger, vmem_socket->string())
+        (_log_emitter, vmem_socket->string())
     : nullptr
     )
   , _event_handler_thread (&GenericDaemon::handle_events, this)

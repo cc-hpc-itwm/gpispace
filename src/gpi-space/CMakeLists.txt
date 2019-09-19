@@ -2,6 +2,7 @@ extended_add_library (NAME gpi-space-gpiapi
   SOURCES "gpi/system.cpp"
           "gpi/gaspi.cpp"
   LIBRARIES GASPI::static
+            gspc::logging
             Util::Generic
             GPISpace::vmem
   INCLUDE_DIRECTORIES PRIVATE "${GASPI_INCLUDE_DIR}"
@@ -11,12 +12,15 @@ extended_add_library (NAME gpi-space-gpiapi
 extended_add_library (NAME gpi-space-pc-client-static
   SOURCES "pc/client/api.cpp"
   LIBRARIES Util::Generic
+            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-segment
   SOURCES "pc/segment/segment.cpp"
-  LIBRARIES "${LIBRT_SHARED_LIBRARY}" Util::Generic
+  LIBRARIES "${LIBRT_SHARED_LIBRARY}"
+            Util::Generic
+            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
@@ -28,6 +32,7 @@ extended_add_library (NAME gpi-space-pc-memory
           "pc/memory/shm_area.cpp"
           "pc/memory/beegfs_area.cpp"
   LIBRARIES gpi-space-pc-segment
+            gspc::logging
             mmgr
             gpi-space_url
             Util::Generic
@@ -38,12 +43,14 @@ extended_add_library (NAME gpi-space-pc-memory
 extended_add_library (NAME gpi-space-pc-container
   SOURCES "pc/container/manager.cpp"
   LIBRARIES Util::Generic
+            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
 extended_add_library (NAME gpi-space-pc-global
   SOURCES "pc/global/topology.cpp"
   LIBRARIES Util::Generic RPC
+            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 

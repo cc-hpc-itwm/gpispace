@@ -194,6 +194,7 @@ DRTSImpl::DRTSImpl
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
+    , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     )
   : _request_stop (request_stop)
@@ -201,7 +202,7 @@ DRTSImpl::DRTSImpl
   , m_my_name (kernel_name)
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
-  , _log_emitter()
+  , _log_emitter (log_emitter)
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)
@@ -512,11 +513,6 @@ void DRTSImpl::emit_gantt
       , sdpa::daemon::gantt_log_category
       }
     );
-}
-
-fhg::logging::endpoint DRTSImpl::logger_registration_endpoint() const
-{
-  return _log_emitter.local_endpoint();
 }
 
 void DRTSImpl::job_execution_thread()

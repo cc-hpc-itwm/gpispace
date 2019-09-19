@@ -2,8 +2,6 @@
 #include <gpi-space/pc/url.hpp>
 #include <gpi-space/pc/url_io.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
@@ -26,7 +24,7 @@ namespace gpi
     {
       namespace
       {
-        area_ptr_t create_area ( fhg::log::Logger& logger
+        area_ptr_t create_area ( fhg::logging::stream_emitter& logger
                                , std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
@@ -45,7 +43,7 @@ namespace gpi
       }
       }
 
-      manager_t::manager_t ( fhg::log::Logger& logger
+      manager_t::manager_t ( fhg::logging::stream_emitter& logger
                            , fhg::vmem::gaspi_context& gaspi_context
                            )
         : _logger (logger)
@@ -86,12 +84,12 @@ namespace gpi
         {
           clear ();
         }
-        catch (std::exception const & ex)
+        catch (...)
         {
-          LLOG( ERROR
-              , _logger
-             , "could not clear memory manager: " << ex.what()
-             );
+          _logger.emit ( "could not clear memory manager: "
+                       + fhg::util::current_exception_printer().string()
+                       , fhg::logging::legacy::category_level_error
+                       );
         }
       }
 
@@ -178,7 +176,9 @@ namespace gpi
           area->garbage_collect ();
           m_areas.erase (area_it);
 
-          LLOG(TRACE, _logger, "memory removed: " << mem_id);
+          _logger.emit ( "memory removed: " + std::to_string (mem_id)
+                       , fhg::logging::legacy::category_level_trace
+                       );
         }
       }
 
@@ -506,11 +506,11 @@ namespace gpi
                                }
                                catch (...)
                                {
-                                 LLOG ( ERROR
-                                      , _logger
-                                      , "additional error in cleanup: "
-                                      << fhg::util::current_exception_printer()
-                                      );
+                                 _logger.emit
+                                   ( "additional error in cleanup: "
+                                   + fhg::util::current_exception_printer().string()
+                                   , fhg::logging::legacy::category_level_error
+                                   );
                                }
                              }
                            }

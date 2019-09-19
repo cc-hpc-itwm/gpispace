@@ -40,6 +40,7 @@ extended_add_library (NAME fhg-util
 
           "util/system_with_blocked_SIGCHLD.cpp"
   LIBRARIES Util::Generic
+            fhglog
             Boost::thread
             Boost::system
             Boost::filesystem

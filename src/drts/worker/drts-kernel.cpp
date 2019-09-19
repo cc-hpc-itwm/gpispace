@@ -182,6 +182,8 @@ int main(int ac, char **av)
     po::store (po::command_line_parser (ac, av).options(desc).run(), vm);
     po::notify (vm);
 
+    fhg::logging::stream_emitter log_emitter;
+
     fhg::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
       (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
@@ -198,7 +200,7 @@ int main(int ac, char **av)
     std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
       ( vm.count (option_name::virtual_memory_socket)
       ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-          ( logger
+          ( log_emitter
           , (static_cast<boost::filesystem::path>
               ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
@@ -272,10 +274,11 @@ int main(int ac, char **av)
       .as<std::vector<boost::filesystem::path>>()
       , vm.at (option_name::backlog_length)
       .as<std::size_t>()
+      , log_emitter
       , certificates
       );
 
-    promise.set_result (plugin.logger_registration_endpoint().to_string());
+    promise.set_result (log_emitter.local_endpoint().to_string());
 
     stop_requested.wait();
 

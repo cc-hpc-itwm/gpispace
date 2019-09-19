@@ -4,8 +4,8 @@
 #include <gpi-space/pc/type/flags.hpp>
 
 #include <fhg/assert.hpp>
+#include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
-#include <fhglog/LogMacros.hpp>
 
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/archive/text_iarchive.hpp>
@@ -52,7 +52,7 @@ namespace gpi
   {
     namespace client
     {
-      api_t::api_t ( fhg::log::Logger& logger
+      api_t::api_t ( fhg::logging::stream_emitter& logger
                    , std::string const & path
                    )
         : _logger (logger)
@@ -427,9 +427,10 @@ namespace gpi
 
         if (m_segments.find (seg->id()) != m_segments.end())
         {
-          LLOG(WARN, _logger, "There is already a segment attached with id " << seg->id());
-          LLOG(WARN, _logger, "DANGER, this looks like an inconsistency!");
-          LLOG(WARN, _logger, "moving my one into the trash");
+          _logger.emit ( "INCONSISTENCY: There is already a segment attached "
+                         "with id " + std::to_string (seg->id())
+                       , fhg::logging::legacy::category_level_warn
+                       );
 
           m_segments.erase(seg->id());
         }
@@ -456,16 +457,16 @@ namespace gpi
             (boost::get<proto::error::error_t>(rply));
           if (result.code != proto::error::success)
           {
-            LLOG( ERROR
-                , _logger
-               , "could not unregister segment " << id << ": "
-               << result.code << ": " << result.detail
-               );
+            throw std::logic_error
+              (std::to_string (result.code) + ": " + result.detail);
           }
         }
-        catch (std::exception const & ex)
+        catch (...)
         {
-          LLOG(ERROR, _logger, "unregister failed: " << ex.what());
+          _logger.emit ( "could not unregister segment " + std::to_string (id)
+                       + ": " + fhg::util::current_exception_printer().string()
+                       , fhg::logging::legacy::category_level_error
+                       );
         }
 
         // remove local
