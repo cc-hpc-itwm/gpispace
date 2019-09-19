@@ -57,7 +57,7 @@ namespace drts
     context_constructor::context_constructor
       ( std::string const& worker_name
       , std::set<std::string> const& workers
-      , fhg::log::Logger& logger
+      , fhg::logging::stream_emitter& logger
       )
         : _ (new context::implementation (worker_name, workers, logger))
     {}
@@ -65,7 +65,7 @@ namespace drts
     context::implementation::implementation
       ( std::string const &worker_name
       , std::set<std::string> const& workers
-      , fhg::log::Logger& logger
+      , fhg::logging::stream_emitter& logger
       )
         : _worker_name (worker_name)
         , _workers (workers)
@@ -103,11 +103,11 @@ namespace drts
       _cancelled = true;
       _module_call_do_cancel();
     }
-    void context::implementation::log ( fhg::log::Level const& severity
+    void context::implementation::log ( char const* const category
                                       , std::string const& message
                                       ) const
     {
-      _logger.log (fhg::log::LogEvent (severity, message));
+      _logger.emit (message, category);
     }
 
     //! \todo factor out channel_from_child_to_parent, see

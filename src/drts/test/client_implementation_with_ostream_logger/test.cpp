@@ -6,7 +6,6 @@
 
 #include <drts/private/option.hpp>
 
-#include <logging/legacy_bridge.hpp>
 #include <logging/stream_receiver.hpp>
 
 #include <test/certificates_data.hpp>
@@ -73,24 +72,7 @@ BOOST_DATA_TEST_CASE
 
   gspc::set_application_search_path (vm, installation_dir);
 
-  //! \todo get a free port
-  unsigned short const log_port (47096);
-
-  gspc::set_log_host (vm, fhg::util::hostname());
-  gspc::set_log_port (vm, log_port);
-
   vm.notify();
-
-  std::list<std::string> logged;
-
-  fhg::logging::legacy_bridge const log_bridge (log_port);
-  fhg::logging::stream_receiver const log_receiver
-    ( log_bridge.local_endpoint()
-    , [&logged] (fhg::logging::message const& message)
-      {
-        logged.emplace_back (message._content);
-      }
-    );
 
   gspc::installation const installation (vm);
 
@@ -113,6 +95,19 @@ BOOST_DATA_TEST_CASE
 
   gspc::scoped_runtime_system drts
     (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
+
+  std::list<std::string> logged;
+  fhg::logging::stream_receiver const log_receiver
+    ( drts.top_level_log_demultiplexer()
+    , [&logged] (fhg::logging::message const& message)
+      {
+        //! \note agent/orchestrator/worker do emit messages we do not want.
+        if (message._category == fhg::logging::legacy::category_level_info)
+        {
+          logged.emplace_back (message._content);
+        }
+      }
+    );
 
   boost::filesystem::path const implementation
     ( vm.at ("implementation")

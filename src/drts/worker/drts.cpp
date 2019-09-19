@@ -5,8 +5,6 @@
 
 #include <util-generic/hostname.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <fhg/util/macros.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -50,7 +48,7 @@ struct wfe_task_t
              , we::type::activity_t const& activity
              , std::string worker_name
              , std::set<std::string> workers
-             , fhg::log::Logger& logger
+             , fhg::logging::stream_emitter& logger
              )
     : id (id_)
     , state (PENDING)
@@ -196,11 +194,9 @@ DRTSImpl::DRTSImpl
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
-    , fhg::log::Logger& logger
     , fhg::com::Certificates const& certificates
     )
-  : _logger (logger)
-  , _request_stop (request_stop)
+  : _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
   , _currently_executed_tasks()
@@ -339,9 +335,10 @@ void DRTSImpl::handleSubmitJobEvent
 
   if (!m_pending_jobs.try_put (job))
   {
-    LLOG ( WARN, _logger
-         , "cannot accept new job (" << job->id << "), backlog is full."
-         );
+    _log_emitter.emit ( "cannot accept new job (" + job->id
+                      + "), backlog is full."
+                      , fhg::logging::legacy::category_level_warn
+                      );
     send_event<sdpa::events::ErrorEvent>
       ( source
       , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
@@ -365,7 +362,9 @@ void DRTSImpl::handleCancelJobEvent
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
 
-  LLOG (TRACE, _logger, "got cancelation request for job: " << e->job_id());
+  _log_emitter.emit ( "got cancelation request for job: " + e->job_id()
+                    , fhg::logging::legacy::category_level_trace
+                    );
 
   if (job_it == m_jobs.end())
   {
@@ -379,13 +378,17 @@ void DRTSImpl::handleCancelJobEvent
   Job::state_t job_state (Job::PENDING);
   if (job_it->second->state.compare_exchange_strong (job_state, Job::CANCELED))
   {
-    LLOG (TRACE, _logger, "canceling pending job: " << e->job_id());
+    _log_emitter.emit ( "canceling pending job " + e->job_id()
+                      , fhg::logging::legacy::category_level_trace
+                      );
     send_event<sdpa::events::CancelJobAckEvent>
       (*job_it->second->owner, job_it->second->id);
   }
   else if (job_state == DRTSImpl::Job::RUNNING)
   {
-    LLOG (TRACE, _logger, "trying to cancel running job " << e->job_id());
+    _log_emitter.emit ( "trying to cancel running job " + e->job_id()
+                      , fhg::logging::legacy::category_level_trace
+                      );
     std::lock_guard<std::mutex> const _ (_currently_executed_tasks_mutex);
     std::map<std::string, wfe_task_t *>::iterator task_it
       (_currently_executed_tasks.find(e->job_id()));
@@ -397,15 +400,21 @@ void DRTSImpl::handleCancelJobEvent
   }
   else if (job_state == DRTSImpl::Job::FAILED)
   {
-    LLOG (TRACE, _logger, "cancel_job for failed job");
+    _log_emitter.emit ( "cancel_job for failed job " + e->job_id()
+                      , fhg::logging::legacy::category_level_trace
+                      );
   }
   else if (job_state == DRTSImpl::Job::CANCELED)
   {
-    LLOG (TRACE, _logger, "cancel_job for canceled job");
+    _log_emitter.emit ( "cancel_job for canceled job " + e->job_id()
+                      , fhg::logging::legacy::category_level_trace
+                      );
   }
   else // if (job_state == DRTSImpl::Job::FINISHED)
   {
-    LLOG (TRACE, _logger, "cancel_job for finished job");
+    _log_emitter.emit ( "cancel_job for finished job " + e->job_id()
+                      , fhg::logging::legacy::category_level_trace
+                      );
   }
 }
 
@@ -549,7 +558,7 @@ try
       job->result = we::type::activity_t();
 
       wfe_task_t task
-        (job->id, job->activity, m_my_name, job->workers, _logger);
+        (job->id, job->activity, m_my_name, job->workers, _log_emitter);
 
       emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
@@ -599,15 +608,21 @@ try
 
       if (wfe_task_t::FINISHED == task.state)
       {
-        LLOG (TRACE, _logger, "task finished: " << task.id);
+        _log_emitter.emit ( "task finished: " + task.id
+                          , fhg::logging::legacy::category_level_trace
+                          );
       }
       else if (wfe_task_t::FAILED == task.state)
       {
-        LLOG (ERROR, _logger, "task failed: " << task.id << ": " << job->message);
+        _log_emitter.emit ( "task failed: " + task.id + ": " + job->message
+                          , fhg::logging::legacy::category_level_error
+                          );
       }
       else if (wfe_task_t::CANCELED == task.state)
       {
-        LLOG (INFO, _logger, "task canceled: " << task.id);
+        _log_emitter.emit ( "task canceled: " + task.id
+                          , fhg::logging::legacy::category_level_info
+                          );
       }
 
       emit_gantt ( task
@@ -630,7 +645,7 @@ try
         ( "unexpected exception during job execution: "
         + fhg::util::current_exception_printer (": ").string()
         );
-      LLOG (ERROR, _logger, error);
+      _log_emitter.emit (error, fhg::logging::legacy::category_level_error);
       job->state = DRTSImpl::Job::FAILED;
 
       job->result = job->activity;
@@ -711,7 +726,9 @@ void DRTSImpl::start_receiver()
         }
         else
         {
-          LLOG (TRACE, _logger, m_my_name << " is shutting down");
+          _log_emitter.emit ( m_my_name + " is shutting down"
+                            , fhg::logging::legacy::category_level_trace
+                            );
         }
       }
     );

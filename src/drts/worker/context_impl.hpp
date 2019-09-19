@@ -2,7 +2,7 @@
 
 #include <drts/worker/context.hpp>
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <util-generic/ostream/redirect.hpp>
 
@@ -20,7 +20,7 @@ namespace drts
     public:
       context_constructor ( std::string const& worker_name
                           , std::set<std::string> const& workers
-                          , fhg::log::Logger& logger
+                          , fhg::logging::stream_emitter& logger
                           );
       context::implementation* _;
     };
@@ -30,7 +30,7 @@ namespace drts
     public:
       implementation ( std::string const& worker_name
                      , std::set<std::string> const& workers
-                     , fhg::log::Logger& logger
+                     , fhg::logging::stream_emitter& logger
                      );
 
       std::string const& worker_name() const;
@@ -48,30 +48,28 @@ namespace drts
         , std::function<void (int)> on_exit
         );
 
-      void log ( fhg::log::Level const& severity
-               , std::string const& message
-               ) const;
+      void log (char const* const category, std::string const& message) const;
 
     private:
       std::string _worker_name;
       std::set<std::string> _workers;
       std::function<void()> _module_call_do_cancel;
       bool _cancelled;
-      fhg::log::Logger& _logger;
+      fhg::logging::stream_emitter& _logger;
     };
 
     class redirect_output : public fhg::util::ostream::redirect
     {
     public:
       redirect_output ( drts::worker::context const* const context
-                      , fhg::log::Level const& severity
+                      , char const* const category
                       , std::ostream& os
                       )
         : redirect
           ( os
-          , [context, severity] (std::string const& line)
+          , [context, category] (std::string const& line)
             {
-              context->_->log (severity, line);
+              context->_->log (category, line);
             }
           )
       {}

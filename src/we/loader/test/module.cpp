@@ -12,8 +12,6 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
-#include <fhglog/Configuration.hpp>
-#include <fhglog/Logger.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
@@ -70,8 +68,7 @@ BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
 
-  fhg::log::Logger logger;
-  fhg::log::configure_to_stderr (logger);
+  fhg::logging::stream_emitter logger;
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -109,8 +106,7 @@ BOOST_AUTO_TEST_CASE (call_local)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  fhg::log::Logger logger;
-  fhg::log::configure_to_stderr (logger);
+  fhg::logging::stream_emitter logger;
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -129,8 +125,7 @@ BOOST_AUTO_TEST_CASE (call_lib)
 {
   we::loader::Module m ("./libanswer.so");
 
-  fhg::log::Logger logger;
-  fhg::log::configure_to_stderr (logger);
+  fhg::logging::stream_emitter logger;
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)

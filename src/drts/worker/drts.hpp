@@ -6,7 +6,6 @@
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhgcom/peer.hpp>
-#include <fhglog/Logger.hpp>
 #include <logging/stream_emitter.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
@@ -93,7 +92,6 @@ public:
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
-    , fhg::log::Logger&
     , fhg::com::Certificates const& certificates
     );
   ~DRTSImpl();
@@ -121,8 +119,6 @@ private:
 
   template<typename Event, typename... Args>
     void send_event (fhg::com::p2p::address_t const& destination, Args&&... args);
-
-  fhg::log::Logger& _logger;
 
   std::function<void()> _request_stop;
 

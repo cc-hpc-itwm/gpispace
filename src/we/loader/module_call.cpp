@@ -207,9 +207,12 @@ namespace we
       expr::eval::context out (input);
 
       {
-        drts::worker::redirect_output const clog (context, fhg::log::TRACE, std::clog);
-        drts::worker::redirect_output const cout (context, fhg::log::INFO, std::cout);
-        drts::worker::redirect_output const cerr (context, fhg::log::WARN, std::cerr);
+        drts::worker::redirect_output const clog
+          (context, fhg::logging::legacy::category_level_trace, std::clog);
+        drts::worker::redirect_output const cout
+          (context, fhg::logging::legacy::category_level_info, std::cout);
+        drts::worker::redirect_output const cerr
+          (context, fhg::logging::legacy::category_level_warn, std::cerr);
 
         loader[module_call.module()].call
           (module_call.function(), context, input, out, pointers);

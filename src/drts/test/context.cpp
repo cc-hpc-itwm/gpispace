@@ -61,7 +61,7 @@ namespace
         )
     {}
 
-    fhg::log::Logger logger;
+    fhg::logging::stream_emitter logger;
     drts::worker::context context;
   };
 
