@@ -117,7 +117,6 @@ int main (int argc, char **argv)
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , vmem_socket
       , std::move (masters)
-      , logger
       , true
       , ssl_certificates
       );

@@ -113,13 +113,13 @@ namespace
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
-BOOST_DATA_TEST_CASE_F
-  (setup_logging, acquire_capability_from_worker, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  (acquire_capability_from_worker, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent (observer, _logger, certificates);
+    const utils::agent agent (observer, certificates);
 
     const std::string name (utils::random_peer_name());
     const sdpa::capability_t capability ("A", name);
@@ -132,14 +132,14 @@ BOOST_DATA_TEST_CASE_F
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
-BOOST_DATA_TEST_CASE_F
-  (setup_logging, acquire_capability_from_worker_chain, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  (acquire_capability_from_worker_chain, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent_0 (observer, _logger, certificates);
-    const utils::agent agent_1 (agent_0, _logger, certificates);
+    const utils::agent agent_0 (observer, certificates);
+    const utils::agent agent_1 (agent_0, certificates);
 
     const std::string name (utils::random_peer_name());
     const sdpa::capability_t capability ("A", name);
@@ -151,13 +151,14 @@ BOOST_DATA_TEST_CASE_F
  observer.wait_for_capabilities ({});
 }
 
-BOOST_DATA_TEST_CASE_F
-  (setup_logging, acquire_capabilities_from_workers, certificates_data, certificates)
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (acquire_capabilities_from_workers, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent (observer, _logger, certificates);
+    const utils::agent agent (observer, certificates);
 
     const std::string name_0 (utils::random_peer_name());
     const std::string name_1 (utils::random_peer_name());
@@ -173,13 +174,13 @@ BOOST_DATA_TEST_CASE_F
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
-BOOST_DATA_TEST_CASE_F
-  (setup_logging, lose_capabilities_after_worker_dies, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  (lose_capabilities_after_worker_dies, certificates_data, certificates)
 {
   drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent (observer, _logger, certificates);
+    const utils::agent agent (observer, certificates);
 
     const std::string name_0 (utils::random_peer_name());
     const std::string name_1 (utils::random_peer_name());
@@ -199,9 +200,8 @@ BOOST_DATA_TEST_CASE_F
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , RACE_capabilities_of_children_are_removed_when_disconnected
+BOOST_DATA_TEST_CASE
+  ( RACE_capabilities_of_children_are_removed_when_disconnected
   , certificates_data
   , certificates
   )
@@ -219,16 +219,16 @@ BOOST_DATA_TEST_CASE_F
   while (repeat --> 0)
   {
     drts_component_observing_capabilities observer (certificates);
-    utils::agent const agent_0 (observer, _logger, certificates);
-    utils::agent const agent_1 (agent_0, _logger, certificates);
-    utils::agent const agent_2 (agent_1, _logger, certificates);
-    utils::agent const agent_3 (agent_2, _logger, certificates);
+    utils::agent const agent_0 (observer, certificates);
+    utils::agent const agent_1 (agent_0, certificates);
+    utils::agent const agent_2 (agent_1, certificates);
+    utils::agent const agent_3 (agent_2, certificates);
 
     {
-      utils::agent const agent_4 (agent_3, _logger, certificates);
-      utils::agent const agent_5 (agent_4, _logger, certificates);
-      utils::agent const agent_6 (agent_5, _logger, certificates);
-      utils::agent const agent_7 (agent_6, _logger, certificates);
+      utils::agent const agent_4 (agent_3, certificates);
+      utils::agent const agent_5 (agent_4, certificates);
+      utils::agent const agent_6 (agent_5, certificates);
+      utils::agent const agent_7 (agent_6, certificates);
 
       std::string const worker_name (utils::random_peer_name());
       sdpa::capability_t const capability ("A", worker_name);
@@ -243,9 +243,8 @@ BOOST_DATA_TEST_CASE_F
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , chain_with_a_lot_of_leafs_different_capabilities
+BOOST_DATA_TEST_CASE
+  ( chain_with_a_lot_of_leafs_different_capabilities
   , certificates_data
   , certificates
   )
@@ -253,8 +252,8 @@ BOOST_DATA_TEST_CASE_F
   drts_component_observing_capabilities observer (certificates);
 
   {
-    utils::agent const agent_0 (observer, _logger, certificates);
-    utils::agent const agent_1 (agent_0, _logger, certificates);
+    utils::agent const agent_0 (observer, certificates);
+    utils::agent const agent_1 (agent_0, certificates);
 
     std::list<utils::basic_drts_worker> workers;
 

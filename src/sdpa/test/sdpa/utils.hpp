@@ -17,8 +17,6 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <fhglog/Configuration.hpp>
-
 #include <boost/asio/io_service.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -30,16 +28,6 @@
 #include <mutex>
 #include <sstream>
 #include <string>
-
-struct setup_logging
-{
-  setup_logging()
-    : _logger()
-  {
-    fhg::log::configure_to_stderr (_logger);
-  }
-  fhg::log::Logger _logger;
-};
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (fhg::com::p2p::address_t, os, address)
 {
@@ -250,15 +238,11 @@ namespace utils
 
   struct orchestrator : boost::noncopyable
   {
-    orchestrator
-      ( fhg::log::Logger& logger
-      , fhg::com::Certificates const& certificates
-      )
+    orchestrator (fhg::com::Certificates const& certificates)
       : _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , sdpa::master_info_t()
-          , logger
           , false
           , certificates
           )
@@ -291,12 +275,10 @@ namespace utils
   struct agent : boost::noncopyable
   {
     template <typename T, typename U>
-      agent
-      ( const T& master_0
-      , const U& master_1
-      , fhg::log::Logger& logger
-      , fhg::com::Certificates const& certificates
-      )
+      agent ( const T& master_0
+            , const U& master_1
+            , fhg::com::Certificates const& certificates
+            )
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -304,38 +286,27 @@ namespace utils
           , { make_master_network_info (master_0)
             , make_master_network_info (master_1)
             }
-          , logger
           , true
           , certificates
           )
     {}
     template <typename T>
-      agent
-      ( const T& master
-      , fhg::log::Logger& logger
-      , fhg::com::Certificates const& certificates
-      )
+      agent (const T& master, fhg::com::Certificates const& certificates)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_network_info (master)}
-          , logger
           , true
           , certificates
           )
     {}
-    agent
-      ( const agent& master
-      , fhg::log::Logger& logger
-      , fhg::com::Certificates const& certificates
-      )
+    agent (const agent& master, fhg::com::Certificates const& certificates)
       : boost::noncopyable ()
       , _ ( random_peer_name(), "127.0.0.1"
           , fhg::util::cxx14::make_unique<boost::asio::io_service>()
           , boost::none
           , {make_master_network_info (master)}
-          , logger
           , true
           , certificates
           )

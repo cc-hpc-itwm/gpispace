@@ -69,7 +69,6 @@ namespace sdpa {
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
                    , master_info_t masters
-                   , fhg::log::Logger& logger
                    , bool create_wfe
                    , fhg::com::Certificates const& certificates
                    );

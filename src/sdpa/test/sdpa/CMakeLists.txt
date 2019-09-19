@@ -3,7 +3,6 @@ fhg_add_test (NAME sdpa_AddNewWorkers
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -12,7 +11,6 @@ fhg_add_test (NAME sdpa_CancelJob
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -21,7 +19,6 @@ fhg_add_test (NAME sdpa_Capabilities
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -30,7 +27,6 @@ fhg_add_test (NAME sdpa_Coallocation
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -39,7 +35,6 @@ fhg_add_test (NAME sdpa_CoallocationScheduler
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -57,7 +52,6 @@ fhg_add_test (NAME sdpa_DiscoverJobStates
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -66,7 +60,6 @@ fhg_add_test (NAME sdpa_InvalidNbWorkersReq
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -76,7 +69,6 @@ fhg_add_test (NAME sdpa_RestartWorkersCoalloc
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -86,7 +78,6 @@ fhg_add_test (NAME sdpa_RestartWorkersDummy
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -95,7 +86,6 @@ fhg_add_test (NAME sdpa_Subscriber
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -104,7 +94,6 @@ fhg_add_test (NAME sdpa_Topologies
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -113,7 +102,6 @@ fhg_add_test (NAME sdpa_WorkerManager
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -122,7 +110,6 @@ fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   LIBRARIES sdpa
-            fhglog
             test-utilities
 )
 
@@ -130,5 +117,6 @@ fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
   SOURCES remove_workers_in_a_coallocation_job.cpp
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
-  LIBRARIES sdpa fhglog test-utilities
+  LIBRARIES sdpa
+            test-utilities
 )

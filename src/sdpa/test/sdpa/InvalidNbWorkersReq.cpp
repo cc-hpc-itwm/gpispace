@@ -6,15 +6,11 @@
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , invalid_number_of_workers_required
-  , certificates_data
-  , certificates
-  )
+BOOST_DATA_TEST_CASE
+  (invalid_number_of_workers_required, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber

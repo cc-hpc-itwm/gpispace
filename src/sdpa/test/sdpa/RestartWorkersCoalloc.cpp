@@ -55,15 +55,14 @@ namespace
   };
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , restart_workers_while_job_requiring_coallocation_is_running
+BOOST_DATA_TEST_CASE
+  ( restart_workers_while_job_requiring_coallocation_is_running
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
@@ -99,15 +98,14 @@ BOOST_DATA_TEST_CASE_F
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , restart_workers_while_job_is_running_and_partial_result_is_missing
+BOOST_DATA_TEST_CASE
+  ( restart_workers_while_job_is_running_and_partial_result_is_missing
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id

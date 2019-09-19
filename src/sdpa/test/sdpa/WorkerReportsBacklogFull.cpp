@@ -67,15 +67,14 @@ namespace
   };
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests
+BOOST_DATA_TEST_CASE
+  ( one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
@@ -123,15 +122,14 @@ BOOST_DATA_TEST_CASE_F
   worker_3.canceled (job_id_3);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
+BOOST_DATA_TEST_CASE
+  ( one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
@@ -185,15 +183,14 @@ BOOST_DATA_TEST_CASE_F
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
+BOOST_DATA_TEST_CASE
+  ( one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
@@ -246,15 +243,14 @@ BOOST_DATA_TEST_CASE_F
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
+BOOST_DATA_TEST_CASE
+  ( one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id

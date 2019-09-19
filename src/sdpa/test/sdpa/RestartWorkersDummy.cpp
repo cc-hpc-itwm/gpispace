@@ -6,15 +6,11 @@
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , restart_worker_with_dummy_workflow
-  , certificates_data
-  , certificates
-  )
+BOOST_DATA_TEST_CASE
+  (restart_worker_with_dummy_workflow, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));

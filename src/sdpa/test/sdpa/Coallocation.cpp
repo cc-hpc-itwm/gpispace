@@ -9,11 +9,10 @@
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
-BOOST_DATA_TEST_CASE_F
-  (setup_logging, coallocation_workflow, certificates_data, certificates)
+BOOST_DATA_TEST_CASE (coallocation_workflow, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
   const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent, certificates);
@@ -25,9 +24,8 @@ BOOST_DATA_TEST_CASE_F
     );
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
+BOOST_DATA_TEST_CASE
+  ( worker_shall_not_get_job_after_finishing_part_of_coallocation_job_while_other_workers_are_not_yet_done
   , certificates_data
   , certificates
   )
@@ -35,8 +33,8 @@ BOOST_DATA_TEST_CASE_F
   //! \note issue #374
 
   // 0. setup environment orch -> agent.
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   // 1. start worker 1
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -111,17 +109,16 @@ BOOST_DATA_TEST_CASE_F
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
+BOOST_DATA_TEST_CASE
+  ( agent_is_scheduling_two_jobs_in_parallel_if_workers_are_available
   , certificates_data
   , certificates
   )
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
@@ -173,17 +170,16 @@ BOOST_DATA_TEST_CASE_F
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+BOOST_DATA_TEST_CASE
+  ( worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
   , certificates_data
   , certificates
   )
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
@@ -297,15 +293,14 @@ BOOST_DATA_TEST_CASE_F
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , reschedule_happens_even_though_all_others_were_success
+BOOST_DATA_TEST_CASE
+  ( reschedule_happens_even_though_all_others_were_success
   , certificates_data
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id

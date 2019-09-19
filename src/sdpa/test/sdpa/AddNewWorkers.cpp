@@ -86,11 +86,10 @@ we::type::activity_t net_with_n_children (unsigned int n)
 // This case tests if each worker added after a user workflow submission
 // gets assigned a task, provided sufficient activities are produced by the
 // workflow engine
-BOOST_DATA_TEST_CASE_F
-  (setup_logging, add_new_workers, certificates_data, certificates)
+BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger, certificates);
-  const utils::agent agent (orchestrator, _logger, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
   utils::client client (orchestrator, certificates);
 
   const unsigned int n_initial_workers (25);

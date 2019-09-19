@@ -107,17 +107,11 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE (generic)
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , job_finished_ack_fails_with_bad_job_id
-  , certificates_data
-  , certificates
-  )
+BOOST_DATA_TEST_CASE
+  (job_finished_ack_fails_with_bad_job_id, certificates_data, certificates)
 {
   const std::string orchestrator_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
-
-  fhg::log::Logger logger;
 
   const sdpa::daemon::GenericDaemon orchestrator
     ( orchestrator_name
@@ -125,7 +119,6 @@ BOOST_DATA_TEST_CASE_F
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , boost::none
     , sdpa::master_info_t()
-    , logger
     , false
     , certificates
     );

@@ -5,15 +5,14 @@
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
-BOOST_DATA_TEST_CASE_F
-  ( setup_logging
-  , remove_workers_in_a_coallocation_job_and_add_them_again
+BOOST_DATA_TEST_CASE
+  ( remove_workers_in_a_coallocation_job_and_add_them_again
   , certificates_data
   , certificates
   )
 {
-  utils::orchestrator const orchestrator (_logger, certificates);
-  utils::agent const agent (orchestrator, _logger, certificates);
+  utils::orchestrator const orchestrator (certificates);
+  utils::agent const agent (orchestrator, certificates);
 
   utils::client client (orchestrator, certificates);
 
