@@ -53,6 +53,12 @@ struct activity
     const NotificationEvent event (_workers, _id, _state, _act);
     emitter.emit_message ({event.encoded(), sdpa::daemon::gantt_log_category});
     legacy_emitter.trace (event.encoded());
+    static char const* arr[4] = { fhg::logging::legacy::category_level_trace
+                                , fhg::logging::legacy::category_level_info
+                                , fhg::logging::legacy::category_level_warn
+                                , fhg::logging::legacy::category_level_error
+                                };
+    emitter.emit_message ({_id, arr[lrand48() % 4]});
   }
 
   bool next_state()

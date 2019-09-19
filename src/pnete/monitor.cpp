@@ -1,6 +1,8 @@
 #include <pnete/ui/execution_monitor.hpp>
 #include <pnete/ui/log_monitor.hpp>
 
+#include <logging/legacy_bridge.hpp>
+
 #include <fhg/revision.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -14,6 +16,7 @@
 #include <QtCore/QString>
 
 #include <iostream>
+#include <vector>
 
 namespace
 {
@@ -48,15 +51,20 @@ try
   QApplication::setOrganizationDomain ("itwm.fraunhofer.de");
   QApplication::setOrganizationName ("Fraunhofer ITWM");
 
+  fhg::logging::legacy_bridge log_bridge (option::log_port.get_from (vm));
+
+  auto emitters (option::emitters.get_from_or_value (vm, {}));
+  emitters.emplace_back (log_bridge.local_endpoint());
+
   QTabWidget window;
   window.addTab
-    ( new fhg::pnete::ui::execution_monitor
-        (option::emitters.get_from_or_value (vm, {}))
+    ( new fhg::pnete::ui::execution_monitor (emitters)
     , QObject::tr ("Execution Monitor")
     );
-  window.addTab ( new log_monitor (option::log_port.get_from (vm))
-                , QObject::tr ("Logging")
-                );
+  window.addTab
+    ( new log_monitor (emitters)
+    , QObject::tr ("Logging")
+    );
   window.show();
 
   return a.exec();

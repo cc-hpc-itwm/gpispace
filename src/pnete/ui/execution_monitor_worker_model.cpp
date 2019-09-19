@@ -94,6 +94,11 @@ namespace fhg
 
       void worker_model::append_event (logging::message event)
       {
+        if (event._category != sdpa::daemon::gantt_log_category)
+        {
+          return;
+        }
+
         std::lock_guard<std::mutex> guard (_event_queue);
         _queued_events.push_back (std::move (event));
       }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include <logging/legacy_bridge.hpp>
+#include <logging/endpoint.hpp>
 #include <logging/stream_receiver.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -9,7 +9,7 @@
 #include <QMutex>
 #include <QWidget>
 
-#include <thread>
+#include <vector>
 
 class QCheckBox;
 class QComboBox;
@@ -72,7 +72,9 @@ class log_monitor : public QWidget
   Q_OBJECT
 
 public:
-  explicit log_monitor (unsigned short port, QWidget* parent = nullptr);
+  log_monitor ( std::vector<fhg::logging::endpoint> emitters
+              , QWidget* parent = nullptr
+              );
   ~log_monitor();
 
 public slots:
@@ -94,6 +96,5 @@ private:
 
   QString _last_saved_filename;
 
-  fhg::logging::legacy_bridge _log_bridge;
   fhg::logging::stream_receiver _log_receiver;
 };

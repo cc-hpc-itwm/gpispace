@@ -39,12 +39,14 @@
 #include <QMutexLocker>
 #include <QThread>
 
-#include <cmath>
-#include <functional>
+#include <algorithm>
+#include <exception>
 #include <fstream>
-#include <list>
-#include <sstream>
+#include <functional>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace
 {
@@ -300,7 +302,8 @@ namespace detail
 }
 
 
-log_monitor::log_monitor (unsigned short port, QWidget* parent)
+log_monitor::log_monitor
+    (std::vector<fhg::logging::endpoint> emitters, QWidget* parent)
   : QWidget (parent)
   , _drop_filtered (false)
   , _filter_level (1)
@@ -310,8 +313,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   //! \todo Do updates in separate thread again?
   // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
-  , _log_bridge (port)
-  , _log_receiver ( _log_bridge.local_endpoint()
+  , _log_receiver ( std::move (emitters)
                   , fhg::util::bind_this (this, &log_monitor::append_log_event)
                   )
 {
@@ -438,6 +440,11 @@ log_monitor::~log_monitor()
 
 void log_monitor::append_log_event (fhg::logging::message message)
 {
+  if (message._category == sdpa::daemon::gantt_log_category)
+  {
+    return;
+  }
+
   if ( category_to_legacy_level (message._category) >= _filter_level
      || !_drop_filtered
      )
