@@ -15,6 +15,16 @@ namespace fhg
   {
     namespace
     {
+      std::string random_host()
+      {
+        std::string result;
+        do
+        {
+          result = util::testing::random_string_without (":");
+        }
+        while (result.empty());
+        return result;
+      }
       std::string random_socket (std::size_t chop_off = 0)
       {
         assert (chop_off < sizeof (sockaddr_un::sun_path));
@@ -32,7 +42,7 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (constructible_from_host_and_socket)
     {
-      auto const host (util::testing::random<std::string>{}());
+      auto const host (random_host());
       auto const socket (random_socket());
 
       socket_endpoint const endpoint (host, socket);
@@ -43,7 +53,7 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (constructible_from_host_and_socket_pair)
     {
-      auto const host (util::testing::random<std::string>{}());
+      auto const host (random_host());
       auto const socket (random_socket());
 
       socket_endpoint const endpoint (std::make_pair (host, socket));
@@ -54,7 +64,7 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (constructible_from_host_and_socket_string)
     {
-      auto const host (util::testing::random_string_without (":"));
+      auto const host (random_host());
       auto const socket (random_socket());
 
       socket_endpoint const endpoint (host + ":" + socket);

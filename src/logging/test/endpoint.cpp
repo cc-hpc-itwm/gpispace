@@ -63,11 +63,19 @@ namespace fhg
 
     namespace
     {
+      std::string random_host()
+      {
+        std::string result;
+        do
+        {
+          result = util::testing::random_string_without (":>");
+        }
+        while (result.empty());
+        return result;
+      }
       tcp_endpoint random_tcp_endpoint()
       {
-        return { util::testing::random_string_without (":>")
-               , util::testing::random<unsigned short>{}()
-               };
+        return {random_host(), util::testing::random<unsigned short>{}()};
       }
       socket_endpoint random_socket_endpoint()
       {
@@ -78,7 +86,7 @@ namespace fhg
         }
         while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
-        return {util::testing::random_string_without (":>"), path};
+        return {random_host(), path};
       }
     }
 
@@ -146,15 +154,13 @@ namespace fhg
       endpoint const socket_ep (socket);
       endpoint const both_ep (tcp, socket);
 
-      auto const random_host (util::testing::random<std::string>{}());
-
-      BOOST_REQUIRE_EQUAL (tcp_ep.best (random_host), tcp);
+      BOOST_REQUIRE_EQUAL (tcp_ep.best (random_host()), tcp);
 
       BOOST_REQUIRE_THROW
-        (socket_ep.best (random_host), error::no_possible_matching_endpoint);
+        (socket_ep.best (random_host()), error::no_possible_matching_endpoint);
       BOOST_REQUIRE_EQUAL (socket_ep.best (socket.host), socket);
 
-      BOOST_REQUIRE_EQUAL (both_ep.best (random_host), tcp);
+      BOOST_REQUIRE_EQUAL (both_ep.best (random_host()), tcp);
       BOOST_REQUIRE_EQUAL (both_ep.best (socket.host), socket);
     }
 
