@@ -611,10 +611,10 @@ namespace fhg
               )
         );
 
-      if (orchestrator_startup_messages.second.size() != 2)
+      if (orchestrator_startup_messages.second.size() != 3)
       {
         throw std::logic_error
-          ("could not start orchestrator: expected 2 lines of startup messages");
+          ("could not start orchestrator: expected 3 lines of startup messages");
       }
 
       processes.store
@@ -625,6 +625,15 @@ namespace fhg
         , boost::lexical_cast<unsigned short>
             (orchestrator_startup_messages.second[1])
         );
+
+      if (logging_rif_client)
+      {
+        logging_rif_client->add_emitter_to_logging_demultiplexer
+          ( logging_rif_info->pid
+          , std::vector<fhg::logging::endpoint>
+              {orchestrator_startup_messages.second[2]}
+          ).get();
+      }
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
       std::vector<std::string> hostnames;

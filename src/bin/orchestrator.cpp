@@ -110,6 +110,7 @@ int main (int argc, char **argv)
                            (orchestrator.peer_local_endpoint().address())
                        , std::to_string
                            (orchestrator.peer_local_endpoint().port())
+                       , orchestrator.logger_registration_endpoint().to_string()
                        );
 
     stop_requested.wait();
