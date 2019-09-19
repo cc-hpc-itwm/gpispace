@@ -56,7 +56,6 @@ int main (int argc, char **argv)
 
     po::options_description desc("Allowed options");
     desc.add_options()
-       ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
        ( option_name::ssl_certificates
@@ -67,13 +66,6 @@ int main (int argc, char **argv)
 
     po::variables_map vm;
     po::store(po::command_line_parser(argc, argv).options(desc).run(), vm);
-
-    if (vm.count("help"))
-    {
-      LLOG (ERROR, logger, "usage: orchestrator [options] ....");
-      LLOG (ERROR, logger, desc);
-      return 0;
-    }
 
     po::notify(vm);
 
