@@ -332,6 +332,13 @@ namespace fhg
         {
           try
           {
+            if (description.base_port)
+            {
+              arguments.emplace_back ("--port");
+              arguments.emplace_back
+                (std::to_string (*description.base_port + identity));
+            }
+
             std::string const name
               ( name_prefix + "-" + connection.second.string()
               + "-" + std::to_string (identity + 1)
@@ -447,7 +454,7 @@ namespace fhg
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
       static std::regex const cap_spec_regex
-        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?)?$");
+        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?(/([0-9]+))?)?$");
       enum class cap_spec_regex_part
       {
         capabilities = 1,
@@ -455,6 +462,7 @@ namespace fhg
         num_per_node = 5,
         max_nodes = 7,
         shm = 9,
+        base_port = 11
       };
 
       std::smatch cap_spec_match;
@@ -490,6 +498,7 @@ namespace fhg
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::shm)
           .get_value_or (0)
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::socket)
+        , get_match<unsigned short> (cap_spec_match, cap_spec_regex_part::base_port)
         };
     }
 
