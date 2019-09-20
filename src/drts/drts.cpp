@@ -155,7 +155,9 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<std::string> const& log_host
+      ( boost::optional<unsigned short> const&
+      , boost::optional<unsigned short> const&
+      , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
@@ -341,7 +343,9 @@ namespace gspc
         : boost::none
         )
       , _started_runtime_system
-          ( get_log_host (vm)
+          ( get_orchestrator_port (vm)
+          , get_agent_port (vm)
+          , get_log_host (vm)
           , get_log_port (vm)
           , !!_virtual_memory_socket
           //! \todo configurable: verbose logging

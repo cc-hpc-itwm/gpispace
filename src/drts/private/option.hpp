@@ -28,6 +28,8 @@ namespace gspc
   ACCESS (nodefile, boost::filesystem::path);
   GET (application_search_path, boost::filesystem::path);
   REQUIRE (application_search_path, boost::filesystem::path);
+  ACCESS (orchestrator_port, unsigned short);
+  ACCESS (agent_port, unsigned short);
 
   ACCESS (virtual_memory_socket, boost::filesystem::path);
   ACCESS (virtual_memory_port, unsigned short);
