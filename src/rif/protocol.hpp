@@ -60,6 +60,22 @@ namespace fhg
         , std::unordered_map<pid_t, std::exception_ptr> (std::vector<pid_t>)
         );
 
+      using hostinfo_t = std::pair<std::string, unsigned short>;
+      struct start_scheduler_result
+      {
+        pid_t pid;
+        hostinfo_t hostinfo;
+        fhg::logging::endpoint logger_registration_endpoint;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_orchestrator
+        , start_scheduler_result ( boost::filesystem::path exe
+                                 , gspc::Certificates certificates
+                                 , boost::optional<unsigned short> port
+                                 )
+        );
+
       FHG_RPC_FUNCTION_DESCRIPTION
         ( start_vmem
         , pid_t ( boost::filesystem::path command
@@ -72,17 +88,9 @@ namespace fhg
                 )
         );
 
-      using hostinfo_t = std::pair<std::string, unsigned short>;
-      struct start_agent_result
-      {
-        pid_t pid;
-        hostinfo_t hostinfo;
-        fhg::logging::endpoint logger_registration_endpoint;
-      };
-
       FHG_RPC_FUNCTION_DESCRIPTION
         ( start_agent
-        , start_agent_result
+        , start_scheduler_result
             ( std::string name
             , hostinfo_t parent
             , boost::optional<unsigned short> agent_port
@@ -184,7 +192,7 @@ namespace boost
     template<typename Archive>
       inline void serialize
         ( Archive& ar
-        , fhg::rif::protocol::start_agent_result& result
+        , fhg::rif::protocol::start_scheduler_result& result
         , unsigned int
         )
     {

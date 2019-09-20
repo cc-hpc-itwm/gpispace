@@ -209,6 +209,49 @@ try
       }
     );
 
+  fhg::rpc::service_handler<fhg::rif::protocol::start_orchestrator>
+    start_orchestrator_service
+      ( service_dispatcher
+      , [] ( boost::filesystem::path const& exe
+           , gspc::Certificates const& certificates
+           , boost::optional<unsigned short> port
+           )
+        {
+          std::vector<std::string> args
+            { "-u", "*:" + std::to_string (port.get_value_or (0))
+            , "-n", "orchestrator"
+            };
+          if (certificates)
+          {
+            args.push_back ("--ssl-certificates");
+            args.push_back (certificates->string());
+          }
+
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                ( exe
+                , args
+                , std::unordered_map<std::string, std::string>()
+                )
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 3)
+          {
+            throw std::logic_error ( "could not start orchestrator"
+                                     ": expected 3 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_scheduler_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.hostinfo
+            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          result.logger_registration_endpoint = messages[2];
+          return result;
+        }
+      );
+
   fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
     start_vmem_service
       ( service_dispatcher
@@ -331,7 +374,7 @@ try
                                    );
           }
 
-          fhg::rif::protocol::start_agent_result result;
+          fhg::rif::protocol::start_scheduler_result result;
           result.pid = pid_and_startup_messages.first;
           result.hostinfo
             = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};

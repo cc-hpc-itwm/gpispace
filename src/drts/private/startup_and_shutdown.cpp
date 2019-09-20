@@ -515,54 +515,28 @@ namespace fhg
           (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
       }
 
-      std::vector<std::string> orchestrator_options
-        { "-u"
-        , "*:" + std::to_string (orchestrator_port.get_value_or (0))
-        , "-n"
-        , "orchestrator"
-        };
-
-      if (certificates)
-      {
-        orchestrator_options.push_back ("--ssl-certificates");
-        orchestrator_options.push_back (certificates->string());
-      }
-
-      std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
+      auto const orchestrator_startup_result
         ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                return master_rif_client.execute_and_get_startup_messages
+                return master_rif_client.start_orchestrator
                   ( installation_path.orchestrator()
-                  , orchestrator_options
-                  , std::unordered_map<std::string, std::string>()
+                  , certificates
+                  , orchestrator_port
                   ).get();
               }
               , "could not start orchestrator"
               )
         );
 
-      if (orchestrator_startup_messages.second.size() != 3)
-      {
-        throw std::logic_error
-          ("could not start orchestrator: expected 3 lines of startup messages");
-      }
-
-      processes.store
-        (master, "orchestrator", orchestrator_startup_messages.first);
-
-      hostinfo_type const orchestrator_hostinfo
-        ( orchestrator_startup_messages.second[0]
-        , boost::lexical_cast<unsigned short>
-            (orchestrator_startup_messages.second[1])
-        );
+      processes.store (master, "orchestrator", orchestrator_startup_result.pid);
 
       if (logging_rif_client)
       {
         logging_rif_client->add_emitter_to_logging_demultiplexer
           ( logging_rif_info->pid
           , std::vector<fhg::logging::endpoint>
-              {orchestrator_startup_messages.second[2]}
+              {orchestrator_startup_result.logger_registration_endpoint}
           ).get();
       }
 
@@ -675,7 +649,7 @@ namespace fhg
                                           , master_rif_client
                                           , master_agent_name
                                           , "orchestrator"
-                                          , orchestrator_hostinfo
+                                          , orchestrator_startup_result.hostinfo
                                           , agent_port
                                           , gpi_socket
                                           , installation_path
@@ -691,7 +665,7 @@ namespace fhg
                                           , certificates
                                           );
 
-      return {orchestrator_hostinfo, logging_rif_info};
+      return {orchestrator_startup_result.hostinfo, logging_rif_info};
     }
 
     namespace
