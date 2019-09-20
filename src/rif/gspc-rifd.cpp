@@ -310,6 +310,7 @@ try
       ( service_dispatcher
       , [] ( std::string const& name
            , fhg::rif::protocol::hostinfo_t const& parent
+           , boost::optional<unsigned short> const& agent_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
            , boost::filesystem::path const& command
@@ -317,7 +318,7 @@ try
            )
         {
           std::vector<std::string> arguments
-            { "-u", "0"
+            { "-u", "*:" + std::to_string (agent_port.get_value_or (0))
             , "-n", name
             , "--masters", parent.first + "%" + std::to_string (parent.second)
             };

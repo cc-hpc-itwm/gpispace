@@ -153,6 +153,7 @@ namespace
     , std::string const& name
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
+    , boost::optional<unsigned short> const& agent_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
@@ -173,6 +174,7 @@ namespace
       ( rif_client.start_agent
           ( name
           , parent_hostinfo
+          , agent_port
           , gpi_socket
           , certificates
           , installation_path.agent()
@@ -504,6 +506,7 @@ namespace fhg
 
     startup_result startup
       ( boost::optional<unsigned short> const& orchestrator_port
+      , boost::optional<unsigned short> const& agent_port
       , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
@@ -740,6 +743,7 @@ namespace fhg
                                           , master_agent_name
                                           , "orchestrator"
                                           , orchestrator_hostinfo
+                                          , agent_port
                                           , log_host
                                           , log_port
                                           , gpi_socket
