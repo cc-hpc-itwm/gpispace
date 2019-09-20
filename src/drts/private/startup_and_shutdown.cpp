@@ -98,18 +98,6 @@ namespace
            ).str();
   }
 
-
-  std::string replace_whitespace (std::string s)
-  {
-    std::transform ( s.begin(), s.end(), s.begin()
-                   , [] (char c)
-                     {
-                       return std::isspace (c) ? '_' : c;
-                     }
-                   );
-    return s;
-  }
-
   template<typename Res, typename Enum, typename Match>
     boost::optional<Res> get_match (Match& match, Enum part)
   {
@@ -122,31 +110,6 @@ namespace
     return boost::none;
   }
 
-  std::unordered_map<std::string, std::string> logging_environment
-    ( boost::optional<std::string> const& log_host
-    , boost::optional<unsigned short> const& log_port
-    , boost::optional<boost::filesystem::path> const& log_dir
-    , bool verbose
-    , std::string name
-    )
-  {
-    std::unordered_map<std::string, std::string> environment;
-    environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
-    if (log_host && log_port)
-    {
-      environment.emplace
-        ("FHGLOG_to_server", *log_host + ":" + std::to_string (*log_port));
-    }
-    if (log_dir)
-    {
-      environment.emplace
-        ( "FHGLOG_to_file"
-        , (*log_dir / (replace_whitespace (name) + ".log")).string()
-        );
-    }
-    return environment;
-  }
-
   fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
@@ -154,12 +117,8 @@ namespace
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
     , boost::optional<unsigned short> const& agent_port
-    , boost::optional<std::string> const& log_host
-    , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
-    , bool verbose
     , gspc::installation_path const& installation_path
-    , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
     , boost::optional<std::pair<fhg::rif::client&, pid_t>> top_level_log
@@ -178,7 +137,6 @@ namespace
           , gpi_socket
           , certificates
           , installation_path.agent()
-          , logging_environment (log_host, log_port, log_dir, verbose, name)
           ).get()
       );
 
@@ -208,11 +166,7 @@ namespace fhg
     , std::string master_name
     , fhg::drts::hostinfo_type master_hostinfo
     , gspc::worker_description const& description
-    , bool verbose
-    , boost::optional<std::string> const& log_host
-    , boost::optional<unsigned short> const& log_port
     , fhg::drts::processes_storage& processes
-    , boost::optional<boost::filesystem::path> const& log_dir
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , gspc::installation_path const& installation_path
@@ -365,10 +319,7 @@ namespace fhg
               }
             }
 
-            std::unordered_map<std::string, std::string> environment
-              ( logging_environment
-                  (log_host, log_port, log_dir, verbose, name)
-              );
+            std::unordered_map<std::string, std::string> environment;
             environment.emplace
               ( "LD_LIBRARY_PATH"
               , (installation_path.lib()).string() + ":"
@@ -507,19 +458,14 @@ namespace fhg
     startup_result startup
       ( boost::optional<unsigned short> const& orchestrator_port
       , boost::optional<unsigned short> const& agent_port
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
-      , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
-      , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
-      , boost::optional<boost::filesystem::path> const& log_dir
       , fhg::drts::processes_storage& processes
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
@@ -528,15 +474,6 @@ namespace fhg
       , gspc::Certificates const& certificates
       )
     {
-      if (log_dir)
-      {
-        if (delete_logfiles)
-        {
-          boost::filesystem::remove_all (*log_dir);
-        }
-        boost::filesystem::create_directories (*log_dir);
-      }
-
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
         ,  SIGINT
@@ -547,11 +484,6 @@ namespace fhg
         );
 
       info_output << "I: starting base sdpa components on " << master << "...\n";
-      if (log_host && log_port)
-      {
-        info_output << "I: sending log events to: "
-                    << *log_host << ":" << *log_port << "\n";
-      }
 
       //! \todo let thread count be a parameter
       fhg::util::scoped_boost_asio_io_service_with_threads io_service
@@ -603,8 +535,7 @@ namespace fhg
                 return master_rif_client.execute_and_get_startup_messages
                   ( installation_path.orchestrator()
                   , orchestrator_options
-                  , logging_environment
-                      (log_host, log_port, log_dir, verbose, "orchestrator")
+                  , std::unordered_map<std::string, std::string>()
                   ).get();
               }
               , "could not start orchestrator"
@@ -693,16 +624,9 @@ namespace fhg
                     ( connection.second
                     , connection.first.start_vmem
                         ( installation_path.vmem()
-                        , verbose ? fhg::log::TRACE : fhg::log::INFO
                         , gpi_socket.get()
                         , vmem_port.get()
                         , vmem_startup_timeout.get()
-                        , log_host && log_port
-                        ? std::make_pair (log_host.get(), log_port.get())
-                        : boost::optional<std::pair<std::string, unsigned short>>()
-                        , log_dir
-                        ? *log_dir / ("vmem-" + replace_whitespace (connection.second.string()) + ".log")
-                        : boost::optional<boost::filesystem::path>()
                         , hostnames
                         , master.string()
                         , rank++
@@ -753,12 +677,8 @@ namespace fhg
                                           , "orchestrator"
                                           , orchestrator_hostinfo
                                           , agent_port
-                                          , log_host
-                                          , log_port
                                           , gpi_socket
-                                          , verbose
                                           , installation_path
-                                          , log_dir
                                           , processes
                                           , info_output
                                           , FHG_UTIL_MAKE_OPTIONAL

@@ -22,7 +22,6 @@ namespace fhg
       pid_t _thread_id;
 
       message (decltype (_content), decltype (_category));
-      static message from_legacy (legacy::event const&);
 
       message() = default;
       template<typename Archive>

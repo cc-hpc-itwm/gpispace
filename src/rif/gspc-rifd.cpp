@@ -17,7 +17,6 @@
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
-#include <fhglog/level_io.hpp>
 #include <logging/protocol.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
@@ -214,35 +213,19 @@ try
     start_vmem_service
       ( service_dispatcher
       , [] ( boost::filesystem::path command
-           , fhg::log::Level log_level
            , boost::filesystem::path socket
            , unsigned short gaspi_port
            , std::chrono::seconds proc_init_timeout
-           , boost::optional<std::pair<std::string, unsigned short>> log_server
-           , boost::optional<boost::filesystem::path> log_file
            , std::vector<std::string> nodes
            , std::string gaspi_master
            , std::size_t rank
            ) -> pid_t
         {
           std::vector<std::string> arguments
-            { "--log-level", fhg::log::string (log_level)
-            , "--socket", socket.string()
+            { "--socket", socket.string()
             , "--port", std::to_string (gaspi_port)
             , "--gpi-timeout", std::to_string (proc_init_timeout.count())
             };
-          if (log_server)
-          {
-            arguments.emplace_back ("--log-host");
-            arguments.emplace_back (log_server->first);
-            arguments.emplace_back ("--log-port");
-            arguments.emplace_back (std::to_string (log_server->second));
-          }
-          if (log_file)
-          {
-            arguments.emplace_back ("--log-file");
-            arguments.emplace_back (log_file->string());
-          }
 
           //! \todo allow to specify folder to put temporary file in
           boost::filesystem::path const nodefile
@@ -314,7 +297,6 @@ try
            , boost::optional<boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
            , boost::filesystem::path const& command
-           , std::unordered_map<std::string, std::string> const& environment
            )
         {
           std::vector<std::string> arguments
@@ -335,7 +317,10 @@ try
 
           auto const pid_and_startup_messages
             ( fhg::rif::execute_and_get_startup_messages
-                (command, arguments, environment)
+                ( command
+                , arguments
+                , std::unordered_map<std::string, std::string>()
+                )
             );
           auto const& messages (pid_and_startup_messages.second);
 

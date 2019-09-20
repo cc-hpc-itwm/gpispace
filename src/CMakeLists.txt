@@ -4,23 +4,9 @@ extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES fhglog Util::Generic ssl crypto
+  LIBRARIES Util::Generic ssl crypto
 )
 add_subdirectory (fhgcom/tests)
-
-extended_add_library (NAME fhglog
-  SOURCES "fhglog/Configuration.cpp"
-          "fhglog/Logger.cpp"
-          "fhglog/event.cpp"
-          "fhglog/level.cpp"
-          "fhglog/appender/file.cpp"
-          "fhglog/appender/stream.cpp"
-          "fhglog/remote/server.cpp"
-          "fhglog/remote/appender.cpp"
-          LIBRARIES fhg-util Boost::filesystem Util::Generic
-)
-add_subdirectory (fhglog/appender/test)
-add_subdirectory (fhglog/test)
 
 add_subdirectory (gpi-space)
 add_subdirectory (vmem)
@@ -171,16 +157,12 @@ extended_add_library (NAME logging
   SOURCES "logging/demultiplexer.cpp"
           "logging/endpoint.cpp"
           "logging/file_sink.cpp"
-          "logging/legacy/emitter.cpp"
-          "logging/legacy/receiver.cpp"
-          "logging/legacy_bridge.cpp"
           "logging/message.cpp"
           "logging/socket_endpoint.cpp"
           "logging/stream_emitter.cpp"
           "logging/stream_receiver.cpp"
           "logging/tcp_endpoint.cpp"
-  LIBRARIES fhglog
-            Util::Generic
+  LIBRARIES Util::Generic
             RPC
             Boost::base
             Boost::program_options
@@ -212,14 +194,6 @@ add_unit_test (NAME logging_file_sink
   SOURCES "logging/test/file_sink.cpp"
   LIBRARIES Util::Generic
             gspc::logging
-  USE_BOOST
-)
-
-add_unit_test (NAME logging_legacy_bridge
-  SOURCES "logging/test/legacy_bridge.cpp"
-  LIBRARIES fhglog
-            gspc::logging
-            test-utilities
   USE_BOOST
 )
 

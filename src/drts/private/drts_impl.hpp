@@ -54,15 +54,10 @@ namespace gspc
     {
       started_runtime_system ( boost::optional<unsigned short> const& orchestrator_port
                              , boost::optional<unsigned short> const& agent_port
-                             , boost::optional<std::string> const& log_host
-                             , boost::optional<unsigned short> const& log_port
                              , bool gpi_enabled
-                             , bool verbose
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
                              , installation_path
-                             , boost::optional<boost::filesystem::path> const& log_dir
-                             , bool delete_logfiles
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
                              , std::vector<worker_description> worker_descriptions
                              , boost::optional<unsigned short> vmem_port
@@ -96,13 +91,9 @@ namespace gspc
 
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
-      boost::optional<std::string> _log_host;
-      boost::optional<unsigned short> _log_port;
-      bool _verbose;
       boost::optional<boost::filesystem::path> _gpi_socket;
       std::vector<boost::filesystem::path> _app_path;
       installation_path _installation_path;
-      boost::optional<boost::filesystem::path> _log_dir;
       boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
       boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
         _logging_rif_info;

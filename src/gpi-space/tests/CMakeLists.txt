@@ -5,7 +5,6 @@ fhg_add_test (NAME vmem_handle_generator
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util
 )
@@ -17,7 +16,6 @@ fhg_add_test (NAME vmem_memory_area
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util
 )
@@ -29,7 +27,6 @@ fhg_add_test (NAME vmem_segment
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util
 )
@@ -62,7 +59,6 @@ fhg_add_test (NAME vmem_beegfs_area
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             Boost::filesystem
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util

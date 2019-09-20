@@ -5,7 +5,6 @@ fhg_add_runtime_executable (NAME gspc-rifd
           "execute_and_get_startup_messages.cpp"
   LIBRARIES RPC
             fhg-util
-            fhglog
             gspc::logging
             Util::Generic
             Boost::filesystem

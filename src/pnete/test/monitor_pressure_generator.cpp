@@ -1,8 +1,6 @@
 // bernd.loerwald@itwm.fraunhofer.de
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
-#include <fhglog/LogMacros.hpp>
-#include <logging/legacy/emitter.hpp>
 #include <logging/stream_emitter.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
@@ -46,13 +44,10 @@ struct activity
     _workers.push_back (worker);
   }
 
-  void send_out_notification ( fhg::logging::stream_emitter& emitter
-                             , fhg::logging::legacy::emitter& legacy_emitter
-                             ) const
+  void send_out_notification (fhg::logging::stream_emitter& emitter) const
   {
     const NotificationEvent event (_workers, _id, _state, _act);
     emitter.emit_message ({event.encoded(), sdpa::daemon::gantt_log_category});
-    legacy_emitter.trace (event.encoded());
     static char const* arr[4] = { fhg::logging::legacy::category_level_trace
                                 , fhg::logging::legacy::category_level_info
                                 , fhg::logging::legacy::category_level_warn
@@ -102,19 +97,17 @@ std::string worker_gen()
 int main(int ac, char **av)
 try
 {
-  if (ac < 2)
+  if (ac > 1 && std::string (av[1]) == "help")
   {
     std::cerr << av[0]
-              << " legacy_port <worker_count=1> <notification_per_second<=1000=1>\n";
+              << " <worker_count=1> <notification_per_second<=1000=1>\n";
     return -1;
   }
 
-  const int legacy_port (atoi (av[1]));
-  const int worker_count (ac >= 3 ? atoi (av[2]) : 1);
-  const int duration (ac >= 4 ? 1000 / atoi (av[3]) : 1);
+  const int worker_count (ac >= 2 ? atoi (av[1]) : 1);
+  const int duration (ac >= 3 ? 1000 / atoi (av[2]) : 1);
 
   fhg::logging::stream_emitter emitter;
-  fhg::logging::legacy::emitter legacy_emitter ("localhost", legacy_port);
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
@@ -132,7 +125,7 @@ try
       workers[worker] = activity (worker);
     }
 
-    workers[worker]->send_out_notification (emitter, legacy_emitter);
+    workers[worker]->send_out_notification (emitter);
 
     if (!workers[worker]->next_state())
     {

@@ -6,8 +6,6 @@
 #include <util-generic/syscall.hpp>
 #include <fhg/util/backtracing_exception.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <boost/range/adaptor/map.hpp>
 
 #include <stdexcept>
@@ -97,7 +95,7 @@ namespace fhg
     namespace
     {
       void crit_err_hdlr ( int sig_num, siginfo_t* info, void* context
-                         , fhg::log::Logger& logger
+                         , fhg::logging::stream_emitter& logger
                          )
       {
         sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
@@ -120,7 +118,9 @@ namespace fhg
                     << " address is " << (void*)info->si_addr
                     << " from " << (void*)caller_address;
 
-        LLOG (ERROR, logger, fhg::util::make_backtrace (log_message.str()));
+        logger.emit ( fhg::util::make_backtrace (log_message.str())
+                    , fhg::logging::legacy::category_level_error
+                    );
 
         _exit (EXIT_FAILURE);
       }
@@ -128,7 +128,7 @@ namespace fhg
 
     scoped_log_backtrace_and_exit_for_critical_errors::
       scoped_log_backtrace_and_exit_for_critical_errors
-        (signal_handler_manager& manager, fhg::log::Logger& logger)
+        (signal_handler_manager& manager, fhg::logging::stream_emitter& logger)
       : _handler ( std::bind ( &crit_err_hdlr
                              , std::placeholders::_1
                              , std::placeholders::_2

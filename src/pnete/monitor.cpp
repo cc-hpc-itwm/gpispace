@@ -1,8 +1,6 @@
 #include <pnete/ui/execution_monitor.hpp>
 #include <pnete/ui/log_monitor.hpp>
 
-#include <logging/legacy_bridge.hpp>
-
 #include <fhg/revision.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -24,8 +22,6 @@ namespace
   {
     namespace po = fhg::util::boost::program_options;
 
-    po::option<po::positive_integral<unsigned short>> const log_port
-      {"log-port", "log port"};
     po::option<std::vector<fhg::logging::endpoint>> const emitters
       {"emitters", "list of tcp emitters"};
   }
@@ -36,8 +32,7 @@ try
 {
   boost::program_options::variables_map const vm
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
-    . require (option::log_port)
-    . add (option::emitters)
+    . require (option::emitters)
     . store_and_notify (ac, av)
     );
 
@@ -51,10 +46,7 @@ try
   QApplication::setOrganizationDomain ("itwm.fraunhofer.de");
   QApplication::setOrganizationName ("Fraunhofer ITWM");
 
-  fhg::logging::legacy_bridge log_bridge (option::log_port.get_from (vm));
-
-  auto emitters (option::emitters.get_from_or_value (vm, {}));
-  emitters.emplace_back (log_bridge.local_endpoint());
+  auto const emitters (option::emitters.get_from_or_value (vm, {}));
 
   QTabWidget window;
   window.addTab

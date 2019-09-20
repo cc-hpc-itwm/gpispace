@@ -410,6 +410,10 @@ std::string GenericDaemon::gen_id()
     {
       return _log_emitter.local_endpoint();
     }
+    fhg::logging::stream_emitter& GenericDaemon::log_emitter()
+    {
+      return _log_emitter;
+    }
 
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)

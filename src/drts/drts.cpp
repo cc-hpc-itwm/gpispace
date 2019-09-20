@@ -157,15 +157,10 @@ namespace gspc
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
       ( boost::optional<unsigned short> const& orchestrator_port
       , boost::optional<unsigned short> const& agent_port
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
-      , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , gspc::installation_path installation_path
-      , boost::optional<boost::filesystem::path> const& log_dir
-      , bool delete_logfiles
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
@@ -177,13 +172,9 @@ namespace gspc
       )
     : _info_output (info_output)
     , _master (master)
-    , _log_host (log_host)
-    , _log_port (log_port)
-    , _verbose (verbose)
     , _gpi_socket (gpi_socket)
     , _app_path (app_path)
     , _installation_path (installation_path)
-    , _log_dir (log_dir)
     , _logging_rif_entry_point (logging_rif_entry_point)
     , _worker_descriptions (worker_descriptions)
     , _processes_storage (_info_output)
@@ -194,19 +185,14 @@ namespace gspc
       ( fhg::drts::startup
           ( orchestrator_port
           , agent_port
-          , _log_host
-          , _log_port
           , gpi_enabled
-          , _verbose
           , _gpi_socket
           , _installation_path
-          , delete_logfiles
           , signal_handler_manager
           , vmem_startup_timeout
           , vmem_port
           , rif_entry_points
           , _master
-          , _log_dir
           , _processes_storage
           , _master_agent_name
           , _master_agent_hostinfo
@@ -292,11 +278,7 @@ namespace gspc
               , _master_agent_name
               , _master_agent_hostinfo
               , description
-              , _verbose
-              , _log_host
-              , _log_port
               , _processes_storage
-              , _log_dir
               , _gpi_socket
               , _app_path
               , _installation_path
@@ -347,19 +329,12 @@ namespace gspc
       , _started_runtime_system
           ( get_orchestrator_port (vm)
           , get_agent_port (vm)
-          , get_log_host (vm)
-          , get_log_port (vm)
           , !!_virtual_memory_socket
-          //! \todo configurable: verbose logging
-          , false
           , _virtual_memory_socket
           , get_application_search_path (vm)
           ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
           : std::vector<boost::filesystem::path>()
           , installation.gspc_home()
-          , get_log_directory (vm)
-          // !\todo configurable: delete logfiles
-          , true
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
           , get_virtual_memory_port (vm)
@@ -379,7 +354,23 @@ namespace gspc
             (_logger, _virtual_memory_socket->string())
         : nullptr
         )
-  {}
+  {
+    if (get_log_host (vm))
+    {
+      throw std::invalid_argument
+        ("--log-host given but currently not supported");
+    }
+    if (get_log_port (vm))
+    {
+      throw std::invalid_argument
+        ("--log-port given but currently not supported");
+    }
+    if (get_log_directory (vm))
+    {
+      throw std::invalid_argument
+        ("--log-directory given but currently not supported");
+    }
+  }
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
       (rifd_entry_points const& rifd_entry_points, Certificates const& certificates)

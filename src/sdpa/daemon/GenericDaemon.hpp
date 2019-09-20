@@ -47,7 +47,6 @@
 #include <fhg/util/thread/set.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <fhglog/LogMacros.hpp>
 #include <logging/stream_emitter.hpp>
 
 #include <chrono>
@@ -77,6 +76,7 @@ namespace sdpa {
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
       fhg::logging::endpoint logger_registration_endpoint() const;
+      fhg::logging::stream_emitter& log_emitter();
 
     public:
       // WE interface

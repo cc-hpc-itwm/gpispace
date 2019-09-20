@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include <fhglog/level.hpp>
 #include <rpc/function_description.hpp>
 
 #include <drts/drts.fwd.hpp>
@@ -64,12 +63,9 @@ namespace fhg
       FHG_RPC_FUNCTION_DESCRIPTION
         ( start_vmem
         , pid_t ( boost::filesystem::path command
-                , fhg::log::Level log_level
                 , boost::filesystem::path socket
                 , unsigned short gaspi_port
                 , std::chrono::seconds proc_init_timeout
-                , boost::optional<std::pair<std::string, unsigned short>> log_server
-                , boost::optional<boost::filesystem::path> log_file
                 , std::vector<std::string> nodes
                 , std::string gaspi_master
                 , std::size_t rank
@@ -93,7 +89,6 @@ namespace fhg
             , boost::optional<boost::filesystem::path> gpi_socket
             , gspc::Certificates
             , boost::filesystem::path command
-            , std::unordered_map<std::string, std::string> environment
             )
         );
 

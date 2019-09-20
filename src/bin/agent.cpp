@@ -4,9 +4,6 @@
 #include <vector>
 #include <csignal>
 
-#include <fhglog/Configuration.hpp>
-#include <fhglog/LogMacros.hpp>
-
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/getenv.hpp>
@@ -53,16 +50,6 @@ int main (int argc, char **argv)
     std::vector<std::string> arrMasterNames;
     boost::optional<bfs::path> vmem_socket;
     fhg::com::Certificates ssl_certificates;
-
-    boost::asio::io_service remote_log_io_service;
-    fhg::log::Logger logger;
-    fhg::log::configure
-      ( logger
-      , remote_log_io_service
-      , fhg::util::getenv ("FHGLOG_level").get()
-      , fhg::util::getenv ("FHGLOG_to_file")
-      , fhg::util::getenv ("FHGLOG_to_server")
-      );
 
     po::options_description desc("Allowed options");
     desc.add_options()
@@ -111,7 +98,7 @@ int main (int argc, char **argv)
       masters.emplace_front (parts[0], parts[1]);
     }
 
-    const sdpa::daemon::GenericDaemon agent
+    sdpa::daemon::GenericDaemon agent
       ( agentName
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -127,7 +114,7 @@ int main (int argc, char **argv)
 
     fhg::util::signal_handler_manager signal_handlers;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-      crit_error_handler (signal_handlers, logger);
+      crit_error_handler (signal_handlers, agent.log_emitter());
 
     fhg::util::scoped_signal_handler const SIGTERM_handler
       (signal_handlers, SIGTERM, std::bind (request_stop));

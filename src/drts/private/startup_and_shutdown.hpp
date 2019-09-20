@@ -78,11 +78,7 @@ namespace fhg
       , std::string master_name
       , fhg::drts::hostinfo_type master_hostinfo
       , gspc::worker_description const& description
-      , bool verbose
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
       , fhg::drts::processes_storage& processes
-      , boost::optional<boost::filesystem::path> const& log_dir
       , boost::optional<boost::filesystem::path> const& gpi_socket
       , std::vector<boost::filesystem::path> const& app_path
       , gspc::installation_path const&
@@ -101,19 +97,14 @@ namespace fhg
     startup_result startup
       ( boost::optional<unsigned short> const& orchestrator_port
       , boost::optional<unsigned short> const& agent_port
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
-      , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const&
-      , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
       , std::vector<fhg::rif::entry_point> const&
       , fhg::rif::entry_point const&
-      , boost::optional<boost::filesystem::path> const& log_dir
       , processes_storage&
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo

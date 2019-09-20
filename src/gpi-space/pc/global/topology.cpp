@@ -1,7 +1,5 @@
 #include <gpi-space/pc/global/topology.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <gpi-space/pc/memory/manager.hpp>
 
 #include <rpc/remote_function.hpp>

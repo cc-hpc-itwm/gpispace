@@ -1,5 +1,4 @@
 set (FILES_REQUIRED_IN_INSTALLATION
-  "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-bootstrap-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-monitor"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-rifd"

@@ -9,8 +9,6 @@
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
 
-#include <fhglog/Configuration.hpp>
-
 #include <boost/asio/io_service.hpp>
 #include <boost/program_options.hpp>
 #include <boost/tokenizer.hpp>
@@ -116,16 +114,6 @@ int main(int ac, char **av)
 
   try
   {
-    boost::asio::io_service remote_log_io_service;
-    fhg::log::Logger logger;
-    fhg::log::configure
-      ( logger
-      , remote_log_io_service
-      , fhg::util::getenv ("FHGLOG_level").get()
-      , fhg::util::getenv ("FHGLOG_to_file")
-      , fhg::util::getenv ("FHGLOG_to_server")
-      );
-
     namespace po = boost::program_options;
 
     po::options_description desc("options");
@@ -190,7 +178,7 @@ int main(int ac, char **av)
 
     fhg::util::signal_handler_manager signal_handlers;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-      crit_error_handler (signal_handlers, logger);
+      crit_error_handler (signal_handlers, log_emitter);
 
     fhg::util::scoped_signal_handler const SIGTERM_handler
       (signal_handlers, SIGTERM, std::bind (request_stop));

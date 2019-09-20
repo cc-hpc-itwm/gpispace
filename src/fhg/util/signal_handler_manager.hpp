@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <functional>
 
@@ -48,7 +48,7 @@ namespace fhg
     struct scoped_log_backtrace_and_exit_for_critical_errors
     {
       scoped_log_backtrace_and_exit_for_critical_errors
-        (signal_handler_manager&, fhg::log::Logger&);
+        (signal_handler_manager&, fhg::logging::stream_emitter&);
 
     private:
       std::function<void (int, siginfo_t*, void*)> const _handler;

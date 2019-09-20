@@ -2,14 +2,12 @@ fhg_add_test (NAME fhgcom_message
   SOURCES message.cpp
   USE_BOOST
   LIBRARIES fhgcom
-            fhglog
 )
 
 fhg_add_test (NAME fhgcom_p2p
   SOURCES p2p.cpp
   USE_BOOST
   LIBRARIES fhgcom
-            fhglog
 )
 
 fhg_add_test (NAME fhgcom_peer
@@ -17,7 +15,6 @@ fhg_add_test (NAME fhgcom_peer
   USE_BOOST
   LIBRARIES fhgcom
             fhg-util
-            fhglog
             test-utilities
             Boost::filesystem
             Boost::serialization
