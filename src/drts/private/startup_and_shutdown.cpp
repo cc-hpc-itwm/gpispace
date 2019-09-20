@@ -503,7 +503,8 @@ namespace fhg
     }
 
     startup_result startup
-      ( boost::optional<std::string> const& log_host
+      ( boost::optional<unsigned short> const& orchestrator_port
+      , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
@@ -579,7 +580,13 @@ namespace fhg
           (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
       }
 
-      std::vector<std::string> orchestrator_options {"-u", "0", "-n", "orchestrator"};
+      std::vector<std::string> orchestrator_options
+        { "-u"
+        , "*:" + std::to_string (orchestrator_port.get_value_or (0))
+        , "-n"
+        , "orchestrator"
+        };
+
       if (certificates)
       {
         orchestrator_options.push_back ("--ssl-certificates");

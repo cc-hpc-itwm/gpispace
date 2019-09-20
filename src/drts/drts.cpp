@@ -155,7 +155,7 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<unsigned short> const&
+      ( boost::optional<unsigned short> const& orchestrator_port
       , boost::optional<unsigned short> const&
       , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
@@ -192,7 +192,8 @@ namespace gspc
 
     auto const startup_result
       ( fhg::drts::startup
-          ( _log_host
+          ( orchestrator_port
+          , _log_host
           , _log_port
           , gpi_enabled
           , _verbose
