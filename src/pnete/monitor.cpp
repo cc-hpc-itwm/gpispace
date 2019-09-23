@@ -1,6 +1,8 @@
 #include <pnete/ui/execution_monitor.hpp>
 #include <pnete/ui/log_monitor.hpp>
 
+#include <logging/stream_receiver.hpp>
+
 #include <fhg/revision.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -51,17 +53,22 @@ try
   QApplication::setOrganizationDomain ("itwm.fraunhofer.de");
   QApplication::setOrganizationName ("Fraunhofer ITWM");
 
-  auto const emitters (option::emitters.get_from_or_value (vm, {}));
-
   QMainWindow window;
   fhg::util::qt::scoped_until_qt_owned_ptr<QTabWidget> tabs;
-  fhg::util::qt::scoped_until_qt_owned_ptr<log_monitor> logging (emitters);
-  tabs->addTab
-    ( new fhg::pnete::ui::execution_monitor (emitters)
-    , QObject::tr ("Execution Monitor")
-    );
+  fhg::util::qt::scoped_until_qt_owned_ptr<log_monitor> logging;
+  fhg::util::qt::scoped_until_qt_owned_ptr<fhg::pnete::ui::execution_monitor> gantt;
+  tabs->addTab (gantt.release(), QObject::tr ("Execution Monitor"));
   tabs->addTab (logging.release(), QObject::tr ("Logging"));
   window.setCentralWidget (tabs.release());
+
+  fhg::logging::stream_receiver log_receiver
+    ( option::emitters.get_from_or_value (vm, {})
+    , [&] (fhg::logging::message const& message)
+      {
+        logging->append_log_event (message);
+        gantt->append_event (message);
+      }
+    );
 
   auto save_log (window.menuBar()->addAction ("Save Text Log"));
   save_log->setShortcuts (QKeySequence::Save);

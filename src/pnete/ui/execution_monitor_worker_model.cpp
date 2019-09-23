@@ -73,26 +73,20 @@ namespace fhg
         _state = state_;
       }
 
-      worker_model::worker_model ( std::vector<logging::endpoint> emitters
-                                 , QObject* parent
-                                 )
+      worker_model::worker_model (QObject* parent)
         : QAbstractItemModel (parent)
         , _workers()
         , _worker_containers()
         , _base_time (QDateTime::currentDateTime())
         , _event_queue()
         , _queued_events()
-        , _log_receiver
-            ( std::move (emitters)
-            , fhg::util::bind_this (this, &worker_model::append_event)
-            )
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
         timer->start (100);
       }
 
-      void worker_model::append_event (logging::message event)
+      void worker_model::append_event (logging::message const& event)
       {
         if (event._category != sdpa::daemon::gantt_log_category)
         {

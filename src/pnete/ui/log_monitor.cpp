@@ -301,9 +301,8 @@ namespace detail
 }
 
 
-log_monitor::log_monitor
-    (std::vector<fhg::logging::endpoint> emitters, QWidget* parent)
-  : QWidget (parent)
+log_monitor::log_monitor()
+  : QWidget()
   , _drop_filtered (false)
   , _filter_level (1)
   , _log_table (new QTableView (this))
@@ -312,9 +311,6 @@ log_monitor::log_monitor
   //! \todo Do updates in separate thread again?
   // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
-  , _log_receiver ( std::move (emitters)
-                  , fhg::util::bind_this (this, &log_monitor::append_log_event)
-                  )
 {
   // _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
@@ -431,7 +427,7 @@ log_monitor::~log_monitor()
   // _log_model_update_thread->wait();
 }
 
-void log_monitor::append_log_event (fhg::logging::message message)
+void log_monitor::append_log_event (fhg::logging::message const& message)
 {
   if (message._category == sdpa::daemon::gantt_log_category)
   {

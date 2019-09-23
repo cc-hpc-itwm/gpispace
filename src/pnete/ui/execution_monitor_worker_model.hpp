@@ -2,8 +2,7 @@
 
 #pragma once
 
-#include <logging/endpoint.hpp>
-#include <logging/stream_receiver.hpp>
+#include <logging/message.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -38,9 +37,9 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model ( std::vector<logging::endpoint>
-                     , QObject* parent = nullptr
-                     );
+        worker_model (QObject* parent);
+
+        void append_event (logging::message const&);
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
         virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
@@ -102,9 +101,6 @@ namespace fhg
 
         std::mutex _event_queue;
         QVector<logging::message> _queued_events;
-        void append_event (logging::message);
-
-        logging::stream_receiver _log_receiver;
       };
     }
   }

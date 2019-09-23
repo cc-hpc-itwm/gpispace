@@ -1,7 +1,6 @@
 #pragma once
 
-#include <logging/endpoint.hpp>
-#include <logging/stream_receiver.hpp>
+#include <logging/message.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -72,18 +71,15 @@ class log_monitor : public QWidget
   Q_OBJECT
 
 public:
-  log_monitor ( std::vector<fhg::logging::endpoint> emitters
-              , QWidget* parent = nullptr
-              );
+  log_monitor();
   ~log_monitor();
 
 public slots:
   void toggle_follow_logging (bool);
   void save();
+  void append_log_event (fhg::logging::message const&);
 
 private:
-  void append_log_event (fhg::logging::message);
-
   bool _drop_filtered;
   int _filter_level;
 
@@ -95,6 +91,4 @@ private:
   QTimer* _log_model_update_timer;
 
   QString _last_saved_filename;
-
-  fhg::logging::stream_receiver _log_receiver;
 };

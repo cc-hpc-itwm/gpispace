@@ -1,6 +1,6 @@
 #pragma once
 
-#include <logging/endpoint.hpp>
+#include <logging/message.hpp>
 
 #include <QSplitter>
 
@@ -12,14 +12,19 @@ namespace fhg
   {
     namespace ui
     {
+      class worker_model;
+
       class execution_monitor : public QSplitter
       {
         Q_OBJECT
 
       public:
-        execution_monitor ( std::vector<logging::endpoint>
-                          , QWidget* parent = nullptr
-                          );
+        execution_monitor();
+
+        void append_event (logging::message const&);
+
+      private:
+        worker_model* base;
       };
     }
   }

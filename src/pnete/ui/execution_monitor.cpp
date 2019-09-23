@@ -288,11 +288,8 @@ namespace fhg
         }
       }
 
-      execution_monitor::execution_monitor
-          ( std::vector<logging::endpoint> emitters
-          , QWidget* parent
-          )
-        : QSplitter (Qt::Horizontal, parent)
+      execution_monitor::execution_monitor()
+        : QSplitter (Qt::Horizontal)
       {
         util::qt::mvc::transform_functions_model* available_transform_functions
           (new util::qt::mvc::transform_functions_model);
@@ -305,7 +302,7 @@ namespace fhg
 
         QAbstractItemModel* next (nullptr);
 
-        worker_model* base (new worker_model (std::move (emitters), this));
+        base = new worker_model (this);
         next = base;
 
         util::qt::mvc::flat_to_tree_proxy* transformed_to_tree
@@ -404,7 +401,7 @@ namespace fhg
         connect
           ( clear_model, &QAction::triggered
           , this
-          , [base, header_view]
+          , [this, header_view]
             {
               //! \note HACK: for some reason the signal blocking in
               //! execution_monitor_editor::update() does not work,
@@ -503,6 +500,11 @@ namespace fhg
           , QVariant::fromValue (execution_monitor_proxy::gantt_column)
           , execution_monitor_proxy::column_type_role
           );
+      }
+
+      void execution_monitor::append_event (logging::message const& message)
+      {
+        base->append_event (message);
       }
     }
   }
