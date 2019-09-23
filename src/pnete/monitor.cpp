@@ -5,22 +5,27 @@
 
 #include <fhg/revision.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
+#include <util-qt/message_box.hpp>
 #include <util-qt/scoped_until_qt_owned_ptr.hpp>
 
 #include <boost/program_options.hpp>
 
 #include <QtCore/QString>
+#include <QtCore/QStringList>
 #include <QtWidgets/QAction>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QInputDialog>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QTabWidget>
 
 #include <iostream>
+#include <string>
 #include <vector>
 
 namespace
@@ -39,7 +44,7 @@ try
 {
   boost::program_options::variables_map const vm
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
-    . require (option::emitters)
+    . add (option::emitters)
     . store_and_notify (ac, av)
     );
 
@@ -67,6 +72,39 @@ try
       {
         logging->append_log_event (message);
         gantt->append_event (message);
+      }
+    );
+
+  auto add_emitter (window.menuBar()->addAction ("Add emitters"));
+  add_emitter->setShortcuts (QKeySequence::New);
+  QObject::connect
+    ( add_emitter, &QAction::triggered
+    , [&]
+      {
+        try
+        {
+          fhg::util::apply_for_each_and_collect_exceptions
+            ( QInputDialog::getMultiLineText
+                (&window, "Add emitters", "Enter one emitter endpoint per line")
+              .split('\n', QString::SkipEmptyParts)
+            , [&] (QString line)
+              {
+                log_receiver.add_emitters
+                  ({fhg::logging::endpoint (line.toStdString())});
+              }
+            );
+        }
+        catch (...)
+        {
+          fhg::util::qt::message_box
+            ( QMessageBox::Critical
+            , &window
+            , "Failed to add emitters"
+            , QString::fromStdString
+                (fhg::util::current_exception_printer().string())
+            , fhg::util::qt::button<QMessageBox::Ok> ([]{})
+            );
+        }
       }
     );
 
