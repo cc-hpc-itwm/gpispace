@@ -7,11 +7,16 @@
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
+#include <util-qt/scoped_until_qt_owned_ptr.hpp>
+
 #include <boost/program_options.hpp>
 
-#include <QApplication>
-#include <QTabWidget>
 #include <QtCore/QString>
+#include <QtWidgets/QAction>
+#include <QtWidgets/QApplication>
+#include <QtWidgets/QMainWindow>
+#include <QtWidgets/QMenuBar>
+#include <QtWidgets/QTabWidget>
 
 #include <iostream>
 #include <vector>
@@ -48,15 +53,21 @@ try
 
   auto const emitters (option::emitters.get_from_or_value (vm, {}));
 
-  QTabWidget window;
-  window.addTab
+  QMainWindow window;
+  fhg::util::qt::scoped_until_qt_owned_ptr<QTabWidget> tabs;
+  fhg::util::qt::scoped_until_qt_owned_ptr<log_monitor> logging (emitters);
+  tabs->addTab
     ( new fhg::pnete::ui::execution_monitor (emitters)
     , QObject::tr ("Execution Monitor")
     );
-  window.addTab
-    ( new log_monitor (emitters)
-    , QObject::tr ("Logging")
-    );
+  tabs->addTab (logging.release(), QObject::tr ("Logging"));
+  window.setCentralWidget (tabs.release());
+
+  auto save_log (window.menuBar()->addAction ("Save Text Log"));
+  save_log->setShortcuts (QKeySequence::Save);
+  QObject::connect
+    (save_log, &QAction::triggered, logging.get(), &log_monitor::save);
+
   window.show();
 
   return a.exec();

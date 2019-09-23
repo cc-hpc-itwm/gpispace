@@ -12,7 +12,6 @@
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <QAction>
 #include <QApplication>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
@@ -423,12 +422,6 @@ log_monitor::log_monitor
   QGridLayout* layout (new QGridLayout (this));
   layout->addWidget (_log_table, 0, 0);
   layout->addLayout (log_sidebar_layout, 0, 1);
-
-
-  QAction* save_log (new QAction (tr ("save_log"), this));
-  save_log->setShortcuts (QKeySequence::Save);
-  connect (save_log, SIGNAL (triggered()), this, SLOT (save()));
-  addAction (save_log);
 }
 
 log_monitor::~log_monitor()
