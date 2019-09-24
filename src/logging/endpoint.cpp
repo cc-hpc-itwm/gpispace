@@ -44,6 +44,11 @@ namespace fhg
       if (tcp_begin != std::string::npos)
       {
         auto const tcp_end (combined_string.find (">>", tcp_begin));
+        if (tcp_end == std::string::npos)
+        {
+          throw std::invalid_argument ("missing TCP part terminator '>>'");
+        }
+
         as_tcp = combined_string.substr
           (tcp_begin + 7, tcp_end - tcp_begin - 7);
 
@@ -54,6 +59,11 @@ namespace fhg
       if (socket_begin != std::string::npos)
       {
         auto const socket_end (combined_string.find (">>", socket_begin));
+        if (socket_end == std::string::npos)
+        {
+          throw std::invalid_argument ("missing SOCKET part terminator '>>'");
+        }
+
         as_socket = combined_string.substr
           (socket_begin + 10, socket_end - socket_begin - 10);
 
