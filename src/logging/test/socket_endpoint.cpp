@@ -17,6 +17,7 @@ namespace fhg
     {
       std::string random_socket (std::size_t chop_off = 0)
       {
+        assert (chop_off < sizeof (sockaddr_un::sun_path));
         std::string result;
         do
         {
