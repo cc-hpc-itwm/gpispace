@@ -99,7 +99,7 @@ BOOST_DATA_TEST_CASE
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points(), certificates);
+    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts, &certificates]

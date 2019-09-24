@@ -114,7 +114,7 @@ void test_workflow_response
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology, rifds.entry_points(), certificates);
+    (vm, installation, topology, rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 
@@ -360,7 +360,7 @@ BOOST_DATA_TEST_CASE
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2 management:1", rifds.entry_points(), certificates);
+    (vm, installation, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 
@@ -552,7 +552,7 @@ BOOST_DATA_TEST_CASE
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points(), certificates);
+    (vm, installation, "work:1", rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 

@@ -122,7 +122,7 @@ BOOST_DATA_TEST_CASE
                                  );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points(), certificates);
+    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
 
   boost::filesystem::path const implementation
     ( vm.at ("implementation")

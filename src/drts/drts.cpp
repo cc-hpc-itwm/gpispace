@@ -73,16 +73,16 @@ namespace gspc
       ( boost::program_options::variables_map const& vm
       , installation const& installation
       , std::string const& topology_description
-      , Certificates const& certificates
       , std::ostream& info_output
+      , Certificates const& certificates
       )
     : scoped_runtime_system
         ( vm
         , installation
         , topology_description
         , require_rif_entry_points_file (vm)
-        , certificates
         , info_output
+        , certificates
         )
   {}
   scoped_runtime_system::scoped_runtime_system
@@ -90,8 +90,8 @@ namespace gspc
     , installation const& installation
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
-    , Certificates const& certificates
     , std::ostream& info_output
+    , Certificates const& certificates
     )
       : scoped_runtime_system
           ( vm
@@ -110,8 +110,8 @@ namespace gspc
                          (entry_points._->_entry_points.front())
                      };
             }()
-          , certificates
           , info_output
+          , certificates
           )
   {}
   scoped_runtime_system::scoped_runtime_system
@@ -120,8 +120,8 @@ namespace gspc
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
-    , Certificates const& certificates
     , std::ostream& info_output
+    , Certificates const& certificates
     )
       : _ (new implementation ( vm
                               , installation

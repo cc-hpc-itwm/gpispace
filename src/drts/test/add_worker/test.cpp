@@ -132,7 +132,7 @@ BOOST_DATA_TEST_CASE
     );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, master.entry_point(), certificates);
+    (vm, installation, "worker:1", boost::none, master.entry_point(), std::cerr, certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
@@ -312,7 +312,7 @@ BOOST_DATA_TEST_CASE
     );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "", boost::none, master.entry_point(), certificates);
+    (vm, installation, "", boost::none, master.entry_point(), std::cerr, certificates);
 
   std::set<std::string> expected_workers;
 
