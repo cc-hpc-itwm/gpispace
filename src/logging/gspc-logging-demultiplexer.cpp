@@ -7,6 +7,7 @@
 #include <util-generic/syscall/process_signal_block.hpp>
 #include <util-generic/syscall/signal_set.hpp>
 
+#include <cstdlib>
 #include <exception>
 #include <iostream>
 
