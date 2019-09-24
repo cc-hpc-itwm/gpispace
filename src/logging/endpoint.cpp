@@ -11,7 +11,7 @@ namespace fhg
       default_constructed_endpoint_used_for_non_deserialization
           ::default_constructed_endpoint_used_for_non_deserialization()
         : std::logic_error ( "Invariant violated: a default constructed "
-                             "endpoint shall only  be used for deserialization"
+                             "endpoint shall only be used for deserialization"
                            )
       {}
       no_possible_matching_endpoint::no_possible_matching_endpoint
