@@ -6,6 +6,7 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
 #define USE_TO_STRING(x) x.to_string()
@@ -13,6 +14,20 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER_WRAPPED (fhg::logging::tcp_endpoint, USE_TO_STR
 FHG_BOOST_TEST_LOG_VALUE_PRINTER_WRAPPED (fhg::logging::socket_endpoint, USE_TO_STRING)
 FHG_BOOST_TEST_LOG_VALUE_PRINTER_WRAPPED (fhg::logging::endpoint, USE_TO_STRING)
 #undef USE_TO_STRING
+#define OPERATOR_STREAM_VIA_TO_STRING(t_)                       \
+  namespace fhg                                                 \
+  {                                                             \
+    namespace logging                                           \
+    {                                                           \
+      std::ostream& operator<< (std::ostream& os, t_ const& t)  \
+      {                                                         \
+        return os << t.to_string();                             \
+      }                                                         \
+    }                                                           \
+  }
+OPERATOR_STREAM_VIA_TO_STRING (fhg::logging::tcp_endpoint)
+OPERATOR_STREAM_VIA_TO_STRING (fhg::logging::socket_endpoint)
+#undef OPERATOR_STREAM_VIA_TO_STRING
 
 namespace fhg
 {
@@ -61,12 +76,12 @@ namespace fhg
       endpoint const socket_ep (socket);
       endpoint const both_ep (tcp, socket);
 
-      BOOST_REQUIRE_EQUAL (*tcp_ep.as_tcp, tcp);
+      BOOST_REQUIRE_EQUAL (tcp_ep.as_tcp, tcp);
 
-      BOOST_REQUIRE_EQUAL (*socket_ep.as_socket, socket);
+      BOOST_REQUIRE_EQUAL (socket_ep.as_socket, socket);
 
-      BOOST_REQUIRE_EQUAL (*both_ep.as_tcp, tcp);
-      BOOST_REQUIRE_EQUAL (*both_ep.as_socket, socket);
+      BOOST_REQUIRE_EQUAL (both_ep.as_tcp, tcp);
+      BOOST_REQUIRE_EQUAL (both_ep.as_socket, socket);
     }
 
     BOOST_AUTO_TEST_CASE (to_string_contains_the_given_endpoints)
@@ -99,12 +114,12 @@ namespace fhg
       endpoint const socket_ep (socket);
       endpoint const both_ep (tcp, socket);
 
-      BOOST_REQUIRE_EQUAL (*endpoint (tcp_ep.to_string()).as_tcp, tcp);
+      BOOST_REQUIRE_EQUAL (endpoint (tcp_ep.to_string()).as_tcp, tcp);
 
-      BOOST_REQUIRE_EQUAL (*endpoint (socket_ep.to_string()).as_socket, socket);
+      BOOST_REQUIRE_EQUAL (endpoint (socket_ep.to_string()).as_socket, socket);
 
-      BOOST_REQUIRE_EQUAL (*endpoint (both_ep.to_string()).as_tcp, tcp);
-      BOOST_REQUIRE_EQUAL (*endpoint (both_ep.to_string()).as_socket, socket);
+      BOOST_REQUIRE_EQUAL (endpoint (both_ep.to_string()).as_tcp, tcp);
+      BOOST_REQUIRE_EQUAL (endpoint (both_ep.to_string()).as_socket, socket);
     }
 
     BOOST_AUTO_TEST_CASE (best_will_prefer_local_socket)
