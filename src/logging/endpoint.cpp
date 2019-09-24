@@ -81,8 +81,16 @@ namespace fhg
       }
     }
 
+#define REQUIRE_VALID()                                                 \
+    if (!as_tcp && !as_socket)                                          \
+    {                                                                   \
+      throw error::default_constructed_endpoint_used_for_non_deserialization(); \
+    }                                                                   \
+
     std::string endpoint::to_string() const
     {
+      REQUIRE_VALID()
+
       if (as_tcp && as_socket)
       {
         return "TCP: <<" + as_tcp->to_string()
@@ -92,38 +100,34 @@ namespace fhg
       {
         return "TCP: <<" + as_tcp->to_string() + ">>";
       }
-      else if (as_socket)
+      else
       {
         return "SOCKET: <<" + as_socket->to_string() + ">>";
       }
-
-      throw error::default_constructed_endpoint_used_for_non_deserialization();
     }
 
     boost::variant<tcp_endpoint, socket_endpoint>
       endpoint::best (std::string host) const
     {
+      REQUIRE_VALID()
+
       //    has   | matches
       //    S | T | S | T | result
-      // a    |   | ? | ? | invalid state
-      // c    | + | ? | ? | tcp
-      // d  + |   |   | ? | error: no local socket
-      // c  + | + |   | ? | tcp
-      // b  + | ? | + | ? | socket
+      // -    |   | ? | ? | invalid state
+      // b    | + | ? | ? | tcp
+      // c  + |   |   | ? | error: no local socket
+      // b  + | + |   | ? | tcp
+      // a  + | ? | + | ? | socket
 
-      /*a*/ if (!as_tcp && !as_socket)
-      {
-        throw error::default_constructed_endpoint_used_for_non_deserialization();
-      }
-      /*b*/ else if (as_socket && as_socket->host == host)
+      /*a*/ if (as_socket && as_socket->host == host)
       {
         return *as_socket;
       }
-      /*c*/ else if (as_tcp)
+      /*b*/ else if (as_tcp)
       {
         return *as_tcp;
       }
-      /*d*/ else
+      /*c*/ else
       {
         throw error::no_possible_matching_endpoint
           ( "Only got socket, but host '" + host
@@ -131,6 +135,8 @@ namespace fhg
           );
       }
     }
+
+#undef REQUIRE_VALID
 
     void validate ( boost::any& result
                   , std::vector<std::string> const& values
