@@ -130,8 +130,8 @@ namespace fhg
       /*c*/ else
       {
         throw error::no_possible_matching_endpoint
-          ( "Only got socket, but host '" + host
-          + "' does not match socket host '" + as_socket->host + "'"
+          ( "Only got socket, but given host differs from socket's host :'"
+          + host + "' != '" + as_socket->host + "'"
           );
       }
     }
