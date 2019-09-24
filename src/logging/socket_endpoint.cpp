@@ -44,7 +44,7 @@ namespace fhg
         auto const host (raw.substr (0, colon_pos));
         auto socket (raw.substr (colon_pos + 1));
 
-        if (socket.size() > 2 && socket[0] == '\\' && socket[1] == '0')
+        if (socket.size() >= 2 && socket[0] == '\\' && socket[1] == '0')
         {
           socket = std::string (1, '\0') + (socket.data() + 2);
         }
@@ -70,7 +70,7 @@ namespace fhg
     std::string socket_endpoint::to_string() const
     {
       auto path (socket.path());
-      if (path.size() > 1 && path[0] == '\0')
+      if (path.size() >= 1 && path[0] == '\0')
       {
         path = "\\0" + std::string (path.data() + 1);
       }
