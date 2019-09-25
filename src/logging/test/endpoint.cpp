@@ -50,7 +50,7 @@ namespace fhg
     {
       tcp_endpoint random_tcp_endpoint()
       {
-        return { util::testing::random_string_without (":")
+        return { util::testing::random_string_without (":>")
                , util::testing::random<unsigned short>{}()
                };
       }
@@ -63,7 +63,7 @@ namespace fhg
         }
         while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
-        return {util::testing::random_string_without (":"), path};
+        return {util::testing::random_string_without (":>"), path};
       }
     }
 
