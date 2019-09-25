@@ -3,6 +3,7 @@
 add_subdirectory (worker)
 
 install (FILES
+  certificates.hpp
   client.fwd.hpp
   client.hpp
   drts.fwd.hpp
