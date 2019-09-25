@@ -1,12 +1,12 @@
 #pragma once
 
+#include <drts/certificates.hpp>
+
 #include <fhgcom/connection.hpp>
 #include <fhgcom/header.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhg/util/thread/event.hpp>
-
-#include <certificates.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
