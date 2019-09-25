@@ -215,6 +215,10 @@ namespace fhg
                     , "', MAGIC: <<thin-air>>'"
                     );
 
+      FAIL ( "TCP: <<SOCKET: <<sock>>tcp>>"
+           , error::bad_host_and_port_string ("SOCKET: <<sock")
+           );
+
 #undef COMBINED_FAIL
 #undef FAIL
     }
