@@ -87,7 +87,7 @@ BOOST_DATA_TEST_CASE
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points(), certificates);
+    (vm, installation, "work:1", rifds.entry_points(), std::cerr, certificates);
 
     std::string const challenge (fhg::util::testing::random_string_without ("\"\\"));
 

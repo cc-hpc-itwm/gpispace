@@ -68,15 +68,15 @@ namespace gspc
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
-                          , Certificates const& certificates = boost::none
                           , std::ostream& info_output = std::cerr
+                          , Certificates const& certificates = boost::none
                           );
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
-                          , Certificates const& certificates = boost::none
                           , std::ostream& info_output = std::cerr
+                          , Certificates const& certificates = boost::none
                           );
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
@@ -84,8 +84,8 @@ namespace gspc
       , std::string const& topology_description
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
-      , Certificates const& certificates = boost::none
       , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
       );
 
     std::unordered_map< rifd_entry_point
