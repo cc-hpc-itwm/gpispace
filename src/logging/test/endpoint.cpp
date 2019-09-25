@@ -149,26 +149,74 @@ namespace fhg
 
     BOOST_AUTO_TEST_CASE (combined_string_detects_errors)
     {
-      fhg::util::testing::require_exception
-        ( [] { endpoint ("preTCP: <<host:1>>end"); }
-        , error::leftovers_when_parsing_endpoint_string ("preend")
-        );
-      fhg::util::testing::require_exception
-        ( [] { endpoint ("preTCP: <<host:1>>midSOCKET: <<host:path>>end"); }
-        , error::leftovers_when_parsing_endpoint_string ("premidend")
-        );
-      fhg::util::testing::require_exception
-        ( [] { endpoint ("preSOCKET: <<host:path>>midTCP: <<host:1>>end"); }
-        , error::leftovers_when_parsing_endpoint_string ("premidend")
-        );
-      fhg::util::testing::require_exception
-        ( [] { endpoint ("nothing at all"); }
-        , error::leftovers_when_parsing_endpoint_string ("nothing at all")
-        );
-      fhg::util::testing::require_exception
-        ( [] { endpoint (""); }
-        , std::invalid_argument ("Neither TCP nor SOCKET given")
-        );
+#define FAIL(str_, subex_)                                                   \
+      fhg::util::testing::require_exception                                  \
+        ( [] { endpoint (str_); }                                            \
+        , fhg::util::testing::make_nested                                    \
+            ( std::runtime_error                                             \
+                ("failed to parse endpoint string '" + std::string (str_) + "'") \
+            , subex_                                                         \
+            )                                                                \
+        )
+#define COMBINED_FAIL(str_, expect_, but_)                                  \
+      FAIL ( str_                                                           \
+           , error::unexpected_token                                        \
+               (std::string ("expected " ) + expect_ + ", but got " + but_) \
+           )
+
+      COMBINED_FAIL ("", "'T' or 'S'", "end-of-string");
+      COMBINED_FAIL ("X", "'T' or 'S'", "'X'");
+      COMBINED_FAIL ("T", "'CP: <<'", "end-of-string");
+      COMBINED_FAIL ("TCP: [[", "'CP: <<'", "'CP: [['");
+      COMBINED_FAIL ("TCP: <<", "'>>' somewhere in the rest", "end-of-string");
+      COMBINED_FAIL ("S", "'OCKET: <<'", "end-of-string");
+      COMBINED_FAIL ("SOCKET: [[", "'OCKET: <<'", "'OCKET: [['");
+      COMBINED_FAIL ( "SOCKET: <<"
+                    , "'>>' somewhere in the rest"
+                    , "end-of-string"
+                    );
+      FAIL ("TCP: <<>>", error::bad_host_and_port_string (""));
+      FAIL ("SOCKET: <<>>", error::bad_host_and_socket_string (""));
+      //! \note See more fails for the tcp/socket endpoint parsers in
+      //! their unit tests, this only is meant to cover that they are
+      //! checked at all.
+      COMBINED_FAIL ("SOCKET: <<h:s>>x", "', '", "'x'");
+      COMBINED_FAIL ("SOCKET: <<h:s>>,", "', '", "','");
+      COMBINED_FAIL ("SOCKET: <<h:s>>, S", "'T'", "'S'");
+      COMBINED_FAIL ("TCP: <<h:0>>, T", "'S'", "'T'");
+      COMBINED_FAIL ("TCP: <<h:0>>, Socket", "'OCKET: <<'", "'ocket'");
+      COMBINED_FAIL ("SOCKET: <<h:s>>, Tcp", "'CP: <<'", "'cp'");
+      COMBINED_FAIL ( "TCP: <<h:0>>, SOCKET: <<"
+                    , "'>>' somewhere in the rest"
+                    , "end-of-string"
+                    );
+      COMBINED_FAIL ( "SOCKET: <<h:s>>, TCP: <<"
+                    , "'>>' somewhere in the rest"
+                    , "end-of-string"
+                    );
+      COMBINED_FAIL ( "TCP: <<h:0>>, SOCKET: <<]]"
+                    , "'>>' somewhere in the rest"
+                    , "']]'"
+                    );
+      COMBINED_FAIL ( "SOCKET: <<h:s>>, TCP: <<]]"
+                    , "'>>' somewhere in the rest"
+                    , "']]'"
+                    );
+      FAIL ("TCP: <<a>>, SOCKET: <<b>>", error::bad_host_and_port_string ("a"));
+      FAIL ("TCP: <<a:0>>, SOCKET: <<b>>", error::bad_host_and_socket_string ("b"));
+      FAIL ("SOCKET: <<a>>, TCP: <<b>>", error::bad_host_and_socket_string ("a"));
+      FAIL ("SOCKET: <<a:s>>, TCP: <<b>>", error::bad_host_and_port_string ("b"));
+      COMBINED_FAIL ( "SOCKET: <<h:s>>, TCP: <<h:0>>x"
+                    , "end-of-string"
+                    , "'x'"
+                    );
+      COMBINED_FAIL ( "TCP: <<h:0>>, SOCKET: <<h:s>>, MAGIC: <<thin-air>>"
+                    , "end-of-string"
+                    , "', MAGIC: <<thin-air>>'"
+                    );
+
+#undef COMBINED_FAIL
+#undef FAIL
     }
   }
 }

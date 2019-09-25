@@ -18,13 +18,22 @@ namespace fhg
           (std::string what)
         : std::runtime_error (what)
       {}
-      leftovers_when_parsing_endpoint_string
-          ::leftovers_when_parsing_endpoint_string (std::string leftovers)
-        : std::invalid_argument
-            ( "had left-overs when consuming TCP and SOCKET parts from "
-              "endpoint string: " + leftovers
-            )
+      unexpected_token::unexpected_token (std::string what)
+        : std::invalid_argument (what)
       {}
+
+      template<typename Iterator, typename T>
+        void throw_unexpected_token
+          (Iterator it, Iterator end, T expected, bool anywhere)
+      {
+        std::string const rest
+          (it == end ? "end-of-string" : "'" + std::string (it, end) + "'");
+
+        throw unexpected_token ( std::string ("expected '") + expected + "'"
+                               + (anywhere ? " somewhere in the rest" : "")
+                               + ", but got " + rest
+                               );
+      }
     }
 
     endpoint::endpoint (tcp_endpoint tcp)
@@ -38,47 +47,132 @@ namespace fhg
       , as_socket (socket)
     {}
 
-    endpoint::endpoint (std::string combined_string)
+    namespace
     {
-      auto const tcp_begin (combined_string.find ("TCP: <<"));
-      if (tcp_begin != std::string::npos)
+      //! \todo Maybe merge/replace with fhg::util::parse::require.
+      std::string read_until
+        (std::string::iterator& it, std::string::iterator end, std::string what)
       {
-        auto const tcp_end (combined_string.find (">>", tcp_begin));
-        if (tcp_end == std::string::npos)
+        auto prior_to_what (std::search (it, end, what.begin(), what.end()));
+        if (prior_to_what == end)
         {
-          throw std::invalid_argument ("missing TCP part terminator '>>'");
+          error::throw_unexpected_token (it, end, what, true);
         }
 
-        as_tcp = combined_string.substr
-          (tcp_begin + 7, tcp_end - tcp_begin - 7);
-
-        combined_string.erase (tcp_begin, tcp_end - tcp_begin + 2);
+        std::string result (it, prior_to_what);
+        it = prior_to_what + what.size();
+        return result;
       }
 
-      auto const socket_begin (combined_string.find ("SOCKET: <<"));
-      if (socket_begin != std::string::npos)
+      void require_char
+        (std::string::iterator& it, std::string::iterator end, char what)
       {
-        auto const socket_end (combined_string.find (">>", socket_begin));
-        if (socket_end == std::string::npos)
+        if (it == end || *it != what)
         {
-          throw std::invalid_argument ("missing SOCKET part terminator '>>'");
+          error::throw_unexpected_token (it, end, what, false);
         }
 
-        as_socket = combined_string.substr
-          (socket_begin + 10, socket_end - socket_begin - 10);
-
-        combined_string.erase (socket_begin, socket_end - socket_begin + 2);
+        ++it;
       }
 
-      if (combined_string != "" && combined_string != ", ")
+      char require_either_char
+        (std::string::iterator& it, std::string::iterator end, char a, char b)
       {
-        throw error::leftovers_when_parsing_endpoint_string (combined_string);
+        if (it == end || (*it != a && *it != b))
+        {
+          error::throw_unexpected_token
+            (it, end, a + std::string ("' or '") + b, false);
+        }
+
+        return *it++;
       }
 
-      if (!as_tcp && !as_socket)
+      void require_string
+        (std::string::iterator& it, std::string::iterator end, std::string what)
       {
-        throw std::invalid_argument ("Neither TCP nor SOCKET given");
+        if ( std::distance (it, end) < std::distance (what.begin(), what.end())
+           || !std::equal (what.begin(), what.end(), it)
+           )
+        {
+          error::throw_unexpected_token (it, end, what, false);
+        }
+
+        it += what.size();
       }
+
+      std::string require_tcp_block
+        (std::string::iterator& it, std::string::iterator end)
+      {
+        require_string (it, end, "CP: <<");
+        return read_until (it, end, ">>");
+      }
+
+      std::string require_socket_block
+        (std::string::iterator& it, std::string::iterator end)
+      {
+        require_string (it, end, "OCKET: <<");
+        return read_until (it, end, ">>");
+      }
+
+      void require_comma_or_end
+        (std::string::iterator& it, std::string::iterator end)
+      {
+        if (it != end)
+        {
+          require_string (it, end, ", ");
+        }
+      }
+    }
+
+    endpoint::endpoint (std::string combined_string)
+    try
+    {
+      auto it (combined_string.begin());
+      auto const end (combined_string.end());
+
+      // t := 'TCP: <<' tcp_endpoint '>>'
+      // s := 'SOCKET: <<' socket_endpoint '>>'
+      // expected = (t [', ' s]) | (s [', ' t])
+
+      switch (require_either_char (it, end, 'T', 'S'))
+      {
+      case 'T':
+        as_tcp = require_tcp_block (it, end);
+        break;
+
+      case 'S':
+        as_socket = require_socket_block (it, end);
+        break;
+      }
+
+      require_comma_or_end (it, end);
+
+      if (it != end)
+      {
+        if (as_tcp)
+        {
+          require_char (it, end, 'S');
+          as_socket = require_socket_block (it, end);
+        }
+        else
+        {
+          require_char (it, end, 'T');
+          as_tcp = require_tcp_block (it, end);
+        }
+      }
+
+      if (it != end)
+      {
+        throw error::unexpected_token
+          ("expected end-of-string, but got '" + std::string (it, end) + "'");
+      }
+    }
+    catch (...)
+    {
+      std::throw_with_nested
+        ( std::runtime_error
+            ("failed to parse endpoint string '" + combined_string + "'")
+        );
     }
 
 #define REQUIRE_VALID()                                                 \

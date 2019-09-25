@@ -29,9 +29,9 @@ namespace fhg
       {
         no_possible_matching_endpoint (std::string);
       };
-      struct leftovers_when_parsing_endpoint_string : std::invalid_argument
+      struct unexpected_token : std::invalid_argument
       {
-        leftovers_when_parsing_endpoint_string (std::string);
+        unexpected_token (std::string);
       };
     }
 
