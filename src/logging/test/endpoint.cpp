@@ -46,6 +46,21 @@ namespace fhg
       return lhs.to_string() == rhs.to_string();
     }
 
+    bool operator== ( boost::variant<tcp_endpoint, socket_endpoint> const& lhs
+                    , socket_endpoint const& rhs
+                    )
+    {
+      return lhs.type() == typeid (socket_endpoint)
+        && boost::get<socket_endpoint> (lhs) == rhs;
+    }
+    bool operator== ( boost::variant<tcp_endpoint, socket_endpoint> const& lhs
+                    , tcp_endpoint const& rhs
+                    )
+    {
+      return lhs.type() == typeid (tcp_endpoint)
+        && boost::get<tcp_endpoint> (lhs) == rhs;
+    }
+
     namespace
     {
       tcp_endpoint random_tcp_endpoint()
@@ -133,18 +148,14 @@ namespace fhg
 
       auto const random_host (util::testing::random<std::string>{}());
 
-      BOOST_REQUIRE_EQUAL
-        (boost::get<tcp_endpoint> (tcp_ep.best (random_host)), tcp);
+      BOOST_REQUIRE_EQUAL (tcp_ep.best (random_host), tcp);
 
       BOOST_REQUIRE_THROW
         (socket_ep.best (random_host), error::no_possible_matching_endpoint);
-      BOOST_REQUIRE_EQUAL
-        (boost::get<socket_endpoint> (socket_ep.best (socket.host)), socket);
+      BOOST_REQUIRE_EQUAL (socket_ep.best (socket.host), socket);
 
-      BOOST_REQUIRE_EQUAL
-        (boost::get<tcp_endpoint> (both_ep.best (random_host)), tcp);
-      BOOST_REQUIRE_EQUAL
-        (boost::get<socket_endpoint> (both_ep.best (socket.host)), socket);
+      BOOST_REQUIRE_EQUAL (both_ep.best (random_host), tcp);
+      BOOST_REQUIRE_EQUAL (both_ep.best (socket.host), socket);
     }
 
     BOOST_AUTO_TEST_CASE (combined_string_detects_errors)
