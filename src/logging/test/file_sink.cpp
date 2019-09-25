@@ -23,8 +23,9 @@ namespace fhg
     {
       //! \note file_sink always tries to subscribe, so the endpoint
       //! needs to be valid.
-      stream_emitter const dummy_emitter;
-      endpoint const dummy_endpoint (dummy_emitter.local_endpoint());
+      stream_emitter const register_only_emitter;
+      endpoint const register_only_endpoint
+        (register_only_emitter.local_endpoint());
     }
 
     BOOST_AUTO_TEST_CASE (constructor_throws_if_file_not_writable)
@@ -37,7 +38,7 @@ namespace fhg
       util::testing::require_exception
         ( [&]
           {
-            file_sink sink ( dummy_endpoint
+            file_sink sink ( register_only_endpoint
                            , target
                            , [] (std::ostream&, message const&) {}
                            , boost::none
@@ -80,7 +81,7 @@ namespace fhg
 
       {
         public_file_sink sink
-          ( dummy_endpoint
+          ( register_only_endpoint
           , sink_path
           , [&] (std::ostream& os, message const&)
             {
@@ -117,7 +118,7 @@ namespace fhg
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
       {
-        public_file_sink sink (dummy_endpoint, path, &just_a_newline, boost::none);
+        public_file_sink sink (register_only_endpoint, path, &just_a_newline, boost::none);
 
         for (std::size_t i (0); i < emits; ++i)
         {
@@ -139,7 +140,7 @@ namespace fhg
 
       {
         public_file_sink sink
-          ( dummy_endpoint
+          ( register_only_endpoint
           , path
           , [&] (std::ostream& os, message const&)
             {
@@ -167,7 +168,7 @@ namespace fhg
       auto const emits (util::testing::random<std::size_t>{}() % 134);
 
       {
-        public_file_sink sink (dummy_endpoint, path, &just_a_newline, 0);
+        public_file_sink sink (register_only_endpoint, path, &just_a_newline, 0);
 
         for (std::size_t i (0); i < emits; ++i)
         {
@@ -193,7 +194,7 @@ namespace fhg
       std::size_t expected_lines (0);
 
       {
-        public_file_sink sink (dummy_endpoint, path, &just_a_newline, interval);
+        public_file_sink sink (register_only_endpoint, path, &just_a_newline, interval);
 
         auto const emit
           ([&] { sink.dispatch_append (util::testing::random<message>{}()); });
