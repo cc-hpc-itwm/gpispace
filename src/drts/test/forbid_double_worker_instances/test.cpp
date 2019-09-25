@@ -4,6 +4,7 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
@@ -14,18 +15,7 @@
 #include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/range/adaptor/map.hpp>
-#include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
-
-namespace
-{
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { gspc::Certificates{}                                           \
-      , gspc::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
-      }                                                                  \
-    )
-}
 
 BOOST_DATA_TEST_CASE
   (forbid_double_worker_instances, certificates_data, certificates)

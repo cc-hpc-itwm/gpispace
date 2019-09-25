@@ -6,6 +6,8 @@
 
 #include <fhg/util/thread/event.hpp>
 
+#include <certificates.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
@@ -22,7 +24,7 @@ namespace fhg
 {
   namespace com
   {
-    using Certificates = boost::optional<boost::filesystem::path>;
+    using Certificates = gspc::Certificates;
 
     /*!
       This class abstracts from an endpoint

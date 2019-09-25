@@ -6,6 +6,7 @@
 
 #include <boost/program_options.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/shared_directory.hpp>
@@ -16,22 +17,11 @@
 #include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/format.hpp>
-#include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
 #include <regex>
 #include <sstream>
 #include <vector>
-
-namespace
-{
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { gspc::Certificates{}                                           \
-      , gspc::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
-      }                                                                  \
-    )
-}
 
 BOOST_DATA_TEST_CASE
   ( scoped_drts_empty_topology
