@@ -159,6 +159,7 @@ extended_add_library (NAME logging
           "logging/file_sink.cpp"
           "logging/message.cpp"
           "logging/socket_endpoint.cpp"
+          "logging/stdout_sink.cpp"
           "logging/stream_emitter.cpp"
           "logging/stream_receiver.cpp"
           "logging/tcp_endpoint.cpp"
