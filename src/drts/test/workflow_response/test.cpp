@@ -12,6 +12,7 @@
 #include <rpc/service_handler.hpp>
 #include <rpc/service_tcp_provider.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -26,29 +27,22 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
 #include <future>
 #include <map>
 #include <regex>
 
-BOOST_DATA_TEST_CASE
-  ( workflow_response
-  , boost::unit_test::data::make ( std::vector<std::string>
-                                     { "workflow_response"
-                                     , "workflow_response_expression"
-                                     }
-                                 )
-  ^ boost::unit_test::data::make
-      (std::vector<std::string> {"worker:2", "worker:1"})
-  , name
-  , topology
+void test_workflow_response
+  ( std::string const& name
+  , std::string const& topology
+  , gspc::Certificates const certificates
   )
 {
   boost::program_options::options_description options_description;
@@ -110,9 +104,9 @@ BOOST_DATA_TEST_CASE
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology, rifds.entry_points());
+    (vm, installation, topology, rifds.entry_points(), std::cerr, certificates);
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -270,7 +264,26 @@ BOOST_DATA_TEST_CASE
                       );
 }
 
-BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
+BOOST_DATA_TEST_CASE
+  ( workflow_response_using_secure_communication
+  , boost::unit_test::data::make ( std::vector<std::string>
+                                     { "workflow_response"
+                                     , "workflow_response_expression"
+                                     }
+                                 )
+  ^ boost::unit_test::data::make
+      (std::vector<std::string> {"worker:2", "worker:1"})
+  ^ certificates_data
+  , name
+  , topology
+  , certificates
+  )
+{
+  test_workflow_response (name, topology, certificates);
+}
+
+BOOST_DATA_TEST_CASE
+  (one_response_waits_while_others_are_made, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -293,10 +306,14 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
         )
     );
 
-  fhg::util::temporary_path const shared_directory
+  boost::filesystem::path test_directory
     ( test::shared_directory (vm)
     / "workflow_response_one_response_waits_while_others_are_made"
     );
+
+  boost::filesystem::remove_all (test_directory);
+
+  fhg::util::temporary_path const shared_directory (test_directory);
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -333,9 +350,9 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2 management:1", rifds.entry_points());
+    (vm, installation, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -404,7 +421,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   auto&& thread_function
     ( [ &status_updates, &job_id, &drts, &no_longer_do_status_update
-      , &no_longer_do_status_update_guard
+      , &no_longer_do_status_update_guard, &certificates
       ]
       {
         unsigned long updates (0);
@@ -416,7 +433,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
             break;
           }
 
-          gspc::client (drts).synchronous_workflow_response
+          gspc::client (drts, certificates).synchronous_workflow_response
             (job_id, "get_and_update_state_trigger", 1UL);
           ++updates;
         }
@@ -454,7 +471,11 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                       );
 }
 
-BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
+BOOST_DATA_TEST_CASE
+  ( response_fails_if_workflow_fails_after_requesting
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -477,10 +498,14 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
         )
     );
 
-  fhg::util::temporary_path const shared_directory
+  boost::filesystem::path test_directory
     ( test::shared_directory (vm)
     / "workflow_response_fails_if_workflow_fails_after_requesting"
     );
+
+  boost::filesystem::remove_all (test_directory);
+
+  fhg::util::temporary_path const shared_directory (test_directory);
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -517,9 +542,9 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
                                  };
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, installation, "work:1", rifds.entry_points(), std::cerr, certificates);
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 

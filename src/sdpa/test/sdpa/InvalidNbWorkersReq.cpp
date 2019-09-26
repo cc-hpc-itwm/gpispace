@@ -1,17 +1,24 @@
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
-BOOST_FIXTURE_TEST_CASE (testInvalidNumberOfWorkersRequired, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , invalid_number_of_workers_required
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (0), orchestrator)
+      (utils::net_with_one_child_requiring_workers (0), orchestrator, certificates)
     , sdpa::status::FAILED
     );
 }

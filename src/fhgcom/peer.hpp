@@ -1,11 +1,14 @@
 #pragma once
 
+#include <drts/certificates.hpp>
+
 #include <fhgcom/connection.hpp>
 #include <fhgcom/header.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhg/util/thread/event.hpp>
 
+#include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -21,6 +24,8 @@ namespace fhg
 {
   namespace com
   {
+    using Certificates = gspc::Certificates;
+
     /*!
       This class abstracts from an endpoint
      */
@@ -29,7 +34,11 @@ namespace fhg
     public:
       typedef std::function <void (boost::system::error_code const &)> handler_t;
 
-      peer_t (std::unique_ptr<boost::asio::io_service>, host_t const& host, port_t const& port);
+      peer_t ( std::unique_ptr<boost::asio::io_service>
+             , host_t const& host
+             , port_t const& port
+             , Certificates const& certificates
+             );
 
       virtual ~peer_t ();
 
@@ -57,6 +66,7 @@ namespace fhg
                        >
         );
       void TESTING_ONLY_recv (message_t *m);
+      std::exception_ptr handshake_exception() const;
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
@@ -102,7 +112,7 @@ namespace fhg
 
       void accept_new ();
       void handle_accept (const boost::system::error_code &);
-      void connection_established (const p2p::address_t, boost::system::error_code const &);
+      void connection_established (const p2p::address_t);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       void start_sender (const p2p::address_t);
 
@@ -117,6 +127,7 @@ namespace fhg
       boost::optional<p2p::address_t> my_addr_;
 
       std::unique_ptr<boost::asio::io_service> io_service_;
+      boost::asio::io_service::strand strand_;
       boost::asio::io_service::work io_service_work_;
       boost::asio::ip::tcp::acceptor acceptor_;
 
@@ -129,7 +140,10 @@ namespace fhg
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
 
+      std::exception_ptr handshake_exception_;
       boost::strict_scoped_thread<> _io_thread;
+
+      std::unique_ptr<boost::asio::ssl::context> ctx_;
     };
   }
 }

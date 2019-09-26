@@ -1,19 +1,19 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <utils.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/optional/optional_io.hpp>
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {
   struct network_strategy
   {
-    network_strategy()
+    network_strategy (fhg::com::Certificates const& certificates)
       : _event_received()
       , _network
         ( [this] (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr e)
@@ -22,6 +22,7 @@ namespace
           }
         , fhg::util::cxx14::make_unique<boost::asio::io_service>()
         , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+        , certificates
         )
     {}
 
@@ -106,7 +107,12 @@ BOOST_AUTO_TEST_SUITE_END()
 
 BOOST_AUTO_TEST_SUITE (generic)
 
-BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , job_finished_ack_fails_with_bad_job_id
+  , certificates_data
+  , certificates
+  )
 {
   const std::string orchestrator_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
@@ -122,9 +128,10 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
     , logger
     , boost::none
     , false
+    , certificates
     );
 
-  network_strategy child;
+  network_strategy child (certificates);
 
   child.send<sdpa::events::JobFinishedAckEvent>
     ( child.connect_to
@@ -147,7 +154,6 @@ BOOST_AUTO_TEST_CASE (job_finished_ack_fails_with_bad_job_id)
     (event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
   BOOST_REQUIRE_EQUAL (event->job_id(), boost::none);
 }
-
 //! \todo Analyse control flow in all GenericDaemon event handlers
 
 BOOST_AUTO_TEST_SUITE_END()

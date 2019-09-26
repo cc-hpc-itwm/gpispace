@@ -195,6 +195,7 @@ DRTSImpl::DRTSImpl
     , std::vector<boost::filesystem::path> const& library_path
     , std::size_t backlog_length
     , fhg::log::Logger& logger
+    , fhg::com::Certificates const& certificates
     )
   : _logger (logger)
   , _request_stop (request_stop)
@@ -208,7 +209,7 @@ DRTSImpl::DRTSImpl
   , _shared_memory (shared_memory)
   , m_pending_jobs (backlog_length)
   , _peer ( std::move (peer_io_service)
-          , fhg::com::host_t ("*"), fhg::com::port_t ("0")
+          , fhg::com::host_t ("*"), fhg::com::port_t ("0"), certificates
           )
   , m_event_thread (&DRTSImpl::event_thread, this)
   , _interrupt_event_thread (m_event_queue)

@@ -10,6 +10,7 @@
 #include <rpc/service_handler.hpp>
 #include <rpc/service_tcp_provider.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -24,6 +25,7 @@
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
@@ -31,12 +33,14 @@
 #include <boost/asio/ip/tcp.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <list>
 #include <vector>
 
-BOOST_AUTO_TEST_CASE (add_worker)
+BOOST_DATA_TEST_CASE
+  (add_worker, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -118,7 +122,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, master.entry_point());
+    (vm, installation, "worker:1", boost::none, master.entry_point(), std::cerr, certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
@@ -130,7 +134,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   boost::asio::ip::tcp::acceptor acceptor (io_service, {});
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   gspc::job_id_t const job_id
     ( client.submit
@@ -160,7 +164,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                               }
                             );
 
-      drts.add_worker (rifd.entry_points());
+      drts.add_worker (rifd.entry_points(), certificates);
 
       client.put_token (job_id, "trigger", we::type::literal::control());
 
@@ -207,7 +211,8 @@ namespace
 // this test it is sufficient to test only if a worker with a given capability
 // executed a task requiring that capability. This would make the test
 // invariant to subsequent changes in the worker naming convention.
-BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
+BOOST_DATA_TEST_CASE
+  (add_workers_with_different_descriptions, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -297,7 +302,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
     );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "", boost::none, master.entry_point());
+    (vm, installation, "", boost::none, master.entry_point(), std::cerr, certificates);
 
   std::set<std::string> expected_workers;
 
@@ -309,10 +314,10 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
 
     gspc::worker_description const description
       {{capabilities[k++]}, 1, 0, 0, boost::none};
-    drts.add_worker ({description}, rifd.entry_points());
+    drts.add_worker ({description}, rifd.entry_points(), certificates);
   }
 
-  gspc::client client (drts);
+  gspc::client client (drts, certificates);
 
   std::set<std::string> announced_workers;
   fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);

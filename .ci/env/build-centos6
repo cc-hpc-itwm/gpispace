@@ -2,7 +2,7 @@ _scriptdir=$(readlink -f ${BASH_SOURCE}); source "${_scriptdir%/*}"/common
 
 external=/home/projects/sdpa/external_software
 
-export BOOST_ROOT=${external}/boost/1.59/gcc
+export BOOST_ROOT=${external}/boost/1.61
 path chrpath/0.16/bin
 path cmake/3.9.1/bin
 path gcc/4.9.2/bin

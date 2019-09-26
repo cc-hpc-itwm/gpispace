@@ -1,11 +1,13 @@
 #include <utils.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 
-#include <boost/test/unit_test.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <condition_variable>
 #include <map>
@@ -16,8 +18,8 @@ namespace
   class drts_component_observing_capabilities final : public utils::basic_drts_component
   {
   public:
-    drts_component_observing_capabilities()
-      : utils::basic_drts_component (utils::random_peer_name(), true)
+    drts_component_observing_capabilities (fhg::com::Certificates const& certificates)
+      : utils::basic_drts_component (utils::random_peer_name(), true, certificates)
     {}
 
     virtual void handleCapabilitiesGainedEvent
@@ -54,7 +56,9 @@ namespace
       , sdpa::events::ErrorEvent const* event
       ) override
     {
-      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
+      if ( event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+         || event->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
+         )
       {
         //! \note hack? isn't this part of what this test is supposed
         //! to test?
@@ -106,16 +110,17 @@ namespace
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, acquire_capability_from_worker, certificates_data, certificates)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent (observer, _logger);
+    const utils::agent agent (observer, _logger, certificates);
 
     const std::string name (utils::random_peer_name());
     const sdpa::capability_t capability ("A", name);
-    utils::basic_drts_worker const worker (name, agent, {capability});
+    utils::basic_drts_worker const worker (name, agent, {capability}, certificates);
 
     observer.wait_for_capabilities ({capability});
   }
@@ -124,37 +129,39 @@ BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, acquire_capability_from_worker_chain, certificates_data, certificates)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent_0 (observer, _logger);
-    const utils::agent agent_1 (agent_0, _logger);
+    const utils::agent agent_0 (observer, _logger, certificates);
+    const utils::agent agent_1 (agent_0, _logger, certificates);
 
     const std::string name (utils::random_peer_name());
     const sdpa::capability_t capability ("A", name);
-    utils::basic_drts_worker const worker (name, agent_1, {capability});
+    utils::basic_drts_worker const worker (name, agent_1, {capability}, certificates);
 
     observer.wait_for_capabilities ({capability});
-  }
+ }
 
-  observer.wait_for_capabilities ({});
+ observer.wait_for_capabilities ({});
 }
 
-BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, acquire_capabilities_from_workers, certificates_data, certificates)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent (observer, _logger);
+    const utils::agent agent (observer, _logger, certificates);
 
     const std::string name_0 (utils::random_peer_name());
     const std::string name_1 (utils::random_peer_name());
     const sdpa::capability_t capability_0 ("A", name_0);
     const sdpa::capability_t capability_1 ("B", name_1);
-    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0});
-    utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1});
+    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0}, certificates);
+    utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1}, certificates);
 
     observer.wait_for_capabilities ({capability_0, capability_1});
   }
@@ -163,20 +170,21 @@ BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, lose_capabilities_after_worker_dies, certificates_data, certificates)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (certificates);
 
   {
-    const utils::agent agent (observer, _logger);
+    const utils::agent agent (observer, _logger, certificates);
 
     const std::string name_0 (utils::random_peer_name());
     const std::string name_1 (utils::random_peer_name());
     const sdpa::capability_t capability_0 ("A", name_0);
     const sdpa::capability_t capability_1 ("B", name_1);
-    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0});
+    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0}, certificates);
     {
-      utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1});
+      utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1}, certificates);
 
       observer.wait_for_capabilities ({capability_0, capability_1});
     }
@@ -187,10 +195,11 @@ BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
   observer.wait_for_capabilities ({});
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  ( RACE_capabilities_of_children_are_removed_when_disconnected
-  , setup_logging
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , capabilities_of_children_are_removed_when_disconnected
+  , certificates_data
+  , certificates
   )
 {
   //! \note race exists due to us not being able to ensure that no
@@ -205,22 +214,22 @@ BOOST_FIXTURE_TEST_CASE
   size_t repeat (10);
   while (repeat --> 0)
   {
-    drts_component_observing_capabilities observer;
-    utils::agent const agent_0 (observer, _logger);
-    utils::agent const agent_1 (agent_0, _logger);
-    utils::agent const agent_2 (agent_1, _logger);
-    utils::agent const agent_3 (agent_2, _logger);
+    drts_component_observing_capabilities observer (certificates);
+    utils::agent const agent_0 (observer, _logger, certificates);
+    utils::agent const agent_1 (agent_0, _logger, certificates);
+    utils::agent const agent_2 (agent_1, _logger, certificates);
+    utils::agent const agent_3 (agent_2, _logger, certificates);
 
     {
-      utils::agent const agent_4 (agent_3, _logger);
-      utils::agent const agent_5 (agent_4, _logger);
-      utils::agent const agent_6 (agent_5, _logger);
-      utils::agent const agent_7 (agent_6, _logger);
+      utils::agent const agent_4 (agent_3, _logger, certificates);
+      utils::agent const agent_5 (agent_4, _logger, certificates);
+      utils::agent const agent_6 (agent_5, _logger, certificates);
+      utils::agent const agent_7 (agent_6, _logger, certificates);
 
       std::string const worker_name (utils::random_peer_name());
       sdpa::capability_t const capability ("A", worker_name);
       utils::basic_drts_worker const worker
-        (worker_name, agent_7, {capability});
+        (worker_name, agent_7, {capability}, certificates);
 
       observer.wait_for_capabilities ({capability});
     }
@@ -229,16 +238,18 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
-                        , setup_logging
-                        )
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , chain_with_a_lot_of_leafs_different_capabilities
+  , certificates_data
+  , certificates
+  )
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (certificates);
 
   {
-    utils::agent const agent_0 (observer, _logger);
-    utils::agent const agent_1 (agent_0, _logger);
+    utils::agent const agent_0 (observer, _logger, certificates);
+    utils::agent const agent_1 (agent_0, _logger, certificates);
 
     std::list<utils::basic_drts_worker> workers;
 
@@ -249,7 +260,7 @@ BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
       sdpa::worker_id_t const name (utils::random_peer_name());
       sdpa::capability_t const capability (std::to_string (count), name);
       workers.emplace_back
-        (name, agent_1, sdpa::capabilities_set_t {capability});
+        (name, agent_1, sdpa::capabilities_set_t {capability}, certificates);
     }
 
     observer.wait_for_capabilities (count);

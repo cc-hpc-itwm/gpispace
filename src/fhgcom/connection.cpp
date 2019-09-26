@@ -3,6 +3,8 @@
 
 #include <fhg/assert.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
+
 #include <boost/system/error_code.hpp>
 
 #include <functional>
@@ -11,14 +13,95 @@ namespace fhg
 {
   namespace com
   {
+    namespace
+    {
+      struct async_read_visitor : public boost::static_visitor<>
+      {
+        template<typename Arg0, typename Arg1, typename Arg2>
+          void operator() (Arg0 const& arg0, Arg1 const& arg1, Arg2 const& arg2) const
+        {
+          async_read (*arg0, arg1, arg2);
+        }
+      };
+
+      template <typename Arg0, typename Arg1, typename Arg2>
+        void async_read_wrapper (Arg0 const& arg0, Arg1 const& arg1, Arg2 const& arg2)
+      {
+        boost::apply_visitor
+          ( std::bind ( async_read_visitor()
+                      , std::placeholders::_1
+                      , std::ref (arg1)
+                      , std::ref (arg2)
+                      )
+          , arg0
+          );
+      }
+
+      struct async_write_visitor : public boost::static_visitor<>
+      {
+        template<typename Arg0, typename Arg1, typename Arg2>
+          void operator() (Arg0 const& arg0, Arg1 const& arg1, Arg2 const& arg2) const
+        {
+          async_write (*arg0, arg1, arg2);
+        }
+      };
+
+      template <typename Arg0, typename Arg1, typename Arg2>
+        void async_write_wrapper (Arg0 const& arg0, Arg1 const& arg1, Arg2 const& arg2)
+      {
+        boost::apply_visitor
+          ( std::bind ( async_write_visitor()
+                      , std::placeholders::_1
+                      , std::ref (arg1)
+                      , std::ref (arg2)
+                      )
+          , arg0
+          );
+      }
+    }
+
+    socket_t make_socket
+      ( boost::asio::io_service& io_service
+      , std::unique_ptr<boost::asio::ssl::context> const& ctx
+      )
+    {
+      if (ctx)
+      {
+        return fhg::util::cxx14::make_unique<ssl_stream_t> (io_service, *ctx);
+      }
+      else
+      {
+        return fhg::util::cxx14::make_unique<tcp_socket_t> (io_service);
+      }
+    }
+    template<typename SocketPtr>
+      tcp_socket_t& raw_socket (SocketPtr& socket)
+    {
+      struct : boost::static_visitor<tcp_socket_t&>
+      {
+        tcp_socket_t& operator() (std::unique_ptr<tcp_socket_t>& stream) const
+        {
+          return *stream;
+        }
+        tcp_socket_t& operator() (std::unique_ptr<ssl_stream_t>& stream) const
+        {
+          return stream->next_layer();
+        }
+      } visitor;
+      return boost::apply_visitor (visitor, socket);
+    }
+
     connection_t::connection_t
       ( boost::asio::io_service & io_service
+      , std::unique_ptr<boost::asio::ssl::context> const& ctx
+      , boost::asio::io_service::strand const& strand
       , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
       , std::function<void (ptr_t connection, const message_t*)> handle_user_data
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
       )
-      : strand_(io_service)
-      , socket_(io_service)
+      : strand_(strand)
+      , socket_ (make_socket (io_service, ctx))
+      , _raw_socket (raw_socket (socket_))
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
@@ -38,7 +121,7 @@ namespace fhg
 
     boost::asio::ip::tcp::socket & connection_t::socket()
     {
-      return socket_;
+      return _raw_socket;
     }
 
     void connection_t::start()
@@ -49,26 +132,69 @@ namespace fhg
     void connection_t::stop ()
     {
       boost::system::error_code ec;
-      if (socket_.is_open())
+      if (socket().is_open())
       {
-        socket_.shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
+        socket().shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
       }
-      socket_.close(ec);
+      socket().close(ec);
+    }
+
+    void connection_t::request_handshake()
+    {
+      struct : boost::static_visitor<void>
+      {
+        void operator() (std::unique_ptr<ssl_stream_t>& stream) const
+        {
+          boost::system::error_code ec;
+          stream->handshake (boost::asio::ssl::stream_base::client, ec);
+          if (ec)
+          {
+            throw handshake_exception (ec);
+          }
+        }
+        void operator() (std::unique_ptr<tcp_socket_t>&) const
+        {
+        }
+      } visitor;
+      boost::apply_visitor (visitor, socket_);
+    }
+
+    void connection_t::acknowledge_handshake()
+    {
+      struct visitor_t : boost::static_visitor<void>
+      {
+        void operator() (std::unique_ptr<ssl_stream_t>& stream) const
+        {
+          boost::system::error_code ec;
+          stream->handshake
+            (boost::asio::ssl::stream_base::server, ec);
+          if (ec)
+          {
+            throw handshake_exception (ec);
+          }
+        }
+        void operator() (std::unique_ptr<tcp_socket_t>&) const
+        {
+        }
+      } visitor;
+      boost::apply_visitor (visitor, socket_);
     }
 
     void connection_t::start_read ()
     {
       fhg_assert (in_message_ != nullptr);
 
-      boost::asio::async_read( socket_
-                             , boost::asio::buffer (&in_message_->header, sizeof(p2p::header_t))
-                             , strand_.wrap
-                             ( std::bind ( &connection_t::handle_read_header
-                                         , shared_from_this()
-                                         , std::placeholders::_1
-                                         , std::placeholders::_2
-                                         )
-                             ));
+      async_read_wrapper
+      	( socket_
+      	, boost::asio::buffer (&in_message_->header, sizeof (p2p::header_t))
+        , strand_.wrap
+            ( std::bind ( &connection_t::handle_read_header
+                        , shared_from_this()
+                        , std::placeholders::_1
+                        , std::placeholders::_2
+                        )
+        	)
+      	);
     }
 
     void connection_t::handle_read_header( const boost::system::error_code & ec
@@ -82,15 +208,17 @@ namespace fhg
         // WORK HERE: convert for local endianess!
         in_message_->resize ();
 
-        boost::asio::async_read ( socket_
-                                , boost::asio::buffer (in_message_->data)
-                                , strand_.wrap
-                                ( std::bind ( &connection_t::handle_read_data
-                                            , shared_from_this()
-                                            , std::placeholders::_1
-                                            , std::placeholders::_2
-                                            )
-                                ));
+        async_read_wrapper
+          ( socket_
+          , boost::asio::buffer (in_message_->data)
+          , strand_.wrap
+              ( std::bind ( &connection_t::handle_read_data
+                          , shared_from_this()
+                          , std::placeholders::_1
+                          , std::placeholders::_2
+                          )
+          	  )
+          );
       }
       else
       {
@@ -108,23 +236,23 @@ namespace fhg
         message_t * m = in_message_;
         in_message_ = nullptr;
 
-            if (m->header.type_of_msg == p2p::HELLO_PACKET)
-            {
-              _handle_hello_message (shared_from_this(), m);
-            }
-            else
-            {
-              _handle_user_data (shared_from_this(), m);
-            }
+        if (m->header.type_of_msg == p2p::HELLO_PACKET)
+        {
+          _handle_hello_message (shared_from_this(), m);
+        }
+        else
+        {
+          _handle_user_data (shared_from_this(), m);
+        }
 
-            in_message_ = new message_t;
+        in_message_ = new message_t;
 
         start_read ();
       }
       else
       {
         in_message_->resize(0);
-            _handle_error (shared_from_this(), ec);
+        _handle_error (shared_from_this(), ec);
       }
     }
 
@@ -147,14 +275,16 @@ namespace fhg
 
       try
       {
-        boost::asio::async_write( socket_
-                                , d.to_buffers()
-                                , strand_.wrap (std::bind( &connection_t::handle_write
-                                                         , shared_from_this()
-                                                         , std::placeholders::_1
-                                                         )
-                                               )
-                                );
+        async_write_wrapper
+          ( socket_
+          , d.to_buffers()
+          , strand_.wrap
+              ( std::bind ( &connection_t::handle_write
+            		  	  , shared_from_this()
+            		  	  , std::placeholders::_1
+              	  	  	  )
+              )
+          );
       }
       catch (std::length_error const &)
       {
@@ -174,7 +304,7 @@ namespace fhg
 
         if (d.handler)
         {
-            d.handler (ec);
+          d.handler (ec);
         }
 
         if (! to_send_.empty())

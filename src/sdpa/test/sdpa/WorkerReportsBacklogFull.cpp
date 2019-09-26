@@ -1,11 +1,13 @@
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 namespace
 {
@@ -16,8 +18,9 @@ namespace
     fake_drts_worker_reporting_backlog_full
       ( std::function<void (std::string)> announce_job
       , utils::agent const& master
+      , fhg::com::Certificates const& certificates
       )
-      : utils::no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master)
+      : utils::no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master, certificates)
     {}
 
     virtual void handleSubmitJobEvent
@@ -64,12 +67,17 @@ namespace
   };
 }
 
-BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_other_two_receive_cancellation_requests
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
@@ -78,6 +86,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_c
   fake_drts_worker_reporting_backlog_full worker_1
     ([&job_submitted_1] (std::string j){job_submitted_1.notify (j);}
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -86,6 +95,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_c
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_3;
@@ -94,6 +104,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_c
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j);}
     , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
     , agent
+    , certificates
     );
 
   const std::string job_name (job_submitted_1.wait());
@@ -112,12 +123,17 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_other_two_receive_c
   worker_3.canceled (job_id_3);
 }
 
-BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_2_siblings_are_cancelled_the_job_is_rescheduled
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
@@ -126,6 +142,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_canc
   fake_drts_worker_reporting_backlog_full worker_1
     ([&job_submitted_1] (std::string j){job_submitted_1.notify (j);}
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -134,6 +151,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_canc
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_3;
@@ -142,13 +160,14 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_canc
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j);}
     , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
     , agent
+    , certificates
     );
 
   const std::string job_name_1 (job_submitted_1.wait());
   job_submitted_2.wait();
   job_submitted_3.wait();
 
-  const utils::fake_drts_worker_directly_finishing_jobs worker_4 (agent);
+  const utils::fake_drts_worker_directly_finishing_jobs worker_4 (agent, certificates);
 
   worker_1.report_backlog_full (job_name_1);
   worker_2.canceled (cancel_requested_2.wait());
@@ -166,23 +185,29 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_2_siblings_are_canc
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_still_running_sibling_is_cancelled_the_job_is_rescheduled
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
-      ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent);
+      ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
 
   fhg::util::thread::event<std::string> job_submitted_2;
   fake_drts_worker_reporting_backlog_full worker_2
     ([&job_submitted_2] (std::string j){job_submitted_2.notify (j);}
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_3;
@@ -191,6 +216,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibli
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j);}
     , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
     , agent
+    , certificates
     );
 
   const std::string job_name (job_submitted_1.wait());
@@ -199,7 +225,7 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibli
 
   fhg::util::thread::event<std::string> job_submitted_4;
   utils::fake_drts_worker_waiting_for_finished_ack worker_4
-    ([&job_submitted_4] (std::string j) { job_submitted_4.notify (j); }, agent);
+    ([&job_submitted_4] (std::string j) { job_submitted_4.notify (j); }, agent, certificates);
 
   worker_1.finish_and_wait_for_ack (job_name);
   worker_2.report_backlog_full (job_name);
@@ -220,13 +246,17 @@ BOOST_FIXTURE_TEST_CASE (one_worker_reports_backlog_full_the_still_running_sibli
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
-BOOST_FIXTURE_TEST_CASE
-  (one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  ( setup_logging
+  , one_worker_reports_backlog_full_the_second_activity_terminates_the_first_activity_is_rescheduled
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
@@ -235,6 +265,7 @@ BOOST_FIXTURE_TEST_CASE
   fake_drts_worker_reporting_backlog_full worker_1
     ([&job_submitted_1] (std::string j){job_submitted_1.notify (j);}
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<std::string> job_submitted_2;
@@ -243,6 +274,7 @@ BOOST_FIXTURE_TEST_CASE
     ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
     , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
     , agent
+    , certificates
     );
 
   const std::string job_name_1 (job_submitted_1.wait());

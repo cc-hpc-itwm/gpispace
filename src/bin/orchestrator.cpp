@@ -25,6 +25,14 @@
 namespace bfs = boost::filesystem;
 namespace po = boost::program_options;
 
+namespace
+{
+  namespace option_name
+  {
+    constexpr const char* ssl_certificates {"ssl-certificates"};
+  }
+}
+
 int main (int argc, char **argv)
 {
   fhg::rif::started_process_promise promise (argc, argv);
@@ -33,6 +41,7 @@ int main (int argc, char **argv)
   {
     std::string orchName;
     std::string orchUrl;
+    fhg::com::Certificates ssl_certificates;
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
@@ -43,6 +52,10 @@ int main (int argc, char **argv)
        ("help,h", "Display this message")
        ("name,n", po::value<std::string>(&orchName)->default_value("orchestrator"), "Orchestrator's logical name")
        ("url,u",  po::value<std::string>(&orchUrl)->default_value("localhost"), "Orchestrator's url")
+       ( option_name::ssl_certificates
+       , po::value<bfs::path>()
+       , "folder containing SSL certificates"
+       )
       ;
 
     po::variables_map vm;
@@ -57,6 +70,11 @@ int main (int argc, char **argv)
 
     po::notify(vm);
 
+    if (vm.count (option_name::ssl_certificates))
+    {
+      ssl_certificates = vm.at (option_name::ssl_certificates).as<bfs::path>();
+    }
+
     const sdpa::daemon::GenericDaemon orchestrator
       ( orchName
       , orchUrl
@@ -66,6 +84,7 @@ int main (int argc, char **argv)
       , logger
       , boost::none
       , false
+      , ssl_certificates
       );
 
     fhg::util::thread::event<> stop_requested;

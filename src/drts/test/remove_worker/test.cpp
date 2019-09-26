@@ -4,6 +4,7 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -14,6 +15,8 @@
 #include <util-generic/finally.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -21,9 +24,11 @@
 #include <boost/asio/read.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
-BOOST_AUTO_TEST_CASE (remove_worker)
+BOOST_DATA_TEST_CASE
+  (remove_worker, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -72,7 +77,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
@@ -94,7 +99,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                         );
 
   gspc::job_id_t const job_id
-    ( gspc::client (drts).submit
+    ( gspc::client (drts, certificates).submit
         ( gspc::workflow (make.pnet())
         , { {"address", fhg::util::connectable_to_address_string
                           (acceptor.local_endpoint().address())

@@ -63,21 +63,28 @@ namespace gspc
 
   struct client::implementation
   {
-    implementation (gspc::host_and_port_type const& orchestrator_endpoint)
+    implementation
+      ( gspc::host_and_port_type const& orchestrator_endpoint
+      , Certificates const& certificates
+      )
       : _client ( fhg::com::host_t (orchestrator_endpoint.host)
                 , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
                 , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , certificates
                 )
     {}
 
     sdpa::client::Client _client;
   };
 
-  client::client (scoped_runtime_system const& drts)
-    : client (information_to_reattach (drts))
+  client::client (scoped_runtime_system const& drts, Certificates const& certificates)
+    : client (information_to_reattach (drts), certificates)
   {}
-  client::client (information_to_reattach const& drts_info)
-    : _ (new implementation (drts_info._->endpoint()))
+  client::client
+    ( information_to_reattach const& drts_info
+    , Certificates const& certificates
+    )
+    : _ (new implementation (drts_info._->endpoint(), certificates))
   {}
   PIMPL_DTOR (client)
 

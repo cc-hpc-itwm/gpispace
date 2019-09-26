@@ -1,18 +1,22 @@
 #include <boost/test/unit_test.hpp>
 
-#include <iostream>
-
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
+#include <test/certificates_data.hpp>
+
 #include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/asio/io_service.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <condition_variable>
 #include <functional>
+#include <iostream>
 #include <mutex>
 
 namespace
@@ -53,7 +57,7 @@ namespace
   };
 }
 
-BOOST_AUTO_TEST_CASE (perform_test)
+BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
 {
   wait_for_n_events_strategy counter (1);
 
@@ -66,6 +70,7 @@ BOOST_AUTO_TEST_CASE (perform_test)
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
+    , certificates
     );
 
   net.perform<sdpa::events::ErrorEvent>

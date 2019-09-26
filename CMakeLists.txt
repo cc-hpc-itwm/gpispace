@@ -42,6 +42,17 @@ SET (TESTING_RIF_STRATEGY_PARAMETERS ""
   CACHE STRING "strategy parameters to use for starting scoped rif daemons"
 )
 
+SET (GSPC_SSL_CERTIFICATES_FOR_TESTS ""
+  CACHE STRING "SSL certificates to use in tests"
+)
+
+if (GSPC_SSL_CERTIFICATES_FOR_TESTS)
+  message ("using user provided certificates for testing, stored in \"${GSPC_SSL_CERTIFICATES_FOR_TESTS}\"")
+  add_definitions ("-DGSPC_SSL_CERTIFICATES_FOR_TESTS=\"${GSPC_SSL_CERTIFICATES_FOR_TESTS}\"")
+else()
+  add_definitions ("-DGSPC_SSL_CERTIFICATES_FOR_TESTS=\"${CMAKE_SOURCE_DIR}/src/fhgcom/tests/certs\"")
+endif()
+  
 set (Boost_NO_SYSTEM_PATHS ON)
 
 if (NOT FHG_ASSERT_MODE)

@@ -2,7 +2,9 @@
 
 #pragma once
 
+#include <drts/certificates.hpp>
 #include <drts/worker_description.hpp>
+#include <drts/drts.fwd.hpp>
 
 #include <installation_path.hpp>
 
@@ -80,6 +82,7 @@ namespace fhg
       , gspc::installation_path const&
       , std::ostream& info_output
       , std::list<fhg::logging::tcp_endpoint>& log_emitters
+      , gspc::Certificates const& certificates
       );
 
     hostinfo_type startup
@@ -103,6 +106,7 @@ namespace fhg
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
       , std::list<fhg::logging::tcp_endpoint>& log_emitters
+      , gspc::Certificates const& certificates
       );
   }
 }

@@ -1,5 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <drts/certificates.hpp>
+
 #include <rif/entry_point.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
@@ -308,6 +310,7 @@ try
            , boost::optional<std::string> const& gui_host
            , boost::optional<unsigned short> const& gui_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
+           , gspc::Certificates const& certificates
            , boost::filesystem::path const& command
            , std::unordered_map<std::string, std::string> const& environment
            )
@@ -327,6 +330,11 @@ try
           {
             arguments.emplace_back ("--vmem-socket");
             arguments.emplace_back (gpi_socket->string());
+          }
+          if (certificates)
+          {
+            arguments.emplace_back ("--ssl-certificates");
+            arguments.emplace_back (certificates->string());
           }
 
           auto const pid_and_startup_messages

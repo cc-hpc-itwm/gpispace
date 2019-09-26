@@ -1,5 +1,9 @@
 #include <utils.hpp>
-#include <boost/test/unit_test.hpp>
+
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 we::type::activity_t net_with_n_children (unsigned int n)
 {
@@ -82,12 +86,12 @@ we::type::activity_t net_with_n_children (unsigned int n)
 // This case tests if each worker added after a user workflow submission
 // gets assigned a task, provided sufficient activities are produced by the
 // workflow engine
-BOOST_FIXTURE_TEST_CASE
-  (add_new_workers, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, add_new_workers, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
-  utils::client client (orchestrator);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
+  utils::client client (orchestrator, certificates);
 
   const unsigned int n_initial_workers (25);
   const unsigned int n_new_workers (25);
@@ -107,6 +111,7 @@ BOOST_FIXTURE_TEST_CASE
       ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
         ( [&e] (std::string str) {e.notify (str);}
         , agent
+        , certificates
         )
       );
   }
@@ -133,6 +138,7 @@ BOOST_FIXTURE_TEST_CASE
       ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
         ( [&e] (std::string str) {e.notify (str);}
         , agent
+        , certificates
         )
       );
   }

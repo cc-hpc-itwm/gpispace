@@ -1,12 +1,14 @@
 #include <utils.hpp>
 
-#include <boost/test/unit_test.hpp>
-
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <functional>
 
@@ -20,9 +22,10 @@ namespace
         ( std::function<void (std::string)> announce_job
         , std::function<void (std::string)> announce_cancel
         , const utils::agent& master_agent
+        , fhg::com::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
-        (announce_job, master_agent)
+        (announce_job, master_agent, certificates)
       , _announce_cancel (announce_cancel)
     {}
 
@@ -58,11 +61,12 @@ namespace
   };
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_no_agent, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_no_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -72,10 +76,11 @@ BOOST_FIXTURE_TEST_CASE (cancel_no_agent, setup_logging)
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_with_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
@@ -83,9 +88,10 @@ BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
     ( [&job_submitted] (std::string) { job_submitted.notify(); }
     , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
     , agent
+    , certificates
     );
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -99,11 +105,12 @@ BOOST_FIXTURE_TEST_CASE (cancel_with_agent, setup_logging)
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 }
 
-BOOST_FIXTURE_TEST_CASE (call_cancel_twice_orch, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, call_cancel_twice_orch, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -115,10 +122,11 @@ BOOST_FIXTURE_TEST_CASE (call_cancel_twice_orch, setup_logging)
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
-BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, call_cancel_twice_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
@@ -126,9 +134,10 @@ BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
     ( [&job_submitted] (std::string) { job_submitted.notify(); }
     , [&cancel_requested] (std::string j) { cancel_requested.notify (j); }
     , agent
+    , certificates
     );
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -144,18 +153,20 @@ BOOST_FIXTURE_TEST_CASE (call_cancel_twice_agent, setup_logging)
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_pending_jobs, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   fhg::util::thread::event<> job_submitted;
   utils::fake_drts_worker_notifying_module_call_submission worker
     ( [&job_submitted] (std::string) { job_submitted.notify(); }
     , agent
+    , certificates
     );
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
 
   const sdpa::job_id_t job_id_0 (client.submit_job (utils::module_call()));
   job_submitted.wait();
@@ -168,10 +179,11 @@ BOOST_FIXTURE_TEST_CASE (cancel_pending_jobs, setup_logging)
     (client.wait_for_terminal_state (job_id_1), sdpa::status::CANCELED);
 }
 
-BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
+BOOST_DATA_TEST_CASE_F
+  (setup_logging, cancel_workflow_with_two_activities, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+  const utils::orchestrator orchestrator (_logger, certificates);
+  const utils::agent agent (orchestrator, _logger, certificates);
 
   fhg::util::thread::event<> job_submitted_0;
   fhg::util::thread::event<std::string> cancel_requested_0;
@@ -179,6 +191,7 @@ BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
     ( [&job_submitted_0] (std::string) { job_submitted_0.notify(); }
     , [&cancel_requested_0] (std::string j) { cancel_requested_0.notify (j); }
     , agent
+    , certificates
     );
 
   fhg::util::thread::event<> job_submitted_1;
@@ -187,9 +200,10 @@ BOOST_FIXTURE_TEST_CASE (cancel_workflow_with_two_activities, setup_logging)
      ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
      , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
      , agent
+     , certificates
      );
 
-  utils::client client (orchestrator);
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 

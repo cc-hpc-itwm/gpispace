@@ -6,9 +6,12 @@
 #include <fhg/assert.hpp>
 
 #include <boost/asio.hpp>
+#include <boost/asio/ssl.hpp>
+#include <boost/asio/ssl/context.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/variant.hpp>
 
 #include <functional>
 #include <iomanip>
@@ -22,6 +25,18 @@ namespace fhg
 {
   namespace com
   {
+    using tcp_socket_t = boost::asio::ip::tcp::socket;
+    using ssl_stream_t = boost::asio::ssl::stream<tcp_socket_t>;
+    using socket_t = boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
+
+    class handshake_exception : public boost::system::system_error
+    {
+    public:
+      handshake_exception (boost::system::error_code const& ec)
+        : boost::system::system_error (ec)
+      {}
+    };
+
     class connection_t : private boost::noncopyable
                        , public boost::enable_shared_from_this<connection_t>
     {
@@ -33,6 +48,8 @@ namespace fhg
       explicit
       connection_t
         ( boost::asio::io_service & io_service
+        , std::unique_ptr<boost::asio::ssl::context> const& ctx
+        , boost::asio::io_service::strand const& strand
         , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
         , std::function<void (ptr_t connection, const message_t*)> handle_user_data
         , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
@@ -40,14 +57,14 @@ namespace fhg
 
       ~connection_t ();
 
-      boost::asio::ip::tcp::socket & socket ();
+      boost::asio::ip::tcp::socket & socket();
 
       void async_send (const message_t * msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
       {
-        socket_.set_option (o);
+        socket().set_option (o);
       }
 
       void start ();
@@ -61,6 +78,10 @@ namespace fhg
       {
         m_remote_addr = a;
       }
+
+      void request_handshake();
+      void acknowledge_handshake();
+
     private:
       struct to_send_t
       {
@@ -112,8 +133,8 @@ namespace fhg
       void handle_write ( const boost::system::error_code & ec );
 
       boost::asio::io_service::strand strand_;
-      boost::asio::ip::tcp::socket socket_;
-
+      socket_t socket_;
+      tcp_socket_t& _raw_socket;
       std::function<void (ptr_t connection, const message_t*)> _handle_hello_message;
       std::function<void (ptr_t connection, const message_t*)> _handle_user_data;
       std::function<void (ptr_t connection, const boost::system::error_code&)> _handle_error;

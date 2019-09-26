@@ -9,6 +9,7 @@
 #include <logging/legacy_bridge.hpp>
 #include <logging/tcp_receiver.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -19,6 +20,7 @@
 #include <util-generic/join.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
@@ -26,11 +28,13 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <list>
 
-BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
+BOOST_DATA_TEST_CASE
+  (client_implementation_with_ostream_logger, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -108,7 +112,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
                                  );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
 
   boost::filesystem::path const implementation
     ( vm.at ("implementation")
@@ -123,7 +127,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts).put_and_run
+    ( gspc::client (drts, certificates).put_and_run
       ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
         , {"message", fhg::util::join (lines, '\n').string()}

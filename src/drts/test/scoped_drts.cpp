@@ -6,6 +6,7 @@
 
 #include <boost/program_options.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/shared_directory.hpp>
@@ -13,14 +14,20 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/format.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <regex>
 #include <sstream>
 #include <vector>
 
-BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
+BOOST_DATA_TEST_CASE
+  ( scoped_drts_empty_topology
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -53,10 +60,14 @@ BOOST_AUTO_TEST_CASE (scoped_drts_empty_topology)
                                         );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifds.entry_points());
+    (vm, installation, "", scoped_rifds.entry_points(), std::cerr, certificates);
 }
 
-BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
+BOOST_DATA_TEST_CASE
+  ( no_worker_started_on_master
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -102,6 +113,7 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
       , boost::none
       , master.entry_point()
       , info_output_stream
+      , certificates
       );
   }
 
@@ -162,7 +174,11 @@ BOOST_AUTO_TEST_CASE (no_worker_started_on_master)
     );
 }
 
-BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
+BOOST_DATA_TEST_CASE
+  ( workers_are_started_on_non_master
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -205,15 +221,17 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     );
 
   std::ostringstream info_output_stream;
+  std::string const worker ("WORKER");
 
   {
     gspc::scoped_runtime_system const drts
       ( vm
       , installation
-      , "WORKER:1"
+      , worker + ":1"
       , scoped_rifds.entry_points()
       , master.entry_point()
       , info_output_stream
+      , certificates
       );
   }
 
@@ -254,7 +272,7 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
     );
 
   std::string const entry_point_worker
-    ([&info_output, &hosts, &entry_point_master]()
+    ([&info_output, &hosts, &entry_point_master, &worker]()
      {
        std::smatch match;
 
@@ -263,12 +281,13 @@ BOOST_AUTO_TEST_CASE (workers_are_started_on_non_master)
            ( info_output[2]
            , match
            , std::regex
-             ( ( boost::format ("I: starting WORKER workers"
+             ( ( boost::format ("I: starting %2% workers"
                                " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
                                " with parent agent-%1%-0"
                                " on rif entry point ((.+) [0-9]+ [0-9]+)"
                                )
                % entry_point_master
+               % worker
                ).str()
              )
            )

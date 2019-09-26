@@ -72,6 +72,7 @@ GenericDaemon::GenericDaemon( const std::string name
                             , fhg::log::Logger& logger
                             , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
                             , bool create_wfe
+                            , fhg::com::Certificates const& certificates
                             )
   : _logger (logger)
   , _name (name)
@@ -114,6 +115,7 @@ GenericDaemon::GenericDaemon( const std::string name
                       , std::move (peer_io_service)
                       , host_from_url (url)
                       , port_from_url (url)
+                      , certificates
                       )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer

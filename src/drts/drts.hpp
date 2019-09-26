@@ -1,7 +1,7 @@
 #pragma once
 
+#include <drts/certificates.hpp>
 #include <drts/drts.fwd.hpp>
-
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
 #include <drts/rifd_entry_points.hpp>
@@ -69,12 +69,14 @@ namespace gspc
                           , installation const&
                           , std::string const& topology_description
                           , std::ostream& info_output = std::cerr
+                          , Certificates const& certificates = boost::none
                           );
     scoped_runtime_system ( boost::program_options::variables_map const& vm
                           , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
                           , std::ostream& info_output = std::cerr
+                          , Certificates const& certificates = boost::none
                           );
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
@@ -83,13 +85,17 @@ namespace gspc
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
       , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
       );
 
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
                       , rifd_entry_point_hash
                       >
-      add_worker (rifd_entry_points const&);
+      add_worker
+        ( rifd_entry_points const&
+        , Certificates const& certificates = boost::none
+        );
 
     std::unordered_map< rifd_entry_point
                       , std::list<std::exception_ptr>
@@ -98,6 +104,7 @@ namespace gspc
       add_worker
         ( std::vector<worker_description> const&
         , rifd_entry_points const&
+        , Certificates const& certificates = boost::none
         );
 
     std::unordered_map< rifd_entry_point

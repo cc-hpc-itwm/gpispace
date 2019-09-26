@@ -16,12 +16,13 @@ namespace sdpa
                                      , std::unique_ptr<boost::asio::io_service> peer_io_service
                                      , fhg::com::host_t const & host
                                      , fhg::com::port_t const & port
+                                     , fhg::com::Certificates const& certificates
                                      )
       : _codec()
       , _event_handler (event_handler)
       , m_message()
       , m_shutting_down (false)
-      , _peer (std::move (peer_io_service), host, port)
+      , _peer (std::move (peer_io_service), host, port, certificates)
     {
       _peer.async_recv
         ( &m_message

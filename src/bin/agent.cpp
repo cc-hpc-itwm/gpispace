@@ -35,6 +35,7 @@ namespace
   namespace option_name
   {
     constexpr const char* vmem_socket {"vmem-socket"};
+    constexpr const char* ssl_certificates {"ssl-certificates"};
   }
 }
 
@@ -51,6 +52,7 @@ int main (int argc, char **argv)
     std::vector<std::string> arrMasterNames;
     std::string appGuiUrl;
     boost::optional<bfs::path> vmem_socket;
+    fhg::com::Certificates ssl_certificates;
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
@@ -64,8 +66,12 @@ int main (int argc, char **argv)
       ("masters", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'host%port'")
       ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
       ( option_name::vmem_socket
-      , boost::program_options::value<validators::nonempty_string>()
+      , po::value<validators::nonempty_string>()
       , "socket file to communicate with the virtual memory manager"
+      )
+      ( option_name::ssl_certificates
+      , po::value<bfs::path>()
+      , "folder containing SSL certificates"
       )
       ;
 
@@ -84,6 +90,11 @@ int main (int argc, char **argv)
     if (vm.count (option_name::vmem_socket))
     {
       vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
+    }
+
+    if (vm.count (option_name::ssl_certificates))
+    {
+      ssl_certificates = vm.at (option_name::ssl_certificates).as<bfs::path>();
     }
 
     sdpa::master_info_t masters;
@@ -113,6 +124,7 @@ int main (int argc, char **argv)
       , logger
       , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
       , true
+      , ssl_certificates
       );
 
     fhg::util::thread::event<> stop_requested;

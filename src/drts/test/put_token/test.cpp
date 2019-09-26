@@ -12,6 +12,7 @@
 #include <rpc/service_handler.hpp>
 #include <rpc/service_tcp_provider.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -26,13 +27,16 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <map>
 
-BOOST_AUTO_TEST_CASE (wait_for_token_put)
+BOOST_DATA_TEST_CASE
+  (wait_for_token_put, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -92,8 +96,8 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
-  gspc::client client (drts);
+    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 

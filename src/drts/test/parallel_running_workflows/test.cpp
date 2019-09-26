@@ -6,6 +6,7 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -14,17 +15,20 @@
 
 #include <we/type/value.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <future>
 #include <map>
 
-BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
+BOOST_DATA_TEST_CASE
+  (drts_parallel_running_workflows, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -85,14 +89,14 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
+    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
 
   auto submit_fun
-    ( [&filename_a, &filename_b, &drts]
+    ( [&filename_a, &filename_b, &drts, &certificates]
       (std::string port, test::make_net_lib_install const& make)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        ( gspc::client (drts).put_and_run
+        ( gspc::client (drts, certificates).put_and_run
           ( gspc::workflow (make.pnet())
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}

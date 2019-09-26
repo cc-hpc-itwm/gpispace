@@ -1,6 +1,7 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
 #include <fhg/util/thread/event.hpp>
 
@@ -10,6 +11,7 @@
 
 #include <cstdlib>
 #include <functional>
+#include <memory>
 
 namespace fhg
 {
@@ -18,19 +20,63 @@ namespace fhg
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
+                   , Certificates const& certificates
                    )
       : stopping_ (false)
       , host_(host)
       , port_(port)
       , io_service_ (std::move (io_service))
+      , strand_ (*io_service_)
       , io_service_work_(*io_service_)
       , acceptor_(*io_service_)
       , connections_()
-      , _io_thread ([this] { io_service_->run(); })
+      , handshake_exception_ (nullptr)
+      , _io_thread ( [this]
+                     { try
+                       {
+                         io_service_->run();
+                       }
+                       catch (fhg::com::handshake_exception const& exc)
+                       {
+                         handshake_exception_=std::current_exception();
+                       }
+                     }
+                   )
+
     {
       try
       {
         lock_type const _ (mutex_);
+
+        if (certificates)
+        {
+          ctx_ = fhg::util::cxx14::make_unique<boost::asio::ssl::context>
+                   (*io_service_, boost::asio::ssl::context::sslv23);
+
+          ctx_->set_options ( boost::asio::ssl::context::default_workarounds
+                            | boost::asio::ssl::context::no_sslv2
+                            | boost::asio::ssl::context::no_sslv3
+                            | boost::asio::ssl::context::single_dh_use
+                            );
+
+          ctx_->use_certificate_chain_file
+            (boost::filesystem::canonical (certificates.get()/"server.crt").string());
+
+          ctx_->use_private_key_file
+            (boost::filesystem::canonical ( certificates.get()/"server.key").string()
+                                          , boost::asio::ssl::context::pem
+                                          );
+          ctx_->use_tmp_dh_file
+            (boost::filesystem::canonical (certificates.get()/"dh2048.pem").string());
+
+          ctx_->set_verify_mode
+            ( boost::asio::ssl::context::verify_fail_if_no_peer_cert
+            | boost::asio::ssl::context::verify_peer
+            );
+
+          ctx_->load_verify_file
+            (boost::filesystem::canonical (certificates.get()/"server.crt").string());
+        }
 
         boost::asio::ip::tcp::resolver resolver(*io_service_);
         boost::asio::ip::tcp::resolver::query query(host_, port_);
@@ -78,7 +124,7 @@ namespace fhg
 
       if (listen_)
       {
-        listen_->socket ().close ();
+        listen_->socket().close();
       }
 
       // TODO: call pending handlers and delete pending messages
@@ -89,7 +135,7 @@ namespace fhg
         if (cd.connection)
         {
           boost::system::error_code ignore;
-          cd.connection->socket ().cancel (ignore);
+          cd.connection->socket().cancel (ignore);
         }
 
         while (! cd.o_queue.empty())
@@ -140,6 +186,8 @@ namespace fhg
       connection_data_t& cd (connections_[addr]);
       cd.connection = boost::make_shared<connection_t>
         ( *io_service_
+        , ctx_
+        , strand_
         , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
         , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
@@ -154,12 +202,14 @@ namespace fhg
         , ec
         );
 
-      connection_established (addr, ec);
-
       if (ec)
       {
         throw boost::system::system_error (ec);
       }
+
+      cd.connection->request_handshake();
+
+      connection_established (addr);
 
       return addr;
     }
@@ -200,16 +250,16 @@ namespace fhg
 
       // TODO: io_service_->post (...);
 
-        connection_data_t & cd = connections_.at (addr);
-        to_send_t to_send;
-        to_send.message.header.src = my_addr_.get();
-        to_send.message.header.dst = addr;
-        to_send.message.assign (data);
-        to_send.handler = completion_handler;
-        cd.o_queue.push_back (to_send);
+      connection_data_t & cd = connections_.at (addr);
+      to_send_t to_send;
+      to_send.message.header.src = my_addr_.get();
+      to_send.message.header.dst = addr;
+      to_send.message.assign (data);
+      to_send.handler = completion_handler;
+      cd.o_queue.push_back (to_send);
 
-        if (cd.o_queue.size () == 1)
-          start_sender (addr);
+      if (cd.o_queue.size () == 1)
+        start_sender (addr);
     }
 
     void peer_t::TESTING_ONLY_recv (message_t *m)
@@ -275,40 +325,29 @@ namespace fhg
       completion_handler (errc::make_error_code (errc::success), m->header.src);
     }
 
-    void peer_t::connection_established (const p2p::address_t a, boost::system::error_code const &ec)
+    void peer_t::connection_established (const p2p::address_t a)
     {
       lock_type lock (mutex_);
 
-      if (! ec)
+      connection_data_t & cd = connections_.find (a)->second;
+
       {
-        connection_data_t & cd = connections_.find (a)->second;
-
-        {
-          boost::asio::socket_base::keep_alive o(true);
-          cd.connection->set_option (o);
-          cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
-        }
-
-        // send hello message
-        to_send_t to_send;
-        to_send.handler = [](boost::system::error_code const&) {};
-        to_send.message.header.src = my_addr_.get();
-        to_send.message.header.dst = a;
-        to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
-        to_send.message.resize (0);
-
-        cd.connection->start ();
-        cd.o_queue.push_front (to_send);
-        start_sender (a);
+        boost::asio::socket_base::keep_alive o(true);
+        cd.connection->set_option (o);
+        cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
       }
-      else
-      {
-        if (connections_.find (a) != connections_.end())
-        {
-          connection_data_t & cd = connections_.find (a)->second;
-          handle_error (cd.connection, ec);
-        }
-      }
+
+      // send hello message
+      to_send_t to_send;
+      to_send.handler = [](boost::system::error_code const&) {};
+      to_send.message.header.src = my_addr_.get();
+      to_send.message.header.dst = a;
+      to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
+      to_send.message.resize (0);
+
+      cd.connection->start ();
+      cd.o_queue.push_front (to_send);
+      start_sender (a);
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
@@ -347,13 +386,14 @@ namespace fhg
       {
         if (! cd.o_queue.empty())
         {
-          // TODO: wrap in strand...
           cd.connection->async_send ( &cd.o_queue.front().message
-                                    , std::bind ( &peer_t::handle_send
-                                                , this
-                                                , a
-                                                , std::placeholders::_1
-                                                )
+                                    , strand_.wrap
+                                        ( std::bind ( &peer_t::handle_send
+                                                    , this
+                                                    , a
+                                                    , std::placeholders::_1
+                                                    )
+                                        )
                                     );
         }
         else
@@ -382,11 +422,13 @@ namespace fhg
 
         cd.send_in_progress = true;
         cd.connection->async_send ( &cd.o_queue.front().message
-                                  , std::bind ( &peer_t::handle_send
-                                              , this
-                                              , a
-                                              , std::placeholders::_1
-                                              )
+                                  , strand_.wrap
+                                      ( std::bind ( &peer_t::handle_send
+                                                  , this
+                                                  , a
+                                                  , std::placeholders::_1
+                                                )
+                                      )
                                   );
       }
       catch (std::out_of_range const &)
@@ -397,20 +439,19 @@ namespace fhg
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
     {
-      lock_type lock (mutex_);
-
       if (! ec && !stopping_)
       {
         fhg_assert (listen_);
 
+        listen_->acknowledge_handshake();
+
         // TODO: work here schedule timeout
         backlog_.insert (listen_);
 
-        // the connection will  call us back when it got the  hello packet or will
-        // timeout
-        listen_->start ();
-
-        accept_new ();
+        // the connection will  call us back when it got the
+        // hello packet or will timeout
+        listen_->start();
+        accept_new();
       }
     }
 
@@ -419,41 +460,45 @@ namespace fhg
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( *io_service_
+          , ctx_
+          , strand_
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
           )
         );
       listen_->local_address(my_addr_.get());
-      acceptor_.async_accept( listen_->socket()
-                            , std::bind( &peer_t::handle_accept
-                                       , this
-                                       , std::placeholders::_1
-                                       )
-                            );
+      acceptor_.async_accept ( listen_->socket()
+                             , strand_.wrap
+                                 ( std::bind ( &peer_t::handle_accept
+                                             , this
+                                             , std::placeholders::_1
+                                             )
+                                 )
+                             );
     }
 
     void peer_t::handle_hello_message (connection_t::ptr_t c, const message_t *m)
     {
       lock_type lock (mutex_);
 
-        if (backlog_.find (c) == backlog_.end())
-        {
-          handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
-        }
-        else
-        {
-          backlog_.erase (c);
+      if (backlog_.find (c) == backlog_.end())
+      {
+        handle_error (c, boost::system::errc::make_error_code (boost::system::errc::connection_reset));
+      }
+      else
+      {
+        backlog_.erase (c);
 
-          c->local_address (m->header.dst);
-          c->remote_address (m->header.src);
+        c->local_address (m->header.dst);
+        c->remote_address (m->header.src);
 
-          connection_data_t & cd = connections_[m->header.src];
-          if (!cd.connection)
-          {
-            cd.connection = c;
-          }
+        connection_data_t & cd = connections_[m->header.src];
+        if (!cd.connection)
+        {
+          cd.connection = c;
         }
+      }
 
       delete m;
     }
@@ -502,8 +547,8 @@ namespace fhg
         connection_data_t & cd = connections_[c->remote_address()];
 
         boost::system::error_code ignore;
-        c->socket ().cancel (ignore);
-        c->socket ().close (ignore);
+        c->socket().cancel (ignore);
+        c->socket().close (ignore);
 
         // deactivate asynchronous sender
         cd.send_in_progress = false;
@@ -549,6 +594,11 @@ namespace fhg
           c.reset ();
         }
       }
+    }
+
+    std::exception_ptr peer_t::handshake_exception() const
+    {
+      return handshake_exception_;
     }
   }
 }
