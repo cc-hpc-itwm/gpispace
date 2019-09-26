@@ -1,5 +1,7 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <drts/certificates.hpp>
+
 #include <rif/entry_point.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>

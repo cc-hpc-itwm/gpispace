@@ -4,6 +4,8 @@
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
+#include <test/certificates_data.hpp>
+
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/temporary_path.hpp>
@@ -13,21 +15,11 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
-#include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 
 #include <memory>
 #include <thread>
 
-namespace
-{
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { fhg::com::Certificates{}                                       \
-      , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
-      }                                                                  \
-    )
-}
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_DATA_TEST_CASE

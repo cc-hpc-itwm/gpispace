@@ -1,7 +1,7 @@
 #pragma once
 
+#include <drts/certificates.hpp>
 #include <drts/drts.fwd.hpp>
-
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
 #include <drts/rifd_entry_points.hpp>

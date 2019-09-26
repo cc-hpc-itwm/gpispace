@@ -9,6 +9,7 @@
 #include <logging/legacy_bridge.hpp>
 #include <logging/tcp_receiver.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -27,21 +28,10 @@
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
-#include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <list>
-
-namespace
-{
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { gspc::Certificates{}                                           \
-      , gspc::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}           \
-      }                                                                  \
-    )
-}
 
 BOOST_DATA_TEST_CASE
   (client_implementation_with_ostream_logger, certificates_data, certificates)

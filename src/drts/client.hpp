@@ -1,5 +1,6 @@
 #pragma once
 
+#include <drts/certificates.hpp>
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>

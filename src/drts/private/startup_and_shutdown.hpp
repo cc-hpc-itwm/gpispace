@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <drts/certificates.hpp>
 #include <drts/worker_description.hpp>
 #include <drts/drts.fwd.hpp>
 

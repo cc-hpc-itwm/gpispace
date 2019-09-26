@@ -18,6 +18,7 @@ fhg_add_test (NAME fhgcom_peer
   LIBRARIES fhgcom
             fhg-util
             fhglog
+            test-utilities
             Boost::filesystem
             Boost::serialization
             Boost::date_time

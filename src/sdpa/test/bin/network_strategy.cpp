@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <iostream>
-
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+
+#include <test/certificates_data.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
@@ -16,17 +16,11 @@
 
 #include <condition_variable>
 #include <functional>
+#include <iostream>
 #include <mutex>
 
 namespace
 {
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { fhg::com::Certificates{}                                       \
-      , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
-      }                                                                  \
-    )
-
   struct wait_for_n_events_strategy
   {
     wait_for_n_events_strategy (unsigned int expected)

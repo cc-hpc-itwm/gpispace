@@ -8,6 +8,8 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <test/certificates_data.hpp>
+
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/syscall.hpp>
@@ -28,16 +30,6 @@
 #include <mutex>
 #include <sstream>
 #include <string>
-
-namespace
-{
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { fhg::com::Certificates{}                                       \
-      , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}       \
-      }                                                                  \
-    )
-}
 
 struct setup_logging
 {

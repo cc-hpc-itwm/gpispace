@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drts/certificates.hpp>
+
 #include <fhgcom/connection.hpp>
 #include <fhgcom/header.hpp>
 #include <fhgcom/peer_info.hpp>
@@ -22,7 +24,7 @@ namespace fhg
 {
   namespace com
   {
-    using Certificates = boost::optional<boost::filesystem::path>;
+    using Certificates = gspc::Certificates;
 
     /*!
       This class abstracts from an endpoint
