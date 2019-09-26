@@ -8,6 +8,8 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/daemon/GenericDaemon.hpp>
 
+#include <logging/stdout_sink.hpp>
+
 #include <test/certificates_data.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
@@ -21,13 +23,22 @@
 #include <boost/test/unit_test.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <algorithm>
 #include <condition_variable>
+#include <cstddef>
 #include <fstream>
 #include <functional>
+#include <iostream>
+#include <iterator>
+#include <list>
+#include <map>
 #include <memory>
 #include <mutex>
-#include <sstream>
+#include <stdexcept>
 #include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <utility>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (fhg::com::p2p::address_t, os, address)
 {
@@ -236,6 +247,19 @@ namespace utils
       );
   }
 
+  struct log_to_stdout
+  {
+    fhg::logging::stdout_sink& sink()
+    {
+      static fhg::logging::stdout_sink _;
+      return _;
+    }
+    log_to_stdout (sdpa::daemon::GenericDaemon& component)
+    {
+      sink().add_emitters ({component.logger_registration_endpoint()});
+    }
+  };
+
   struct orchestrator : boost::noncopyable
   {
     orchestrator (fhg::com::Certificates const& certificates)
@@ -249,6 +273,8 @@ namespace utils
     {}
 
     sdpa::daemon::GenericDaemon _;
+    log_to_stdout _log_to_stdout = {_};
+
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const
     {
@@ -312,6 +338,8 @@ namespace utils
           )
     {}
     sdpa::daemon::GenericDaemon _;
+    log_to_stdout _log_to_stdout = {_};
+
     std::string name() const { return _.name(); }
     fhg::com::host_t host() const
     {
