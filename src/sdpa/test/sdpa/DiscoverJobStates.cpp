@@ -233,64 +233,48 @@ namespace
 
     return i.state();
   }
-
-  void verify_child_count_in_agent_chain
-    (const std::size_t num_agents, fhg::com::Certificates const& certificates)
-  {
-    const utils::orchestrator orchestrator (certificates);
-    std::list<std::unique_ptr<utils::agent>> agents;
-    agents.emplace_front
-      (fhg::util::cxx14::make_unique<utils::agent> (orchestrator, certificates));
-
-    for (std::size_t counter (1); counter < num_agents; ++counter)
-    {
-      agents.emplace_front
-        (fhg::util::cxx14::make_unique<utils::agent> (*agents.front(), certificates));
-    }
-
-    fhg::util::thread::event<std::string> job_submitted;
-
-    fake_drts_worker_discovering<sdpa::status::RUNNING> worker
-      ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
-      , *agents.front()
-      , certificates
-      );
-
-    const std::string activity_name (fhg::util::testing::random_string());
-
-    utils::client::submitted_job submitted_job
-      (utils::module_call (activity_name), orchestrator, certificates);
-
-    const wait_until_submitted_and_finish_on_scope_exit _
-      (worker, activity_name, job_submitted);
-
-    sdpa::discovery_info_t const info (submitted_job.discover());
-
-    BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
-    BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);
-  }
-}
-
-BOOST_DATA_TEST_CASE (agent_chain_1, certificates_data, certificates)
-{
-  verify_child_count_in_agent_chain (1, certificates);
-}
-
-BOOST_DATA_TEST_CASE (agent_chain_2, certificates_data, certificates)
-{
-  verify_child_count_in_agent_chain (2, certificates);
-}
-
-BOOST_DATA_TEST_CASE (agent_chain_3_to_9, certificates_data, certificates)
-{
-  for (std::size_t n (3); n < 10; ++n)
-  {
-    verify_child_count_in_agent_chain (n, certificates);
-  }
 }
 
 //! \note number of open files is the limiting factor
-BOOST_DATA_TEST_CASE (agent_chain_89, certificates_data, certificates)
+//! * September 2019 - with new logging, more file descriptors are
+//! used. Reduced chain from 89 to 76 to accommodate.
+BOOST_DATA_TEST_CASE
+  ( agent_chain
+  , boost::unit_test::data::make ({1, 2, 3, 4, 5, 6, 7, 8, 9, 76})
+  * certificates_data
+  , num_agents
+  , certificates
+  )
 {
-  verify_child_count_in_agent_chain (89, certificates);
+  const utils::orchestrator orchestrator (certificates);
+  std::list<std::unique_ptr<utils::agent>> agents;
+  agents.emplace_front
+    (fhg::util::cxx14::make_unique<utils::agent> (orchestrator, certificates));
+
+  for (int counter (1); counter < num_agents; ++counter)
+  {
+    agents.emplace_front
+      (fhg::util::cxx14::make_unique<utils::agent> (*agents.front(), certificates));
+  }
+
+  fhg::util::thread::event<std::string> job_submitted;
+
+  fake_drts_worker_discovering<sdpa::status::RUNNING> worker
+    ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
+    , *agents.front()
+    , certificates
+    );
+
+  const std::string activity_name (fhg::util::testing::random_string());
+
+  utils::client::submitted_job submitted_job
+    (utils::module_call (activity_name), orchestrator, certificates);
+
+  const wait_until_submitted_and_finish_on_scope_exit _
+    (worker, activity_name, job_submitted);
+
+  sdpa::discovery_info_t const info (submitted_job.discover());
+
+  BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
+  BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);
 }
