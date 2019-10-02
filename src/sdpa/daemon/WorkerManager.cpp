@@ -167,15 +167,16 @@ namespace sdpa
       }
     }
 
-    boost::optional<double> WorkerManager::match_requirements_and_preferences
-      ( Worker const& worker
-      , const Requirements_and_preferences& requirements_and_preferences
-      ) const
+    std::pair<boost::optional<double>, boost::optional<std::string>>
+      WorkerManager::match_requirements_and_preferences
+        ( Worker const& worker
+        , const Requirements_and_preferences& requirements_and_preferences
+        ) const
     {
       std::size_t matchingDeg (0);
       if (requirements_and_preferences.numWorkers()>1 && worker._children_allowed)
       {
-        return boost::none;
+        return std::make_pair (boost::none, boost::none);
       }
       for ( we::type::requirement_t const& req
           : requirements_and_preferences.requirements()
@@ -190,11 +191,39 @@ namespace sdpa
         }
         else if (req.is_mandatory())
         {
-          return boost::none;
+          return std::make_pair (boost::none, boost::none);
         }
       }
 
-      return (matchingDeg + 1.0)/(worker._capabilities.size() + 1.0);
+      auto const preferences (requirements_and_preferences.preferences());
+
+      if (preferences.empty())
+      {
+        return std::make_pair
+          ( ( ( matchingDeg + 1.0)
+            / (worker._capabilities.size() + 1.0)
+            )
+          , boost::none
+          );
+      }
+
+      unsigned int preference_weight (preferences.size());
+      for (auto const& preference : preferences)
+      {
+        if (worker.hasCapability (preference))
+        {
+          return std::make_pair
+            ( ( ( matchingDeg + preference_weight + 1.0)
+              / (worker._capabilities.size() + preferences.size() + 1.0)
+              )
+            , preference
+            );
+        }
+
+        --preference_weight;
+      }
+
+      return std::make_pair (boost::none, boost::none);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
@@ -227,7 +256,7 @@ namespace sdpa
           continue;
 
         const boost::optional<double>
-          matchingDeg (match_requirements_and_preferences (worker.second, requirements_and_preferences));
+          matchingDeg (match_requirements_and_preferences (worker.second, requirements_and_preferences).first);
 
         if (matchingDeg)
         {
@@ -276,7 +305,7 @@ namespace sdpa
 
         const boost::optional<double> matching_degree
           (match_requirements_and_preferences
-             (worker.second, requirements_and_preferences)
+             (worker.second, requirements_and_preferences).first
           );
 
         if (matching_degree)

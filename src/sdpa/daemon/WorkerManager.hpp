@@ -169,10 +169,9 @@ namespace sdpa
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
       void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
 
-      boost::optional<double> match_requirements_and_preferences
-        ( Worker const&
-        , const Requirements_and_preferences&
-        ) const;
+      std::pair<boost::optional<double>, boost::optional<std::string>>
+        match_requirements_and_preferences
+          ( Worker const&, const Requirements_and_preferences&) const;
 
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
