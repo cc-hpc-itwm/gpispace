@@ -1,10 +1,10 @@
 #pragma once
 
-#include <logging/tcp_endpoint.hpp>
+#include <logging/endpoint.hpp>
 
 #include <QSplitter>
 
-#include <list>
+#include <vector>
 
 namespace fhg
 {
@@ -17,8 +17,7 @@ namespace fhg
         Q_OBJECT
 
       public:
-        execution_monitor ( unsigned short port
-                          , std::list<logging::tcp_endpoint>
+        execution_monitor ( std::vector<logging::endpoint>
                           , QWidget* parent = nullptr
                           );
       };

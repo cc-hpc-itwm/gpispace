@@ -126,7 +126,6 @@ BOOST_DATA_TEST_CASE_F
     , boost::none
     , sdpa::master_info_t()
     , logger
-    , boost::none
     , false
     , certificates
     );

@@ -1,7 +1,7 @@
 #pragma once
 
 #include <logging/legacy_bridge.hpp>
-#include <logging/tcp_receiver.hpp>
+#include <logging/stream_receiver.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -95,5 +95,5 @@ private:
   QString _last_saved_filename;
 
   fhg::logging::legacy_bridge _log_bridge;
-  fhg::logging::tcp_receiver _log_receiver;
+  fhg::logging::stream_receiver _log_receiver;
 };

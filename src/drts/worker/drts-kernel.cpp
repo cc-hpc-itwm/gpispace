@@ -2,10 +2,9 @@
 
 #include <drts/worker/drts.hpp>
 
-#include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
@@ -41,8 +40,6 @@ namespace
     constexpr char const* const library_search_path {"library-search-path"};
     constexpr char const* const socket {"socket"};
     constexpr char const* const master {"master"};
-    constexpr char const* const gui_host {"gui-host"};
-    constexpr char const* const gui_port {"gui-port"};
     constexpr char const* const certificates {"certificates"};
   }
 
@@ -121,7 +118,13 @@ int main(int ac, char **av)
   {
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::log::configure
+      ( logger
+      , remote_log_io_service
+      , fhg::util::getenv ("FHGLOG_level").get()
+      , fhg::util::getenv ("FHGLOG_to_file")
+      , fhg::util::getenv ("FHGLOG_to_server")
+      );
 
     namespace po = boost::program_options;
 
@@ -163,15 +166,6 @@ int main(int ac, char **av)
       , po::value<std::vector<std::string>>()->required()
       , "masters to connect to (unique_name%host%port)"
       )
-      ( option_name::gui_host
-      , po::value<std::string>()
-      , "host to send gui notifications to"
-      )
-      ( option_name::gui_port
-      , po::value
-          <fhg::util::boost::program_options::positive_integral<unsigned short>>()
-      , "port to send gui notifications to"
-      )
       ( option_name::certificates
       , po::value<boost::filesystem::path>()
       , "folder containing SSL certificates"
@@ -182,9 +176,6 @@ int main(int ac, char **av)
 
     po::store (po::command_line_parser (ac, av).options(desc).run(), vm);
     po::notify (vm);
-
-    fhg::util::boost::program_options::require_all_if_one
-      (vm, {option_name::gui_host, option_name::gui_port});
 
     fhg::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
@@ -250,8 +241,6 @@ int main(int ac, char **av)
         (fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
     }
 
-    boost::asio::io_service gui_io_service;
-
     if (vm.count (option_name::socket))
     {
       set_numa_socket (vm.at (option_name::socket).as<std::size_t>());
@@ -267,14 +256,6 @@ int main(int ac, char **av)
     DRTSImpl const plugin
       ( request_stop
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-      , (vm.count (option_name::gui_host) || vm.count (option_name::gui_port))
-        ? fhg::util::cxx14::make_unique<sdpa::daemon::NotificationService>
-          ( vm.at (option_name::gui_host).as<std::string>()
-          , vm.at (option_name::gui_port)
-            .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
-          , gui_io_service
-          )
-        : nullptr
       , kernel_name
       , virtual_memory_api.get()
       , shared_memory.get()
@@ -289,11 +270,7 @@ int main(int ac, char **av)
       , certificates
       );
 
-    promise.set_result ( { plugin.logger_registration_endpoint().host
-                         , std::to_string
-                             (plugin.logger_registration_endpoint().port)
-                         }
-                       );
+    promise.set_result (plugin.logger_registration_endpoint().to_string());
 
     stop_requested.wait();
 

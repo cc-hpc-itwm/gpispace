@@ -50,5 +50,9 @@ namespace gspc
     {
       return libexec() / "gpi-space";
     }
+    boost::filesystem::path logging_demultiplexer() const
+    {
+      return libexec() / "gspc-logging-demultiplexer.exe";
+    }
   };
 }

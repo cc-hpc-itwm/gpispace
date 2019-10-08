@@ -1,10 +1,8 @@
 #pragma once
 
+#include <logging/endpoint.hpp>
 #include <logging/message.hpp>
 #include <logging/protocol.hpp>
-#include <logging/socket_endpoint.hpp>
-#include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_endpoint_serialization.hpp>
 
 #include <rpc/remote_endpoint.hpp>
 #include <rpc/service_dispatcher.hpp>
@@ -26,8 +24,7 @@ namespace fhg
     public:
       stream_emitter();
 
-      socket_endpoint local_socket_endpoint() const;
-      tcp_endpoint local_tcp_endpoint() const;
+      endpoint local_endpoint() const;
 
       void emit_message (message const&);
 
@@ -37,15 +34,13 @@ namespace fhg
 
       std::list<std::unique_ptr<rpc::remote_endpoint>> _receivers;
 
-      void register_socket_receiver (socket_endpoint const&);
-      rpc::service_handler<protocol::register_socket_receiver> const
-        _register_socket_receiver;
-      void register_tcp_receiver (tcp_endpoint const&);
-      rpc::service_handler<protocol::register_tcp_receiver> const
-        _register_tcp_receiver;
+      void register_receiver (endpoint const&);
+      rpc::service_handler<protocol::register_receiver> const
+        _register_receiver;
 
       rpc::service_socket_provider const _service_socket_provider;
       rpc::service_tcp_provider const _service_tcp_provider;
+      endpoint const _local_endpoint;
     };
   }
 }

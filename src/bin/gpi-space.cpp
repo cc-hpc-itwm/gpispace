@@ -11,6 +11,7 @@
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -156,23 +157,31 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
       );
 
-    if (log_host || log_port)
+    boost::optional<std::string> log_server;
+    boost::optional<char const*> log_server_raw;
+    if (log_host && log_port)
     {
-      std::string const server_url
-        ((boost::format ("%1%:%2%") % *log_host % *log_port).str());
-      fhg::util::syscall::setenv ("FHGLOG_to_server", server_url.c_str(), true);
+      log_server = (boost::format ("%1%:%2%") % *log_host % *log_port).str();
+      log_server_raw = log_server->c_str();
     }
-    fhg::util::syscall::setenv ("FHGLOG_level", log_level.c_str(), true);
 
+    boost::optional<std::string> log_file_raw;
+    boost::optional<char const*> log_file_raw_raw;
     if (log_file)
     {
-      fhg::util::syscall::setenv
-        ("FHGLOG_to_file", log_file->string().c_str(), true);
+      log_file_raw = log_file->string();
+      log_file_raw_raw = log_file_raw->c_str();
     }
 
     boost::asio::io_service remote_log_io_service;
     fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::log::configure
+      ( logger
+      , remote_log_io_service
+      , log_level
+      , log_file_raw_raw
+      , log_server_raw
+      );
 
     fhg::util::signal_handler_manager signal_handler;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
@@ -210,7 +219,7 @@ int main (int argc, char** argv)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handler, SIGINT, std::bind (request_stop));
 
-    promise.set_result ({});
+    promise.set_result();
 
     stop_requested.wait();
 

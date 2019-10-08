@@ -33,12 +33,10 @@
 
 struct setup_logging
 {
-  boost::asio::io_service io_service;
   setup_logging()
     : _logger()
   {
-    fhg::util::syscall::setenv ("FHGLOG_level", "TRACE", true);
-    fhg::log::configure (io_service, _logger);
+    fhg::log::configure_to_stderr (_logger);
   }
   fhg::log::Logger _logger;
 };
@@ -261,7 +259,6 @@ namespace utils
           , boost::none
           , sdpa::master_info_t()
           , logger
-          , boost::none
           , false
           , certificates
           )
@@ -308,7 +305,6 @@ namespace utils
             , make_master_network_info (master_1)
             }
           , logger
-          , boost::none
           , true
           , certificates
           )
@@ -325,7 +321,6 @@ namespace utils
           , boost::none
           , {make_master_network_info (master)}
           , logger
-          , boost::none
           , true
           , certificates
           )
@@ -341,7 +336,6 @@ namespace utils
           , boost::none
           , {make_master_network_info (master)}
           , logger
-          , boost::none
           , true
           , certificates
           )

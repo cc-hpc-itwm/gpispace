@@ -18,16 +18,19 @@
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
 #include <fhglog/level_io.hpp>
+#include <logging/protocol.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/future.hpp>
 #include <rpc/remote_function.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>
+#include <rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -307,8 +310,6 @@ try
       ( service_dispatcher
       , [] ( std::string const& name
            , fhg::rif::protocol::hostinfo_t const& parent
-           , boost::optional<std::string> const& gui_host
-           , boost::optional<unsigned short> const& gui_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
            , boost::filesystem::path const& command
@@ -320,12 +321,6 @@ try
             , "-n", name
             , "--masters", parent.first + "%" + std::to_string (parent.second)
             };
-          if (gui_host && gui_port)
-          {
-            arguments.emplace_back ("-a");
-            arguments.emplace_back
-              (*gui_host + ":" + std::to_string (*gui_port));
-          }
           if (gpi_socket)
           {
             arguments.emplace_back ("--vmem-socket");
@@ -343,10 +338,10 @@ try
             );
           auto const& messages (pid_and_startup_messages.second);
 
-          if (messages.size() != 4)
+          if (messages.size() != 3)
           {
             throw std::logic_error ( "could not start agent " + name
-                                   + ": expected 4 lines of startup messages"
+                                   + ": expected 3 lines of startup messages"
                                    );
           }
 
@@ -354,8 +349,7 @@ try
           result.pid = pid_and_startup_messages.first;
           result.hostinfo
             = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
-          result.logger_registration_endpoint
-            = {messages[2], boost::lexical_cast<unsigned short> (messages[3])};
+          result.logger_registration_endpoint = messages[2];
           return result;
         }
       );
@@ -381,23 +375,83 @@ try
             );
           auto const& messages (pid_and_startup_messages.second);
 
-          if (messages.size() != 2)
+          if (messages.size() != 1)
           {
             throw std::logic_error ( "could not start worker " + name
-                                   + ": expected 2 lines of startup messages"
+                                   + ": expected 1 line of startup messages"
                                    );
           }
 
           fhg::rif::protocol::start_worker_result result;
           result.pid = pid_and_startup_messages.first;
-          result.logger_registration_endpoint
-            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          result.logger_registration_endpoint = messages[0];
           return result;
         }
       );
 
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
+
+  std::unordered_map<pid_t, fhg::rpc::remote_socket_endpoint>
+    add_emitters_endpoints;
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_logging_demultiplexer>
+    start_logging_demultiplexer_service
+      ( service_dispatcher
+      , [&add_emitters_endpoints, &io_service] (boost::filesystem::path exe)
+        {
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                (exe, {}, std::unordered_map<std::string, std::string>())
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 2)
+          {
+            throw std::logic_error ( "could not start logging-demultiplexer "
+                                     ": expected 2 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_logging_demultiplexer_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.sink_endpoint = messages[0];
+
+          add_emitters_endpoints.emplace
+            ( std::piecewise_construct
+            , std::forward_as_tuple (result.pid)
+            , std::forward_as_tuple
+                (io_service, fhg::logging::socket_endpoint (messages[1]).socket)
+            );
+
+          return result;
+        }
+      );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::add_emitter_to_logging_demultiplexer>
+    add_emitter_to_logging_demultiplexer_service
+      ( service_dispatcher
+      , [&add_emitters_endpoints]
+          ( boost::asio::yield_context yield
+          , pid_t pid
+          , std::vector<fhg::logging::endpoint> emitters
+          )
+        {
+          auto const it (add_emitters_endpoints.find (pid));
+          if (it == add_emitters_endpoints.end())
+          {
+            throw std::invalid_argument
+              ("unknown log demultiplexer: " + std::to_string (pid));
+          }
+
+          fhg::rpc::sync_remote_function
+            < fhg::logging::protocol::logging_demultiplexer::add_emitters
+            , fhg::rpc::future
+            > {it->second} (yield, std::move (emitters));
+        }
+      , fhg::rpc::yielding
+      );
+
   fhg::rpc::service_tcp_provider_with_deferred_start server
     (io_service, service_dispatcher);
 

@@ -2,9 +2,8 @@
 
 #pragma once
 
-#include <logging/legacy_bridge.hpp>
-#include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_receiver.hpp>
+#include <logging/endpoint.hpp>
+#include <logging/stream_receiver.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
@@ -17,9 +16,8 @@
 #include <QVector>
 
 #include <functional>
-#include <list>
 #include <mutex>
-#include <thread>
+#include <vector>
 
 namespace fhg
 {
@@ -40,8 +38,7 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model ( unsigned short port
-                     , std::list<logging::tcp_endpoint>
+        worker_model ( std::vector<logging::endpoint>
                      , QObject* parent = nullptr
                      );
 
@@ -107,8 +104,7 @@ namespace fhg
         QVector<logging::message> _queued_events;
         void append_event (logging::message);
 
-        logging::legacy_bridge _log_bridge;
-        logging::tcp_receiver _log_receiver;
+        logging::stream_receiver _log_receiver;
       };
     }
   }

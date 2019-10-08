@@ -17,6 +17,7 @@
 #include <sdpa/client.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
@@ -27,11 +28,9 @@
 
 #include <boost/format.hpp>
 
-#include <chrono>
-#include <iostream>
+#include <ostream>
 #include <sstream>
 #include <stdexcept>
-#include <thread>
 
 namespace gspc
 {
@@ -156,9 +155,7 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
+      ( boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
@@ -173,12 +170,11 @@ namespace gspc
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , std::ostream& info_output
+      , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
       , Certificates const& certificates
       )
     : _info_output (info_output)
     , _master (master)
-    , _gui_host (gui_host)
-    , _gui_port (gui_port)
     , _log_host (log_host)
     , _log_port (log_port)
     , _verbose (verbose)
@@ -186,34 +182,38 @@ namespace gspc
     , _app_path (app_path)
     , _installation_path (installation_path)
     , _log_dir (log_dir)
+    , _logging_rif_entry_point (logging_rif_entry_point)
     , _worker_descriptions (worker_descriptions)
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
-    std::tie (_orchestrator_host, _orchestrator_port) = fhg::drts::startup
-      ( _gui_host
-      , _gui_port
-      , _log_host
-      , _log_port
-      , gpi_enabled
-      , _verbose
-      , _gpi_socket
-      , _installation_path
-      , delete_logfiles
-      , signal_handler_manager
-      , vmem_startup_timeout
-      , vmem_port
-      , rif_entry_points
-      , _master
-      , _log_dir
-      , _processes_storage
-      , _master_agent_name
-      , _master_agent_hostinfo
-      , _info_output
-      , _log_emitters
-      , certificates
+    auto const startup_result
+      ( fhg::drts::startup
+          ( _log_host
+          , _log_port
+          , gpi_enabled
+          , _verbose
+          , _gpi_socket
+          , _installation_path
+          , delete_logfiles
+          , signal_handler_manager
+          , vmem_startup_timeout
+          , vmem_port
+          , rif_entry_points
+          , _master
+          , _log_dir
+          , _processes_storage
+          , _master_agent_name
+          , _master_agent_hostinfo
+          , _info_output
+          , _logging_rif_entry_point
+          , certificates
+          )
       );
+    _orchestrator_host = startup_result.orchestrator.first;
+    _orchestrator_port = startup_result.orchestrator.second;
+    _logging_rif_info = startup_result.top_level_logging_demultiplexer;
 
     if (!rif_entry_points.empty())
     {
@@ -282,24 +282,28 @@ namespace gspc
         : worker_descriptions
         )
     {
-      for (auto const& fail : start_workers_for ( entry_points
-                                                , _master_agent_name
-                                                , _master_agent_hostinfo
-                                                , description
-                                                , _verbose
-                                                , _gui_host
-                                                , _gui_port
-                                                , _log_host
-                                                , _log_port
-                                                , _processes_storage
-                                                , _log_dir
-                                                , _gpi_socket
-                                                , _app_path
-                                                , _installation_path
-                                                , _info_output
-                                                , _log_emitters
-                                                , certificates
-                                                ).second
+      for ( auto const& fail
+          : start_workers_for
+              ( entry_points
+              , _master_agent_name
+              , _master_agent_hostinfo
+              , description
+              , _verbose
+              , _log_host
+              , _log_port
+              , _processes_storage
+              , _log_dir
+              , _gpi_socket
+              , _app_path
+              , _installation_path
+              , _info_output
+              , FHG_UTIL_MAKE_OPTIONAL
+                  ( _logging_rif_entry_point && _logging_rif_info
+                  , std::make_pair
+                      (*_logging_rif_entry_point, _logging_rif_info->pid)
+                  )
+              , certificates
+              ).second
           )
       {
         failures[fail.first].emplace_back (fail.second);
@@ -337,9 +341,7 @@ namespace gspc
         : boost::none
         )
       , _started_runtime_system
-          ( get_gui_host (vm)
-          , get_gui_port (vm)
-          , get_log_host (vm)
+          ( get_log_host (vm)
           , get_log_port (vm)
           , !!_virtual_memory_socket
           //! \todo configurable: verbose logging
@@ -360,6 +362,8 @@ namespace gspc
             : entry_points->_->_entry_points
           , master._->_entry_point
           , info_output
+          //! \todo User-configurable.
+          , master._->_entry_point
           , certificates
           )
       , _logger()
@@ -497,9 +501,12 @@ namespace gspc
     return wrapped;
   }
 
-  std::list<fhg::logging::tcp_endpoint> const&
-    scoped_runtime_system::log_emitters() const
+  fhg::logging::endpoint scoped_runtime_system::top_level_log_demultiplexer() const
   {
-    return _->_started_runtime_system._log_emitters;
+    if (!_->_started_runtime_system._logging_rif_info)
+    {
+      throw std::logic_error ("No top level log demultiplexer was started.");
+    }
+    return _->_started_runtime_system._logging_rif_info->sink_endpoint;
   }
 }

@@ -17,8 +17,9 @@ namespace fhg
       {}
     }
 
-    basic_file_sink::basic_file_sink
-        ( boost::filesystem::path const& target
+    file_sink::file_sink
+        ( endpoint const& emitter
+        , boost::filesystem::path const& target
         , std::function<void (std::ostream&, message const&)> formatter
         , boost::optional<std::size_t> flush_interval
         )
@@ -27,9 +28,13 @@ namespace fhg
       , _emit_counter (0)
       , _flush_interval (std::move (flush_interval))
       , _append ( !!_flush_interval
-                ? &basic_file_sink::append
-                : &basic_file_sink::append_no_flush
+                ? &file_sink::append
+                : &file_sink::append_no_flush
                 )
+      , _receiver
+          ( emitter
+          , [&] (message const& m) { return dispatch_append (m); }
+          )
     {
       _stream.exceptions (std::fstream::badbit | std::fstream::failbit);
       try
@@ -43,21 +48,21 @@ namespace fhg
       }
     }
 
-    void basic_file_sink::dispatch_append (message const& m)
+    void file_sink::dispatch_append (message const& m)
     {
       return (this->*_append) (m);
     }
-    void basic_file_sink::append (message const& message)
+    void file_sink::append (message const& message)
     {
       append_no_flush (message);
       maybe_flush();
     }
-    void basic_file_sink::append_no_flush (message const& message)
+    void file_sink::append_no_flush (message const& message)
     {
       _formatter (_stream, message);
     }
 
-    void basic_file_sink::maybe_flush()
+    void file_sink::maybe_flush()
     {
       if (++_emit_counter >= _flush_interval.get())
       {

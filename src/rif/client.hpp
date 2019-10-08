@@ -23,6 +23,8 @@ namespace fhg
         , start_vmem (_endpoint)
         , start_agent (_endpoint)
         , start_worker (_endpoint)
+        , start_logging_demultiplexer (_endpoint)
+        , add_emitter_to_logging_demultiplexer (_endpoint)
       {}
 
     private:
@@ -37,6 +39,10 @@ namespace fhg
       rpc::remote_function<protocol::start_vmem> start_vmem;
       rpc::remote_function<protocol::start_agent> start_agent;
       rpc::remote_function<protocol::start_worker> start_worker;
+      rpc::remote_function<protocol::start_logging_demultiplexer>
+        start_logging_demultiplexer;
+      rpc::remote_function<protocol::add_emitter_to_logging_demultiplexer>
+        add_emitter_to_logging_demultiplexer;
     };
   }
 }

@@ -11,15 +11,16 @@
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/serialization/std/chrono.hpp>
 
-#include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_endpoint_serialization.hpp>
+#include <logging/endpoint.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/serialization.hpp>
 #include <boost/serialization/split_free.hpp>
+#include <boost/serialization/string.hpp>
 #include <boost/serialization/utility.hpp>
+#include <boost/serialization/vector.hpp>
 
 #include <chrono>
 #include <exception>
@@ -80,7 +81,7 @@ namespace fhg
       {
         pid_t pid;
         hostinfo_t hostinfo;
-        fhg::logging::tcp_endpoint logger_registration_endpoint;
+        fhg::logging::endpoint logger_registration_endpoint;
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION
@@ -88,8 +89,6 @@ namespace fhg
         , start_agent_result
             ( std::string name
             , hostinfo_t parent
-            , boost::optional<std::string> gui_host
-            , boost::optional<unsigned short> gui_port
             , boost::optional<boost::filesystem::path> gpi_socket
             , gspc::Certificates
             , boost::filesystem::path command
@@ -100,7 +99,7 @@ namespace fhg
       struct start_worker_result
       {
         pid_t pid;
-        fhg::logging::tcp_endpoint logger_registration_endpoint;
+        fhg::logging::endpoint logger_registration_endpoint;
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION
@@ -111,6 +110,22 @@ namespace fhg
             , std::vector<std::string> arguments
             , std::unordered_map<std::string, std::string> environment
             )
+        );
+
+      struct start_logging_demultiplexer_result
+      {
+        pid_t pid;
+        fhg::logging::endpoint sink_endpoint;
+      };
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( start_logging_demultiplexer
+        , start_logging_demultiplexer_result (boost::filesystem::path exe)
+        );
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( add_emitter_to_logging_demultiplexer
+        , void (pid_t, std::vector<logging::endpoint>)
         );
     }
   }
@@ -191,6 +206,17 @@ namespace boost
     {
       ar & result.pid;
       ar & result.logger_registration_endpoint;
+    }
+
+    template<typename Archive>
+      inline void serialize
+        ( Archive& ar
+        , fhg::rif::protocol::start_logging_demultiplexer_result& result
+        , unsigned int
+        )
+    {
+      ar & result.pid;
+      ar & result.sink_endpoint;
     }
   }
 }

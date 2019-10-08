@@ -167,19 +167,44 @@ add_subdirectory (gspc)
 
 extended_add_library (NAME logging
   NAMESPACE gspc
-  SOURCES "logging/file_sink.cpp"
+  SOURCES "logging/demultiplexer.cpp"
+          "logging/endpoint.cpp"
+          "logging/file_sink.cpp"
           "logging/legacy/emitter.cpp"
           "logging/legacy/receiver.cpp"
           "logging/legacy_bridge.cpp"
           "logging/message.cpp"
+          "logging/socket_endpoint.cpp"
           "logging/stream_emitter.cpp"
+          "logging/stream_receiver.cpp"
           "logging/tcp_endpoint.cpp"
-          "logging/tcp_receiver.cpp"
   LIBRARIES fhglog
             Util::Generic
             RPC
             Boost::base
             Boost::program_options
+)
+
+extended_add_executable (NAME gspc-logging-demultiplexer
+  SOURCES "logging/gspc-logging-demultiplexer.cpp"
+  LIBRARIES gspc::logging
+            Util::Generic
+            rif-started_process_promise
+  INSTALL INSTALL_DESTINATION "libexec/gspc"
+)
+
+extended_add_executable (NAME gspc-logging-to-stdout
+  SOURCES "logging/gspc-logging-to-stdout.cpp"
+  LIBRARIES gspc::logging
+            Util::Generic
+  INSTALL INSTALL_DESTINATION "bin"
+)
+
+add_unit_test (NAME logging_endpoint
+  SOURCES "logging/test/endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
 )
 
 add_unit_test (NAME logging_file_sink
@@ -204,6 +229,13 @@ add_unit_test (NAME logging_ostream_redirect
   USE_BOOST
 )
 
+add_unit_test (NAME logging_socket_endpoint
+  SOURCES "logging/test/socket_endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
 add_unit_test (NAME logging_stream_emitter
   SOURCES "logging/test/stream_emitter.cpp"
   LIBRARIES Util::Generic
@@ -211,15 +243,15 @@ add_unit_test (NAME logging_stream_emitter
   USE_BOOST
 )
 
-add_unit_test (NAME logging_tcp_endpoint
-  SOURCES "logging/test/tcp_endpoint.cpp"
+add_unit_test (NAME logging_stream_receiver
+  SOURCES "logging/test/stream_receiver.cpp"
   LIBRARIES Util::Generic
             gspc::logging
   USE_BOOST
 )
 
-add_unit_test (NAME logging_tcp_receiver
-  SOURCES "logging/test/tcp_receiver.cpp"
+add_unit_test (NAME logging_tcp_endpoint
+  SOURCES "logging/test/tcp_endpoint.cpp"
   LIBRARIES Util::Generic
             gspc::logging
   USE_BOOST
