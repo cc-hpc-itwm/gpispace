@@ -1,5 +1,6 @@
 extended_add_library (NAME test-utilities
-  SOURCES "hopefully_free_port.cpp"
+  SOURCES "certificates_data.cpp"
+          "hopefully_free_port.cpp"
           "make.cpp"
           "scoped_nodefile_from_environment.cpp"
           "shared_directory.cpp"
