@@ -6,7 +6,7 @@ set (GSPC_SSL_CERTIFICATES_FOR_TESTS "${_default_test_certs}"
 message (STATUS "Using '${GSPC_SSL_CERTIFICATES_FOR_TESTS}' for tests using SSL")
 
 set (_test_rsa_bits 1024)
-set (_test_dh_bits 2048)
+set (_test_dh_bits 1024)
 
 add_custom_command (OUTPUT "${_default_test_certs}/server.key"
                            "${_default_test_certs}/server.crt"
