@@ -15,17 +15,6 @@ namespace pnet
 {
   namespace
   {
-    class visitor_name_structured
-      : public boost::static_visitor<const std::string&>
-    {
-    public:
-      const std::string& operator()
-        (const std::pair<std::string, type::signature::structure_type>& s) const
-      {
-        return s.first;
-      }
-    };
-
     class visitor_name : public boost::static_visitor<const std::string&>
     {
     public:
