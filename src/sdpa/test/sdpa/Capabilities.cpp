@@ -195,9 +195,10 @@ BOOST_DATA_TEST_CASE_F
   observer.wait_for_capabilities ({});
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_DATA_TEST_CASE_F
   ( setup_logging
-  , capabilities_of_children_are_removed_when_disconnected
+  , RACE_capabilities_of_children_are_removed_when_disconnected
   , certificates_data
   , certificates
   )
@@ -238,6 +239,7 @@ BOOST_DATA_TEST_CASE_F
   }
 }
 
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_DATA_TEST_CASE_F
   ( setup_logging
   , chain_with_a_lot_of_leafs_different_capabilities
