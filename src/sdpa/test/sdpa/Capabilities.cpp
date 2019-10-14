@@ -107,9 +107,12 @@ namespace
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
+
+  auto const avoid_infinite_wait_for_capabilities_call
+    (boost::unit_test::timeout (2));
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
 BOOST_DATA_TEST_CASE_F
   (setup_logging, acquire_capability_from_worker, certificates_data, certificates)
 {
@@ -128,7 +131,7 @@ BOOST_DATA_TEST_CASE_F
   observer.wait_for_capabilities ({});
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
 BOOST_DATA_TEST_CASE_F
   (setup_logging, acquire_capability_from_worker_chain, certificates_data, certificates)
 {
@@ -169,7 +172,7 @@ BOOST_DATA_TEST_CASE_F
   observer.wait_for_capabilities ({});
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
 BOOST_DATA_TEST_CASE_F
   (setup_logging, lose_capabilities_after_worker_dies, certificates_data, certificates)
 {
@@ -195,7 +198,7 @@ BOOST_DATA_TEST_CASE_F
   observer.wait_for_capabilities ({});
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
 BOOST_DATA_TEST_CASE_F
   ( setup_logging
   , RACE_capabilities_of_children_are_removed_when_disconnected
@@ -239,7 +242,7 @@ BOOST_DATA_TEST_CASE_F
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
 BOOST_DATA_TEST_CASE_F
   ( setup_logging
   , chain_with_a_lot_of_leafs_different_capabilities
