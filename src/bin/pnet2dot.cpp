@@ -44,6 +44,7 @@ namespace
     static std::string const plugin ("tan");
     static std::string const node ("white");
     static std::string const put_token ("lightblue");
+    static std::string const tp_many ("black:invis:black");
   }
 
   namespace style
@@ -346,6 +347,22 @@ namespace
               << name ( id_net
                       , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
                       );
+          }
+        }
+
+        if (net.port_many_to_place().find (trans_id) != net.port_many_to_place().end())
+        {
+          for (auto const& port_to_place : net.port_many_to_place().at (trans_id))
+          {
+            s << fhg::util::deeper (_indent)
+              << name ( id_trans
+                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
+                      )
+              << arrow
+              << name ( id_net
+                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
+                      )
+              << brackets (keyval ("color", color::tp_many));
           }
         }
 
