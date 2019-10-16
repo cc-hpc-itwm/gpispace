@@ -134,11 +134,12 @@ extended_add_library (NAME pnet
   LIBRARIES fhg-util
             drts-context
             Util::Generic
-            Boost::serialization
             Boost::date_time
+            Boost::program_options
+            Boost::serialization
             RPC
             ${CMAKE_DL_LIBS}
-            rapidxml 
+            rapidxml
             ssl
             crypto
 )

@@ -9,7 +9,6 @@ fhg_add_test (NAME xml_parse_function_description_with_unknown_port
   USE_BOOST
   LIBRARIES pnet
             Boost::filesystem
-            Boost::program_options
 )
 
 configure_file (
@@ -23,13 +22,12 @@ fhg_add_test (NAME xml_parse_virtual_place_not_tunneled
   USE_BOOST
   LIBRARIES pnet
             Boost::filesystem
-            Boost::program_options
 )
 
 fhg_add_test (NAME xml_parse_diagnostics
   SOURCES diagnostics.cpp
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}/.."
-  LIBRARIES pnet Boost::filesystem Boost::program_options
+  LIBRARIES pnet Boost::filesystem
   DESCRIPTION "check parser diagnostics"
 )

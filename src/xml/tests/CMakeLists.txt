@@ -8,7 +8,7 @@ fhg_add_test (NAME xml_parse_duplicate_connect
   SOURCES parse_duplicate_connect.cpp
   USE_BOOST
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LIBRARIES pnet Boost::filesystem Boost::program_options
+  LIBRARIES pnet Boost::filesystem
   DESCRIPTION "pnetc shall throw if there are mutiple connections with the same port, place and direction"
 )
 
@@ -35,21 +35,18 @@ fhg_add_test (NAME xml_parse_memory_buffer
   SOURCES parse_memory_buffer.cpp
   USE_BOOST
   LIBRARIES pnet
-            Boost::program_options
 )
 
 fhg_add_test (NAME xml_parse_memory_transfer
   SOURCES parse_memory_transfer.cpp
   USE_BOOST
   LIBRARIES pnet
-            Boost::program_options
 )
 
 fhg_add_test (NAME xml_conditions_and_expressions_with_cdata
   SOURCES conditions_and_expressions_with_cdata.cpp
   USE_BOOST
   LIBRARIES pnet
-            Boost::program_options
 )
 
 add_subdirectory (bytearray)
