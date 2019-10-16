@@ -12,6 +12,7 @@
 
 #include <xml/parse/type/dumps.hpp>
 
+#include <we/type/value/name.hpp>
 #include <we/type/expression.hpp>
 #include <we/workflow_response.hpp>
 
@@ -269,6 +270,15 @@ namespace xml
         }
       }
 
+      bool transition_type::is_connect_tp_many ( const we::edge::type direction
+                                               , const std::string &port_type
+                                               ) const
+      {
+        return (  direction == we::edge::TP_MANY
+               && port_type == pnet::type::value::LIST()
+               );
+      }
+
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type &
@@ -300,7 +310,9 @@ namespace xml
             (*this, connect);
         }
 
-        if (place->signature() != port->signature())
+        if (  place->signature() != port->signature()
+           && not is_connect_tp_many (connect.direction(), port->type())
+           )
         {
           throw error::connect_type_error ( *this
                                           , connect

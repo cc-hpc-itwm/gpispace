@@ -749,6 +749,11 @@ namespace xml
               connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::PT));
             }
+            else if (child_name == "connect-out-many")
+            {
+              connections.push<error::duplicate_connect>
+                (connect_type (child, state, we::edge::TP_MANY));
+            }
             else if (child_name == "connect-out")
             {
               connections.push<error::duplicate_connect>

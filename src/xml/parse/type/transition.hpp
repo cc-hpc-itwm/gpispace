@@ -111,6 +111,7 @@ namespace xml
         responses_type _responses;
         place_maps_type _place_map;
 
+        bool is_connect_tp_many (const we::edge::type, const std::string &) const;
         //! \todo All below should be private with accessors.
       public:
         structs_type structs;
