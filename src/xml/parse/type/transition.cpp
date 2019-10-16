@@ -275,9 +275,6 @@ namespace xml
                                        , net_type const& parent_net
                                        ) const
       {
-        const std::string direction
-          (we::edge::enum_to_string (connect.direction()));
-
         const boost::optional<const place_type&> place
           (parent_net.places().get (connect.place()));
 
