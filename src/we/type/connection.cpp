@@ -24,6 +24,7 @@ namespace we
       case PT: return "in";
       case PT_READ: return "read";
       case TP: return "out";
+      case TP_MANY: return "out-many";
       }
 
       INVALID_ENUM_VALUE (we::edge:type, e);

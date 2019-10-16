@@ -5,11 +5,14 @@
 #include <we/type/value/show.hpp>
 
 #include <we/require_type.hpp>
+#include <we/type/value/from_value.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
+
+#include <boost/variant/get.hpp>
 
 #include <boost/format.hpp>
 
@@ -121,6 +124,18 @@ namespace we
           throw std::logic_error ("duplicate connection");
         }
         break;
+      case edge::TP_MANY:
+        _adj_tp.emplace (place_id, transition_id);
+        if (!_port_many_to_place[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (port_id)
+             , std::forward_as_tuple (place_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
+        break;
       case edge::PT:
         _adj_pt_consume.insert
           (adj_pt_type::value_type (place_id, transition_id));
@@ -195,6 +210,10 @@ namespace we
     net_type::port_to_place_type const& net_type::port_to_place() const
     {
       return _port_to_place;
+    }
+    net_type::port_to_place_type const& net_type::port_many_to_place() const
+    {
+      return _port_many_to_place;
     }
     net_type::port_to_response_type const& net_type::port_to_response() const
     {
@@ -627,6 +646,25 @@ namespace we
               )
             );
         }
+        else if (  _port_many_to_place.count (tid)
+                && _port_many_to_place.at (tid).count (p.first)
+                )
+        {
+          const std::list<pnet::type::value::value_type> & many_tokens
+            (boost::get<std::list<pnet::type::value::value_type>>
+              (context.value ({p.second.name()}))
+            );
+
+          std::list<to_be_updated_type> pending_updates;
+          for (auto const& token : many_tokens) {
+            pending_updates.emplace_back
+              ( do_put_value
+                ( _port_many_to_place.at (tid).at (p.first).first
+                , token
+                )
+              );
+          }
+        }
         else
         {
           fhg::util::nest_exceptions<std::runtime_error>
@@ -670,6 +708,23 @@ namespace we
                     . at (token_on_port.second).first
                     , token_on_port.first
                     );
+        }
+        else if (  _port_many_to_place.count (*child.transition_id())
+                && _port_many_to_place.at (*child.transition_id())
+                 . count (token_on_port.second)
+                )
+        {
+          const std::list<pnet::type::value::value_type> & many_tokens
+            (boost::get<std::list<pnet::type::value::value_type>>
+              (token_on_port.first)
+            );
+
+          for (auto const& token : many_tokens) {
+            put_value ( _port_many_to_place.at (*child.transition_id())
+                      . at (token_on_port.second).first
+                      , token
+                      );
+          }
         }
         else
         {
