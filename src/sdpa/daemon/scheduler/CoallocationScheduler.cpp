@@ -67,15 +67,30 @@ namespace sdpa
 
         const Requirements_and_preferences requirements_and_preferences
           (_requirements_and_preferences (jobId));
-        const std::set<worker_id_t> matching_workers
-          (_worker_manager.find_assignment
-            ( requirements_and_preferences
-            , [this] (const job_id_t& job_id) -> double
-              {
-                return allocation_table_.at (job_id)->cost();
-              }
-            )
-          );
+
+        const std::set<Worker_and_implementation>
+          matching_workers_and_implementations
+            (_worker_manager.find_assignment
+              ( requirements_and_preferences
+              , [this] (const job_id_t& job_id) -> double
+                {
+                  return allocation_table_.at (job_id)->cost();
+                }
+              )
+            );
+
+        std::set<worker_id_t> matching_workers;
+
+        std::transform ( matching_workers_and_implementations.begin()
+                       , matching_workers_and_implementations.end()
+                       , std::inserter ( matching_workers
+                                       , matching_workers.begin()
+                                       )
+                       , [] (Worker_and_implementation const& w)
+                         {
+                           return w.worker();
+                         }
+                       );
 
         if (!matching_workers.empty())
         {

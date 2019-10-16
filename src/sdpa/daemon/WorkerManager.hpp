@@ -127,16 +127,18 @@ namespace sdpa
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY
         (const Requirements_and_preferences&) const;
-      std::set<worker_id_t> find_job_assignment_minimizing_total_cost
-        ( const mmap_match_deg_worker_id_t&
-        , const Requirements_and_preferences&
-        , const std::function<double (job_id_t const&)>
-        ) const;
+      std::set<Worker_and_implementation>
+        find_job_assignment_minimizing_total_cost
+          ( const mmap_match_deg_worker_id_t&
+          , const Requirements_and_preferences&
+          , const std::function<double (job_id_t const&)>
+          ) const;
 
-      std::set<worker_id_t> find_assignment
-        ( const Requirements_and_preferences&
-        , const std::function<double (job_id_t const&)>
-        ) const;
+      std::set<Worker_and_implementation>
+        find_assignment
+          ( const Requirements_and_preferences&
+          , const std::function<double (job_id_t const&)>
+          ) const;
 
       template <typename Reservation>
       void steal_work (std::function<Reservation* (job_id_t const&)> reservation);

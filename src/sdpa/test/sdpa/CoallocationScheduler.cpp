@@ -769,13 +769,25 @@ struct fixture_minimal_cost_assignment
       , {}
       );
 
-    const std::set<sdpa::worker_id_t> set_assigned_workers
+    const std::set<sdpa::daemon::Worker_and_implementation> workers_and_implementations
       (_worker_manager.find_job_assignment_minimizing_total_cost
         ( mmap_match_deg_worker
         , requirements_and_preferences
         , [] (sdpa::job_id_t const&) {return 1.0;}
         )
       );
+
+    std::set<sdpa::worker_id_t> set_assigned_workers;
+    std::transform ( workers_and_implementations.begin()
+                   , workers_and_implementations.end()
+                   , std::inserter ( set_assigned_workers
+                                   , set_assigned_workers.begin()
+                                   )
+                   , [] (sdpa::daemon::Worker_and_implementation const& w)
+                     {
+                       return w.worker();
+                     }
+                   );
 
     BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
 

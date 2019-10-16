@@ -49,20 +49,26 @@ namespace sdpa
           }
         }
 
-        std::set<worker_id_t> assigned_workers() const
+        std::set<Worker_and_implementation>
+          assigned_workers_and_implementations() const
         {
-          std::set<worker_id_t> assigned_workers;
+          std::set<Worker_and_implementation> workers_and_implementations;
 
           std::transform ( c.begin()
                          , c.end()
-                         , std::inserter (assigned_workers, assigned_workers.begin())
-                         , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
+                         , std::inserter ( workers_and_implementations
+                                         , workers_and_implementations.begin()
+                                         )
+                         , [] (const cost_deg_wid_t& cost_deg_wid)
                            {
-                             return  std::get<4> (cost_deg_wid);
+                             return Worker_and_implementation
+                               ( std::get<4> (cost_deg_wid)
+                               , std::get<5> (cost_deg_wid)
+                               );
                            }
                          );
 
-          return assigned_workers;
+          return workers_and_implementations;
         }
 
       private:
@@ -331,7 +337,7 @@ namespace sdpa
       return mmap_match_deg_worker_id;
     }
 
-    std::set<worker_id_t> WorkerManager::find_assignment
+    std::set<Worker_and_implementation> WorkerManager::find_assignment
       ( const Requirements_and_preferences& requirements_and_preferences
       , const std::function<double (job_id_t const&)> cost_reservation
       ) const
@@ -387,11 +393,12 @@ namespace sdpa
         );
     }
 
-    std::set<worker_id_t> WorkerManager::find_job_assignment_minimizing_total_cost
-      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-      , const Requirements_and_preferences& requirements_and_preferences
-      , const std::function<double (job_id_t const&)> cost_reservation
-      ) const
+    std::set<Worker_and_implementation>
+      WorkerManager::find_job_assignment_minimizing_total_cost
+        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+        , const Requirements_and_preferences& requirements_and_preferences
+        , const std::function<double (job_id_t const&)> cost_reservation
+        ) const
     {
       const size_t n_req_workers (requirements_and_preferences.numWorkers());
 
@@ -426,7 +433,7 @@ namespace sdpa
                     );
       }
 
-      return bpq.assigned_workers();
+      return bpq.assigned_workers_and_implementations();
     }
 
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
