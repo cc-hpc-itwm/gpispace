@@ -50,6 +50,12 @@ fhg_add_test (NAME we_expression_based_cross_product
   LIBRARIES pnet
 )
 
+fhg_add_test (NAME we_tp_many_typecheck
+  SOURCES tp_many_typecheck.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
 fhg_add_test (NAME we_net
   SOURCES net.cpp
   USE_BOOST
