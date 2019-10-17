@@ -67,6 +67,8 @@ namespace we
         net_type* _net;
         transition_id_type _tid;
         we::type::transition_t const& _transition;
+        boost::optional<expression_t> const& _condition;
+        expr::parse::node::KeyRoots _key_roots;
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
@@ -719,7 +721,14 @@ namespace we
       : _net (net)
       , _tid (tid)
       , _transition (_net->transitions().at (_tid))
-    {}
+      , _condition (_transition.condition())
+      , _key_roots()
+    {
+      if (_condition)
+      {
+        _condition->ast().collect_key_roots (_key_roots);
+      }
+    }
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
         : _begin (tokens.begin())
@@ -763,6 +772,8 @@ namespace we
     {
       while (slot != end)
       {
+        if (_key_roots.count (input_port_name (slot->first)) > 0)
+        {
         //! \note all sequences are non-empty
         ++slot->second;
 
@@ -772,6 +783,7 @@ namespace we
         }
 
         slot->second.rewind();
+        }
         ++slot;
       }
 
@@ -794,7 +806,7 @@ namespace we
         return false;
       }
 
-      if (!_transition.condition())
+      if (!_condition)
       {
         return true;
       }
@@ -811,9 +823,7 @@ namespace we
             );
         }
 
-        if (boost::get<bool>
-            (_transition.condition()->ast().eval_all (context))
-           )
+        if (boost::get<bool> (_condition->ast().eval_all (context)))
         {
           return true;
         }
