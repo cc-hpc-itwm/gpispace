@@ -38,7 +38,7 @@ namespace expr
       {}
 
       namespace {
-        std::string show_key_vec (const std::list<std::string>& key_vec)
+        std::string show_key_vec (const Key& key_vec)
         {
           std::string s;
 
@@ -70,7 +70,7 @@ namespace expr
             s << pnet::type::value::show (v);
           }
 
-          void operator () (const std::list<std::string>& key) const
+          void operator () (const Key& key) const
           {
             s << "${" << show_key_vec (key) << "}";
           }
@@ -150,7 +150,7 @@ namespace expr
         {
         public:
           bool operator () (const pnet::type::value::value_type &) const { return true; }
-          bool operator () (const std::list<std::string>&) const { return false; }
+          bool operator () (const Key&) const { return false; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -168,7 +168,7 @@ namespace expr
         {
         public:
           bool operator () (const pnet::type::value::value_type &) const { return false; }
-          bool operator () (const std::list<std::string>&) const { return true; }
+          bool operator () (const Key&) const { return true; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -194,7 +194,7 @@ namespace expr
             return;
           }
 
-          void operator () (std::list<std::string>& v) const
+          void operator () (Key& v) const
           {
             if (v.size() > 0 && *v.begin() == from)
               {

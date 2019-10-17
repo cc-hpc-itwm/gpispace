@@ -9,6 +9,9 @@
 
 #include <boost/variant.hpp>
 
+#include <list>
+#include <string>
+
 namespace expr
 {
   namespace parse
@@ -19,8 +22,9 @@ namespace expr
       struct binary_t;
       struct ternary_t;
 
+      using Key = std::list<std::string>;
       typedef boost::variant < pnet::type::value::value_type
-                             , std::list<std::string>
+                             , Key
                              , boost::recursive_wrapper<unary_t>
                              , boost::recursive_wrapper<binary_t>
                              , boost::recursive_wrapper<ternary_t>
