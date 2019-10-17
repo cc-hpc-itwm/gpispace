@@ -822,10 +822,13 @@ namespace we
 
         for (std::pair<place_id_type const, iterators_type> const& pits : _m)
         {
+          if (is_referenced (pits.first))
+          {
           context.bind_ref
             ( input_port_name (pits.first)
             , pits.second.pos()->second
             );
+          }
         }
 
         if (boost::get<bool> (_condition->ast().eval_all (context)))
