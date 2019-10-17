@@ -380,14 +380,14 @@ BOOST_AUTO_TEST_CASE
     ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , host_t ("localhost")
     , port_t ("0")
-    , boost::none
+    , gspc::testing::no_certs()
     );
 
   peer_t peer_2
     ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , host_t ("localhost")
     , port_t ("0")
-    , fhg::com::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}
+    , gspc::testing::yes_certs()
     );
 
   BOOST_REQUIRE_THROW

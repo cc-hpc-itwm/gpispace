@@ -2,11 +2,18 @@
 
 #include <drts/certificates.hpp>
 
+#include <boost/ref.hpp>
 #include <boost/test/data/monomorphic.hpp>
 
-#define certificates_data                                                \
-  boost::unit_test::data::make                                           \
-    ( { gspc::Certificates{}                                             \
-      , gspc::Certificates {GSPC_SSL_CERTIFICATES_FOR_TESTS}             \
-      }                                                                  \
-    )
+namespace gspc
+{
+  namespace testing
+  {
+    Certificates no_certs();
+    Certificates yes_certs();
+  }
+}
+
+#define certificates_data                                               \
+  boost::unit_test::data::make                                          \
+    ({::gspc::testing::no_certs(), ::gspc::testing::yes_certs()})
