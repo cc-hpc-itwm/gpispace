@@ -72,6 +72,7 @@ namespace we
 
         map_type _m;
 
+        std::string const& input_port_name (place_id_type) const;
         bool do_step (map_type::iterator, map_type::iterator const&);
       };
     }
@@ -777,6 +778,15 @@ namespace we
       return false;
     }
 
+    std::string const& cross_type::input_port_name (place_id_type pid) const
+    {
+      return _transition.ports_input()
+        .at ( _net->place_to_port().at (_tid)
+            . at (pid).first
+            ).name()
+        ;
+    }
+
     bool cross_type::enables()
     {
       if (_m.size() < _transition.ports_input().size())
@@ -796,9 +806,7 @@ namespace we
         for (std::pair<place_id_type const, iterators_type> const& pits : _m)
         {
           context.bind_ref
-            ( _transition.ports_input()
-            . at (_net->place_to_port().at (_tid)
-            . at (pits.first).first).name()
+            ( input_port_name (pits.first)
             , pits.second.pos()->second
             );
         }
