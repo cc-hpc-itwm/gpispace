@@ -109,7 +109,7 @@ namespace
   };
 
   auto const avoid_infinite_wait_for_capabilities_call
-    (boost::unit_test::timeout (5));
+    (boost::unit_test::timeout (11));
 }
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
