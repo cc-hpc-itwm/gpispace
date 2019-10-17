@@ -66,6 +66,7 @@ namespace we
 
         net_type* _net;
         transition_id_type _tid;
+        we::type::transition_t const& _transition;
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
@@ -716,6 +717,7 @@ namespace we
     cross_type::cross_type (net_type* const net, transition_id_type tid)
       : _net (net)
       , _tid (tid)
+      , _transition (_net->transitions().at (_tid))
     {}
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
@@ -777,15 +779,12 @@ namespace we
 
     bool cross_type::enables()
     {
-      we::type::transition_t const& transition
-        (_net->transitions().at (_tid));
-
-      if (_m.size() < transition.ports_input().size())
+      if (_m.size() < _transition.ports_input().size())
       {
         return false;
       }
 
-      if (!transition.condition())
+      if (!_transition.condition())
       {
         return true;
       }
@@ -797,7 +796,7 @@ namespace we
         for (std::pair<place_id_type const, iterators_type> const& pits : _m)
         {
           context.bind_ref
-            ( transition.ports_input()
+            ( _transition.ports_input()
             . at (_net->place_to_port().at (_tid)
             . at (pits.first).first).name()
             , pits.second.pos()->second
@@ -805,7 +804,7 @@ namespace we
         }
 
         if (boost::get<bool>
-            (transition.condition()->ast().eval_all (context))
+            (_transition.condition()->ast().eval_all (context))
            )
         {
           return true;
