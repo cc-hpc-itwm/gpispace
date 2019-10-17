@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <numeric>
 #include <sstream>
@@ -73,6 +74,16 @@ namespace expr
     {
       std::for_each ( begin(), end()
                     , std::bind (node::rename, std::placeholders::_1, from, to)
+                    );
+    }
+
+    void parser::collect_key_roots (node::KeyRoots& roots) const
+    {
+      std::for_each ( begin(), end()
+                    , std::bind ( node::collect_key_roots
+                                , std::placeholders::_1
+                                , std::ref (roots)
+                                )
                     );
     }
 

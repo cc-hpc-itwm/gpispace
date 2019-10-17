@@ -76,6 +76,8 @@ namespace expr
 
       void rename (const std::string& from, const std::string& to);
 
+      void collect_key_roots (node::KeyRoots&) const;
+
       std::string string() const;
     };
   }
