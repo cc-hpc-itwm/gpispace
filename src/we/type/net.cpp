@@ -15,6 +15,7 @@
 
 #include <list>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace gspc
 {
@@ -74,9 +75,15 @@ namespace we
 
         map_type _m;
 
+        using ReferencedPlaces = std::unordered_set<place_id_type>;
+
+        ReferencedPlaces _referenced_places;
+
         bool is_referenced (place_id_type) const;
         std::string const& input_port_name (place_id_type) const;
-        bool do_step (map_type::iterator, map_type::iterator const&);
+        bool do_step ( ReferencedPlaces::const_iterator
+                     , ReferencedPlaces::const_iterator const&
+                     );
       };
     }
 
@@ -768,13 +775,14 @@ namespace we
       _pos = _begin;
     }
 
-    bool cross_type::do_step
-      (map_type::iterator slot, map_type::iterator const& end)
+    bool cross_type::do_step ( ReferencedPlaces::const_iterator place
+                             , ReferencedPlaces::const_iterator const& end
+                             )
     {
-      while (slot != end)
+      while (place != end)
       {
-        if (is_referenced (slot->first))
-        {
+        auto slot (_m.find (*place));
+
         //! \note all sequences are non-empty
         ++slot->second;
 
@@ -784,8 +792,7 @@ namespace we
         }
 
         slot->second.rewind();
-        }
-        ++slot;
+        ++place;
       }
 
       return false;
@@ -820,15 +827,12 @@ namespace we
       {
         expr::eval::context context;
 
-        for (std::pair<place_id_type const, iterators_type> const& pits : _m)
+        for (auto const& place : _referenced_places)
         {
-          if (is_referenced (pits.first))
-          {
           context.bind_ref
-            ( input_port_name (pits.first)
-            , pits.second.pos()->second
+            ( input_port_name (place)
+            , _m.at (place).pos()->second
             );
-          }
         }
 
         if (boost::get<bool> (_condition->ast().eval_all (context)))
@@ -836,7 +840,7 @@ namespace we
           return true;
         }
       }
-      while (do_step (_m.begin(), _m.end()));
+      while (do_step (_referenced_places.cbegin(), _referenced_places.cend()));
 
       return false;
     }
@@ -859,6 +863,11 @@ namespace we
                           )
     {
       _m.emplace (place_id, iterators_type (tokens, is_read_connection));
+
+      if (is_referenced (place_id))
+      {
+        _referenced_places.emplace (place_id);
+      }
     }
     void cross_type::push ( place_id_type place_id
                           , net_type::token_by_id_type::const_iterator token
@@ -867,6 +876,11 @@ namespace we
     {
       _m.emplace
         (place_id, iterators_type (std::move (token), is_read_connection));
+
+      if (is_referenced (place_id))
+      {
+        _referenced_places.emplace (place_id);
+      }
     }
   }
 }
