@@ -36,7 +36,8 @@ namespace we
       class cross_type
       {
       public:
-        bool enables (net_type* const, transition_id_type);
+        cross_type (net_type* const, transition_id_type);
+        bool enables();
         void write_to ( std::unordered_map< place_id_type
                                           , std::pair<token_id_type, bool>
                                           >&
@@ -62,6 +63,9 @@ namespace we
           net_type::token_by_id_type::const_iterator _pos;
           bool const _is_read_connection;
         };
+
+        net_type* _net;
+        transition_id_type _tid;
 
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
@@ -294,7 +298,7 @@ namespace we
 
     void net_type::update_enabled (transition_id_type tid)
     {
-      cross_type cross;
+      cross_type cross (this, tid);
 
       auto&& push
         ([&] (adj_pt_type& adj, bool is_read_connection)
@@ -321,7 +325,7 @@ namespace we
 
       if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (cross.enables (this, tid))
+        if (cross.enables())
         {
           _enabled[_tmap.at (tid).priority()].insert (tid);
           cross.write_to (_enabled_choice[tid]);
@@ -350,7 +354,7 @@ namespace we
         }
       }
 
-      cross_type cross;
+      cross_type cross (this, tid);
 
       auto&& push
         ( [&] (adj_pt_type& adj, bool is_read_connection)
@@ -388,7 +392,7 @@ namespace we
 
       if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (cross.enables (this, tid))
+        if (cross.enables())
         {
           _enabled[_tmap.at (tid).priority()].insert (tid);
           cross.write_to (_enabled_choice[tid]);
@@ -709,6 +713,10 @@ namespace we
 
     // cross_type
 
+    cross_type::cross_type (net_type* const net, transition_id_type tid)
+      : _net (net)
+      , _tid (tid)
+    {}
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
         : _begin (tokens.begin())
@@ -767,10 +775,10 @@ namespace we
       return false;
     }
 
-    bool cross_type::enables (net_type* const n, transition_id_type transition_id)
+    bool cross_type::enables()
     {
       we::type::transition_t const& transition
-        (n->transitions().at (transition_id));
+        (_net->transitions().at (_tid));
 
       if (_m.size() < transition.ports_input().size())
       {
@@ -790,7 +798,7 @@ namespace we
         {
           context.bind_ref
             ( transition.ports_input()
-            . at (n->place_to_port().at (transition_id)
+            . at (_net->place_to_port().at (_tid)
             . at (pits.first).first).name()
             , pits.second.pos()->second
             );
