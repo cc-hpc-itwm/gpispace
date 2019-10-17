@@ -74,6 +74,7 @@ namespace we
 
         map_type _m;
 
+        bool is_referenced (place_id_type) const;
         std::string const& input_port_name (place_id_type) const;
         bool do_step (map_type::iterator, map_type::iterator const&);
       };
@@ -772,7 +773,7 @@ namespace we
     {
       while (slot != end)
       {
-        if (_key_roots.count (input_port_name (slot->first)) > 0)
+        if (is_referenced (slot->first))
         {
         //! \note all sequences are non-empty
         ++slot->second;
@@ -790,6 +791,10 @@ namespace we
       return false;
     }
 
+    bool cross_type::is_referenced (place_id_type pid) const
+    {
+      return _key_roots.count (input_port_name (pid)) > 0;
+    }
     std::string const& cross_type::input_port_name (place_id_type pid) const
     {
       return _transition.ports_input()
