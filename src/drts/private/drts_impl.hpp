@@ -50,7 +50,9 @@ namespace gspc
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<std::string> const& log_host
+      started_runtime_system ( boost::optional<unsigned short> const& orchestrator_port
+                             , boost::optional<unsigned short> const& agent_port
+                             , boost::optional<std::string> const& log_host
                              , boost::optional<unsigned short> const& log_port
                              , bool gpi_enabled
                              , bool verbose

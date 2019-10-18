@@ -153,6 +153,7 @@ namespace
     , std::string const& name
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
+    , boost::optional<unsigned short> const& agent_port
     , boost::optional<std::string> const& log_host
     , boost::optional<unsigned short> const& log_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
@@ -173,6 +174,7 @@ namespace
       ( rif_client.start_agent
           ( name
           , parent_hostinfo
+          , agent_port
           , gpi_socket
           , certificates
           , installation_path.agent()
@@ -332,6 +334,13 @@ namespace fhg
         {
           try
           {
+            if (description.base_port)
+            {
+              arguments.emplace_back ("--port");
+              arguments.emplace_back
+                (std::to_string (*description.base_port + identity));
+            }
+
             std::string const name
               ( name_prefix + "-" + connection.second.string()
               + "-" + std::to_string (identity + 1)
@@ -447,7 +456,7 @@ namespace fhg
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
       static std::regex const cap_spec_regex
-        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?)?$");
+        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?(/([0-9]+))?)?$");
       enum class cap_spec_regex_part
       {
         capabilities = 1,
@@ -455,6 +464,7 @@ namespace fhg
         num_per_node = 5,
         max_nodes = 7,
         shm = 9,
+        base_port = 11
       };
 
       std::smatch cap_spec_match;
@@ -490,11 +500,14 @@ namespace fhg
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::shm)
           .get_value_or (0)
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::socket)
+        , get_match<unsigned short> (cap_spec_match, cap_spec_regex_part::base_port)
         };
     }
 
     startup_result startup
-      ( boost::optional<std::string> const& log_host
+      ( boost::optional<unsigned short> const& orchestrator_port
+      , boost::optional<unsigned short> const& agent_port
+      , boost::optional<std::string> const& log_host
       , boost::optional<unsigned short> const& log_port
       , bool gpi_enabled
       , bool verbose
@@ -570,7 +583,13 @@ namespace fhg
           (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
       }
 
-      std::vector<std::string> orchestrator_options {"-u", "0", "-n", "orchestrator"};
+      std::vector<std::string> orchestrator_options
+        { "-u"
+        , "*:" + std::to_string (orchestrator_port.get_value_or (0))
+        , "-n"
+        , "orchestrator"
+        };
+
       if (certificates)
       {
         orchestrator_options.push_back ("--ssl-certificates");
@@ -724,6 +743,7 @@ namespace fhg
                                           , master_agent_name
                                           , "orchestrator"
                                           , orchestrator_hostinfo
+                                          , agent_port
                                           , log_host
                                           , log_port
                                           , gpi_socket

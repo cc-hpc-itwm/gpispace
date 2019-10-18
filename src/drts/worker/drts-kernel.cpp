@@ -131,6 +131,7 @@ int main(int ac, char **av)
     po::options_description desc("options");
 
     std::string kernel_name;
+    unsigned short comm_port;
 
     desc.add_options()
       ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
@@ -143,6 +144,10 @@ int main(int ac, char **av)
       ( option_name::shared_memory_size
       , po::value<unsigned long>()
       , "size of shared memory associated with the kernel"
+      )
+      ( "port,p"
+      , po::value<unsigned short>(&comm_port)->default_value(0)
+      , "workers's communication port"
       )
       ( option_name::capability
       , po::value<std::vector<std::string>>()
@@ -257,6 +262,7 @@ int main(int ac, char **av)
       ( request_stop
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , kernel_name
+      , comm_port
       , virtual_memory_api.get()
       , shared_memory.get()
       , master_info

@@ -86,6 +86,7 @@ public:
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
+    , unsigned short comm_port
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
