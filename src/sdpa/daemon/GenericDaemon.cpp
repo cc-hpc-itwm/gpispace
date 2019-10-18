@@ -1607,7 +1607,7 @@ namespace sdpa
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, activity, workers);
+        (_address, id, activity, boost::none, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const
