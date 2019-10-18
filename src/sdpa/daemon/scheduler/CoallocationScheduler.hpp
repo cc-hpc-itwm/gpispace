@@ -52,7 +52,7 @@ namespace sdpa
     private:
       double compute_reservation_cost
         ( const job_id_t&
-        , const std::set<worker_id_t>&
+        , const std::set<Worker_and_implementation>&
         , const double computational_cost
         ) const;
 
@@ -79,31 +79,61 @@ namespace sdpa
       class Reservation : boost::noncopyable
       {
       public:
-        Reservation (std::set<worker_id_t> workers, double cost)
-          : _workers (workers)
+        Reservation
+            ( std::set<Worker_and_implementation> workers_and_implementations
+            , double cost
+            )
+          : _workers_and_implementations (workers_and_implementations)
           , _cost (cost)
         {}
 
-        void replace_worker (worker_id_t const& w1, worker_id_t w2)
+        void replace_worker (worker_id_t const& w1, worker_id_t const& w2)
         {
-          if (!_workers.count (w1))
+          std::set<Worker_and_implementation>::iterator it
+            (std::find_if
+               ( _workers_and_implementations.begin()
+               , _workers_and_implementations.end()
+               , [&w1] (Worker_and_implementation const& x)
+                 {
+                   return x.worker() == w1;
+                 }
+               )
+            );
+
+          if (it == _workers_and_implementations.end())
           {
-            throw std::runtime_error ( "Asked to replace the non-existent worker " + w1);
+            throw std::runtime_error
+              ("Asked to replace the non-existent worker " + w1);
           }
 
-          _workers.erase (w1);
-          _workers.emplace (std::move (w2));
+          _workers_and_implementations.emplace (w2, it->implementation());
+          _workers_and_implementations.erase (it);
         }
 
         std::set<worker_id_t> workers() const
         {
-          return _workers;
+          std::set<worker_id_t> workers;
+          std::transform ( _workers_and_implementations.begin()
+                         , _workers_and_implementations.end()
+                         , std::inserter (workers, workers.begin())
+                         , [] (Worker_and_implementation const& worker_impl)
+                           {
+                             return worker_impl.worker();
+                           }
+                         );
+
+          return workers;
+        }
+
+        std::set<Worker_and_implementation> workers_and_implementations() const
+        {
+          return _workers_and_implementations;
         }
 
         double cost() const {return _cost;}
 
       private:
-        std::set<worker_id_t> _workers;
+        std::set<Worker_and_implementation> _workers_and_implementations;
         double _cost;
 
       public:
@@ -137,7 +167,9 @@ namespace sdpa
           get_aggregated_results_if_all_terminated() const
         {
           return boost::make_optional
-            (_results.individual_results.size() == _workers.size(), _results);
+            ( _results.individual_results.size() == _workers_and_implementations.size()
+            , _results
+            );
         }
 
         bool apply_to_workers_without_result
@@ -145,11 +177,11 @@ namespace sdpa
         {
           bool applied {false};
 
-          for (worker_id_t const& worker_id : _workers)
+          for (auto const& worker_and_impl : _workers_and_implementations)
           {
-            if (!_results.individual_results.count (worker_id))
+            if (!_results.individual_results.count (worker_and_impl.worker()))
             {
-              fun (worker_id);
+              fun (worker_and_impl.worker());
 
               applied = true;
             }

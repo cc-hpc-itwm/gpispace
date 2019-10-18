@@ -32,19 +32,23 @@ namespace sdpa
 
     double CoallocationScheduler::compute_reservation_cost
       ( const job_id_t& job_id
-      , const std::set<worker_id_t>& workers
+      , const std::set<Worker_and_implementation>& workers_and_implementations
       , const double computational_cost
       ) const
     {
       return std::accumulate
-        ( workers.begin()
-        , workers.end()
+        ( workers_and_implementations.begin()
+        , workers_and_implementations.end()
         , 0.0
-        , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
+        , [this, &job_id] ( const double total
+                          , Worker_and_implementation const& worker_and_impl
+                          )
           {
             return total
               + _requirements_and_preferences (job_id).transfer_cost()
-                  (_worker_manager.host_INDICATES_A_RACE (wid));
+                  (_worker_manager.host_INDICATES_A_RACE
+                      (worker_and_impl.worker())
+                  );
           }
         ) + computational_cost;
     }
@@ -79,20 +83,7 @@ namespace sdpa
               )
             );
 
-        std::set<worker_id_t> matching_workers;
-
-        std::transform ( matching_workers_and_implementations.begin()
-                       , matching_workers_and_implementations.end()
-                       , std::inserter ( matching_workers
-                                       , matching_workers.begin()
-                                       )
-                       , [] (Worker_and_implementation const& w)
-                         {
-                           return w.worker();
-                         }
-                       );
-
-        if (!matching_workers.empty())
+        if (!matching_workers_and_implementations.empty())
         {
           if (allocation_table_.find (jobId) != allocation_table_.end())
           {
@@ -101,17 +92,20 @@ namespace sdpa
 
           try
           {
-            for (worker_id_t const& worker : matching_workers)
+            for ( auto const& worker_and_impl
+                : matching_workers_and_implementations
+                )
             {
-              _worker_manager.assign_job_to_worker (jobId, worker);
+              _worker_manager.assign_job_to_worker
+                (jobId, worker_and_impl.worker());
             }
 
             Reservation* const pReservation
               (new Reservation
-                 ( matching_workers
+                 ( matching_workers_and_implementations
                  , compute_reservation_cost
                      ( jobId
-                     , matching_workers
+                     , matching_workers_and_implementations
                      , requirements_and_preferences.computational_cost()
                      )
                  )
@@ -122,9 +116,12 @@ namespace sdpa
           }
           catch (std::out_of_range const&)
           {
-            for (const worker_id_t& wid : matching_workers)
+            for ( auto const&  worker_and_impl
+                : matching_workers_and_implementations
+                )
             {
-              _worker_manager.delete_job_from_worker (jobId, wid);
+              _worker_manager.delete_job_from_worker
+                (jobId, worker_and_impl.worker());
             }
 
             jobs_to_schedule.push_front (jobId);
