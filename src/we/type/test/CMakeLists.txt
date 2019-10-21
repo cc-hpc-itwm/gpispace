@@ -30,7 +30,7 @@ fhg_add_test (NAME we_type_module_call
 
 extended_add_executable (NAME mk_cpp
   SOURCES "mk_cpp.cpp"
-  LIBRARIES pnet Boost::program_options Util::Generic
+  LIBRARIES pnet Util::Generic
 )
 
 add_custom_command (
