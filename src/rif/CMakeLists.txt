@@ -26,6 +26,7 @@ extended_add_library (NAME rif-started_process_promise
 
 install (FILES
   started_process_promise.hpp
+  started_process_promise.ipp
   DESTINATION include/rif
 )
 
