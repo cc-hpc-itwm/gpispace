@@ -1,11 +1,7 @@
 #pragma once
 
-#include <util-generic/serialization/boost/asio/local/stream_protocol.hpp>
-#include <util-generic/serialization/by_member.hpp>
-
 #include <boost/any.hpp>
 #include <boost/asio/local/stream_protocol.hpp>
-#include <boost/serialization/utility.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -45,6 +41,9 @@ namespace fhg
       socket_endpoint& operator= (socket_endpoint&&) = default;
       ~socket_endpoint() = default;
 
+      template<typename Archive>
+        void serialize (Archive&, socket_endpoint&, unsigned int);
+
       operator std::pair<std::string, Socket>() const;
     };
 
@@ -53,7 +52,4 @@ namespace fhg
   }
 }
 
-FHG_UTIL_SERIALIZATION_BY_MEMBER ( fhg::logging::socket_endpoint
-                                 , &fhg::logging::socket_endpoint::host
-                                 , &fhg::logging::socket_endpoint::socket
-                                 )
+#include <logging/socket_endpoint.ipp>

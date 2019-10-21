@@ -1,5 +1,4 @@
 #include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_endpoint_serialization.hpp>
 
 #include <fhg/util/boost/program_options/validators.hpp>
 

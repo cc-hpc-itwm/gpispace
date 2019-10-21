@@ -1,13 +1,9 @@
 #pragma once
 
 #include <logging/tcp_endpoint.hpp>
-#include <logging/tcp_endpoint_serialization.hpp>
 #include <logging/socket_endpoint.hpp>
 
-#include <util-generic/serialization/by_member.hpp>
-
 #include <boost/optional.hpp>
-#include <boost/serialization/optional.hpp>
 #include <boost/variant.hpp>
 
 #include <stdexcept>
@@ -56,6 +52,9 @@ namespace fhg
       endpoint& operator= (endpoint const&) = default;
       endpoint& operator= (endpoint&&) = default;
       ~endpoint() = default;
+
+      template<typename Archive>
+        void serialize (Archive&, endpoint&, unsigned int);
     };
 
     void validate
@@ -63,7 +62,4 @@ namespace fhg
   }
 }
 
-FHG_UTIL_SERIALIZATION_BY_MEMBER ( fhg::logging::endpoint
-                                 , &fhg::logging::endpoint::as_tcp
-                                 , &fhg::logging::endpoint::as_socket
-                                 )
+#include <logging/endpoint.ipp>
