@@ -350,9 +350,10 @@ namespace
           }
         }
 
-        if (net.port_many_to_place().find (trans_id) != net.port_many_to_place().end())
+        auto const& tid_with_tp_many (net.port_many_to_place().find (trans_id));
+        if (tid_with_tp_many != net.port_many_to_place().end())
         {
-          for (auto const& port_to_place : net.port_many_to_place().at (trans_id))
+          for (auto const& port_to_place : tid_with_tp_many->second)
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
