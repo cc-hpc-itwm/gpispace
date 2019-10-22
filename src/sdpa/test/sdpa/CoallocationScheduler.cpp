@@ -126,6 +126,12 @@ struct fixture_scheduler_and_requirements_and_preferences
     return _access_allocation_table.get_current_assignment();
   }
 
+  std::set<sdpa::daemon::Worker_and_implementation> const
+     workers_and_implementations (sdpa::job_id_t const& job) const
+  {
+    return _access_allocation_table.workers_and_implementations (job);
+  }
+
   void add_job ( const sdpa::job_id_t& job_id
                , const Requirements_and_preferences& reqs_and_prefs
                )
@@ -162,6 +168,25 @@ struct fixture_scheduler_and_requirements_and_preferences
                             }
                           )
            );
+  }
+
+  void require_worker_and_implementation
+    ( sdpa::job_id_t const& job
+    , sdpa::worker_id_t const& worker
+    , std::string const& implementation
+    )
+  {
+    auto const assignment (get_current_assignment());
+    BOOST_REQUIRE (assignment.count (job));
+
+    std::set<sdpa::daemon::Worker_and_implementation>
+      expected_workers_and_implementations
+        {sdpa::daemon::Worker_and_implementation (worker, implementation)};
+
+    require_identical_sets
+      ( workers_and_implementations (job)
+      , expected_workers_and_implementations
+      );
   }
 };
 
@@ -210,6 +235,20 @@ namespace
            , computational_cost
            , 0
            , {}
+           };
+  }
+
+  Requirements_and_preferences require
+    ( std::string capability
+    , Preferences const& preferences
+    )
+  {
+    return { {we::type::requirement_t (capability, true)}
+           , we::type::schedule_data()
+           , null_transfer_cost
+           , computational_cost
+           , 0
+           , preferences
            };
   }
 }
@@ -2504,4 +2543,79 @@ BOOST_FIXTURE_TEST_CASE
   }
 
   BOOST_REQUIRE_EQUAL (started_jobs, n_jobs);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( assign_jobs_respecting_preferences
+  , fixture_scheduler_and_requirements_and_preferences
+  )
+{
+  std::string const common_capability
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+
+  Preferences const preferences
+    { fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    };
+
+  sdpa::worker_id_t const worker_0
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  _worker_manager.addWorker
+    ( worker_0
+    , { sdpa::Capability (common_capability, worker_0)
+      , sdpa::Capability (preferences[0], worker_0)
+      }
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    );
+
+  sdpa::worker_id_t const worker_1
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  _worker_manager.addWorker
+    ( worker_1
+    , { sdpa::Capability (common_capability, worker_1)
+      , sdpa::Capability (preferences[1], worker_1)
+      }
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    );
+
+  sdpa::worker_id_t const worker_2
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  _worker_manager.addWorker
+    ( worker_2
+    , { sdpa::Capability (common_capability, worker_2)
+      , sdpa::Capability (preferences[2], worker_2)
+      }
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    );
+
+  sdpa::job_id_t const job0
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  add_job (job0, require (common_capability, preferences));
+  _scheduler.enqueueJob (job0);
+  _scheduler.assignJobsToWorkers();
+  require_worker_and_implementation (job0, worker_0, preferences[0]);
+
+  sdpa::job_id_t const job1
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  add_job (job1, require (common_capability, preferences));
+  _scheduler.enqueueJob (job1);
+  _scheduler.assignJobsToWorkers();
+  require_worker_and_implementation (job1, worker_1, preferences[1]);
+
+  sdpa::job_id_t const job2
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  add_job (job2, require (common_capability, preferences));
+  _scheduler.enqueueJob (job2);
+  _scheduler.assignJobsToWorkers();
+  require_worker_and_implementation (job2, worker_2, preferences[2]);
 }
