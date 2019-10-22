@@ -75,20 +75,26 @@ BOOST_AUTO_TEST_CASE (we_put_many_decomposes_result_lists)
 
   for (auto workflow : {manual.pnet(), automatic.pnet()})
   {
-    for (unsigned long N (0UL); N < 10UL; ++N)
+    BOOST_TEST_CONTEXT ("With pnet type = " << workflow.filename())
     {
-      std::multimap<std::string, pnet::type::value::value_type> const result
-        ( gspc::client (drts).put_and_run
-            (gspc::workflow (workflow), {{"N", N}})
-        );
+      for (unsigned long N (0UL); N < 10UL; ++N)
+      {
+        BOOST_TEST_CONTEXT ("With sum range = [0.." << N << ")")
+        {
+          std::multimap<std::string, pnet::type::value::value_type> const result
+            ( gspc::client (drts).put_and_run
+              (gspc::workflow (workflow), {{"N", N}})
+            );
 
-      BOOST_REQUIRE_EQUAL (result.size(), 1);
+          BOOST_REQUIRE_EQUAL (result.size(), 1);
 
-      BOOST_REQUIRE_EQUAL (result.count ("S"), 1);
-      BOOST_CHECK_EQUAL
-        ( result.find ("S")->second
-        , pnet::type::value::value_type ((N * (N + 1UL)) / 2UL)
-        );
+          BOOST_REQUIRE_EQUAL (result.count ("S"), 1);
+          BOOST_CHECK_EQUAL
+            ( result.find ("S")->second
+            , pnet::type::value::value_type ((N * (N - 1UL)) / 2UL)
+            );
+        }
+      }
     }
   }
 }

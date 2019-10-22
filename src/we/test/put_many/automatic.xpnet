@@ -13,11 +13,10 @@
         <in name="N" type="unsigned long"/>
         <out name="out" type="list"/>
         <module name="automatic" function="generate (N, out)">
+          <cinclude href="numeric"/>
           <code><![CDATA[
-          for (unsigned long i (0); i <= N; ++i)
-          {
-            out.emplace_back (i);
-          }
+          out.resize (N);
+          std::iota (out.begin(), out.end(), 0UL);
           ]]>
           </code>
         </module>
