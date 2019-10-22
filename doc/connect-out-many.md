@@ -26,7 +26,7 @@ This naive solution has the following drawbacks:
 An ideal way to alleviate the drawbacks of the above solution is to introduce an option that facilitates the application
 developer to connect an output port of type ``list`` directly to an individual valued input place. The list-to-tokens
 decomposition can happen implicitly, thus, shifting the burden away from the application developer. Towards enabling
-this, we define the new **``connect-out-many``** Petri Net feature in this document. 
+this, we define the new **``connect-out-many``** Petri Net feature in this document.
 
 ## connect-out-many
 The **``connect-out-many``** is a new Petri Net element, that defines a special port-to-place connector.  Unlike the typical
@@ -36,28 +36,28 @@ decomposed within the GPI-Space workflow engine, thus, avoiding the need for any
 definition.
 
 Now, in terms of the application runtime, instead of putting (i.e., injecting) a list as a single token to a place, any
-port-to-place connections defined as ``connect-to-many`` triggers the workflow engine to: 
+port-to-place connections defined as ``connect-to-many`` triggers the workflow engine to:
 
 * decompose the value of type ``list`` generated at the output port (via an executed module call or expression) into
-  individual elements, and, 
-* feed each element of the list to input place (as long as the element type matches that of the input place). 
+  individual elements, and,
+* feed each element of the list to input place (as long as the element type matches that of the input place).
 
 Unlike the manual decomposition solution, ``connect-out-many`` enables a sort of **put_many port-to-place token
-injection pattern**, that is performed implicitly by the workflow engine in O(n). 
+injection pattern**, that is performed implicitly by the workflow engine in O(n).
 
 ## Usage
-The ``connect-out-many`` Petri Net element can be leveraged as follows: 
+The ``connect-out-many`` Petri Net element can be leveraged as follows:
 
 ```
-<place name="<input-place-name>" type="<input-place-type>" /> 
-<transition name="<transition-name>"> 
- <defun> 
- ...  
- <out name="<output-port-name>" type="list"/> 
- </defun> 
- ...  
+<place name="<input-place-name>" type="<input-place-type>" />
+<transition name="<transition-name>">
+ <defun>
+ ...
+ <out name="<output-port-name>" type="list"/>
+ </defun>
+ ...
 <connect-out-many port="<output-port-name>" place="<input-place-name>"/>
-</transition> 
+</transition>
 ```
 
 > NOTE (1): the ``list`` can be a homogeneous list or heterogeneous list, that contains value of any valid data-type
@@ -65,23 +65,24 @@ The ``connect-out-many`` Petri Net element can be leveraged as follows:
 
 
 > NOTE (2): During compile time, the output port attached to a ``connect-out-many`` is only checked for type ``list``.
-> Any mismatch between the elements of the ``list`` and the input place detected during runtime will cause the GPI-Space
-> workflow engine to throw a ``type_mismatch`` exception. 
+> Any mismatch between the elements of the ``list`` and the input place is detected during runtime, which causes the
+> GPI-Space workflow engine to throw a ``type_mismatch`` exception.
 
 
 ## Example
-We illustrate below a simple example regarding how to use ``connect-out-many``.  
+We illustrate below a simple example regarding how to use ``connect-out-many``.
 
 To contrast the ease-of-use of ``connect-out-many``, we first present an example with the naive solution described in
-the [Motivation](#motivation). 
+the [Motivation](#motivation).
 
-``` 
-//example_putmany_manual: generate list of {0...1M} and 
-//compute its sum using ``stack`` utility. 
+```
+//example_putmany_manual: generate list of [0..N) and
+//compute its sum using ``stack`` utility.
 
-<defun name="sum_of_some_list">
+<defun name="sum_of_zero_to_N_by_list">
 ....
 <net>
+  <place name="N" type="unsigned long"/>
   <place name="S" type="unsigned long">
     <token><value>0UL</value></token>
   </place>
@@ -94,7 +95,7 @@ the [Motivation](#motivation).
       <out name="out" type="list"/>
       <module name="manual" function="generate (N, out)">
         <code><![CDATA[
-        for (unsigned long i (0); i <= 10000; ++i)
+        for (unsigned long i (0); i < N; ++i)
         {
           out.emplace_back (i);
         }
@@ -102,6 +103,7 @@ the [Motivation](#motivation).
         </code>
       </module>
     </defun>
+    <connect-in port="N" place="N"/>
     <connect-out port="out" place="is"/>
   </transition>
 
@@ -131,7 +133,7 @@ the [Motivation](#motivation).
     <connect-out port="i" place="i"/>
   </transition>
 
-  <transition name="sum">
+  <transition name="compute_sum">
     <defun>
       <in name="i" type="unsigned long"/>
       <inout name="S" type="unsigned long"/>
@@ -149,25 +151,26 @@ the [Motivation](#motivation).
 
 As seen from ``example_putmany_manual``, we cannot directly connect the output port ``out`` to place ``i`` that inputs
 into the ``sum`` module. Instead, this needs to be done via place ``is``, which employs the ``empty`` and ``cons``
-transitions with the ``stack_top/stack_pop`` functionality to decompose the list output by module ``generate`` and feed
-it to ``sum``. 
+transitions with the ``stack_top/stack_pop`` functionality to decompose the list output by ``generate`` and feed it into
+``sum``.
 
-Now, to get rid of the boilerplate in the above example that decomposes the list manually (or explicitly), we can
-leverage the new ``connect-to-many`` port-to-place collection. To enable this, we need to do the following: 
+Now, to get rid of the boilerplate in the above example, that decomposes the list manually (or explicitly), we can
+leverage the new ``connect-to-many`` port-to-place connection. To enable this, we need to do the following:
 
-* change the connection type of output port ``out`` from ``connect-out`` to ``connect-out-many``. 
-* directly connect output port ``out`` to place ``i``, and therefore, get rid of the ``empty`` and ``cons`` transitions. 
-  
+* change the connection type of output port ``out`` from ``connect-out`` to ``connect-out-many``.
+* directly connect output port ``out`` to place ``i``, and therefore, get rid of the ``empty`` and ``cons`` transitions.
+
 The updated and a minimalistic version of the ``example_putmany_manual`` Petri Net with ``connect-out-many`` is
-illustrated below in ``example_putmany_automatic``. 
+illustrated below in ``example_putmany_automatic``.
 
-``` 
-//example_putmany_automatic: generate list of {0...1M} and 
-//compute its sum using "connect-out-many" 
+```
+//example_putmany_automatic: generate list of [0..N) and
+//compute its sum using "connect-out-many"
 
-<defun name="sum_of_some_list">
+<defun name="sum_of_zero_to_N_by_list">
 ....
 <net>
+  <place name="N" type="unsigned long"/>
   <place name="S" type="unsigned long">
     <token><value>0UL</value></token>
   </place>
@@ -179,7 +182,7 @@ illustrated below in ``example_putmany_automatic``.
       <out name="out" type="list"/>
       <module name="manual" function="generate (N, out)">
         <code><![CDATA[
-        for (unsigned long i (0); i <= 10000; ++i)
+        for (unsigned long i (0); i < N; ++i)
         {
           out.emplace_back (i);
         }
@@ -187,10 +190,11 @@ illustrated below in ``example_putmany_automatic``.
         </code>
       </module>
     </defun>
+    <connect-in port="N" place="N"/>
     <connect-out-many port="out" place="i"/>
   </transition>
 
-  <transition name="sum">
+  <transition name="compute_sum">
     <defun>
       <in name="i" type="unsigned long"/>
       <inout name="S" type="unsigned long"/>
