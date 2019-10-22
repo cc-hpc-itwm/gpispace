@@ -650,12 +650,11 @@ namespace we
                 && _port_many_to_place.at (tid).count (p.first)
                 )
         {
-          const std::list<pnet::type::value::value_type> & many_tokens
+          auto const& many_tokens
             (boost::get<std::list<pnet::type::value::value_type>>
               (context.value ({p.second.name()}))
             );
 
-          std::list<to_be_updated_type> pending_updates;
           for (auto const& token : many_tokens) {
             pending_updates.emplace_back
               ( do_put_value
@@ -714,7 +713,7 @@ namespace we
                  . count (token_on_port.second)
                 )
         {
-          const std::list<pnet::type::value::value_type> & many_tokens
+          auto const& many_tokens
             (boost::get<std::list<pnet::type::value::value_type>>
               (token_on_port.first)
             );
