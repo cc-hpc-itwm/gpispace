@@ -251,6 +251,21 @@ namespace
            , preferences
            };
   }
+
+  Requirements_and_preferences require
+     ( std::string const& capability
+     , unsigned int num_workers
+     , Preferences const& preferences
+     )
+  {
+    return { {we::type::requirement_t (capability, true)}
+           , we::type::schedule_data (num_workers)
+           , null_transfer_cost
+           , computational_cost
+           , 0
+           , preferences
+           };
+  }
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -2061,6 +2076,20 @@ struct fixture_add_new_workers
     // the total number of jobs is conserved
     BOOST_REQUIRE_EQUAL (n_jobs_initial_workers + n_stolen_jobs, n_total_jobs);
   }
+
+  void require_workers_and_implementations
+    ( sdpa::job_id_t const& job
+    , std::set<sdpa::daemon::Worker_and_implementation> exp_workers_and_implementations
+    )
+  {
+    auto const assignment (get_current_assignment());
+    BOOST_REQUIRE (assignment.count (job));
+
+    require_identical_sets
+      ( workers_and_implementations (job)
+      , exp_workers_and_implementations
+      );
+  }
 };
 
 BOOST_FIXTURE_TEST_CASE
@@ -2618,4 +2647,84 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob (job2);
   _scheduler.assignJobsToWorkers();
   require_worker_and_implementation (job2, worker_2, preferences[2]);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( coallocation_with_multiple_implementations
+  , fixture_add_new_workers
+  )
+{
+  std::string const common_capability
+     (fhg::util::testing::random_identifier_without_leading_underscore());
+
+  Preferences const preferences
+    { fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    };
+
+  std::set<sdpa::daemon::Worker_and_implementation>
+    expected_workers_and_implementations;
+
+  unsigned int const num_workers_type_0
+    (1 + fhg::util::testing::random_integral<unsigned int>() % 3);
+
+  std::vector<sdpa::worker_id_t> const workers_of_type_0
+    (add_new_workers ( {common_capability, preferences[0]}
+                     , num_workers_type_0
+                     )
+    );
+
+  for (auto const& worker : workers_of_type_0)
+  {
+    expected_workers_and_implementations.emplace
+      (worker, preferences[0]);
+  }
+
+  unsigned int const num_workers_type_1
+    (1 + fhg::util::testing::random_integral<unsigned int>() % 3);
+
+  std::vector<sdpa::worker_id_t> const workers_of_type_1
+    (add_new_workers ( {common_capability, preferences[1]}
+                     , num_workers_type_1
+                     )
+    );
+
+  for (auto const& worker : workers_of_type_1)
+  {
+    expected_workers_and_implementations.emplace
+      (worker, preferences[1]);
+  }
+
+  unsigned int num_workers_type_2
+    (1 + fhg::util::testing::random_integral<unsigned int>() % 3);
+
+  std::vector<sdpa::worker_id_t> const workers_of_type_2
+    (add_new_workers ( {common_capability, preferences[2]}
+                     , num_workers_type_2
+                     )
+    );
+
+  for (auto const& worker : workers_of_type_2)
+  {
+    expected_workers_and_implementations.emplace
+      (worker, preferences[2]);
+  }
+
+  sdpa::job_id_t const job
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+
+  add_job
+    ( job
+    , require ( common_capability
+              , expected_workers_and_implementations.size()
+              , preferences
+              )
+    );
+
+  _scheduler.enqueueJob (job);
+  _scheduler.assignJobsToWorkers();
+
+  require_workers_and_implementations
+    (job, expected_workers_and_implementations);
 }
