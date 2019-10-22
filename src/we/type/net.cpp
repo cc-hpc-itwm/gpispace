@@ -113,6 +113,13 @@ namespace we
       switch (type)
       {
       case edge::TP:
+        if (  _port_many_to_place.count (transition_id) > 0
+           && _port_many_to_place.at (transition_id).count (port_id) > 0
+           )
+        {
+          throw std::logic_error ("duplicate connection: out-many and out");
+        }
+
         _adj_tp.emplace (place_id, transition_id);
         if (!_port_to_place[transition_id].emplace
              ( std::piecewise_construct
@@ -125,6 +132,13 @@ namespace we
         }
         break;
       case edge::TP_MANY:
+        if (  _port_to_place.count (transition_id) > 0
+           && _port_to_place.at (transition_id).count (port_id) > 0
+           )
+        {
+          throw std::logic_error ("duplicate connection: out and out-many");
+        }
+
         _adj_tp.emplace (place_id, transition_id);
         if (!_port_many_to_place[transition_id].emplace
              ( std::piecewise_construct
