@@ -8,8 +8,10 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/chrono.hpp>
 
+#include <algorithm>
 #include <chrono>
 #include <random>
+#include <vector>
 
 #include <we/test/net.common.hpp>
 
@@ -113,6 +115,85 @@ namespace we
 
         last_duration = duration;
       }
+    }
+
+    BOOST_AUTO_TEST_CASE (partial_cross_product_uses_referenced_places_only)
+    {
+      using Clock = std::chrono::steady_clock;
+      using Duration = decltype (Clock::now() - Clock::now());
+
+      std::vector<Duration> durations;
+
+      for ( std::size_t number_of_tokens {1}
+          ; number_of_tokens <= 10000000
+          ; number_of_tokens *= 10
+          )
+      {
+        //    (x::bool) -> [ t        ]
+        // (y::control) -> [ if: ${x} ]
+
+        net_type net;
+
+        auto add_place
+          ( [&] ( std::string name
+                , pnet::type::signature::signature_type signature
+                )
+            {
+              return net.add_place
+                ({name, signature, boost::none, no_properties()});
+            }
+          );
+
+        auto const pid_x (add_place ("x", "bool"));
+        auto const pid_y (add_place ("y", "control"));
+
+        transition_t transition ( "t"
+                                , type::expression_t{}
+                                , expression_t {"${x}"}
+                                , no_properties()
+                                , we::priority_type{}
+                                );
+
+        auto add_in_port
+          ( [&] ( std::string name
+                , pnet::type::signature::signature_type signature
+                )
+            {
+              return transition.add_port
+                ({name, PORT_IN, signature, no_properties()});
+            }
+          );
+
+        auto const port_x (add_in_port ("x", "bool"));
+        auto const port_y (add_in_port ("y", "control"));
+
+        auto const tid (net.add_transition (transition));
+
+        net.add_connection (edge::PT, tid, pid_x, port_x, no_properties());
+        net.add_connection (edge::PT, tid, pid_y, port_y, no_properties());
+
+        // t is not enabled because there is no token on x, the
+        // condition is not evaluated
+        for (decltype (number_of_tokens) _ {0}; _ < number_of_tokens; ++_)
+        {
+          net.put_value (pid_y, type::literal::control());
+        }
+
+        // to put a token on x implies the evaluation of the condition
+        auto const start (Clock::now());
+        net.put_value (pid_x, false);
+        auto const end (Clock::now());
+
+        durations.emplace_back (end - start);
+      }
+
+      auto minmax (std::minmax_element (durations.cbegin(), durations.cend()));
+
+      // the factor 100 is very small compared to the growth in the
+      // number of tokens in y, to not differ by more than a factor of
+      // 100 is a good indicator that the condition evaluation does
+      // not depend on the number of tokens on place y
+      BOOST_REQUIRE_LT (((*minmax.second) / (*minmax.first)), 100);
     }
   }
 }
