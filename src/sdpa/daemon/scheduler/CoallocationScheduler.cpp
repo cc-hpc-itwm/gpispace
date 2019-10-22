@@ -191,9 +191,11 @@ namespace sdpa
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
       for (const job_id_t& job_id: _pending_jobs)
       {
-        std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-             (job_id, workers, serve_job)
+              ( job_id
+              , allocation_table_.at (job_id)->workers_and_implementations()
+              , serve_job
+              )
            )
         {
           jobs_started.insert (job_id);

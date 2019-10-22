@@ -438,7 +438,7 @@ namespace sdpa
 
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const& job_id
-      , std::set<worker_id_t> const& workers
+      , std::set<Worker_and_implementation> const& workers_and_implementations
       , std::function<void ( std::set<worker_id_t> const&
                            , const job_id_t&
                            )
@@ -447,22 +447,33 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _(mtx_);
       bool const can_start
-        ( std::all_of ( std::begin(workers)
-                      , std::end(workers)
-                      , [this] (const worker_id_t& worker_id)
+        ( std::all_of ( std::begin (workers_and_implementations)
+                      , std::end (workers_and_implementations)
+                      , [this] (Worker_and_implementation const& worker_and_impl)
                         {
-                          return worker_map_.count (worker_id)
-                            && !worker_map_.at (worker_id).isReserved();
+                          return worker_map_.count (worker_and_impl.worker())
+                            && !worker_map_.at (worker_and_impl.worker()).isReserved();
                         }
                       )
         );
 
       if (can_start)
       {
-        for (worker_id_t const& worker_id : workers)
+        for (auto const& worker_and_impl: workers_and_implementations)
         {
-          submit_job_to_worker (job_id, worker_id);
+          submit_job_to_worker (job_id, worker_and_impl.worker());
         }
+
+        //to do: replace this in the next commit
+        std::set<worker_id_t> workers;
+        std::transform ( workers_and_implementations.begin()
+                       , workers_and_implementations.end()
+                       , std::inserter (workers, workers.begin())
+                       , [] (Worker_and_implementation const& worker_impl)
+                         {
+                           return worker_impl.worker();
+                         }
+                       );
 
         serve_job (workers, job_id);
       }

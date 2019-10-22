@@ -2173,7 +2173,7 @@ BOOST_FIXTURE_TEST_CASE
 
   _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( *worker_jobs.cbegin()
-    , {worker_with_1_job}
+    , {sdpa::daemon::Worker_and_implementation (worker_with_1_job, boost::none)}
     , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
     );
 
@@ -2229,7 +2229,7 @@ BOOST_FIXTURE_TEST_CASE
 
   _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( *worker_jobs.cbegin()
-    , {worker_with_1_job}
+    , {sdpa::daemon::Worker_and_implementation (worker_with_1_job, boost::none)}
     , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
     );
 
@@ -2303,7 +2303,7 @@ BOOST_FIXTURE_TEST_CASE
 
     _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( *worker_jobs.cbegin()
-      , {worker}
+      , {sdpa::daemon::Worker_and_implementation (worker, boost::none)}
       , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
       );
 

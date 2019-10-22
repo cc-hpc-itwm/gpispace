@@ -236,7 +236,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( job_id
-    , {worker_ids[0]}
+    , {sdpa::daemon::Worker_and_implementation (worker_ids[0], boost::none)}
     , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
       {
         // do nothing, serve_job is merged with submit_if_can_start in
@@ -261,6 +261,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
 
   sdpa::daemon::WorkerManager worker_manager;
 
+  std::set<sdpa::daemon::Worker_and_implementation> workers_and_implementations;
+
   for (unsigned int k=0; k<N; k++)
   {
     worker_manager.addWorker ( worker_ids[k]
@@ -270,6 +272,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
                              , fhg::util::testing::random_string()
                              , fhg::util::testing::random_string()
                              );
+
+    workers_and_implementations.emplace ( worker_ids[k], boost::none);
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -283,7 +287,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
 
   worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( job_id
-    , std::set<sdpa::worker_id_t> (worker_ids.begin(), worker_ids.end())
+    , workers_and_implementations
     , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
       {
         // do nothing, serve_job is merged with submit_if_can_start in
@@ -382,7 +386,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
         BOOST_REQUIRE
           ( worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
             ( job_id
-            , {worker_id}
+            , {sdpa::daemon::Worker_and_implementation (worker_id, boost::none)}
             , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){}
             )
           );

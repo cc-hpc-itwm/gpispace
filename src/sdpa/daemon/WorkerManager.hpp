@@ -144,7 +144,8 @@ namespace sdpa
       void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const&, std::set<worker_id_t> const&
+      ( job_id_t const&
+      , std::set<Worker_and_implementation> const&
       , std::function<void ( std::set<worker_id_t> const&
                            , const job_id_t&
                            )> const& serve_job
