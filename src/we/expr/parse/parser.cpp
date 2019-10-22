@@ -80,10 +80,10 @@ namespace expr
     void parser::collect_key_roots (node::KeyRoots& roots) const
     {
       std::for_each ( begin(), end()
-                    , std::bind ( node::collect_key_roots
-                                , std::placeholders::_1
-                                , std::ref (roots)
-                                )
+                    , [&] (nd_t const& node)
+                      {
+                        node::collect_key_roots (node, roots);
+                      }
                     );
     }
 
