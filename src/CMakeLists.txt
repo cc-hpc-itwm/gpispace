@@ -169,6 +169,16 @@ extended_add_library (NAME logging
             Boost::program_options
 )
 
+install (FILES
+  logging/endpoint.hpp
+  logging/endpoint.ipp
+  logging/socket_endpoint.hpp
+  logging/socket_endpoint.ipp
+  logging/tcp_endpoint.hpp
+  logging/tcp_endpoint.ipp
+  DESTINATION include/logging
+)
+
 extended_add_executable (NAME gspc-logging-demultiplexer
   SOURCES "logging/gspc-logging-demultiplexer.cpp"
   LIBRARIES gspc::logging

@@ -37,6 +37,9 @@ namespace fhg
       tcp_endpoint& operator= (tcp_endpoint&&) = default;
       ~tcp_endpoint() = default;
 
+      template<typename Archive>
+        void serialize (Archive&, tcp_endpoint&, unsigned int);
+
       operator std::pair<std::string, unsigned short>() const;
     };
 
@@ -44,3 +47,5 @@ namespace fhg
       (boost::any&, std::vector<std::string> const&, tcp_endpoint*, int);
   }
 }
+
+#include <logging/tcp_endpoint.ipp>

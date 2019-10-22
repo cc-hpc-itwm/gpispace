@@ -1,5 +1,4 @@
 #include <logging/stream_receiver.hpp>
-#include <logging/tcp_endpoint_serialization.hpp>
 #include <logging/test/message.hpp>
 
 #include <rpc/remote_function.hpp>
