@@ -173,24 +173,36 @@ const std::string& GenericDaemon::name() const
       return _network_strategy.local_endpoint();
     }
 
-void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
+void GenericDaemon::serveJob
+  ( std::set<Worker_and_implementation> const& workers_and_implementations
+  , const job_id_t& jobId
+  )
 {
-  //take a job from the workers' queue and serve it
-  Job const* const ptrJob = findJob(jobId);
-  if(ptrJob)
+  Job const* const ptrJob = findJob (jobId);
+  if (ptrJob)
   {
-      // create a SubmitJobEvent for the job job_id serialize and attach description
-    _log_emitter.emit ( "The job " + ptrJob->id()
-                      + " was assigned the following workers: {"
-                      + fhg::util::join (workers, ", ").string() + '}'
-                      , fhg::logging::legacy::category_level_trace
-                      );
+    std::set<worker_id_t> workers;
+    std::transform ( workers_and_implementations.begin()
+                   , workers_and_implementations.end()
+                   , std::inserter (workers, workers.begin())
+                   , [] (Worker_and_implementation const& worker_impl)
+                     {
+                       return worker_impl.worker();
+                     }
+                   );
 
-      for (const worker_id_t& worker_id : workers)
-      {
-        child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->activity(), workers);
-      }
+    for (auto const& worker_and_impl : workers_and_implementations)
+    {
+      child_proxy
+        ( this
+        , _worker_manager.address_by_worker (worker_and_impl.worker()).get()->second
+        )
+        .submit_job ( ptrJob->id()
+                    , ptrJob->activity()
+                    , worker_and_impl.implementation()
+                    , workers
+                    );
+    }
   }
 }
 
@@ -1603,11 +1615,12 @@ namespace sdpa
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
                                                 , we::type::activity_t activity
+                                                , boost::optional<std::string> const& implementation
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, activity, boost::none, workers);
+        (_address, id, activity, implementation, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const

@@ -184,7 +184,11 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void (std::set<worker_id_t> const&, const job_id_t&)> serve_job)
+      (std::function<void ( std::set<Worker_and_implementation> const&
+                          , const job_id_t&
+                          )
+                    > serve_job
+      )
     {
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;

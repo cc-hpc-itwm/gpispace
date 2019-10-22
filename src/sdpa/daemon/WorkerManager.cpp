@@ -439,7 +439,7 @@ namespace sdpa
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const& job_id
       , std::set<Worker_and_implementation> const& workers_and_implementations
-      , std::function<void ( std::set<worker_id_t> const&
+      , std::function<void ( std::set<Worker_and_implementation> const&
                            , const job_id_t&
                            )
                      > const& serve_job
@@ -464,18 +464,7 @@ namespace sdpa
           submit_job_to_worker (job_id, worker_and_impl.worker());
         }
 
-        //to do: replace this in the next commit
-        std::set<worker_id_t> workers;
-        std::transform ( workers_and_implementations.begin()
-                       , workers_and_implementations.end()
-                       , std::inserter (workers, workers.begin())
-                       , [] (Worker_and_implementation const& worker_impl)
-                         {
-                           return worker_impl.worker();
-                         }
-                       );
-
-        serve_job (workers, job_id);
+        serve_job (workers_and_implementations, job_id);
       }
 
       return can_start;

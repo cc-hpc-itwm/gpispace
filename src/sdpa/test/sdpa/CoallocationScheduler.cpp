@@ -32,11 +32,29 @@
 namespace
 {
   std::string (&random_job_id)(void) = utils::random_peer_name;
-  auto serve_job = [] (std::set<sdpa::worker_id_t> const&, const sdpa::job_id_t&) {};
+  auto serve_job = [] (std::set<sdpa::daemon::Worker_and_implementation> const&, const sdpa::job_id_t&) {};
 
   unsigned long random_ulong()
   {
     return fhg::util::testing::random_integral<unsigned long>();
+  }
+
+  void require_identical_sets
+    ( std::set<sdpa::daemon::Worker_and_implementation> const& left
+    , std::set<sdpa::daemon::Worker_and_implementation> const& right
+    )
+  {
+    std::set<sdpa::daemon::Worker_and_implementation> sym_diff;
+
+    std::set_symmetric_difference
+      ( left.begin()
+      , left.end()
+      , right.begin()
+      , right.end()
+      , std::inserter (sym_diff, sym_diff.begin())
+      );
+
+    BOOST_REQUIRE (sym_diff.empty());
   }
 }
 
@@ -65,6 +83,13 @@ namespace sdpa
 
         return assignment;
       }
+
+      std::set<sdpa::daemon::Worker_and_implementation>
+        workers_and_implementations (sdpa::job_id_t const& job) const
+      {
+        return _allocation_table.at (job)->workers_and_implementations();
+      }
+
     private:
       CoallocationScheduler::allocation_table_t& _allocation_table;
     };
@@ -1049,27 +1074,37 @@ struct serve_job_and_check_for_minimal_cost_assignement
     return map_costs;
   }
 
-  void serve_and_check_assignment ( const std::function<double (std::string const&)> cost
-                                  , const std::vector<std::string>& worker_ids
-                                  , std::set<sdpa::worker_id_t> const& assigned_worker_ids
-                                  , const sdpa::job_id_t&
-                                  )
+  void serve_and_check_assignment
+    ( const std::function<double (std::string const&)> cost
+    , const std::vector<std::string>& worker_ids
+    , std::set<sdpa::daemon::Worker_and_implementation> const& assigned_workers_and_impls
+    , const sdpa::job_id_t&
+    )
   {
-    sdpa::worker_id_t assigned_worker_with_max_cost
-      (*std::max_element ( assigned_worker_ids.begin()
-                         , assigned_worker_ids.end()
-                         , [cost](const sdpa::worker_id_t& wid_l, const sdpa::worker_id_t& wid_r)
-                           { return cost (wid_l) < cost (wid_r); }
+    sdpa::daemon::Worker_and_implementation assigned_worker_with_max_cost
+      (*std::max_element ( assigned_workers_and_impls.begin()
+                         , assigned_workers_and_impls.end()
+                         , [cost] ( const sdpa::daemon::Worker_and_implementation& left
+                                  , const sdpa::daemon::Worker_and_implementation& right
+                                  )
+                           { return cost (left.worker()) < cost (right.worker()); }
                          )
       );
 
     for (const sdpa::worker_id_t& wid : worker_ids)
     {
-      if (std::find (assigned_worker_ids.begin(), assigned_worker_ids.end(), wid) == assigned_worker_ids.end())
+      auto const it (std::find_if ( assigned_workers_and_impls.begin()
+                                  , assigned_workers_and_impls.end()
+                                  , [&wid] (sdpa::daemon::Worker_and_implementation const& x)
+                                    { return x.worker() == wid; }
+                                  )
+                    );
+
+      if (it == assigned_workers_and_impls.end())
       {
          // any not assigned worker has n associated a cost that is either greater or equal
          // to the maximum cost of the assigned workers
-         BOOST_REQUIRE_GE (cost (wid), cost (assigned_worker_with_max_cost));
+         BOOST_REQUIRE_GE (cost (wid), cost (assigned_worker_with_max_cost.worker()));
       }
     }
   }
@@ -1799,6 +1834,12 @@ struct fixture_add_new_workers
     return _access_allocation_table.get_current_assignment();
   }
 
+  std::set<sdpa::daemon::Worker_and_implementation> const
+    workers_and_implementations (sdpa::job_id_t const& job) const
+  {
+    return _access_allocation_table.workers_and_implementations (job);
+  }
+
   void add_job ( const sdpa::job_id_t& job_id
                , const Requirements_and_preferences& reqs
                )
@@ -2174,7 +2215,7 @@ BOOST_FIXTURE_TEST_CASE
   _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( *worker_jobs.cbegin()
     , {sdpa::daemon::Worker_and_implementation (worker_with_1_job, boost::none)}
-    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+    , [] (std::set<sdpa::daemon::Worker_and_implementation> const&, sdpa::job_id_t const&) {}
     );
 
   _scheduler.releaseReservation (*worker_jobs.begin());
@@ -2230,7 +2271,10 @@ BOOST_FIXTURE_TEST_CASE
   _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( *worker_jobs.cbegin()
     , {sdpa::daemon::Worker_and_implementation (worker_with_1_job, boost::none)}
-    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+    , [] ( std::set<sdpa::daemon::Worker_and_implementation> const&
+         , sdpa::job_id_t const&
+         )
+      {}
     );
 
   // the worker with 1 job finishes the assigned job
@@ -2304,7 +2348,10 @@ BOOST_FIXTURE_TEST_CASE
     _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( *worker_jobs.cbegin()
       , {sdpa::daemon::Worker_and_implementation (worker, boost::none)}
-      , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&) {}
+      , [] ( std::set<sdpa::daemon::Worker_and_implementation> const&
+           , sdpa::job_id_t const&
+           )
+        {}
       );
 
     _scheduler.releaseReservation (*worker_jobs.begin());
@@ -2414,15 +2461,19 @@ BOOST_FIXTURE_TEST_CASE
     std::set<sdpa::job_id_t> const jobs_started
       (_scheduler.start_pending_jobs
         ( [&assignment, this, &started_jobs]
-              ( std::set<sdpa::worker_id_t> const& workers
-              , sdpa::job_id_t const& job
-              )
+             ( std::set<sdpa::daemon::Worker_and_implementation> const& workers_and_impls
+             , sdpa::job_id_t const& job
+             )
           {
             BOOST_REQUIRE_EQUAL
-              ( assignment.at (job).size()
+              ( workers_and_implementations (job).size()
               , _requirements_and_preferences.at (job).numWorkers()
               );
-            BOOST_REQUIRE_EQUAL (assignment.at (job), workers);
+
+            require_identical_sets
+              ( workers_and_implementations (job)
+              , workers_and_impls
+              );
 
             ++started_jobs;
           }

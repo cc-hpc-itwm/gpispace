@@ -183,7 +183,7 @@ namespace sdpa {
       void job_canceled (Job*);
 
       // workers
-      void serveJob(std::set<worker_id_t> const&, const job_id_t&);
+      void serveJob (std::set<Worker_and_implementation> const&, const job_id_t&);
 
       // jobs
       std::string gen_id();
@@ -304,7 +304,11 @@ namespace sdpa {
           (boost::optional<std::exception_ptr>) const;
 
         void submit_job
-          (boost::optional<job_id_t>, we::type::activity_t, std::set<worker_id_t> const&) const;
+          ( boost::optional<job_id_t>
+          , we::type::activity_t
+          , boost::optional<std::string> const&
+          , std::set<worker_id_t> const&
+          ) const;
         void cancel_job (job_id_t) const;
 
         void job_failed_ack (job_id_t) const;
