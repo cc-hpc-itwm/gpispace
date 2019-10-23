@@ -2728,3 +2728,61 @@ BOOST_FIXTURE_TEST_CASE
   require_workers_and_implementations
     (job, expected_workers_and_implementations);
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( check_worker_is_served_the_corresponding_implementation
+  , fixture_scheduler_and_requirements_and_preferences
+  )
+{
+  std::string const capability
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+
+  Preferences const preferences
+    { fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    };
+
+  sdpa::worker_id_t const worker
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+
+  auto const preference_id
+    ( fhg::util::testing::random_integral<unsigned char>()
+    % preferences.size()
+    );
+  std::string const preference (preferences[preference_id]);
+
+  _worker_manager.addWorker
+    ( worker
+    , { sdpa::Capability (capability, worker)
+      , sdpa::Capability (preference, worker)
+      }
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    );
+
+  sdpa::job_id_t const job
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  add_job (job, require (capability, preferences));
+
+  _scheduler.enqueueJob (job);
+  _scheduler.assignJobsToWorkers();
+
+  require_worker_and_implementation (job, worker, preference);
+
+  _scheduler.start_pending_jobs
+    ( [this]
+      ( std::set<sdpa::daemon::Worker_and_implementation> const& workers_and_impls
+      , sdpa::job_id_t const& job
+      )
+      {
+        BOOST_REQUIRE_EQUAL
+          (_requirements_and_preferences.at (job).numWorkers(), 1);
+
+        require_identical_sets
+          (workers_and_implementations (job), workers_and_impls);
+      }
+    );
+}
