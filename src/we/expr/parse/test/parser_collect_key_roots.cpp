@@ -48,61 +48,45 @@ namespace expr
 
     BOOST_AUTO_TEST_CASE (empty_expression_has_no_key_roots)
     {
-      node::KeyRoots key_roots;
-
-      parser ("").collect_key_roots (key_roots);
-
-      BOOST_REQUIRE (key_roots.empty());
+      BOOST_REQUIRE (parser ("").key_roots().empty());
     }
 
     BOOST_AUTO_TEST_CASE (expression_without_reference_has_no_key_roots)
     {
-      node::KeyRoots key_roots;
-
-      parser ("1 + 2").collect_key_roots (key_roots);
-
-      BOOST_REQUIRE (key_roots.empty());
+      BOOST_REQUIRE (parser ("1 + 2").key_roots().empty());
     }
 
     BOOST_AUTO_TEST_CASE
       (expression_sequence_without_references_has_no_key_roots)
     {
-      node::KeyRoots key_roots;
-
-      parser ("1 + 2; 3 + 4").collect_key_roots (key_roots);
-
-      BOOST_REQUIRE (key_roots.empty());
+      BOOST_REQUIRE (parser ("1 + 2; 3 + 4").key_roots().empty());
     }
 
     BOOST_AUTO_TEST_CASE (expression_with_reference_has_key_roots)
     {
-      node::KeyRoots key_roots;
-
       auto const x (random_nonempty_path());
-
-      parser (reference (x)).collect_key_roots (key_roots);
 
       node::KeyRoots const expected {x.front()};
 
-      BOOST_TEST (key_roots == expected);
+      BOOST_TEST (parser (reference (x)).key_roots () == expected);
     }
 
     BOOST_AUTO_TEST_CASE (expression_sequence_with_references_has_key_roots)
     {
-      node::KeyRoots key_roots;
-
       auto const N (random_small_positive_number());
       std::list<Path> xs (N);
       std::generate (xs.begin(), xs.end(), random_nonempty_path);
 
-      parser ( fhg::util::print_container
-               ( "", ";" , "", xs
-               , [] (std::ostream& os, Path const& path) -> decltype (os)
-                 {
-                   return os << reference (path);
-                 }
-               ).string()
-             ).collect_key_roots (key_roots);
+      auto const key_roots
+        ( parser ( fhg::util::print_container
+                   ( "", ";" , "", xs
+                   , [] (std::ostream& os, Path const& path) -> decltype (os)
+                     {
+                       return os << reference (path);
+                     }
+                   ).string()
+                 ).key_roots()
+        );
 
       node::KeyRoots expected;
 

@@ -730,13 +730,11 @@ namespace we
       , _tid (tid)
       , _transition (_net->transitions().at (_tid))
       , _condition (_transition.condition())
-      , _key_roots()
-    {
-      if (_condition)
-      {
-        _condition->ast().collect_key_roots (_key_roots);
-      }
-    }
+      , _key_roots ( _condition
+                   ? _condition->ast().key_roots()
+                   : decltype (_condition->ast().key_roots()) {}
+                   )
+    {}
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
         : _begin (tokens.begin())

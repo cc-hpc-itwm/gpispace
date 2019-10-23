@@ -77,14 +77,18 @@ namespace expr
                     );
     }
 
-    void parser::collect_key_roots (node::KeyRoots& roots) const
+    node::KeyRoots parser::key_roots() const
     {
+      node::KeyRoots roots;
+
       std::for_each ( begin(), end()
                     , [&] (nd_t const& node)
                       {
                         node::collect_key_roots (node, roots);
                       }
                     );
+
+      return roots;
     }
 
     std::string parser::string() const
