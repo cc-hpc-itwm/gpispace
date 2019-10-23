@@ -313,7 +313,7 @@ namespace we
       cross_type cross (this, tid);
 
       auto&& push
-        ([&] (adj_pt_type& adj, bool is_read_connection)
+        ([&] (adj_pt_type const& adj, bool is_read_connection)
          {
            for ( place_id_type place_id
                : adj.right.equal_range (tid) | boost::adaptors::map_values
@@ -369,7 +369,7 @@ namespace we
       cross_type cross (this, tid);
 
       auto&& push
-        ( [&] (adj_pt_type& adj, bool is_read_connection)
+        ( [&] (adj_pt_type const& adj, bool is_read_connection)
           {
             for ( place_id_type place_id
                 : adj.right.equal_range (tid) | boost::adaptors::map_values
