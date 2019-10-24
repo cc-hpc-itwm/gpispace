@@ -103,6 +103,21 @@ namespace we
       return tid;
     }
 
+    void require_no_output_connection ( net_type::port_to_place_type const& port_to_place
+                                      , transition_id_type const transition_id
+                                      , port_id_type const port_id
+                                      )
+    {
+      auto const output_connector (port_to_place.find (transition_id));
+
+      if (  output_connector != port_to_place.end ()
+         && output_connector->second.count (port_id) > 0
+         )
+      {
+        throw std::logic_error ("duplicate connection: out and out-many");
+      }
+    }
+
     void net_type::add_connection ( edge::type type
                                   , transition_id_type transition_id
                                   , place_id_type place_id
@@ -113,13 +128,7 @@ namespace we
       switch (type)
       {
       case edge::TP:
-        if (  _port_many_to_place.count (transition_id) > 0
-           && _port_many_to_place.at (transition_id).count (port_id) > 0
-           )
-        {
-          throw std::logic_error ("duplicate connection: out-many and out");
-        }
-
+        require_no_output_connection (_port_many_to_place, transition_id, port_id);
         _adj_tp.emplace (place_id, transition_id);
         if (!_port_to_place[transition_id].emplace
              ( std::piecewise_construct
@@ -132,13 +141,7 @@ namespace we
         }
         break;
       case edge::TP_MANY:
-        if (  _port_to_place.count (transition_id) > 0
-           && _port_to_place.at (transition_id).count (port_id) > 0
-           )
-        {
-          throw std::logic_error ("duplicate connection: out and out-many");
-        }
-
+        require_no_output_connection (_port_to_place, transition_id, port_id);
         _adj_tp.emplace (place_id, transition_id);
         if (!_port_many_to_place[transition_id].emplace
              ( std::piecewise_construct
