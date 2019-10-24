@@ -90,6 +90,33 @@ namespace sdpa
       return _implementation;
     }
 
+    Worker_and_implementation::Worker_and_implementation
+        (worker_id_t worker, boost::optional<std::string> implementation)
+      : _worker (std::move (worker))
+      , _implementation (std::move (implementation))
+    {}
+
+    void Worker_and_implementation::replace_worker (worker_id_t worker)
+    {
+      _worker = std::move (worker);
+    }
+
+    worker_id_t const& Worker_and_implementation::worker() const
+    {
+      return _worker;
+    }
+    boost::optional<std::string> const&
+      Worker_and_implementation::implementation() const
+    {
+      return _implementation;
+    }
+
+    bool Worker_and_implementation::operator<
+      (Worker_and_implementation const& other) const
+    {
+      return std::tie (_worker) < std::tie (other.worker());
+    }
+
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
     {
       return worker_map_.at(worker)._hostname;

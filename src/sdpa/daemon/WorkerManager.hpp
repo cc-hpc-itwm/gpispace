@@ -47,6 +47,24 @@ namespace sdpa
     using mmap_match_deg_worker_id_t
       = std::multimap<double, worker_id_host_info_t, std::greater<double>>;
 
+    class Worker_and_implementation
+    {
+    public:
+      Worker_and_implementation
+        (worker_id_t worker, boost::optional<std::string> implementation);
+
+      void replace_worker (worker_id_t worker);
+
+      worker_id_t const& worker() const;
+      boost::optional<std::string> const& implementation() const;
+
+      bool operator< (Worker_and_implementation const& other) const;
+
+    private:
+      worker_id_t _worker;
+      boost::optional<std::string> _implementation;
+    };
+
     class WorkerManager : boost::noncopyable
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
