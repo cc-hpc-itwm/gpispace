@@ -824,26 +824,26 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on the "node_0", the next 4 on the "node_1" and so on
   const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {20, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {19, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {18, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {17, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {16, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {15, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {14, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {13, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {12, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {11, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {10, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , { 9, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , { 8, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , { 7, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , { 6, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , { 5, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , { 4, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , { 3, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , { 2, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , { 1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {20, {"worker_20", "node_5", random_ulong(), 0.0, boost::none}}
+    , {19, {"worker_19", "node_5", random_ulong(), 0.0, boost::none}}
+    , {18, {"worker_18", "node_5", random_ulong(), 0.0, boost::none}}
+    , {17, {"worker_17", "node_5", random_ulong(), 0.0, boost::none}}
+    , {16, {"worker_16", "node_4", random_ulong(), 0.0, boost::none}}
+    , {15, {"worker_15", "node_4", random_ulong(), 0.0, boost::none}}
+    , {14, {"worker_14", "node_4", random_ulong(), 0.0, boost::none}}
+    , {13, {"worker_13", "node_4", random_ulong(), 0.0, boost::none}}
+    , {12, {"worker_12", "node_3", random_ulong(), 0.0, boost::none}}
+    , {11, {"worker_11", "node_3", random_ulong(), 0.0, boost::none}}
+    , {10, {"worker_10", "node_3", random_ulong(), 0.0, boost::none}}
+    , { 9, {"worker_09", "node_3", random_ulong(), 0.0, boost::none}}
+    , { 8, {"worker_08", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 7, {"worker_07", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 6, {"worker_06", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 5, {"worker_05", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 4, {"worker_04", "node_1", random_ulong(), 0.0, boost::none}}
+    , { 3, {"worker_03", "node_1", random_ulong(), 0.0, boost::none}}
+    , { 2, {"worker_02", "node_1", random_ulong(), 0.0, boost::none}}
+    , { 1, {"worker_01", "node_1", random_ulong(), 0.0, boost::none}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -873,26 +873,26 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
   const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {20, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {19, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {18, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {17, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {16, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {15, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {14, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {13, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {12, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {11, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {10, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , { 9, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , { 8, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , { 7, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , { 6, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , { 5, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , { 4, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , { 3, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , { 2, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , { 1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {20, {"worker_20", "node_5", random_ulong(), 0.0, boost::none}}
+    , {19, {"worker_19", "node_5", random_ulong(), 0.0, boost::none}}
+    , {18, {"worker_18", "node_5", random_ulong(), 0.0, boost::none}}
+    , {17, {"worker_17", "node_5", random_ulong(), 0.0, boost::none}}
+    , {16, {"worker_16", "node_4", random_ulong(), 0.0, boost::none}}
+    , {15, {"worker_15", "node_4", random_ulong(), 0.0, boost::none}}
+    , {14, {"worker_14", "node_4", random_ulong(), 0.0, boost::none}}
+    , {13, {"worker_13", "node_4", random_ulong(), 0.0, boost::none}}
+    , {12, {"worker_12", "node_3", random_ulong(), 0.0, boost::none}}
+    , {11, {"worker_11", "node_3", random_ulong(), 0.0, boost::none}}
+    , {10, {"worker_10", "node_3", random_ulong(), 0.0, boost::none}}
+    , { 9, {"worker_09", "node_3", random_ulong(), 0.0, boost::none}}
+    , { 8, {"worker_08", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 7, {"worker_07", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 6, {"worker_06", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 5, {"worker_05", "node_2", random_ulong(), 0.0, boost::none}}
+    , { 4, {"worker_04", "node_1", random_ulong(), 0.0, boost::none}}
+    , { 3, {"worker_03", "node_1", random_ulong(), 0.0, boost::none}}
+    , { 2, {"worker_02", "node_1", random_ulong(), 0.0, boost::none}}
+    , { 1, {"worker_01", "node_1", random_ulong(), 0.0, boost::none}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -922,26 +922,26 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_diff
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
   const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {1, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {1, {"worker_20", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_19", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_18", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_17", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_16", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_15", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_14", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_13", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_12", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_11", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_10", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_09", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_08", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_07", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_06", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_05", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_04", "node_1", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_03", "node_1", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_02", "node_1", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_01", "node_1", random_ulong(), 0.0, boost::none}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost
@@ -971,26 +971,26 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_equa
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
   const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
-    { {1, {"worker_20", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_19", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_18", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_17", "node_5", random_ulong(), 0.0}}
-    , {1, {"worker_16", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_15", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_14", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_13", "node_4", random_ulong(), 0.0}}
-    , {1, {"worker_12", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_11", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_10", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_09", "node_3", random_ulong(), 0.0}}
-    , {1, {"worker_08", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_07", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_06", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_05", "node_2", random_ulong(), 0.0}}
-    , {1, {"worker_04", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_03", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_02", "node_1", random_ulong(), 0.0}}
-    , {1, {"worker_01", "node_1", random_ulong(), 0.0}}
+    { {1, {"worker_20", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_19", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_18", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_17", "node_5", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_16", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_15", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_14", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_13", "node_4", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_12", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_11", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_10", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_09", "node_3", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_08", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_07", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_06", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_05", "node_2", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_04", "node_1", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_03", "node_1", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_02", "node_1", random_ulong(), 0.0, boost::none}}
+    , {1, {"worker_01", "node_1", random_ulong(), 0.0, boost::none}}
     };
 
   check_scheduler_finds_minimal_cost_assignement ( map_host_transfer_cost

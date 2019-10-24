@@ -12,7 +12,14 @@ namespace sdpa
   {
     namespace
     {
-      typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
+      typedef std::tuple< double
+                        , double
+                        , unsigned long
+                        , double
+                        , worker_id_t
+                        , boost::optional<std::string>
+                        > cost_deg_wid_t;
+
       typedef std::priority_queue < cost_deg_wid_t
                                   , std::vector<cost_deg_wid_t>
                                   > base_priority_queue_t;
@@ -61,6 +68,26 @@ namespace sdpa
       private:
         size_t capacity_;
       };
+    }
+
+    worker_id_host_info_t::worker_id_host_info_t
+        ( worker_id_t worker_id
+        , std::string worker_host
+        , unsigned long shared_memory_size
+        , double last_time_idle
+        , boost::optional<std::string> implementation
+        )
+      : worker_id_ (std::move (worker_id))
+      , worker_host_ (std::move (worker_host))
+      , shared_memory_size_ (shared_memory_size)
+      , _last_time_idle (last_time_idle)
+      , _implementation (std::move (implementation))
+    {}
+
+    boost::optional<std::string> const&
+      worker_id_host_info_t::implementation() const
+    {
+      return _implementation;
     }
 
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
@@ -255,18 +282,22 @@ namespace sdpa
         if (worker.second.backlog_full())
           continue;
 
-        const boost::optional<double>
-          matchingDeg (match_requirements_and_preferences (worker.second, requirements_and_preferences).first);
+        auto const matching_degree_and_implementation
+          (match_requirements_and_preferences
+             (worker.second, requirements_and_preferences)
+          );
 
-        if (matchingDeg)
+        if (matching_degree_and_implementation.first)
         {
-          mmap_match_deg_worker_id.emplace ( matchingDeg.get()
-                                           , worker_id_host_info_t ( worker.first
-                                                                   , worker.second._hostname
-                                                                   , worker.second._allocated_shared_memory_size
-                                                                   , worker.second._last_time_idle
-                                                                   )
-                                           );
+          mmap_match_deg_worker_id.emplace
+            ( matching_degree_and_implementation.first.get()
+            , worker_id_host_info_t ( worker.first
+                                    , worker.second._hostname
+                                    , worker.second._allocated_shared_memory_size
+                                    , worker.second._last_time_idle
+                                    , matching_degree_and_implementation.second
+                                    )
+            );
         }
       }
 
@@ -303,19 +334,20 @@ namespace sdpa
         if (worker.second.backlog_full())
           {continue;}
 
-        const boost::optional<double> matching_degree
+        auto const matching_degree_and_implementation
           (match_requirements_and_preferences
-             (worker.second, requirements_and_preferences).first
+             (worker.second, requirements_and_preferences)
           );
 
-        if (matching_degree)
+        if (matching_degree_and_implementation.first)
         {
           mmap_matching_workers.emplace
-            ( matching_degree.get()
+            ( matching_degree_and_implementation.first.get()
             , worker_id_host_info_t ( worker.first
                                     , worker.second._hostname
                                     , worker.second._allocated_shared_memory_size
                                     , worker.second._last_time_idle
+                                    , matching_degree_and_implementation.second
                                     )
             );
         }
@@ -363,6 +395,7 @@ namespace sdpa
                     , worker_info.shared_memory_size()
                     , worker_info.last_time_idle()
                     , worker_info.worker_id()
+                    , worker_info.implementation()
                     );
       }
 

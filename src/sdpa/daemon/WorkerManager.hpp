@@ -24,27 +24,25 @@ namespace sdpa
     class worker_id_host_info_t
     {
     public:
-      worker_id_host_info_t ( const worker_id_t& worker_id
-                            , const std::string& worker_host
+      worker_id_host_info_t ( worker_id_t worker_id
+                            , std::string worker_host
                             , unsigned long shared_memory_size
-                            , const double& last_time_idle
-                            )
-        : worker_id_ (worker_id)
-        , worker_host_ (worker_host)
-        , shared_memory_size_ (shared_memory_size)
-        , _last_time_idle (last_time_idle)
-      {}
+                            , double last_time_idle
+                            , boost::optional<std::string> implementation
+                            );
 
       const worker_id_t& worker_id() const {return worker_id_;}
       const std::string& worker_host() const {return worker_host_;}
       double last_time_idle() const {return _last_time_idle;}
       unsigned long shared_memory_size() const {return shared_memory_size_;}
+      boost::optional<std::string> const& implementation() const;
 
     private:
       worker_id_t worker_id_;
       std::string worker_host_;
       unsigned long shared_memory_size_;
       double _last_time_idle;
+      boost::optional<std::string> _implementation;
     };
     using mmap_match_deg_worker_id_t
       = std::multimap<double, worker_id_host_info_t, std::greater<double>>;
