@@ -184,6 +184,7 @@ extended_add_executable (NAME gspc-logging-demultiplexer
   LIBRARIES gspc::logging
             Util::Generic
             rif-started_process_promise
+  CREATE_BUNDLE_INFO
   INSTALL INSTALL_DESTINATION "libexec/gspc"
 )
 
