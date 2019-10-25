@@ -36,19 +36,27 @@ namespace
 
   //! Net with
   //! - place "in" type "list"
+  //! - place "tp_many" type as given to ctor
   //! - place "out" type as given to ctor
-  //! - a single empty expression
-  //!   - connect-in "in"
-  //!   - connect-out-many "out"
+  //! - two empty expressions
+  //    - first expression
+  //!     - connect-in "in"
+  //!     - connect-out-many "tp_many"
+  //    - second expression
+  //      - pipes the decomposed "tp_many" list
+  //!     - connect-in "tp_many"
+  //!     - connect-out "out"
   struct net_with_empty_transition_with_tp_many
   {
     we::type::net_type net;
     we::place_id_type pid_in;
+    we::place_id_type pid_tp_many;
     we::place_id_type pid_out;
 
     net_with_empty_transition_with_tp_many (std::string out_type_str);
 
     std::list<value::value_type> get_sorted_list_of_output_tokens() const;
+    std::string const& get_tp_many_place_name () const;
   };
 }
 
@@ -59,22 +67,37 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_match_input_list_and_output_tokens
                      , in_type_str
                      )
 {
-  net_with_empty_transition_with_tp_many testnet (in_type_str);
+  net_with_empty_transition_with_tp_many test_net (in_type_str);
 
   auto in_list (make_list_of_values (in_type_str));
 
-  testnet.net.put_value (testnet.pid_in, value::wrap (in_list));
-  BOOST_REQUIRE_EQUAL (testnet.net.get_token (testnet.pid_in).size(), 1);
+  test_net.net.put_value (test_net.pid_in, value::wrap (in_list));
+  BOOST_REQUIRE_EQUAL (test_net.net.get_token (test_net.pid_in).size(), 1);
 
   BOOST_REQUIRE
-    ( !testnet.net.fire_expressions_and_extract_activity_random
+    ( !test_net.net.fire_expressions_and_extract_activity_random
         (random_engine(), unexpected_workflow_response)
     );
 
   in_list.sort();
 
-  auto const out_tokens (testnet.get_sorted_list_of_output_tokens());
+  auto const out_tokens (test_net.get_sorted_list_of_output_tokens());
   BOOST_REQUIRE_EQUAL (in_list, out_tokens);
+}
+
+namespace pnet
+{
+  namespace exception
+  {
+    bool operator== ( type_mismatch const& lhs
+                    , type_mismatch const& rhs
+                    )
+    {
+      return std::tie (lhs.signature(), lhs.value(), lhs.path())
+          == std::tie (rhs.signature(), rhs.value(), rhs.path());
+    }
+
+  }
 }
 
 BOOST_DATA_TEST_CASE ( tp_many_typecheck_mismatch_expection_for_all_types
@@ -89,27 +112,23 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_mismatch_expection_for_all_types
     return;
   }
 
-  net_with_empty_transition_with_tp_many testnet (out_type_str);
+  net_with_empty_transition_with_tp_many test_net (out_type_str);
 
   auto const in_list (make_list_of_values (in_type_str));
 
-  testnet.net.put_value (testnet.pid_in, value::wrap (in_list));
-  BOOST_REQUIRE_EQUAL (testnet.net.get_token (testnet.pid_in).size(), 1);
+  test_net.net.put_value (test_net.pid_in, value::wrap (in_list));
+  BOOST_REQUIRE_EQUAL (test_net.net.get_token (test_net.pid_in).size(), 1);
 
   fhg::util::testing::require_exception
     ( [&]
       {
-        testnet.net.fire_expressions_and_extract_activity_random
+        test_net.net.fire_expressions_and_extract_activity_random
           (random_engine(), unexpected_workflow_response);
       }
     , pnet::exception::type_mismatch
-        (name_to_signature (out_type_str), in_list.front(), {"out"})
-    , [] ( pnet::exception::type_mismatch const& lhs
-         , pnet::exception::type_mismatch const& rhs
-         )
-      {
-        return std::tie (lhs.signature(), lhs.value(), lhs.path())
-          == std::tie (rhs.signature(), rhs.value(), rhs.path());
-      }
+        ( name_to_signature (out_type_str)
+        , in_list.front()
+        , {test_net.get_tp_many_place_name()}
+        )
     );
 }
