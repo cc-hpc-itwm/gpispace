@@ -56,6 +56,12 @@ fhg_add_test (NAME we_tp_many_typecheck
   LIBRARIES pnet
 )
 
+fhg_add_test (NAME we_tp_many_duplicate_connections
+  SOURCES tp_many_duplicate_connections.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
 fhg_add_test (NAME we_net
   SOURCES net.cpp
   USE_BOOST
