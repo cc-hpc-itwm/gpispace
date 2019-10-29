@@ -37,7 +37,7 @@ namespace we
       class cross_type
       {
       public:
-        cross_type (net_type* const, transition_id_type);
+        cross_type (net_type&, transition_id_type);
         bool enables();
         void write_to ( std::unordered_map< place_id_type
                                           , std::pair<token_id_type, bool>
@@ -65,7 +65,7 @@ namespace we
           bool const _is_read_connection;
         };
 
-        net_type* _net;
+        net_type& _net;
         transition_id_type _tid;
         we::type::transition_t const& _transition;
         boost::optional<expression_t> const& _condition;
@@ -310,7 +310,7 @@ namespace we
 
     void net_type::update_enabled (transition_id_type tid)
     {
-      cross_type cross (this, tid);
+      cross_type cross (*this, tid);
 
       auto&& push
         ([&] (adj_pt_type const& adj, bool is_read_connection)
@@ -366,7 +366,7 @@ namespace we
         }
       }
 
-      cross_type cross (this, tid);
+      cross_type cross (*this, tid);
 
       auto&& push
         ( [&] (adj_pt_type const& adj, bool is_read_connection)
@@ -725,10 +725,10 @@ namespace we
 
     // cross_type
 
-    cross_type::cross_type (net_type* const net, transition_id_type tid)
+    cross_type::cross_type (net_type& net, transition_id_type tid)
       : _net (net)
       , _tid (tid)
-      , _transition (_net->transitions().at (_tid))
+      , _transition (_net.transitions().at (_tid))
       , _condition (_transition.condition())
       , _key_roots ( _condition
                    ? _condition->ast().key_roots()
@@ -803,7 +803,7 @@ namespace we
     std::string const& cross_type::input_port_name (place_id_type pid) const
     {
       return _transition.ports_input()
-        .at ( _net->place_to_port().at (_tid)
+        .at ( _net.place_to_port().at (_tid)
             . at (pid).first
             ).name()
         ;
