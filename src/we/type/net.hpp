@@ -87,6 +87,7 @@ namespace we
       adj_pt_type const& place_to_transition_read() const;
 
       port_to_place_type const& port_to_place() const;
+      port_to_place_type const& port_many_to_place() const;
       port_to_response_type const& port_to_response() const;
       place_to_port_type const& place_to_port() const;
 
@@ -172,6 +173,7 @@ namespace we
       adj_tp_type _adj_tp;
 
       port_to_place_type _port_to_place;
+      port_to_place_type _port_many_to_place;
       port_to_response_type _port_to_response;
       place_to_port_type _place_to_port;
 
@@ -240,6 +242,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
         ar & BOOST_SERIALIZATION_NVP (_adj_tp);
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
+        ar & BOOST_SERIALIZATION_NVP (_port_many_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
         ar & BOOST_SERIALIZATION_NVP (_token_id);

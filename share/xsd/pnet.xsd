@@ -281,6 +281,7 @@
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
+        <xsd:element name="connect-out-many" type="connect_type"/>
         <xsd:element name="connect-inout" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
         <xsd:element name="connect-response" type="connect_response_type"/>
