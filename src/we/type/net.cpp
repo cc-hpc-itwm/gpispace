@@ -5,7 +5,6 @@
 #include <we/type/value/show.hpp>
 
 #include <we/require_type.hpp>
-#include <we/type/value/from_value.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 
