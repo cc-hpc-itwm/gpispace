@@ -15,7 +15,7 @@ width=$(cd "${install_prefix}/include"; find * -type f | sed -e 's,.,X,g' | sort
 process_pool_locks=()
 outputs=()
 pids=()
-trap 'pkill -P $$; rm ${outputs[@]}; rm ${process_pool_locks[@]}' EXIT
+trap 'pkill -P $$ || true; rm -f ${outputs[@]}; rm -f ${process_pool_locks[@]}' EXIT
 
 for ((i = 0; i < ${num_parallel_procs}; ++i))
 do
