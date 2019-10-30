@@ -102,18 +102,22 @@ namespace we
       return tid;
     }
 
-    void require_no_output_connection ( net_type::port_to_place_type const& port_to_place
-                                      , transition_id_type const transition_id
-                                      , port_id_type const port_id
-                                      )
+    namespace
     {
-      auto const output_connector (port_to_place.find (transition_id));
-
-      if (  output_connector != port_to_place.end ()
-         && output_connector->second.count (port_id) > 0
-         )
+      void require_no_output_connection
+        ( net_type::port_to_place_type const& port_to_place
+        , transition_id_type const transition_id
+        , port_id_type const port_id
+        )
       {
-        throw std::logic_error ("duplicate connection: out and out-many");
+        auto const output_connector (port_to_place.find (transition_id));
+
+        if (  output_connector != port_to_place.end ()
+           && output_connector->second.count (port_id) > 0
+           )
+        {
+          throw std::logic_error ("duplicate connection: out and out-many");
+        }
       }
     }
 
