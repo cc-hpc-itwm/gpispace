@@ -151,8 +151,8 @@ namespace we
     stencil_cache::~stencil_cache()
     {
       _queue_allocate.interrupt();
-      _allocate.join();
       _scache.interrupt();
+      _allocate.join();
     }
 
     void stencil_cache::allocate()
