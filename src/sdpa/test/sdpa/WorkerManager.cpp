@@ -346,7 +346,11 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
     {
       return _cost;
     }
-    void replace_worker (sdpa::worker_id_t, sdpa::worker_id_t)
+    void replace_worker
+      ( sdpa::worker_id_t
+      , sdpa::worker_id_t
+      , std::function<bool (const std::string& cpb)> const&
+      )
     {
       BOOST_REQUIRE (_allowed_to_be_stolen);
     }

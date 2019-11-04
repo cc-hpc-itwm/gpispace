@@ -8,6 +8,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <mutex>
 
 namespace sdpa
@@ -91,7 +92,12 @@ namespace sdpa
           , _cost (cost)
         {}
 
-        void replace_worker (worker_id_t const& w1, worker_id_t const& w2)
+        void replace_worker
+          ( worker_id_t const& w1
+          , worker_id_t const& w2
+          , std::function<bool (const std::string& cpb)> const&
+              supports_implementation
+          )
         {
           std::set<Worker_and_implementation>::iterator it
             (std::find_if
@@ -108,6 +114,22 @@ namespace sdpa
           {
             throw std::runtime_error
               ("Asked to replace the non-existent worker " + w1);
+          }
+
+          auto const& implementation (it->implementation());
+          if (implementation && !supports_implementation (*implementation))
+          {
+            throw std::runtime_error
+              ( ( boost::format
+                    ( "Cannot replace worker %1% with worker %2%: "
+                      "%3% does not support the implementation %4%."
+                    )
+                % w1
+                % w2
+                % w2
+                % *implementation
+                ).str()
+              );
           }
 
           _workers_and_implementations.emplace (w2, it->implementation());

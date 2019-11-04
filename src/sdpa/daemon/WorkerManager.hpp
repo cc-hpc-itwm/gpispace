@@ -299,7 +299,14 @@ namespace sdpa
 
         fhg_assert (it_job != richest_worker.pending_.end());
 
-        reservation (*it_job)->replace_worker (richest->first, thief->first);
+        reservation (*it_job)->replace_worker
+          ( richest->first
+          , thief->first
+          , [&thief] (const std::string& cpb)
+            {
+              return thief->second.hasCapability (cpb);
+            }
+          );
 
         thief->second.assign (*it_job);
         richest_worker.pending_.erase (*it_job);
