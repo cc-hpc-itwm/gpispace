@@ -1,5 +1,31 @@
 Scheduling with preferences
 
+Current situation:
+
+The workers may have capabilities and the transitions may have requirements. 
+A capability expresses a specialization (coded as a string) of the worker: 
+it can only execute tasks/transitions that have no requirements or require 
+at least one of its assigned capabilities. A transition may require multiple 
+capabilities, in which case these should be a subset of the worker's 
+capabilities (specified at start time in the topology description).
+A requirement is a capability requested by a task/activity.
+
+Allowing multiple module implementations:
+
+The current GPI-Space implementation (xsd description) allows the 
+implementation associated to a transition to be either an expression or 
+a single module. Implicitly, the transition's requirements are also the 
+module's requirements. In the scenario with multiple module implementations, 
+each module itself may require other additional specific capabilities. 
+In this case the scheduler should deal with a set of common requirements 
+(set by the transition) and a set of specific requirements for each module 
+implementation. This informations should be sent to the scheduler by the 
+workflow engine, together with the activity. 
+The implementation of scheduling with preferences assumes that apart the 
+transition requirements, the workflow engine also sends the list of 
+requirements for each module implementation, referred to as preferences 
+(from the scheduler's point of view).
+
 Assumptions: 
 
 1. For each computing resource type (i.e. "CPU", "GPU", "FPGA") there 
@@ -16,11 +42,6 @@ Assumptions:
    Example: requirements: {"COMPUTE"}, 
             preferences: {"CPU", "GPU", "FPGA"}
    
-Proposed solution: allow scheduling with preferences. 
-
-This means that the scheduler should take into account apart requirements 
-(common to all implementations) also a sorted list of preferences
-(capabilities names).
 
 Note: the order is important only when the module implementations have 
 associated equal costs, in the contrary case the selection is driven in the 
