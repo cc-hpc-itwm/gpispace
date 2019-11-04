@@ -116,3 +116,15 @@ add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
 add_subdirectory (test/gspc)
+
+add_test (NAME installed_headers_are_selfcontained
+  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/installed_headers_are_selfcontained.sh"
+          "${CMAKE_INSTALL_PREFIX}"
+          "${CMAKE_CXX_COMPILER}"
+)
+set_property (TEST installed_headers_are_selfcontained
+  APPEND PROPERTY LABELS "requires_installation"
+)
+set_property (TEST installed_headers_are_selfcontained
+  APPEND PROPERTY REQUIRED_FILES ${FILES_REQUIRED_IN_INSTALLATION}
+)
