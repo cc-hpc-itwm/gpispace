@@ -2579,13 +2579,14 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  std::string const common_capability
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+
+  std::string const common_capability (capability_pool());
 
   Preferences const preferences
-    { fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
+    { capability_pool()
+    , capability_pool()
+    , capability_pool()
     };
 
   sdpa::worker_id_t const worker_0
@@ -2654,13 +2655,14 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_add_new_workers
   )
 {
-  std::string const common_capability
-     (fhg::util::testing::random_identifier_without_leading_underscore());
+  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+
+  std::string const common_capability (capability_pool());
 
   Preferences const preferences
-    { fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
+    { capability_pool()
+    , capability_pool()
+    , capability_pool()
     };
 
   std::set<sdpa::daemon::Worker_and_implementation>
@@ -2734,13 +2736,14 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  std::string const capability
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+
+  std::string const capability (capability_pool());
 
   Preferences const preferences
-    { fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
+    { capability_pool()
+    , capability_pool()
+    , capability_pool()
     };
 
   sdpa::worker_id_t const worker

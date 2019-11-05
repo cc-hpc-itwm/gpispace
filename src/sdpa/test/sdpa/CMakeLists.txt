@@ -125,3 +125,10 @@ fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
             sdpa
             test-utilities
 )
+
+fhg_add_test (NAME forbid_equal_preferences_for_tasks
+  SOURCES forbid_equal_preferences_for_tasks.cpp
+  USE_BOOST
+  LIBRARIES sdpa
+            test-utilities
+)

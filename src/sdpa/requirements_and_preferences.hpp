@@ -4,8 +4,12 @@
 #include <we/type/schedule_data.hpp>
 
 #include <functional>
+#include <iterator>
 #include <list>
+#include <stdexcept>
 #include <string>
+#include <unordered_set>
+#include <vector>
 
 const std::function<double (std::string const&)>
   null_transfer_cost = [](const std::string&) {return 0.0;};
@@ -23,15 +27,24 @@ public:
       , std::function<double (std::string const&)> transfer_cost
       , double estimated_computational_cost
       , unsigned long shared_memory_amount_required
-      , Preferences const& preferences
+      , Preferences preferences
       )
     : _requirements (requirements)
     , _scheduleData (schedule_data)
     , _transfer_cost (transfer_cost)
     , _estimated_computational_cost (estimated_computational_cost)
     , _shared_memory_amount_required (shared_memory_amount_required)
-    , _preferences (preferences)
-  {}
+  {
+    if ( std::unordered_set<std::string>
+           (std::begin (preferences), std::end (preferences)).size()
+       != preferences.size()
+       )
+    {
+      throw std::runtime_error ("the preferences must be distinct!");
+    }
+
+    _preferences.swap (preferences);
+  }
 
   unsigned long numWorkers() const {return _scheduleData.num_worker().get_value_or(1);}
   const std::list<we::type::requirement_t>& requirements() const {return _requirements;}
