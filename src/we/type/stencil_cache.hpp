@@ -62,6 +62,8 @@ namespace we
 
       std::string _place_prepare;
       std::string _place_ready;
+      std::string _place_neighbors;
+      std::string _place_neighbors_count;
       pnet::type::value::value_type _memory;
       pnet::type::value::value_type _handle;
       unsigned long _base;

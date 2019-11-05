@@ -100,6 +100,8 @@
     <place name="prepared" type="Coordinate"/>
     <place name="ready" type="Ready" put_token="true"/>
     <place name="used" type="Assignment"/>
+    <place name="dependent_neighbors" type="Coordinate" put_token="true"/>
+    <place name="dependent_neighbors_count" type="unsigned long" put_token="true"/>
 
     <place name="N" type="unsigned long"/>
     <place name="computed" type="Stencil"/>
@@ -132,6 +134,8 @@
         <expression>
           ${place.prepare} := "prepare";
           ${place.ready} := "ready";
+          ${place.neighbors} := "dependent_neighbors";
+          ${place.neighbors_count} := "dependent_neighbors_count";
           ${begin.value} := 0L;
           ${end.value} := ${X.value} * ${Y.value};
 
@@ -169,6 +173,7 @@
     <place name="co_generate" type="control">
       <token><value>[]</value></token>
     </place>
+    <place name="co_dependent_generate" type="control"/>
 
     <place name="x" type="long"/>
     <place name="y" type="long"/>
@@ -393,6 +398,37 @@
       <connect-read port="plugin_id" place="plugin_id"/>
       <connect-in port="stencil" place="stencil"/>
       <connect-in port="co" place="co_alloc"/>
+      <connect-out port="co" place="co_dependent_generate"/>
+    </transition>
+
+    <transition name="dependent_generate_use_neighbor">
+      <defun>
+        <in name="co" type="control"/>
+        <inout name="dependent_neighbors_count" type="unsigned long"/>
+        <in name="dependent_neighbor" type="Coordinate"/>
+        <expression>
+          ${dependent_neighbors_count} := ${dependent_neighbors_count} - 1UL
+        </expression>
+      </defun>
+      <condition>
+        ${dependent_neighbors_count} :gt: 0UL
+      </condition>
+      <connect-read port="co" place="co_dependent_generate"/>
+      <connect-inout port="dependent_neighbors_count" place="dependent_neighbors_count"/>
+      <connect-in port="dependent_neighbor" place="dependent_neighbors"/>
+    </transition>
+
+    <transition name="dependent_generate_done">
+      <defun>
+        <inout name="co" type="control"/>
+        <in name="dependent_neighbors_count" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${dependent_neighbors_count} :eq: 0UL
+      </condition>
+      <connect-in port="co" place="co_dependent_generate"/>
+      <connect-in port="dependent_neighbors_count" place="dependent_neighbors_count"/>
       <connect-out port="co" place="co_generate"/>
     </transition>
 
