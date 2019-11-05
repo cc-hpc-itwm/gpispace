@@ -267,23 +267,29 @@ namespace sdpa
           );
       }
 
-      unsigned int preference_weight (preferences.size());
-      for (auto const& preference : preferences)
-      {
-        if (worker.hasCapability (preference))
-        {
-          return std::make_pair
-            ( ( ( matchingDeg + preference_weight + 1.0)
-              / (worker._capabilities.size() + preferences.size() + 1.0)
+      auto const preference
+        ( std::find_if ( preferences.cbegin()
+                       , preferences.cend()
+                       , [&] (Preferences::value_type const& pref)
+                         {
+                           return worker.hasCapability (pref);
+                         }
+                       )
+        );
+
+      auto const condition (preference != preferences.cend());
+      return std::make_pair
+        ( boost::make_optional
+            ( condition
+            , ( matchingDeg
+              + std::distance (preference, preferences.end())
+              + 1.0
               )
-            , preference
-            );
-        }
-
-        --preference_weight;
-      }
-
-      return std::make_pair (boost::none, boost::none);
+              /
+              (worker._capabilities.size() + preferences.size() + 1.0)
+            )
+        , boost::make_optional (condition, *preference)
+        );
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
