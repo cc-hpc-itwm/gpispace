@@ -1,19 +1,28 @@
 #include <pnete/ui/execution_monitor.hpp>
 #include <pnete/ui/log_monitor.hpp>
 
+#include <logging/protocol.hpp>
 #include <logging/stream_receiver.hpp>
 
-#include <fhg/revision.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
+#include <rpc/service_dispatcher.hpp>
+#include <rpc/service_handler.hpp>
+#include <rpc/service_tcp_provider.hpp>
 
+#include <fhg/revision.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/make_optional.hpp>
+#include <util-generic/print_exception.hpp>
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
+#include <util-generic/this_bound_mem_fn.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <util-qt/message_box.hpp>
 #include <util-qt/scoped_until_qt_owned_ptr.hpp>
 
+#include <boost/optional.hpp>
 #include <boost/program_options.hpp>
+#include <boost/utility/in_place_factory.hpp>
 
 #include <QtCore/QString>
 #include <QtCore/QStringList>
@@ -36,7 +45,33 @@ namespace
 
     po::option<std::vector<fhg::logging::endpoint>> const emitters
       {"emitters", "list of tcp emitters"};
+    po::option<unsigned short> const port
+      {"port", "a port to listen on for new emitters"};
   }
+
+  struct TCPServerProvidingAddEmitters
+  {
+    fhg::rpc::service_dispatcher service_dispatcher;
+    fhg::rpc::service_handler
+      <fhg::logging::protocol::receiver::add_emitters> add_emitters;
+    fhg::util::scoped_boost_asio_io_service_with_threads io_service = {1};
+    fhg::rpc::service_tcp_provider add_emitters_service_provider;
+
+    TCPServerProvidingAddEmitters ( fhg::logging::stream_receiver* log_receiver
+                                  , unsigned short port
+                                  )
+      : add_emitters
+          ( service_dispatcher
+          , fhg::util::bind_this
+              (log_receiver, &fhg::logging::stream_receiver::add_emitters)
+          )
+      , add_emitters_service_provider
+          ( io_service
+          , service_dispatcher
+          , boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), port)
+          )
+    {}
+  };
 }
 
 int main (int ac, char *av[])
@@ -45,6 +80,7 @@ try
   boost::program_options::variables_map const vm
     ( fhg::util::boost::program_options::options ("GPI-Space monitor")
     . add (option::emitters)
+    . add (option::port)
     . store_and_notify (ac, av)
     );
 
@@ -74,6 +110,14 @@ try
         gantt->append_event (message);
       }
     );
+
+  boost::optional<TCPServerProvidingAddEmitters>
+    tcp_server_providing_add_emitters;
+  auto const port (option::port.get<unsigned short> (vm));
+  if (port)
+  {
+    tcp_server_providing_add_emitters = boost::in_place (&log_receiver, *port);
+  }
 
   auto add_emitter (window.menuBar()->addAction ("Add emitters"));
   add_emitter->setShortcuts (QKeySequence::New);

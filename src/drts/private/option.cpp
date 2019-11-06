@@ -64,12 +64,12 @@ namespace gspc
       logging.add_options()
         ( name::log_host
         , boost::program_options::value<validators::nonempty_string>()
-        , "name of log host"
+        , "name of a host running a gspc-monitor with registration enabled"
         )
         ( name::log_port
         , boost::program_options::value
           <validators::positive_integral<unsigned short>>()
-        , "port on log-host to log to"
+        , "port on log-host running a gspc-monitor with registration enabled"
         )
         ( name::log_level
         , boost::program_options::value<std::string>()->default_value ("INFO")

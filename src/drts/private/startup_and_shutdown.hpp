@@ -110,6 +110,7 @@ namespace fhg
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
       , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+      , std::vector<fhg::logging::endpoint> default_log_receivers
       , gspc::Certificates const& certificates
       );
   }

@@ -16,15 +16,16 @@
 
 #include <sdpa/client.hpp>
 
+#include <fhg/revision.hpp>
+#include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/split.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
-#include <fhg/revision.hpp>
 #include <util-generic/syscall.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <boost/format.hpp>
 
@@ -168,6 +169,7 @@ namespace gspc
       , fhg::rif::entry_point const& master
       , std::ostream& info_output
       , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
+      , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
       )
     : _info_output (info_output)
@@ -198,6 +200,7 @@ namespace gspc
           , _master_agent_hostinfo
           , _info_output
           , _logging_rif_entry_point
+          , default_log_receivers
           , certificates
           )
       );
@@ -310,6 +313,24 @@ namespace gspc
     return _processes_storage.shutdown_worker (entry_points);
   }
 
+  namespace
+  {
+    std::vector<fhg::logging::endpoint> extract_default_receivers
+      (boost::program_options::variables_map const& vm)
+    {
+      fhg::util::boost::program_options::require_all_if_one
+        (vm, {"log-host", "log-port"});
+
+      std::vector<fhg::logging::endpoint> receivers;
+      if (auto const log_host = get_log_host (vm))
+      {
+        receivers.emplace_back
+          (fhg::logging::tcp_endpoint (*log_host, *get_log_port (vm)));
+      }
+      return receivers;
+    }
+  }
+
   scoped_runtime_system::implementation::implementation
     ( boost::program_options::variables_map const& vm
     , installation const& installation
@@ -345,6 +366,7 @@ namespace gspc
           , info_output
           //! \todo User-configurable.
           , master._->_entry_point
+          , extract_default_receivers (vm)
           , certificates
           )
       , _logger()
@@ -355,16 +377,6 @@ namespace gspc
         : nullptr
         )
   {
-    if (get_log_host (vm))
-    {
-      throw std::invalid_argument
-        ("--log-host given but currently not supported");
-    }
-    if (get_log_port (vm))
-    {
-      throw std::invalid_argument
-        ("--log-port given but currently not supported");
-    }
     if (get_log_directory (vm))
     {
       throw std::invalid_argument
