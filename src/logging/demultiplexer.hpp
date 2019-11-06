@@ -22,8 +22,7 @@ namespace fhg
 
       util::scoped_boost_asio_io_service_with_threads io_service = {1};
       rpc::service_dispatcher service_dispatcher;
-      rpc::service_handler<protocol::logging_demultiplexer::add_emitters>
-        add_emitters;
+      rpc::service_handler<protocol::receiver::add_emitters> add_emitters;
       rpc::service_socket_provider add_service_provider;
 
       demultiplexer (rif::started_process_promise& promise, int, char**);

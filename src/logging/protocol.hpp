@@ -16,7 +16,7 @@ namespace fhg
       FHG_RPC_FUNCTION_DESCRIPTION (receive, void (message));
       FHG_RPC_FUNCTION_DESCRIPTION (register_receiver, void (endpoint));
 
-      namespace logging_demultiplexer
+      namespace receiver
       {
         FHG_RPC_FUNCTION_DESCRIPTION
           (add_emitters, void (std::vector<endpoint>));

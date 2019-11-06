@@ -474,7 +474,7 @@ try
           }
 
           fhg::rpc::sync_remote_function
-            < fhg::logging::protocol::logging_demultiplexer::add_emitters
+            < fhg::logging::protocol::receiver::add_emitters
             , fhg::rpc::future
             > {it->second} (yield, std::move (emitters));
         }
