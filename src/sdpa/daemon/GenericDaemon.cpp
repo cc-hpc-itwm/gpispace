@@ -181,16 +181,6 @@ void GenericDaemon::serveJob
   Job const* const ptrJob = findJob (jobId);
   if (ptrJob)
   {
-    std::set<worker_id_t> workers;
-    std::transform ( workers_and_implementations.begin()
-                   , workers_and_implementations.end()
-                   , std::inserter (workers, workers.begin())
-                   , [] (Worker_and_implementation const& worker_impl)
-                     {
-                       return worker_impl.worker();
-                     }
-                   );
-
     for (auto const& worker_and_impl : workers_and_implementations)
     {
       child_proxy
@@ -200,7 +190,7 @@ void GenericDaemon::serveJob
         .submit_job ( ptrJob->id()
                     , ptrJob->activity()
                     , worker_and_impl.implementation()
-                    , workers
+                    , extract_workers (workers_and_implementations)
                     );
     }
   }

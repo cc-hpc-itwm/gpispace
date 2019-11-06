@@ -717,5 +717,21 @@ namespace sdpa
                        + worker->second.acknowledged_.size()
                        );
     }
+
+    std::set<worker_id_t> extract_workers
+      (std::set<Worker_and_implementation> const& workers_and_implementations)
+    {
+      std::set<worker_id_t> _workers;
+      std::transform ( workers_and_implementations.begin()
+                     , workers_and_implementations.end()
+                     , std::inserter (_workers, _workers.begin())
+                     , [] (Worker_and_implementation const& worker_impl)
+                       {
+                         return worker_impl.worker();
+                       }
+                     );
+
+      return _workers;
+    }
   }
 }

@@ -138,17 +138,7 @@ namespace sdpa
 
         std::set<worker_id_t> workers() const
         {
-          std::set<worker_id_t> workers;
-          std::transform ( _workers_and_implementations.begin()
-                         , _workers_and_implementations.end()
-                         , std::inserter (workers, workers.begin())
-                         , [] (Worker_and_implementation const& worker_impl)
-                           {
-                             return worker_impl.worker();
-                           }
-                         );
-
-          return workers;
+          return sdpa::daemon::extract_workers (_workers_and_implementations);
         }
 
         std::set<Worker_and_implementation> workers_and_implementations() const

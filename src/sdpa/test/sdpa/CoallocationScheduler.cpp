@@ -856,17 +856,8 @@ struct fixture_minimal_cost_assignment
         )
       );
 
-    std::set<sdpa::worker_id_t> set_assigned_workers;
-    std::transform ( workers_and_implementations.begin()
-                   , workers_and_implementations.end()
-                   , std::inserter ( set_assigned_workers
-                                   , set_assigned_workers.begin()
-                                   )
-                   , [] (sdpa::daemon::Worker_and_implementation const& w)
-                     {
-                       return w.worker();
-                     }
-                   );
+    std::set<sdpa::worker_id_t> set_assigned_workers
+      (sdpa::daemon::extract_workers (workers_and_implementations));
 
     BOOST_REQUIRE_EQUAL (set_assigned_workers.size(), n_req_workers);
 

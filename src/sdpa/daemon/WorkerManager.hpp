@@ -372,5 +372,8 @@ namespace sdpa
 
       return jobs_to_reschedule;
     }
+
+    std::set<worker_id_t> extract_workers
+      (std::set<Worker_and_implementation> const& workers_and_implementations);
   }
 }
