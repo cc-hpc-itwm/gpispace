@@ -72,12 +72,12 @@ namespace gspc
         , "port on log-host running a gspc-monitor with registration enabled"
         )
         ( name::log_level
-        , boost::program_options::value<std::string>()->default_value ("INFO")
-        , "log level to use"
+        , boost::program_options::value<std::string>()
+        , "DO NOT USE - log level to use"
         )
         ( name::log_directory
         , boost::program_options::value<validators::is_directory_if_exists>()
-        , "directory where to store drts runtime log information"
+        , "DO NOT USE - directory where to store drts runtime log information"
         )
         ;
 

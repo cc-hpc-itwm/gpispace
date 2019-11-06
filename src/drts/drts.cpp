@@ -382,6 +382,11 @@ namespace gspc
       throw std::invalid_argument
         ("--log-directory given but currently not supported");
     }
+    if (get_log_level (vm))
+    {
+      throw std::invalid_argument
+        ("--log-level given but currently not supported");
+    }
   }
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
