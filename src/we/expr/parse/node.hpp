@@ -9,6 +9,10 @@
 
 #include <boost/variant.hpp>
 
+#include <list>
+#include <string>
+#include <unordered_set>
+
 namespace expr
 {
   namespace parse
@@ -19,8 +23,11 @@ namespace expr
       struct binary_t;
       struct ternary_t;
 
+      using Key = std::list<std::string>;
+      using KeyRoots = std::unordered_set<std::string>;
+
       typedef boost::variant < pnet::type::value::value_type
-                             , std::list<std::string>
+                             , Key
                              , boost::recursive_wrapper<unary_t>
                              , boost::recursive_wrapper<binary_t>
                              , boost::recursive_wrapper<ternary_t>
@@ -31,6 +38,7 @@ namespace expr
       bool is_value (const type&);
       bool is_ref (const type&);
       void rename (type&, const std::string& from, const std::string& to);
+      void collect_key_roots (type const&, KeyRoots&);
 
       struct unary_t
       {

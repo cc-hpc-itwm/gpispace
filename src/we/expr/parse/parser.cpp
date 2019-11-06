@@ -11,6 +11,7 @@
 #include <boost/lexical_cast.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <numeric>
 #include <sstream>
@@ -74,6 +75,20 @@ namespace expr
       std::for_each ( begin(), end()
                     , std::bind (node::rename, std::placeholders::_1, from, to)
                     );
+    }
+
+    node::KeyRoots parser::key_roots() const
+    {
+      node::KeyRoots roots;
+
+      std::for_each ( begin(), end()
+                    , [&] (nd_t const& node)
+                      {
+                        node::collect_key_roots (node, roots);
+                      }
+                    );
+
+      return roots;
     }
 
     std::string parser::string() const

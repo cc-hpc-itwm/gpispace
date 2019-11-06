@@ -27,6 +27,11 @@ extended_add_library (NAME we-dev
   INSTALL
 )
 
+extended_add_library (NAME we-dev-testing
+  SOURCES "expr/token/testing/all_tokens.cpp"
+  LIBRARIES we-dev
+)
+
 install (FILES
   expr/eval/context.hpp
   DESTINATION include/we/expr/eval

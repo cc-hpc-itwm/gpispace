@@ -17,6 +17,7 @@
 
 #include <list>
 #include <stdexcept>
+#include <unordered_set>
 
 namespace gspc
 {
@@ -38,7 +39,8 @@ namespace we
       class cross_type
       {
       public:
-        bool enables (net_type* const, transition_id_type);
+        cross_type (net_type&, transition_id_type);
+        bool enables();
         void write_to ( std::unordered_map< place_id_type
                                           , std::pair<token_id_type, bool>
                                           >&
@@ -65,11 +67,25 @@ namespace we
           bool const _is_read_connection;
         };
 
+        net_type& _net;
+        transition_id_type _tid;
+        we::type::transition_t const& _transition;
+        boost::optional<expression_t> const& _condition;
+        expr::parse::node::KeyRoots _key_roots;
+
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
         map_type _m;
 
-        bool do_step (map_type::iterator, map_type::iterator const&);
+        using ReferencedPlaces = std::unordered_set<place_id_type>;
+
+        ReferencedPlaces _referenced_places;
+
+        bool is_referenced (place_id_type) const;
+        std::string const& input_port_name (place_id_type) const;
+        bool do_step ( ReferencedPlaces::const_iterator
+                     , ReferencedPlaces::const_iterator const&
+                     );
       };
     }
 
@@ -333,10 +349,10 @@ namespace we
 
     void net_type::update_enabled (transition_id_type tid)
     {
-      cross_type cross;
+      cross_type cross (*this, tid);
 
       auto&& push
-        ([&] (adj_pt_type& adj, bool is_read_connection)
+        ([&] (adj_pt_type const& adj, bool is_read_connection)
          {
            for ( place_id_type place_id
                : adj.right.equal_range (tid) | boost::adaptors::map_values
@@ -360,7 +376,7 @@ namespace we
 
       if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (cross.enables (this, tid))
+        if (cross.enables())
         {
           _enabled[_tmap.at (tid).priority()].insert (tid);
           cross.write_to (_enabled_choice[tid]);
@@ -389,10 +405,10 @@ namespace we
         }
       }
 
-      cross_type cross;
+      cross_type cross (*this, tid);
 
       auto&& push
-        ( [&] (adj_pt_type& adj, bool is_read_connection)
+        ( [&] (adj_pt_type const& adj, bool is_read_connection)
           {
             for ( place_id_type place_id
                 : adj.right.equal_range (tid) | boost::adaptors::map_values
@@ -427,7 +443,7 @@ namespace we
 
       if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (cross.enables (this, tid))
+        if (cross.enables())
         {
           _enabled[_tmap.at (tid).priority()].insert (tid);
           cross.write_to (_enabled_choice[tid]);
@@ -783,6 +799,16 @@ namespace we
 
     // cross_type
 
+    cross_type::cross_type (net_type& net, transition_id_type tid)
+      : _net (net)
+      , _tid (tid)
+      , _transition (_net.transitions().at (_tid))
+      , _condition (_transition.condition())
+      , _key_roots ( _condition
+                   ? _condition->ast().key_roots()
+                   : decltype (_condition->ast().key_roots()) {}
+                   )
+    {}
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
         : _begin (tokens.begin())
@@ -821,11 +847,14 @@ namespace we
       _pos = _begin;
     }
 
-    bool cross_type::do_step
-      (map_type::iterator slot, map_type::iterator const& end)
+    bool cross_type::do_step ( ReferencedPlaces::const_iterator place
+                             , ReferencedPlaces::const_iterator const& end
+                             )
     {
-      while (slot != end)
+      while (place != end)
       {
+        auto slot (_m.find (*place));
+
         //! \note all sequences are non-empty
         ++slot->second;
 
@@ -835,23 +864,33 @@ namespace we
         }
 
         slot->second.rewind();
-        ++slot;
+        ++place;
       }
 
       return false;
     }
 
-    bool cross_type::enables (net_type* const n, transition_id_type transition_id)
+    bool cross_type::is_referenced (place_id_type pid) const
     {
-      we::type::transition_t const& transition
-        (n->transitions().at (transition_id));
+      return _key_roots.count (input_port_name (pid)) > 0;
+    }
+    std::string const& cross_type::input_port_name (place_id_type pid) const
+    {
+      return _transition.ports_input()
+        .at ( _net.place_to_port().at (_tid)
+            . at (pid).first
+            ).name()
+        ;
+    }
 
-      if (_m.size() < transition.ports_input().size())
+    bool cross_type::enables()
+    {
+      if (_m.size() < _transition.ports_input().size())
       {
         return false;
       }
 
-      if (!transition.condition())
+      if (!_condition)
       {
         return true;
       }
@@ -860,24 +899,20 @@ namespace we
       {
         expr::eval::context context;
 
-        for (std::pair<place_id_type const, iterators_type> const& pits : _m)
+        for (auto const& place : _referenced_places)
         {
           context.bind_ref
-            ( transition.ports_input()
-            . at (n->place_to_port().at (transition_id)
-            . at (pits.first).first).name()
-            , pits.second.pos()->second
+            ( input_port_name (place)
+            , _m.at (place).pos()->second
             );
         }
 
-        if (boost::get<bool>
-            (transition.condition()->ast().eval_all (context))
-           )
+        if (boost::get<bool> (_condition->ast().eval_all (context)))
         {
           return true;
         }
       }
-      while (do_step (_m.begin(), _m.end()));
+      while (do_step (_referenced_places.cbegin(), _referenced_places.cend()));
 
       return false;
     }
@@ -900,6 +935,11 @@ namespace we
                           )
     {
       _m.emplace (place_id, iterators_type (tokens, is_read_connection));
+
+      if (is_referenced (place_id))
+      {
+        _referenced_places.emplace (place_id);
+      }
     }
     void cross_type::push ( place_id_type place_id
                           , net_type::token_by_id_type::const_iterator token
@@ -908,6 +948,11 @@ namespace we
     {
       _m.emplace
         (place_id, iterators_type (std::move (token), is_read_connection));
+
+      if (is_referenced (place_id))
+      {
+        _referenced_places.emplace (place_id);
+      }
     }
   }
 }
