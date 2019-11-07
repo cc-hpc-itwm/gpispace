@@ -2780,3 +2780,108 @@ BOOST_FIXTURE_TEST_CASE
       }
     );
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( tasks_preferring_cpus_are_assigned_cpu_workers_first
+  , fixture_add_new_workers
+  )
+{
+  const std::string CPU ("CPU");
+  const std::string GPU ("GPU");
+
+  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+
+  std::string const common_capability (capability_pool());
+
+  std::set<sdpa::daemon::Worker_and_implementation>
+    expected_cpu_workers_and_implementations;
+
+  unsigned int const num_cpu_workers
+    (10 + fhg::util::testing::random_integral<unsigned int>() % 10);
+
+  std::vector<sdpa::worker_id_t> const cpu_workers
+    (add_new_workers ( {common_capability, CPU}
+                     , num_cpu_workers
+                     )
+    );
+
+  for (auto const& worker : cpu_workers)
+  {
+    expected_cpu_workers_and_implementations.emplace (worker, CPU);
+  }
+
+  unsigned int const num_cpu_gpu_workers
+    (10 + fhg::util::testing::random_integral<unsigned int>() % 10);
+
+  std::vector<sdpa::worker_id_t> const cpu_gpu_workers
+    (add_new_workers ( {common_capability, CPU, GPU}
+                     , num_cpu_gpu_workers
+                     )
+    );
+
+  std::set<sdpa::daemon::Worker_and_implementation>
+    expected_cpu_gpu_workers_and_implementations;
+
+  for (auto const& worker : cpu_gpu_workers)
+  {
+    expected_cpu_gpu_workers_and_implementations.emplace (worker, GPU);
+  }
+
+  for (unsigned int i (0); i < num_cpu_workers; i++)
+  {
+    sdpa::job_id_t const job
+      (fhg::util::testing::random_identifier_without_leading_underscore());
+
+    add_job (job, require (common_capability, {CPU}));
+
+    _scheduler.enqueueJob (job);
+    _scheduler.assignJobsToWorkers();
+
+    auto const assignment (get_current_assignment());
+    BOOST_REQUIRE (assignment.count (job));
+
+    auto const assigned_workers_and_impls
+      (workers_and_implementations (job));
+
+    BOOST_REQUIRE_EQUAL (assigned_workers_and_impls.size(), 1);
+
+    BOOST_REQUIRE
+      (expected_cpu_workers_and_implementations.count
+         (*assigned_workers_and_impls.begin())
+      );
+
+    expected_cpu_workers_and_implementations.erase
+      (*assigned_workers_and_impls.begin());
+  }
+
+  BOOST_REQUIRE (expected_cpu_workers_and_implementations.empty());
+
+  for (unsigned int i (0); i < num_cpu_gpu_workers; i++)
+  {
+    sdpa::job_id_t const job
+      (fhg::util::testing::random_identifier_without_leading_underscore());
+
+    add_job (job, require (common_capability, {GPU}));
+
+    _scheduler.enqueueJob (job);
+    _scheduler.assignJobsToWorkers();
+
+    auto const assignment (get_current_assignment());
+    BOOST_REQUIRE (assignment.count (job));
+
+    auto const assigned_workers_and_impls
+      (workers_and_implementations (job));
+
+    BOOST_REQUIRE_EQUAL (assigned_workers_and_impls.size(), 1);
+
+    BOOST_REQUIRE
+      (expected_cpu_gpu_workers_and_implementations.count
+         (*assigned_workers_and_impls.begin())
+      );
+
+    expected_cpu_gpu_workers_and_implementations.erase
+      (*assigned_workers_and_impls.begin());
+  }
+
+  BOOST_REQUIRE (expected_cpu_gpu_workers_and_implementations.empty());
+}
