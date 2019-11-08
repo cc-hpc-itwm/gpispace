@@ -65,6 +65,7 @@ namespace gspc
                              , fhg::rif::entry_point const& master
                              , std::ostream& info_output
                              , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+                             , std::vector<fhg::logging::endpoint> default_log_receivers
                              , Certificates const& certificates
                              );
 

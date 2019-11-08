@@ -2,6 +2,12 @@
 
 #include <drts/private/drts_impl.hpp>
 
+#include <rif/client.hpp>
+
+#include <fhg/util/starts_with.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/functor_visitor.hpp>
+#include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
@@ -9,13 +15,13 @@
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
+#include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-#include <fhg/util/starts_with.hpp>
 
-#include <util-generic/serialization/boost/filesystem/path.hpp>
-
-#include <rif/client.hpp>
+#include <rpc/remote_function.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/filesystem.hpp>
@@ -455,6 +461,27 @@ namespace fhg
         };
     }
 
+    namespace
+    {
+      std::unique_ptr<rpc::remote_endpoint> connect
+        (boost::asio::io_service& io_service, logging::endpoint ep)
+      {
+        return util::visit<std::unique_ptr<rpc::remote_endpoint>>
+          ( ep.best (util::hostname())
+          , [&] (logging::socket_endpoint const& as_socket)
+            {
+              return util::cxx14::make_unique<rpc::remote_socket_endpoint>
+                (io_service, as_socket.socket);
+            }
+          , [&] (logging::tcp_endpoint const& as_tcp)
+            {
+              return util::cxx14::make_unique<rpc::remote_tcp_endpoint>
+                (io_service, as_tcp);
+            }
+          );
+      }
+    }
+
     startup_result startup
       ( boost::optional<unsigned short> const& orchestrator_port
       , boost::optional<unsigned short> const& agent_port
@@ -471,6 +498,7 @@ namespace fhg
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
       , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+      , std::vector<logging::endpoint> default_log_receivers
       , gspc::Certificates const& certificates
       )
     {
@@ -513,6 +541,15 @@ namespace fhg
 
         processes.store
           (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
+
+        std::vector<logging::endpoint> const top_level_endpoint
+          {logging_rif_info->sink_endpoint};
+        for (auto const& receiver : default_log_receivers)
+        {
+          auto const endpoint (connect (io_service, receiver));
+          rpc::sync_remote_function<logging::protocol::receiver::add_emitters>
+            {*endpoint} (top_level_endpoint);
+        }
       }
 
       auto const orchestrator_startup_result
