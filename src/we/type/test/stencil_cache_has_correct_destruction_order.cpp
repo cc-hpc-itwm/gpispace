@@ -70,10 +70,7 @@ namespace we
 
     // to destroy the cache in this moment shall not block
 
-    BOOST_AUTO_TEST_CASE
-      ( stencil_cache_has_correct_destruction_order
-      , *boost::unit_test::timeout (2)
-      )
+    BOOST_AUTO_TEST_CASE (stencil_cache_has_correct_destruction_order)
     {
       using fhg::util::print_container;
       using fhg::util::testing::random_identifier;
@@ -241,8 +238,10 @@ namespace we
 
       //! \note "long enough" to give the stencil cache time to
       //! retrieve the stencil to allocate from its internal queue and
-      //! enter and block inside of the allocation routine
-      std::this_thread::sleep_for (std::chrono::milliseconds (100));
+      //! enter and block inside of the allocation routine, random to
+      //! allow for _both_ interruptions to be executed/not executed
+      std::this_thread::sleep_for
+        (std::chrono::milliseconds (random<int>{}() % 10000));
     }
   }
 }
