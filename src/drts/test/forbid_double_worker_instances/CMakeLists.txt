@@ -8,8 +8,6 @@ fhg_add_test (NAME drts_forbid_double_worker_instances
   LIBRARIES gspc
             test-utilities
             fhg-util
-            ${Boost_PROGRAM_OPTIONS_LIBRARY}
-            ${Boost_FILESYSTEM_LIBRARY}
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )

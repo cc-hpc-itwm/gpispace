@@ -59,9 +59,7 @@ fhg_add_runtime_executable (NAME pnetd
   LIBRARIES fhg-revision
             pnet
             gspc
-            ${Boost_PROGRAM_OPTIONS_LIBRARY}
-            ${Boost_SERIALIZATION_LIBRARY}
-            ${Boost_SYSTEM_LIBRARY}
+            Boost::program_options
 )
 
 fhg_add_runtime_executable (NAME orchestrator

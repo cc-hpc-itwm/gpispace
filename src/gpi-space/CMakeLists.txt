@@ -5,7 +5,6 @@ extended_add_library (NAME gpi-space-gpiapi
             gspc::logging
             Util::Generic
             GPISpace::vmem
-  INCLUDE_DIRECTORIES PRIVATE "${GASPI_INCLUDE_DIR}"
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 

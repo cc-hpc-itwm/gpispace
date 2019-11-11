@@ -3,11 +3,8 @@ project (gspc VERSION 16.04 LANGUAGES CXX)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set (CMAKE_MODULE_PATH
-  "${CMAKE_MODULE_PATH}"
-  "${CMAKE_SOURCE_DIR}/modules"
-  "$ENV{CMAKE_MODULE_PATH}"
-)
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+list (APPEND CMAKE_MODULE_PATH "$ENV{CMAKE_MODULE_PATH}")
 
 add_subdirectory (cmake)
 
