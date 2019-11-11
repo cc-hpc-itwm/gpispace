@@ -47,10 +47,12 @@ namespace we
 
         void exclusive (Who who, Next next, std::function<void()> what)
         {
-          std::unique_lock<std::mutex> lock {_guard};
-          FHG_UTIL_FINALLY ([&] { _who = next; });
-          _flip.wait (lock, [&] { return _who == who; });
-          what();
+          {
+            std::unique_lock<std::mutex> lock {_guard};
+            FHG_UTIL_FINALLY ([&] { _who = next; });
+            _flip.wait (lock, [&] { return _who == who; });
+            what();
+          }
           _flip.notify_all();
         }
 
