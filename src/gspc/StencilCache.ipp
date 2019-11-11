@@ -124,6 +124,10 @@ namespace gspc
       }
     }
   }
+  catch (interrupted)
+  {
+    throw;
+  }
   catch (typename STENCILCACHE::Base::interrupted)
   {
     throw interrupted{};
@@ -179,6 +183,10 @@ namespace gspc
 
     return input_entry.prepared();
   }
+  catch (interrupted)
+  {
+    throw;
+  }
   catch (typename STENCILCACHE::Base::interrupted)
   {
     throw interrupted{};
@@ -215,6 +223,10 @@ namespace gspc
 
       Base::_forget (i, _);
     }
+  }
+  catch (interrupted)
+  {
+    throw;
   }
   catch (typename STENCILCACHE::Base::interrupted)
   {
