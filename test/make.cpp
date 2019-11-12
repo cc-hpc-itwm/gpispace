@@ -1,5 +1,7 @@
 #include <test/make.hpp>
 
+#include <test/make_environment.hpp>
+
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
@@ -66,7 +68,9 @@ namespace test
       std::ostringstream command;
 
       command
-        << "CXXFLAGS=\"-Wall -Wextra -Werror\" make "
+        << "CXXFLAGS=\"-Wall -Wextra -Werror\""
+        << " CXX=\"" << cmake_cxx_compiler << "\""
+        << " make "
         << " LIB_DESTDIR=" << lib_destdir.get()
         << " -C " << wrapper_directory
         << " install"
