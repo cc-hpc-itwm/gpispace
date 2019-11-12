@@ -85,6 +85,13 @@ namespace we
 
         return input_entries;
       }
+
+      std::string place ( expr::eval::context const& context
+                        , std::string key
+                        )
+      {
+        return boost::get<std::string> (context.value ({"place", key}));
+      }
     }
 
     scoped_neighbors_callback::scoped_neighbors_callback
@@ -124,10 +131,10 @@ namespace we
     stencil_cache::stencil_cache ( expr::eval::context const& context
                                  , PutToken const& put_token
                                  )
-      : _place_prepare
-        (boost::get<std::string> (context.value ({"place", "prepare"})))
-      , _place_ready
-        (boost::get<std::string> (context.value ({"place", "ready"})))
+      : _place_prepare (place (context, "prepare"))
+      , _place_ready (place (context, "ready"))
+      , _place_neighbors (place (context, "neighbors"))
+      , _place_neighbors_count (place (context, "neighbors_count"))
       , _memory (context.value ({"memory"}))
       , _handle (peek ("handle", _memory))
       , _base (boost::get<unsigned long> (peek ("offset", _memory)))
@@ -179,7 +186,23 @@ namespace we
             (peek ("value", context.value ({"stencil"})))
         );
 
-      _queue_allocate.put (Allocate {stencil, _neighbors (stencil)});
+      auto const neighbors (_neighbors (stencil));
+
+      _queue_allocate.put (Allocate {stencil, neighbors});
+
+      for (auto const& neighbor : neighbors)
+      {
+        using pnet::type::value::value_type;
+        using pnet::type::value::poke;
+        using Path = std::list<std::string>;
+
+        value_type v;
+        poke (Path {"value"}, v, neighbor);
+
+        _put_token (_place_neighbors, std::move (v));
+      }
+
+      _put_token (_place_neighbors_count, neighbors.size());
     }
 
     void stencil_cache::prepare

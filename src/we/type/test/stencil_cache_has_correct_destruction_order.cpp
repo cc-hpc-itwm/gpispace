@@ -133,6 +133,8 @@ namespace we
 
       auto const place_prepare (random_uniq_identifier());
       auto const place_ready (random_uniq_identifier());
+      auto const place_neighbors (random_uniq_identifier());
+      auto const place_neighbors_count (random_uniq_identifier());
       auto const memory_handle (random_identifier());
       auto const input_size (random_ulong());
       auto const block_size (1UL);
@@ -164,6 +166,8 @@ namespace we
       expr::eval::context context;
       context.bind_and_discard_ref (Path {"place", "prepare"}, place_prepare);
       context.bind_and_discard_ref (Path {"place", "ready"}, place_ready);
+      context.bind_and_discard_ref (Path {"place", "neighbors"}, place_neighbors);
+      context.bind_and_discard_ref (Path {"place", "neighbors_count"}, place_neighbors_count);
       context.bind_and_discard_ref (Path {"memory"}, memory);
       context.bind_and_discard_ref (Path {"input_size"}, input_size);
       context.bind_and_discard_ref (Path {"block_size"}, block_size);
@@ -175,16 +179,17 @@ namespace we
 
       mutual_exclusion sequential (Starter {ALLOC});
       expr::eval::context allocation_context;
+      std::unordered_set<std::string> sync_callbacks;
 
       stencil_cache::PutToken put_token
         ( [&] (std::string place, value_type value)
           {
-            sequential.exclusive
-              ( Who {PUT}
-              , Next {ALLOC}
-              , [&]
-                {
-                  if (place == place_prepare)
+            if (place == place_prepare)
+            {
+              sequential.exclusive
+                ( Who {PUT}
+                , Next {ALLOC}
+                , [&]
                   {
                     BOOST_REQUIRE_EQUAL
                       ( peek (Path {"coordinate"}, value)
@@ -207,17 +212,32 @@ namespace we
                       , value_type {input_size}
                       );
                   }
-                  else
-                  {
-                    throw std::logic_error
-                      ( ( boost::format ("unexpected put_token (%1%, %2%)")
-                        % place
-                        % show (value)
-                        ).str()
-                      );
-                  }
-                }
-              );
+                );
+            }
+            else if (  place == place_neighbors
+                    && sync_callbacks.emplace (place).second
+                    )
+            {
+              BOOST_REQUIRE_EQUAL
+                ( value
+                , allocation_context.value (Path {"stencil"})
+                );
+            }
+            else if (  place == place_neighbors_count
+                    && sync_callbacks.emplace (place).second
+                    )
+            {
+              BOOST_REQUIRE_EQUAL (value, value_type {1UL});
+            }
+            else
+            {
+              throw std::logic_error
+                ( ( boost::format ("unexpected put_token (%1%, %2%)")
+                  % place
+                  % show (value)
+                  ).str()
+                );
+            }
           }
         );
 
@@ -225,6 +245,8 @@ namespace we
 
       for (gspc::stencil_cache::Coordinate x (cBegin); x < cEnd; ++x)
       {
+        sync_callbacks.clear();
+
         sequential.exclusive
           ( Who {ALLOC}
           , Next {PUT}
@@ -236,6 +258,10 @@ namespace we
               stencil_cache.alloc (allocation_context);
             }
           );
+
+        BOOST_REQUIRE_EQUAL (sync_callbacks.size(), 2);
+        BOOST_REQUIRE (sync_callbacks.count (place_neighbors));
+        BOOST_REQUIRE (sync_callbacks.count (place_neighbors_count));
       }
 
       //! \note "long enough" to give the stencil cache time to
