@@ -105,6 +105,7 @@ if (CMAKE_USE_PTHREADS_INIT)
 endif()
 
 bundle_boost (DESTINATION "external/boost")
+list (APPEND INSTALL_RPATH_DIRS "lib")
 
 add_subdirectory (external)
 add_subdirectory (doc)
