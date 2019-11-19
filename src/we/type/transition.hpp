@@ -22,7 +22,12 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace we { namespace type {
+namespace we
+{
+  namespace type
+  {
+    typedef std::string preference_t;
+
     struct transition_t
     {
     private:
@@ -63,8 +68,36 @@ namespace we { namespace type {
         , port_id_counter_ (0)
         , prop_(prop)
         , _requirements()
+        , _preferences()
         , _priority (priority)
       { }
+
+      template <typename Type>
+      transition_t ( const std::string& name
+                   , Type const& typ
+                   , boost::optional<expression_t> const& _condition
+                   , const we::type::property::type& prop
+                   , we::priority_type priority
+                   , const std::list<we::type::preference_t>& preferences
+                   )
+        : name_ (name)
+        , data_ (typ)
+          //! \todo better check user input earlier!?
+        , condition_
+          ( (!_condition || _condition.get().ast().is_const_true())
+          ? boost::none : _condition
+          )
+        , _ports_input()
+        , _ports_output()
+        , _ports_tunnel()
+        , port_id_counter_ (0)
+        , prop_(prop)
+        , _requirements()
+        , _preferences (preferences)
+        , _priority (priority)
+      {
+        //! \todo check if preferences enabled only for multi-modules
+      }
 
       const std::string& name() const;
 
@@ -89,6 +122,7 @@ namespace we { namespace type {
       const we::type::property::type& prop() const;
 
       std::list<we::type::requirement_t> const& requirements() const;
+      std::list<we::type::preference_t> const& preferences() const;
       void add_requirement (we::type::requirement_t const&);
 
       we::priority_type priority() const;
@@ -113,6 +147,7 @@ namespace we { namespace type {
       we::type::property::type prop_;
 
       std::list<we::type::requirement_t> _requirements;
+      std::list<we::type::preference_t> _preferences;
       we::priority_type _priority;
 
       friend class boost::serialization::access;

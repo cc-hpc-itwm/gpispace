@@ -89,6 +89,7 @@ namespace we
         }
 
         std::list<we::type::requirement_t> const requirements() const;
+        std::list<we::type::preference_t> const preferences() const;
 
       private:
         friend class boost::serialization::access;
