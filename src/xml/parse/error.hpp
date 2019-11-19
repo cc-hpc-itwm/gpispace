@@ -259,6 +259,42 @@ namespace xml
 
       // ******************************************************************* //
 
+      class empty_preferences : public generic
+      {
+      public:
+        empty_preferences ()
+          : generic ( boost::format ( "preferences enabled, but no targets"
+                                      " specified (empty list)"
+                                    )
+                    )
+        {}
+      };
+
+      class duplicate_preference : public generic
+      {
+      public:
+        duplicate_preference (const std::string& target_type_descr)
+          : generic ( boost::format ( "duplicate target type \'%1%\'"
+                                      ", already in the preference list"
+                                    )
+                    % target_type_descr
+                    )
+        {}
+      };
+
+      class preferences_without_modules : public generic
+      {
+      public:
+        preferences_without_modules ()
+          : generic ( boost::format ( "preferences enabled, but"
+                                      " no modules defined"
+                                    )
+                    )
+        {}
+      };
+
+      // ******************************************************************* //
+
       template<typename T>
       class generic_duplicate : public generic
       {

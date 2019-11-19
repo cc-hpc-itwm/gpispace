@@ -102,6 +102,7 @@ extended_add_library (NAME pnet
           "xml/parse/type/transition.cpp"
           "xml/parse/type/use.cpp"
           "xml/parse/type/with_position_of_definition.cpp"
+          "xml/parse/type/preferences.cpp"
           "xml/parse/util/cdata.cpp"
           "xml/parse/util/expect.cpp"
           "xml/parse/util/mk_fstream.cpp"

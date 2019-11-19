@@ -35,6 +35,7 @@
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
+#include <xml/parse/type/preferences.hpp>
 
 #include <xml/parse/util/position.hpp>
 
@@ -210,6 +211,63 @@ namespace xml
 
         // collect all the requirements for the top level function
         state.set_requirement (key, mandatory);
+      }
+
+      // ******************************************************************* //
+
+      void preferences_type ( type::preferences_type& preferences
+                            , const xml_node_type* node
+                            , state::type& state
+                            )
+      {
+        std::unordered_map<type::preference_type, bool> _map_unique;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "target")
+            {
+              const std::string target_name
+                (validate_name ( std::string (child->value(), child->value_size())
+                               , "target"
+                               , state.file_in_progress()
+                               )
+                );
+
+              auto search = _map_unique.find (target_name);
+              if (search != _map_unique.end())
+              {
+                throw error::duplicate_preference (target_name);
+              }
+              else
+              {
+                _map_unique[target_name] = true;
+                preferences.add_unique_target_in_order (target_name);
+              }
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "target"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+
+        if (preferences.empty())
+        {
+          throw error::empty_preferences();
+        }
       }
 
       // ******************************************************************* //
@@ -1692,6 +1750,7 @@ namespace xml
         std::list<type::structure_type> structs;
         type::conditions_type conditions;
         type::requirements_type requirements;
+        type::preferences_type preferences;
         boost::optional<type::expression_type> expression;
         boost::optional<type::module_type> module;
         boost::optional<type::net_type> net;
@@ -1800,6 +1859,10 @@ namespace xml
             {
               require_type (requirements, child, state);
             }
+            else if (child_name == "preferences")
+            {
+              preferences_type (preferences, child, state);
+            }
             else
             {
               state.warn ( warning::unexpected_element ( child_name
@@ -1809,6 +1872,11 @@ namespace xml
                        );
             }
           }
+        }
+
+        if (!preferences.empty() && !module)
+        {
+          throw error::preferences_without_modules();
         }
 
 #define FUNCTION(_content) type::function_type  \
@@ -1823,6 +1891,7 @@ namespace xml
           , structs                             \
           , conditions                          \
           , requirements                        \
+          , preferences                         \
           , _content                            \
           , properties                          \
           }

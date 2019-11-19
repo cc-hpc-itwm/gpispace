@@ -68,6 +68,7 @@ namespace xml
         , const structs_type& structs_
         , const conditions_type& conditions
         , const requirements_type& requirements_
+        , const preferences_type& preferences
         , const content_type& content
         , const we::type::property::type& properties
         )
@@ -81,6 +82,7 @@ namespace xml
         , contains_a_module_call (contains_a_module_call_)
         , structs (structs_)
         , _conditions (conditions)
+        , _preferences (preferences)
         , requirements (requirements_)
         , _content (content)
         , _properties (properties)
@@ -176,6 +178,7 @@ namespace xml
                , structs
                , _conditions
                , requirements
+               , _preferences
                , _content
                , _properties
                };
@@ -293,6 +296,13 @@ namespace xml
       {
         lhs.insert (lhs.end(), rhs.begin(), rhs.end());
         return lhs;
+      }
+
+      // ***************************************************************** //
+
+      const preferences_type& function_type::preferences() const
+      {
+        return _preferences;
       }
 
       // ***************************************************************** //
@@ -605,6 +615,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
+            , fun.preferences().get_preference_list()
             );
 
           add_ports (trans, fun.ports());
