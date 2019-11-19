@@ -165,6 +165,12 @@
     <xsd:attribute name="place" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
+  <xsd:complexType name="preferences_type">
+    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+      <xsd:element name="target" type="xsd:string"/>
+    </xsd:choice>
+  </xsd:complexType>
+
   <xsd:complexType name="memory_buffer_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
@@ -246,6 +252,7 @@
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
+        <xsd:element name="preferences" type="preferences_type"/>
         <xsd:element name="out" type="port_type"/>
         <xsd:element name="inout" type="port_type"/>
         <xsd:element name="tunnel" type="port_type"/>
