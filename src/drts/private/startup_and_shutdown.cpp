@@ -531,9 +531,14 @@ namespace fhg
                     << log_rif_entry_point->hostname << "\n";
 
         logging_rif_info
-          = logging_rif_client->start_logging_demultiplexer
-              (installation_path.logging_demultiplexer()).get();
-
+          = util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  return logging_rif_client->start_logging_demultiplexer
+                    (installation_path.logging_demultiplexer()).get();
+                }
+              , "Starting top level logging demultiplexer failed"
+              );
 
         info_output << "   => accepting registration on '"
                     << logging_rif_info->sink_endpoint.to_string()
@@ -546,9 +551,16 @@ namespace fhg
           {logging_rif_info->sink_endpoint};
         for (auto const& receiver : default_log_receivers)
         {
-          auto const endpoint (connect (io_service, receiver));
-          rpc::sync_remote_function<logging::protocol::receiver::add_emitters>
-            {*endpoint} (top_level_endpoint);
+          util::nest_exceptions<std::runtime_error>
+            ( [&]
+              {
+                auto const endpoint (connect (io_service, receiver));
+                using fun = logging::protocol::receiver::add_emitters;
+                rpc::sync_remote_function<fun> {*endpoint} (top_level_endpoint);
+              }
+            , "Requesting " + receiver.to_string()
+            + " to connect to top level logging demultiplexer failed"
+            );
         }
       }
 
