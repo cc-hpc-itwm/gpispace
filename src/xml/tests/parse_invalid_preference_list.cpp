@@ -40,23 +40,27 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
         <defun>
           <preferences>
             <target>%1%</target>
-            <target>%2%</target>
+            <target>%1%</target>
           </preferences>
         </defun>)EOS")
-      % name
       % name
       ).str()
     );
 
-    xml::parse::state::type state;
+  xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
-      ( [&state, &input]()
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::duplicate_preference>
+      ( [&state, &input]
         {
           std::istringstream input_stream (input);
           xml::parse::just_parse (state, input_stream);
         }
-      , xml::parse::error::duplicate_preference (name)
+      , boost::format ( "ERROR: duplicate target type '%1%' at %2%"
+                        ", already in the preferences"
+                      )
+        % name
+        % "[<stdin>:5:13]"
       );
 }
 
@@ -71,14 +75,19 @@ BOOST_AUTO_TEST_CASE (parse_empty_preference_list)
       ).str()
     );
 
-    xml::parse::state::type state;
+  xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
-      ( [&state, &input]()
-      { std::istringstream input_stream (input);
-        xml::parse::just_parse (state, input_stream);
-      }
-      , xml::parse::error::empty_preferences()
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::empty_preferences>
+      ( [&state, &input]
+        {
+          std::istringstream input_stream (input);
+          xml::parse::just_parse (state, input_stream);
+        }
+        , boost::format ( "ERROR: preferences enabled, but no targets"
+                        " specified at %1%"
+                      )
+          % "[<stdin>:3:11]"
       );
 }
 
@@ -101,18 +110,19 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
 
   fhg::util::testing::require_exception_with_message
     <xml::parse::error::invalid_name>
-    ( [&state, &input]()
-    { std::istringstream input_stream (input);
-      xml::parse::just_parse (state, input_stream);
-    }
-    , boost::format ("ERROR: %2% %1% is invalid"
-                     " (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
-                     " in %3%"
-                    )
-    % name
-    % "target"
-    % "\"<stdin>\""
-    );
+      ( [&state, &input]
+        {
+          std::istringstream input_stream (input);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: %2% %1% is invalid"
+                        " (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
+                        " in %3%"
+                      )
+        % name
+        % "target"
+        % "\"<stdin>\""
+      );
 }
 
 BOOST_AUTO_TEST_CASE (parse_preference_list_without_modules)
@@ -129,21 +139,26 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_without_modules)
             <target>%1%</target>
             <target>%2%</target>
           </preferences>
-         <expression>
-         </expression>
+          <expression>
+          </expression>
         </defun>)EOS")
       % first_type_name
       % second_type_name
       ).str()
     );
 
-    xml::parse::state::type state;
+  xml::parse::state::type state;
 
-    fhg::util::testing::require_exception
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::preferences_without_modules>
       ( [&state, &input]
-      { std::istringstream input_stream (input);
-        xml::parse::just_parse (state, input_stream);
-      }
-      , xml::parse::error::preferences_without_modules()
-      );
+        {
+          std::istringstream input_stream (input);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: preferences enabled, but"
+                        " no modules defined in %1%"
+                      )
+        % "[<stdin>:2:9]"
+    );
 }
