@@ -1,0 +1,6 @@
+#pragma once
+
+namespace test
+{
+  constexpr char const* cmake_cxx_compiler = "@CMAKE_CXX_COMPILER@";
+}
