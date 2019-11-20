@@ -75,10 +75,9 @@ BOOST_AUTO_TEST_CASE (parse_empty_preference_list)
 
     fhg::util::testing::require_exception
       ( [&state, &input]()
-        {
-          std::istringstream input_stream (input);
-          xml::parse::just_parse (state, input_stream);
-        }
+      { std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
       , xml::parse::error::empty_preferences()
       );
 }
@@ -98,22 +97,22 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
       ).str()
     );
 
-    xml::parse::state::type state;
+  xml::parse::state::type state;
 
-    fhg::util::testing::require_exception_with_message
-      <xml::parse::error::invalid_name>
-      ( [&state, &input]()
-      { std::istringstream input_stream (input);
-        xml::parse::just_parse (state, input_stream);
-      }
-      , boost::format ( "ERROR: %2% %1% is invalid"
-                        " (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
-                        " in %3%"
-                      )
-            % name
-            % "target"
-            % "\"<stdin>\""
-      );
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::invalid_name>
+    ( [&state, &input]()
+    { std::istringstream input_stream (input);
+      xml::parse::just_parse (state, input_stream);
+    }
+    , boost::format ("ERROR: %2% %1% is invalid"
+                     " (not of the form: [a-zA-Z_][a-zA-Z_0-9]^*)"
+                     " in %3%"
+                    )
+    % name
+    % "target"
+    % "\"<stdin>\""
+    );
 }
 
 BOOST_AUTO_TEST_CASE (parse_preference_list_without_modules)
@@ -141,11 +140,10 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_without_modules)
     xml::parse::state::type state;
 
     fhg::util::testing::require_exception
-      ( [&state, &input]()
-        {
-          std::istringstream input_stream (input);
-          xml::parse::just_parse (state, input_stream);
-        }
+      ( [&state, &input]
+      { std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
       , xml::parse::error::preferences_without_modules()
       );
 }
