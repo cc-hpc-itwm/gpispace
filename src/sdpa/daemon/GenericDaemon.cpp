@@ -246,7 +246,7 @@ std::string GenericDaemon::gen_id()
           }()
         , computational_cost
         , activity.memory_buffer_size_total()
-        , {} //Empty preferences. To be later replaced with activity preferences
+        , activity.preferences()
         };
 
       return addJob ( job_id
