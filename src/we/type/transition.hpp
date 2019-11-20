@@ -26,7 +26,7 @@ namespace we
 {
   namespace type
   {
-    typedef std::string preference_t;
+    using preference_t = std::string;
 
     struct transition_t
     {
@@ -163,6 +163,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_preferences);
         ar & BOOST_SERIALIZATION_NVP(_priority);
       }
     };
