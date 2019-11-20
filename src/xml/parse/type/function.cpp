@@ -300,7 +300,7 @@ namespace xml
 
       // ***************************************************************** //
 
-      const preferences_type& function_type::preferences() const
+      preferences_type const& function_type::preferences() const
       {
         return _preferences;
       }
