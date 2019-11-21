@@ -54,30 +54,6 @@ namespace we
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
-                   )
-        : name_ (name)
-        , data_ (typ)
-          //! \todo better check user input earlier!?
-        , condition_
-          ( (!_condition || _condition.get().ast().is_const_true())
-          ? boost::none : _condition
-          )
-        , _ports_input()
-        , _ports_output()
-        , _ports_tunnel()
-        , port_id_counter_ (0)
-        , prop_(prop)
-        , _requirements()
-        , _preferences()
-        , _priority (priority)
-      { }
-
-      template <typename Type>
-      transition_t ( const std::string& name
-                   , Type const& typ
-                   , boost::optional<expression_t> const& _condition
-                   , const we::type::property::type& prop
-                   , we::priority_type priority
                    , const std::list<we::type::preference_t>& preferences
                    )
         : name_ (name)
@@ -97,7 +73,18 @@ namespace we
         , _priority (priority)
       {
         //! \todo check if preferences enabled only for multi-modules
+        fhg_assert (data_.which() == typeid (module_call_t));
       }
+
+      template <typename Type>
+      transition_t ( const std::string& name
+                   , Type const& typ
+                   , boost::optional<expression_t> const& _condition
+                   , const we::type::property::type& prop
+                   , we::priority_type priority
+                   )
+        : transition_t (name, typ, _condition, prop, priority, {})
+      { }
 
       const std::string& name() const;
 
