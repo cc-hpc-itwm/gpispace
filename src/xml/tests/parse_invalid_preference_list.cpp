@@ -1,4 +1,5 @@
 #include <boost/test/unit_test.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
@@ -125,12 +126,15 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
       );
 }
 
-BOOST_AUTO_TEST_CASE (parse_preference_list_without_modules)
+BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
+                     , std::vector<std::string> ({"net", "expression"})
+                     , non_module_type
+                     )
 {
-  std::string const first_type_name
-    (random_identifier_with_valid_prefix());
-  std::string const second_type_name
-    (random_identifier_with_valid_prefix());
+  std::string const first_target_name
+    ("first_" + random_identifier_with_valid_prefix());
+  std::string const second_target_name
+    ("second_" + random_identifier_with_valid_prefix());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -139,11 +143,12 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_without_modules)
             <target>%1%</target>
             <target>%2%</target>
           </preferences>
-          <expression>
-          </expression>
+          <%3%>
+          </%3%>
         </defun>)EOS")
-      % first_type_name
-      % second_type_name
+      % first_target_name
+      % second_target_name
+      % non_module_type
       ).str()
     );
 
