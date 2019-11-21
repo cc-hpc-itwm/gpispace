@@ -184,6 +184,71 @@ namespace
 
     return activity;
   }
+
+  class fake_drts_worker_verifying_implementation final
+    : public utils::no_thread::basic_drts_worker
+  {
+  public:
+    fake_drts_worker_verifying_implementation
+        ( sdpa::worker_id_t const& name
+        , utils::agent const& master
+        , sdpa::capabilities_set_t capabilities
+        , fhg::com::Certificates const& certificates
+        , std::string const& expected_preference
+        )
+      : utils::no_thread::basic_drts_worker
+          (name, master, capabilities, certificates)
+      , _expected_preference (expected_preference)
+    {}
+
+    virtual void handleSubmitJobEvent
+      ( fhg::com::p2p::address_t const& source
+      , const sdpa::events::SubmitJobEvent* event
+      ) override
+    {
+      _network.perform<sdpa::events::SubmitJobAckEvent>
+        (source, *event->job_id());
+
+      BOOST_REQUIRE (event->implementation());
+
+      auto const activity_preferences (event->activity().preferences());
+
+      BOOST_REQUIRE (!activity_preferences.empty());
+
+      auto const corresponding_preference
+        (std::find ( activity_preferences.begin()
+                   , activity_preferences.end()
+                   , *event->implementation()
+                   )
+        );
+
+      BOOST_REQUIRE
+        (corresponding_preference != activity_preferences.end());
+
+      BOOST_REQUIRE_EQUAL (*corresponding_preference, _expected_preference);
+
+      finish_job (source, *event->job_id());
+    }
+
+    virtual void handleJobFinishedAckEvent
+      ( fhg::com::p2p::address_t const&
+      , const sdpa::events::JobFinishedAckEvent*
+      ) override
+    {}
+
+  private:
+    void finish_job
+      ( fhg::com::p2p::address_t const& source
+      , sdpa::job_id_t const& job
+      )
+    {
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (source, job, we::type::activity_t());
+    }
+
+    std::string _expected_preference;
+    basic_drts_component::event_thread_and_worker_join _ = {*this};
+  };
 }
 
 BOOST_DATA_TEST_CASE
@@ -210,4 +275,49 @@ BOOST_DATA_TEST_CASE
     ( client.wait_for_terminal_state_and_cleanup (job)
     , sdpa::status::FINISHED
     );
+}
+
+BOOST_DATA_TEST_CASE
+  ( worker_with_capabilty_matching_aribtrary_preference_receives_valid_implementation
+  , certificates_data
+  , certificates
+  )
+{
+  fhg::util::testing::unique_random<std::string> generate_preference;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> generate_worker_id;
+
+  Preferences const preferences
+    {generate_preference(), generate_preference(), generate_preference()};
+
+  utils::orchestrator const orchestrator (certificates);
+  utils::agent const agent (orchestrator, certificates);
+
+  auto const preference_index
+    ( fhg::util::testing::random_integral<std::size_t>()
+    % preferences.size()
+    );
+
+  auto const random_preference
+    ( (preference_index == 0)
+    ? preferences.begin()
+    : std::next (preferences.begin(), preference_index)
+    );
+
+  auto const name (generate_worker_id());
+
+  fake_drts_worker_verifying_implementation const worker
+    ( name
+    , agent
+    , {sdpa::Capability (*random_preference, name)}
+    , certificates
+    , *random_preference
+    );
+
+  utils::client client (orchestrator, certificates);
+
+  sdpa::job_id_t const job
+    (client.submit_job (activity_with_preferences (preferences)));
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state_and_cleanup (job), sdpa::status::FINISHED);
 }
