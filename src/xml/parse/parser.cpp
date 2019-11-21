@@ -243,7 +243,9 @@ namespace xml
               auto search = _map_unique.find (target_name);
               if (search != _map_unique.end())
               {
-                throw error::duplicate_preference (target_name);
+                throw error::duplicate_preference ( target_name
+                                                  , state.position (child)
+                                                  );
               }
               else
               {
@@ -261,12 +263,6 @@ namespace xml
                 );
             }
           }
-        }
-
-
-        if (preferences.empty())
-        {
-          throw error::empty_preferences();
         }
       }
 
@@ -1862,6 +1858,11 @@ namespace xml
             else if (child_name == "preferences")
             {
               preferences_type (preferences, child, state);
+
+              if (preferences.empty())
+              {
+                throw error::empty_preferences (state.position (child));
+              }
             }
             else
             {
@@ -1876,7 +1877,7 @@ namespace xml
 
         if (!preferences.empty() && !module)
         {
-          throw error::preferences_without_modules();
+          throw error::preferences_without_modules (state.position (node));
         }
 
 #define FUNCTION(_content) type::function_type  \
