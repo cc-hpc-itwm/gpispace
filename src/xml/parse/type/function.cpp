@@ -615,7 +615,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
-            , fun.preferences().get_preference_list()
+            , fun.preferences().targets()
             );
 
           add_ports (trans, fun.ports());

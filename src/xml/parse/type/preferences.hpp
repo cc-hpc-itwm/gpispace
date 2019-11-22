@@ -1,5 +1,3 @@
-// dipti.shankar@itwm.fraunhofer.de
-
 #pragma once
 
 #include <fhg/util/xml.fwd.hpp>
@@ -16,26 +14,25 @@ namespace xml
     {
       typedef std::string preference_type;
 
-      struct preferences_type
+      class preferences_type
       {
-      private:
-        std::list<type::preference_type> _list;
+        private:
+          std::list<preference_type> _targets;
 
-      public:
-        preferences_type();
+        public:
+          preferences_type () = default;
 
-        void add_unique_target_in_order
-          (const preference_type& target_name);
-        bool empty() const;
+          //! \note assumes targets is a list of unique names
+          //! \note insertion order reflects preference ordering
+          preferences_type (std::list<preference_type> targets);
 
-        const std::list<type::preference_type>&
-          get_preference_list() const;
+          std::list<preference_type> const& targets() const;
       };
 
       namespace dump
       {
-        void dump ( ::fhg::util::xml::xmlstream & s
-                  , const preferences_type & cs
+        void dump ( ::fhg::util::xml::xmlstream& s
+                  , const preferences_type& cs
                   );
       }
     }

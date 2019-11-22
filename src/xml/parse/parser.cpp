@@ -215,12 +215,12 @@ namespace xml
 
       // ******************************************************************* //
 
-      void preferences_type ( type::preferences_type& preferences
-                            , const xml_node_type* node
-                            , state::type& state
-                            )
+      type::preferences_type preferences_type ( const xml_node_type* node
+                                              , state::type& state
+                                              )
       {
-        std::unordered_map<type::preference_type, bool> _map_unique;
+        std::unordered_set<type::preference_type> unique_targets;
+        std::list<type::preference_type> target_list;
 
         for ( xml_node_type* child (node->first_node())
             ; child
@@ -240,8 +240,7 @@ namespace xml
                                )
                 );
 
-              auto search = _map_unique.find (target_name);
-              if (search != _map_unique.end())
+              if (unique_targets.count (target_name))
               {
                 throw error::duplicate_preference ( target_name
                                                   , state.position (child)
@@ -249,8 +248,8 @@ namespace xml
               }
               else
               {
-                _map_unique[target_name] = true;
-                preferences.add_unique_target_in_order (target_name);
+                unique_targets.emplace (target_name);
+                target_list.push_back (target_name);
               }
             }
             else
@@ -264,6 +263,8 @@ namespace xml
             }
           }
         }
+
+        return target_list;
       }
 
       // ******************************************************************* //
@@ -1857,9 +1858,9 @@ namespace xml
             }
             else if (child_name == "preferences")
             {
-              preferences_type (preferences, child, state);
+              preferences = preferences_type (child, state);
 
-              if (preferences.empty())
+              if (preferences.targets().empty())
               {
                 throw error::empty_preferences (state.position (child));
               }
@@ -1875,7 +1876,7 @@ namespace xml
           }
         }
 
-        if (!preferences.empty() && !module)
+        if (!preferences.targets().empty() && !module)
         {
           throw error::preferences_without_modules (state.position (node));
         }
