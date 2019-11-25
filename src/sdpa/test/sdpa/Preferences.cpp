@@ -185,7 +185,7 @@ namespace
     return activity;
   }
 
-  class fake_drts_worker_verifying_implementation final
+  class fake_drts_worker_verifying_implementation
     : public utils::no_thread::basic_drts_worker
   {
   public:
@@ -249,6 +249,134 @@ namespace
     std::string _expected_preference;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
+
+  class fake_drts_worker_verifying_implementation_and_notifying_registration final
+    : public fake_drts_worker_verifying_implementation
+  {
+  public:
+    fake_drts_worker_verifying_implementation_and_notifying_registration
+        ( sdpa::worker_id_t const& name
+        , utils::agent const& master
+        , sdpa::capabilities_set_t capabilities
+        , fhg::com::Certificates const& certificates
+        , std::string const& expected_preference
+        , std::function<void ()> announce_registration_succeeded
+        )
+      : fake_drts_worker_verifying_implementation
+          (name, master, capabilities, certificates, expected_preference)
+      , _announce_registration_succeeded (announce_registration_succeeded)
+      , _received_tasks (false)
+    {}
+
+    virtual ~fake_drts_worker_verifying_implementation_and_notifying_registration()
+    {
+      BOOST_CHECK (_received_tasks);
+    }
+
+    virtual void handle_worker_registration_response
+      ( fhg::com::p2p::address_t const& source
+      , sdpa::events::worker_registration_response const* response
+      ) override
+    {
+      fake_drts_worker_verifying_implementation::handle_worker_registration_response
+        (source, response);
+
+      _announce_registration_succeeded();
+    }
+
+    virtual void handleSubmitJobEvent
+      (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
+    {
+      fake_drts_worker_verifying_implementation::handleSubmitJobEvent
+        (source, e);
+
+      _received_tasks = true;
+    }
+
+  private:
+    std::function<void ()> _announce_registration_succeeded;
+    bool _received_tasks;
+  };
+
+  we::type::activity_t net_with_n_children_and_preferences
+    (unsigned int n, Preferences const& preferences)
+  {
+    we::type::property::type props;
+    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (1) + "UL");
+
+    std::vector<we::type::transition_t> transitions;
+    for (unsigned int k{0}; k < n; k++)
+    {
+      transitions.emplace_back
+        ( fhg::util::testing::random_string()
+        , we::type::module_call_t ( fhg::util::testing::random_string()
+                                  , fhg::util::testing::random_string()
+                                  , std::unordered_map<std::string, std::string>()
+                                  , std::list<we::type::memory_transfer>()
+                                  , std::list<we::type::memory_transfer>()
+                                  )
+        , boost::none
+        , props
+        , we::priority_type()
+        , preferences
+        );
+    }
+
+    const std::string port_name (fhg::util::testing::random_string());
+    std::vector<we::port_id_type> port_ids_in;
+    for (unsigned int k{0}; k < n; k++)
+    {
+      port_ids_in.emplace_back ( transitions.at (k).add_port
+                                   ( we::type::port_t ( port_name
+                                                      , we::type::PORT_IN
+                                                      , std::string ("string")
+                                                      , we::type::property::type()
+                                                      )
+                                   )
+                                );
+    }
+
+    we::type::net_type net;
+
+    std::vector<we::place_id_type> place_ids_in;
+    for (unsigned int k{0}; k < n; k++)
+    {
+      place_ids_in.emplace_back
+        (net.add_place (place::type ( port_name + std::to_string (k)
+                                    , std::string ("string")
+                                    , boost::none
+                                    )
+                       )
+        );
+    }
+
+    for (unsigned int k{0}; k < n; k++)
+    {
+      net.put_value (place_ids_in.at (k), fhg::util::testing::random_string_without ("\\\""));
+    }
+
+    std::vector<we::transition_id_type> transition_ids;
+    for (unsigned int k{0}; k < n; k++)
+    {
+      transition_ids.emplace_back (net.add_transition (transitions.at (k)));
+      net.add_connection ( we::edge::PT
+                          , transition_ids.at (k)
+                          , place_ids_in.at (k)
+                          , port_ids_in.at (k)
+                          , we::type::property::type()
+                          );
+    }
+
+    return we::type::activity_t
+      ( we::type::transition_t ( fhg::util::testing::random_string()
+                               , net
+                               , boost::none
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , boost::none
+      );
+  }
 }
 
 BOOST_DATA_TEST_CASE
@@ -317,6 +445,76 @@ BOOST_DATA_TEST_CASE
 
   sdpa::job_id_t const job
     (client.submit_job (activity_with_preferences (preferences)));
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state_and_cleanup (job), sdpa::status::FINISHED);
+}
+
+BOOST_DATA_TEST_CASE
+  ( variable_number_of_workers_and_tasks_with_preferences
+  , certificates_data
+  , certificates
+  )
+{
+  unsigned int const max_num_workers (10);
+  unsigned int const min_num_workers (2);
+  unsigned int const min_num_tasks (100);
+  unsigned int const num_preferences (3);
+
+  fhg::util::testing::unique_random<std::string> generate_preference;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> generate_worker_id;
+
+  Preferences preferences;
+
+  utils::orchestrator const orchestrator (certificates);
+  utils::agent const agent (orchestrator, certificates);
+
+  std::list<std::unique_ptr<fake_drts_worker_verifying_implementation_and_notifying_registration>>
+     workers;
+
+  for (unsigned int i {0}; i < num_preferences; ++i)
+  {
+    auto const preference (generate_preference());
+    preferences.emplace_back (preference);
+    fhg::util::thread::event<> worker_registered;
+
+    unsigned int const num_workers
+      ( (fhg::util::testing::random_integral<std::size_t>()
+        % (max_num_workers - min_num_workers)
+        )
+      + min_num_workers
+      );
+
+    for (unsigned int k {0}; k < num_workers; ++k)
+    {
+      auto const name (generate_worker_id());
+
+      workers.emplace_back
+        (fhg::util::cxx14::make_unique<fake_drts_worker_verifying_implementation_and_notifying_registration>
+           ( name
+           , agent
+           , sdpa::capabilities_set_t {sdpa::Capability (preference, name)}
+           , certificates
+           , preference
+           , [&worker_registered]() { worker_registered.notify(); }
+           )
+        );
+    }
+
+    worker_registered.wait();
+  }
+
+  utils::client client (orchestrator, certificates);
+
+  unsigned int const num_tasks
+    ( fhg::util::testing::random_integral<unsigned int>() % 100
+    + min_num_tasks
+    );
+
+  sdpa::job_id_t const job
+    (client.submit_job
+       (net_with_n_children_and_preferences (num_tasks, preferences))
+    );
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state_and_cleanup (job), sdpa::status::FINISHED);
