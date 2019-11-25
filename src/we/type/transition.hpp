@@ -73,7 +73,15 @@ namespace we
         , _priority (priority)
       {
         //! \todo check if preferences enabled only for multi-modules
-        fhg_assert (data_.which() == typeid (module_call_t));
+        if (preferences.size() && data_.type() != typeid (module_call_t))
+        {
+          throw std::runtime_error
+            ( ( boost::format ("Error when creating transition '%1%'"
+                               " preferences defined without modules"
+                              ) % name
+              ).str()
+            );
+        }
       }
 
       template <typename Type>
