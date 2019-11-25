@@ -1,3 +1,2 @@
 ctest --output-on-failure --timeout 180 --schedule-random \
-  -L "requires_vmem" \
-  -j "${gspc_parallel_test_and_build_jobs}"
+  -L "requires_vmem"
