@@ -4,4 +4,4 @@ mkdir -p "${shared_directory_for_tests}"
 export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
 hostname > "${GSPC_NODEFILE_FOR_TESTS}"
 
-trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
+trap "killall -qs SIGKILL gpi-space gspc-rifd orchestrator agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
