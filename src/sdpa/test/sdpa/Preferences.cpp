@@ -153,8 +153,11 @@ namespace
   };
 
   we::type::activity_t activity_with_preferences
-    (std::list<std::string> const& preferences)
+    (std::list<std::string> const& preferences, unsigned int n = 1)
   {
+    we::type::property::type props;
+    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
+
     we::type::transition_t transition
       ( fhg::util::testing::random_string()
       , we::type::module_call_t ( fhg::util::testing::random_string()
@@ -164,7 +167,7 @@ namespace
                                 , std::list<we::type::memory_transfer>()
                                 )
       , boost::none
-      , we::type::property::type()
+      , props
       , we::priority_type()
       , preferences
       );
@@ -403,6 +406,39 @@ BOOST_DATA_TEST_CASE
     ( client.wait_for_terminal_state_and_cleanup (job)
     , sdpa::status::FINISHED
     );
+}
+
+BOOST_DATA_TEST_CASE
+  ( coallocation_for_jobs_with_multiple_implementations_not_allowed
+  , certificates_data
+  , certificates
+  )
+{
+  fhg::util::testing::unique_random<std::string> preference_pool;
+
+  Preferences const preferences
+    {preference_pool(), preference_pool(), preference_pool()};
+
+  utils::orchestrator const orchestrator (certificates);
+  utils::agent const agent (orchestrator, certificates);
+
+  utils::client client (orchestrator, certificates);
+
+  sdpa::job_id_t const job
+     (client.submit_job (activity_with_preferences (preferences, 2)));
+
+  sdpa::client::job_info_t info;
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job, info), sdpa::status::FAILED);
+
+  std::string const expected_error
+    ("Not allowed to use coallocation for activities with multiple module implementations!");
+
+  BOOST_REQUIRE
+    (info.error_message.find (expected_error) != std::string::npos);
+
+  client.delete_job (job);
 }
 
 BOOST_DATA_TEST_CASE

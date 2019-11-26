@@ -628,6 +628,17 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
+  auto const num_required_workers (activity.get_schedule_data().num_worker());
+
+  if ( num_required_workers
+     && *num_required_workers > 1
+     && !activity.preferences().empty()
+     )
+  {
+    throw std::runtime_error
+      ("Not allowed to use coallocation for activities with multiple module implementations!");
+  }
+
   addJob (job_id, activity, job_source_wfe(), job_handler_worker());
 
   _scheduler.enqueueJob (job_id);
