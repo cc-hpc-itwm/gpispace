@@ -58,20 +58,23 @@ BOOST_DATA_TEST_CASE ( we_transition_check_preferences_without_modules
 {
   const std::string transition_name ("transition_with_prefs");
 
+  const std::string outer ( "Failed to create transition '"
+                            + transition_name + "'"
+                          );
+  const std::string inner ("preferences defined without modules");
+
   fhg::util::testing::require_exception
     ( [&]
       {
         create_transition_with_preferences ( transition_name
                                            , type_name);
       }
-      , std::runtime_error
-        ( ( boost::format ("Error when creating transition '%1%'"
-                           " preferences defined without modules"
-                          ) % transition_name
-          ).str()
-        )
+      , fhg::util::testing::make_nested ( std::runtime_error (outer)
+                                        , std::runtime_error (inner)
+                                        )
     );
 }
+
 
 namespace we
 {
