@@ -240,7 +240,7 @@ namespace xml
                                )
                 );
 
-              if (unique_targets.count (target_name))
+              if (!unique_targets.emplace (target_name).second)
               {
                 throw error::duplicate_preference ( target_name
                                                   , state.position (child)
@@ -248,7 +248,6 @@ namespace xml
               }
               else
               {
-                unique_targets.emplace (target_name);
                 target_list.push_back (target_name);
               }
             }
