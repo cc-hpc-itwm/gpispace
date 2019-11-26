@@ -7,6 +7,8 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
 
+#include <we/test/operator_equal.hpp>
+
 namespace {
   std::vector<std::string> const non_preference_types {"net", "expression"};
 
@@ -77,5 +79,27 @@ BOOST_DATA_TEST_CASE ( we_transition_check_preferences_without_modules
                           ) % test_name
           ).str()
         )
+    );
+}
+
+namespace we
+{
+  namespace type
+  {
+    std::ostream& operator<< (std::ostream& os, const transition_t& x)
+    {
+      return os << x.name();
+    }
+  }
+}
+
+BOOST_AUTO_TEST_CASE (we_transition_check_for_serialized_preferences)
+{
+  auto const transition_with_preferences_and_modules =
+    create_transition_with_preferences ("module");
+
+  FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID
+    ( {transition_with_preferences_and_modules}
+    , we::type::transition_t
     );
 }
