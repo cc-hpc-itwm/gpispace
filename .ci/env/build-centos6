@@ -5,7 +5,7 @@ external=/home/projects/sdpa/external_software
 export BOOST_ROOT=${external}/boost/1.61
 path chrpath/0.16/bin
 path cmake/3.9.1/bin
-path gcc/4.9.2/bin
+path gcc/4.9.4/bin
 path qt/5.9.1/bin
 path asciidoc/8.6.9/bin
 path source-highlight/3.1.7/bin
@@ -18,8 +18,8 @@ pkg_config_path openssl/1.0.2g+fpic/lib/pkgconfig
 export CC="${external}/ccache/3.2.4/lib/gcc"
 export CXX="${external}/ccache/3.2.4/lib/g++"
 export CCACHE_DIR="/tmp/gitlab-ci/.ccache"
-export CCACHE_PATH=${external}/gcc/4.9.2/bin
-ld_library_path gcc/4.9.2/lib64
+export CCACHE_PATH=${external}/gcc/4.9.4/bin
+ld_library_path gcc/4.9.4/lib64
 
 gspc_testing_rif_strategy=ssh
 gspc_parallel_test_and_build_jobs=$(nproc)
