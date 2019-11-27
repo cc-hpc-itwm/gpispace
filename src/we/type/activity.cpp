@@ -277,5 +277,10 @@ namespace we
 
         return requirements;
       }
+
+      std::list<we::type::preference_t> const activity_t::preferences() const
+      {
+        return _transition.preferences();
+      }
     }
 }

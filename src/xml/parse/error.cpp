@@ -570,6 +570,34 @@ namespace xml
                   % place.position_of_definition()
                   )
       {}
+
+      duplicate_preference::duplicate_preference
+        (const std::string& target, const util::position_type& position)
+          : generic ( boost::format ( "duplicate target type '%1%' at %2%"
+                                      ", already in the preferences"
+                                    )
+                    % target
+                    % position
+                    )
+      {}
+
+      empty_preferences::empty_preferences
+        (const util::position_type& position)
+          : generic ( boost::format ( "preferences enabled, but no targets"
+                                      " specified at %1%"
+                                    )
+                    % position
+                    )
+      {}
+
+      preferences_without_modules::preferences_without_modules
+        (const util::position_type& position)
+          : generic ( boost::format ( "preferences enabled, but"
+                                      " no modules defined in %1%"
+                                    )
+                    % position
+                    )
+      {}
     }
   }
 }

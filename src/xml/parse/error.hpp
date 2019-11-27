@@ -299,6 +299,26 @@ namespace xml
 
       // ******************************************************************* //
 
+      class empty_preferences : public generic
+      {
+      public:
+        empty_preferences (const util::position_type&);
+      };
+
+      class duplicate_preference : public generic
+      {
+      public:
+        duplicate_preference (const std::string&, const util::position_type&);
+      };
+
+      class preferences_without_modules : public generic
+      {
+      public:
+        preferences_without_modules (const util::position_type&);
+      };
+
+      // ******************************************************************* //
+
       class port_with_unknown_type : public generic
       {
       public:

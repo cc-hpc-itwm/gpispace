@@ -13,6 +13,7 @@
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.fwd.hpp>
 #include <xml/parse/type/transition.fwd.hpp>
+#include <xml/parse/type/preferences.hpp>
 #include <xml/parse/util/mk_fstream.hpp>
 #include <xml/parse/util/unique.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
@@ -58,6 +59,7 @@ namespace xml
                       , const structs_type& structs
                       , const conditions_type&
                       , const requirements_type& requirements
+                      , const preferences_type& preferences
                       , const content_type& content
                       , const we::type::property::type& properties
                       );
@@ -108,6 +110,10 @@ namespace xml
         // ***************************************************************** //
 
         const conditions_type& conditions() const;
+
+        // ***************************************************************** //
+
+        const preferences_type& preferences() const;
 
         // ***************************************************************** //
 
@@ -169,6 +175,7 @@ namespace xml
 
       private:
         conditions_type _conditions;
+        preferences_type _preferences;
 
       public:
         requirements_type requirements;

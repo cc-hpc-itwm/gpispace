@@ -25,6 +25,7 @@ namespace we
       , port_id_counter_ (0)
       , prop_()
       , _requirements()
+      , _preferences()
       , _priority()
     {}
 
@@ -63,6 +64,11 @@ namespace we
     std::list<we::type::requirement_t> const& transition_t::requirements() const
     {
       return _requirements;
+    }
+
+    std::list<we::type::preference_t> const& transition_t::preferences() const
+    {
+      return _preferences;
     }
 
     we::port_id_type transition_t::add_port (port_t const& port)
