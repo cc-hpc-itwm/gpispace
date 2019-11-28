@@ -1,5 +1,6 @@
 #pragma once
 
+#include <sdpa/discovery_info.hpp>
 #include <sdpa/events/JobEvent.hpp>
 
 namespace sdpa

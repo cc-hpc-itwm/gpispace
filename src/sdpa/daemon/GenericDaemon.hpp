@@ -20,6 +20,7 @@
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/job_requirements.hpp>
+#include <sdpa/master_network_info.hpp>
 #include <sdpa/types.hpp>
 
 #include <gpi-space/pc/client/api.hpp>

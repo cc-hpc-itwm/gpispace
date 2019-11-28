@@ -7,7 +7,7 @@
 #include <we/type/place.hpp>
 #include <we/type/net.hpp>
 
-#include <sdpa/types.hpp>
+#include <sdpa/discovery_info.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 

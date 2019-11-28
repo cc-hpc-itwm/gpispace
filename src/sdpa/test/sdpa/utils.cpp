@@ -1,6 +1,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/master_network_info.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
