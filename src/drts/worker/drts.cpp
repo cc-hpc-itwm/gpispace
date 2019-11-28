@@ -3,25 +3,31 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
-#include <util-generic/hostname.hpp>
-
-#include <fhg/util/macros.hpp>
-#include <util-generic/nest_exceptions.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
-
 #include <sdpa/capability.hpp>
+#include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/JobFailedAckEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
+#include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
+#include <sdpa/events/worker_registration_response.hpp>
 
-#include <we/type/activity.hpp>
 #include <we/loader/module_call.hpp>
+#include <we/type/activity.hpp>
+
+#include <fhg/util/macros.hpp>
+#include <util-generic/hostname.hpp>
+#include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_exception.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>

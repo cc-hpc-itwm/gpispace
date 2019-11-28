@@ -1,5 +1,7 @@
 #include <sdpa/test/sdpa/utils.hpp>
 
+#include <sdpa/events/ErrorEvent.hpp>
+
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/printer/generic.hpp>

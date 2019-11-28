@@ -2,6 +2,7 @@
 
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
 
 #include <util-generic/print_exception.hpp>
 
