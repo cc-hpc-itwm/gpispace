@@ -1,14 +1,22 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/types.hpp>
+
+#include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random/integral.hpp>
-#include <util-generic/testing/random/string.hpp>
 
-#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <functional>
 #include <random>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace
 {

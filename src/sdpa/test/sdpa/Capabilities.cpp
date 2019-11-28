@@ -1,17 +1,25 @@
-#include <utils.hpp>
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
+
+#include <test/certificates_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/random/string.hpp>
 
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
-
+#include <boost/range/adaptor/map.hpp>
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
 
+#include <algorithm>
 #include <condition_variable>
-#include <map>
+#include <list>
 #include <mutex>
+#include <string>
+#include <utility>
 
 namespace
 {

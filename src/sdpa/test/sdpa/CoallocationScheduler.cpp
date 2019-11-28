@@ -1,20 +1,33 @@
-#include <utils.hpp>
-#include <boost/test/unit_test.hpp>
-
+#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
+
+#include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
+
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/set.hpp>
-#include <util-generic/testing/printer/generic.hpp>
-#include <util-generic/testing/random/string.hpp>
-#include <util-generic/testing/random/integral.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/optional.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <algorithm>
+#include <chrono>
 #include <functional>
-#include <iostream>
+#include <map>
+#include <numeric>
 #include <random>
+#include <set>
+#include <stdexcept>
+#include <string>
 #include <thread>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace
 {
