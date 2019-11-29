@@ -1,20 +1,33 @@
-#include <utils.hpp>
-#include <boost/test/unit_test.hpp>
-
+#include <sdpa/daemon/WorkerManager.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
+
+#include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
+
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/set.hpp>
-#include <util-generic/testing/printer/generic.hpp>
-#include <util-generic/testing/random/string.hpp>
-#include <util-generic/testing/random/integral.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
+#include <boost/optional.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <algorithm>
+#include <chrono>
 #include <functional>
-#include <iostream>
+#include <map>
+#include <numeric>
 #include <random>
+#include <set>
+#include <stdexcept>
+#include <string>
 #include <thread>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 namespace
 {
@@ -684,7 +697,7 @@ struct fixture_minimal_cost_assignment
   }
 
   void check_scheduler_finds_minimal_cost_assignement ( const std::map<std::string, double>& map_host_transfer_cost
-                                                      , const sdpa::mmap_match_deg_worker_id_t& mmap_match_deg_worker
+                                                      , const sdpa::daemon::mmap_match_deg_worker_id_t& mmap_match_deg_worker
                                                       , const size_t n_req_workers
                                                       , const double min_total_cost
                                                       )
@@ -717,7 +730,7 @@ struct fixture_minimal_cost_assignment
     std::transform ( mmap_match_deg_worker.begin()
                    , mmap_match_deg_worker.end()
                    , std::inserter (map_worker_cost, map_worker_cost.begin())
-                   , [&map_host_transfer_cost] (const sdpa::mmap_match_deg_worker_id_t::value_type p)
+                   , [&map_host_transfer_cost] (const sdpa::daemon::mmap_match_deg_worker_id_t::value_type p)
                      {return std::make_pair ( p.second.worker_id()
                                             , map_host_transfer_cost.at(p.second.worker_host())
                                             );
@@ -757,7 +770,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on the "node_0", the next 4 on the "node_1" and so on
-  const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
+  const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
     { {20, {"worker_20", "node_5", random_ulong(), 0.0}}
     , {19, {"worker_19", "node_5", random_ulong(), 0.0}}
     , {18, {"worker_18", "node_5", random_ulong(), 0.0}}
@@ -806,7 +819,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_different_matching_degs_
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
-  const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
+  const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
     { {20, {"worker_20", "node_5", random_ulong(), 0.0}}
     , {19, {"worker_19", "node_5", random_ulong(), 0.0}}
     , {18, {"worker_18", "node_5", random_ulong(), 0.0}}
@@ -855,7 +868,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_diff
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
-  const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
+  const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
     { {1, {"worker_20", "node_5", random_ulong(), 0.0}}
     , {1, {"worker_19", "node_5", random_ulong(), 0.0}}
     , {1, {"worker_18", "node_5", random_ulong(), 0.0}}
@@ -904,7 +917,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_equal_matching_degs_equa
 
   // assume that we have 20 workers, i.e. 4 workers per host
   // first 4 on "node_0", the next 4 on the "node_1" and so on
-  const sdpa::mmap_match_deg_worker_id_t mmap_match_deg_worker
+  const sdpa::daemon::mmap_match_deg_worker_id_t mmap_match_deg_worker
     { {1, {"worker_20", "node_5", random_ulong(), 0.0}}
     , {1, {"worker_19", "node_5", random_ulong(), 0.0}}
     , {1, {"worker_18", "node_5", random_ulong(), 0.0}}

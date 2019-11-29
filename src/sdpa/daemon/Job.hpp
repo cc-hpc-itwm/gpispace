@@ -1,8 +1,9 @@
 #pragma once
 
-#include <sdpa/job_states.hpp>
-#include <sdpa/types.hpp>
 #include <sdpa/job_requirements.hpp>
+#include <sdpa/job_states.hpp>
+#include <sdpa/master_network_info.hpp>
+#include <sdpa/types.hpp>
 
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>

@@ -6,6 +6,8 @@
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 
+#include <util-generic/serialization/exception.hpp>
+
 #include <boost/optional.hpp>
 
 #include <exception>

@@ -3,6 +3,10 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <functional>
+#include <list>
+#include <string>
+
 const std::function<double (std::string const&)>
   null_transfer_cost = [](const std::string&) {return 0.0;};
 

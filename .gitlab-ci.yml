@@ -24,6 +24,7 @@ build (centos 6.5):
 tests (centos 5.7):
   stage: test
   script:
+    - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-5.7
@@ -31,6 +32,7 @@ tests (centos 5.7):
 tests (centos 6.5):
   stage: test
   script:
+    - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-6.5
@@ -41,6 +43,7 @@ tests (centos 6.5):
 virtual memory tests (centos 6.5):
   stage: test
   script:
+    - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/virtual_memory_test"
   tags:
     - centos-6.5
@@ -48,6 +51,7 @@ virtual memory tests (centos 6.5):
 performance tests (centos 5.7):
   stage: test
   script:
+    - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/performance_test"
   allow_failure: true
   tags:
@@ -56,6 +60,7 @@ performance tests (centos 5.7):
 performance tests (centos 6.5):
   stage: test
   script:
+    - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/performance_test"
   allow_failure: true
   tags:

@@ -1,13 +1,20 @@
-#include <utils.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
 
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
-#include <sdpa/events/JobFinishedAckEvent.hpp>
+#include <test/certificates_data.hpp>
 
+#include <fhg/util/thread/event.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <chrono>
+#include <string>
+#include <thread>
 
 BOOST_DATA_TEST_CASE (coallocation_workflow, certificates_data, certificates)
 {
