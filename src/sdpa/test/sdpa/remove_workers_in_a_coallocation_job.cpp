@@ -1,9 +1,17 @@
-#include <utils.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
 
+#include <test/certificates_data.hpp>
+
+#include <fhg/util/thread/event.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 BOOST_DATA_TEST_CASE
   ( remove_workers_in_a_coallocation_job_and_add_them_again

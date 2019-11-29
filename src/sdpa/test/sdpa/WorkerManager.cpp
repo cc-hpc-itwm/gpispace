@@ -1,14 +1,22 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/types.hpp>
+
+#include <we/type/requirement.hpp>
+#include <we/type/schedule_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random/integral.hpp>
-#include <util-generic/testing/random/string.hpp>
 
-#include <boost/optional/optional_io.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <functional>
 #include <random>
+#include <set>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 namespace
 {
@@ -90,12 +98,11 @@ BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
                                     }
                                    );
 
-  sdpa::mmap_match_deg_worker_id_t
-    mmap_match_deg_worker_id
-      (worker_manager.getMatchingDegreesAndWorkers_TESTING_ONLY (job_req));
+  auto const mmap_match_deg_worker_id
+    (worker_manager.getMatchingDegreesAndWorkers_TESTING_ONLY (job_req));
 
   BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
-  sdpa::mmap_match_deg_worker_id_t::iterator it (mmap_match_deg_worker_id.begin());
+  auto it (mmap_match_deg_worker_id.begin());
   BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[2]);
   BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[3]);
   BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[0]);

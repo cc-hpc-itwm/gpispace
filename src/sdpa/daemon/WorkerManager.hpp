@@ -21,6 +21,34 @@ namespace sdpa
 {
   namespace daemon
   {
+    class worker_id_host_info_t
+    {
+    public:
+      worker_id_host_info_t ( const worker_id_t& worker_id
+                            , const std::string& worker_host
+                            , unsigned long shared_memory_size
+                            , const double& last_time_idle
+                            )
+        : worker_id_ (worker_id)
+        , worker_host_ (worker_host)
+        , shared_memory_size_ (shared_memory_size)
+        , _last_time_idle (last_time_idle)
+      {}
+
+      const worker_id_t& worker_id() const {return worker_id_;}
+      const std::string& worker_host() const {return worker_host_;}
+      double last_time_idle() const {return _last_time_idle;}
+      unsigned long shared_memory_size() const {return shared_memory_size_;}
+
+    private:
+      worker_id_t worker_id_;
+      std::string worker_host_;
+      unsigned long shared_memory_size_;
+      double _last_time_idle;
+    };
+    using mmap_match_deg_worker_id_t
+      = std::multimap<double, worker_id_host_info_t, std::greater<double>>;
+
     class WorkerManager : boost::noncopyable
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;

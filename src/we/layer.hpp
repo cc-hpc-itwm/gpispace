@@ -12,6 +12,7 @@
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
 
+#include <sdpa/discovery_info.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/bimap/bimap.hpp>

@@ -1,11 +1,9 @@
-#include <sdpa/daemon/Job.hpp>
-#include <sdpa/events/SubscribeAckEvent.hpp>
-
 #include <sdpa/daemon/GenericDaemon.hpp>
+
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
-#include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -13,25 +11,28 @@
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
+#include <sdpa/events/SubscribeAckEvent.hpp>
+#include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/put_token.hpp>
+#include <sdpa/events/workflow_response.hpp>
 #include <sdpa/id_generator.hpp>
 
 #include <fhg/util/boost/optional.hpp>
+#include <fhg/util/macros.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/fallthrough.hpp>
 #include <util-generic/hostname.hpp>
-#include <fhg/util/macros.hpp>
 #include <util-generic/join.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/tokenizer.hpp>
 
+#include <algorithm>
+#include <chrono>
 #include <functional>
 #include <sstream>
-#include <algorithm>
 #include <thread>
-#include <chrono>
 
 namespace sdpa
 {

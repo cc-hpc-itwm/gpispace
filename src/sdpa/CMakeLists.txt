@@ -7,6 +7,7 @@ ADD_LIBRARY(sdpa
   daemon/scheduler/CoallocationScheduler.cpp
   daemon/Worker.cpp
   daemon/WorkerManager.cpp
+  events/Codec.cpp
 )
 
 target_link_libraries (sdpa

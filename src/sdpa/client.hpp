@@ -2,19 +2,22 @@
 
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/types.hpp>
+
 #include <we/layer.hpp>
 #include <we/type/activity.hpp>
-#include <we/type/net.hpp>
-
-#include <fhg/util/thread/queue.hpp>
+#include <we/type/value.hpp>
 
 #include <fhgcom/peer.hpp>
 
-#include <we/type/value.hpp>
+#include <fhg/util/thread/queue.hpp>
 
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
+#include <boost/system/error_code.hpp>
 
+#include <memory>
 #include <mutex>
+#include <string>
 
 namespace sdpa
 {

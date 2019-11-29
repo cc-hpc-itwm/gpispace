@@ -7,19 +7,28 @@
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
-#include <boost/asio/ssl/context.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/system/error_code.hpp>
-#include <boost/variant.hpp>
+#include <boost/variant/variant.hpp>
 
+#include <cstddef>
 #include <functional>
-#include <iomanip>
-#include <ios>
 #include <list>
-#include <stdint.h>
-#include <string>
+#include <memory>
+#include <stdexcept>
 #include <vector>
+
+namespace boost
+{
+  namespace asio
+  {
+    namespace ssl
+    {
+      class context;
+    }
+  }
+}
 
 namespace fhg
 {

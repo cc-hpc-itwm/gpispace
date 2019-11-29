@@ -1,9 +1,9 @@
 #pragma once
 
 #include <sdpa/capability.hpp>
-#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
-
+#include <sdpa/daemon/NotificationEvent.hpp>
+#include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
@@ -13,41 +13,37 @@
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
+#include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
-#include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
-
+#include <sdpa/events/worker_registration_response.hpp>
+#include <sdpa/job_requirements.hpp>
+#include <sdpa/master_network_info.hpp>
 #include <sdpa/types.hpp>
+
+#include <gpi-space/pc/client/api.hpp>
+
+#include <logging/stream_emitter.hpp>
 
 #include <we/layer.hpp>
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
-#include <boost/bimap.hpp>
-#include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/optional.hpp>
-#include <boost/utility.hpp>
-#include <boost/thread/scoped_thread.hpp>
-#include <boost/shared_ptr.hpp>
-
-#include <sdpa/daemon/NotificationEvent.hpp>
-#include <sdpa/events/SDPAEvent.hpp>
-#include <sdpa/job_requirements.hpp>
-#include <sdpa/types.hpp>
-#include <sdpa/capability.hpp>
-
-#include <gpi-space/pc/client/api.hpp>
-
+#include <fhg/util/thread/set.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hash/std/pair.hpp>
-#include <fhg/util/thread/set.hpp>
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <logging/stream_emitter.hpp>
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
+#include <boost/optional.hpp>
+#include <boost/shared_ptr.hpp>
+#include <boost/thread/scoped_thread.hpp>
+#include <boost/utility.hpp>
 
 #include <chrono>
 #include <condition_variable>
