@@ -512,7 +512,6 @@ BOOST_DATA_TEST_CASE
   {
     auto const preference (generate_preference());
     preferences.emplace_back (preference);
-    fhg::util::thread::event<> worker_registered;
 
     unsigned int const num_workers
       ( (fhg::util::testing::random_integral<std::size_t>()
@@ -525,6 +524,7 @@ BOOST_DATA_TEST_CASE
     {
       auto const name (generate_worker_id());
 
+      fhg::util::thread::event<> worker_registered;
       workers.emplace_back
         (fhg::util::cxx14::make_unique<fake_drts_worker_verifying_implementation_and_notifying_registration>
            ( name
@@ -535,9 +535,8 @@ BOOST_DATA_TEST_CASE
            , [&worker_registered]() { worker_registered.notify(); }
            )
         );
+      worker_registered.wait();
     }
-
-    worker_registered.wait();
   }
 
   utils::client client (orchestrator, certificates);
