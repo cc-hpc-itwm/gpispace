@@ -50,6 +50,8 @@ class TransitionVisitor: public boost::static_visitor<void> {
 
     void operator()(const we::type::module_call_t &) { return; }
 
+    void operator()(const we::type::multi_module_call_t &) { return; }
+
     void operator()(const we::type::net_type &net) {
         typedef we::type::transition_t transition_t;
 

@@ -27,11 +27,15 @@ namespace we
   namespace type
   {
     using preference_t = std::string;
+    typedef std::unordered_map < preference_t
+                               , module_call_t
+                               > multi_module_call_t;
 
     struct transition_t
     {
     private:
       typedef boost::variant< module_call_t
+                            , multi_module_call_t
                             , expression_t
                             , boost::recursive_wrapper<we::type::net_type>
                             > data_type;
@@ -73,10 +77,10 @@ namespace we
           ,  _preferences  (preferences)
           ,  _priority  (priority)
       {
-        //! \todo check if preferences enabled only for multi-modules
-        if (preferences.size() && data_.type() != typeid (module_call_t))
+        if (preferences.size() && data_.type() != typeid (multi_module_call_t))
         {
-          throw std::runtime_error ("preferences defined without modules");
+          throw std::runtime_error
+            ("preferences defined without multiple modules with target");
         }
       }
       catch (...)
