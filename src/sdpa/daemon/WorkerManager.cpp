@@ -12,16 +12,49 @@ namespace sdpa
   {
     namespace
     {
-      typedef std::tuple< double
-                        , double
-                        , unsigned long
-                        , double
-                        , worker_id_t
-                        , boost::optional<std::string>
-                        > cost_deg_wid_t;
+      struct cost_and_matching_info_t
+      {
+        cost_and_matching_info_t
+            ( double cost
+            , double matching_degree
+            , unsigned long shared_memory_size
+            , double last_time_idle
+            , worker_id_t const& worker_id
+            , boost::optional<std::string>const& implementation
+            )
+          : _cost (cost)
+          , _matching_degree (matching_degree)
+          , _shared_memory_size (shared_memory_size)
+          , _last_time_idle (last_time_idle)
+          , _worker_id (worker_id)
+          , _implementation (implementation)
+        {}
 
-      typedef std::priority_queue < cost_deg_wid_t
-                                  , std::vector<cost_deg_wid_t>
+        double _cost;
+        double _matching_degree;
+        unsigned long _shared_memory_size;
+        double _last_time_idle;
+        worker_id_t _worker_id;
+        boost::optional<std::string> _implementation;
+      };
+
+      class Compare
+       {
+       public:
+         bool operator() (cost_and_matching_info_t const& l, cost_and_matching_info_t const& r)
+         {
+           return std::tie ( l._cost, l._matching_degree
+                           , l._shared_memory_size, l._last_time_idle
+                           )
+             < std::tie ( r._cost, r._matching_degree
+                        , l._shared_memory_size,  r._last_time_idle
+                        );
+         }
+       };
+
+      typedef std::priority_queue < cost_and_matching_info_t
+                                  , std::vector<cost_and_matching_info_t>
+                                  , Compare
                                   > base_priority_queue_t;
 
       class bounded_priority_queue_t : private base_priority_queue_t
@@ -40,7 +73,7 @@ namespace sdpa
             return;
           }
 
-          cost_deg_wid_t const next_tuple (std::forward<Args> (args)...);
+          cost_and_matching_info_t const next_tuple (std::forward<Args> (args)...);
 
           if (comp (next_tuple, top()))
           {
@@ -59,11 +92,11 @@ namespace sdpa
                          , std::inserter ( workers_and_implementations
                                          , workers_and_implementations.begin()
                                          )
-                         , [] (const cost_deg_wid_t& cost_deg_wid)
+                         , [] (const cost_and_matching_info_t& cost_and_matching_info)
                            {
                              return Worker_and_implementation
-                               ( std::get<4> (cost_deg_wid)
-                               , std::get<5> (cost_deg_wid)
+                               ( cost_and_matching_info._worker_id
+                               , cost_and_matching_info._implementation
                                );
                            }
                          );
