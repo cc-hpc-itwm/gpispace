@@ -23,6 +23,7 @@ namespace xml
         ( const util::position_type& pod
         , const std::string& name
         , const std::string& function
+        , const boost::optional<std::string>& target
         , const boost::optional<std::string>& port_return
         , const std::list<std::string>& port_arg
         , boost::optional<std::string> memory_buffer_return
@@ -37,6 +38,7 @@ namespace xml
         : with_position_of_definition (pod)
         , _name (name)
         , _function (function)
+        , _target (target)
         , _port_return (port_return)
         , _port_arg (port_arg)
         , _memory_buffer_return (memory_buffer_return)
@@ -49,6 +51,13 @@ namespace xml
         , _pass_context (pass_context)
       {
         fhg_assert (!(_port_return && _memory_buffer_return));
+
+        //! \note enable unique module names with target
+        //! \note to ensure unique namespace per-target-implemetation
+        if (_target)
+        {
+          _name = _name + "_" + *_target;
+        }
       }
 
       const std::string& module_type::name() const
@@ -100,6 +109,10 @@ namespace xml
       bool module_type::pass_context () const
       {
         return _pass_context ? *_pass_context : false;
+      }
+      const boost::optional<std::string>& module_type::target() const
+      {
+        return _target;
       }
 
       bool module_type::operator == (const module_type& other) const

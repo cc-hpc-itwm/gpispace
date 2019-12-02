@@ -1421,6 +1421,8 @@ namespace xml
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
         const util::position_type pod (state.position (node));
+        const boost::optional<std::string> target
+          (optional (node, "target"));
         const std::tuple
           < std::string
           , boost::optional<std::string>
@@ -1498,6 +1500,7 @@ namespace xml
           ( pod
           , name
           , function
+          , target
           , port_return
           , port_arg
           , memory_buffer_return
