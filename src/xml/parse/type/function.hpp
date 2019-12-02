@@ -6,6 +6,7 @@
 #include <xml/parse/type/memory_buffer.hpp>
 #include <xml/parse/type/memory_transfer.hpp>
 #include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/multi_mod.hpp>
 #include <xml/parse/type/net.fwd.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/place_map.hpp>
@@ -44,6 +45,7 @@ namespace xml
         typedef boost::variant < expression_type
                                , module_type
                                , boost::recursive_wrapper<net_type>
+                               , multi_module_type
                                > content_type;
 
         // ***************************************************************** //

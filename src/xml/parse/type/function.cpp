@@ -615,7 +615,6 @@ namespace xml
             , condition()
             , _properties
             , _priority
-            , fun.preferences().targets()
             );
 
           add_ports (trans, fun.ports());
@@ -652,6 +651,69 @@ namespace xml
             );
 
           add_ports (trans, fun.ports(), pid_of_place, net);
+          add_requirements (trans);
+
+          return trans;
+        }
+
+        we_transition_type operator () (const multi_module_type& multi_mod) const
+        {
+          we::type::multi_module_call_t multi_modules;
+
+          for ( auto const& mod_locator : multi_mod.modules())
+          {
+            const module_type &mod = mod_locator.second;
+
+            std::unordered_map<std::string, std::string> memory_buffers;
+
+            for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+            {
+              memory_buffer_type const& memory_buffer
+                (*fun.memory_buffers().get (memory_buffer_name));
+
+              memory_buffers.emplace ( memory_buffer.name()
+                  , memory_buffer.size()
+                  );
+            }
+
+            std::list<we::type::memory_transfer> memory_gets;
+            std::list<we::type::memory_transfer> memory_puts;
+
+            for (memory_get const& mg : fun.memory_gets())
+            {
+              memory_gets.emplace_back (mg.global(), mg.local(), boost::none);
+            }
+            for (memory_put const& mp : fun.memory_puts())
+            {
+              memory_puts.emplace_back
+                (mp.global(), mp.local(), mp.not_modified_in_module_call());
+            }
+            for (memory_getput const& mgp : fun.memory_getputs())
+            {
+              memory_gets.emplace_back (mgp.global(), mgp.local(), boost::none);
+              memory_puts.emplace_back
+                (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
+            }
+
+            const we_module_type& we_mod = we_module_type ( mod.name()
+                                                          , mod.function()
+                                                          , std::move (memory_buffers)
+                                                          , std::move (memory_gets)
+                                                          , std::move (memory_puts)
+                                                          );
+            multi_modules[mod_locator.first] = we_mod;
+          }
+
+          we_transition_type trans
+            ( name()
+            , multi_modules
+            , condition()
+            , _properties
+            , _priority
+            , fun.preferences().targets()
+            );
+
+          add_ports (trans, fun.ports());
           add_requirements (trans);
 
           return trans;
@@ -742,6 +804,8 @@ namespace xml
                           , state
                           );
           }
+
+          void operator () (multi_module_type &) const { return; }
         };
       }
 
@@ -2016,6 +2080,286 @@ namespace xml
 
             return true;
           }
+
+          bool operator () (multi_module_type const& multi_mod) const
+          {
+            namespace cpp_util = ::fhg::util::cpp;
+
+            for (auto const& mod_locator : multi_mod.modules())
+            {
+              module_type const& mod = mod_locator.second;
+
+              const mcs_type::const_iterator old_map (mcs.find (mod.name()));
+
+              if (old_map != mcs.end())
+              {
+                const mc_by_function_type::const_iterator old_mc
+                  (old_map->second.find (mod.function()));
+
+                if (old_mc != old_map->second.end())
+                {
+                  if (old_mc->second == mod)
+                  {
+                    state.warn ( warning::duplicate_external_function
+                        (mod, old_mc->second)
+                        );
+                  }
+                  else
+                  {
+                    throw error::duplicate_external_function
+                      (old_mc->second, mod);
+                  }
+                }
+              }
+
+              mcs[mod.name()].emplace (mod.function(), mod);
+
+              ports_with_type_type ports_const;
+              ports_with_type_type ports_mutable;
+              ports_with_type_type ports_out;
+              boost::optional<port_with_type> port_return;
+              types_type types;
+
+              if (mod.port_return())
+              {
+                port_type const& port
+                  (_function.get_port_out (*mod.port_return()).get());
+
+                port_return = port_with_type (*mod.port_return(), port.type());
+                types.insert (port.type());
+              }
+
+              for (const std::string& name : mod.port_arg())
+              {
+                if (_function.is_known_port_inout (name))
+                {
+                  port_type const& port_in
+                    (_function.get_port_in (name).get());
+
+                  if (    mod.port_return()
+                      && (*mod.port_return() == port_in.name())
+                     )
+                  {
+                    ports_const.push_back (port_with_type (name, port_in.type()));
+                    types.insert (port_in.type());
+                  }
+                  else
+                  {
+                    ports_mutable.push_back (port_with_type (name, port_in.type()));
+                    types.insert (port_in.type());
+                  }
+                }
+                else if (_function.is_known_port_in (name))
+                {
+                  port_type const& port_in
+                    (_function.get_port_in (name).get());
+
+                  ports_const.push_back (port_with_type (name, port_in.type()));
+                  types.insert (port_in.type());
+                }
+                else if (_function.is_known_port_out (name))
+                {
+                  port_type const& port_out
+                    (_function.get_port_out (name).get());
+
+                  if (    mod.port_return()
+                      && (*mod.port_return() == port_out.name())
+                     )
+                  {
+                    // do nothing, it is the return port
+                  }
+                  else
+                  {
+                    ports_out.push_back (port_with_type (name, port_out.type()));
+                    types.insert (port_out.type());
+                  }
+                }
+              }
+
+              const path_t prefix (state.path_to_cpp());
+              const path_t path (state.path_to_cpp() + "/pnetc/op/" + mod.name());
+              const std::string file_hpp (mod.function() + ".hpp");
+              const std::string file_cpp
+                (mod.function() + (mod.code() ? ".cpp" : ".cpp_tmpl"));
+
+              {
+                std::ostringstream stream;
+
+                mod_wrapper ( stream
+                    , mod
+                    , file_hpp
+                    , ports_const
+                    , ports_mutable
+                    , ports_out
+                    , port_return
+                    , types
+                    , _function
+                    );
+
+                const fun_info_type fun_info ( mod.function()
+                    , stream.str()
+                    , mod.ldflags()
+                    , mod.cxxflags()
+                    , mod.position_of_definition().path()
+                    );
+
+                m[mod.name()].insert (fun_info);
+              }
+
+              {
+                namespace ns = fhg::util::cpp::ns;
+
+                fhg::util::indenter indent;
+
+                const path_t file (path / file_hpp);
+
+                util::check_no_change_fstream stream (state, file);
+
+                stream << cpp_util::include_guard::open
+                  ("PNETC_OP_" + mod.name() + "_" + mod.function());
+
+                if (mod.pass_context ())
+                {
+                  stream << cpp_util::include ("drts/worker/context_fwd.hpp");
+                }
+                for (const std::string& tname : types)
+                {
+                  stream << include (tname, ".hpp");
+                }
+
+                stream << ns::open (indent, "pnetc");
+                stream << ns::open (indent, "op");
+                stream << ns::open (indent, mod.name());
+
+                mod_signature ( stream
+                    , indent
+                    , port_return
+                    , ports_const, ports_mutable, ports_out, mod
+                    , _function
+                    );
+
+                stream << ";";
+
+                stream << ns::close (indent)
+                  << ns::close (indent)
+                  << ns::close (indent);
+
+                stream << std::endl;
+
+                stream << cpp_util::include_guard::close();
+              }
+
+              {
+                namespace ns = fhg::util::cpp::ns;
+                namespace block = fhg::util::cpp::block;
+
+                fhg::util::indenter indent;
+
+                const path_t file (path / file_cpp);
+
+                util::check_no_change_fstream stream
+                  ( state
+                    , file
+                    , [] (std::string const& l, std::string const& r)
+                    {
+                    std::list<std::string> const
+                    ls (fhg::util::split<std::string, std::string> (l, '\n'));
+                    std::list<std::string> const
+                    rs (fhg::util::split<std::string, std::string> (r, '\n'));
+
+                    std::list<std::string>::const_iterator pos_l (ls.begin());
+                    std::list<std::string>::const_iterator pos_r (rs.begin());
+
+                    while (pos_l != ls.end() && pos_r != rs.end())
+                    {
+                    if (! ((  fhg::util::starts_with ("#line", *pos_l)
+                          && fhg::util::starts_with ("#line", *pos_r)
+                          )
+                        || *pos_l == *pos_r
+                        )
+                      )
+                    {
+                      return false;
+                    }
+
+                    ++pos_l;
+                    ++pos_r;
+                    }
+
+                  return pos_l == ls.end() && pos_r == rs.end();
+                    }
+                );
+
+                stream << cpp_util::include
+                  ("pnetc/op/" + mod.name() + "/" + file_hpp);
+
+                for (const std::string& tname : types)
+                {
+                  stream << include (tname, "/op.hpp");
+                }
+
+                if (mod.pass_context ())
+                {
+                  stream << cpp_util::include ("drts/worker/context.hpp");
+                }
+
+                for (const std::string& inc : mod.cincludes())
+                {
+                  stream << cpp_util::include (inc);
+                }
+
+                if (not mod.code())
+                {
+                  stream << cpp_util::include ("stdexcept");
+                }
+
+                stream << ns::open (indent, "pnetc");
+                stream << ns::open (indent, "op");
+                stream << ns::open (indent, mod.name());
+
+                mod_signature ( stream
+                    , indent
+                    , port_return
+                    , ports_const, ports_mutable, ports_out, mod
+                    , _function
+                    );
+
+                stream << block::open (indent);
+
+                if (not mod.code())
+                {
+                  stream << "        // INSERT CODE HERE" << std::endl
+                    << "        throw std::runtime_error (\""
+                    << mod.name() << "::" << mod.function()
+                    << ": NOT YET IMPLEMENTED\");";
+                }
+                else
+                {
+                  if (!mod.position_of_definition_of_code())
+                  {
+                    throw std::runtime_error
+                      ("STRANGE: There is code without a position of definition");
+                  }
+
+                  stream << std::endl
+                    << "#line "
+                    << mod.position_of_definition_of_code()->line()
+                    << " "
+                    << state.strip_path_prefix
+                    (mod.position_of_definition_of_code()->path())
+                    << std::endl;
+                  stream << *mod.code();
+                }
+
+                stream << block::close (indent)
+                  << ns::close (indent)
+                  << ns::close (indent)
+                  << ns::close (indent);
+              }
+            }
+
+            return true;
+          }
         };
       }
 
@@ -2188,6 +2532,7 @@ namespace xml
           void operator() (use_type const&) const { }
           void operator() (const module_type&) const { }
           void operator() (expression_type const&) const { }
+          void operator() (const multi_module_type&) const { }
 
         private:
           const state::type & state;
