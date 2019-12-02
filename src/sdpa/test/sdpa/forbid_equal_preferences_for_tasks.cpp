@@ -5,18 +5,38 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <random>
 #include <stdexcept>
 #include <string>
 
 BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
 {
-  auto const preference (fhg::util::testing::random<std::string>{}());
+  using fhg::util::testing::random_integral;
+  using fhg::util::testing::randoms;
+  using fhg::util::testing::unique_random;
+
+  unsigned int const MAX_PREFERENCES (100);
+  unsigned int const MIN_PREFERENCES (1);
+
+  unsigned int const npreferences
+    ( MIN_PREFERENCES
+    + random_integral<unsigned int>() % (MAX_PREFERENCES - MIN_PREFERENCES + 1)
+    );
+
+  auto preferences
+    (randoms<std::vector<std::string>, unique_random> (npreferences));
+
+  preferences.emplace_back (preferences.front());
+
+  std::shuffle
+    (preferences.begin(), preferences.end(), std::default_random_engine());
 
   fhg::util::testing::require_exception
     ( [&]
       {
         Requirements_and_preferences
-          ({}, {}, {}, {}, {}, {preference, preference});
+          ({}, {}, {}, {}, {}, preferences);
       }
     , std::runtime_error ("the preferences must be distinct!")
     );
