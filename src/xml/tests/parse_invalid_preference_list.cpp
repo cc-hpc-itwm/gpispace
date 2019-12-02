@@ -11,6 +11,14 @@
 
 namespace
 {
+  enum transition_type { net, module, expression, multi_module };
+
+  std::vector<transition_type> const non_preference_types
+    { transition_type::net
+    , transition_type::expression
+    , transition_type::module
+    };
+
   std::string random_identifier_with_invalid_prefix()
   {
     return
@@ -21,8 +29,21 @@ namespace
       ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
   }
 
+  std::string create_pnet_transition_data_type (const transition_type type)
   std::string random_identifier_with_valid_prefix()
   {
+    switch (type)
+    {
+      case transition_type::net:
+        return "<net></net>";
+      case transition_type::expression:
+        return "<expression></expression>";
+      case transition_type::module:
+        return "<module name=\"some_name\" function=\"func ()\"></module>";
+      default:
+        throw std::logic_error
+          ("invalid transition data_type specified");
+    }
     return
       fhg::util::testing::random_char_of
       ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
@@ -127,8 +148,8 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
 }
 
 BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
-                     , std::vector<std::string> ({"net", "expression"})
-                     , non_module_type
+                     , non_preference_types
+                     , type
                      )
 {
   std::string const first_target_name
@@ -143,12 +164,11 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
             <target>%1%</target>
             <target>%2%</target>
           </preferences>
-          <%3%>
-          </%3%>
+          %3%
         </defun>)EOS")
       % first_target_name
       % second_target_name
-      % non_module_type
+      % create_pnet_transition_data_type (type)
       ).str()
     );
 
@@ -162,6 +182,8 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
           xml::parse::just_parse (state, input_stream);
         }
       , boost::format ( "ERROR: preferences enabled, but"
+                        " no modules with target defined"
+                        " in %1%"
                         " no modules defined in %1%"
                       )
         % "[<stdin>:2:9]"
