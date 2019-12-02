@@ -317,6 +317,23 @@ namespace xml
         preferences_without_modules (const util::position_type&);
       };
 
+      class missing_target_for_module : public generic
+      {
+      public:
+        missing_target_for_module ( const std::string&
+                                  , const util::position_type&
+                                  );
+      };
+
+      class mistmatching_modules_and_preferences : public generic
+      {
+      public:
+        mistmatching_modules_and_preferences ( const std::list<std::string>&
+                                             , const std::list<std::string>&
+                                             , const util::position_type&
+                                             );
+      };
+
       // ******************************************************************* //
 
       class port_with_unknown_type : public generic

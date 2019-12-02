@@ -592,9 +592,48 @@ namespace xml
 
       preferences_without_modules::preferences_without_modules
         (const util::position_type& position)
-          : generic ( boost::format ( "preferences enabled, but"
-                                      " no modules defined in %1%"
+          : generic ( boost::format ( "preferences enabled, but no modules"
+                                      " with target defined in %1%"
                                     )
+                    % position
+                    )
+      {}
+
+      missing_target_for_module::missing_target_for_module
+        (const std::string& module, const util::position_type& position)
+          : generic ( boost::format ( "module '%1%' missing target"
+                                      " for multi-module transition at %2%"
+                                    )
+                    % module
+                    % position
+                    )
+      {}
+
+      namespace
+      {
+        std::string print_list ( const std::string& _prefix
+                               , const std::list<std::string>& _list
+                               )
+       {
+         return !_list.empty() ? fhg::util::print_container ( _prefix + " ('"
+                                                            , "', '"
+                                                            , "')"
+                                                            , _list
+                                                            ).string()
+                               : "";
+       }
+      }
+
+      mistmatching_modules_and_preferences::mistmatching_modules_and_preferences
+        ( const std::list<std::string>& missing_in_preferences
+        , const std::list<std::string>& missing_in_modules
+        , const util::position_type& position
+        )
+          : generic ( boost::format ( "mismatching targets in %1%%2%"
+                                      " for multi-module transition at %3%"
+                                    )
+                    % print_list ("preferences", missing_in_preferences)
+                    % print_list (" and modules", missing_in_modules)
                     % position
                     )
       {}
