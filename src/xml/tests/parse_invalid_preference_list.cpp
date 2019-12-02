@@ -30,7 +30,6 @@ namespace
   }
 
   std::string create_pnet_transition_data_type (const transition_type type)
-  std::string random_identifier_with_valid_prefix()
   {
     switch (type)
     {
@@ -44,18 +43,12 @@ namespace
         throw std::logic_error
           ("invalid transition data_type specified");
     }
-    return
-      fhg::util::testing::random_char_of
-      ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-      +
-      fhg::util::testing::random_string_of
-      ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
   }
 }
 
 BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
 {
-  std::string const name (random_identifier_with_valid_prefix());
+  std::string const name (fhg::util::testing::random_identifier());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -153,9 +146,9 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
                      )
 {
   std::string const first_target_name
-    ("first_" + random_identifier_with_valid_prefix());
+    ("first_" + fhg::util::testing::random_identifier());
   std::string const second_target_name
-    ("second_" + random_identifier_with_valid_prefix());
+    ("second_" + fhg::util::testing::random_identifier());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -184,7 +177,6 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
       , boost::format ( "ERROR: preferences enabled, but"
                         " no modules with target defined"
                         " in %1%"
-                        " no modules defined in %1%"
                       )
         % "[<stdin>:2:9]"
     );
