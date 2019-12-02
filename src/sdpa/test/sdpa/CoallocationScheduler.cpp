@@ -2570,7 +2570,8 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2580,8 +2581,7 @@ BOOST_FIXTURE_TEST_CASE
     , capability_pool()
     };
 
-  sdpa::worker_id_t const worker_0
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::worker_id_t const worker_0 (worker_name_pool());
   _worker_manager.addWorker
     ( worker_0
     , { sdpa::Capability (common_capability, worker_0)
@@ -2593,8 +2593,7 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::worker_id_t const worker_1
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::worker_id_t const worker_1 (worker_name_pool());
   _worker_manager.addWorker
     ( worker_1
     , { sdpa::Capability (common_capability, worker_1)
@@ -2606,8 +2605,7 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::worker_id_t const worker_2
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::worker_id_t const worker_2 (worker_name_pool());
   _worker_manager.addWorker
     ( worker_2
     , { sdpa::Capability (common_capability, worker_2)
@@ -2646,7 +2644,7 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_add_new_workers
   )
 {
-  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2727,7 +2725,7 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
 
   std::string const capability (capability_pool());
 
@@ -2789,7 +2787,7 @@ BOOST_FIXTURE_TEST_CASE
   const std::string CPU ("CPU");
   const std::string GPU ("GPU");
 
-  fhg::util::testing::unique_random<sdpa::worker_id_t> capability_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
 
   std::string const common_capability (capability_pool());
 
