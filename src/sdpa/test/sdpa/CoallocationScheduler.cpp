@@ -2572,6 +2572,7 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2617,22 +2618,19 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::job_id_t const job0
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::job_id_t const job0 (job_name_pool());
   add_job (job0, require (common_capability, preferences));
   _scheduler.enqueueJob (job0);
   _scheduler.assignJobsToWorkers();
   require_worker_and_implementation (job0, worker_0, preferences[0]);
 
-  sdpa::job_id_t const job1
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::job_id_t const job1 (job_name_pool());
   add_job (job1, require (common_capability, preferences));
   _scheduler.enqueueJob (job1);
   _scheduler.assignJobsToWorkers();
   require_worker_and_implementation (job1, worker_1, preferences[1]);
 
-  sdpa::job_id_t const job2
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::job_id_t const job2 (job_name_pool());
   add_job (job2, require (common_capability, preferences));
   _scheduler.enqueueJob (job2);
   _scheduler.assignJobsToWorkers();
@@ -2645,6 +2643,7 @@ BOOST_FIXTURE_TEST_CASE
   )
 {
   fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2702,8 +2701,7 @@ BOOST_FIXTURE_TEST_CASE
       (worker, preferences[2]);
   }
 
-  sdpa::job_id_t const job
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::job_id_t const job (job_name_pool());
 
   add_job
     ( job
@@ -2726,6 +2724,7 @@ BOOST_FIXTURE_TEST_CASE
   )
 {
   fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
 
   std::string const capability (capability_pool());
 
@@ -2755,8 +2754,7 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::job_id_t const job
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  sdpa::job_id_t const job (job_name_pool());
   add_job (job, require (capability, preferences));
 
   _scheduler.enqueueJob (job);
@@ -2788,6 +2786,7 @@ BOOST_FIXTURE_TEST_CASE
   const std::string GPU ("GPU");
 
   fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2827,8 +2826,7 @@ BOOST_FIXTURE_TEST_CASE
 
   for (unsigned int i (0); i < num_cpu_workers; i++)
   {
-    sdpa::job_id_t const job
-      (fhg::util::testing::random_identifier_without_leading_underscore());
+    sdpa::job_id_t const job (job_name_pool());
 
     add_job (job, require (common_capability, {CPU}));
 
@@ -2856,8 +2854,7 @@ BOOST_FIXTURE_TEST_CASE
 
   for (unsigned int i (0); i < num_cpu_gpu_workers; i++)
   {
-    sdpa::job_id_t const job
-      (fhg::util::testing::random_identifier_without_leading_underscore());
+    sdpa::job_id_t const job (job_name_pool());
 
     add_job (job, require (common_capability, {GPU}));
 
