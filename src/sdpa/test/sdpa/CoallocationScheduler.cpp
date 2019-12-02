@@ -2067,20 +2067,6 @@ struct fixture_add_new_workers
     // the total number of jobs is conserved
     BOOST_REQUIRE_EQUAL (n_jobs_initial_workers + n_stolen_jobs, n_total_jobs);
   }
-
-  void require_workers_and_implementations
-    ( sdpa::job_id_t const& job
-    , std::set<sdpa::daemon::Worker_and_implementation> exp_workers_and_implementations
-    )
-  {
-    auto const assignment (get_current_assignment());
-    BOOST_REQUIRE (assignment.count (job));
-
-    require_identical_sets
-      ( workers_and_implementations (job)
-      , exp_workers_and_implementations
-      );
-  }
 };
 
 BOOST_FIXTURE_TEST_CASE
@@ -2714,8 +2700,13 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.enqueueJob (job);
   _scheduler.assignJobsToWorkers();
 
-  require_workers_and_implementations
-    (job, expected_workers_and_implementations);
+  auto const assignment (get_current_assignment());
+  BOOST_REQUIRE (assignment.count (job));
+
+  require_identical_sets
+    ( workers_and_implementations (job)
+    , expected_workers_and_implementations
+    );
 }
 
 BOOST_FIXTURE_TEST_CASE
