@@ -14,6 +14,7 @@
 
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/random/string.hpp>
 
@@ -1750,4 +1751,136 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
   BOOST_REQUIRE_EQUAL (helper._received_requirements.size(), 2);
   BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_a), 20);
   BOOST_REQUIRE_EQUAL (helper._received_requirements.at (req_b), 10);
+}
+
+namespace
+{
+  we::type::activity_t activity_with_preferences
+   (std::list<we::type::preference_t> const& preferences)
+  {
+    we::type::transition_t transition
+     ( fhg::util::testing::random_string()
+     , we::type::module_call_t ( fhg::util::testing::random_string()
+                               , fhg::util::testing::random_string()
+                               , std::unordered_map<std::string, std::string>()
+                               , std::list<we::type::memory_transfer>()
+                               , std::list<we::type::memory_transfer>()
+                               )
+     , boost::none
+     , we::type::property::type()
+     , we::priority_type()
+     , preferences
+     );
+
+   const std::string port_name (fhg::util::testing::random_string());
+   transition.add_port ( we::type::port_t ( port_name
+                                          , we::type::PORT_IN
+                                          , std::string ("string")
+                                          , we::type::property::type()
+                                          )
+                       );
+
+   we::type::activity_t activity (transition, boost::none);
+   activity.add_input ( transition.input_port_by_name (port_name)
+                      , fhg::util::testing::random_string_without ("\\\"")
+                      );
+
+   return activity;
+  }
+
+  class wfe_remembering_submitted_preferences
+  {
+  public:
+    wfe_remembering_submitted_preferences()
+      : _received_preferences()
+      , _random_extraction_engine()
+      , _cnt (0)
+      , _layer ( std::bind
+               (&wfe_remembering_submitted_preferences::submit, this, std::placeholders::_2)
+               , std::bind (&disallow, "cancel")
+               , std::bind (&disallow, "finished")
+               , std::bind (&disallow, "failed")
+               , std::bind (&disallow, "canceled")
+               , std::bind (&disallow, "discover")
+               , std::bind (&disallow, "discovered")
+               , std::bind (&disallow, "token_put")
+               , std::bind (&disallow, "workflow_response")
+               , std::bind
+                   (&wfe_remembering_submitted_preferences::generate_id, this)
+               , _random_extraction_engine
+               )
+    {}
+
+    void submit (const we::type::activity_t& activity)
+    {
+      _received_preferences = activity.transition().preferences();
+      std::lock_guard<std::mutex> const _ (_mtx_submitted);
+      _cond_submitted.notify_one();
+    }
+
+    void wait_submitted()
+    {
+      std::unique_lock<std::mutex> lock (_mtx_submitted);
+      _cond_submitted.wait (lock);
+    }
+
+    std::list<we::type::preference_t> received_preferences()
+    {
+      return _received_preferences;
+    }
+
+  private:
+    std::mutex _mtx_submitted;
+    std::condition_variable _cond_submitted;
+    std::list<we::type::preference_t> _received_preferences;
+
+  private:
+    std::mt19937 _random_extraction_engine;
+
+    std::mutex _generate_id_mutex;
+    unsigned long _cnt;
+    we::layer::id_type generate_id()
+    {
+      std::lock_guard<std::mutex> const _ (_generate_id_mutex);
+      return boost::lexical_cast<we::layer::id_type> (++_cnt);
+    }
+
+  public:
+    we::layer _layer;
+  };
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
+{
+  wfe_remembering_submitted_preferences wfe;
+
+  unsigned int const MAX_PREFERENCES (10);
+  unsigned int const MIN_PREFERENCES (1);
+
+  unsigned int const num_preferences
+    ( MIN_PREFERENCES
+    + fhg::util::testing::random_integral<unsigned int>()
+    % (MAX_PREFERENCES - MIN_PREFERENCES + 1)
+    );
+
+  auto const unique_random_preferences
+    (fhg::util::testing::randoms < std::vector<std::string>
+                                 , fhg::util::testing::unique_random
+                                 > (num_preferences)
+    );
+
+  std::list<we::type::preference_t> preferences
+    ( unique_random_preferences.begin()
+    , unique_random_preferences.end()
+    );
+
+  wfe._layer.submit
+    ( fhg::util::testing::random_string()
+    , activity_with_preferences (preferences)
+    );
+
+  wfe.wait_submitted();
+
+  BOOST_REQUIRE_EQUAL (wfe.received_preferences(), preferences);
 }
