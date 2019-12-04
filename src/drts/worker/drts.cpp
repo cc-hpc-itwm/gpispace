@@ -157,8 +157,8 @@ namespace
           );
       }
 
-      auto const& mod_locator = multi_mod.find (*_target);
-      if (mod_locator == multi_mod.end())
+      auto const& mod_it = multi_mod.find (*_target);
+      if (mod_it == multi_mod.end())
       {
         std::throw_with_nested
           ( std::runtime_error
@@ -169,30 +169,7 @@ namespace
           );
       }
 
-      we::type::module_call_t& mod = mod_locator->second;
-      try
-      {
-        _activity.add_output
-          ( we::loader::module_call ( loader
-                                    , _virtual_memory_api
-                                    , _shared_memory
-                                    , &task.context
-                                    , _activity.evaluation_context()
-                                    , mod
-                                    )
-          );
-      }
-      catch (drts::worker::context::cancelled const&)
-      {
-        throw;
-      }
-      catch (...)
-      {
-        std::throw_with_nested
-          ( std::runtime_error
-              ("call to '" + mod.module() + "::" + mod.function() + "' failed")
-          );
-      }
+      return (*this) (mod_it->second);
     }
 
     void operator() (we::type::expression_t&) const
