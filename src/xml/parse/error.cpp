@@ -609,9 +609,22 @@ namespace xml
                     )
       {}
 
+      duplicate_module_for_target::duplicate_module_for_target
+        ( const std::string& module
+        , const std::string& target
+        , const util::position_type& position)
+          : generic ( boost::format ( "duplicate module '%1%' for target '%2%'"
+                                      "at %3%"
+                                    )
+                    % module
+                    % target
+                    % position
+                    )
+      {}
+
       namespace
       {
-        std::string print_list ( const std::string& _prefix
+        std::string print_target_list ( const std::string& _prefix
                                , const std::list<std::string>& _list
                                )
        {
@@ -624,16 +637,20 @@ namespace xml
        }
       }
 
-      mistmatching_modules_and_preferences::mistmatching_modules_and_preferences
+      mismatching_modules_and_preferences::mismatching_modules_and_preferences
         ( const std::list<std::string>& missing_in_preferences
         , const std::list<std::string>& missing_in_modules
         , const util::position_type& position
         )
-          : generic ( boost::format ( "mismatching targets in %1%%2%"
-                                      " for multi-module transition at %3%"
+          : generic ( boost::format ( "mismatching targets for multi-module"
+                                      " transition in %3%, %1%%2%"
                                     )
-                    % print_list ("preferences", missing_in_preferences)
-                    % print_list (" and modules", missing_in_modules)
+                    % print_target_list ( "mismatch-in-preferences"
+                                        , missing_in_preferences
+                                        )
+                    % print_target_list ( ", mismatch-in-modules"
+                                        , missing_in_modules
+                                        )
                     % position
                     )
       {}
