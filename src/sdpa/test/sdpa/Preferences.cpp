@@ -3,7 +3,6 @@
 
 #include <test/certificates_data.hpp>
 
-#include <we/layer.hpp>
 #include <we/type/activity.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
@@ -36,27 +35,6 @@ namespace
         , std::list<std::string> const preferences
         )
       : basic_drts_component (utils::random_peer_name(), false, certificates)
-      , workflow_engine
-          ( std::bind ( &drts_component_observing_preferences::submit
-                      , this
-                      , std::placeholders::_1
-                      , std::placeholders::_2
-                      )
-          , [](sdpa::job_id_t){}
-          , [](sdpa::job_id_t, we::type::activity_t){}
-          , [](sdpa::job_id_t, std::string){}
-          , [](sdpa::job_id_t){}
-          , [](sdpa::job_id_t, sdpa::job_id_t){}
-          , [](sdpa::job_id_t, sdpa::discovery_info_t){}
-          , [](std::string, boost::optional<std::exception_ptr>){}
-          , []( std::string
-              , boost::variant<std::exception_ptr
-              , pnet::type::value::value_type>
-              )
-            {}
-          , std::bind (&drts_component_observing_preferences::gen_id, this)
-          , *_random_extraction_engine
-          )
       , _expected_preferences (preferences)
     {
       _master = _network.connect_to (master.host(), master.port());
@@ -79,7 +57,11 @@ namespace
     {
       _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
       _master = source;
-      workflow_engine.submit (*e->job_id(), e->activity());
+
+      BOOST_REQUIRE_EQUAL
+        (e->activity().preferences(), _expected_preferences);
+
+      finish_job (*e->job_id(), e->activity());
     }
 
     virtual void handleJobFinishedAckEvent
@@ -87,55 +69,6 @@ namespace
       , const sdpa::events::JobFinishedAckEvent*
       ) override
     {}
-
-    std::string gen_id() const
-    {
-      static sdpa::id_generator generator ("job");
-      return generator.next();
-    }
-
-    void submit ( we::layer::id_type const& job_id
-                , we::type::activity_t const& activity
-                )
-    {
-      BOOST_REQUIRE_EQUAL (activity.preferences(), _expected_preferences);
-
-      std::unique_ptr<sdpa::daemon::Job> const job
-        (add_job (job_id, activity));
-
-      BOOST_REQUIRE_EQUAL
-        ( job->requirements_and_preferences().preferences()
-        , _expected_preferences
-        );
-
-      finish_job (job_id, activity);
-    }
-
-    std::unique_ptr<sdpa::daemon::Job> add_job
-      ( we::layer::id_type const& job_id
-      , we::type::activity_t const& activity
-      ) const
-    {
-      Requirements_and_preferences const requirements_and_preferences
-        ( activity.requirements()
-        , activity.get_schedule_data()
-        , [] (std::string const&)
-          {
-            return fhg::util::testing::random_integral<unsigned int>();
-          }
-        , fhg::util::testing::random_integral<unsigned int>()
-        , fhg::util::testing::random_integral<unsigned int>()
-        , activity.preferences()
-        );
-
-      return fhg::util::cxx14::make_unique<sdpa::daemon::Job>
-        ( std::move (job_id)
-        , std::move (activity)
-        , sdpa::daemon::job_source_wfe()
-        , sdpa::daemon::job_handler_worker()
-        , std::move (requirements_and_preferences)
-        );
-    }
 
     void finish_job
       ( sdpa::job_id_t const& job
@@ -146,8 +79,6 @@ namespace
         (*_master, job, activity);
     }
 
-    boost::optional<std::mt19937> _random_extraction_engine;
-    we::layer workflow_engine;
     std::list<std::string> _expected_preferences;
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
@@ -383,7 +314,7 @@ namespace
 }
 
 BOOST_DATA_TEST_CASE
-  ( agent_receives_the_expected_preferences_from_the_workflow_engine
+  ( agent_receives_the_expected_preferences_from_the_orchestrator
   , certificates_data
   , certificates
   )
