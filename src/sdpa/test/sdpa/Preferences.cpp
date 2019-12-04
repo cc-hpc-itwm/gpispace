@@ -462,10 +462,7 @@ BOOST_DATA_TEST_CASE
     );
 
   auto const random_preference
-    ( (preference_index == 0)
-    ? preferences.begin()
-    : std::next (preferences.begin(), preference_index)
-    );
+    (std::next (preferences.begin(), preference_index));
 
   auto const name (generate_worker_id());
 
