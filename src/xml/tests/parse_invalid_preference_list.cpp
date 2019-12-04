@@ -4,19 +4,19 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
-#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <string>
+
+#include <xml/tests/parse_preference_list_with_modules_helpers.ipp>
 
 namespace
 {
   enum transition_type { net, module, expression, multi_module };
 
-  std::vector<transition_type> const non_preference_types
+  std::vector<transition_type> const non_module_types
     { transition_type::net
     , transition_type::expression
-    , transition_type::module
     };
 
   std::string random_identifier_with_invalid_prefix()
@@ -29,21 +29,41 @@ namespace
       ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
   }
 
-  std::string create_pnet_transition_data_type (const transition_type type)
+  std::string create_non_preference_transition_data_type
+    ( transition_type const type
+    , boost::optional<std::string> const name = boost::none
+    )
   {
     switch (type)
     {
       case transition_type::net:
+      {
         return "<net></net>";
+      }
       case transition_type::expression:
+      {
         return "<expression></expression>";
+      }
       case transition_type::module:
-        return "<module name=\"some_name\" function=\"func ()\"></module>";
+      {
+        if (!name)
+        {
+          throw std::logic_error
+            ("missing name to create module for pnet");
+        }
+
+        return "<module name=\"" + *name
+               + "\" function=\"func()\">"
+               + "</module>";
+      }
       default:
+      {
         throw std::logic_error
-          ("invalid transition data_type specified");
+          ("invalid non-preference transition data_type specified");
+      }
     }
   }
+
 }
 
 BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
@@ -141,7 +161,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
 }
 
 BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
-                     , non_preference_types
+                     , non_module_types
                      , type
                      )
 {
@@ -161,7 +181,7 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
         </defun>)EOS")
       % first_target_name
       % second_target_name
-      % create_pnet_transition_data_type (type)
+      % create_non_preference_transition_data_type (type)
       ).str()
     );
 
@@ -179,5 +199,144 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
                         " in %1%"
                       )
         % "[<stdin>:2:9]"
+     );
+}
+
+BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
+{
+  std::string const no_target_mod_name
+    (fhg::util::testing::random_identifier());
+  std::list<xml::parse::type::preference_type> test_targets
+    (gen_valid_targets (MAX_TARGETS));
+
+  pnet_with_multi_modules const pnet_mixed_modules
+    ( test_targets
+    , test_targets
+    , no_target_mod_name
+    , create_non_preference_transition_data_type
+      ( transition_type::module
+      , no_target_mod_name
+      )
     );
+
+  xml::parse::state::type state;
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::missing_target_for_module>
+      ( [&state, &pnet_mixed_modules]
+        {
+          std::istringstream input_stream
+            (pnet_mixed_modules.pnet_xml);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: module '%1%' missing target"
+                        " for multi-module transition at %2%"
+                      )
+                      % no_target_mod_name
+                      % "[<stdin>:6:11]"
+      );
+}
+
+BOOST_AUTO_TEST_CASE (parse_multi_modules_with_duplicate_module_targets)
+{
+  std::string const mod_name
+    (fhg::util::testing::random_identifier());
+  std::string const target_name_first
+    (fhg::util::testing::random_identifier());
+  std::string const target_name_second
+    (fhg::util::testing::random_identifier());
+  std::list<xml::parse::type::preference_type> test_targets
+    ({target_name_first, target_name_first});
+
+  pnet_with_multi_modules const pnet_dup_modules
+    ( {target_name_first, target_name_second}
+    , test_targets
+    , mod_name
+    );
+
+  xml::parse::state::type state;
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::duplicate_module_for_target>
+      ( [&state, &pnet_dup_modules]
+        {
+          std::istringstream input_stream
+            (pnet_dup_modules.pnet_xml);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: duplicate module '%1%' for target '%2%'"
+                        "at %3%"
+                      )
+                      % (mod_name + "_" + target_name_first)
+                      % target_name_first
+                      % "[<stdin>:8:1]"
+      );
+}
+
+BOOST_AUTO_TEST_CASE (parse_multi_modules_with_mismatching_preferences)
+{
+  std::list<xml::parse::type::preference_type> preference_targets
+    (gen_valid_targets (MAX_TARGETS));
+  std::list<xml::parse::type::preference_type> module_targets
+    (gen_valid_targets (MAX_TARGETS));
+
+  pnet_with_multi_modules const multi_mod ( preference_targets
+                                          , module_targets
+                                          );
+
+  xml::parse::state::type state;
+
+  std::list<xml::parse::type::preference_type> missing_in_modules;
+  std::set_difference ( preference_targets.begin()
+                      , preference_targets.end()
+                      , module_targets.begin()
+                      , module_targets.end()
+                      , std::inserter
+                        ( missing_in_modules
+                        , missing_in_modules.begin()
+                        )
+                      );
+
+  std::list<xml::parse::type::preference_type> missing_in_preferences;
+  std::set_difference ( module_targets.begin()
+                      , module_targets.end()
+                      , preference_targets.begin()
+                      , preference_targets.end()
+                      , std::inserter
+                        ( missing_in_preferences
+                        , missing_in_preferences.begin()
+                        )
+                      );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::mismatching_modules_and_preferences>
+      ( [&state, &multi_mod]
+        {
+          std::istringstream input_stream
+            (multi_mod.pnet_xml);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: mismatching targets for"
+                        " multi-module transition in %3%, %1%%2%"
+                      )
+                      % ( missing_in_modules.empty()
+                          ?  ""
+                          : fhg::util::print_container
+                            ( "mismatch-in-preferences ('"
+                            , "', '"
+                            , "')"
+                            , missing_in_modules
+                            ).string()
+                        )
+                      % ( missing_in_preferences.empty()
+                          ?  ""
+                          : fhg::util::print_container
+                            ( ", mismatch-in-modules ('"
+                            , "', '"
+                            , "')"
+                            , missing_in_preferences
+                            ).string()
+                        )
+                      % "[<stdin>:2:9]"
+      );
 }
