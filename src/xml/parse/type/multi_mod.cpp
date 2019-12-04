@@ -18,26 +18,21 @@ namespace xml
       {
         if (!mod.target())
         {
-          throw std::logic_error ( "cannot include module '"
-                                 + mod.name() + "' with preferences"
-                                 + " without a target"
-                                 );
+          throw error::missing_target_for_module
+            ( mod.name()
+            , mod.position_of_definition()
+            );
         }
 
-        auto const& status = _modules.emplace
-                              (std::make_pair (*mod.target()
-                                              , mod
-                                              )
-                              );
+        auto const& status = _modules.emplace (*mod.target(), mod);
 
         if (!status.second)
         {
-          throw std::logic_error ( "duplicate module '" + mod.name()
-                                 + "' for target '" + *mod.target()
-                                 + "' module "
-                                 + status.first->second.name()
-                                 + "' already exists"
-                                 );
+          throw error::duplicate_module_for_target
+            ( mod.name()
+            , *mod.target()
+            , mod.position_of_definition()
+            );
         }
       }
 

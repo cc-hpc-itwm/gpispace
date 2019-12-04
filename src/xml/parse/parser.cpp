@@ -285,14 +285,15 @@ namespace xml
         std::list<type::preference_type> pref_list (preferences.targets());
         pref_list.sort();
 
-        std::list<type::preference_type> mistmatching_preferences;
+        std::list<type::preference_type> mismatching_preferences;
         std::set_difference ( pref_list.begin()
                             , pref_list.end()
                             , modules.begin()
                             , modules.end()
-                            , std::inserter ( mistmatching_preferences
-                                            , mistmatching_preferences.begin()
-                                            )
+                            , std::inserter
+                              ( mismatching_preferences
+                              , mismatching_preferences.begin()
+                              )
                             );
 
         std::list<type::preference_type> mismatching_modules;
@@ -306,16 +307,15 @@ namespace xml
                               )
                             );
 
-        if (mismatching_modules.size() || mistmatching_preferences.size())
+        if (mismatching_modules.size() || mismatching_preferences.size())
         {
-          throw error::mistmatching_modules_and_preferences
-            ( mistmatching_preferences
+          throw error::mismatching_modules_and_preferences
+            ( mismatching_preferences
             , mismatching_modules
             , state.position (node)
             );
         }
       }
-
 
       // ******************************************************************* //
 
@@ -1457,6 +1457,7 @@ namespace xml
         , state::type& state
         , type::function_type::ports_type const& ports
         , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
+        , const bool is_target_required
         , boost::filesystem::path const& path
         )
       {
@@ -1545,6 +1546,13 @@ namespace xml
                 );
             }
           }
+        }
+
+        if (is_target_required && !target)
+        {
+          throw error::missing_target_for_module ( name
+                                                 , pod
+                                                 );
         }
 
         return type::module_type
@@ -1875,23 +1883,22 @@ namespace xml
             }
             else if (child_name == "module")
             {
-              module = module_type ( child
-                                   , state
-                                   , ports
-                                   , memory_buffers
-                                   , state.position (node).path()
-                                   );
+              type::module_type parsed_module =
+                module_type ( child
+                            , state
+                            , ports
+                            , memory_buffers
+                            , !preferences.targets().empty()
+                            , state.position (node).path()
+                            );
 
-              if (module && module->target())
+              if (parsed_module.target())
               {
-                multi_module.add (*module);
+                multi_module.add (parsed_module);
               }
-              else if (module && !multi_module.modules().empty())
+              else
               {
-                throw error::missing_target_for_module
-                  ( module->name()
-                  , state.position (child)
-                  );
+                module = parsed_module;
               }
             }
             else if (child_name == "net")
