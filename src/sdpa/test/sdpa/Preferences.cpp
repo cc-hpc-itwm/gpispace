@@ -472,23 +472,32 @@ BOOST_DATA_TEST_CASE
   std::list<std::unique_ptr<fake_drts_worker_verifying_implementation_and_notifying_registration>>
      workers;
 
-  for (unsigned int i {0}; i < num_preferences; ++i)
+  std::size_t n_total_workers (0);
+  std::vector<std::size_t> num_workers (num_preferences);
+  for (unsigned int k {0}; k < num_preferences; ++k)
   {
-    auto const preference (generate_preference());
-    preferences.emplace_back (preference);
-
-    unsigned int const num_workers
+    num_workers[k] =
       ( (fhg::util::testing::random_integral<std::size_t>()
         % (max_num_workers - min_num_workers)
         )
       + min_num_workers
       );
 
-    for (unsigned int k {0}; k < num_workers; ++k)
-    {
-      auto const name (generate_worker_id());
+    n_total_workers += num_workers[k];
+  }
 
-      fhg::util::thread::event<> worker_registered;
+  std::vector<fhg::util::thread::event<>> registration_events (n_total_workers);
+
+  unsigned int rank (0);
+  for (unsigned int i {0}; i < num_preferences; ++i)
+  {
+    auto const preference (generate_preference());
+    preferences.emplace_back (preference);
+
+    for (unsigned int k {0}; k < num_workers[i]; ++k)
+    {
+      fhg::util::thread::event<>& event (registration_events.at (rank++));
+      auto const name (generate_worker_id());
       workers.emplace_back
         (fhg::util::cxx14::make_unique<fake_drts_worker_verifying_implementation_and_notifying_registration>
            ( name
@@ -496,11 +505,15 @@ BOOST_DATA_TEST_CASE
            , sdpa::capabilities_set_t {sdpa::Capability (preference, name)}
            , certificates
            , preference
-           , [&worker_registered]() { worker_registered.notify(); }
+           , [&event]() { event.notify(); }
            )
         );
-      worker_registered.wait();
     }
+  }
+
+  for (auto& event : registration_events)
+  {
+    event.wait();
   }
 
   utils::client client (orchestrator, certificates);
