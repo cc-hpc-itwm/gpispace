@@ -494,9 +494,8 @@ BOOST_DATA_TEST_CASE
     auto const preference (generate_preference());
     preferences.emplace_back (preference);
 
-    for (unsigned int k {0}; k < num_workers[i]; ++k)
+    for (unsigned int k {0}; k < num_workers[i]; ++k, ++rank)
     {
-      fhg::util::thread::event<>& event (registration_events.at (rank++));
       auto const name (generate_worker_id());
       workers.emplace_back
         (fhg::util::cxx14::make_unique<fake_drts_worker_verifying_implementation_and_notifying_registration>
@@ -505,7 +504,7 @@ BOOST_DATA_TEST_CASE
            , sdpa::capabilities_set_t {sdpa::Capability (preference, name)}
            , certificates
            , preference
-           , [&event]() { event.notify(); }
+           , [rank, &registration_events] { registration_events.at (rank).notify(); }
            )
         );
     }
