@@ -204,7 +204,7 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
 
 BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
 {
-  std::string const no_target_mod_name
+  std::string const mod_name_with_no_target
     (fhg::util::testing::random_identifier());
   std::list<xml::parse::type::preference_type> test_targets
     (gen_valid_targets (MAX_TARGETS));
@@ -212,10 +212,10 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
   pnet_with_multi_modules const pnet_mixed_modules
     ( test_targets
     , test_targets
-    , no_target_mod_name
+    , mod_name_with_no_target
     , create_non_preference_transition_data_type
       ( transition_type::module
-      , no_target_mod_name
+      , mod_name_with_no_target
       )
     );
 
@@ -232,7 +232,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
       , boost::format ( "ERROR: module '%1%' missing target"
                         " for multi-module transition at %2%"
                       )
-                      % no_target_mod_name
+                      % mod_name_with_no_target
                       % "[<stdin>:6:11]"
       );
 }
@@ -338,5 +338,38 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_mismatching_preferences)
                             ).string()
                         )
                       % "[<stdin>:2:9]"
+      );
+}
+
+BOOST_AUTO_TEST_CASE (parse_multi_modules_without_preferences)
+{
+  std::string const mod_name_with_no_preferences
+    (fhg::util::testing::random_identifier());
+  std::string const target_name
+    (fhg::util::testing::random_identifier());
+
+  pnet_with_multi_modules const pnet_no_pref
+    ( {}
+    , {target_name}
+    , mod_name_with_no_preferences
+    );
+
+  xml::parse::state::type state;
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::modules_without_preferences>
+      ( [&state, &pnet_no_pref]
+        {
+          std::istringstream input_stream
+            (pnet_no_pref.pnet_xml);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: module '%1%' defined with"
+                        " target '%2%', but preferences"
+                        " not enabled at %3%"
+                      )
+                    % mod_name_with_no_preferences
+                    % target_name
+                    % "[<stdin>:5:11]"
       );
 }
