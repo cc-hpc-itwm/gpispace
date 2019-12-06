@@ -11,7 +11,9 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
 
+#include <util-generic/read_file.hpp>
 #include <util-generic/join.hpp>
+#include <util-generic/executable_path.hpp>
 
 #include <string>
 #include <unordered_set>
@@ -29,7 +31,7 @@ namespace
     std::list<std::string> const test_targets;
     pnet_with_multi_modules const pnet;
 
-    valid_pnet_with_multi_modules()
+    valid_pnet_with_multi_modules ()
       : test_targets (gen_valid_targets (MAX_TARGETS))
       , pnet (test_targets, test_targets)
     {}
@@ -79,4 +81,71 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_propagate_to_we)
     = activity.preferences();
 
   BOOST_REQUIRE_EQUAL (multi_mod.test_targets, out_targets);
+}
+
+BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
+{
+  valid_pnet_with_multi_modules const multi_mod;
+
+  xml::parse::state::type state;
+
+  std::istringstream input_stream (multi_mod.pnet.pnet_xml);
+  xml::parse::type::function_type fun
+    = xml::parse::just_parse (state, input_stream);
+
+  boost::filesystem::path const path
+    ( fhg::util::executable_path().parent_path()
+      / "gen_modules_with_preferences_test"
+    );
+  state.path_to_cpp() = path.string();
+
+  BOOST_REQUIRE_NO_THROW (xml::parse::generate_cpp (fun, state));
+
+  for (auto const& target : multi_mod.test_targets)
+  {
+    std::string const mod_name ( multi_mod.pnet.module_name
+                               + "_" + target
+                               );
+
+    //! \note check if files generated for target
+    BOOST_TEST_CONTEXT ("cpp generation for target = " << target)
+    {
+      boost::filesystem::path const wrapper_cpp
+        (path.string() + "/pnetc/op/" + mod_name + ".cpp");
+
+      boost::filesystem::path const func_def_cpp
+        (path.string() + "/pnetc/op/" + mod_name + "/func.cpp");
+
+      boost::filesystem::path const func_def_hpp
+        (path.string() + "/pnetc/op/" + mod_name + "/func.hpp");
+
+      BOOST_REQUIRE (boost::filesystem::exists (wrapper_cpp));
+      BOOST_REQUIRE (boost::filesystem::exists (func_def_cpp));
+      BOOST_REQUIRE (boost::filesystem::exists (func_def_hpp));
+    }
+
+    boost::filesystem::path const makefile_path
+      (path.string() + "/Makefile");
+    std::string const makefile
+      {fhg::util::read_file<std::string> (makefile_path)};
+
+    //! \note check makefile for target ".so" build
+    BOOST_TEST_CONTEXT ("lib for target = " << target)
+    {
+      std::string const lib_path
+        ("pnetc/op/lib" + mod_name + ".so");
+      BOOST_REQUIRE (makefile.find ("MODULES += " + lib_path));
+    }
+
+    //! \note check makefile for wrapper register calls
+    BOOST_TEST_CONTEXT ("wrapper for target = " << target)
+    {
+      std::string const wrapper_reg
+        ( "WE_REGISTER_FUN_AS (::pnetc::op::"
+        + mod_name
+        + "::func"
+        );
+      BOOST_REQUIRE (makefile.find (wrapper_reg));
+    }
+  }
 }
