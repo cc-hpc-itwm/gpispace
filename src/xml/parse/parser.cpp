@@ -1554,6 +1554,13 @@ namespace xml
                                                  , pod
                                                  );
         }
+        else if (!is_target_required && target)
+        {
+          throw error::modules_without_preferences ( name
+                                                   , *target
+                                                   , pod
+                                                   );
+        }
 
         return type::module_type
           ( pod

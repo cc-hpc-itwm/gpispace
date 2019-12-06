@@ -325,6 +325,15 @@ namespace xml
                                   );
       };
 
+      class modules_without_preferences : public generic
+      {
+      public:
+        modules_without_preferences ( const std::string&
+                                    , const std::string&
+                                    , const util::position_type&
+                                    );
+      };
+
       class duplicate_module_for_target : public generic
       {
       public:

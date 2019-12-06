@@ -609,10 +609,25 @@ namespace xml
                     )
       {}
 
+      modules_without_preferences::modules_without_preferences
+        ( const std::string& module
+        , const std::string& target
+        , const util::position_type& position
+        )
+          : generic ( boost::format ( "module '%1%' defined with target '%2%'"
+                                      ", but preferences not enabled at %3%"
+                                    )
+                    % module
+                    % target
+                    % position
+                    )
+      {}
+
       duplicate_module_for_target::duplicate_module_for_target
         ( const std::string& module
         , const std::string& target
-        , const util::position_type& position)
+        , const util::position_type& position
+        )
           : generic ( boost::format ( "duplicate module '%1%' for target '%2%'"
                                       "at %3%"
                                     )
