@@ -87,6 +87,16 @@ fhg_add_test (NAME sdpa_RestartWorkersDummy
             test-utilities
 )
 
+fhg_add_test (NAME sdpa_Scheduler_no_preferences.performance
+  SOURCES Scheduler_no_preferences.performance.cpp
+  USE_BOOST
+  PERFORMANCE_TEST
+  RUN_SERIAL
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
 fhg_add_test (NAME sdpa_Subscriber
   SOURCES Subscriber.cpp
   USE_BOOST
