@@ -6,13 +6,10 @@
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 
-#include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
 
 #include <util-generic/read_file.hpp>
-#include <util-generic/join.hpp>
 #include <util-generic/executable_path.hpp>
 
 #include <string>
@@ -22,6 +19,7 @@
 
 #include <boost/range/adaptors.hpp>
 
+#include <xml/tests/parse_preference_list_with_modules_helpers.hpp>
 #include <xml/tests/parse_preference_list_with_modules_helpers.ipp>
 
 namespace

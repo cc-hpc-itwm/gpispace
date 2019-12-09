@@ -6,8 +6,7 @@
 
 #include <util-generic/testing/require_exception.hpp>
 
-#include <string>
-
+#include <xml/tests/parse_preference_list_with_modules_helpers.hpp>
 #include <xml/tests/parse_preference_list_with_modules_helpers.ipp>
 
 namespace
