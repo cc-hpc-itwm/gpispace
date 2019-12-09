@@ -2,7 +2,11 @@
 
 namespace
 {
+  //! \note restricting target and module name length to ensure
+  //        lib/cpp filenames generated are not too long
   constexpr auto const MAX_TARGET_LEN = 16;
+  constexpr auto const MAX_MODNAME_LEN = 32;
+  constexpr auto const MAX_TARGETS = 64;
 
   std::list<std::string> gen_valid_targets (size_t const max)
   {
@@ -87,9 +91,6 @@ namespace
         % (add_trans_content ? *add_trans_content : "")
       ).str();
   }
-
-  constexpr auto const MAX_TARGETS = 64;
-  constexpr auto const MAX_MODNAME_LEN = 32;
 
   struct pnet_with_multi_modules
   {
