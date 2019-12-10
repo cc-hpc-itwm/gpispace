@@ -1,7 +1,3 @@
-#include <util-generic/testing/random.hpp>
-
-#include <util-generic/join.hpp>
-
 namespace
 {
   //! \note restrict target and module name length to ensure
@@ -38,3 +34,5 @@ namespace
       );
   };
 }
+
+#include <xml/tests/parse_preference_list_with_modules_helpers.ipp>

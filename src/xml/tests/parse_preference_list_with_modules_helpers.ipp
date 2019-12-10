@@ -1,3 +1,7 @@
+#include <util-generic/testing/random.hpp>
+
+#include <util-generic/join.hpp>
+
 namespace
 {
   std::list<std::string> gen_valid_targets (size_t const max)
@@ -37,10 +41,9 @@ namespace
     {
       pnet_target_list =
         ( "<preferences>\n<target>"
-          + fhg::util::join_reference < std::list<std::string>
-                                      , std::string
-                                      >
-            (preference_targets, "</target><target>").string()
+          + fhg::util::join ( preference_targets
+                            , "</target><target>"
+                            ).string()
           + "</target>\n</preferences>"
         );
     }
@@ -61,13 +64,10 @@ namespace
 
     std::string const pnet_module_list
       ( pnet_module_prefix
-        + fhg::util::join_reference < std::list<std::string>
-                                    , std::string
-                                    >
-          ( module_targets
-          , pnet_module_suffix + pnet_module_prefix
-          )
-          .string()
+        + fhg::util::join ( module_targets
+                          , pnet_module_suffix
+                            + pnet_module_prefix
+                          ).string()
         + pnet_module_suffix
       );
 
@@ -80,7 +80,7 @@ namespace
         </defun>)EOS")
         % pnet_target_list
         % pnet_module_list
-        % (add_trans_content ? *add_trans_content : "")
+        % add_trans_content.value_or ("")
       ).str();
   }
 
