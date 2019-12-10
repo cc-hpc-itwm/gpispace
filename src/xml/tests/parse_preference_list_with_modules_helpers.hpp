@@ -1,3 +1,5 @@
+#pragma once
+
 namespace
 {
   //! \note restrict target and module name length to ensure
