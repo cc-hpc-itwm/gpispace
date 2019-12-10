@@ -521,6 +521,47 @@ namespace xml
           return we::type::expression_t (cond, parsed_condition);
         }
 
+        we_module_type create_we_module (const module_type& mod) const
+        {
+          std::unordered_map<std::string, std::string> memory_buffers;
+
+          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
+          {
+            memory_buffer_type const& memory_buffer
+              (*fun.memory_buffers().get (memory_buffer_name));
+
+            memory_buffers.emplace ( memory_buffer.name()
+                                   , memory_buffer.size()
+                                   );
+          }
+
+          std::list<we::type::memory_transfer> memory_gets;
+          std::list<we::type::memory_transfer> memory_puts;
+
+          for (memory_get const& mg : fun.memory_gets())
+          {
+            memory_gets.emplace_back (mg.global(), mg.local(), boost::none);
+          }
+          for (memory_put const& mp : fun.memory_puts())
+          {
+            memory_puts.emplace_back
+              (mp.global(), mp.local(), mp.not_modified_in_module_call());
+          }
+          for (memory_getput const& mgp : fun.memory_getputs())
+          {
+            memory_gets.emplace_back (mgp.global(), mgp.local(), boost::none);
+            memory_puts.emplace_back
+              (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
+          }
+
+          return we_module_type ( mod.name()
+                                , mod.function()
+                                , std::move (memory_buffers)
+                                , std::move (memory_gets)
+                                , std::move (memory_puts)
+                                );
+        }
+
       public:
         function_synthesize
           ( const std::string& name
@@ -573,45 +614,9 @@ namespace xml
 
         we_transition_type operator () (const module_type& mod) const
         {
-          std::unordered_map<std::string, std::string> memory_buffers;
-
-          for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
-          {
-            memory_buffer_type const& memory_buffer
-              (*fun.memory_buffers().get (memory_buffer_name));
-
-            memory_buffers.emplace ( memory_buffer.name()
-                                   , memory_buffer.size()
-                                   );
-          }
-
-          std::list<we::type::memory_transfer> memory_gets;
-          std::list<we::type::memory_transfer> memory_puts;
-
-          for (memory_get const& mg : fun.memory_gets())
-          {
-            memory_gets.emplace_back (mg.global(), mg.local(), boost::none);
-          }
-          for (memory_put const& mp : fun.memory_puts())
-          {
-            memory_puts.emplace_back
-              (mp.global(), mp.local(), mp.not_modified_in_module_call());
-          }
-          for (memory_getput const& mgp : fun.memory_getputs())
-          {
-            memory_gets.emplace_back (mgp.global(), mgp.local(), boost::none);
-            memory_puts.emplace_back
-              (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
-          }
-
           we_transition_type trans
             ( name()
-            , we_module_type ( mod.name()
-                             , mod.function()
-                             , std::move (memory_buffers)
-                             , std::move (memory_gets)
-                             , std::move (memory_puts)
-                             )
+            , create_we_module (mod)
             , condition()
             , _properties
             , _priority
@@ -660,48 +665,9 @@ namespace xml
         {
           we::type::multi_module_call_t multi_modules;
 
-          for ( auto const& mod_locator : multi_mod.modules())
+          for (auto const& mod_it : multi_mod.modules())
           {
-            const module_type &mod = mod_locator.second;
-
-            std::unordered_map<std::string, std::string> memory_buffers;
-
-            for (std::string const& memory_buffer_name : mod.memory_buffer_arg())
-            {
-              memory_buffer_type const& memory_buffer
-                (*fun.memory_buffers().get (memory_buffer_name));
-
-              memory_buffers.emplace ( memory_buffer.name()
-                  , memory_buffer.size()
-                  );
-            }
-
-            std::list<we::type::memory_transfer> memory_gets;
-            std::list<we::type::memory_transfer> memory_puts;
-
-            for (memory_get const& mg : fun.memory_gets())
-            {
-              memory_gets.emplace_back (mg.global(), mg.local(), boost::none);
-            }
-            for (memory_put const& mp : fun.memory_puts())
-            {
-              memory_puts.emplace_back
-                (mp.global(), mp.local(), mp.not_modified_in_module_call());
-            }
-            for (memory_getput const& mgp : fun.memory_getputs())
-            {
-              memory_gets.emplace_back (mgp.global(), mgp.local(), boost::none);
-              memory_puts.emplace_back
-                (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
-            }
-
-            const we_module_type& we_mod = we_module_type ( mod.name()
-                                                          , mod.function()
-                                                          , std::move (memory_buffers)
-                                                          , std::move (memory_gets)
-                                                          , std::move (memory_puts)
-                                                          );
-            multi_modules[mod_locator.first] = we_mod;
+            multi_modules[mod_it.first] = create_we_module (mod_it.second);
           }
 
           we_transition_type trans
