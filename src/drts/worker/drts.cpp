@@ -143,7 +143,7 @@ namespace
       }
     }
 
-    //!to-do: fix wfe_exec_context() here to get target name from scheduler
+    //! \todo fix wfe_exec_context() here, to get target from scheduler
     void operator() (we::type::multi_module_call_t& multi_mod) const
     {
       if (!_target)
