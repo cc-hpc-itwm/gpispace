@@ -147,7 +147,7 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
 
     //! \note check wrapper cpp, i.e., module_target.cpp, for
     //        wrapper register calls
-    std::string const makefile
+    std::string const wrapper_cpp_content
       {fhg::util::read_file<std::string> (wrapper_cpp)};
     BOOST_TEST_CONTEXT ("wrapper for target = " << target)
     {
@@ -156,7 +156,7 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
                               + mod_name
                               + wrapper_suffix
                               );
-      BOOST_REQUIRE (  makefile.find (wrapper_reg)
+      BOOST_REQUIRE (  wrapper_cpp_content.find (wrapper_reg)
                     != std::string::npos
                     );
     }
