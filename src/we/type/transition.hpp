@@ -27,9 +27,9 @@ namespace we
   namespace type
   {
     using preference_t = std::string;
-    typedef std::unordered_map < preference_t
-                               , module_call_t
-                               > multi_module_call_t;
+    using multi_module_call_t = std::unordered_map < preference_t
+                                                   , module_call_t
+                                                   >;
 
     struct transition_t
     {
