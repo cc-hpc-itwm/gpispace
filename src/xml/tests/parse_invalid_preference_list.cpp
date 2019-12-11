@@ -354,12 +354,7 @@ namespace
       std::list<xml::parse::type::preference_type> targets;
       do
       {
-        targets = gen_valid_targets
-                  ( roll_random_number
-                    ( MIN_TARGETS
-                    , MAX_TARGETS
-                    )
-                  );
+        targets = gen_valid_targets (MAX_TARGETS);
       } while (targets.size() < MIN_TARGETS);
 
       unsigned int split_a =
