@@ -25,7 +25,7 @@ namespace sdpa
                       , const std::string& hostname
                       );
 
-      void assign (const job_id_t&);
+      void assign (const job_id_t&, double);
       void submit(const job_id_t&);
 
       void acknowledge(const job_id_t&);
@@ -47,7 +47,9 @@ namespace sdpa
       void set_backlog_full (bool);
 
       // cost
-      double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
+      double cost_assigned_jobs() const;
+      double _cost_assigned_jobs;
+      std::unordered_map<job_id_t, double> _cost_by_job_id;
 
       bool stealing_allowed() const;
 

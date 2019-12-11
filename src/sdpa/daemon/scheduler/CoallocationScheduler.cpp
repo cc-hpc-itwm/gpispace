@@ -80,13 +80,7 @@ namespace sdpa
 
         const Workers_and_implementation
           matching_workers_and_implementation
-            (_worker_manager.find_assignment
-              ( requirements_and_preferences
-              , [this] (const job_id_t& job_id) -> double
-                {
-                  return allocation_table_.at (job_id)->cost();
-                }
-              )
+            (_worker_manager.find_assignment (requirements_and_preferences)
             );
 
         if (!matching_workers_and_implementation.first.empty())
@@ -98,22 +92,26 @@ namespace sdpa
 
           try
           {
+            double cost
+              (compute_reservation_cost
+                 ( jobId
+                 ,  matching_workers_and_implementation.first
+                 , requirements_and_preferences.computational_cost()
+                 )
+              );
+
             for ( auto const& worker
                 : matching_workers_and_implementation.first
                 )
             {
-              _worker_manager.assign_job_to_worker (jobId, worker);
+              _worker_manager.assign_job_to_worker (jobId, worker, cost);
             }
 
             Reservation* const pReservation
               (new Reservation
                  ( matching_workers_and_implementation.first
                  , matching_workers_and_implementation.second
-                 , compute_reservation_cost
-                     ( jobId
-                     , matching_workers_and_implementation.first
-                     , requirements_and_preferences.computational_cost()
-                     )
+                 , cost
                  )
               );
 

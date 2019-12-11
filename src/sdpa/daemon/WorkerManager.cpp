@@ -345,9 +345,7 @@ namespace sdpa
     }
 
     Workers_and_implementation WorkerManager::find_assignment
-      ( const Requirements_and_preferences& requirements_and_preferences
-      , const std::function<double (job_id_t const&)> cost_reservation
-      ) const
+      (const Requirements_and_preferences& requirements_and_preferences) const
     {
       std::lock_guard<std::mutex> const _(mtx_);
 
@@ -396,7 +394,6 @@ namespace sdpa
       return find_job_assignment_minimizing_total_cost
         ( mmap_matching_workers
         , requirements_and_preferences
-        , cost_reservation
         );
     }
 
@@ -404,7 +401,6 @@ namespace sdpa
       WorkerManager::find_job_assignment_minimizing_total_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , const Requirements_and_preferences& requirements_and_preferences
-        , const std::function<double (job_id_t const&)> cost_reservation
         ) const
     {
       const size_t n_req_workers (requirements_and_preferences.numWorkers());
@@ -419,16 +415,12 @@ namespace sdpa
           )
       {
         const worker_id_host_info_t& worker_info = it.second;
-        double const cost_preassigned_jobs
-          (worker_map_.at (worker_info.worker_id()).cost_assigned_jobs
-             (cost_reservation)
-          );
 
         double const total_cost
           ( requirements_and_preferences.transfer_cost()
               (worker_info.worker_host())
           + requirements_and_preferences.computational_cost()
-          + cost_preassigned_jobs
+          + worker_map_.at (worker_info.worker_id()).cost_assigned_jobs()
           );
 
         bpq.emplace ( total_cost
@@ -509,11 +501,11 @@ namespace sdpa
       return workers_to_cancel;
     }
 
-    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id, double cost)
     {
       std::lock_guard<std::mutex> const _(mtx_);
       Worker& worker (worker_map_.at (worker_id));
-      worker.assign (job_id);
+      worker.assign (job_id, cost);
       worker_equiv_classes_.at
         (worker.capability_names_).inc_pending_jobs (1);
     }

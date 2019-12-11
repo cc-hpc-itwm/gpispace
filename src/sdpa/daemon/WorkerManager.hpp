@@ -117,14 +117,10 @@ namespace sdpa
         find_job_assignment_minimizing_total_cost
           ( const mmap_match_deg_worker_id_t&
           , const Requirements_and_preferences&
-          , const std::function<double (job_id_t const&)>
           ) const;
 
-      Workers_and_implementation
-        find_assignment
-          ( const Requirements_and_preferences&
-          , const std::function<double (job_id_t const&)>
-          ) const;
+      Workers_and_implementation find_assignment
+        (const Requirements_and_preferences&) const;
 
       template <typename Reservation>
       void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
@@ -149,7 +145,7 @@ namespace sdpa
       , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
       );
 
-    void assign_job_to_worker (const job_id_t&, const worker_id_t&);
+    void assign_job_to_worker (const job_id_t&, const worker_id_t&, double cost);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
@@ -246,8 +242,8 @@ namespace sdpa
       std::function<bool (worker_ptr const&, worker_ptr const&)> const
         comp { [&cost] (worker_ptr const& lhs, worker_ptr const& rhs)
                {
-                 return lhs->second.cost_assigned_jobs (cost)
-                   < rhs->second.cost_assigned_jobs (cost);
+                 return lhs->second.cost_assigned_jobs()
+                   < rhs->second.cost_assigned_jobs();
                }
              };
 
@@ -309,7 +305,7 @@ namespace sdpa
             }
           );
 
-        thief->second.assign (*it_job);
+        thief->second.assign (*it_job, cost (*it_job));
         richest_worker.delete_pending_job (*it_job);
 
         thieves.pop();

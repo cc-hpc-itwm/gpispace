@@ -842,7 +842,6 @@ struct fixture_minimal_cost_assignment
       (_worker_manager.find_job_assignment_minimizing_total_cost
         ( mmap_match_deg_worker
         , requirements_and_preferences
-        , [] (sdpa::job_id_t const&) {return 1.0;}
         )
       );
 

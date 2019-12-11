@@ -14,7 +14,9 @@ namespace sdpa
                    , const bool children_allowed
                    , const std::string& hostname
                    )
-      : _capabilities (capabilities)
+      : _cost_assigned_jobs (0)
+      , _cost_by_job_id ({})
+      , _capabilities (capabilities)
       , capability_names_()
       , _allocated_shared_memory_size (allocated_shared_memory_size)
       , _children_allowed (children_allowed)
@@ -39,9 +41,11 @@ namespace sdpa
       return !submitted_.empty() || !acknowledged_.empty();
     }
 
-    void Worker::assign (const job_id_t& jobId)
+    void Worker::assign (const job_id_t& jobId, double cost)
     {
       pending_.insert (jobId);
+      _cost_by_job_id.emplace (jobId, cost);
+      _cost_assigned_jobs += cost;
     }
 
     void Worker::submit (const job_id_t& jobId)
@@ -75,6 +79,18 @@ namespace sdpa
       {
         reserved_ = false;
       }
+
+      auto const it (_cost_by_job_id.find (job_id));
+      if (it != _cost_by_job_id.end())
+      {
+        _cost_assigned_jobs -= it->second;
+        _cost_by_job_id.erase (it);
+      }
+      else
+      {
+        throw std::runtime_error
+          ("No cost associated with the job " + job_id + " was found in the worker!");
+      }
     }
 
     void Worker::delete_pending_job (const job_id_t& job_id)
@@ -84,6 +100,18 @@ namespace sdpa
         throw std::runtime_error ( "Could not remove the pending job "
                                  + job_id
                                  );
+      }
+
+      auto const it (_cost_by_job_id.find (job_id));
+      if (it != _cost_by_job_id.end())
+      {
+        _cost_assigned_jobs -= it->second;
+        _cost_by_job_id.erase (it);
+      }
+      else
+      {
+        throw std::runtime_error
+          ("No cost associated with the job " + job_id + " was found in the worker!");
       }
     }
 
@@ -133,34 +161,9 @@ namespace sdpa
       return reserved_;
     }
 
-    double Worker::cost_assigned_jobs
-      (std::function<double (job_id_t job_id)> cost_reservation) const
+    double Worker::cost_assigned_jobs() const
     {
-      return ( std::accumulate ( pending_.begin()
-                               , pending_.end()
-                               , 0.0
-                               , [&cost_reservation] (double total_cost, job_id_t job_id)
-                                 {
-                                   return total_cost + cost_reservation (job_id);
-                                 }
-                               )
-             + std::accumulate ( submitted_.begin()
-                               , submitted_.end()
-                               , 0.0
-                               , [&cost_reservation] (double total_cost, job_id_t job_id)
-                                 {
-                                   return total_cost + cost_reservation (job_id);
-                                 }
-                               )
-             + std::accumulate ( acknowledged_.begin()
-                               , acknowledged_.end()
-                               , 0.0
-                               , [&cost_reservation] (double total_cost, job_id_t job_id)
-                                 {
-                                   return total_cost + cost_reservation (job_id);
-                                 }
-                               )
-             );
+      return _cost_assigned_jobs;
     }
 
     bool Worker::backlog_full() const
