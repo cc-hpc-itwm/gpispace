@@ -2811,3 +2811,70 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE (expected_cpu_workers.empty());
   BOOST_REQUIRE (expected_cpu_gpu_workers.empty());
 }
+
+BOOST_FIXTURE_TEST_CASE
+  (random_workers_are_assigned_valid_implementations, fixture_add_new_workers)
+{
+  using namespace std;
+
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
+
+  std::string const common_capability (capability_pool());
+
+  Preferences preferences;
+
+  unsigned int total_num_workers (0);
+  unsigned int const num_preferences
+    (3 + fhg::util::testing::random_integral<unsigned int>() % 10);
+
+  std::map<std::string, std::set<sdpa::worker_id_t>> workers_by_preference;
+
+  for (unsigned int i (0); i < num_preferences; ++i)
+  {
+    std::string const preference (capability_pool());
+    preferences.emplace_back (preference);
+
+    unsigned int const num_workers
+      (100 + fhg::util::testing::random_integral<unsigned int>() % 100);
+    total_num_workers += num_workers;
+
+    std::vector<sdpa::worker_id_t> const workers
+      (add_new_workers ( {common_capability, preference}
+                       , num_workers
+                       )
+      );
+
+    workers_by_preference.emplace
+      (preference, std::set<sdpa::worker_id_t> (workers.begin(), workers.end()));
+  }
+
+  unsigned int const num_tasks
+    ( 2*total_num_workers
+    + fhg::util::testing::random_integral<unsigned int>() % total_num_workers
+    );
+
+  for (unsigned int i {0}; i < num_tasks; i++)
+  {
+    sdpa::job_id_t const task (job_name_pool());
+    add_job (task, require (common_capability, preferences));
+
+    _scheduler.enqueueJob (task);
+    request_scheduling();
+
+    auto const assignment (get_current_assignment());
+    BOOST_REQUIRE (assignment.count (task));
+
+    auto const assigned_implementation (*implementation (task));
+    BOOST_REQUIRE (implementation (task));
+    BOOST_REQUIRE
+      ( std::find (preferences.begin(), preferences.end(), assigned_implementation)
+      != preferences.end()
+      );
+
+    auto const assigned_worker (*workers (task).begin());
+
+    BOOST_REQUIRE
+      (workers_by_preference.at (assigned_implementation).count (assigned_worker));
+  }
+}
