@@ -2524,7 +2524,7 @@ BOOST_FIXTURE_TEST_CASE
   {
     std::set<sdpa::job_id_t> const jobs_started
       (_scheduler.start_pending_jobs
-        ( [&assignment, this, &started_jobs]
+        ( [this, &started_jobs]
              ( sdpa::daemon::WorkerSet const& assigned_workers
              , sdpa::daemon::Implementation const& implementation
              , sdpa::job_id_t const& job
