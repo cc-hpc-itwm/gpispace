@@ -137,8 +137,8 @@ BOOST_FIXTURE_TEST_CASE
   std::unordered_set<std::string> const capabilities
     {capability_pool(), capability_pool()};
 
-  unsigned int const num_workers (2000);
-  unsigned int const num_tasks (15000);
+  unsigned int const num_workers (3000);
+  unsigned int const num_tasks (20000);
 
   std::vector<sdpa::worker_id_t> const workers
     (add_new_workers (capabilities, num_workers));
