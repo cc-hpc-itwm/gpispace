@@ -2056,6 +2056,27 @@ struct fixture_add_new_workers
     // the total number of jobs is conserved
     BOOST_REQUIRE_EQUAL (n_jobs_initial_workers + n_stolen_jobs, n_total_jobs);
   }
+
+  void require_worker_and_implementation
+    ( sdpa::job_id_t const& job
+    , std::set<sdpa::worker_id_t>& expected_workers
+    , sdpa::daemon::Implementation const& impl
+    )
+  {
+    auto const assignment (get_current_assignment());
+    BOOST_REQUIRE (assignment.count (job));
+
+    auto const assigned_workers (workers (job));
+
+    BOOST_REQUIRE_EQUAL (assigned_workers.size(), 1);
+    BOOST_REQUIRE (implementation (job));
+    BOOST_REQUIRE_EQUAL (implementation (job), impl);
+
+    BOOST_REQUIRE
+      (expected_workers.count (*assigned_workers.begin()));
+
+    expected_workers.erase (*assigned_workers.begin());
+  }
 };
 
 BOOST_FIXTURE_TEST_CASE
@@ -2746,7 +2767,7 @@ BOOST_FIXTURE_TEST_CASE
                      )
     );
 
-  sdpa::daemon::WorkerSet expected_cpu_workers
+  std::set<sdpa::worker_id_t> expected_cpu_workers
     (cpu_workers.begin(), cpu_workers.end());
 
   unsigned int const num_cpu_gpu_workers
@@ -2758,62 +2779,35 @@ BOOST_FIXTURE_TEST_CASE
                      )
     );
 
-  sdpa::daemon::WorkerSet expected_cpu_gpu_workers
+  std::set<sdpa::worker_id_t> expected_cpu_gpu_workers
     (cpu_gpu_workers.begin(), cpu_gpu_workers.end());
 
-  for (unsigned int i (0); i < num_cpu_workers; i++)
+  std::vector<std::string> targets (num_cpu_workers, CPU);
+  targets.insert (targets.end(), num_cpu_gpu_workers, GPU);
+
+  BOOST_REQUIRE_EQUAL (targets.size(), num_cpu_workers + num_cpu_gpu_workers);
+
+  std::shuffle (targets.begin(), targets.end(), std::default_random_engine());
+
+  for (auto const& target : targets)
   {
     sdpa::job_id_t const job (job_name_pool());
 
-    add_job (job, require (common_capability, {CPU}));
+    add_job (job, require (common_capability, {target}));
 
     _scheduler.enqueueJob (job);
-    _scheduler.assignJobsToWorkers();
+    request_scheduling();
 
-    auto const assignment (get_current_assignment());
-    BOOST_REQUIRE (assignment.count (job));
-
-    auto const assigned_workers (workers (job));
-
-    BOOST_REQUIRE_EQUAL (assigned_workers.size(), 1);
-
-    auto const worker (*assigned_workers.begin());
-
-    BOOST_REQUIRE
-      (expected_cpu_workers.count (worker));
-
-    BOOST_REQUIRE_EQUAL (implementation (job), CPU);
-
-    expected_cpu_workers.erase (worker);
+    if (target == CPU)
+    {
+      require_worker_and_implementation (job, expected_cpu_workers, CPU);
+    }
+    else
+    {
+      require_worker_and_implementation (job, expected_cpu_gpu_workers, GPU);
+    }
   }
 
   BOOST_REQUIRE (expected_cpu_workers.empty());
-
-  for (unsigned int i (0); i < num_cpu_gpu_workers; i++)
-  {
-    sdpa::job_id_t const job (job_name_pool());
-
-    add_job (job, require (common_capability, {GPU}));
-
-    _scheduler.enqueueJob (job);
-    _scheduler.assignJobsToWorkers();
-
-    auto const assignment (get_current_assignment());
-    BOOST_REQUIRE (assignment.count (job));
-
-    auto const assigned_workers (workers (job));
-
-    BOOST_REQUIRE_EQUAL (assigned_workers.size(), 1);
-
-    auto const worker (*assigned_workers.begin());
-
-    BOOST_REQUIRE
-      (expected_cpu_gpu_workers.count (worker));
-
-    BOOST_REQUIRE_EQUAL (implementation (job), GPU);
-
-    expected_cpu_gpu_workers.erase (worker);
-  }
-
   BOOST_REQUIRE (expected_cpu_gpu_workers.empty());
 }
