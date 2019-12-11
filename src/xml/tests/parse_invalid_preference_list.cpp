@@ -357,23 +357,23 @@ namespace
         targets = gen_valid_targets (MAX_TARGETS);
       } while (targets.size() < MIN_TARGETS);
 
-      unsigned int split_a =
+      auto const split_a =
         roll_random_number ( 1
                            , targets.size() - 1
                            );
 
-      unsigned int split_b =
+      auto const split_b =
         roll_random_number ( 0
                            , split_a
                            );
 
       auto it_a = std::next ( targets.begin()
-                          , split_a
-                          );
+                            , split_a
+                            );
 
       auto it_b = std::next ( targets.begin()
-                          , split_b
-                          );
+                            , split_b
+                            );
 
       preferences = std::list<xml::parse::type::preference_type>
                     ( targets.begin()
@@ -401,9 +401,9 @@ namespace
 
 BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences)
 {
-  struct mismatching_targets _targets;
-  pnet_with_multi_modules const multi_mod ( _targets.preferences
-                                          , _targets.modules
+  mismatching_targets const targets;
+  pnet_with_multi_modules const multi_mod ( targets.preferences
+                                          , targets.modules
                                           );
 
   xml::parse::state::type state;
@@ -419,22 +419,22 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences
       , boost::format ( "ERROR: mismatching targets for"
                         " multi-module transition in %3%, %1%%2%"
                       )
-                      % ( _targets.no_modules.empty()
+                      % ( targets.no_modules.empty()
                           ?  ""
                           : fhg::util::print_container
                             ( "mismatch-in-preferences ('"
                             , "', '"
                             , "')"
-                            , _targets.no_modules
+                            , targets.no_modules
                             ).string()
                         )
-                      % ( _targets.no_preferences.empty()
+                      % ( targets.no_preferences.empty()
                           ?  ""
                           : fhg::util::print_container
                             ( ", mismatch-in-modules ('"
                             , "', '"
                             , "')"
-                            , _targets.no_preferences
+                            , targets.no_preferences
                             ).string()
                         )
                       % "[<stdin>:2:9]"
