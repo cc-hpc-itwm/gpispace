@@ -303,3 +303,145 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_without_preferences)
                     % "[<stdin>:5:11]"
       );
 }
+
+//! \note the following test cases exist:
+// +--------------------+----------------+---------------------------------------+
+// | preference_targets | module_targets |                                       |
+// +--------------------+----------------+---------------------------------------+
+// | ∅                  | ∅              | good: default single module case      |
+// | a                  | a              | good: multi-mod valid matching        |
+// | ∅                  | a              | covered: modules_without_preferences  |
+// | a                  | ∅              | covered: preferences_without_modules  |
+// |                    |                |          & missing_target_for_module  |
+// | a                  | c              | left: [a], [c]                        |
+// | a, b               | b, c           | left: [a], [c], match: [b]            |
+// | a                  | a, b           | left: [], [b], match: [a]             |
+// | a, b               | b              | left: [a], [], match: [b]             |
+// +--------------------+----------------+---------------------------------------+
+//
+// "parse_multi_modules_with_mismatching_preferences" covers the last four cases,
+// involving non-empty preferences and modules with target.
+// the below constraints are posed to trigger the one exception type corresponding
+// to them (i.e., error::mismatching_modules_and_preferences):
+// * Roll a unique<list<string>> (count >= 2) and sorting that (the exception diff
+// is always sorted)
+// * Roll iterators: it_a = next (begin, [1, count-1]), it_b = next (begin, [0, a])
+// [begin, a) and [b, end) ranges generate preferences and module targets, resp.
+// [begin, b) and [a, end) ranges generate diff for preferences and modules, resp.
+namespace
+{
+  constexpr auto const MIN_TARGETS = 2;
+
+  size_t roll_random_number ( size_t min_inclusive
+                            , size_t max_inclusive
+                            )
+  {
+    return ( fhg::util::testing::random<size_t>{}()
+             % (max_inclusive - min_inclusive + 1)
+           )
+           + min_inclusive;
+  }
+
+  struct mismatching_targets
+  {
+    std::list<xml::parse::type::preference_type> preferences;
+    std::list<xml::parse::type::preference_type> modules;
+    std::list<xml::parse::type::preference_type> no_modules;
+    std::list<xml::parse::type::preference_type> no_preferences;
+
+    mismatching_targets()
+    {
+      std::list<xml::parse::type::preference_type> targets;
+      do
+      {
+        targets = gen_valid_targets
+                  ( roll_random_number
+                    ( MIN_TARGETS
+                    , MAX_TARGETS
+                    )
+                  );
+      } while (targets.size() < MIN_TARGETS);
+
+      unsigned int split_a =
+        roll_random_number ( 1
+                           , targets.size() - 1
+                           );
+
+      unsigned int split_b =
+        roll_random_number ( 0
+                           , split_a
+                           );
+
+      auto it_a = std::next ( targets.begin()
+                          , split_a
+                          );
+
+      auto it_b = std::next ( targets.begin()
+                          , split_b
+                          );
+
+      preferences = std::list<xml::parse::type::preference_type>
+                    ( targets.begin()
+                    , it_a
+                    );
+
+      modules = std::list<xml::parse::type::preference_type>
+                ( it_b
+                , targets.end()
+                );
+
+      no_modules = std::list<xml::parse::type::preference_type>
+                   ( targets.begin()
+                   , it_b
+                   );
+
+      no_preferences = std::list<xml::parse::type::preference_type>
+                  ( it_a
+                  , targets.end()
+                  );
+    }
+  };
+}
+
+
+BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences)
+{
+  struct mismatching_targets _targets;
+  pnet_with_multi_modules const multi_mod ( _targets.preferences
+                                          , _targets.modules
+                                          );
+
+  xml::parse::state::type state;
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::mismatching_modules_and_preferences>
+      ( [&state, &multi_mod]
+        {
+          std::istringstream input_stream
+            (multi_mod.pnet_xml);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format ( "ERROR: mismatching targets for"
+                        " multi-module transition in %3%, %1%%2%"
+                      )
+                      % ( _targets.no_modules.empty()
+                          ?  ""
+                          : fhg::util::print_container
+                            ( "mismatch-in-preferences ('"
+                            , "', '"
+                            , "')"
+                            , _targets.no_modules
+                            ).string()
+                        )
+                      % ( _targets.no_preferences.empty()
+                          ?  ""
+                          : fhg::util::print_container
+                            ( ", mismatch-in-modules ('"
+                            , "', '"
+                            , "')"
+                            , _targets.no_preferences
+                            ).string()
+                        )
+                      % "[<stdin>:2:9]"
+      );
+}
