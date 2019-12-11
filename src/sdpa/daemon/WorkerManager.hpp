@@ -47,23 +47,9 @@ namespace sdpa
     using mmap_match_deg_worker_id_t
       = std::multimap<double, worker_id_host_info_t, std::greater<double>>;
 
-    class Worker_and_implementation
-    {
-    public:
-      Worker_and_implementation
-        (worker_id_t worker, boost::optional<std::string> implementation);
-
-      void replace_worker (worker_id_t worker);
-
-      worker_id_t const& worker() const;
-      boost::optional<std::string> const& implementation() const;
-
-      bool operator< (Worker_and_implementation const& other) const;
-
-    private:
-      worker_id_t _worker;
-      boost::optional<std::string> _implementation;
-    };
+    using Implementation = boost::optional<std::string>;
+    using WorkerSet = std::set<worker_id_t>;
+    using Workers_and_implementation = std::pair<WorkerSet, Implementation>;
 
     class WorkerManager : boost::noncopyable
     {
@@ -127,14 +113,14 @@ namespace sdpa
 
       mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY
         (const Requirements_and_preferences&) const;
-      std::set<Worker_and_implementation>
+      Workers_and_implementation
         find_job_assignment_minimizing_total_cost
           ( const mmap_match_deg_worker_id_t&
           , const Requirements_and_preferences&
           , const std::function<double (job_id_t const&)>
           ) const;
 
-      std::set<Worker_and_implementation>
+      Workers_and_implementation
         find_assignment
           ( const Requirements_and_preferences&
           , const std::function<double (job_id_t const&)>
@@ -145,8 +131,10 @@ namespace sdpa
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const&
-      , std::set<Worker_and_implementation> const&
-      , std::function<void ( std::set<Worker_and_implementation> const&
+      , WorkerSet const&
+      , Implementation const&
+      , std::function<void ( WorkerSet const&
+                           , Implementation const&
                            , const job_id_t&
                            )> const& serve_job
       );
@@ -372,8 +360,5 @@ namespace sdpa
 
       return jobs_to_reschedule;
     }
-
-    std::set<worker_id_t> extract_workers
-      (std::set<Worker_and_implementation> const& workers_and_implementations);
   }
 }

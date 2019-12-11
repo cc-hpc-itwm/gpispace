@@ -82,26 +82,21 @@ namespace sdpa
           }
         }
 
-        std::set<Worker_and_implementation>
-          assigned_workers_and_implementations() const
+        Workers_and_implementation
+          assigned_workers_and_implementation() const
         {
-          std::set<Worker_and_implementation> workers_and_implementations;
+          WorkerSet workers;
 
           std::transform ( c.begin()
                          , c.end()
-                         , std::inserter ( workers_and_implementations
-                                         , workers_and_implementations.begin()
-                                         )
+                         , std::inserter (workers, workers.begin())
                          , [] (const cost_and_matching_info_t& cost_and_matching_info)
                            {
-                             return Worker_and_implementation
-                               ( cost_and_matching_info._worker_id
-                               , cost_and_matching_info._implementation
-                               );
+                             return cost_and_matching_info._worker_id;
                            }
                          );
 
-          return workers_and_implementations;
+          return std::make_pair (workers, c.front()._implementation);
         }
 
       private:
@@ -127,33 +122,6 @@ namespace sdpa
       worker_id_host_info_t::implementation() const
     {
       return _implementation;
-    }
-
-    Worker_and_implementation::Worker_and_implementation
-        (worker_id_t worker, boost::optional<std::string> implementation)
-      : _worker (std::move (worker))
-      , _implementation (std::move (implementation))
-    {}
-
-    void Worker_and_implementation::replace_worker (worker_id_t worker)
-    {
-      _worker = std::move (worker);
-    }
-
-    worker_id_t const& Worker_and_implementation::worker() const
-    {
-      return _worker;
-    }
-    boost::optional<std::string> const&
-      Worker_and_implementation::implementation() const
-    {
-      return _implementation;
-    }
-
-    bool Worker_and_implementation::operator<
-      (Worker_and_implementation const& other) const
-    {
-      return std::tie (_worker) < std::tie (other.worker());
     }
 
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
@@ -376,7 +344,7 @@ namespace sdpa
       return mmap_match_deg_worker_id;
     }
 
-    std::set<Worker_and_implementation> WorkerManager::find_assignment
+    Workers_and_implementation WorkerManager::find_assignment
       ( const Requirements_and_preferences& requirements_and_preferences
       , const std::function<double (job_id_t const&)> cost_reservation
       ) const
@@ -432,7 +400,7 @@ namespace sdpa
         );
     }
 
-    std::set<Worker_and_implementation>
+    Workers_and_implementation
       WorkerManager::find_job_assignment_minimizing_total_cost
         ( const mmap_match_deg_worker_id_t& mmap_matching_workers
         , const Requirements_and_preferences& requirements_and_preferences
@@ -472,13 +440,15 @@ namespace sdpa
                     );
       }
 
-      return bpq.assigned_workers_and_implementations();
+      return bpq.assigned_workers_and_implementation();
     }
 
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const& job_id
-      , std::set<Worker_and_implementation> const& workers_and_implementations
-      , std::function<void ( std::set<Worker_and_implementation> const&
+      , WorkerSet const& workers
+      , Implementation const& implementation
+      , std::function<void ( WorkerSet const&
+                           , Implementation const&
                            , const job_id_t&
                            )
                      > const& serve_job
@@ -486,24 +456,24 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _(mtx_);
       bool const can_start
-        ( std::all_of ( std::begin (workers_and_implementations)
-                      , std::end (workers_and_implementations)
-                      , [this] (Worker_and_implementation const& worker_and_impl)
+        ( std::all_of ( workers.begin()
+                      , workers.end()
+                      , [this] (worker_id_t const& worker)
                         {
-                          return worker_map_.count (worker_and_impl.worker())
-                            && !worker_map_.at (worker_and_impl.worker()).isReserved();
+                          return worker_map_.count (worker)
+                            && !worker_map_.at (worker).isReserved();
                         }
                       )
         );
 
       if (can_start)
       {
-        for (auto const& worker_and_impl: workers_and_implementations)
+        for (auto const& worker: workers)
         {
-          submit_job_to_worker (job_id, worker_and_impl.worker());
+          submit_job_to_worker (job_id, worker);
         }
 
-        serve_job (workers_and_implementations, job_id);
+        serve_job (workers, implementation, job_id);
       }
 
       return can_start;
@@ -749,22 +719,6 @@ namespace sdpa
       dec_running_jobs ( worker->second.submitted_.size()
                        + worker->second.acknowledged_.size()
                        );
-    }
-
-    std::set<worker_id_t> extract_workers
-      (std::set<Worker_and_implementation> const& workers_and_implementations)
-    {
-      std::set<worker_id_t> _workers;
-      std::transform ( workers_and_implementations.begin()
-                     , workers_and_implementations.end()
-                     , std::inserter (_workers, _workers.begin())
-                     , [] (Worker_and_implementation const& worker_impl)
-                       {
-                         return worker_impl.worker();
-                       }
-                     );
-
-      return _workers;
     }
   }
 }

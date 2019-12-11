@@ -47,7 +47,8 @@ namespace sdpa
         );
 
       std::set<job_id_t> start_pending_jobs
-        (std::function<void ( std::set<Worker_and_implementation> const&
+        (std::function<void ( WorkerSet const&
+                            , Implementation const&
                             , const job_id_t&
                             )
                       >
@@ -57,7 +58,7 @@ namespace sdpa
     private:
       double compute_reservation_cost
         ( const job_id_t&
-        , const std::set<Worker_and_implementation>&
+        , const std::set<worker_id_t>&
         , const double computational_cost
         ) const;
 
@@ -85,10 +86,12 @@ namespace sdpa
       {
       public:
         Reservation
-            ( std::set<Worker_and_implementation> workers_and_implementations
+            ( std::set<worker_id_t> const& workers
+            , Implementation const& implementation
             , double cost
             )
-          : _workers_and_implementations (workers_and_implementations)
+          : _workers (workers)
+          , _implementation (implementation)
           , _cost (cost)
         {}
 
@@ -99,25 +102,13 @@ namespace sdpa
               supports_implementation
           )
         {
-          std::set<Worker_and_implementation>::iterator it
-            (std::find_if
-               ( _workers_and_implementations.begin()
-               , _workers_and_implementations.end()
-               , [&w1] (Worker_and_implementation const& x)
-                 {
-                   return x.worker() == w1;
-                 }
-               )
-            );
-
-          if (it == _workers_and_implementations.end())
+          if (!_workers.count (w1))
           {
             throw std::runtime_error
               ("Asked to replace the non-existent worker " + w1);
           }
 
-          auto const& implementation (it->implementation());
-          if (implementation && !supports_implementation (*implementation))
+          if (_implementation && !supports_implementation (*_implementation))
           {
             throw std::runtime_error
               ( ( boost::format
@@ -127,29 +118,30 @@ namespace sdpa
                 % w1
                 % w2
                 % w2
-                % *implementation
+                % *_implementation
                 ).str()
               );
           }
 
-          _workers_and_implementations.emplace (w2, it->implementation());
-          _workers_and_implementations.erase (it);
+          _workers.emplace (w2);
+          _workers.erase (w1);
         }
 
         std::set<worker_id_t> workers() const
         {
-          return sdpa::daemon::extract_workers (_workers_and_implementations);
+          return _workers;
         }
 
-        std::set<Worker_and_implementation> workers_and_implementations() const
+        Implementation implementation() const
         {
-          return _workers_and_implementations;
+          return _implementation;
         }
 
         double cost() const {return _cost;}
 
       private:
-        std::set<Worker_and_implementation> _workers_and_implementations;
+        std::set<worker_id_t> _workers;
+        Implementation _implementation;
         double _cost;
 
       public:
@@ -183,7 +175,7 @@ namespace sdpa
           get_aggregated_results_if_all_terminated() const
         {
           return boost::make_optional
-            ( _results.individual_results.size() == _workers_and_implementations.size()
+            ( _results.individual_results.size() == _workers.size()
             , _results
             );
         }
@@ -193,11 +185,11 @@ namespace sdpa
         {
           bool applied {false};
 
-          for (auto const& worker_and_impl : _workers_and_implementations)
+          for (auto const& worker : _workers)
           {
-            if (!_results.individual_results.count (worker_and_impl.worker()))
+            if (!_results.individual_results.count (worker))
             {
-              fun (worker_and_impl.worker());
+              fun (worker);
 
               applied = true;
             }

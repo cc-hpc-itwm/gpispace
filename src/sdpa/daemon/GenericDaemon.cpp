@@ -174,23 +174,24 @@ const std::string& GenericDaemon::name() const
     }
 
 void GenericDaemon::serveJob
-  ( std::set<Worker_and_implementation> const& workers_and_implementations
+  ( WorkerSet const& workers
+  , Implementation const& implementation
   , const job_id_t& jobId
   )
 {
   Job const* const ptrJob = findJob (jobId);
   if (ptrJob)
   {
-    for (auto const& worker_and_impl : workers_and_implementations)
+    for (auto const& worker : workers)
     {
       child_proxy
         ( this
-        , _worker_manager.address_by_worker (worker_and_impl.worker()).get()->second
+        , _worker_manager.address_by_worker (worker).get()->second
         )
         .submit_job ( ptrJob->id()
                     , ptrJob->activity()
-                    , worker_and_impl.implementation()
-                    , extract_workers (workers_and_implementations)
+                    , implementation
+                    , workers
                     );
     }
   }
@@ -1579,7 +1580,13 @@ namespace sdpa
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
-          (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
+          (std::bind ( &GenericDaemon::serveJob
+                     , this
+                     , std::placeholders::_1
+                     , std::placeholders::_2
+                     , std::placeholders::_3
+                     )
+          );
       }
     }
 

@@ -183,7 +183,8 @@ namespace sdpa {
       void job_canceled (Job*);
 
       // workers
-      void serveJob (std::set<Worker_and_implementation> const&, const job_id_t&);
+      void serveJob
+        (WorkerSet const&, Implementation const&, const job_id_t&);
 
       // jobs
       std::string gen_id();
