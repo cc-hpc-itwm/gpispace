@@ -141,8 +141,8 @@ BOOST_FIXTURE_TEST_CASE
   Preferences const preferences
     {capability_pool(), capability_pool(), capability_pool()};
 
-  unsigned int const num_workers (3000);
-  unsigned int const num_tasks (20000);
+  unsigned int const num_workers (2000);
+  unsigned int const num_tasks (15000);
   unsigned int const n (num_workers/3);
 
   std::vector<sdpa::worker_id_t> const workers_with_first_capability
@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE
     );
 
   fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (70);
+    const maxmimum_running_time (60);
 
   for (unsigned int i {0}; i < num_tasks; i++)
   {
