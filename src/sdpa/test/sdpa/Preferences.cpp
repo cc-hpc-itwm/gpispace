@@ -25,6 +25,28 @@
 
 namespace
 {
+  we::type::multi_module_call_t create_dummy_multi_mod
+    (Preferences const& preferences)
+  {
+    we::type::multi_module_call_t multi_mod;
+
+    for (auto const& target : preferences)
+    {
+      multi_mod.emplace
+        ( target
+        , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, std::string>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
+        );
+    }
+
+    return multi_mod;
+  }
+
   class drts_component_observing_preferences final
     : public utils::basic_drts_component
   {
@@ -91,12 +113,7 @@ namespace
 
     we::type::transition_t transition
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      , create_dummy_multi_mod (preferences)
       , boost::none
       , props
       , we::priority_type()
@@ -243,12 +260,7 @@ namespace
     {
       transitions.emplace_back
         ( fhg::util::testing::random_string()
-        , we::type::module_call_t ( fhg::util::testing::random_string()
-                                  , fhg::util::testing::random_string()
-                                  , std::unordered_map<std::string, std::string>()
-                                  , std::list<we::type::memory_transfer>()
-                                  , std::list<we::type::memory_transfer>()
-                                  )
+        , create_dummy_multi_mod (preferences)
         , boost::none
         , props
         , we::priority_type()
