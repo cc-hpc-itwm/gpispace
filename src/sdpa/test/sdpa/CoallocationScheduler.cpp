@@ -2814,8 +2814,6 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_FIXTURE_TEST_CASE
   (random_workers_are_assigned_valid_implementations, fixture_add_new_workers)
 {
-  using namespace std;
-
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
 
