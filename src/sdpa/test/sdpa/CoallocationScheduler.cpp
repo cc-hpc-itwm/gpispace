@@ -2797,14 +2797,11 @@ BOOST_FIXTURE_TEST_CASE
     _scheduler.enqueueJob (job);
     request_scheduling();
 
-    if (target == CPU)
-    {
-      require_worker_and_implementation (job, expected_cpu_workers, CPU);
-    }
-    else
-    {
-      require_worker_and_implementation (job, expected_cpu_gpu_workers, GPU);
-    }
+    require_worker_and_implementation 
+      ( job
+      , target == CPU ? expected_cpu_workers : expected_cpu_gpu_workers
+      , target
+      );
   }
 
   BOOST_REQUIRE (expected_cpu_workers.empty());
