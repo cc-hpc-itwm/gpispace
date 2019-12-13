@@ -65,6 +65,7 @@ struct fixture_add_new_workers
 
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> _worker_name_pool;
 
   void add_job ( const sdpa::job_id_t& job_id
                , const Requirements_and_preferences& reqs
@@ -87,10 +88,9 @@ struct fixture_add_new_workers
     )
   {
     std::vector<sdpa::worker_id_t> new_workers (n);
-    static unsigned int j (0);
     std::generate_n ( new_workers.begin()
                     , n
-                    , [] {return "worker_" + std::to_string (j++);}
+                    , [this] {return _worker_name_pool();}
                     );
 
     for (sdpa::worker_id_t const& worker : new_workers)
