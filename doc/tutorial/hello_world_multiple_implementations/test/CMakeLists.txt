@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME tutorial_hello_world_multiple_implementations
   SOURCES test.cpp
   USE_BOOST
