@@ -2786,7 +2786,10 @@ BOOST_FIXTURE_TEST_CASE
 
   BOOST_REQUIRE_EQUAL (targets.size(), num_cpu_workers + num_cpu_gpu_workers);
 
-  std::shuffle (targets.begin(), targets.end(), std::default_random_engine());
+  std::shuffle ( targets.begin()
+               , targets.end()
+               , fhg::util::testing::detail::GLOBAL_random_engine()
+               );
 
   for (auto const& target : targets)
   {
@@ -2797,7 +2800,7 @@ BOOST_FIXTURE_TEST_CASE
     _scheduler.enqueueJob (job);
     request_scheduling();
 
-    require_worker_and_implementation 
+    require_worker_and_implementation
       ( job
       , target == CPU ? expected_cpu_workers : expected_cpu_gpu_workers
       , target

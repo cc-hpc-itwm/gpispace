@@ -30,7 +30,10 @@ BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
   preferences.emplace_back (preferences.front());
 
   std::shuffle
-    (preferences.begin(), preferences.end(), std::default_random_engine());
+    ( preferences.begin()
+    , preferences.end()
+    , fhg::util::testing::detail::GLOBAL_random_engine()
+    );
 
   fhg::util::testing::require_exception
     ( [&]
