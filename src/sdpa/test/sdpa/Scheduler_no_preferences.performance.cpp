@@ -128,7 +128,6 @@ private:
 BOOST_FIXTURE_TEST_CASE
   (performance_scheduling_tasks_with_no_preferences, fixture_add_new_workers)
 {
-  using namespace std;
   using fhg::util::testing::random_integral;
 
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
