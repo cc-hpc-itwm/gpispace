@@ -164,7 +164,7 @@ BOOST_FIXTURE_TEST_CASE
     );
 
   fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (60);
+    const maxmimum_running_time (80);
 
   for (unsigned int i {0}; i < num_tasks; i++)
   {
