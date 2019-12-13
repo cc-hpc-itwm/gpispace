@@ -2650,17 +2650,13 @@ BOOST_FIXTURE_TEST_CASE
 
   std::string const common_capability (capability_pool());
 
-  Preferences const preferences
-     { capability_pool()
-     , capability_pool()
-     , capability_pool()
-     };
+  std::string preference (capability_pool());
 
   unsigned int const num_workers
     (2 + fhg::util::testing::random_integral<unsigned int>() % 3);
 
   std::vector<sdpa::worker_id_t> const workers
-    (add_new_workers ( {common_capability, preferences[0]}
+    (add_new_workers ( {common_capability, preference}
                      , num_workers
                      )
     );
@@ -2671,7 +2667,7 @@ BOOST_FIXTURE_TEST_CASE
     ( job
     , require ( common_capability
               , num_workers
-              , preferences
+              , {preference, capability_pool(), capability_pool()}
               )
     );
 
