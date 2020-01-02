@@ -111,7 +111,6 @@ struct fixture_add_new_workers
                                 , fhg::util::testing::random_string()
                                 , fhg::util::testing::random_string()
                                 );
-      request_scheduling();
     }
 
     return new_workers;
