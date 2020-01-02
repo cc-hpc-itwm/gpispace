@@ -240,7 +240,7 @@ namespace sdpa
         };
 
       std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp { [&cost] (worker_ptr const& lhs, worker_ptr const& rhs)
+        comp { [] (worker_ptr const& lhs, worker_ptr const& rhs)
                {
                  return lhs->second.cost_assigned_jobs()
                    < rhs->second.cost_assigned_jobs();
