@@ -6,12 +6,11 @@
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 
-#include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
 
-#include <util-generic/join.hpp>
+#include <util-generic/read_file.hpp>
+#include <util-generic/executable_path.hpp>
 
 #include <string>
 #include <unordered_set>
@@ -20,110 +19,55 @@
 
 #include <boost/range/adaptors.hpp>
 
+#include <xml/tests/parse_preference_list_with_modules_helpers.hpp>
+
 namespace
 {
-  constexpr auto const MAX_TARGET_PREFERENCES = 10000;
-
-  std::string random_identifier_with_valid_prefix()
+  struct valid_pnet_with_multi_modules
   {
-    return
-      fhg::util::testing::random_char_of
-        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-      +
-      fhg::util::testing::random_string_of
-        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
-  }
+    std::list<std::string> const test_targets;
+    pnet_with_multi_modules const pnet;
 
-  std::list<std::string> gen_valid_targets()
-  {
-    size_t max = ( fhg::util::testing::unique_random<size_t>{}()
-                   % MAX_TARGET_PREFERENCES
-                 ) + 1;
-
-    std::list<std::string> _targets;
-    std::function<std::string()> generate
-      ([] { return random_identifier_with_valid_prefix(); });
-    std::generate_n
-      ( std::back_inserter (_targets)
-        , max
-        , generate
-      );
-
-    _targets.sort();
-    _targets.unique();
-
-    return _targets;
-  }
+    valid_pnet_with_multi_modules ()
+      : test_targets (gen_valid_targets (MAX_TARGETS))
+      , pnet (test_targets, test_targets)
+    {}
+  };
 }
 
-BOOST_AUTO_TEST_CASE (parse_preference_list_and_propagate_to_we)
+BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_match_to_target_in_modules)
 {
-  std::string const first_target_name
-    ("first_" + random_identifier_with_valid_prefix());
-  std::string const second_target_name
-    ("second_" + random_identifier_with_valid_prefix());
+  valid_pnet_with_multi_modules const multi_mod;
 
-  std::string const input
-    ( ( boost::format (R"EOS(
-        <defun name="n_preferences">
-          <preferences>
-            <target>%1%</target>
-            <target>%2%</target>
-           </preferences>
-          <module name="some_module_name" function="some_function()">
-          </module>
-        </defun>)EOS")
-      % first_target_name
-      % second_target_name
-      ).str()
-    );
+  xml::parse::state::type state;
+  std::istringstream input_stream (multi_mod.pnet.pnet_xml);
+
+  BOOST_REQUIRE_NO_THROW (xml::parse::just_parse (state, input_stream));
+}
+
+BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_match_targets_in_function)
+{
+  valid_pnet_with_multi_modules const multi_mod;
 
   xml::parse::state::type state;
 
-  std::istringstream input_stream (input);
+  std::istringstream input_stream (multi_mod.pnet.pnet_xml);
   xml::parse::type::function_type fun
     = xml::parse::just_parse (state, input_stream);
 
-  we::type::activity_t activity
-    (xml::parse::xml_to_we (fun, state));
+  const std::list<xml::parse::type::preference_type>& out_targets
+    = fun.preferences().targets();
 
-  std::list<std::string> test_list;
-  test_list.push_back (first_target_name);
-  test_list.push_back (second_target_name);
-
-  const std::list<xml::parse::type::preference_type>& out_list
-    = activity.preferences();
-
-  BOOST_REQUIRE_EQUAL (test_list, out_list);
+  BOOST_REQUIRE_EQUAL (multi_mod.test_targets, out_targets);
 }
 
-BOOST_AUTO_TEST_CASE (parse_preference_list_and_match_for_valid_targets)
+BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_propagate_to_we)
 {
-  std::list<std::string> test_targets = ::gen_valid_targets();
-
-  std::string pnet_target_list
-    ( "<target>"
-    + fhg::util::join_reference<std::list<std::string>, std::string>
-        (test_targets, "</target><target>").string()
-    + "</target>"
-    );
-
-  std::string const input
-    ( ( boost::format (R"EOS(
-        <defun name="n_preferences">
-          <preferences>
-          %1%
-          </preferences>
-          <module name="some_module_name" function="some_function()">
-          </module>
-        </defun>)EOS")
-      % pnet_target_list
-      ).str()
-    );
+  valid_pnet_with_multi_modules const multi_mod;
 
   xml::parse::state::type state;
 
-  std::istringstream input_stream (input);
+  std::istringstream input_stream (multi_mod.pnet.pnet_xml);
   xml::parse::type::function_type fun
     = xml::parse::just_parse (state, input_stream);
 
@@ -133,5 +77,88 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_and_match_for_valid_targets)
   const std::list<xml::parse::type::preference_type>& out_targets
     = activity.preferences();
 
-  BOOST_REQUIRE_EQUAL (test_targets, out_targets);
+  BOOST_REQUIRE_EQUAL (multi_mod.test_targets, out_targets);
+}
+
+BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_generate_cpp)
+{
+  valid_pnet_with_multi_modules const multi_mod;
+
+  xml::parse::state::type state;
+
+  std::istringstream input_stream (multi_mod.pnet.pnet_xml);
+  xml::parse::type::function_type fun
+    = xml::parse::just_parse (state, input_stream);
+
+  boost::filesystem::path const path
+    ( fhg::util::executable_path().parent_path()
+      / "gen_modules_with_preferences_test"
+    );
+  state.path_to_cpp() = path.string();
+
+  BOOST_REQUIRE_NO_THROW (xml::parse::generate_cpp (fun, state));
+
+  boost::filesystem::path const makefile_path
+    (path.string() + "/Makefile");
+  std::string const makefile
+    {fhg::util::read_file<std::string> (makefile_path)};
+
+  std::string const wrapper_prefix
+    ("WE_MOD_INITIALIZE_START()\n{\n");
+  std::string const wrapper_func_reg
+    ("  WE_REGISTER_FUN_AS (::pnetc::op::");
+  std::string const wrapper_suffix
+    ("::func,\"func\");\n}\nWE_MOD_INITIALIZE_END()");
+
+  for (auto const& target : multi_mod.test_targets)
+  {
+    std::string const mod_name ( multi_mod.pnet.module_name
+                               + "_" + target
+                               );
+
+    boost::filesystem::path const wrapper_cpp
+      (path.string() + "/pnetc/op/" + mod_name + ".cpp");
+
+    boost::filesystem::path const func_def_cpp
+      (path.string() + "/pnetc/op/" + mod_name + "/func.cpp");
+
+    boost::filesystem::path const func_def_hpp
+      (path.string() + "/pnetc/op/" + mod_name + "/func.hpp");
+
+    //! \note check if files generated for target
+    BOOST_TEST_CONTEXT ("cpp generation for target = " << target)
+    {
+      BOOST_REQUIRE (boost::filesystem::exists (wrapper_cpp));
+      BOOST_REQUIRE (boost::filesystem::exists (func_def_cpp));
+      BOOST_REQUIRE (boost::filesystem::exists (func_def_hpp));
+    }
+
+    //! \note check makefile for target ".so" build
+    BOOST_TEST_CONTEXT ("lib for target = " << target)
+    {
+      std::string const lib_path
+        ("pnetc/op/lib" + mod_name + ".so");
+      BOOST_REQUIRE (  makefile.find ( "MODULES += "
+                                     + lib_path
+                                     )
+                    != std::string::npos
+                    );
+    }
+
+    //! \note check wrapper cpp, i.e., module_target.cpp, for
+    //        wrapper register calls
+    std::string const wrapper_cpp_content
+      {fhg::util::read_file<std::string> (wrapper_cpp)};
+    BOOST_TEST_CONTEXT ("wrapper for target = " << target)
+    {
+      std::string wrapper_reg ( wrapper_prefix
+                              + wrapper_func_reg
+                              + mod_name
+                              + wrapper_suffix
+                              );
+      BOOST_REQUIRE (  wrapper_cpp_content.find (wrapper_reg)
+                    != std::string::npos
+                    );
+    }
+  }
 }

@@ -36,6 +36,7 @@
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/preferences.hpp>
+#include <xml/parse/type/multi_mod.hpp>
 
 #include <xml/parse/util/position.hpp>
 
@@ -55,6 +56,7 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <functional>
 
@@ -264,6 +266,55 @@ namespace xml
         }
 
         return target_list;
+      }
+
+      void is_matching_preferences_and_modules
+        ( const xml_node_type* node
+        , state::type const& state
+        , type::preferences_type const& preferences
+        , type::multi_module_type const& multi_mod
+        )
+      {
+        std::list<type::preference_type> modules;
+        for (auto const& mod : multi_mod.modules())
+        {
+          modules.push_back (mod.first);
+        }
+        modules.sort();
+
+        std::list<type::preference_type> pref_list (preferences.targets());
+        pref_list.sort();
+
+        std::list<type::preference_type> mismatching_preferences;
+        std::set_difference ( pref_list.begin()
+                            , pref_list.end()
+                            , modules.begin()
+                            , modules.end()
+                            , std::inserter
+                              ( mismatching_preferences
+                              , mismatching_preferences.begin()
+                              )
+                            );
+
+        std::list<type::preference_type> mismatching_modules;
+        std::set_difference ( modules.begin()
+                            , modules.end()
+                            , pref_list.begin()
+                            , pref_list.end()
+                            , std::inserter
+                              ( mismatching_modules
+                              , mismatching_modules.begin()
+                              )
+                            );
+
+        if (mismatching_modules.size() || mismatching_preferences.size())
+        {
+          throw error::mismatching_modules_and_preferences
+            ( mismatching_preferences
+            , mismatching_modules
+            , state.position (node)
+            );
+        }
       }
 
       // ******************************************************************* //
@@ -1406,6 +1457,7 @@ namespace xml
         , state::type& state
         , type::function_type::ports_type const& ports
         , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
+        , const bool is_target_required
         , boost::filesystem::path const& path
         )
       {
@@ -1421,6 +1473,8 @@ namespace xml
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
         const util::position_type pod (state.position (node));
+        const boost::optional<std::string> target
+          (optional (node, "target"));
         const std::tuple
           < std::string
           , boost::optional<std::string>
@@ -1494,10 +1548,25 @@ namespace xml
           }
         }
 
+        if (is_target_required && !target)
+        {
+          throw error::missing_target_for_module ( name
+                                                 , pod
+                                                 );
+        }
+        else if (!is_target_required && target)
+        {
+          throw error::modules_without_preferences ( name
+                                                   , *target
+                                                   , pod
+                                                   );
+        }
+
         return type::module_type
           ( pod
           , name
           , function
+          , target
           , port_return
           , port_arg
           , memory_buffer_return
@@ -1750,6 +1819,7 @@ namespace xml
         boost::optional<type::expression_type> expression;
         boost::optional<type::module_type> module;
         boost::optional<type::net_type> net;
+        type::multi_module_type multi_module;
         we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
@@ -1820,12 +1890,23 @@ namespace xml
             }
             else if (child_name == "module")
             {
-              module = module_type ( child
-                                   , state
-                                   , ports
-                                   , memory_buffers
-                                   , state.position (node).path()
-                                   );
+              type::module_type parsed_module =
+                module_type ( child
+                            , state
+                            , ports
+                            , memory_buffers
+                            , !preferences.targets().empty()
+                            , state.position (node).path()
+                            );
+
+              if (parsed_module.target())
+              {
+                multi_module.add (parsed_module);
+              }
+              else
+              {
+                module = parsed_module;
+              }
             }
             else if (child_name == "net")
             {
@@ -1875,9 +1956,17 @@ namespace xml
           }
         }
 
-        if (!preferences.targets().empty() && !module)
+        if (!preferences.targets().empty() && multi_module.modules().empty())
         {
           throw error::preferences_without_modules (state.position (node));
+        }
+        else if (!preferences.targets().empty())
+        {
+          is_matching_preferences_and_modules ( node
+                                              , state
+                                              , preferences
+                                              , multi_module
+                                              );
         }
 
 #define FUNCTION(_content) type::function_type  \
@@ -1898,6 +1987,7 @@ namespace xml
           }
 
         return !!expression ? FUNCTION (*expression)
+          : !!multi_module.modules().size() ? FUNCTION (multi_module)
           : !!module ? FUNCTION (*module)
           : !!net ? FUNCTION (*net)
           : throw std::logic_error ("missing function content");

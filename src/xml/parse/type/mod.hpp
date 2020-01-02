@@ -26,6 +26,7 @@ namespace xml
         module_type ( const util::position_type&
                     , const std::string& name
                     , const std::string& function
+                    , const boost::optional<std::string>& target
                     , const boost::optional<std::string>& port_return
                     , const std::list<std::string>& port_arg
                     , boost::optional<std::string> _memory_buffer_return
@@ -40,6 +41,7 @@ namespace xml
 
         const std::string& name() const;
         const std::string& function() const;
+        const boost::optional<std::string>& target() const;
         const boost::optional<std::string>& port_return() const;
         const std::list<std::string>& port_arg() const;
         const boost::optional<std::string>& memory_buffer_return() const;
@@ -59,6 +61,7 @@ namespace xml
       private:
         std::string _name;
         std::string _function;
+        boost::optional<std::string> _target;
         boost::optional<std::string> _port_return;
         std::list<std::string> _port_arg;
         boost::optional<std::string> _memory_buffer_return;

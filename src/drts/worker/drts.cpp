@@ -82,6 +82,7 @@ namespace
       , task (target)
       , _engine (engine)
       , _activity (activity)
+      , _target (boost::none)
     {}
 
     void operator() (we::type::net_type& net) const
@@ -142,6 +143,35 @@ namespace
       }
     }
 
+    //! \todo fix wfe_exec_context() here, to get target from scheduler
+    void operator() (we::type::multi_module_call_t& multi_mod) const
+    {
+      if (!_target)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "no target selected for multi-module transition '"
+                + _activity.transition().name()
+                + "' failed"
+              )
+          );
+      }
+
+      auto const& mod_it = multi_mod.find (*_target);
+      if (mod_it == multi_mod.end())
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "no module for target '" + *_target + "' found"
+                " found in multi-module transition '"
+                + _activity.transition().name() + "'"
+              )
+          );
+      }
+
+      return (*this) (mod_it->second);
+    }
+
     void operator() (we::type::expression_t&) const
     {
       throw std::logic_error ("wfe_exec_context (expression)");
@@ -154,6 +184,7 @@ namespace
     wfe_task_t& task;
     std::mt19937& _engine;
     we::type::activity_t& _activity;
+    const boost::optional<std::string> _target;
   };
 }
 

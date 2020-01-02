@@ -317,6 +317,41 @@ namespace xml
         preferences_without_modules (const util::position_type&);
       };
 
+      class missing_target_for_module : public generic
+      {
+      public:
+        missing_target_for_module ( const std::string&
+                                  , const util::position_type&
+                                  );
+      };
+
+      class modules_without_preferences : public generic
+      {
+      public:
+        modules_without_preferences ( const std::string&
+                                    , const std::string&
+                                    , const util::position_type&
+                                    );
+      };
+
+      class duplicate_module_for_target : public generic
+      {
+      public:
+        duplicate_module_for_target ( const std::string&
+                                     , const std::string&
+                                     , const util::position_type&
+                                     );
+      };
+
+      class mismatching_modules_and_preferences : public generic
+      {
+      public:
+        mismatching_modules_and_preferences ( const std::list<std::string>&
+                                             , const std::list<std::string>&
+                                             , const util::position_type&
+                                             );
+      };
+
       // ******************************************************************* //
 
       class port_with_unknown_type : public generic

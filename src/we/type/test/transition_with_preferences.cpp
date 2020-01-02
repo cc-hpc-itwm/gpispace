@@ -12,11 +12,12 @@
 
 namespace {
   //! \todo update this list to contain single module type
-  enum transition_type { net, module, expression };
+  enum transition_type { net, module, expression, multi_module };
 
   std::vector<transition_type> const non_preference_types
     { transition_type::net
     , transition_type::expression
+    , transition_type::module
     };
 
   using data_type = typename std::remove_reference
@@ -39,6 +40,8 @@ namespace {
           data_type (we::type::expression_t (""))
       : type == transition_type::module ?
           data_type (we::type::module_call_t())
+      : type == transition_type::multi_module ?
+          data_type (we::type::multi_module_call_t())
       : throw std::logic_error
           ("invalid transition data_type specified")
       , boost::none
@@ -61,7 +64,8 @@ BOOST_DATA_TEST_CASE ( we_transition_check_preferences_without_modules
   const std::string outer ( "Failed to create transition '"
                             + transition_name + "'"
                           );
-  const std::string inner ("preferences defined without modules");
+  const std::string inner
+    ("preferences defined without multiple modules with target");
 
   fhg::util::testing::require_exception
     ( [&]
@@ -91,7 +95,7 @@ BOOST_AUTO_TEST_CASE (we_transition_check_for_serialized_preferences)
 {
   auto const transition_with_preferences_and_modules =
     create_transition_with_preferences ( "transition_for_serialize"
-                                       , transition_type::module
+                                       , transition_type::multi_module
                                        );
 
   FHG_UTIL_TESTING_REQUIRE_SERIALIZED_TO_ID

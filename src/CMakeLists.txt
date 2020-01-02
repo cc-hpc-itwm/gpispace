@@ -90,6 +90,7 @@ extended_add_library (NAME pnet
           "xml/parse/type/memory_buffer.cpp"
           "xml/parse/type/memory_transfer.cpp"
           "xml/parse/type/mod.cpp"
+          "xml/parse/type/multi_mod.cpp"
           "xml/parse/type/net.cpp"
           "xml/parse/type/place.cpp"
           "xml/parse/type/place_map.cpp"
