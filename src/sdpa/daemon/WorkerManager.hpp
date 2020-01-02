@@ -1,7 +1,7 @@
 #pragma once
 
 #include <sdpa/daemon/Worker.hpp>
-#include <sdpa/job_requirements.hpp>
+#include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 
 #include <boost/bimap.hpp>
@@ -24,30 +24,32 @@ namespace sdpa
     class worker_id_host_info_t
     {
     public:
-      worker_id_host_info_t ( const worker_id_t& worker_id
-                            , const std::string& worker_host
+      worker_id_host_info_t ( worker_id_t worker_id
+                            , std::string worker_host
                             , unsigned long shared_memory_size
-                            , const double& last_time_idle
-                            )
-        : worker_id_ (worker_id)
-        , worker_host_ (worker_host)
-        , shared_memory_size_ (shared_memory_size)
-        , _last_time_idle (last_time_idle)
-      {}
+                            , double last_time_idle
+                            , boost::optional<std::string> implementation
+                            );
 
       const worker_id_t& worker_id() const {return worker_id_;}
       const std::string& worker_host() const {return worker_host_;}
       double last_time_idle() const {return _last_time_idle;}
       unsigned long shared_memory_size() const {return shared_memory_size_;}
+      boost::optional<std::string> const& implementation() const;
 
     private:
       worker_id_t worker_id_;
       std::string worker_host_;
       unsigned long shared_memory_size_;
       double _last_time_idle;
+      boost::optional<std::string> _implementation;
     };
     using mmap_match_deg_worker_id_t
       = std::multimap<double, worker_id_host_info_t, std::greater<double>>;
+
+    using Implementation = boost::optional<std::string>;
+    using WorkerSet = std::set<worker_id_t>;
+    using Workers_and_implementation = std::pair<WorkerSet, Implementation>;
 
     class WorkerManager : boost::noncopyable
     {
@@ -109,24 +111,26 @@ namespace sdpa
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
-      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY (const job_requirements_t&) const;
-      std::set<worker_id_t> find_job_assignment_minimizing_total_cost
-        ( const mmap_match_deg_worker_id_t&
-        , const job_requirements_t&
-        , const std::function<double (job_id_t const&)>
-        ) const;
+      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY
+        (const Requirements_and_preferences&) const;
+      Workers_and_implementation
+        find_job_assignment_minimizing_total_cost
+          ( const mmap_match_deg_worker_id_t&
+          , const Requirements_and_preferences&
+          ) const;
 
-      std::set<worker_id_t> find_assignment
-        ( const job_requirements_t&
-        , const std::function<double (job_id_t const&)>
-        ) const;
+      Workers_and_implementation find_assignment
+        (const Requirements_and_preferences&) const;
 
       template <typename Reservation>
       void steal_work (std::function<Reservation* (job_id_t const&)> reservation);
 
     bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const&, std::set<worker_id_t> const&
-      , std::function<void ( std::set<worker_id_t> const&
+      ( job_id_t const&
+      , WorkerSet const&
+      , Implementation const&
+      , std::function<void ( WorkerSet const&
+                           , Implementation const&
                            , const job_id_t&
                            )> const& serve_job
       );
@@ -141,7 +145,7 @@ namespace sdpa
       , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
       );
 
-    void assign_job_to_worker (const job_id_t&, const worker_id_t&);
+    void assign_job_to_worker (const job_id_t&, const worker_id_t&, double cost);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t& );
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
@@ -168,10 +172,9 @@ namespace sdpa
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
       void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
 
-      boost::optional<double> matchRequirements
-        ( Worker const&
-        , const job_requirements_t& job_req_set
-        ) const;
+      std::pair<boost::optional<double>, boost::optional<std::string>>
+        match_requirements_and_preferences
+          ( Worker const&, const Requirements_and_preferences&) const;
 
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
@@ -209,6 +212,26 @@ namespace sdpa
         return;
       }
 
+      using worker_ptr = worker_map_t::iterator;
+
+      std::vector<worker_ptr> thief_candidates;
+      for (worker_id_t const& w : _worker_ids)
+      {
+        auto const& it (worker_map.find (w));
+        fhg_assert (it != worker_map.end());
+        Worker const& worker (it->second);
+
+        if (!worker.has_running_jobs() && !worker.has_pending_jobs())
+        {
+          thief_candidates.emplace_back (it);
+        }
+      }
+
+      if (thief_candidates.empty())
+      {
+        return;
+      }
+
       std::function<double (job_id_t const& job_id)> const cost
         { [&reservation] (job_id_t const& job_id)
           {
@@ -216,13 +239,11 @@ namespace sdpa
           }
         };
 
-      using worker_ptr = worker_map_t::iterator;
-
       std::function<bool (worker_ptr const&, worker_ptr const&)> const
         comp { [&cost] (worker_ptr const& lhs, worker_ptr const& rhs)
                {
-                 return lhs->second.cost_assigned_jobs (cost)
-                   < rhs->second.cost_assigned_jobs (cost);
+                 return lhs->second.cost_assigned_jobs()
+                   < rhs->second.cost_assigned_jobs();
                }
              };
 
@@ -232,7 +253,7 @@ namespace sdpa
                           > to_steal_from (comp);
 
       std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp_idles { [] (worker_ptr const& lhs, worker_ptr const& rhs)
+        comp_thieves { [] (worker_ptr const& lhs, worker_ptr const& rhs)
                      {
                        return lhs->second._last_time_idle
                          > rhs->second._last_time_idle;
@@ -241,29 +262,24 @@ namespace sdpa
 
       std::priority_queue < worker_ptr
                           , std::vector<worker_ptr>
-                          , decltype (comp_idles)
-                          > idles (comp_idles);
+                          , decltype (comp_thieves)
+                          > thieves (comp_thieves, thief_candidates);
 
       for (worker_id_t const& w : _worker_ids)
       {
-        worker_ptr const& worker_ptr (worker_map.find (w));
-        fhg_assert (worker_ptr != worker_map.end());
-        Worker const& worker (worker_ptr->second);
+        auto const& it (worker_map.find (w));
+        Worker const& worker (it->second);
 
         if (worker.stealing_allowed())
         {
-          to_steal_from.emplace (worker_ptr);
-        }
-        else if (!worker.has_running_jobs() && !worker.has_pending_jobs())
-        {
-          idles.emplace (worker_ptr);
+          to_steal_from.emplace (it);
         }
       }
 
-      while (!(idles.empty() || to_steal_from.empty()))
+      while (!(thieves.empty() || to_steal_from.empty()))
       {
         worker_ptr const richest (to_steal_from.top());
-        worker_ptr const& thief (idles.top());
+        worker_ptr const& thief (thieves.top());
         Worker& richest_worker (richest->second);
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()
@@ -280,12 +296,19 @@ namespace sdpa
 
         fhg_assert (it_job != richest_worker.pending_.end());
 
-        reservation (*it_job)->replace_worker (richest->first, thief->first);
+        reservation (*it_job)->replace_worker
+          ( richest->first
+          , thief->first
+          , [&thief] (const std::string& cpb)
+            {
+              return thief->second.hasCapability (cpb);
+            }
+          );
 
-        thief->second.assign (*it_job);
-        richest_worker.pending_.erase (*it_job);
+        thief->second.assign (*it_job, cost (*it_job));
+        richest_worker.delete_pending_job (*it_job);
 
-        idles.pop();
+        thieves.pop();
         to_steal_from.pop();
 
         if (richest_worker.stealing_allowed())
