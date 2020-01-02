@@ -5,10 +5,9 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <algorithm>
-#include <random>
+#include <cstddef>
+#include <iterator>
 #include <stdexcept>
-#include <string>
 
 BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
 {
@@ -24,16 +23,12 @@ BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
     + random_integral<unsigned int>() % (MAX_PREFERENCES - MIN_PREFERENCES + 1)
     );
 
-  auto preferences
-    (randoms<std::vector<std::string>, unique_random> (npreferences));
+  auto preferences (randoms<Preferences, unique_random> (npreferences));
 
-  preferences.emplace_back (preferences.front());
-
-  std::shuffle
-    ( preferences.begin()
-    , preferences.end()
-    , fhg::util::testing::detail::GLOBAL_random_engine()
-    );
+  auto const insertion_point
+    (random_integral<std::size_t>() % preferences.size());
+  preferences.emplace
+    (std::next (preferences.begin(), insertion_point), preferences.front());
 
   fhg::util::testing::require_exception
     ( [&]
