@@ -30,9 +30,3 @@ $(LIB_PATH):
 
 $(OBJ_HELLO): hello_world.cpp $(LIB_PATH)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-$(OBJ_HELLO2): hello2.c $(LIB_PATH)
-	$(CC) $(CFLAGS) -c $< -o $@
-
-$(OBJ_LIBHELLO): hello_util.c $(LIB_PATH)
-	$(CC) $(CFLAGS) -shared $< -o $@
