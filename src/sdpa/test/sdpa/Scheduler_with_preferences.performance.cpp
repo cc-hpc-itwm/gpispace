@@ -85,19 +85,14 @@ struct fixture_add_new_workers
     return _requirements_and_preferences.find (id)->second;
   }
 
-  std::vector<sdpa::worker_id_t> add_new_workers
+  void add_new_workers
     ( std::unordered_set<std::string> const& cpbnames
     , unsigned int n
     )
   {
-    std::vector<sdpa::worker_id_t> new_workers (n);
-    std::generate_n ( new_workers.begin()
-                    , n
-                    , [this] {return _worker_name_pool();}
-                    );
-
-    for (sdpa::worker_id_t const& worker : new_workers)
+    while (n --> 0)
     {
+      auto const worker (_worker_name_pool());
       sdpa::capabilities_set_t cpbset;
       for (std::string const& capability_name : cpbnames)
       {
@@ -112,8 +107,6 @@ struct fixture_add_new_workers
                                 , fhg::util::testing::random_string()
                                 );
     }
-
-    return new_workers;
   }
 
   void request_scheduling()
@@ -143,23 +136,15 @@ BOOST_FIXTURE_TEST_CASE
   unsigned int const num_tasks (15000);
   unsigned int const n (num_workers/3);
 
-  std::vector<sdpa::worker_id_t> const workers_with_first_capability
-    (add_new_workers ( {common_capability, *preferences.begin()}
-                     , n
-                     )
-    );
-
-  std::vector<sdpa::worker_id_t> const workers_with_second_capability
-    (add_new_workers ( {common_capability, *std::next (preferences.begin(), 1)}
-                     , n
-                     )
-    );
-
-  std::vector<sdpa::worker_id_t> const workers_with_third_capability
-    (add_new_workers ( {common_capability, *std::next (preferences.begin(), 2)}
-                     , num_workers - 2*n
-                     )
-    );
+  add_new_workers ( {common_capability, *preferences.begin()}
+                  , n
+                  );
+  add_new_workers ( {common_capability, *std::next (preferences.begin(), 1)}
+                  , n
+                  );
+  add_new_workers ( {common_capability, *std::next (preferences.begin(), 2)}
+                  , num_workers - 2*n
+                  );
 
   fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
     const maxmimum_running_time (80);
