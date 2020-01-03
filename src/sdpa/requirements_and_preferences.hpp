@@ -2,6 +2,7 @@
 
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
+#include <we/type/transition.hpp>
 
 #include <functional>
 #include <iterator>
@@ -14,7 +15,7 @@
 const std::function<double (std::string const&)>
   null_transfer_cost = [](const std::string&) {return 0.0;};
 
-using Preferences = std::vector<std::string>;
+using Preferences = std::list<we::type::preference_t>;
 
 class Requirements_and_preferences
 {
