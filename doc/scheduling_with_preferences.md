@@ -28,21 +28,34 @@ requirements for each module implementation, referred to as preferences
 
 Assumptions: 
 
-1. For each computing resource type (i.e. "CPU", "GPU", "FPGA") there 
-   is a number of workers started (for some resource types it can be zero)
-             
-2. Each activity submitted to the runtime has specified apart a 
-   set of requirements an ordered list of preferences 
+1. Each activity submitted to the runtime system has specified apart a 
+   set of requirements an ordered list of activity preferences 
    (e.g. {"CPU", "GPU", "FPGA"}).
-             
-   For each preference in that list there should be an implementation provided 
-   by the user for that specific compute resource type.
+   
+2. The activity preferences are a set of independent requirements for modules. 
+   Each preference should be identical to a target of a module implementation.
+   The set of preferences of an activity should be identical to the set of 
+   targets.
+
+3. From the point of view of the scheduler, the preferences are set of worker 
+   capabilities, identical to the set of targets specified in the Petri net 
+   scheme. The workers capable to run a certain module implementation must have 
+   as capability the target specified for that module in the Petri net scheme.
+       
+4. For each preference there should be an implementation provided 
+   by the user for that specific compute resource (worker) type.
 
    Note: the requirements and preferences should be disjoint sets.
-   Example: requirements: {"COMPUTE"}, 
-            preferences: {"CPU", "GPU", "FPGA"}
-   
-
+   Example: activity requirements: {"COMPUTE"}, 
+            activity preferences: {"CPU", "GPU", "FPGA"}
+            Correspondingly, there should be three module implementations
+            in the Petri net scheme for the targets "CPU", "GPU" and "FPGA",
+            respectively
+            
+   Worker capabilities required for running the task:
+     {"COMPUTE", "CPU"} or {"COMPUTE", "GPU"} or {"COMPUTE", "FPGA"},
+     or a combination of these.
+     
 Note: the order is important only when the module implementations have 
 associated equal costs, in the contrary case the selection is driven in the 
 first place by the costs. This means that even if a CPU is preferred to a GPU 
