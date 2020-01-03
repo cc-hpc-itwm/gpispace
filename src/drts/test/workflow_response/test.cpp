@@ -22,6 +22,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/starts_with.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/latch.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
@@ -586,6 +587,18 @@ BOOST_DATA_TEST_CASE
        client.synchronous_workflow_response
          (job_id, "get_and_update_state", 0UL);
      }
-    , std::runtime_error ("workflow failed")
+    , std::runtime_error ("provoke failure")
+    , [] (std::runtime_error const& lhs, std::runtime_error const& rhs)
+      {
+        if (!fhg::util::ends_with (lhs.what(), rhs.what()))
+        {
+          throw std::logic_error
+            ( ( boost::format ("Wrong message: '%1%' does not ends with '%2%'.")
+              % rhs.what()
+              % lhs.what()
+              ).str()
+            );
+        }
+      }
     );
 }

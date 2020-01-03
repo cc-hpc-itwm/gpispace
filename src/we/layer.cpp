@@ -541,7 +541,7 @@ namespace we
     void layer::rts_failed_and_forget (id_type id, std::string message)
     {
       _nets_to_extract_from.forget (id);
-      cancel_outstanding_responses (id, "workflow failed");
+      cancel_outstanding_responses (id, message);
       _rts_failed (id, message);
     }
     void layer::rts_canceled_and_forget (id_type id)
