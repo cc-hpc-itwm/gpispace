@@ -2971,3 +2971,41 @@ BOOST_FIXTURE_TEST_CASE
 
     require_worker_and_implementation (job_3, worker_1, boost::none);
 }
+
+BOOST_FIXTURE_TEST_CASE
+  ( no_assignment_to_workers_with_no_capability_among_preferences_is_allowed
+  , fixture_scheduler_and_requirements_and_preferences
+  )
+{
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
+
+  sdpa::worker_id_t const worker (worker_name_pool());
+  _worker_manager.addWorker
+    ( worker
+    , {sdpa::Capability (capability_pool(), worker)}
+    , random_ulong()
+    , false
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    , fhg::util::testing::random_identifier_without_leading_underscore()
+    );
+
+  sdpa::job_id_t const job (job_name_pool());
+  add_job ( job
+          , Requirements_and_preferences
+              ( {}
+              , we::type::schedule_data (1)
+              , null_transfer_cost
+              , computational_cost
+              , 0
+              , {capability_pool(), capability_pool(), capability_pool()}
+              )
+          );
+
+  _scheduler.enqueueJob (job);
+  _scheduler.assignJobsToWorkers();
+
+  auto const assignment (get_current_assignment());
+  BOOST_REQUIRE_EQUAL (assignment.count (job), 0);
+}
