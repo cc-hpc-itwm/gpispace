@@ -278,19 +278,21 @@ namespace sdpa
                        )
         );
 
-      auto const condition (preference != preferences.cend());
-      return std::make_pair
-        ( boost::make_optional
-            ( condition
-            , ( matchingDeg
-              + std::distance (preference, preferences.end())
-              + 1.0
-              )
-              /
-              (worker._capabilities.size() + preferences.size() + 1.0)
-            )
-        , boost::make_optional (condition, *preference)
+      if (preference == preferences.cend())
+      {
+        return std::make_pair (boost::none, boost::none);
+      }
+
+      boost::optional<double> matching_req_and_pref_deg
+        ( ( matchingDeg
+          + std::distance (preference, preferences.end())
+          + 1.0
+          )
+          /
+          (worker._capabilities.size() + preferences.size() + 1.0)
         );
+
+      return std::make_pair (matching_req_and_pref_deg, *preference);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
