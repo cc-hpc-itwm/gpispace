@@ -24,5 +24,5 @@ namespace gspc
     resource::Type const& type() const;
   };
 
-  using ResourceHierarchy = Tree<Resource>;
+  using Resources = Forest<Resource>;
 }

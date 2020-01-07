@@ -18,11 +18,15 @@ namespace gspc
 
   struct ResourceManager
   {
-    TreeResult<resource::ID> add (Tree<Resource>);
-    TreeResult<resource::ID> remove (Tree<resource::ID>);
+    Forest<MaybeError<resource::ID>>> add (Forest<resource::ID>);
+
+    resource::ID add (Args&&...); // create Resource
+    Resource const& at (resource::ID);
 
     resource::ID aquire (resource::Type);
     void release (resource::ID);
+
+    std::unordered_map<resource>
   };
 
   namespace resource_manager

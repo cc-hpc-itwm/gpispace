@@ -17,14 +17,12 @@ namespace gspc
     State state() const;
     Workflow (State);
 
-    boost::optional<task::ID> next();
-    Task extract (task::ID);
+    boost::optional<Task> task();
     void inject (task::ID, task::State);
 
   private:
     task::ID _next_task {0};
     std::unordered_map<task::ID, Task> _tasks;
-    std::unordered_map<task::ID, Task> _running;
   };
 
   namespace workflow

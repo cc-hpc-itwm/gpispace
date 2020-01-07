@@ -6,9 +6,12 @@ namespace gspc
 {
   namespace task
   {
+    // more complex:
+    // - hierarchy with user_context
+    // - information for scheduler
     FHG_UTIL_HARD_INTEGRAL_TYPEDEF (ID, std::uint64_t);
 
-    struct State; // success, failure (reason), cancelled (reason), ...
+    struct State; // success (result), failure (reason), cancelled (reason), ...
   }
 
   struct Task
