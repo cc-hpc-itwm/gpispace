@@ -6,3 +6,4 @@ add_unit_test (NAME gspc_Cache
 )
 
 add_subdirectory (stencil_cache)
+add_subdirectory (util)
