@@ -59,6 +59,18 @@ namespace gspc
       Iterator begin() const; // O(1)
       Iterator end() const;   // O(1)
 
+      // transform
+      template<typename U, typename F>
+        using is_transformer = typename
+          std::enable_if<fhg::util::is_callable<F, U (T const&)>{}>::type;
+
+      // apply calls transform once for every node in the forest
+      template< typename U
+              , typename Transformer
+              , typename = is_transformer<U, Transformer>
+              >
+        Forest<U> apply (Transformer) const;
+
       Forest() = default;
       Forest (Forest const&) = delete;
       Forest (Forest&&) = default;

@@ -269,5 +269,38 @@ namespace gspc
     {
       return _suc.end();
     }
+
+    template<typename T>
+      template<typename U, typename Transformer, typename>
+        Forest<U> Forest<T>::apply (Transformer transform) const
+    {
+      std::unordered_map<T, U> _transformed;
+
+      auto transformed
+        ( [&] (T const& x) -> U const&
+          {
+            if (!_transformed.count (x))
+            {
+              _transformed.emplace (x, transform (x));
+            }
+
+            return _transformed.at (x);
+          }
+        );
+
+      Forest<U> forest;
+
+      for (auto suc : _suc)
+      {
+        auto from (suc.first);
+
+        for (auto to : suc.second)
+        {
+          forest.insert (transformed (from), transformed (to));
+        }
+      }
+
+      return forest;
+    }
   }
 }
