@@ -89,6 +89,11 @@ namespace sdpa
           return _stealing_allowed_classes;
         }
 
+        void allow_classes_matching_preferences_stealing
+          ( std::map<std::set<std::string>, WorkerEquivalenceClass> const& worker_classes
+          , Preferences const& preferences
+          );
+
       private:
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;

@@ -670,6 +670,30 @@ namespace sdpa
       _idle_workers.erase (worker->first);
     }
 
+    void WorkerManager::WorkerEquivalenceClass::allow_classes_matching_preferences_stealing
+      ( std::map<std::set<std::string>, WorkerEquivalenceClass> const& worker_classes
+      , Preferences const& preferences
+      )
+    {
+      if (preferences.empty())
+      {
+        return;
+      }
+
+      for (auto const& worker_class : worker_classes)
+      {
+        if (std::any_of ( preferences.begin()
+                        , preferences.end()
+                        , [&worker_class] (std::string const& preference)
+                          { return worker_class.first.count (preference); }
+                        )
+           )
+        {
+          _stealing_allowed_classes.emplace (worker_class.first);
+        }
+      }
+    }
+
     void WorkerManager::steal_work
       (std::function<scheduler::Reservation* (job_id_t const&)> reservation)
     {
