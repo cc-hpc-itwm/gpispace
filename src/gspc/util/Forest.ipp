@@ -105,13 +105,6 @@ namespace gspc
         (From<T> from, To<T> to)
     try
     {
-      auto suc {_suc.find (from)};
-
-      if (suc != _suc.end() && suc->second.find (to) != suc->second.end())
-      {
-        throw std::invalid_argument ("Duplicate connection.");
-      }
-
         down ( to
              , [&] (T index)
                {

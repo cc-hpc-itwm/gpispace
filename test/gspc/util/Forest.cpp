@@ -175,7 +175,7 @@ namespace gspc
               % xs.at (p + 1)
               ).str()
             )
-          , std::invalid_argument ("Duplicate connection.")
+          , std::invalid_argument ("Diamond.")
           )
         );
     }

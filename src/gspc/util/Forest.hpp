@@ -40,7 +40,6 @@ namespace gspc
       template<typename U> using To = U;
 
       // insert a new connection
-      // duplicate connection: throw, forest unchanged
       // insert would add a cycle: throw, forest unchanged
       // insert would add a diamond: throw, forest unchanged
       // amortized O(#component) for cycle/diamond detection
