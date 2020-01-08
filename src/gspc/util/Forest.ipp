@@ -112,13 +112,10 @@ namespace gspc
         throw std::invalid_argument ("Duplicate connection.");
       }
 
-      {
-        auto seen {Ts {from}};
-
         down ( to
-             , [&seen] (T index)
+             , [&] (T index)
                {
-                 if (!seen.emplace (index).second)
+                 if (index == from)
                  {
                    throw std::invalid_argument ("Cycle.");
                  }
@@ -126,7 +123,6 @@ namespace gspc
                  return true;
                }
              );
-      }
 
       //! BROKEN: Does not detect D<-A->B->C + D->C
       {
