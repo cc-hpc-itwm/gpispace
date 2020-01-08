@@ -33,10 +33,17 @@ extended_add_executable (NAME GSPC19
             Util::Generic
 )
 
+extended_add_library (NAME util
+  NAMESPACE GSPC
+  # SOURCES "gspc/util/Forest.ipp"
+  LIBRARIES Boost::serialization
+)
+
 extended_add_executable (NAME Proto
   SOURCES "Proto.cpp"
-  LIBRARIES Util::Generic
+  LIBRARIES GSPC::util
             gspc::logging
+            Util::Generic
             RPC
             Boost::base
 )

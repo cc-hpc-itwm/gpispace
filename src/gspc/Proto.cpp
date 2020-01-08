@@ -1,310 +1,126 @@
-#include <gspc/util/Forest.hpp>
-#include <gspc/MaybeError.hpp>
+#include <gspc/Proto.hpp>
 
-#include <logging/endpoint.hpp>
-
-#include <rpc/remote_endpoint.hpp>
-#include <rpc/service_dispatcher.hpp>
-#include <rpc/service_handler.hpp>
-#include <rpc/service_socket_provider.hpp>
-#include <rpc/service_tcp_provider.hpp>
-
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/finally.hpp>
-#include <util-generic/hash/combined_hash.hpp>
-#include <util-generic/print_exception.hpp>
-#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-
-#include <boost/variant.hpp>
-#include <boost/range/adaptor/map.hpp>
-
-#include <cstdint>
-#include <cstdlib>
-#include <iostream>
-#include <list>
-#include <memory>
-#include <stdexcept>
-#include <string>
-#include <thread>
-#include <unordered_map>
-#include <unordered_set>
-
-//! \todo merge rpc/logging
 namespace rpc
 {
-  using endpoint = fhg::logging::endpoint;
-  using remote_endpoint = fhg::rpc::remote_endpoint;
-  using service_dispatcher = fhg::rpc::service_dispatcher;
-  using service_socket_provider = fhg::rpc::service_socket_provider;
-  using service_tcp_provider = fhg::rpc::service_tcp_provider;
-
-  template<typename Protocol>
-    using service_handler = fhg::rpc::service_handler<Protocol>;
+  std::unique_ptr<remote_endpoint> make_endpoint
+    (boost::asio::io_service& io_service, endpoint ep)
+  {
+    return fhg::util::visit<std::unique_ptr<remote_endpoint>>
+      ( ep.best (fhg::util::hostname())
+      , [&] (socket_endpoint const& as_socket)
+        {
+          return std::make_unique<remote_socket_endpoint>
+            (io_service, as_socket.socket);
+        }
+      , [&] (tcp_endpoint const& as_tcp)
+        {
+          return std::make_unique<remote_tcp_endpoint> (io_service, as_tcp);
+        }
+      );
+  }
 }
 
 namespace gspc
 {
-  namespace interface
-  {
-    class ResourceManager;
-    class Scheduler;
-    class WorkflowEngine;
-  }
-
-  class PetriNetWorkflow{};
-  class PetriNetWorkflowEngine
-  {
-  public:
-    PetriNetWorkflowEngine (PetriNetWorkflow);
-  };
-  class TreeTraversalWorkflow;
-  class TreeTraversalWorkflowEngine;
-  class MapReduceWorkflow;
-  class MapReduceWorkflowEngine;
-
-  class GreedyScheduler
-  {
-  public:
-    template<typename WE, typename RM, typename RTS>
-      GreedyScheduler (WE&, RM&, RTS const&);
-
-    void wait();
-  };
-  class ReschedulingGreedyScheduler;
-  class LookaheadScheduler;
-  class WorkStealingScheduler;
-  class CoallocationScheduler;
-  class TransferCostAwareScheduler;
-
-  namespace resource_manager
-  {
-    class Trivial{};
-    class Coallocation;
-    class WithPreferences;
-  }
-}
-
-template<typename, typename A> using AnnotatedForest
-  = std::list<std::pair<int, A>>;
-
-namespace gspc
-{
-  class Resource
-  {
-  public:
-    int _;
-  };
-
-  bool operator== (Resource const&, Resource const&);
-
   namespace remote_interface
   {
-    struct ID
+    bool operator== (ID const& lhs, ID const& rhs)
     {
-      std::uint64_t id;
-
-      ID& operator++() { ++id; return *this; }
-    };
-    bool operator== (ID const&, ID const&);
-
-    using Hostname = std::string;
+      return std::tie (lhs.id) == std::tie (rhs.id);
+    }
   }
-
   namespace resource
   {
-    struct ID
+    bool operator== (ID const& lhs, ID const& rhs)
     {
-      remote_interface::ID remote_interface;
-      std::uint64_t id;
-    };
-    bool operator== (ID const&, ID const&);
-  }
-
-  class RemoteInterface
-  {
-  public:
-    RemoteInterface (remote_interface::ID);
-
-    AnnotatedForest<Resource, MaybeError<resource::ID>>
-      add (util::Forest<Resource>);
-
-  private:
-    remote_interface::ID _id;
-  };
-
-  namespace remote_interface
-  {
-    struct RuntimeSystemToRemoteInterface
-    {
-      RuntimeSystemToRemoteInterface (rpc::endpoint);
-
-      AnnotatedForest<Resource, MaybeError<resource::ID>>
-        add (util::Forest<Resource> const&);
-    };
-
-    namespace strategy
-    {
-      // class ssh;
-
-      class Thread
-      {
-        struct RemoteInterfaceServer
-        {
-          RemoteInterfaceServer (ID);
-
-          rpc::endpoint endpoint() const;
-
-        private:
-          RemoteInterface _remote_interface;
-          rpc::service_dispatcher _service_dispatcher;
-          fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
-
-          // rpc::service_handler<protocol::register_receiver> const
-          //   _register_receiver;
-
-          rpc::service_socket_provider const _service_socket_provider;
-          rpc::service_tcp_provider const _service_tcp_provider;
-          rpc::endpoint const _local_endpoint;
-        };
-
-      public:
-        using State = std::unordered_map<Hostname, RemoteInterfaceServer>;
-
-        Thread (State*);
-        RuntimeSystemToRemoteInterface boot (Hostname, ID) const;
-        void teardown (Hostname) const;
-
-      private:
-        State* _remote_interfaces_by_hostname;
-      };
+      return std::tie (lhs.remote_interface, lhs.id)
+        == std::tie (rhs.remote_interface, rhs.id);
     }
-
-    using Strategy = boost::variant< strategy::Thread
-                                   // , strategy::ssh
-                                   >;
-
-    class ConnectionAndPID
-    {
-    public:
-      ConnectionAndPID ( Hostname
-                       , Strategy
-                       , ID
-                       );
-
-      AnnotatedForest<Resource, MaybeError<resource::ID>>
-        add (util::Forest<Resource> const&);
-
-    private:
-      Hostname _hostname;
-      Strategy _strategy;
-      RuntimeSystemToRemoteInterface _client;
-    };
   }
-}
 
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::remote_interface::ID
-  , x
-  , x.id
-  );
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::resource::ID
-  , x
-  , x.id
-  , x.remote_interface
-  );
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::Resource
-  , r
-  , r._
-  );
-
-namespace gspc
-{
-  class RuntimeSystem
+  bool operator== (Resource const& lhs, Resource const& rhs)
   {
-  public:
-    template<typename RM> RuntimeSystem (RM&);
+    return std::tie (lhs._) == std::tie (rhs._);
+  }
 
-    std::unordered_map
-      < remote_interface::Hostname
-      , MaybeError<AnnotatedForest<Resource, MaybeError<resource::ID>>>
-      >
-      add ( std::unordered_set<remote_interface::Hostname>
-          , remote_interface::Strategy
-          , util::Forest<Resource>
-          ) noexcept;
+  RemoteInterface::RemoteInterface (remote_interface::ID id)
+    : _next_resource_id {id}
+    , _service_dispatcher()
+    , _io_service (1)
+    , _add ( _service_dispatcher
+           , fhg::util::bind_this (this, &RemoteInterface::add)
+           )
+    , _service_socket_provider (_io_service, _service_dispatcher)
+    , _service_tcp_provider (_io_service, _service_dispatcher)
+    , _local_endpoint ( fhg::util::connectable_to_address_string
+                          (_service_tcp_provider.local_endpoint())
+                      , _service_socket_provider.local_endpoint()
+                      )
+  {}
 
-    std::unordered_set<resource::ID>
-      add_or_throw  ( std::unordered_set<remote_interface::Hostname> hostnames
-                    , remote_interface::Strategy strategy
-                    , util::Forest<Resource> resources
-                    );
+  rpc::endpoint const& RemoteInterface::local_endpoint() const
+  {
+    return _local_endpoint;
+  }
 
-    //! \todo return value and noexcept!?
-    void remove (std::unordered_set<resource::ID>);
+  util::AnnotatedForest<Resource, MaybeError<resource::ID>>
+    RemoteInterface::add (util::Forest<Resource> const& resources)
+  {
+    return resources.combining_transform
+      ( [&] ( Resource const& resource
+            , std::list<MaybeError<resource::ID> const*> const& children
+            )
+        {
+          if (std::any_of ( children.cbegin()
+                          , children.cend()
+                          , [] (auto const child)
+                            {
+                              return is_failure (*child);
+                            }
+                          )
+             )
+          {
+            throw std::runtime_error
+              (str ( boost::format ("Skip start of '%1%': Child failure.")
+                   % resource._
+                   )
+              );
+          }
 
-  private:
-    remote_interface::ID _next_remote_interface_id {0};
+          // start resource: fork process
 
-    std::unordered_map< remote_interface::Hostname
-                      , remote_interface::ConnectionAndPID
-                      > _remote_interface_by_hostname;
-    std::unordered_map< resource::ID
-                      , remote_interface::Hostname
-                      > _hostname_by_resource_id;
+          return ++_next_resource_id;
+        }
+      );
+  }
 
-    std::unordered_map
-      < remote_interface::Hostname
-      , MaybeError<remote_interface::ConnectionAndPID*>
-      >
-      remote_interfaces ( std::unordered_set<remote_interface::Hostname>
-                        , remote_interface::Strategy
-                        ) noexcept;
-
-    //! \todo OPTIMIZE access to hostname via map<hostID, hostName>
-  };
-}
-
-// IMPL
-
-namespace gspc
-{
   namespace remote_interface
   {
     namespace strategy
     {
       Thread::RemoteInterfaceServer::RemoteInterfaceServer (ID id)
         : _remote_interface (id)
-        , _service_dispatcher()
-        , _io_service (1)
-        , _service_socket_provider (_io_service, _service_dispatcher)
-        , _service_tcp_provider (_io_service, _service_dispatcher)
-        , _local_endpoint ( fhg::util::connectable_to_address_string
-                              (_service_tcp_provider.local_endpoint())
-                          , _service_socket_provider.local_endpoint()
-                          )
       {}
-      rpc::endpoint Thread::RemoteInterfaceServer::endpoint() const
+      rpc::endpoint Thread::RemoteInterfaceServer::local_endpoint() const
       {
-        return _local_endpoint;
+        return _remote_interface.local_endpoint();
       }
 
       Thread::Thread (State* state)
         : _remote_interfaces_by_hostname {state}
       {}
 
-      RuntimeSystemToRemoteInterface Thread::boot
+      rpc::endpoint Thread::boot
         ( Hostname hostname
         , ID id
         ) const
       {
         auto const remote_interface
           (_remote_interfaces_by_hostname->emplace
-               ( std::piecewise_construct
-               , std::forward_as_tuple (hostname)
-               , std::forward_as_tuple (id)
-               )
+             ( std::piecewise_construct
+             , std::forward_as_tuple (hostname)
+             , std::forward_as_tuple (id)
+             )
           );
 
         if (!remote_interface.second)
@@ -316,7 +132,7 @@ namespace gspc
             );
         }
 
-        return remote_interface.first->second.endpoint();
+        return remote_interface.first->second.local_endpoint();
       }
 
       void Thread::teardown (Hostname hostname) const
@@ -338,24 +154,39 @@ namespace gspc
 {
   namespace remote_interface
   {
+    RuntimeSystemToRemoteInterface::RuntimeSystemToRemoteInterface
+        (boost::asio::io_service& io_service, rpc::endpoint endpoint)
+      : _endpoint {rpc::make_endpoint (io_service, endpoint)}
+      , add {*_endpoint}
+    {}
+
     ConnectionAndPID::ConnectionAndPID
-      ( Hostname hostname
+      ( boost::asio::io_service& io_service
+      , Hostname hostname
       , Strategy strategy
       , ID id
       )
         : _hostname {std::move (hostname)}
         , _strategy {std::move (strategy)}
-        , _client { fhg::util::visit<RuntimeSystemToRemoteInterface>
-                     ( _strategy
-                     , [&] (auto const& s) { return s.boot (_hostname, id); }
-                     )
+        , _client { io_service
+                  , fhg::util::visit<rpc::endpoint>
+                      ( _strategy
+                      , [&] (auto const& s) { return s.boot (_hostname, id); }
+                      )
                   }
     {}
+    ConnectionAndPID::~ConnectionAndPID()
+    {
+      fhg::util::visit<void>
+        ( _strategy
+        , [&] (auto const& s) { return s.teardown (_hostname); }
+        );
+    }
 
-    AnnotatedForest<Resource, MaybeError<resource::ID>>
+    util::AnnotatedForest<Resource, MaybeError<resource::ID>>
       ConnectionAndPID::add (util::Forest<Resource> const& resources)
     {
-      return _client.add (resources);
+      return _client.add (resources).get();
     }
   }
 }
@@ -366,7 +197,7 @@ namespace gspc
     < remote_interface::Hostname
     , MaybeError<remote_interface::ConnectionAndPID*>
     >
-  RuntimeSystem::remote_interfaces
+  ScopedRuntimeSystem::remote_interfaces
     ( std::unordered_set<remote_interface::Hostname> hostnames
     , remote_interface::Strategy strategy
     ) noexcept
@@ -389,7 +220,8 @@ namespace gspc
               remote_interface = _remote_interface_by_hostname.emplace
                 ( std::piecewise_construct
                 , std::forward_as_tuple (hostname)
-                , std::forward_as_tuple ( hostname
+                , std::forward_as_tuple ( _remote_interface_io_service
+                                        , hostname
                                         , strategy
                                         , ++_next_remote_interface_id
                                         )
@@ -406,9 +238,9 @@ namespace gspc
 
   std::unordered_map
     < remote_interface::Hostname
-    , MaybeError<AnnotatedForest<Resource, MaybeError<resource::ID>>>
+    , MaybeError<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
     >
-    RuntimeSystem::add
+    ScopedRuntimeSystem::add
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
       , util::Forest<Resource> resources
@@ -416,7 +248,7 @@ namespace gspc
   {
     std::unordered_map
       < remote_interface::Hostname
-      , MaybeError<AnnotatedForest<Resource, MaybeError<resource::ID>>>
+      , MaybeError<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
       > resources_by_host;
 
     for ( auto&& hostname_and_remote_interface
@@ -429,6 +261,15 @@ namespace gspc
           ( std::move (hostname_and_remote_interface.second)
           , [&] (remote_interface::ConnectionAndPID* connection)
             {
+              //! \todo if adding the resources fails, we do *not*
+              //! stop the rif again. is this bad? is this good
+              //! because 99% there will be a retry anyway? what is
+              //! our post-condition? (note: we do not leak it, we
+              //! remember we started one.)
+
+              //! \note to try-catch and remove rif on error is _not_
+              //! enough: the rif might have been started in a
+              //! previous call
               return connection->add (resources);
             }
           )
@@ -439,7 +280,7 @@ namespace gspc
   }
 
   std::unordered_set<resource::ID>
-    RuntimeSystem::add_or_throw
+    ScopedRuntimeSystem::add_or_throw
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
       , util::Forest<Resource> resources
@@ -462,8 +303,8 @@ namespace gspc
       else
       {
         for ( auto const& resource_result
-            : boost::get<AnnotatedForest<Resource, MaybeError<resource::ID>>>
-                (host_result)
+            : boost::get<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
+               (host_result)
             )
         {
           if (is_success (resource_result.second))
@@ -495,7 +336,7 @@ try
 {
   gspc::resource_manager::Trivial resource_manager;
 
-  gspc::RuntimeSystem runtime_system (resource_manager);
+  gspc::ScopedRuntimeSystem runtime_system (resource_manager);
 
   gspc::remote_interface::strategy::Thread::State strategy_state;
 

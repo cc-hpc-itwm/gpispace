@@ -1,4 +1,6 @@
 #include <boost/format.hpp>
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/unordered_set.hpp>
 
 #include <exception>
 #include <stack>
@@ -126,6 +128,7 @@ namespace gspc
              );
       }
 
+      //! BROKEN: Does not detect D<-A->B->C + D->C
       {
         auto seen {Ts {from}};
 
@@ -260,17 +263,6 @@ namespace gspc
     }
 
     template<typename T>
-      typename Forest<T>::Iterator Forest<T>::begin() const
-    {
-      return _suc.begin();
-    }
-    template<typename T>
-      typename Forest<T>::Iterator Forest<T>::end() const
-    {
-      return _suc.end();
-    }
-
-    template<typename T>
       template<typename U, typename Transformer, typename>
         Forest<U> Forest<T>::apply (Transformer transform) const
     {
@@ -301,6 +293,14 @@ namespace gspc
       }
 
       return forest;
+    }
+
+    template<typename T>
+      template<typename Archive>
+        void Forest<T>::serialize (Archive& ar, unsigned int /* version */)
+    {
+      ar & _suc;
+      ar & _pre;
     }
   }
 }
