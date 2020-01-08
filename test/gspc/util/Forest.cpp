@@ -126,6 +126,30 @@ namespace gspc
         );
     }
 
+    BOOST_AUTO_TEST_CASE (specific_diamond_throws)
+    {
+      //    a                   a
+      //   / \                 / \
+      //  b   d  +     d  ==  b   d
+      //   \          /        \ /
+      //    c        c          c
+      Forest<char> forest;
+      forest.insert ('a', 'b');
+      forest.insert ('b', 'c');
+      forest.insert ('a', 'd');
+
+      fhg::util::testing::require_exception
+        ( [&]
+          {
+            forest.insert ('d', 'c');
+          }
+        , fhg::util::testing::make_nested
+          ( std::runtime_error ("Forest::insert: (from d, to c)")
+          , std::invalid_argument ("Diamond.")
+          )
+        );
+    }
+
     BOOST_DATA_TEST_CASE (duplicate_connections_throw, from_to (2, 100), i)
     {
       auto const xs {randoms<std::vector<std::size_t>, unique_random> (i)};
