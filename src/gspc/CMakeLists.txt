@@ -32,3 +32,9 @@ extended_add_executable (NAME GSPC19
   LIBRARIES gspc19
             Util::Generic
 )
+
+extended_add_executable (NAME Proto
+  SOURCES "Proto.cpp"
+  LIBRARIES Util::Generic
+            Boost::base
+)
