@@ -79,22 +79,7 @@ namespace gspc
       template<typename Callback, typename = is_callback<T, Callback>>
         void up (T, Callback) const;
 
-      //! \todo: iterate
-      using Ts = std::unordered_set<T>;
-      using Relation = std::unordered_map<T, Ts>;
-
-      // transform
-      template<typename U, typename F>
-        using is_transformer = typename
-          std::enable_if<fhg::util::is_callable<F, U (T const&)>{}>::type;
-
-      // apply calls transform once for every node in the forest
-      template< typename U
-              , typename Transformer
-              , typename = is_transformer<U, Transformer>
-              >
-        Forest<U> apply (Transformer) const;
-
+      //! combining transformer
       template<typename F, typename U = fhg::util::return_type<F>>
         using is_combining_transformer = std::enable_if_t
           < fhg::util::is_callable
@@ -104,18 +89,18 @@ namespace gspc
                   )
               >{}
           >;
-      //! applies \a transformer to parent only if all children did not throw
-      //! returned tree has the same shape as the parameter
+
       template< typename CombiningTransformer
               , typename = is_combining_transformer<CombiningTransformer>
               >
      AnnotatedForest< T
                     , MaybeError<fhg::util::return_type<CombiningTransformer>>
                     >
-        combining_transform (CombiningTransformer) const
-      {
-        throw std::runtime_error ("NYI: combining_transform");
-      }
+        combining_transform (CombiningTransformer) const;
+
+      //! \todo: iterate
+      using Ts = std::unordered_set<T>;
+      using Relation = std::unordered_map<T, Ts>;
 
     private:
       Relation _suc;

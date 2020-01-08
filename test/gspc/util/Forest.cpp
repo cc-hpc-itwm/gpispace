@@ -563,32 +563,5 @@ namespace gspc
 
       BOOST_REQUIRE (loop);
     }
-
-    BOOST_AUTO_TEST_CASE (apply)
-    {
-      Forest<int> fi;
-      fi.insert (0, 1);
-      fi.insert (0, 2);
-      fi.insert (2, 3);
-      fi.insert (2, 4);
-      fi.insert (4, 5);
-      fi.insert (5, 6);
-      fi.insert (6, 7);
-      fi.insert (8, 7);
-      fi.insert (9, 7);
-      fi.insert (10, 9);
-      fi.insert (7, 11);
-
-      auto transform
-        ( [] (int i)
-          {
-            std::cout << i << std::endl;
-
-            return std::to_string (i);
-          }
-        );
-
-      auto fs (fi.apply<std::string> (transform));
-    }
   }
 }

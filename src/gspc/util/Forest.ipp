@@ -253,36 +253,13 @@ namespace gspc
     }
 
     template<typename T>
-      template<typename U, typename Transformer, typename>
-        Forest<U> Forest<T>::apply (Transformer transform) const
+      template<typename CombiningTransformer, typename>
+     AnnotatedForest< T
+                    , MaybeError<fhg::util::return_type<CombiningTransformer>>
+                    >
+      Forest<T>::combining_transform (CombiningTransformer) const
     {
-      std::unordered_map<T, U> _transformed;
-
-      auto transformed
-        ( [&] (T const& x) -> U const&
-          {
-            if (!_transformed.count (x))
-            {
-              _transformed.emplace (x, transform (x));
-            }
-
-            return _transformed.at (x);
-          }
-        );
-
-      Forest<U> forest;
-
-      for (auto suc : _suc)
-      {
-        auto from (suc.first);
-
-        for (auto to : suc.second)
-        {
-          forest.insert (transformed (from), transformed (to));
-        }
-      }
-
-      return forest;
+      throw std::runtime_error ("NYI: combining_transform");
     }
 
     template<typename T>
