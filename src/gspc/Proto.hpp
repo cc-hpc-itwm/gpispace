@@ -162,7 +162,7 @@ namespace gspc
       FHG_RPC_FUNCTION_DESCRIPTION
         ( add
         , util::AnnotatedForest<Resource, MaybeError<resource::ID>>
-            (util::Forest<Resource> /* \todo RPC: const& */);
+            (util::Forest<Resource> /* \todo RPC: const& */)
         );
     }
   }
