@@ -3,14 +3,45 @@
 #include <gspc/Tree.hpp>
 
 #include <util-generic/functor_visitor.hpp>
+#include <util-generic/callable_signature.hpp>
 
 #include <boost/variant.hpp>
 
 #include <exception>
 #include <functional>
+#include <type_traits>
 
 namespace gspc
 {
+  template<typename T>
+    struct ErrorOr : private boost::variant<std::exception_ptr, T>
+  {
+    ErrorOr (T) noexcept;
+    ErrorOr (std::exception_ptr) noexcept;
+
+    template
+      < typename Function
+      , typename = std::enable_if_t<fhg::util::is_callable<Function, T()>{}>
+      >
+      ErrorOr (Function&&) noexcept;
+
+    explicit operator bool() const noexcept;
+
+    // monad::bind
+    template
+      < typename Function
+      , typename U = fhg::util::return_type<Function>
+      , typename = std::enable_if_t<fhg::util::is_callable<Function, U (T)>{}>
+      >
+      ErrorOr<U> operator>> (Function&&) && noexcept;
+  };
+
+  // std::unordered_map<K, MaybeError<U>> operator>>
+  //   ( std::unordered_map<K, MaybeError<T>>
+  //   , Function
+  //   )
+  // {}
+
   template<typename T>
     using MaybeError = boost::variant<std::exception_ptr, T>;
 

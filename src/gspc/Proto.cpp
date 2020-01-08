@@ -246,6 +246,13 @@ namespace gspc
       , util::Forest<Resource> resources
       ) noexcept
   {
+    //! \note syntax goal
+    // return remote_interfaces (std::move (hostnames), std::move (strategy))
+    //   >> [&] (remote_interface::ConnectionAndPID* connection)
+    //         {
+    //           return connection->add (resources);
+    //         }
+
     std::unordered_map
       < remote_interface::Hostname
       , MaybeError<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
