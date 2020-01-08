@@ -429,16 +429,24 @@ namespace sdpa
     }
 
     void WorkerManager::assign_job_to_worker
-      (const job_id_t& job_id, const worker_id_t& worker_id, double cost)
+      ( const job_id_t& job_id
+      , const worker_id_t& worker_id
+      , double cost
+      , Preferences const& preferences
+      )
     {
       std::lock_guard<std::mutex> const _(mtx_);
       auto worker (worker_map_.find (worker_id));
       fhg_assert (worker != worker_map_.end());
-      assign_job_to_worker (job_id, worker, cost);
+      assign_job_to_worker (job_id, worker, cost, preferences);
     }
 
     void WorkerManager::assign_job_to_worker
-      (const job_id_t& job_id, worker_iterator worker, double cost)
+      ( const job_id_t& job_id
+      , const worker_iterator worker
+      , double cost
+      , Preferences const& preferences
+      )
     {
       worker->second.assign (job_id, cost);
 
@@ -447,6 +455,9 @@ namespace sdpa
       worker_class.inc_pending_jobs (1);
 
       worker_class._idle_workers.erase (worker->first);
+
+      worker_class.allow_classes_matching_preferences_stealing
+        (worker_equiv_classes_, preferences);
     }
 
     void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
@@ -783,7 +794,7 @@ namespace sdpa
             }
           );
 
-        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job));
+        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job), {});
         worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
 
         to_steal_from.pop();

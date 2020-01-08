@@ -143,7 +143,8 @@ namespace sdpa
       , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
       );
 
-    void assign_job_to_worker (const job_id_t&, const worker_id_t&, double cost);
+    void assign_job_to_worker
+      (const job_id_t&, const worker_id_t&, double cost, Preferences const&);
     void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
     void delete_job_from_worker (const job_id_t &job_id, const worker_id_t&, double);
     const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
@@ -168,7 +169,7 @@ namespace sdpa
 
     private:
       void assign_job_to_worker
-        (const job_id_t& job_id, worker_iterator worker, double cost);
+        (const job_id_t&, worker_iterator, double cost, Preferences const&);
       void delete_job_from_worker
         (const job_id_t &job_id, const worker_iterator worker, double cost);
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
