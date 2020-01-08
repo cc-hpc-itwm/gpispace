@@ -20,24 +20,20 @@ namespace gspc
   // monad::return
   template<typename T> MaybeError<T> mreturn (T) noexcept;
   template<typename T> MaybeError<T> mreturn (std::exception_ptr) noexcept;
+  template<typename Fun>
+    MaybeError<decltype(std::declval<Fun>()())> bind
+    ( Fun&& function
+    ) noexcept;
+  //! \todo use struct and let mreturn and bind (Fun) be ctors
 
   // monad::bind
-  template<typename T, typename U>
-    MaybeError<U> bind
-    ( MaybeError<T> const& x
-    , std::function<U (T const&)> const& function
+  template<typename T, typename Fun>
+    MaybeError<decltype(std::declval<Fun>()(std::declval<T>()))> bind
+    ( MaybeError<T>&& x
+    , Fun&& function
     ) noexcept;
-
-  // error handling in trees
-  template<typename T>
-    using TreeResult = Tree<MaybeError<T>>;
-
-  template<typename T> TreeResult<T> mreturn (Tree<T> const&);
-
-  template<typename T, typename U>
-    TreeResult<U> bind ( TreeResult<T> const&
-                       , std::function<U (T const&)> const&
-                       ) noexcept;
+  //! \todo operator>>
+  //! \todo overloads for containers
 }
 
 #include <gspc/MaybeError.ipp>

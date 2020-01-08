@@ -36,5 +36,7 @@ extended_add_executable (NAME GSPC19
 extended_add_executable (NAME Proto
   SOURCES "Proto.cpp"
   LIBRARIES Util::Generic
+            gspc::logging
+            RPC
             Boost::base
 )

@@ -27,54 +27,38 @@ namespace gspc
   {
     return std::move (exception);
   }
-  template<typename T, typename U>
-    MaybeError<U> bind
-    ( MaybeError<T> const& x
-    , std::function<U (T const&)> const& function
+  template<typename Fun>
+    MaybeError<decltype(std::declval<Fun>()())> bind
+    ( Fun&& function
     ) noexcept
   {
+    try
+    {
+      return std::move (function)();
+    }
+    catch (...)
+    {
+      return std::current_exception();
+    }
+  }
+
+  template<typename T, typename Fun>
+    MaybeError<decltype (std::declval<Fun>()(std::declval<T>()))> bind
+    ( MaybeError<T>&& x
+    , Fun&& function
+    ) noexcept
+  {
+    using U = decltype (std::declval<Fun>()(std::declval<T>()));
+
     return fhg::util::visit<MaybeError<U>>
       ( x
-      , [] (std::exception_ptr const& exception) -> MaybeError<U>
+      , [] (std::exception_ptr exception) -> MaybeError<U>
         {
-          return exception;
+          return std::move (exception);
         }
-      , [&] (T const& value) -> MaybeError<U>
+      , [&] (T value) -> MaybeError<U>
         {
-          try
-          {
-            return function (value);
-          }
-          catch (...)
-          {
-            return std::current_exception();
-          }
-        }
-      );
-  }
-
-  template<typename T>
-    TreeResult<T> mreturn (Tree<T> const& tree)
-  {
-    return apply<T, MaybeError<T>>
-      ( tree
-      , [&] (T const& x)
-        {
-          return mreturn (x);
-        }
-      );
-  }
-
-  template<typename T, typename U>
-    TreeResult<U> bind ( TreeResult<T> const& tree
-                       , std::function<U (T const&)> const& function
-                       ) noexcept
-  {
-    return apply<MaybeError<T>, MaybeError<U>>
-      ( tree
-      , [&] (MaybeError<T> const& x)
-        {
-          return bind<T, U> (x, function);
+          return bind ([&] { return function (std::move (value)); });
         }
       );
   }
