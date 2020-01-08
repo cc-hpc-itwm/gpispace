@@ -713,7 +713,14 @@ namespace sdpa
                                         | boost::adaptors::map_values
           )
       {
-        weqc.steal_work (reservation, *this);
+        if (weqc.stealing_allowed_classes().empty())
+        {
+          weqc.steal_work (reservation, *this);
+        }
+        else
+        {
+          weqc.steal_tasks_with_preferences (reservation, *this);
+        }
       }
     }
 
@@ -804,6 +811,124 @@ namespace sdpa
         {
           to_steal_from.emplace (richest);
         }
+      }
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::steal_tasks_with_preferences
+      ( std::function<scheduler::Reservation* (job_id_t const&)> reservation
+      , WorkerManager& worker_manager
+      )
+    {
+      if (n_pending_jobs() == 0)
+      {
+        return;
+      }
+
+      std::unordered_set<worker_id_t> thieves;
+
+      auto const& worker_classes (worker_manager.worker_equiv_classes_);
+      for (auto const& cls : _stealing_allowed_classes)
+      {
+        thieves.insert ( worker_classes.at (cls)._idle_workers.begin()
+                       , worker_classes.at (cls)._idle_workers.end()
+                       );
+      }
+
+      if (thieves.empty())
+      {
+        return;
+      }
+
+      std::function<double (job_id_t const& job_id)> const cost
+        { [&reservation] (job_id_t const& job_id)
+          {
+            return reservation (job_id)->cost();
+          }
+        };
+
+      std::function<bool (worker_iterator const&, worker_iterator const&)> const
+        comp { [] (worker_iterator const& lhs, worker_iterator const& rhs)
+               {
+                 return lhs->second.cost_assigned_jobs()
+                   < rhs->second.cost_assigned_jobs();
+               }
+             };
+
+      std::priority_queue < worker_iterator
+                          , std::vector<worker_iterator>
+                          , decltype (comp)
+                          > to_steal_from (comp);
+
+      for (worker_id_t const& w : _worker_ids)
+      {
+        auto const& it (worker_manager.worker_map_.find (w));
+        Worker const& worker (it->second);
+
+        if (worker.stealing_allowed())
+        {
+          to_steal_from.emplace (it);
+        }
+      }
+
+      while (!(thieves.empty() || to_steal_from.empty()))
+      {
+        worker_iterator const richest (to_steal_from.top());
+        worker_iterator const& thief
+          (worker_manager.worker_map_.find (*thieves.begin()));
+        Worker& richest_worker (richest->second);
+
+        auto it_job (std::max_element ( richest_worker.pending_.begin()
+                                      , richest_worker.pending_.end()
+                                      , [&reservation] ( job_id_t const& r
+                                                       , job_id_t const& l
+                                                       )
+                                        {
+                                          return reservation (r)->cost()
+                                            < reservation (l)->cost();
+                                        }
+                                      )
+                    );
+
+        fhg_assert (it_job != richest_worker.pending_.end());
+
+        Preferences const preferences (reservation (*it_job)->preferences());
+
+        auto const preference
+          (std::find_if ( preferences.begin()
+                        , preferences.end()
+                        , [&] (std::string const& pref)
+                          {
+                            return thief->second.hasCapability (pref);
+                          }
+                        )
+          );
+
+        if (preference != preferences.end())
+        {
+          reservation (*it_job)->replace_worker
+            ( richest->first
+            , thief->first
+            , *preference
+            , [&thief] (const std::string& cpb)
+              {
+                return thief->second.hasCapability (cpb);
+              }
+            );
+
+          worker_manager.assign_job_to_worker
+            (*it_job, thief, cost (*it_job), preferences);
+          worker_manager.delete_job_from_worker
+            (*it_job, richest, cost (*it_job));
+
+          to_steal_from.pop();
+
+          if (richest_worker.stealing_allowed())
+          {
+            to_steal_from.emplace (richest);
+          }
+        }
+
+        thieves.erase (thieves.begin());
       }
     }
 
