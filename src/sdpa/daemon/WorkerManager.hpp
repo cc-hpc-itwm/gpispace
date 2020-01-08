@@ -84,11 +84,17 @@ namespace sdpa
         void steal_work
           (std::function<scheduler::Reservation* (job_id_t const&)>, WorkerManager&);
 
+        std::set<std::set<std::string>> stealing_allowed_classes() const
+        {
+          return _stealing_allowed_classes;
+        }
+
       private:
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;
         std::unordered_set<worker_id_t> _worker_ids;
         std::unordered_set<worker_id_t> _idle_workers;
+        std::set<std::set<std::string>> _stealing_allowed_classes;
       };
 
     public:
