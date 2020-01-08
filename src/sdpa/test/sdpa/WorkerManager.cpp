@@ -303,6 +303,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
               ? std::set<sdpa::worker_id_t> {worker_id}
               : std::set<sdpa::worker_id_t>{}
               , sdpa::daemon::Implementation{}
+              , Preferences{}
               , cost
               )
           );

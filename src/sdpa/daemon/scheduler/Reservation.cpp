@@ -14,10 +14,12 @@ namespace sdpa
     {
       Reservation::Reservation ( std::set<worker_id_t> const& workers
                                , Implementation const& implementation
+                               , Preferences const& preferences
                                , double cost
                                )
         : _workers (workers)
         , _implementation (implementation)
+        , _preferences (preferences)
         , _cost (cost)
       {}
 
@@ -61,6 +63,11 @@ namespace sdpa
       Implementation Reservation::implementation() const
       {
         return _implementation;
+      }
+
+      Preferences Reservation::preferences() const
+      {
+        return _preferences;
       }
 
       double Reservation::cost() const

@@ -113,6 +113,7 @@ namespace sdpa
               , fhg::util::cxx14::make_unique<scheduler::Reservation>
                   ( matching_workers_and_implementation.first
                   , matching_workers_and_implementation.second
+                  , requirements_and_preferences.preferences()
                   , cost
                   )
               );

@@ -27,6 +27,7 @@ namespace sdpa
 
         Reservation ( std::set<worker_id_t> const& workers
                     , Implementation const& implementation
+                    , Preferences const& preferences
                     , double cost
                     );
 
@@ -39,12 +40,14 @@ namespace sdpa
 
         std::set<worker_id_t> workers() const;
         Implementation implementation() const;
+        Preferences preferences() const;
 
         double cost() const;
 
       private:
         std::set<worker_id_t> _workers;
         Implementation _implementation;
+        Preferences _preferences;
         double _cost;
 
       public:
