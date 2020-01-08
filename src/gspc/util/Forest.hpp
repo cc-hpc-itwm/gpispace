@@ -36,6 +36,13 @@ namespace gspc
     template<typename T>
       struct Forest
     {
+      Forest() = default;
+      Forest (Forest const&) = default;       //! \todo rpc requires copy
+      Forest (Forest&&) = default;
+      Forest& operator= (Forest const&) = delete;
+      Forest& operator= (Forest&&) = delete;
+      ~Forest() = default;
+
       template<typename U> using From = U;
       template<typename U> using To = U;
 
@@ -87,14 +94,6 @@ namespace gspc
               , typename = is_transformer<U, Transformer>
               >
         Forest<U> apply (Transformer) const;
-
-      Forest() = default;
-      //! \todo rpc requires copy
-      Forest (Forest const&) = default;
-      Forest (Forest&&) = default;
-      Forest& operator= (Forest const&) = delete;
-      Forest& operator= (Forest&&) = delete;
-      ~Forest() = default;
 
       template<typename F, typename U = fhg::util::return_type<F>>
         using is_combining_transformer = std::enable_if_t
