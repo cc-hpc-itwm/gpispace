@@ -124,21 +124,22 @@ namespace gspc
                }
              );
 
-      //! BROKEN: Does not detect D<-A->B->C + D->C
       {
-        auto seen {Ts {from}};
+        auto seen {Ts{}};
+        auto see
+          ( [&] (T index)
+            {
+              if (!seen.emplace (std::move (index)).second)
+              {
+                throw std::invalid_argument ("Diamond.");
+              }
 
-        up ( to
-           , [&seen] (T index)
-             {
-               if (!seen.emplace (index).second)
-               {
-                 throw std::invalid_argument ("Diamond.");
-               }
+              return true;
+            }
+          );
 
-               return true;
-             }
-           );
+        up (to, see);
+        up (from, see);
       }
 
       return UNSAFE_insert (from, to);
