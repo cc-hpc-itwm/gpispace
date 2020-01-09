@@ -26,7 +26,7 @@ namespace gspc
           { [&]() -> Base
             {
               static_assert
-                (fhg::util::is_callable<Function, T()>{});
+                (fhg::util::is_callable<Function, T()>{}, "fun not T()");
 
               try
               {
