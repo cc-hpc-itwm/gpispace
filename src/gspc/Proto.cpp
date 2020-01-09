@@ -297,27 +297,23 @@ namespace gspc
     std::unordered_set<resource::ID> resource_ids;
 
     for ( auto const& host_result
-            : add ( hostnames
-                  , std::move (strategy)
-                  , std::move (resources)
-                  ) | boost::adaptors::map_values
+        : add ( hostnames
+              , std::move (strategy)
+              , std::move (resources)
+              ) | boost::adaptors::map_values
         )
     {
-      if (is_failure (host_result))
+      if (!host_result)
       {
         failed = true;
       }
       else
       {
-        for ( auto const& resource_result
-            : boost::get<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
-               (host_result)
-            )
+        for (auto const& resource_result : host_result.value())
         {
-          if (is_success (resource_result.second))
+          if (resource_result.second)
           {
-            resource_ids.emplace
-              (boost::get<resource::ID> (resource_result.second));
+            resource_ids.emplace (resource_result.second.value());
           }
           else
           {
