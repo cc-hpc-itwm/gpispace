@@ -259,6 +259,12 @@ namespace gspc
            //! \note to try-catch and remove rif on error is _not_
            //! enough: the rif might have been started in a
            //! previous call
+
+           //! \note if the post condition of connection->add
+           //! (resources) is "all or nothing", then it would be
+           //! enough to remove the rif if there are not other
+           //! resources on the same rif (in this case the rif _was_
+           //! started by this incarnation)
            return connection->add (resources);
          };
   }
