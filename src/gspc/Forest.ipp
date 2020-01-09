@@ -127,16 +127,21 @@ namespace gspc
       }
 
       {
-        Ts seen;
+        Children seen;
 
         std::for_each ( tos.cbegin()
                       , tos.cend()
-                      , [&] (T x)
+                      , [&] (auto child)
                         {
-                          if (!seen.emplace (std::move (x)).second)
-                          {
-                            throw std::invalid_argument ("Diamond.");
-                          }
+                          down ( std::move (child)
+                               , [&] (auto const& node)
+                                 {
+                                   if (!seen.emplace (node.first).second)
+                                   {
+                                     throw std::invalid_argument ("Diamond.");
+                                   }
+                                 }
+                               );
                         }
                       );
       }
