@@ -290,11 +290,11 @@ The Resource Manager is the component that keeps track of all existing resources
 
 Interactions:
 \begin{description}
-    \item [\rts:] The \rts can add and remove resource hierarchies (DAGs) from the \rm
+    \item [\rts:] The \rts can add and remove resource hierarchies (DAGs) from the \rman
     \item [\sched:] The scheduler is the only component that can acquire/release
     resources (but the system should allow for multiple schedulers to use the same
     \rman, for instance to have multiple applications running on the same physical
-    machines). The \rm provides a means to mark resources that are in use, while
+    machines). The \rman provides a means to mark resources that are in use, while
     taking into account resource hierarchies; this is done in a transparent manner
     relative to the scheduler, which only needs to keep track of the class of
     resource it needs, without any knowledge of dependent resources
@@ -556,10 +556,6 @@ Interactions:
         \user & void free(allocation)  \\
         \worker & get() \\
         \worker & put() \\
-        \midrule
-        & Data members \\
-        \midrule
-        & set<\task\id> extracted \\
         \bottomrule
     \end{tabular}
     \egroup
@@ -791,4 +787,3 @@ GPISpace.
 
 
 \end{document}
-
