@@ -9,10 +9,19 @@
 namespace gspc
 {
   template<typename T>
-    struct ErrorOr : /* private */ boost::variant<std::exception_ptr, T>
+    struct ErrorOr : private boost::variant<std::exception_ptr, T>
   {
+  private:
+    using Base = boost::variant<std::exception_ptr, T>;
+
+  public:
     ErrorOr (T) noexcept;
     ErrorOr (std::exception_ptr) noexcept;
+
+    ErrorOr (ErrorOr const&) = default;
+    ErrorOr (ErrorOr&&) = default;
+    ErrorOr& operator= (ErrorOr const&) = default;
+    ErrorOr& operator= (ErrorOr&&) = default;
 
     template
       < typename Function
@@ -28,7 +37,7 @@ namespace gspc
       , typename U = fhg::util::return_type<Function>
       , typename = std::enable_if_t<fhg::util::is_callable<Function, U (T)>{}>
       >
-      ErrorOr<U> operator>> (Function&&) && noexcept;
+      ErrorOr<U> operator>>= (Function&& function) && noexcept;
 
     // unbind
     T const& value() const;
@@ -40,11 +49,8 @@ namespace gspc
     template<typename Archive>
       void serialize (Archive& ar, unsigned int)
     {
-      ar & *this;
+      ar & static_cast<Base&> (*this);
     }
-
-  private:
-    using Base = boost::variant<std::exception_ptr, T>;
   };
 }
 
@@ -53,13 +59,13 @@ namespace gspc
 namespace gspc
 {
   template
-    < typename Key
-    , typename T
-    , typename Function
+    < typename Function
     , typename U = fhg::util::return_type<Function>
-    , typename = std::enable_if<fhg::util::is_callable<Function, U (T)>{}>
+    , typename Key
+    , typename T
+    , typename = std::enable_if<fhg::util::is_callable<Function, U (Key const&, T)>{}>
     >
-    std::unordered_map<Key, ErrorOr<U>> operator>>
+    std::unordered_map<Key, ErrorOr<U>> operator>>=
       ( std::unordered_map<Key, ErrorOr<T>>&&
       , Function&&
       );

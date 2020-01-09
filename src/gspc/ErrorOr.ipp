@@ -24,6 +24,9 @@ namespace gspc
         : Base
           { [&]() -> Base
             {
+              static_assert
+                (fhg::util::is_callable<Function, T()>{});
+
               try
               {
                 return std::move (function)();
@@ -40,7 +43,7 @@ namespace gspc
     ErrorOr<T>::operator bool() const noexcept
   {
     return fhg::util::visit<bool>
-      ( *this
+      ( static_cast<Base const&> (*this)
       , [] (std::exception_ptr const&) { return false; }
       , [] (T const&) { return true; }
       );
@@ -48,10 +51,10 @@ namespace gspc
 
   template<typename T>
     template<typename Function, typename U, typename>
-    ErrorOr<U> ErrorOr<T>::operator>> (Function&& function) && noexcept
+    ErrorOr<U> ErrorOr<T>::operator>>= (Function&& function) && noexcept
   {
     return fhg::util::visit<ErrorOr<U>>
-      ( *this
+      ( static_cast<Base&&> (*this)
       , [] (std::exception_ptr exception) -> ErrorOr<U>
         {
           return std::move (exception);
@@ -63,8 +66,8 @@ namespace gspc
       );
   }
 
-  template<typename Key, typename T, typename Function, typename U, typename>
-    std::unordered_map<Key, ErrorOr<U>> operator>>
+  template<typename Function, typename U, typename Key, typename T, typename>
+    std::unordered_map<Key, ErrorOr<U>> operator>>=
       ( std::unordered_map<Key, ErrorOr<T>>&& xs
       , Function&& function
       )
@@ -73,7 +76,11 @@ namespace gspc
 
     for (auto&& x : xs)
     {
-      ys.emplace (std::move (x.first), std::move (x.second) >> function);
+      ys.emplace
+        ( x.first
+        , std::move (x.second)
+          >>= [&] (T z) { return function (x.first, std::move (z)); }
+        );
     }
 
     return ys;
