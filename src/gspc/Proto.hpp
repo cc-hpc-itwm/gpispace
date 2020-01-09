@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gspc/util/Forest.hpp>
 #include <gspc/ErrorOr.hpp>
+#include <gspc/Forest.hpp>
 
 #include <logging/endpoint.hpp>
 
@@ -139,10 +139,20 @@ namespace gspc
       }
     };
     bool operator== (ID const& lhs, ID const& rhs);
+    std::ostream& operator<< (std::ostream&, ID const&);
 
     using Hostname = std::string;
   }
+}
 
+FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( gspc::remote_interface::ID
+  , x
+  , x.id
+  )
+
+namespace gspc
+{
   namespace resource
   {
     struct ID
@@ -164,29 +174,75 @@ namespace gspc
       }
     };
     bool operator== (ID const& lhs, ID const& rhs);
+    std::ostream& operator<< (std::ostream&, ID const&);
   }
+}
 
+  FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( gspc::resource::ID
+  , x
+  , x.id
+  , x.remote_interface
+  )
+
+namespace gspc
+{
   namespace remote_interface
   {
     namespace protocol
     {
       FHG_RPC_FUNCTION_DESCRIPTION
         ( add
-        , util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
-            (util::Forest<Resource> /* \todo RPC: const& */)
+        , Forest<Resource, ErrorOr<resource::ID>>
+            (Forest<Resource> /* \todo RPC: const& */)
         );
     }
   }
+
+  class Worker
+  {
+  public:
+    Worker (Resource);
+
+    Worker (Worker const&) = delete;
+    Worker (Worker&&) = delete;
+    Worker& operator= (Worker const&) = delete;
+    Worker& operator= (Worker&&) = delete;
+    //! \note dtor waits? cancels?
+    ~Worker() = default;
+
+    rpc::endpoint const& local_endpoint() const;
+
+  private:
+    Resource _resource;
+
+    rpc::service_dispatcher _service_dispatcher;
+    fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
+
+    // rpc::service_handler<worker::protocol::submit> const _submit;
+
+    rpc::service_socket_provider const _service_socket_provider;
+    rpc::service_tcp_provider const _service_tcp_provider;
+    rpc::endpoint const _local_endpoint;
+  };
 
   class RemoteInterface
   {
   public:
     RemoteInterface (remote_interface::ID);
 
-    util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
-      add (util::Forest<Resource> const&);
+    Forest<Resource, ErrorOr<resource::ID>>
+      add (Forest<Resource> const&);
+
+    //! \todo is unordered_set<resource::ID> enough? instead of
+    //! Forest<resource::id>? because ther traversal is unordered
+    //! anyways
+    Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
     rpc::endpoint const& local_endpoint() const;
+
+    //! \todo or alternative: be a proxy and forward to worker
+    //    rpc::endpoint const& local_endpoint (resource::ID) const;
 
   private:
     resource::ID _next_resource_id;
@@ -199,6 +255,19 @@ namespace gspc
     rpc::service_socket_provider const _service_socket_provider;
     rpc::service_tcp_provider const _service_tcp_provider;
     rpc::endpoint const _local_endpoint;
+
+    //! \note process proxy
+    struct WorkerServer
+    {
+      WorkerServer (Resource const&);
+
+      rpc::endpoint local_endpoint() const;
+
+    private:
+      Worker _worker;
+    };
+
+    std::unordered_map<resource::ID, WorkerServer> _workers;
   };
 
   namespace remote_interface
@@ -243,6 +312,9 @@ namespace gspc
       };
     }
 
+    //! Strategy must not contain state but only information
+    //! (e.g. pointer, filename, ...) about to get a state, Strategies
+    //! _are_ copied!
     using Strategy = boost::variant< strategy::Thread
                                    // , strategy::ssh
                                    >;
@@ -263,8 +335,10 @@ namespace gspc
       ConnectionAndPID& operator= (ConnectionAndPID const&) = delete;
       ConnectionAndPID& operator= (ConnectionAndPID&&) = delete;
 
-      util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
-        add (util::Forest<Resource> const&);
+      Forest<Resource, ErrorOr<resource::ID>>
+        add (Forest<Resource> const&);
+
+      Strategy const& strategy() const;
 
     private:
       Hostname _hostname;
@@ -273,18 +347,6 @@ namespace gspc
     };
   }
 }
-
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::remote_interface::ID
-  , x
-  , x.id
-  )
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::resource::ID
-  , x
-  , x.id
-  , x.remote_interface
-  )
 
 namespace gspc
 {
@@ -297,21 +359,22 @@ namespace gspc
 
     std::unordered_map
       < remote_interface::Hostname
-      , ErrorOr<util::AnnotatedForest<Resource, ErrorOr<resource::ID>>>
+      , ErrorOr<Forest<Resource, ErrorOr<resource::ID>>>
       >
       add ( std::unordered_set<remote_interface::Hostname>
           , remote_interface::Strategy
-          , util::Forest<Resource> const&
+          , Forest<Resource> const&
           ) noexcept;
 
-    std::unordered_set<resource::ID>
+    Forest<resource::ID>
       add_or_throw  ( std::unordered_set<remote_interface::Hostname> hostnames
                     , remote_interface::Strategy strategy
-                    , util::Forest<Resource> const& resources
+                    , Forest<Resource> const& resources
                     );
 
-    //! \todo return value and noexcept!?
-    void remove (std::unordered_set<resource::ID>);
+    //! \todo return value and noexcept!? is Forest<resource::ID>
+    //! required? Or would unordered_set be enough?
+    void remove (Forest<resource::ID> const&);
 
   private:
     //! \todo thread count based on parameter or?
@@ -323,9 +386,10 @@ namespace gspc
     std::unordered_map< remote_interface::Hostname
                       , remote_interface::ConnectionAndPID
                       > _remote_interface_by_hostname;
-    std::unordered_map< resource::ID
-                      , remote_interface::Hostname
-                      > _hostname_by_resource_id;
+    //! \todo
+    // std::unordered_map< resource::ID
+    //                   , remote_interface::Hostname
+    //                   > _hostname_by_resource_id;
 
     std::unordered_map
       < remote_interface::Hostname

@@ -3,12 +3,13 @@
 #include <util-generic/callable_signature.hpp>
 
 #include <boost/variant.hpp>
+#include <boost/blank.hpp>
 
 #include <type_traits>
 
 namespace gspc
 {
-  template<typename T>
+  template<typename T = boost::blank>
     struct ErrorOr : private boost::variant<std::exception_ptr, T>
   {
   private:

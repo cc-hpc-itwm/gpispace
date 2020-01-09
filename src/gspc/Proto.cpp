@@ -28,6 +28,10 @@ namespace gspc
     {
       return std::tie (lhs.id) == std::tie (rhs.id);
     }
+    std::ostream& operator<< (std::ostream& os, ID const& x)
+    {
+      return os << "remote_interface " << x.id;
+    }
   }
   namespace resource
   {
@@ -36,11 +40,35 @@ namespace gspc
       return std::tie (lhs.remote_interface, lhs.id)
         == std::tie (rhs.remote_interface, rhs.id);
     }
+    std::ostream& operator<< (std::ostream& os, ID const& x)
+    {
+      return os << x.remote_interface << " resource " << x.id;
+    }
   }
 
   bool operator== (Resource const& lhs, Resource const& rhs)
   {
     return std::tie (lhs._) == std::tie (rhs._);
+  }
+
+  Worker::Worker (Resource resource)
+    : _resource {std::move (resource)}
+    , _service_dispatcher()
+    , _io_service (1)
+    // , _add ( _service_dispatcher
+    //        , fhg::util::bind_this (this, &Worker::add)
+    //        )
+    , _service_socket_provider (_io_service, _service_dispatcher)
+    , _service_tcp_provider (_io_service, _service_dispatcher)
+    , _local_endpoint ( fhg::util::connectable_to_address_string
+                          (_service_tcp_provider.local_endpoint())
+                      , _service_socket_provider.local_endpoint()
+                      )
+  {}
+
+  rpc::endpoint const& Worker::local_endpoint() const
+  {
+    return _local_endpoint;
   }
 
   RemoteInterface::RemoteInterface (remote_interface::ID id)
@@ -63,33 +91,71 @@ namespace gspc
     return _local_endpoint;
   }
 
-  util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
-    RemoteInterface::add (util::Forest<Resource> const& resources)
+  RemoteInterface::WorkerServer::WorkerServer (Resource const& resource)
+    : _worker (resource)
+  {}
+  rpc::endpoint RemoteInterface::WorkerServer::local_endpoint() const
   {
-    return resources.combining_transform
-      ( [&] ( Resource const& resource
-            , std::list<ErrorOr<resource::ID> const*> const& children
-            )
+    return _worker.local_endpoint();
+  }
+
+  Forest<Resource, ErrorOr<resource::ID>>
+    RemoteInterface::add (Forest<Resource> const& resources)
+  {
+    using ResultNode = forest::Node<Resource, ErrorOr<resource::ID>>;
+
+    return resources.upward_combine_transform
+      ( [&] ( forest::Node<Resource> const& resource
+            , std::list<ResultNode const*> const& children
+            ) -> ResultNode
         {
           if (std::any_of ( children.cbegin()
                           , children.cend()
-                          , [] (auto const child)
+                          , [] (auto const& child)
                             {
-                              return !*child;
+                              return !child->second;
                             }
                           )
              )
           {
             throw std::runtime_error
               (str ( boost::format ("Skip start of '%1%': Child failure.")
-                   % resource._
+                   % resource.first._
                    )
               );
           }
 
-          // start resource: fork process
+          return
+            { resource.first
+            , _workers.emplace
+              ( std::piecewise_construct
+              , std::forward_as_tuple (++_next_resource_id)
+              , std::forward_as_tuple (resource.first)
+              ).first->first
+            };
+        }
+      );
+  }
 
-          return ++_next_resource_id;
+  Forest<resource::ID, ErrorOr<>>
+    RemoteInterface::remove (Forest<resource::ID> const& resources)
+  {
+    using ResultNode = forest::Node<resource::ID, ErrorOr<>>;
+
+    return resources.unordered_transform
+      ( [&] (forest::Node<resource::ID> const& id) -> ResultNode
+        {
+          if (! _workers.erase (id.first))
+          {
+            throw std::invalid_argument
+              (str ( boost::format
+                       ("RemoteInterface::remove: Unknown worker '%1%'.")
+                   % id.first
+                   )
+              );
+          }
+
+          return {id.first, {}};
         }
       );
   }
@@ -175,6 +241,10 @@ namespace gspc
                       )
                   }
     {}
+    Strategy const& ConnectionAndPID::strategy() const
+    {
+      return _strategy;
+    }
     ConnectionAndPID::~ConnectionAndPID()
     {
       fhg::util::visit<void>
@@ -183,8 +253,8 @@ namespace gspc
         );
     }
 
-    util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
-      ConnectionAndPID::add (util::Forest<Resource> const& resources)
+    Forest<Resource, ErrorOr<resource::ID>>
+      ConnectionAndPID::add (Forest<Resource> const& resources)
     {
       return _client.add (resources).get();
     }
@@ -232,6 +302,16 @@ namespace gspc
                                         )
                 ).first;
             }
+            //! \todo specify: would it be okay to use a second
+            //! strategy for the same host?
+            // else
+            // {
+            //   if (remote_interface->second.strategy() != strategy)
+            //   {
+            //     //! \todo more information in exception!?
+            //     throw std::invalid_argument ("Different strategy");
+            //   }
+            // }
 
             return &remote_interface->second;
           }
@@ -243,12 +323,12 @@ namespace gspc
 
   std::unordered_map
     < remote_interface::Hostname
-    , ErrorOr<util::AnnotatedForest<Resource, ErrorOr<resource::ID>>>
+    , ErrorOr<Forest<Resource, ErrorOr<resource::ID>>>
     >
     ScopedRuntimeSystem::add
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
-      , util::Forest<Resource> const& resources
+      , Forest<Resource> const& resources
       ) noexcept
   {
     return remote_interfaces (std::move (hostnames), std::move (strategy))
@@ -273,53 +353,68 @@ namespace gspc
             //! started by this incarnation)
             return connection->add (resources);
           };
+      //! \todo
+      //      >>= [&] ( remote_interface::Hostname const&
+      //              , Forest<Resource, ErrorOr<resource::ID>> // result
+      //              )
+      //          {
+      //            // save result and tell resource manager
+      //          }
+      //      |= [&] ( remote_interface::Hostname const& // hostname
+      //             , MaybeError<Forest<Resource, ErrorOr<resource::ID>>> // result
+      //             )
+      //         {
+      //           // teardown rif if empty
+      //         };
   }
 
-  std::unordered_set<resource::ID>
+  Forest<resource::ID>
     ScopedRuntimeSystem::add_or_throw
-      ( std::unordered_set<remote_interface::Hostname> hostnames
-      , remote_interface::Strategy strategy
-      , util::Forest<Resource> const& resources
+    ( std::unordered_set<remote_interface::Hostname> //hostnames
+    , remote_interface::Strategy// strategy
+    , Forest<Resource> const&// resources
       )
   {
-    bool failed {false};
-    std::unordered_set<resource::ID> resource_ids;
+    return {};
 
-    for ( auto const& host_result
-        : add ( hostnames
-              , std::move (strategy)
-              , std::move (resources)
-              ) | boost::adaptors::map_values
-        )
-    {
-      if (!host_result)
-      {
-        failed = true;
-      }
-      else
-      {
-        for (auto const& resource_result : host_result.value())
-        {
-          if (resource_result.second)
-          {
-            resource_ids.emplace (resource_result.second.value());
-          }
-          else
-          {
-            failed = true;
-          }
-        }
-      }
-    }
+  //   bool failed {false};
+  //   std::unordered_set<resource::ID> resource_ids;
 
-    if (failed)
-    {
-      remove (resource_ids);
+  //   for ( auto const& host_result
+  //       : add ( hostnames
+  //             , std::move (strategy)
+  //             , std::move (resources)
+  //             ) | boost::adaptors::map_values
+  //       )
+  //   {
+  //     if (!host_result)
+  //     {
+  //       failed = true;
+  //     }
+  //     else
+  //     {
+  //       for (auto const& resource_result : host_result.value())
+  //       {
+  //         if (resource_result.second)
+  //         {
+  //           resource_ids.emplace (resource_result.second.value());
+  //         }
+  //         else
+  //         {
+  //           failed = true;
+  //         }
+  //       }
+  //     }
+  //   }
 
-      throw std::runtime_error ("failed to bootstrap");
-    }
+  //   if (failed)
+  //   {
+  //     remove (resource_ids);
 
-    return resource_ids;
+  //     throw std::runtime_error ("failed to bootstrap");
+  //   }
+
+  //   return resource_ids;
   }
 }
 
@@ -331,15 +426,37 @@ try
   gspc::ScopedRuntimeSystem runtime_system (resource_manager);
 
   gspc::remote_interface::strategy::Thread::State strategy_state;
+  gspc::remote_interface::strategy::Thread thread_strategy {&strategy_state};
 
-  auto const resource_ids
+  auto const resource_ids1
     ( runtime_system.add_or_throw
-      ( {"hostname"}
-      , gspc::remote_interface::strategy::Thread {&strategy_state}
-      , gspc::util::Forest<gspc::Resource> {}
+      ( {"hostname1", "hostname2"}
+      , thread_strategy
+      , gspc::Forest<gspc::Resource> {}
       )
     );
-  FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids); });
+  FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids1); });
+
+  auto const resource_ids2
+    ( runtime_system.add_or_throw
+      ( {"hostname3", "hostname4"}
+      , thread_strategy
+      , gspc::Forest<gspc::Resource> {}
+      )
+    );
+  FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });
+
+  // gspc::remote_interface::strategy::SSH ssh_strategy;
+
+  // //! \note will _not_ use SSH for hostname4 because it already uses THREAD
+  // auto const resource_ids3
+  //   ( runtime_system.add_or_throw
+  //     ( {"hostname4", "hostname6"}
+  //     , SSH_strategy
+  //     , gspc::Forest<gspc::Resource> {}
+  //     )
+  //   );
+  // FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids3); });
 
   gspc::PetriNetWorkflow workflow;
   gspc::PetriNetWorkflowEngine workflow_engine (workflow);

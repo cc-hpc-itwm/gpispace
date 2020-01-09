@@ -1,4 +1,5 @@
 #include <util-generic/functor_visitor.hpp>
+#include <util-generic/serialization/boost/blank.hpp>
 
 namespace gspc
 {
