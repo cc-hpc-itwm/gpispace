@@ -244,7 +244,7 @@ namespace gspc
     ScopedRuntimeSystem::add
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
-      , util::Forest<Resource> resources
+      , util::Forest<Resource> const& resources
       ) noexcept
   {
     //! \note syntax goal
@@ -289,7 +289,7 @@ namespace gspc
     ScopedRuntimeSystem::add_or_throw
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
-      , util::Forest<Resource> resources
+      , util::Forest<Resource> const& resources
       )
   {
     bool failed {false};

@@ -295,13 +295,13 @@ namespace gspc
       >
       add ( std::unordered_set<remote_interface::Hostname>
           , remote_interface::Strategy
-          , util::Forest<Resource>
+          , util::Forest<Resource> const&
           ) noexcept;
 
     std::unordered_set<resource::ID>
       add_or_throw  ( std::unordered_set<remote_interface::Hostname> hostnames
                     , remote_interface::Strategy strategy
-                    , util::Forest<Resource> resources
+                    , util::Forest<Resource> const& resources
                     );
 
     //! \todo return value and noexcept!?
