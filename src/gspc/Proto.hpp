@@ -267,18 +267,18 @@ FHG_UTIL_MAKE_COMBINED_STD_HASH
   ( gspc::remote_interface::ID
   , x
   , x.id
-  );
+  )
 FHG_UTIL_MAKE_COMBINED_STD_HASH
   ( gspc::resource::ID
   , x
   , x.id
   , x.remote_interface
-  );
+  )
 FHG_UTIL_MAKE_COMBINED_STD_HASH
   ( gspc::Resource
   , r
   , r._
-  );
+  )
 
 namespace gspc
 {
