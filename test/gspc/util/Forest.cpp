@@ -128,11 +128,11 @@ namespace gspc
 
     BOOST_AUTO_TEST_CASE (specific_diamond_throws)
     {
-      //    a                   a
-      //   / \                 / \
-      //  b   d  +     d  ==  b   d
-      //   \          /        \ /
-      //    c        c          c
+      // |   a                   a   |
+      // |  / \                 / \  |
+      // | b   d  +     d  ==  b   d |
+      // |  \          /        \ /  |
+      // |   c        c          c   |
       Forest<char> forest;
       forest.insert ('a', 'b');
       forest.insert ('b', 'c');
