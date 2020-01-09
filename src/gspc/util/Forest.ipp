@@ -255,7 +255,7 @@ namespace gspc
     template<typename T>
       template<typename CombiningTransformer, typename>
      AnnotatedForest< T
-                    , MaybeError<fhg::util::return_type<CombiningTransformer>>
+                    , ErrorOr<fhg::util::return_type<CombiningTransformer>>
                     >
       Forest<T>::combining_transform (CombiningTransformer) const
     {

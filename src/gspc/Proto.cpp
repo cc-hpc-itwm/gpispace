@@ -63,19 +63,19 @@ namespace gspc
     return _local_endpoint;
   }
 
-  util::AnnotatedForest<Resource, MaybeError<resource::ID>>
+  util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
     RemoteInterface::add (util::Forest<Resource> const& resources)
   {
     return resources.combining_transform
       ( [&] ( Resource const& resource
-            , std::list<MaybeError<resource::ID> const*> const& children
+            , std::list<ErrorOr<resource::ID> const*> const& children
             )
         {
           if (std::any_of ( children.cbegin()
                           , children.cend()
                           , [] (auto const child)
                             {
-                              return is_failure (*child);
+                              return !*child;
                             }
                           )
              )
@@ -183,7 +183,7 @@ namespace gspc
         );
     }
 
-    util::AnnotatedForest<Resource, MaybeError<resource::ID>>
+    util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
       ConnectionAndPID::add (util::Forest<Resource> const& resources)
     {
       return _client.add (resources).get();
@@ -195,7 +195,7 @@ namespace gspc
 {
   std::unordered_map
     < remote_interface::Hostname
-    , MaybeError<remote_interface::ConnectionAndPID*>
+    , ErrorOr<remote_interface::ConnectionAndPID*>
     >
   ScopedRuntimeSystem::remote_interfaces
     ( std::unordered_set<remote_interface::Hostname> hostnames
@@ -204,13 +204,14 @@ namespace gspc
   {
     std::unordered_map
       < remote_interface::Hostname
-      , MaybeError<remote_interface::ConnectionAndPID*>
+      , ErrorOr<remote_interface::ConnectionAndPID*>
       > remote_interfaces;
 
     for (auto const& hostname : hostnames)
     {
-      remote_interfaces[hostname] = bind
-        ( [&]
+      remote_interfaces.emplace
+        ( hostname
+        , [&]
           {
             auto remote_interface
               (_remote_interface_by_hostname.find (hostname));
@@ -238,7 +239,7 @@ namespace gspc
 
   std::unordered_map
     < remote_interface::Hostname
-    , MaybeError<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
+    , ErrorOr<util::AnnotatedForest<Resource, ErrorOr<resource::ID>>>
     >
     ScopedRuntimeSystem::add
       ( std::unordered_set<remote_interface::Hostname> hostnames
@@ -255,7 +256,7 @@ namespace gspc
 
     std::unordered_map
       < remote_interface::Hostname
-      , MaybeError<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
+      , ErrorOr<util::AnnotatedForest<Resource, ErrorOr<resource::ID>>>
       > resources_by_host;
 
     for ( auto&& hostname_and_remote_interface
@@ -264,22 +265,20 @@ namespace gspc
     {
       resources_by_host.emplace
         ( std::move (hostname_and_remote_interface.first)
-        , bind
-          ( std::move (hostname_and_remote_interface.second)
-          , [&] (remote_interface::ConnectionAndPID* connection)
-            {
-              //! \todo if adding the resources fails, we do *not*
-              //! stop the rif again. is this bad? is this good
-              //! because 99% there will be a retry anyway? what is
-              //! our post-condition? (note: we do not leak it, we
-              //! remember we started one.)
+        , std::move (hostname_and_remote_interface.second)
+          >> [&] (remote_interface::ConnectionAndPID* connection)
+             {
+               //! \todo if adding the resources fails, we do *not*
+               //! stop the rif again. is this bad? is this good
+               //! because 99% there will be a retry anyway? what is
+               //! our post-condition? (note: we do not leak it, we
+               //! remember we started one.)
 
-              //! \note to try-catch and remove rif on error is _not_
-              //! enough: the rif might have been started in a
-              //! previous call
-              return connection->add (resources);
-            }
-          )
+               //! \note to try-catch and remove rif on error is _not_
+               //! enough: the rif might have been started in a
+               //! previous call
+               return connection->add (resources);
+             }
         );
     }
 

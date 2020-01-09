@@ -1,5 +1,5 @@
 #include <gspc/util/Forest.hpp>
-#include <gspc/MaybeError.hpp>
+#include <gspc/ErrorOr.hpp>
 
 #include <logging/endpoint.hpp>
 
@@ -161,7 +161,7 @@ namespace gspc
     {
       FHG_RPC_FUNCTION_DESCRIPTION
         ( add
-        , util::AnnotatedForest<Resource, MaybeError<resource::ID>>
+        , util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
             (util::Forest<Resource> /* \todo RPC: const& */)
         );
     }
@@ -172,7 +172,7 @@ namespace gspc
   public:
     RemoteInterface (remote_interface::ID);
 
-    util::AnnotatedForest<Resource, MaybeError<resource::ID>>
+    util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
       add (util::Forest<Resource> const&);
 
     rpc::endpoint const& local_endpoint() const;
@@ -252,7 +252,7 @@ namespace gspc
       ConnectionAndPID& operator= (ConnectionAndPID const&) = delete;
       ConnectionAndPID& operator= (ConnectionAndPID&&) = delete;
 
-      util::AnnotatedForest<Resource, MaybeError<resource::ID>>
+      util::AnnotatedForest<Resource, ErrorOr<resource::ID>>
         add (util::Forest<Resource> const&);
 
     private:
@@ -291,7 +291,7 @@ namespace gspc
 
     std::unordered_map
       < remote_interface::Hostname
-      , MaybeError<util::AnnotatedForest<Resource, MaybeError<resource::ID>>>
+      , ErrorOr<util::AnnotatedForest<Resource, ErrorOr<resource::ID>>>
       >
       add ( std::unordered_set<remote_interface::Hostname>
           , remote_interface::Strategy
@@ -323,7 +323,7 @@ namespace gspc
 
     std::unordered_map
       < remote_interface::Hostname
-      , MaybeError<remote_interface::ConnectionAndPID*>
+      , ErrorOr<remote_interface::ConnectionAndPID*>
       >
       remote_interfaces ( std::unordered_set<remote_interface::Hostname>
                         , remote_interface::Strategy

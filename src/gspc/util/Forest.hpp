@@ -18,7 +18,7 @@ namespace gspc
 }
 //! \todo END
 
-#include <gspc/MaybeError.hpp>
+#include <gspc/ErrorOr.hpp>
 
 #include <util-generic/callable_signature.hpp>
 
@@ -85,7 +85,7 @@ namespace gspc
           < fhg::util::is_callable
               < F
               , U ( T const& // node
-                  , std::list<MaybeError<U> const*> const& // results of all direct children
+                  , std::list<ErrorOr<U> const*> const& // results of all direct children
                   )
               >{}
           >;
@@ -94,7 +94,7 @@ namespace gspc
               , typename = is_combining_transformer<CombiningTransformer>
               >
      AnnotatedForest< T
-                    , MaybeError<fhg::util::return_type<CombiningTransformer>>
+                    , ErrorOr<fhg::util::return_type<CombiningTransformer>>
                     >
         combining_transform (CombiningTransformer) const;
 
