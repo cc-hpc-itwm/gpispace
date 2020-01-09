@@ -88,16 +88,15 @@ namespace gspc
         auto index {open.top()};
         open.pop();
 
-        if (callback (*annotations.find (index)))
-        {
-          auto children {relation.find (index)};
+        callback (*annotations.find (index));
 
-          if (children != relation.end())
+        auto children {relation.find (index)};
+
+        if (children != relation.end())
+        {
+          for (auto child : children->second)
           {
-            for (auto child : children->second)
-            {
-              open.push (child);
-            }
+            open.push (child);
           }
         }
       }
