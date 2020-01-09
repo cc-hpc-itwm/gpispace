@@ -247,42 +247,20 @@ namespace gspc
       , util::Forest<Resource> const& resources
       ) noexcept
   {
-    //! \note syntax goal
-    // return remote_interfaces (std::move (hostnames), std::move (strategy))
-    //   >> [&] (remote_interface::ConnectionAndPID* connection)
-    //         {
-    //           return connection->add (resources);
-    //         }
+    return remote_interfaces (std::move (hostnames), std::move (strategy))
+      >> [&] (remote_interface::ConnectionAndPID* connection)
+         {
+           //! \todo if adding the resources fails, we do *not*
+           //! stop the rif again. is this bad? is this good
+           //! because 99% there will be a retry anyway? what is
+           //! our post-condition? (note: we do not leak it, we
+           //! remember we started one.)
 
-    std::unordered_map
-      < remote_interface::Hostname
-      , ErrorOr<util::AnnotatedForest<Resource, ErrorOr<resource::ID>>>
-      > resources_by_host;
-
-    for ( auto&& hostname_and_remote_interface
-        : remote_interfaces (std::move (hostnames), std::move (strategy))
-        )
-    {
-      resources_by_host.emplace
-        ( std::move (hostname_and_remote_interface.first)
-        , std::move (hostname_and_remote_interface.second)
-          >> [&] (remote_interface::ConnectionAndPID* connection)
-             {
-               //! \todo if adding the resources fails, we do *not*
-               //! stop the rif again. is this bad? is this good
-               //! because 99% there will be a retry anyway? what is
-               //! our post-condition? (note: we do not leak it, we
-               //! remember we started one.)
-
-               //! \note to try-catch and remove rif on error is _not_
-               //! enough: the rif might have been started in a
-               //! previous call
-               return connection->add (resources);
-             }
-        );
-    }
-
-    return resources_by_host;
+           //! \note to try-catch and remove rif on error is _not_
+           //! enough: the rif might have been started in a
+           //! previous call
+           return connection->add (resources);
+         };
   }
 
   std::unordered_set<resource::ID>

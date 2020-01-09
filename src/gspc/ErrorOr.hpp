@@ -46,12 +46,23 @@ namespace gspc
   private:
     using Base = boost::variant<std::exception_ptr, T>;
   };
+}
 
-  // std::unordered_map<K, MaybeError<U>> operator>>
-  //   ( std::unordered_map<K, MaybeError<T>>
-  //   , Function
-  //   )
-  // {}
+#include <unordered_map>
+
+namespace gspc
+{
+  template
+    < typename Key
+    , typename T
+    , typename Function
+    , typename U = fhg::util::return_type<Function>
+    , typename = std::enable_if<fhg::util::is_callable<Function, U (T)>{}>
+    >
+    std::unordered_map<Key, ErrorOr<U>> operator>>
+      ( std::unordered_map<Key, ErrorOr<T>>&&
+      , Function&&
+      );
 }
 
 #include <gspc/ErrorOr.ipp>

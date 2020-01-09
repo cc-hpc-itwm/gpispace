@@ -62,4 +62,20 @@ namespace gspc
         }
       );
   }
+
+  template<typename Key, typename T, typename Function, typename U, typename>
+    std::unordered_map<Key, ErrorOr<U>> operator>>
+      ( std::unordered_map<Key, ErrorOr<T>>&& xs
+      , Function&& function
+      )
+  {
+    std::unordered_map<Key, ErrorOr<U>> ys;
+
+    for (auto&& x : xs)
+    {
+      ys.emplace (std::move (x.first), std::move (x.second) >> function);
+    }
+
+    return ys;
+  }
 }
