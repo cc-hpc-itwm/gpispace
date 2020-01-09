@@ -105,17 +105,17 @@ namespace gspc
         (From<T> from, To<T> to)
     try
     {
-        down ( to
-             , [&] (T index)
+      down ( to
+           , [&] (T index)
+             {
+               if (index == from)
                {
-                 if (index == from)
-                 {
-                   throw std::invalid_argument ("Cycle.");
-                 }
-
-                 return true;
+                 throw std::invalid_argument ("Cycle.");
                }
-             );
+
+               return true;
+             }
+           );
 
       {
         auto seen {Ts{}};
