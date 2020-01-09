@@ -107,7 +107,7 @@ namespace gspc
   }
 
   template<typename T, typename A>
-    void Forest<T, A>::insert (T from, A annotation, std::unordered_set<T> tos)
+    void Forest<T, A>::insert (T from, A annotation, Children tos)
     try
     {
       auto is_unknown

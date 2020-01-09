@@ -36,7 +36,9 @@ namespace gspc
     // 2 throw when any_of (cs: unknown)
     // 3 throw when cycle -> is free because of 1, 2
     // 4 throw when diamond -> seen = cs; for c : cs: traverse and throw if seen twice
-    void insert (T x, A a, std::unordered_set<T> cs);
+    using Children = std::unordered_set<T>;
+
+    void insert (T x, A a, Children cs);
 
     void remove_leaf (T);
     void remove_root (T);
@@ -93,8 +95,7 @@ namespace gspc
       Forest<U, B> unordered_transform (UnorderedTransformer) const;
 
     //! \todo: iterate
-    using Ts = std::unordered_set<T>;
-    using Relation = std::unordered_map<T, Ts>;
+    using Relation = std::unordered_map<T, Children>;
     using Annotations = std::unordered_map<T, A>;
 
   private:
