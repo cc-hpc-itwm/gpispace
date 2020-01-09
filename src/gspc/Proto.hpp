@@ -1,3 +1,5 @@
+#pragma once
+
 #include <gspc/util/Forest.hpp>
 #include <gspc/ErrorOr.hpp>
 
@@ -112,7 +114,16 @@ namespace gspc
   };
 
   bool operator== (Resource const&, Resource const&);
+}
 
+FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( gspc::Resource
+  , r
+  , r._
+  )
+
+namespace gspc
+{
   namespace remote_interface
   {
     struct ID
@@ -273,11 +284,6 @@ FHG_UTIL_MAKE_COMBINED_STD_HASH
   , x
   , x.id
   , x.remote_interface
-  )
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::Resource
-  , r
-  , r._
   )
 
 namespace gspc
