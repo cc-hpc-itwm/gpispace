@@ -103,6 +103,9 @@ namespace gspc
     Relation _pre;
     Annotations _annotations;
 
+    bool is_unknown (T const&) const;
+    T const& assert_is_known (T const&) const;
+
     friend boost::serialization::access;
     template<typename Archive>
       void serialize (Archive&, unsigned int);

@@ -106,6 +106,22 @@ namespace gspc
   }
 
   template<typename T, typename A>
+    bool Forest<T, A>::is_unknown (T const& x) const
+  {
+    return _annotations.end() == _annotations.find (x);
+  }
+  template<typename T, typename A>
+    T const& Forest<T, A>::assert_is_known (T const& x) const
+  {
+    if (is_unknown (x))
+    {
+      throw std::invalid_argument ("Unknown.");
+    }
+
+    return x;
+  }
+
+  template<typename T, typename A>
     void Forest<T, A>::insert (T from, A annotation, Children tos)
     try
     {
