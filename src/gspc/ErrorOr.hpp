@@ -1,6 +1,7 @@
 #pragma once
 
 #include <util-generic/callable_signature.hpp>
+#include <util-generic/cxx17/void_t.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/blank.hpp>
@@ -26,7 +27,7 @@ namespace gspc
 
     template
       < typename Function
-      //      , typename = std::enable_if_t<fhg::util::is_callable<Function, T()>{}>
+      , typename = fhg::util::cxx17::void_t<decltype (T (std::declval<Function>()()))>
       >
       ErrorOr (Function&&) noexcept;
 

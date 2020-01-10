@@ -20,7 +20,7 @@ namespace gspc
   }
 
   template<typename T>
-    template<typename Function> // , typename>
+    template<typename Function, typename>
       ErrorOr<T>::ErrorOr (Function&& function) noexcept
         : Base
           { [&]() -> Base
