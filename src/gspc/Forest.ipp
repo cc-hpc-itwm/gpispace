@@ -125,19 +125,19 @@ namespace gspc
     void Forest<T, A>::insert (T from, A annotation, Children tos)
     try
     {
-      auto is_unknown
-        ( [&] (auto x)
+      auto is_known
+        ( [&] (auto const& x)
           {
-            return 0 == _annotations.count (x);
+            return !is_unknown (x);
           }
-          );
+        );
 
-      if (!is_unknown (from))
+      if (is_known (from))
       {
         throw std::invalid_argument ("Duplicate.");
       }
 
-      if (std::any_of (tos.cbegin(), tos.cend(), is_unknown))
+      if (!std::all_of (tos.cbegin(), tos.cend(), is_known))
       {
         throw std::invalid_argument ("Unknown child");
       }
