@@ -149,7 +149,7 @@ namespace gspc
     return resources.unordered_transform
       ( [&] (forest::Node<resource::ID> const& id) -> ResultNode
         {
-          if (! _workers.erase (id.first))
+          if (!_workers.erase (id.first))
           {
             throw std::invalid_argument
               (str ( boost::format
