@@ -12,6 +12,7 @@
 
 #include <algorithm>
 #include <iostream>
+#include <iterator>
 #include <numeric>
 #include <set>
 #include <stdexcept>
@@ -254,116 +255,94 @@ namespace gspc
       BOOST_REQUIRE_EQUAL (c, 2);
     }
 
+  BOOST_DATA_TEST_CASE (remove_leaf_for_non_leaf_throws, from_to (2, 25), N)
+  {
+    auto const xs {randoms<std::vector<int>, unique_random> (N)};
+
+    Forest<int> forest (chain (xs));
+
+    for (std::size_t i (1); i < N; ++i)
+    {
+      fhg::util::testing::require_exception
+        ( [&]
+          {
+            forest.remove_leaf (xs.at (i));
+          }
+        , fhg::util::testing::make_nested
+          ( std::runtime_error
+            (str ( boost::format ("Forest::remove_leaf: ('%1%')")
+                 % xs.at (i)
+                 )
+            )
+          , std::invalid_argument ("Not a leaf.")
+          )
+        );
+    }
+  }
+
+  BOOST_DATA_TEST_CASE (remove_root_for_non_root_throws, from_to (2, 25), N)
+  {
+    auto const xs {randoms<std::vector<int>, unique_random> (N)};
+
+    Forest<int> forest (chain (xs));
+
+    for (std::size_t i (0); i + 1 < N; ++i)
+    {
+      fhg::util::testing::require_exception
+        ( [&]
+          {
+            forest.remove_root (xs.at (i));
+          }
+        , fhg::util::testing::make_nested
+          ( std::runtime_error
+            (str ( boost::format ("Forest::remove_root: ('%1%')")
+                 % xs.at (i)
+                 )
+            )
+          , std::invalid_argument ("Not a root.")
+          )
+        );
+    }
+  }
+
+  BOOST_DATA_TEST_CASE (remove_for_unknown_throws, from_to (0, 100), N)
+  {
+    auto const xs {randoms<std::vector<int>, unique_random> (N + 1)};
+
+    Forest<int> forest (chain ({xs.cbegin(), std::prev (xs.end())}));
+
+    fhg::util::testing::require_exception
+      ( [&]
+        {
+          forest.remove_leaf (xs.back());
+        }
+      , fhg::util::testing::make_nested
+        ( std::runtime_error
+          (str ( boost::format ("Forest::remove_leaf: ('%1%')")
+               % xs.back()
+               )
+          )
+        , std::invalid_argument ("Unknown.")
+        )
+      );
+
+    fhg::util::testing::require_exception
+      ( [&]
+        {
+          forest.remove_root (xs.back());
+        }
+      , fhg::util::testing::make_nested
+        ( std::runtime_error
+          (str ( boost::format ("Forest::remove_root: ('%1%')")
+               % xs.back()
+               )
+          )
+        , std::invalid_argument ("Unknown.")
+        )
+      );
+  }
+
   //! \todo
-  //   BOOST_AUTO_TEST_CASE (remove_nonexisting_connection_throws)
-  //   {
-  //     auto const xs {randoms<std::vector<int>, unique_random> (3)};
-
-  //     Forest<int> forest;
-
-  //     auto const outer
-  //       { std::runtime_error
-  //         ( ( boost::format ("Forest::remove: (from %1%, to %2%)")
-  //           % xs.at (0)
-  //           % xs.at (1)
-  //           ).str()
-  //         )
-  //         };
-
-  //     fhg::util::testing::require_exception
-  //       ( [&]
-  //         {
-  //           forest.remove (xs.at (0), xs.at (1));
-  //         }
-  //       , fhg::util::testing::make_nested
-  //         ( outer
-  //         , std::invalid_argument ("Connection does not exist: Missing from.")
-  //         )
-  //       );
-
-  //     forest.insert (xs.at (0), xs.at (2));
-
-  //     fhg::util::testing::require_exception
-  //       ( [&]
-  //         {
-  //           forest.remove (xs.at (0), xs.at (1));
-  //         }
-  //       , fhg::util::testing::make_nested
-  //         ( outer
-  //         , std::invalid_argument ("Connection does not exist: Missing to.")
-  //         )
-  //       );
-  //   }
-
-  //   BOOST_AUTO_TEST_CASE (remove_connection_removes_connection)
-  //   {
-  //     auto const xs {randoms<std::vector<int>, unique_random> (4)};
-
-  //     Forest<int> forest;
-
-  //     auto check
-  //     { [&] (std::vector<int> result, std::vector<std::size_t> indices)
-  //       {
-  //         std::vector<int> expected;
-
-  //         for (auto index : indices)
-  //         {
-  //           expected.emplace_back (xs.at (index));
-  //         }
-
-  //         BOOST_REQUIRE_EQUAL_COLLECTIONS
-  //           (expected.begin(), expected.end(), result.begin(), result.end());
-  //       }
-  //     };
-  //     auto check_down
-  //     { [&] (std::size_t root, std::vector<std::size_t> indices)
-  //       {
-  //         collect<int> callback;
-
-  //         forest.down (xs.at (root), std::ref (callback));
-
-  //         check (callback._, indices);
-  //       }
-  //     };
-  //     auto check_up
-  //     { [&] (std::size_t root, std::vector<std::size_t> indices)
-  //       {
-  //         collect<int> callback;
-
-  //         forest.up (xs.at (root), std::ref (callback));
-
-  //         check (callback._, indices);
-  //       }
-  //     };
-
-  //     forest.insert (xs.at (0), xs.at (1))
-  //       .insert (xs.at (1), xs.at (2))
-  //       .insert (xs.at (2), xs.at (3))
-  //       ;
-
-  //     check_down (0, {0, 1, 2, 3});
-  //     check_down (1, {1, 2, 3});
-  //     check_down (2, {2, 3});
-  //     check_down (3, {3});
-
-  //     check_up (0, {0});
-  //     check_up (1, {1, 0});
-  //     check_up (2, {2, 1, 0});
-  //     check_up (3, {3, 2, 1, 0});
-
-  //     forest.remove (xs.at (1), xs.at (2));
-
-  //     check_down (0, {0, 1});
-  //     check_down (1, {1});
-  //     check_down (2, {2, 3});
-  //     check_down (3, {3});
-
-  //     check_up (0, {0});
-  //     check_up (1, {1, 0});
-  //     check_up (2, {2});
-  //     check_up (3, {3, 2});
-  //   }
-
   //   BOOST_AUTO_TEST_CASE (remove_element_removes_all_connections)
   //   {
   //     auto const xs {randoms<std::vector<int>, unique_random> (6)};

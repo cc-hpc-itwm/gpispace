@@ -43,12 +43,18 @@ namespace gspc
       return;
     }
 
-    template<typename T, typename Relation>
+    template<typename T, typename Relation, typename Annotations>
       void erase_all ( T x
                      , Relation& forward
                      , Relation& backward
+                     , Annotations& annotations
                      )
     {
+      if (!annotations.erase (x))
+      {
+        throw std::invalid_argument ("Unknown.");
+      }
+
       auto pos {forward.find (x)};
 
       if (pos != forward.end())
@@ -193,13 +199,7 @@ namespace gspc
       throw std::invalid_argument ("Not a leaf.");
     }
 
-    if (!_annotations.erase (x))
-    {
-      throw std::invalid_argument ("Unknown.");
-    }
-
-    detail::erase_all<T> (x, _suc, _pre);
-    detail::erase_all<T> (x, _pre, _suc);
+    detail::erase_all<T> (x, _pre, _suc, _annotations);
   }
   catch (...)
   {
@@ -218,13 +218,7 @@ namespace gspc
       throw std::invalid_argument ("Not a root.");
     }
 
-    if (!_annotations.erase (x))
-    {
-      throw std::invalid_argument ("Unknown.");
-    }
-
-    detail::erase_all<T> (x, _suc, _pre);
-    detail::erase_all<T> (x, _pre, _suc);
+    detail::erase_all<T> (x, _suc, _pre, _annotations);
   }
   catch (...)
   {

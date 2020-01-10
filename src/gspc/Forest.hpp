@@ -42,6 +42,7 @@ namespace gspc
     //! 3 throw when diamond
     void insert (T x, A a, Children cs);
 
+    //! throw then unknown of no
     void remove_leaf (T);
     void remove_root (T);
 
