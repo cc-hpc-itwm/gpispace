@@ -1,0 +1,13 @@
+_scriptdir=$(readlink -f ${BASH_SOURCE}); source "${_scriptdir%/*}"/common
+
+export CC="gcc-5"
+export CXX="g++-5"
+
+external=/home/projects/sdpa/external_software
+
+export BOOST_LIBRARYDIR=/usr/lib64/
+
+pkg_config_path gaspi/1.3.0+eth/lib64/pkgconfig
+
+gspc_testing_rif_strategy=ssh
+gspc_parallel_test_and_build_jobs=$(nproc)

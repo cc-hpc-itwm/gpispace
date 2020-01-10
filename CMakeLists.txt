@@ -77,7 +77,6 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
   random
   serialization
   system
-  test_exec_monitor
   thread
   timer
   unit_test_framework

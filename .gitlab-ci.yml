@@ -21,6 +21,13 @@ build (centos 6.5):
   tags:
     - centos-6.5
 
+build (opensuse 42.3):
+  stage: build
+  script:
+    - source "${ci_scripts_dir}/jobs/build"
+  tags:
+    - opensuse-42
+
 tests (centos 5.7):
   stage: test
   script:
@@ -36,6 +43,14 @@ tests (centos 6.5):
     - source "${ci_scripts_dir}/jobs/test"
   tags:
     - centos-6.5
+
+tests (opensuse 42.3):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/test"
+  tags:
+    - opensuse-42
 
 #! \todo add virtual memory tests on centos 5.7: needs infiniband or
 #        gpi2+eth (requires higher kernel version)
@@ -65,3 +80,12 @@ performance tests (centos 6.5):
   allow_failure: true
   tags:
     - centos-6.5
+
+performance tests (opensuse 42.3):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/performance_test"
+  allow_failure: true
+  tags:
+    - opensuse-42

@@ -167,6 +167,7 @@ extended_add_library (NAME logging
             RPC
             Boost::base
             Boost::program_options
+            Boost::thread
 )
 
 install (FILES
