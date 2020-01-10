@@ -109,6 +109,9 @@ namespace gspc
             >
       Forest<U, B> unordered_transform (UnorderedTransformer) const;
 
+    //! throw if node already known
+    void merge (Forest<T, A> other);
+
     //! \todo: iterate
 
   private:

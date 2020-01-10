@@ -445,6 +445,27 @@ namespace gspc
 
 
   template<typename T, typename A>
+    void Forest<T, A>::merge (Forest<T, A> other)
+  try
+  {
+    for (auto const& key : other._annotations | boost::adaptors::map_keys)
+    {
+      if (_annotations.count (key))
+      {
+        throw std::invalid_argument ("Duplicate Key.");
+      }
+    }
+
+    _suc.insert (other._suc.begin(), other._suc.end());
+    _pre.insert (other._pre.begin(), other._pre.end());
+    _annotations.insert (other._annotations.begin(), other._annotations.end());
+  }
+  catch (...)
+  {
+    std::throw_with_nested (std::runtime_error ("Forest::merge: (other)"));
+  }
+
+  template<typename T, typename A>
     template<typename Archive>
     void Forest<T, A>::serialize (Archive& ar, unsigned int /* version */)
   {
