@@ -10,6 +10,7 @@
 
 namespace gspc
 {
+  //! \todo don't use std::exception_ptr
   template<typename T = boost::blank>
     struct ErrorOr : private boost::variant<std::exception_ptr, T>
   {
@@ -53,6 +54,12 @@ namespace gspc
     {
       ar & static_cast<Base&> (*this);
     }
+
+    template<typename U>
+      friend bool operator== (ErrorOr<U> const& lhs, ErrorOr<U> const& rhs);
+    template<typename U>
+      friend std::ostream& operator<< (std::ostream&, ErrorOr<U> const&);
+    friend std::hash<ErrorOr<T>>;
   };
 }
 
@@ -97,4 +104,10 @@ namespace boost
       }
     }
   }
+}
+
+namespace std
+{
+  template<typename T>
+    struct hash<gspc::ErrorOr<T>>;
 }

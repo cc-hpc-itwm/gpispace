@@ -1,5 +1,11 @@
 #include <util-generic/functor_visitor.hpp>
+#include <util-generic/hash/boost/variant.hpp>
+#include <util-generic/print_exception.hpp>
 #include <util-generic/serialization/boost/blank.hpp>
+
+#include <cstdint>
+#include <exception>
+#include <functional>
 
 namespace gspc
 {
@@ -17,6 +23,13 @@ namespace gspc
   {
     //! \todo specific exception
     return boost::get<T> (*this);
+  }
+
+  template<typename T>
+    std::exception_ptr ErrorOr<T>::error() const
+  {
+    //! \todo specific exception
+    return boost::get<std::exception_ptr> (*this);
   }
 
   template<typename T>
@@ -48,6 +61,26 @@ namespace gspc
       , [] (std::exception_ptr const&) { return false; }
       , [] (T const&) { return true; }
       );
+  }
+
+  template<typename U>
+    bool operator== (ErrorOr<U> const& lhs, ErrorOr<U> const& rhs)
+  {
+    return static_cast<typename ErrorOr<U>::Base const&> (lhs)
+      == static_cast<typename ErrorOr<U>::Base const&> (rhs);
+  }
+
+  template<typename U>
+    std::ostream& operator<< (std::ostream& os, ErrorOr<U> const& x)
+  {
+    if (x)
+    {
+      return os << "Just: " << x.value();
+    }
+    else
+    {
+      return os << fhg::util::exception_printer (x.error());
+    }
   }
 
   template<typename T>
@@ -86,4 +119,28 @@ namespace gspc
 
     return ys;
   }
+}
+
+namespace std
+{
+  template<>
+    struct hash<exception_ptr>
+  {
+    std::size_t operator() (exception_ptr const&) const
+    {
+      //! \todo this is a highly low quality hash. throw and compare
+      //! catched address?! remove and replace with own
+      //! exception/error infrastructure?!
+      return 0;
+    }
+  };
+
+  template<typename T>
+    struct hash<gspc::ErrorOr<T>>
+  {
+    std::size_t operator() (gspc::ErrorOr<T> const& eo) const
+    {
+      return std::hash<typename gspc::ErrorOr<T>::Base>{} (eo);
+    }
+  };
 }
