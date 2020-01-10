@@ -49,6 +49,15 @@ namespace gspc
     void remove_leaf (T);
     void remove_root (T);
 
+    template<typename F>
+      using is_predicate =
+        fhg::util::is_callable<F, bool (forest::Node<T, A> const&)>;
+
+    //! downward iterate, stop subtree iteration if not removed
+    //! post: \all root: !pred(root)
+    template<typename Pred, typename = std::enable_if_t<is_predicate<Pred>{}>>
+      Forest remove_root_if (Pred&&) &&;
+
     // traverse downwards/upwards:
     // callback called once for the root and once for each transitive child
     // throw when root is unknown

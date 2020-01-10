@@ -404,6 +404,47 @@ namespace gspc
   }
 
   template<typename T, typename A>
+    template<typename Pred, typename>
+      Forest<T, A> Forest<T, A>::remove_root_if (Pred&& pred) &&
+  {
+    std::stack<T> roots;
+
+    for (auto const& x : _annotations | boost::adaptors::map_keys)
+    {
+      if (_pre.find (x) == _pre.end())
+      {
+        roots.push (x);
+      }
+    }
+
+    while (!roots.empty())
+    {
+      auto const root (roots.top());
+      roots.pop();
+
+      if (pred (*_annotations.find (root)))
+      {
+        detail::for_each_at
+          ( _suc
+          , root
+          , [&] (T const& child)
+            {
+              if (_pre.at (child).size() == 1) // <==> pre.at (child) == {root}
+              {
+                roots.push (child);
+              }
+            }
+          );
+
+        remove_root (root);
+      }
+    }
+
+    return std::move (*this);
+  }
+
+
+  template<typename T, typename A>
     template<typename Archive>
     void Forest<T, A>::serialize (Archive& ar, unsigned int /* version */)
   {
