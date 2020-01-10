@@ -114,6 +114,7 @@ namespace gspc
   };
 
   bool operator== (Resource const&, Resource const&);
+  std::ostream& operator<< (std::ostream&, Resource const&);
 }
 
 FHG_UTIL_MAKE_COMBINED_STD_HASH

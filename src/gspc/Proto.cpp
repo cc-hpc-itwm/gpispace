@@ -50,6 +50,10 @@ namespace gspc
   {
     return std::tie (lhs._) == std::tie (rhs._);
   }
+  std::ostream& operator<< (std::ostream& os, Resource const& r)
+  {
+    return os << "resource " << r._;
+  }
 
   Worker::Worker (Resource resource)
     : _resource {std::move (resource)}
@@ -120,7 +124,7 @@ namespace gspc
           {
             throw std::runtime_error
               (str ( boost::format ("Skip start of '%1%': Child failure.")
-                   % resource.first._
+                   % resource.first
                    )
               );
           }
