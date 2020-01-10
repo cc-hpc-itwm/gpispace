@@ -13,6 +13,23 @@ namespace gspc
 {
   namespace detail
   {
+    template<typename Key, typename Relation, typename Callback>
+      void for_each_at ( Relation const& relation
+                       , Key const& key
+                       , Callback&& callback
+                       )
+    {
+      auto const pos (relation.find (key));
+
+      if (pos != relation.cend())
+      {
+        std::for_each ( pos->second.cbegin()
+                      , pos->second.cend()
+                      , std::forward<Callback> (callback)
+                      );
+      }
+    }
+
     template<typename T, typename Container>
       typename Container::iterator
         assert_element (T x, Container& xs)
@@ -96,15 +113,7 @@ namespace gspc
 
         callback (*annotations.find (index));
 
-        auto children {relation.find (index)};
-
-        if (children != relation.end())
-        {
-          for (auto child : children->second)
-          {
-            open.push (child);
-          }
-        }
+        for_each_at (relation, index, [&] (auto child) { open.push (child); });
       }
 
       return;
