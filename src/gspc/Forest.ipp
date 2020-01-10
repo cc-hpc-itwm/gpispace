@@ -391,9 +391,16 @@ namespace gspc
             , typename
             >
     Forest<U, B>
-    Forest<T, A>::unordered_transform (UnorderedTransformer) const
+    Forest<T, A>::unordered_transform (UnorderedTransformer function) const
   {
-    throw std::runtime_error ("NYI: unordered_transform");
+    return upward_combine_transform
+      ( [&] ( forest::Node<T, A> const& node
+            , std::list<forest::Node<U, B> const*> const& // children_results
+            )
+        {
+          return function (node);
+        }
+      );
   }
 
   template<typename T, typename A>
