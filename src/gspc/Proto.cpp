@@ -1,5 +1,13 @@
 #include <gspc/Proto.hpp>
 
+#include <util-generic/nest_exceptions.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
+
+#include <boost/lexical_cast.hpp>
+
+#include <exception>
+#include <vector>
+
 namespace rpc
 {
   std::unique_ptr<remote_endpoint> make_endpoint
@@ -372,53 +380,145 @@ namespace gspc
       //         };
   }
 
+  namespace
+  {
+    std::exception_ptr nest_with_runtime_error
+      (std::exception_ptr ex, std::string what)
+    {
+      try
+      {
+        fhg::util::nest_exceptions<std::runtime_error>
+          ([&] { std::rethrow_exception (ex); }, what);
+      }
+      catch (...)
+      {
+        return std::current_exception();
+      }
+
+      throw std::logic_error ("null exception pointer");
+    }
+  }
+
+  //! \todo think about combinators like this
+  template<typename T, typename U>
+    std::pair<Forest<T, U>, Forest<T, std::exception_ptr>>
+      split (Forest<T, ErrorOr<U>> forest)
+  {
+    Forest<T, ErrorOr<U>> copy (forest);
+
+    return
+      { std::move (forest)
+      . remove_root_if
+        ( [] (forest::Node<T, ErrorOr<U>> const& node)
+          {
+            return !node.second;
+          }
+        )
+      . unordered_transform
+        ( [] (forest::Node<T, ErrorOr<U>> const& node)
+          {
+            return forest::Node<T, U> (node.first, node.second.value());
+          }
+       )
+      , std::move (copy)
+      . remove_root_if
+        ( [] (forest::Node<T, ErrorOr<U>> const& node)
+          {
+            return node.second;
+          }
+        )
+      . unordered_transform
+        ( [] (forest::Node<T, ErrorOr<U>> const& node)
+          {
+            return forest::Node<T, std::exception_ptr>
+              (node.first, node.second.error());
+          }
+       )
+      };
+  }
+
   Forest<resource::ID>
     ScopedRuntimeSystem::add_or_throw
-    ( std::unordered_set<remote_interface::Hostname> //hostnames
-    , remote_interface::Strategy// strategy
-    , Forest<Resource> const&// resources
+      ( std::unordered_set<remote_interface::Hostname> hostnames
+      , remote_interface::Strategy strategy
+      , Forest<Resource> const& resources
       )
   {
-    return {};
+    std::vector<std::exception_ptr> failures;
+    Forest<resource::ID> successes;
 
-  //   bool failed {false};
-  //   std::unordered_set<resource::ID> resource_ids;
+    for ( auto const& host_result
+        : add (hostnames, std::move (strategy), resources)
+        )
+    {
+      if (!host_result.second)
+      {
+        failures.emplace_back
+          ( nest_with_runtime_error
+              (host_result.second.error(), "failure on " + host_result.first)
+          );
+      }
+      else
+      {
+        successes.merge
+          ( host_result.second.value()
+          . unordered_transform
+              ( [&] (forest::Node<Resource, ErrorOr<resource::ID>> const& node)
+                {
+                  if (!node.second)
+                  {
+                    failures.emplace_back
+                      ( nest_with_runtime_error
+                          ( node.second.error()
+                          , "failure on " + host_result.first
+                          + " for resource "
+                          + boost::lexical_cast<std::string> (node.first)
+                          )
+                      );
+                  }
 
-  //   for ( auto const& host_result
-  //       : add ( hostnames
-  //             , std::move (strategy)
-  //             , std::move (resources)
-  //             ) | boost::adaptors::map_values
-  //       )
-  //   {
-  //     if (!host_result)
-  //     {
-  //       failed = true;
-  //     }
-  //     else
-  //     {
-  //       for (auto const& resource_result : host_result.value())
-  //       {
-  //         if (resource_result.second)
-  //         {
-  //           resource_ids.emplace (resource_result.second.value());
-  //         }
-  //         else
-  //         {
-  //           failed = true;
-  //         }
-  //       }
-  //     }
-  //   }
+                  return forest::Node<ErrorOr<resource::ID>> (node.second, {});
+                }
+              )
+          . remove_root_if
+              ( [] (forest::Node<ErrorOr<resource::ID>> const& node)
+                {
+                  return !node.first;
+                }
+              )
+          . unordered_transform
+              ( [] (forest::Node<ErrorOr<resource::ID>> const& node)
+                {
+                  return forest::Node<resource::ID> (node.first.value(), {});
+                }
+              )
+          );
+      }
+    }
 
-  //   if (failed)
-  //   {
-  //     remove (resource_ids);
+    if (!failures.empty())
+    {
+      try
+      {
+        remove (successes);
+      }
+      catch (...)
+      {
+        failures.emplace_back
+          ( nest_with_runtime_error
+              ( std::current_exception()
+              , "when trying to clean up successfully started resources"
+              )
+          );
+      }
 
-  //     throw std::runtime_error ("failed to bootstrap");
-  //   }
+      fhg::util::nest_exceptions<std::runtime_error>
+        ( [&] { fhg::util::throw_collected_exceptions (failures); }
+        , "adding resources failures"
+        );
+    }
 
-  //   return resource_ids;
+    return successes;
   }
 }
 
