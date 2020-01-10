@@ -238,13 +238,15 @@ namespace gspc
     template<typename Callback, typename>
     void Forest<T, A>::down (T root, Callback callback) const
   {
-    return detail::component<T> (root, callback, _suc, _annotations);
+    return detail::component<T>
+      (assert_is_known (root), callback, _suc, _annotations);
   }
   template<typename T, typename A>
     template<typename Callback, typename>
     void Forest<T, A>::up (T root, Callback callback) const
   {
-    return detail::component<T> (root, callback, _pre, _annotations);
+    return detail::component<T>
+      (assert_is_known (root), callback, _pre, _annotations);
   }
 
   template<typename T, typename A>
