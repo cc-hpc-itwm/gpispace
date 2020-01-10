@@ -133,10 +133,10 @@ namespace gspc
   {
     auto is_known
       ( [&] (auto const& x)
-      {
-        return !is_unknown (x);
-      }
-    );
+        {
+          return !is_unknown (x);
+        }
+      );
 
     if (is_known (from))
     {
