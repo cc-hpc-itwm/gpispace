@@ -434,72 +434,71 @@ namespace gspc
   //     check_up (5, {5});
   //   }
 
-  //   BOOST_AUTO_TEST_CASE (up_and_down)
-  //   {
-  //     auto const xs {randoms<std::vector<int>, unique_random> (8)};
-  //     auto const n {xs.at (0)};
-  //     auto const m0 {xs.at (1)};
-  //     auto const m1 {xs.at (2)};
-  //     auto const s0 {xs.at (3)};
-  //     auto const s1 {xs.at (4)};
-  //     auto const s2 {xs.at (5)};
-  //     auto const s3 {xs.at (6)};
-  //     auto const gpu {xs.at (7)};
+  BOOST_AUTO_TEST_CASE (up_and_down)
+  {
+    auto const xs {randoms<std::vector<int>, unique_random> (8)};
+    auto const n {xs.at (0)};
+    auto const m0 {xs.at (1)};
+    auto const m1 {xs.at (2)};
+    auto const s0 {xs.at (3)};
+    auto const s1 {xs.at (4)};
+    auto const s2 {xs.at (5)};
+    auto const s3 {xs.at (6)};
+    auto const gpu {xs.at (7)};
 
-  //     Forest<int> forest;
+    Forest<int> forest;
+    forest.insert (s0, {}, {});
+    forest.insert (s1, {}, {});
+    forest.insert (s2, {}, {});
+    forest.insert (s3, {}, {});
+    forest.insert (m0, {}, {s0, s1});
+    forest.insert (m1, {}, {s2, s3});
+    forest.insert (n, {}, {m0, m1});
+    forest.insert (gpu, {}, {s3});
 
-  //     forest.insert (n, m0)
-  //       .insert (n, m1)
-  //       .insert (m0, s0)
-  //       .insert (m0, s1)
-  //       .insert (m1, s2)
-  //       .insert (m1, s3)
-  //       .insert (gpu, s3)
-  //       ;
+    auto check_down
+    { [&] (int root, std::set<int> expected)
+      {
+        collectS<int> callback;
 
-  //     auto check_down
-  //     { [&] (int root, std::set<int> expected)
-  //       {
-  //         collectS<int> callback;
+        forest.down (root, std::ref (callback));
 
-  //         forest.down (root, std::ref (callback));
+        BOOST_REQUIRE_EQUAL_COLLECTIONS
+          ( expected.begin(), expected.end()
+          , callback._.begin(), callback._.end()
+          );
+      }
+    };
+    auto check_up
+    { [&] (int root, std::set<int> expected)
+      {
+        collectS<int> callback;
 
-  //         BOOST_REQUIRE_EQUAL_COLLECTIONS
-  //           ( expected.begin(), expected.end()
-  //           , callback._.begin(), callback._.end()
-  //           );
-  //       }
-  //     };
-  //     auto check_up
-  //     { [&] (int root, std::set<int> expected)
-  //       {
-  //         collectS<int> callback;
+        forest.up (root, std::ref (callback));
 
-  //         forest.up (root, std::ref (callback));
+        BOOST_REQUIRE_EQUAL_COLLECTIONS
+          ( expected.begin(), expected.end()
+          , callback._.begin(), callback._.end()
+          );
+      }
+    };
 
-  //         BOOST_REQUIRE_EQUAL_COLLECTIONS
-  //           ( expected.begin(), expected.end()
-  //           , callback._.begin(), callback._.end()
-  //           );
-  //       }
-  //     };
+    check_down (n, {n, m0, m1, s0, s1, s2, s3});
+    check_down (m0, {m0, s0, s1});
+    check_down (m1, {m1, s2, s3});
+    check_down (s0, {s0});
+    check_down (s1, {s1});
+    check_down (s2, {s2});
+    check_down (s3, {s3});
+    check_down (gpu, {gpu, s3});
 
-  //     check_down (n, {n, m0, m1, s0, s1, s2, s3});
-  //     check_down (m0, {m0, s0, s1});
-  //     check_down (m1, {m1, s2, s3});
-  //     check_down (s0, {s0});
-  //     check_down (s1, {s1});
-  //     check_down (s2, {s2});
-  //     check_down (s3, {s3});
-  //     check_down (gpu, {gpu, s3});
-
-  //     check_up (n, {n});
-  //     check_up (m0, {m0, n});
-  //     check_up (m1, {m1, n});
-  //     check_up (s0, {s0, m0, n});
-  //     check_up (s1, {s1, m0, n});
-  //     check_up (s2, {s2, m1, n});
-  //     check_up (s3, {s3, m1, n, gpu});
-  //     check_up (gpu, {gpu});
-  //   }
+    check_up (n, {n});
+    check_up (m0, {m0, n});
+    check_up (m1, {m1, n});
+    check_up (s0, {s0, m0, n});
+    check_up (s1, {s1, m0, n});
+    check_up (s2, {s2, m1, n});
+    check_up (s3, {s3, m1, n, gpu});
+    check_up (gpu, {gpu});
+  }
 }
