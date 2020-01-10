@@ -342,6 +342,85 @@ namespace gspc
       );
   }
 
+  BOOST_DATA_TEST_CASE (remove_leaf_removes_leaf, from_to (0, 25), N)
+  {
+    auto const ns {randoms<std::vector<int>, unique_random> (N + 1)};
+    auto const leaf {ns.front()};
+    std::vector<int> const roots {ns.cbegin() + 1, ns.cend()};
+
+    auto for_each_root
+      ( [&] (auto&& callback)
+        {
+          std::for_each (roots.cbegin(), roots.cend(), callback);
+        }
+      );
+
+    Forest<int> forest;
+    forest.insert (leaf, {}, {});
+
+    for_each_root ([&] (auto root) { forest.insert (root, {}, {leaf}); });
+
+    auto check
+      ( [&] (auto x, std::set<int> expected)
+        {
+          collectS<int> callback;
+
+          forest.down (x, std::ref (callback));
+
+          BOOST_REQUIRE_EQUAL_COLLECTIONS
+            ( expected.begin(), expected.end()
+            , callback._.begin(), callback._.end()
+            );
+        }
+      );
+
+    for_each_root ([&] (auto root) { check (root, {leaf, root}); });
+
+    forest.remove_leaf (leaf);
+
+    for_each_root ([&] (auto root) { check (root, {root}); });
+  }
+
+  BOOST_DATA_TEST_CASE (remove_root_removes_root, from_to (0, 25), N)
+  {
+    auto const ns {randoms<std::vector<int>, unique_random> (N + 1)};
+    auto const root {ns.front()};
+    typename Forest<int>::Children const leafs {ns.cbegin() + 1, ns.cend()};
+
+    auto for_each_leaf
+      ( [&] (auto&& callback)
+        {
+          std::for_each (leafs.cbegin(), leafs.cend(), callback);
+        }
+      );
+
+    Forest<int> forest;
+
+    for_each_leaf ([&] (auto leaf) { forest.insert (leaf, {}, {}); });
+
+    forest.insert (root, {}, leafs);
+
+    auto check
+      ( [&] (auto leaf, std::set<int> expected)
+        {
+          collectS<int> callback;
+
+          forest.up (leaf, std::ref (callback));
+
+          BOOST_REQUIRE_EQUAL_COLLECTIONS
+            ( expected.begin(), expected.end()
+            , callback._.begin(), callback._.end()
+            );
+        }
+      );
+
+    for_each_leaf ([&] (auto leaf) { check (leaf, {leaf, root}); });
+
+    forest.remove_root (root);
+
+    for_each_leaf ([&] (auto leaf) { check (leaf, {leaf}); });
+  }
+
   BOOST_AUTO_TEST_CASE (up_and_down)
   {
     auto const xs {randoms<std::vector<int>, unique_random> (8)};
