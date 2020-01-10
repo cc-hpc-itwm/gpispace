@@ -40,7 +40,8 @@ namespace gspc
     //! 2 throw when any_of (cs: unknown)
     //!   1 + 2 imply: throw when cycle
     //! 3 throw when diamond
-    void insert (T x, A a, Children cs);
+    forest::Node<T, A> const& insert (T x, A a, Children cs);
+    forest::Node<T, A> const& insert (forest::Node<T, A>, Children);
 
     //! throw when unknown
     //! throw when not leaf/root

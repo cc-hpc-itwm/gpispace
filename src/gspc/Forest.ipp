@@ -128,7 +128,18 @@ namespace gspc
   }
 
   template<typename T, typename A>
-    void Forest<T, A>::insert (T from, A annotation, Children tos)
+    forest::Node<T, A> const&
+      Forest<T, A>::insert (forest::Node<T, A> node, Children tos)
+  {
+    return insert ( std::move (node.first)
+                  , std::move (node.second)
+                  , std::move (tos)
+                  );
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::insert (T from, A annotation, Children tos)
   try
   {
     auto is_known
@@ -168,8 +179,6 @@ namespace gspc
                     );
     }
 
-    _annotations.emplace (from, annotation);
-
     for (auto const& to : tos)
     {
       if (!_suc[from].emplace (to).second || !_pre[to].emplace (from).second)
@@ -177,6 +186,8 @@ namespace gspc
         throw std::logic_error ("INCONSISTENCY.");
       }
     }
+
+    return *_annotations.emplace (from, annotation).first;
   }
   catch (...)
   {
