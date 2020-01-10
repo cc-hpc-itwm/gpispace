@@ -2,8 +2,8 @@
 
 #include <util-generic/callable_signature.hpp>
 
-#include <boost/serialization/access.hpp>
 #include <boost/blank.hpp>
+#include <boost/serialization/access.hpp>
 
 #include <list>
 #include <type_traits>
@@ -25,6 +25,10 @@ namespace gspc
   template<typename T, typename A = boost::blank>
     struct Forest
   {
+    using Children = std::unordered_set<T>;
+    using Relation = std::unordered_map<T, Children>;
+    using Annotations = std::unordered_map<T, A>;
+
     Forest() = default;
     Forest (Forest const&) = default;       //! \todo rpc requires copy
     Forest (Forest&&) = default;
@@ -32,12 +36,10 @@ namespace gspc
     Forest& operator= (Forest&&) = delete;
     ~Forest() = default;
 
-    // 1 throw when duplicate x
-    // 2 throw when any_of (cs: unknown)
-    // 3 throw when cycle -> is free because of 1, 2
-    // 4 throw when diamond -> seen = cs; for c : cs: traverse and throw if seen twice
-    using Children = std::unordered_set<T>;
-
+    //! 1 throw when duplicate x
+    //! 2 throw when any_of (cs: unknown)
+    //!   1 + 2 imply: throw when cycle
+    //! 3 throw when diamond
     void insert (T x, A a, Children cs);
 
     void remove_leaf (T);
@@ -45,7 +47,7 @@ namespace gspc
 
     // traverse downwards/upwards:
     // callback called once for the root and once for each transitive child
-    // early abort: only go deeper if callback returns true
+    // throw when root is unknown
     // amortized O(#component)
     template<typename F>
       using is_callback =
@@ -95,8 +97,6 @@ namespace gspc
       Forest<U, B> unordered_transform (UnorderedTransformer) const;
 
     //! \todo: iterate
-    using Relation = std::unordered_map<T, Children>;
-    using Annotations = std::unordered_map<T, A>;
 
   private:
     Relation _suc;
