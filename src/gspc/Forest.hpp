@@ -120,7 +120,27 @@ namespace gspc
     Annotations _annotations;
 
     bool is_unknown (T const&) const;
+    bool is_leaf (T const&) const;
+    bool is_root (T const&) const;
+
     T const& assert_is_known (T const&) const;
+    T const& assert_is_root (T const&) const;
+    T const& assert_is_leaf (T const&) const;
+
+    template< typename Callback
+            , typename = std::enable_if_t<is_callback<Callback>{}>
+            >
+      void for_each_node (Callback&&) const;
+
+    template< typename Callback
+            , typename = std::enable_if_t<is_callback<Callback>{}>
+            >
+      void for_each_root (Callback&&) const;
+
+    template< typename Callback
+            , typename = std::enable_if_t<is_callback<Callback>{}>
+            >
+      void for_each_leaf (Callback&&) const;
 
     friend boost::serialization::access;
     template<typename Archive>

@@ -119,13 +119,30 @@ namespace gspc
 
       return;
     }
+
+    template<typename Key, typename Container>
+      bool is_member (Key const& key, Container const& relation)
+    {
+      return relation.find (key) != relation.end();
+    }
   }
 
   template<typename T, typename A>
     bool Forest<T, A>::is_unknown (T const& x) const
   {
-    return _annotations.end() == _annotations.find (x);
+    return !detail::is_member (x, _annotations);
   }
+  template<typename T, typename A>
+    bool Forest<T, A>::is_leaf (T const& x) const
+  {
+    return !detail::is_member (x, _suc);
+  }
+  template<typename T, typename A>
+    bool Forest<T, A>::is_root (T const& x) const
+  {
+    return !detail::is_member (x, _pre);
+  }
+
   template<typename T, typename A>
     T const& Forest<T, A>::assert_is_known (T const& x) const
   {
@@ -135,6 +152,61 @@ namespace gspc
     }
 
     return x;
+  }
+  template<typename T, typename A>
+    T const& Forest<T, A>::assert_is_root (T const& x) const
+  {
+    if (!is_root (x))
+    {
+      throw std::invalid_argument ("Not a root.");
+    }
+
+    return x;
+  }
+  template<typename T, typename A>
+    T const& Forest<T, A>::assert_is_leaf (T const& x) const
+  {
+    if (!is_leaf (x))
+    {
+      throw std::invalid_argument ("Not a leaf.");
+    }
+
+    return x;
+  }
+
+  template<typename T, typename A>
+    template<typename Callback, typename>
+      void Forest<T, A>::for_each_node (Callback&& callback) const
+  {
+    std::for_each (_annotations.cbegin(), _annotations.cend(), callback);
+  }
+
+  template<typename T, typename A>
+    template<typename Callback, typename>
+      void Forest<T, A>::for_each_root (Callback&& callback) const
+  {
+    for_each_node ( [&] (forest::Node<T, A> const& node)
+                    {
+                      if (is_root (node.first))
+                      {
+                        callback (node);
+                      }
+                    }
+                  );
+  }
+
+  template<typename T, typename A>
+    template<typename Callback, typename>
+      void Forest<T, A>::for_each_leaf (Callback&& callback) const
+  {
+    for_each_node ( [&] (forest::Node<T, A> const& node)
+                    {
+                      if (is_leaf (node.first))
+                      {
+                        callback (node);
+                      }
+                    }
+                  );
   }
 
   template<typename T, typename A>
@@ -215,12 +287,7 @@ namespace gspc
     void Forest<T, A>::remove_leaf (T x)
   try
   {
-    if (_suc.find (x) != _suc.end())
-    {
-      throw std::invalid_argument ("Not a leaf.");
-    }
-
-    detail::erase_all<T> (x, _pre, _suc, _annotations);
+    detail::erase_all<T> (assert_is_leaf (x), _pre, _suc, _annotations);
   }
   catch (...)
   {
@@ -234,12 +301,7 @@ namespace gspc
     void Forest<T, A>::remove_root (T x)
   try
   {
-    if (_pre.find (x) != _pre.end())
-    {
-      throw std::invalid_argument ("Not a root.");
-    }
-
-    detail::erase_all<T> (x, _suc, _pre, _annotations);
+    detail::erase_all<T> (assert_is_root (x), _suc, _pre, _annotations);
   }
   catch (...)
   {
@@ -327,13 +389,12 @@ namespace gspc
       );
     //! END STATE
 
-    for (auto const& x : _annotations | boost::adaptors::map_keys)
-    {
-      if (_suc.find (x) == _suc.end())
-      {
-        nodes.push (x);
-      }
-    }
+    for_each_leaf
+      ( [&] (forest::Node<T, A> const& node)
+        {
+          nodes.push (node.first);
+        }
+      );
 
     for (auto const& suc : _suc)
     {
@@ -409,13 +470,12 @@ namespace gspc
   {
     std::stack<T> roots;
 
-    for (auto const& x : _annotations | boost::adaptors::map_keys)
-    {
-      if (_pre.find (x) == _pre.end())
-      {
-        roots.push (x);
-      }
-    }
+    for_each_root
+      ( [&] (forest::Node<T, A> const& node)
+        {
+          roots.push (node.first);
+        }
+      );
 
     while (!roots.empty())
     {
