@@ -1,4 +1,5 @@
 #include <boost/format.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
 
@@ -270,9 +271,117 @@ namespace gspc
             , typename
             >
     Forest<U, B>
-    Forest<T, A>::upward_combine_transform (CombiningTransformer) const
+    Forest<T, A>::upward_combine_transform (CombiningTransformer function) const
   {
-    throw std::runtime_error ("NYI: upward_combine_transform");
+    Forest<U, B> transformed_forest;
+
+    //! BEGIN STATE
+    std::unordered_map<T, forest::Node<U, B> const*> transformed_nodes;
+    std::unordered_map<T, std::size_t> missing_children_by_key;
+    std::stack<T> nodes;
+
+    auto is_last_unseen_child
+      ( [&] (T const& parent, T const& /* child: ignored, only counted */)
+        {
+          auto missing_children (missing_children_by_key.find (parent));
+
+          if (missing_children == missing_children_by_key.end())
+          {
+            throw std::logic_error
+              ("INCONSISTENCY: Parent without missing child.");
+          }
+
+          --missing_children->second;
+
+          if (missing_children->second == 0)
+          {
+            missing_children_by_key.erase (missing_children);
+
+            return true;
+          }
+
+          return false;
+        }
+      );
+
+    auto transformed_children_and_results
+      ( [&] (T const& node)
+        {
+          typename Forest<U, B>::Children children;
+          std::list<forest::Node<U, B> const*> results;
+
+          detail::for_each_at
+            ( _suc
+            , node
+            , [&] (auto const& child)
+              {
+                auto const& transformed_node (transformed_nodes.at (child));
+
+                children.emplace (transformed_node->first);
+                results.emplace_back (transformed_node);
+              }
+            );
+
+          return std::make_tuple (std::move (children), std::move (results));
+        }
+      );
+    //! END STATE
+
+    for (auto const& x : _annotations | boost::adaptors::map_keys)
+    {
+      if (_suc.find (x) == _suc.end())
+      {
+        nodes.push (x);
+      }
+    }
+
+    for (auto const& suc : _suc)
+    {
+      missing_children_by_key[suc.first] = suc.second.size();
+    }
+
+    while (!nodes.empty())
+    {
+      auto const t (nodes.top());
+      nodes.pop();
+
+      auto tcrs (transformed_children_and_results (t));
+      auto& children (std::get<0> (tcrs));
+      auto& results (std::get<1> (tcrs));
+
+      transformed_nodes.emplace
+        ( t
+        , &transformed_forest.insert
+          ( function (*_annotations.find (t), std::move (results))
+          , std::move (children)
+          )
+        );
+
+      detail::for_each_at
+        ( _pre
+        , t
+        , [&] (T const& parent)
+          {
+            if (is_last_unseen_child (parent, t))
+            {
+              nodes.push (parent);
+            }
+          }
+        );
+    }
+
+    //! BEGIN SANITY
+    if (!missing_children_by_key.empty())
+    {
+      throw std::logic_error ("INCONSISTENCY: Missing childs!");
+    }
+    if (transformed_nodes.size() != _annotations.size())
+    {
+      throw std::logic_error ("INCONSISTENCY: Not transformed all nodes!");
+    }
+    //! END SANITY
+
+    return transformed_forest;
   }
 
   template<typename T, typename A>
