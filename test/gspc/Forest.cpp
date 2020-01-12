@@ -19,6 +19,9 @@
 #include <string>
 #include <vector>
 
+//! \todo remove include
+#include <util-generic/print_container.hpp>
+
 namespace gspc
 {
   using fhg::util::testing::random;
@@ -423,69 +426,118 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (up_and_down)
   {
-    auto const xs {randoms<std::vector<int>, unique_random> (8)};
-    auto const n {xs.at (0)};
-    auto const m0 {xs.at (1)};
-    auto const m1 {xs.at (2)};
-    auto const s0 {xs.at (3)};
-    auto const s1 {xs.at (4)};
-    auto const s2 {xs.at (5)};
-    auto const s3 {xs.at (6)};
-    auto const gpu {xs.at (7)};
+    // auto const xs {randoms<std::vector<int>, unique_random> (8)};
+    // auto const n {xs.at (0)};
+    // auto const m0 {xs.at (1)};
+    // auto const m1 {xs.at (2)};
+    // auto const s0 {xs.at (3)};
+    // auto const s1 {xs.at (4)};
+    // auto const s2 {xs.at (5)};
+    // auto const s3 {xs.at (6)};
+    // auto const gpu {xs.at (7)};
 
-    Forest<int> forest;
-    forest.insert (s0, {}, {});
-    forest.insert (s1, {}, {});
-    forest.insert (s2, {}, {});
-    forest.insert (s3, {}, {});
+    std::string const n {"n"};
+    std::string const m0 {"m0"};
+    std::string const m1 {"m1"};
+    std::string const s0 {"s0"};
+    std::string const s1 {"s1"};
+    std::string const s2 {"s2"};
+    std::string const s3 {"s3"};
+    std::string const gpu {"gpu"};
+
+    Forest<std::string> forest;
+    Forest<std::string>::Children cs0;
+    Forest<std::string>::Children cs1;
+    Forest<std::string>::Children cs2;
+    Forest<std::string>::Children cs3;
+
+    for (std::size_t c {0}; c < 8; ++c)
+    {
+      cs0.emplace (s0 + "-c" + std::to_string (c));
+      cs1.emplace (s1 + "-c" + std::to_string (c));
+      cs2.emplace (s2 + "-c" + std::to_string (c));
+      cs3.emplace (s3 + "-c" + std::to_string (c));
+
+      forest.insert (s0 + "-c" + std::to_string (c), {}, {});
+      forest.insert (s1 + "-c" + std::to_string (c), {}, {});
+      forest.insert (s2 + "-c" + std::to_string (c), {}, {});
+      forest.insert (s3 + "-c" + std::to_string (c), {}, {});
+    }
+
+    forest.insert (s0, {}, cs0);
+    forest.insert (s1, {}, cs1);
+    forest.insert (s2, {}, cs2);
+    forest.insert (s3, {}, cs3);
     forest.insert (m0, {}, {s0, s1});
     forest.insert (m1, {}, {s2, s3});
     forest.insert (n, {}, {m0, m1});
     forest.insert (gpu, {}, {s3});
 
-    auto check_down
-    { [&] (int root, std::set<int> expected)
-      {
-        collectS<int> callback;
+    // auto check_down
+    // { [&] (std::string root, std::set<std::string> expected)
+    //   {
+    //     collectS<std::string> callback;
 
-        forest.down (root, std::ref (callback));
+    //     forest.down (root, std::ref (callback));
 
-        BOOST_REQUIRE_EQUAL_COLLECTIONS
-          ( expected.begin(), expected.end()
-          , callback._.begin(), callback._.end()
-          );
-      }
-    };
-    auto check_up
-    { [&] (int root, std::set<int> expected)
-      {
-        collectS<int> callback;
+    //     BOOST_REQUIRE_EQUAL_COLLECTIONS
+    //       ( expected.begin(), expected.end()
+    //       , callback._.begin(), callback._.end()
+    //       );
+    //   }
+    // };
+    // auto check_up
+    // { [&] (std::string root, std::set<std::string> expected)
+    //   {
+    //     collectS<std::string> callback;
 
-        forest.up (root, std::ref (callback));
+    //     forest.up (root, std::ref (callback));
 
-        BOOST_REQUIRE_EQUAL_COLLECTIONS
-          ( expected.begin(), expected.end()
-          , callback._.begin(), callback._.end()
-          );
-      }
-    };
+    //     BOOST_REQUIRE_EQUAL_COLLECTIONS
+    //       ( expected.begin(), expected.end()
+    //       , callback._.begin(), callback._.end()
+    //       );
+    //   }
+    // };
 
-    check_down (n, {n, m0, m1, s0, s1, s2, s3});
-    check_down (m0, {m0, s0, s1});
-    check_down (m1, {m1, s2, s3});
-    check_down (s0, {s0});
-    check_down (s1, {s1});
-    check_down (s2, {s2});
-    check_down (s3, {s3});
-    check_down (gpu, {gpu, s3});
+    // check_down (n, {n, m0, m1, s0, s1, s2, s3});
+    // check_down (m0, {m0, s0, s1});
+    // check_down (m1, {m1, s2, s3});
+    // check_down (s0, {s0});
+    // check_down (s1, {s1});
+    // check_down (s2, {s2});
+    // check_down (s3, {s3});
+    // check_down (gpu, {gpu, s3});
 
-    check_up (n, {n});
-    check_up (m0, {m0, n});
-    check_up (m1, {m1, n});
-    check_up (s0, {s0, m0, n});
-    check_up (s1, {s1, m0, n});
-    check_up (s2, {s2, m1, n});
-    check_up (s3, {s3, m1, n, gpu});
-    check_up (gpu, {gpu});
+    // check_up (n, {n});
+    // check_up (m0, {m0, n});
+    // check_up (m1, {m1, n});
+    // check_up (s0, {s0, m0, n});
+    // check_up (s1, {s1, m0, n});
+    // check_up (s2, {s2, m1, n});
+    // check_up (s3, {s3, m1, n, gpu});
+    // check_up (gpu, {gpu});
+
+    forest.upward_combine_transform
+      ( [] ( forest::Node<std::string> const& node
+           , std::list<forest::Node<std::string> const*> const& children
+           )
+        {
+          std::cout
+            << "node " << node.first
+            << " children "
+            << fhg::util::print_container
+               ( "{", ", ", "}", children
+               , [&] (auto& os, auto& child) -> decltype (os)
+                 {
+                   return os << child->first;
+                 }
+               )
+            << '\n'
+            ;
+
+          return node;
+        }
+      );
   }
 }
