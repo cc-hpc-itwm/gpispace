@@ -320,6 +320,11 @@ namespace gspc
         , Forest<Resource, ErrorOr<resource::ID>>
             (Forest<Resource> /* \todo RPC: const& */)
         );
+
+      FHG_RPC_FUNCTION_DESCRIPTION
+        ( remove
+        , Forest<resource::ID, ErrorOr<>> (Forest<resource::ID>)
+        );
     }
   }
 
@@ -375,6 +380,7 @@ namespace gspc
     fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
 
     rpc::service_handler<remote_interface::protocol::add> const _add;
+    rpc::service_handler<remote_interface::protocol::remove> const _remove;
 
     rpc::service_socket_provider const _service_socket_provider;
     rpc::service_tcp_provider const _service_tcp_provider;
@@ -406,6 +412,7 @@ namespace gspc
 
     public:
       rpc::remote_function<protocol::add> add;
+      rpc::remote_function<protocol::remove> remove;
     };
 
     namespace strategy
@@ -461,6 +468,7 @@ namespace gspc
 
       Forest<Resource, ErrorOr<resource::ID>>
         add (Forest<Resource> const&);
+      Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
       Strategy const& strategy() const;
 
@@ -498,7 +506,9 @@ namespace gspc
 
     //! \todo return value and noexcept!? is Forest<resource::ID>
     //! required? Or would unordered_set be enough?
-    void remove (Forest<resource::ID> const&);
+    //! \note Assumes that two connected resource IDs have the same
+    //! RemoteInterface ID.
+    Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
   private:
     interface::ResourceManager& _resource_manager;
@@ -509,13 +519,14 @@ namespace gspc
 
     remote_interface::ID _next_remote_interface_id;
 
+    //! \todo earlier cleanup, e.g. when last resource using them is
+    //! removed.
     std::unordered_map< remote_interface::Hostname
                       , remote_interface::ConnectionAndPID
                       > _remote_interface_by_hostname;
-    //! \todo
-    // std::unordered_map< resource::ID
-    //                   , remote_interface::Hostname
-    //                   > _hostname_by_resource_id;
+    std::unordered_map< remote_interface::ID
+                      , remote_interface::Hostname
+                      > _hostname_by_remote_interface_id;
 
     std::unordered_map
       < remote_interface::Hostname

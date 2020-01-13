@@ -90,6 +90,9 @@ namespace gspc
     , _add ( _service_dispatcher
            , fhg::util::bind_this (this, &RemoteInterface::add)
            )
+    , _remove ( _service_dispatcher
+              , fhg::util::bind_this (this, &RemoteInterface::remove)
+              )
     , _service_socket_provider (_io_service, _service_dispatcher)
     , _service_tcp_provider (_io_service, _service_dispatcher)
     , _local_endpoint ( fhg::util::connectable_to_address_string
@@ -236,6 +239,7 @@ namespace gspc
         (boost::asio::io_service& io_service, rpc::endpoint endpoint)
       : _endpoint {rpc::make_endpoint (io_service, endpoint)}
       , add {*_endpoint}
+      , remove {*_endpoint}
     {}
 
     ConnectionAndPID::ConnectionAndPID
@@ -269,6 +273,12 @@ namespace gspc
       ConnectionAndPID::add (Forest<Resource> const& resources)
     {
       return _client.add (resources).get();
+    }
+
+    Forest<resource::ID, ErrorOr<>>
+      ConnectionAndPID::remove (Forest<resource::ID> const& resources)
+    {
+      return _client.remove (resources).get();
     }
   }
 }
@@ -309,15 +319,19 @@ namespace gspc
 
             if (remote_interface == _remote_interface_by_hostname.end())
             {
+              auto const id (++_next_remote_interface_id);
+
               remote_interface = _remote_interface_by_hostname.emplace
                 ( std::piecewise_construct
                 , std::forward_as_tuple (hostname)
                 , std::forward_as_tuple ( _remote_interface_io_service
                                         , hostname
                                         , strategy
-                                        , ++_next_remote_interface_id
+                                        , id
                                         )
                 ).first;
+
+              _hostname_by_remote_interface_id.emplace (id, hostname);
             }
             //! \todo specify: would it be okay to use a second
             //! strategy for the same host?
@@ -399,6 +413,81 @@ namespace gspc
       //         {
       //           // teardown rif if empty
       //         };
+  }
+
+  namespace
+  {
+    std::unordered_set<resource::ID> child_ts
+      (std::list<forest::Node<resource::ID> const*> const& children)
+    {
+      std::unordered_set<resource::ID> result;
+      std::transform ( children.begin(), children.end()
+                     , std::inserter (result, result.end())
+                     , [] (auto const& node) { return node->first; }
+                     );
+      return result;
+    }
+
+    template<typename Others>
+      void require_all_rif_ids_equal
+        (remote_interface::ID lhs, Others const& rhs)
+    {
+      if ( !std::all_of ( rhs.begin()
+                        , rhs.end()
+                        , [&] (forest::Node<resource::ID> const* child)
+                          {
+                            return child->first.remote_interface == lhs;
+                          }
+                        )
+         )
+      {
+        throw std::invalid_argument
+          ( "ScopedRuntimeSystem::remove: connected component crosses "
+            "remote_interface boundary"
+          );
+      }
+    }
+  }
+
+  Forest<resource::ID, ErrorOr<>>
+    ScopedRuntimeSystem::remove (Forest<resource::ID> const& to_remove)
+  {
+    std::unordered_map < remote_interface::Hostname
+                       , Forest<resource::ID>
+                       > to_remove_by_host;
+
+    //! upward_combine, no transform -- multiway-split by pred
+    to_remove.upward_combine_transform
+      ( [&] ( forest::Node<resource::ID> const& resource_id
+            , std::list<forest::Node<resource::ID> const*> const& children
+            )
+        {
+          auto const rif_id (resource_id.first.remote_interface);
+          require_all_rif_ids_equal (rif_id, children);
+
+          auto const hostname (_hostname_by_remote_interface_id.at (rif_id));
+
+          to_remove_by_host[hostname].insert (resource_id, child_ts (children));
+          return resource_id;
+        }
+      );
+
+    Forest<resource::ID, ErrorOr<>> results;
+
+    std::for_each
+      ( to_remove_by_host.begin(), to_remove_by_host.end()
+      , [&] (auto const& host_and_to_remove)
+        {
+          //! \todo use unsafe_merge: known no duplicates
+          results.merge
+            ( _remote_interface_by_hostname
+              . at (host_and_to_remove.first)
+                . remove (host_and_to_remove.second)
+            );
+        }
+      );
+
+    return results;
   }
 
   namespace
@@ -777,7 +866,10 @@ namespace gspc
           }
         );
 
-      //! \todo Forest::upward_apply
+      //! \todo Forest::upward_apply, required: upwards or downwards
+      //! per unconnected sub-tree, just *not random*. Every block
+      //! that happened before removal has to still block during (or
+      //! have one side of the block vanished).
       to_remove.upward_combine_transform
         ( [&] ( Resources::Node const& resource
               , std::list<Resources::Node const*> const& // unused children
