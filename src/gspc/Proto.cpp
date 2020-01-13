@@ -487,6 +487,8 @@ namespace gspc
         }
       );
 
+    _resource_manager.remove (to_remove.annotate (resource_classes?!));
+
     return results;
   }
 
@@ -611,6 +613,7 @@ namespace gspc
     {
       try
       {
+        //! \todo No longer throws but returns errorors. Rethrow?!
         remove (successes);
       }
       catch (...)
@@ -690,11 +693,12 @@ namespace gspc
               , std::list<Resources::Node const*> const& // unused children
               )
           {
+            Resources::Node const a = _resources.remove_leaf (resource.first);
             _resource_usage_by_id.erase (resource.first);
-            _available_resources_by_class.at (resource.second)
+            _available_resources_by_class.at (a.second)
               . erase (resource.first)
               ;
-            _resources.remove_leaf (resource.first);
+
             return resource;
           }
         );
