@@ -348,7 +348,7 @@ namespace gspc
       , Forest<Resource> const& resources
       ) noexcept
   {
-    return remote_interfaces (std::move (hostnames), std::move (strategy))
+    return (remote_interfaces (std::move (hostnames), std::move (strategy))
       >>= [&] ( remote_interface::Hostname const&
               , remote_interface::ConnectionAndPID* connection
               )
@@ -369,14 +369,30 @@ namespace gspc
             //! resources on the same rif (in this case the rif _was_
             //! started by this incarnation)
             return connection->add (resources);
+          })
+      >>= [&] ( remote_interface::Hostname const&
+              , Forest<Resource, ErrorOr<resource::ID>> result
+              )
+          {
+            using Node = forest::Node<Resource, ErrorOr<resource::ID>>;
+
+            //! split (result).first.unordered_transform () -> Resources::Node
+            _resource_manager.add
+              ( Forest<Resource, ErrorOr<resource::ID>> (result)
+              . remove_root_if
+                  ([] (Node const& node) { return !node.second; })
+              . unordered_transform
+                  ( [] (Node const& node)
+                    {
+                      return interface::ResourceManager::Resources::Node
+                        (node.second.value(), node.first.resource_class);
+                    }
+                  )
+              );
+
+            return result;
           };
       //! \todo
-      //      >>= [&] ( remote_interface::Hostname const&
-      //              , Forest<Resource, ErrorOr<resource::ID>> // result
-      //              )
-      //          {
-      //            // save result and tell resource manager
-      //          }
       //      |= [&] ( remote_interface::Hostname const& // hostname
       //             , MaybeError<Forest<Resource, ErrorOr<resource::ID>>> // result
       //             )
