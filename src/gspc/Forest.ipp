@@ -516,6 +516,7 @@ namespace gspc
       }
     }
 
+    //! \todo move from other
     _suc.insert (other._suc.begin(), other._suc.end());
     _pre.insert (other._pre.begin(), other._pre.end());
     _annotations.insert (other._annotations.begin(), other._annotations.end());

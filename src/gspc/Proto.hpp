@@ -63,68 +63,6 @@ namespace rpc
 
 namespace gspc
 {
-  namespace interface
-  {
-    class ResourceManager;
-    class Scheduler;
-    class WorkflowEngine;
-  }
-
-  class PetriNetWorkflow{};
-  class PetriNetWorkflowEngine
-  {
-  public:
-    PetriNetWorkflowEngine (PetriNetWorkflow);
-  };
-  class TreeTraversalWorkflow;
-  class TreeTraversalWorkflowEngine;
-  class MapReduceWorkflow;
-  class MapReduceWorkflowEngine;
-
-  class GreedyScheduler
-  {
-  public:
-    template<typename WE, typename RM, typename RTS>
-      GreedyScheduler (WE&, RM&, RTS const&);
-
-    void wait();
-  };
-  class ReschedulingGreedyScheduler;
-  class LookaheadScheduler;
-  class WorkStealingScheduler;
-  class CoallocationScheduler;
-  class TransferCostAwareScheduler;
-
-  namespace resource_manager
-  {
-    class Trivial{};
-    class Coallocation;
-    class WithPreferences;
-  }
-}
-
-namespace gspc
-{
-  class Resource
-  {
-  public:
-    int _;
-
-    template<typename Archive> void serialize (Archive&, unsigned int) {}
-  };
-
-  bool operator== (Resource const&, Resource const&);
-  std::ostream& operator<< (std::ostream&, Resource const&);
-}
-
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::Resource
-  , r
-  , r._
-  )
-
-namespace gspc
-{
   namespace remote_interface
   {
     struct ID
@@ -176,6 +114,15 @@ namespace gspc
     };
     bool operator== (ID const& lhs, ID const& rhs);
     std::ostream& operator<< (std::ostream&, ID const&);
+
+    //! \note *not* a set, if users want a single worker to have more
+    //! than one resource, they need to explicitly model that in the
+    //! forest. (e.g. "CPU+Compute" -> ["CPU", "Compute"], which
+    //! allows for aquisition of "CPU", "Compute" or "CPU+Compute",
+    //! and allows the user to specify exactly which subset is a valid
+    //! aquisition, e.g. "GPU+Compute" -> ["Compute"], would not allow
+    //! to aquire a solo GPU worker, but still a compute-only task).
+    using Class = std::string;
   }
 }
 
@@ -184,6 +131,127 @@ namespace gspc
   , x
   , x.id
   , x.remote_interface
+  )
+
+namespace gspc
+{
+  namespace interface
+  {
+    //! \todo what is base class, what is implementation specific!?
+    class ResourceManager
+    {
+    public:
+      virtual ~ResourceManager() = default;
+
+      // - shall throw on duplicate id
+      virtual void add (Forest<resource::ID, resource::Class>) = 0;
+      virtual void remove (Forest<resource::ID, resource::Class>) = 0;
+
+      struct Interrupted : public std::exception{};
+      //! \note once called all running and future acquire will throw
+      //! Interrupted
+      //! \todo Discuss this implies that a single resource manager can not be
+      //! shared between multiple clients
+      virtual void interrupt() = 0;
+      //! \todo maybe return optional<...> instead of throwing Interrupted
+      // virtual ? acquire (?)
+      // virtual void release (?)
+   };
+    class Scheduler;
+    class WorkflowEngine;
+  }
+
+  class PetriNetWorkflow{};
+  class PetriNetWorkflowEngine
+  {
+  public:
+    PetriNetWorkflowEngine (PetriNetWorkflow);
+  };
+  class TreeTraversalWorkflow;
+  class TreeTraversalWorkflowEngine;
+  class MapReduceWorkflow;
+  class MapReduceWorkflowEngine;
+
+  class GreedyScheduler
+  {
+  public:
+    template<typename WE, typename RM, typename RTS>
+      GreedyScheduler (WE&, RM&, RTS const&);
+
+    void wait();
+  };
+  class ReschedulingGreedyScheduler;
+  class LookaheadScheduler;
+  class WorkStealingScheduler;
+  class CoallocationScheduler;
+  class TransferCostAwareScheduler;
+
+  namespace resource_manager
+  {
+    class Trivial : public interface::ResourceManager
+    {
+    public:
+      virtual void add (Forest<resource::ID, resource::Class>) override;
+      virtual void remove (Forest<resource::ID, resource::Class>) override;
+
+      struct Acquired
+      {
+        resource::ID requested;
+        //! \note not shown to the user but implicitly locked, in
+        //! order to avoid partial release. note: disallows freeing
+        //! only requested but keeping dependent, e.g. (A -> B,
+        //! request B, get {B, A}, release only B, still have A.)
+        // std::unordered_set<resource::ID> dependent;
+      };
+
+      //! blocks if no resource of that class available/exists
+      //! (not-block-on-not-exists would race with add).
+      Acquired acquire (resource::Class);
+      void release (Acquired const&);
+      virtual void interrupt() override;
+
+    private:
+      std::mutex _resources_guard;
+      std::condition_variable _resources_became_available_or_interrupted;
+      bool _interrupted {false};
+
+      using Resources = Forest<resource::ID, resource::Class>;
+      Resources _resources;
+      std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;
+      std::unordered_map<resource::Class, std::unordered_set<resource::ID>>
+        _available_resources_by_class;
+
+      void release (resource::ID const&);
+    };
+
+    class Coallocation;
+    class WithPreferences;
+  }
+}
+
+namespace gspc
+{
+  class Resource
+  {
+  public:
+    //! \todo individual-worker-specific, non-resource attributes,
+    //! e.g. socket binding, port, memory…
+    resource::Class resource_class;
+
+    template<typename Archive> void serialize (Archive& ar, unsigned int)
+    {
+      ar & resource_class;
+    }
+  };
+
+  bool operator== (Resource const&, Resource const&);
+  std::ostream& operator<< (std::ostream&, Resource const&);
+}
+
+FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( gspc::Resource
+  , r
+  , r.resource_class
   )
 
 namespace gspc

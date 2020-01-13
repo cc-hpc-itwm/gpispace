@@ -25,6 +25,7 @@ namespace gspc
   template<typename T, typename A = boost::blank>
     struct Forest
   {
+    using Node = forest::Node<T, A>;
     using Children = std::unordered_set<T>;
     using Relation = std::unordered_map<T, Children>;
     using Annotations = std::unordered_map<T, A>;
@@ -113,6 +114,11 @@ namespace gspc
     void merge (Forest<T, A> other);
 
     //! \todo: iterate
+    //! unspecified order
+    template< typename Callback
+            , typename = std::enable_if_t<is_callback<Callback>{}>
+            >
+      void for_each_node (Callback&&) const;
 
   private:
     Relation _suc;
@@ -126,11 +132,6 @@ namespace gspc
     T const& assert_is_known (T const&) const;
     T const& assert_is_root (T const&) const;
     T const& assert_is_leaf (T const&) const;
-
-    template< typename Callback
-            , typename = std::enable_if_t<is_callback<Callback>{}>
-            >
-      void for_each_node (Callback&&) const;
 
     template< typename Callback
             , typename = std::enable_if_t<is_callback<Callback>{}>

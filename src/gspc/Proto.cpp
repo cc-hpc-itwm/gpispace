@@ -56,11 +56,11 @@ namespace gspc
 
   bool operator== (Resource const& lhs, Resource const& rhs)
   {
-    return std::tie (lhs._) == std::tie (rhs._);
+    return std::tie (lhs.resource_class) == std::tie (rhs.resource_class);
   }
   std::ostream& operator<< (std::ostream& os, Resource const& r)
   {
-    return os << "resource " << r._;
+    return os << "resource " << r.resource_class;
   }
 
   Worker::Worker (Resource resource)
@@ -521,6 +521,166 @@ namespace gspc
     return successes;
   }
 }
+
+namespace gspc
+{
+  namespace resource_manager
+  {
+    void Trivial::interrupt()
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      _interrupted = true;
+
+      _resources_became_available_or_interrupted.notify_all();
+    }
+
+    void Trivial::add (Resources new_resources)
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      //! \note already asserts precondition of uniqueness
+      _resources.merge (new_resources);
+
+      new_resources.for_each_node
+        ( [&] (Resources::Node const& resource)
+          {
+            _resource_usage_by_id.emplace (resource.first, 0);
+            _available_resources_by_class[resource.second]
+              . emplace (resource.first)
+              ;
+          }
+        );
+
+      _resources_became_available_or_interrupted.notify_all();
+    }
+
+    void Trivial::remove (Resources to_remove)
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      to_remove.for_each_node
+        ( [&] (Resources::Node const& resource)
+          {
+            if (!_resource_usage_by_id.count (resource.first))
+            {
+              throw std::invalid_argument ("Unknown.");
+            }
+            if (_resource_usage_by_id.at (resource.first))
+            {
+              throw std::invalid_argument ("In use.");
+            }
+          }
+        );
+
+      //! \todo Forest::upward_apply
+      to_remove.upward_combine_transform
+        ( [&] ( Resources::Node const& resource
+              , std::list<Resources::Node const*> const& // unused children
+              )
+          {
+            _resource_usage_by_id.erase (resource.first);
+            _available_resources_by_class.at (resource.second)
+              . erase (resource.first)
+              ;
+            _resources.remove_leaf (resource.first);
+            return resource;
+          }
+        );
+    }
+
+    namespace
+    {
+      template<typename Collection>
+        auto select_any (Collection& collection)
+          -> decltype (*collection.begin())
+      {
+        return *collection.begin();
+      }
+    }
+
+    Trivial::Acquired Trivial::acquire (resource::Class resource_class)
+    {
+      std::unique_lock<std::mutex> resources_lock (_resources_guard);
+
+      _resources_became_available_or_interrupted.wait
+        ( resources_lock
+        , [&]
+          {
+            return !_available_resources_by_class.at (resource_class).empty()
+              || _interrupted
+              ;
+          }
+        );
+
+      if (_interrupted)
+      {
+        throw Interrupted{};
+      }
+
+      auto const requested
+        (select_any (_available_resources_by_class.at (resource_class)));
+
+      //! \todo ascii art why we block what
+
+      //! \note traversal includes `requested`.
+      //! \todo name in Forest, is likely required by all resource managers.
+      _resources.down
+        ( requested
+        , [&] (Resources::Node const& forward_dependent)
+          {
+            _resources.up
+              ( forward_dependent.first
+              , [&] (Resources::Node const& backward_dependent)
+                {
+                  if (++_resource_usage_by_id.at (backward_dependent.first))
+                  {
+                    _available_resources_by_class
+                      . at (backward_dependent.second)
+                        . erase (backward_dependent.first)
+                      ;
+                  }
+                }
+              );
+          }
+        );
+
+      return Acquired {requested /*, up-visited*/};
+    }
+
+    void Trivial::release (Acquired const& to_release)
+    {
+      return release (to_release.requested);
+    }
+    void Trivial::release (resource::ID const& to_release)
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      //! \note traversal includes `to_release`.
+      _resources.down
+        ( to_release
+        , [&] (Resources::Node const& forward_dependent)
+          {
+            _resources.up
+              ( forward_dependent.first
+              , [&] (Resources::Node const& backward_dependent)
+                {
+                  if (!--_resource_usage_by_id.at (backward_dependent.first))
+                  {
+                    _available_resources_by_class
+                      . at (backward_dependent.second)
+                        . emplace (backward_dependent.first)
+                      ;
+                  }
+                }
+              );
+          }
+        );
+
+      _resources_became_available_or_interrupted.notify_all();
+    }
+  }
+};
 
 int main()
 try
