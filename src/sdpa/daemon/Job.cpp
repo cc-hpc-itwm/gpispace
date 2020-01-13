@@ -8,13 +8,13 @@ namespace sdpa
              , we::type::activity_t activity
              , job_source source
              , job_handler handler
-             , job_requirements_t requirements
+             , Requirements_and_preferences requirements_and_preferences
              )
       : _activity (std::move (activity))
       , id_ (id)
       , _source (std::move (source))
       , _handler (std::move (handler))
-      , _requirements (std::move (requirements))
+      , _requirements_and_preferences (std::move (requirements_and_preferences))
       , m_error_message()
       , result_()
     {
@@ -29,9 +29,9 @@ namespace sdpa
     {
       return _source;
     }
-    job_requirements_t Job::requirements() const
+    Requirements_and_preferences Job::requirements_and_preferences() const
     {
-      return _requirements;
+      return _requirements_and_preferences;
     }
 
     std::string Job::error_message () const

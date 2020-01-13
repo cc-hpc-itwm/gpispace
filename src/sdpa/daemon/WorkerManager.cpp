@@ -12,9 +12,49 @@ namespace sdpa
   {
     namespace
     {
-      typedef std::tuple<double, double, unsigned long, double, worker_id_t> cost_deg_wid_t;
-      typedef std::priority_queue < cost_deg_wid_t
-                                  , std::vector<cost_deg_wid_t>
+      struct cost_and_matching_info_t
+      {
+        cost_and_matching_info_t
+            ( double cost
+            , double matching_degree
+            , unsigned long shared_memory_size
+            , double last_time_idle
+            , worker_id_t const& worker_id
+            , boost::optional<std::string>const& implementation
+            )
+          : _cost (cost)
+          , _matching_degree (matching_degree)
+          , _shared_memory_size (shared_memory_size)
+          , _last_time_idle (last_time_idle)
+          , _worker_id (worker_id)
+          , _implementation (implementation)
+        {}
+
+        double _cost;
+        double _matching_degree;
+        unsigned long _shared_memory_size;
+        double _last_time_idle;
+        worker_id_t _worker_id;
+        boost::optional<std::string> _implementation;
+      };
+
+      class Compare
+       {
+       public:
+         bool operator() (cost_and_matching_info_t const& l, cost_and_matching_info_t const& r)
+         {
+           return std::tie ( l._cost, l._matching_degree
+                           , l._shared_memory_size, l._last_time_idle
+                           )
+             < std::tie ( r._cost, r._matching_degree
+                        , l._shared_memory_size,  r._last_time_idle
+                        );
+         }
+       };
+
+      typedef std::priority_queue < cost_and_matching_info_t
+                                  , std::vector<cost_and_matching_info_t>
+                                  , Compare
                                   > base_priority_queue_t;
 
       class bounded_priority_queue_t : private base_priority_queue_t
@@ -33,7 +73,7 @@ namespace sdpa
             return;
           }
 
-          cost_deg_wid_t const next_tuple (std::forward<Args> (args)...);
+          cost_and_matching_info_t const next_tuple (std::forward<Args> (args)...);
 
           if (comp (next_tuple, top()))
           {
@@ -42,25 +82,46 @@ namespace sdpa
           }
         }
 
-        std::set<worker_id_t> assigned_workers() const
+        Workers_and_implementation
+          assigned_workers_and_implementation() const
         {
-          std::set<worker_id_t> assigned_workers;
+          WorkerSet workers;
 
           std::transform ( c.begin()
                          , c.end()
-                         , std::inserter (assigned_workers, assigned_workers.begin())
-                         , [] (const cost_deg_wid_t& cost_deg_wid) -> worker_id_t
+                         , std::inserter (workers, workers.begin())
+                         , [] (const cost_and_matching_info_t& cost_and_matching_info)
                            {
-                             return  std::get<4> (cost_deg_wid);
+                             return cost_and_matching_info._worker_id;
                            }
                          );
 
-          return assigned_workers;
+          return std::make_pair (workers, c.front()._implementation);
         }
 
       private:
         size_t capacity_;
       };
+    }
+
+    worker_id_host_info_t::worker_id_host_info_t
+        ( worker_id_t worker_id
+        , std::string worker_host
+        , unsigned long shared_memory_size
+        , double last_time_idle
+        , boost::optional<std::string> implementation
+        )
+      : worker_id_ (std::move (worker_id))
+      , worker_host_ (std::move (worker_host))
+      , shared_memory_size_ (shared_memory_size)
+      , _last_time_idle (last_time_idle)
+      , _implementation (std::move (implementation))
+    {}
+
+    boost::optional<std::string> const&
+      worker_id_host_info_t::implementation() const
+    {
+      return _implementation;
     }
 
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
@@ -167,17 +228,20 @@ namespace sdpa
       }
     }
 
-    boost::optional<double> WorkerManager::matchRequirements
-      ( Worker const& worker
-      , const job_requirements_t& job_req_set
-      ) const
+    std::pair<boost::optional<double>, boost::optional<std::string>>
+      WorkerManager::match_requirements_and_preferences
+        ( Worker const& worker
+        , const Requirements_and_preferences& requirements_and_preferences
+        ) const
     {
       std::size_t matchingDeg (0);
-      if (job_req_set.numWorkers()>1 && worker._children_allowed)
+      if (requirements_and_preferences.numWorkers()>1 && worker._children_allowed)
       {
-        return boost::none;
+        return std::make_pair (boost::none, boost::none);
       }
-      for (we::type::requirement_t const& req : job_req_set.getReqList())
+      for ( we::type::requirement_t const& req
+          : requirements_and_preferences.requirements()
+          )
       {
         if (worker.hasCapability (req.value()))
         {
@@ -188,20 +252,56 @@ namespace sdpa
         }
         else if (req.is_mandatory())
         {
-          return boost::none;
+          return std::make_pair (boost::none, boost::none);
         }
       }
 
-      return (matchingDeg + 1.0)/(worker._capabilities.size() + 1.0);
+      auto const preferences (requirements_and_preferences.preferences());
+
+      if (preferences.empty())
+      {
+        return std::make_pair
+          ( ( ( matchingDeg + 1.0)
+            / (worker._capabilities.size() + 1.0)
+            )
+          , boost::none
+          );
+      }
+
+      auto const preference
+        ( std::find_if ( preferences.cbegin()
+                       , preferences.cend()
+                       , [&] (Preferences::value_type const& pref)
+                         {
+                           return worker.hasCapability (pref);
+                         }
+                       )
+        );
+
+      if (preference == preferences.cend())
+      {
+        return std::make_pair (boost::none, boost::none);
+      }
+
+      boost::optional<double> matching_req_and_pref_deg
+        ( ( matchingDeg
+          + std::distance (preference, preferences.end())
+          + 1.0
+          )
+          /
+          (worker._capabilities.size() + preferences.size() + 1.0)
+        );
+
+      return std::make_pair (matching_req_and_pref_deg, *preference);
     }
 
     mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
-      ( const job_requirements_t& job_reqs
+      ( const Requirements_and_preferences& requirements_and_preferences
       ) const
     {
       std::lock_guard<std::mutex> const lock_worker_map (mtx_);
 
-      if (worker_map_.size() < job_reqs.numWorkers())
+      if (worker_map_.size() < requirements_and_preferences.numWorkers())
       {
         return {};
       }
@@ -216,7 +316,7 @@ namespace sdpa
 
       for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
-        if ( job_reqs.shared_memory_amount_required()
+        if ( requirements_and_preferences.shared_memory_amount_required()
            > worker.second._allocated_shared_memory_size
            )
           continue;
@@ -224,32 +324,34 @@ namespace sdpa
         if (worker.second.backlog_full())
           continue;
 
-        const boost::optional<double>
-          matchingDeg (matchRequirements (worker.second, job_reqs));
+        auto const matching_degree_and_implementation
+          (match_requirements_and_preferences
+             (worker.second, requirements_and_preferences)
+          );
 
-        if (matchingDeg)
+        if (matching_degree_and_implementation.first)
         {
-          mmap_match_deg_worker_id.emplace ( matchingDeg.get()
-                                           , worker_id_host_info_t ( worker.first
-                                                                   , worker.second._hostname
-                                                                   , worker.second._allocated_shared_memory_size
-                                                                   , worker.second._last_time_idle
-                                                                   )
-                                           );
+          mmap_match_deg_worker_id.emplace
+            ( matching_degree_and_implementation.first.get()
+            , worker_id_host_info_t ( worker.first
+                                    , worker.second._hostname
+                                    , worker.second._allocated_shared_memory_size
+                                    , worker.second._last_time_idle
+                                    , matching_degree_and_implementation.second
+                                    )
+            );
         }
       }
 
       return mmap_match_deg_worker_id;
     }
 
-    std::set<worker_id_t> WorkerManager::find_assignment
-      ( const job_requirements_t& requirements
-      , const std::function<double (job_id_t const&)> cost_reservation
-      ) const
+    Workers_and_implementation WorkerManager::find_assignment
+      (const Requirements_and_preferences& requirements_and_preferences) const
     {
       std::lock_guard<std::mutex> const _(mtx_);
 
-      if (worker_map_.size() < requirements.numWorkers())
+      if (worker_map_.size() < requirements_and_preferences.numWorkers())
       {
         return {};
       }
@@ -264,7 +366,7 @@ namespace sdpa
 
       for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
       {
-        if ( requirements.shared_memory_amount_required()
+        if ( requirements_and_preferences.shared_memory_amount_required()
            > worker.second._allocated_shared_memory_size
            )
           {continue;}
@@ -272,17 +374,20 @@ namespace sdpa
         if (worker.second.backlog_full())
           {continue;}
 
-        const boost::optional<double>
-        matching_degree (matchRequirements (worker.second, requirements));
+        auto const matching_degree_and_implementation
+          (match_requirements_and_preferences
+             (worker.second, requirements_and_preferences)
+          );
 
-        if (matching_degree)
+        if (matching_degree_and_implementation.first)
         {
           mmap_matching_workers.emplace
-            ( matching_degree.get()
+            ( matching_degree_and_implementation.first.get()
             , worker_id_host_info_t ( worker.first
                                     , worker.second._hostname
                                     , worker.second._allocated_shared_memory_size
                                     , worker.second._last_time_idle
+                                    , matching_degree_and_implementation.second
                                     )
             );
         }
@@ -290,18 +395,17 @@ namespace sdpa
 
       return find_job_assignment_minimizing_total_cost
         ( mmap_matching_workers
-        , requirements
-        , cost_reservation
+        , requirements_and_preferences
         );
     }
 
-    std::set<worker_id_t> WorkerManager::find_job_assignment_minimizing_total_cost
-      ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-      , const job_requirements_t& requirements
-      , const std::function<double (job_id_t const&)> cost_reservation
-      ) const
+    Workers_and_implementation
+      WorkerManager::find_job_assignment_minimizing_total_cost
+        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
+        , const Requirements_and_preferences& requirements_and_preferences
+        ) const
     {
-      const size_t n_req_workers (requirements.numWorkers());
+      const size_t n_req_workers (requirements_and_preferences.numWorkers());
 
       if (mmap_matching_workers.size() < n_req_workers)
         return {};
@@ -313,15 +417,12 @@ namespace sdpa
           )
       {
         const worker_id_host_info_t& worker_info = it.second;
-        double const cost_preassigned_jobs
-          (worker_map_.at (worker_info.worker_id()).cost_assigned_jobs
-             (cost_reservation)
-          );
 
         double const total_cost
-          ( requirements.transfer_cost() (worker_info.worker_host())
-          + requirements.computational_cost()
-          + cost_preassigned_jobs
+          ( requirements_and_preferences.transfer_cost()
+              (worker_info.worker_host())
+          + requirements_and_preferences.computational_cost()
+          + worker_map_.at (worker_info.worker_id()).cost_assigned_jobs()
           );
 
         bpq.emplace ( total_cost
@@ -329,16 +430,19 @@ namespace sdpa
                     , worker_info.shared_memory_size()
                     , worker_info.last_time_idle()
                     , worker_info.worker_id()
+                    , worker_info.implementation()
                     );
       }
 
-      return bpq.assigned_workers();
+      return bpq.assigned_workers_and_implementation();
     }
 
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
       ( job_id_t const& job_id
-      , std::set<worker_id_t> const& workers
-      , std::function<void ( std::set<worker_id_t> const&
+      , WorkerSet const& workers
+      , Implementation const& implementation
+      , std::function<void ( WorkerSet const&
+                           , Implementation const&
                            , const job_id_t&
                            )
                      > const& serve_job
@@ -346,24 +450,24 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _(mtx_);
       bool const can_start
-        ( std::all_of ( std::begin(workers)
-                      , std::end(workers)
-                      , [this] (const worker_id_t& worker_id)
+        ( std::all_of ( workers.begin()
+                      , workers.end()
+                      , [this] (worker_id_t const& worker)
                         {
-                          return worker_map_.count (worker_id)
-                            && !worker_map_.at (worker_id).isReserved();
+                          return worker_map_.count (worker)
+                            && !worker_map_.at (worker).isReserved();
                         }
                       )
         );
 
       if (can_start)
       {
-        for (worker_id_t const& worker_id : workers)
+        for (auto const& worker: workers)
         {
-          submit_job_to_worker (job_id, worker_id);
+          submit_job_to_worker (job_id, worker);
         }
 
-        serve_job (workers, job_id);
+        serve_job (workers, implementation, job_id);
       }
 
       return can_start;
@@ -399,11 +503,11 @@ namespace sdpa
       return workers_to_cancel;
     }
 
-    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
+    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id, double cost)
     {
       std::lock_guard<std::mutex> const _(mtx_);
       Worker& worker (worker_map_.at (worker_id));
-      worker.assign (job_id);
+      worker.assign (job_id, cost);
       worker_equiv_classes_.at
         (worker.capability_names_).inc_pending_jobs (1);
     }
