@@ -479,7 +479,7 @@ namespace gspc
   class ScopedRuntimeSystem
   {
   public:
-    template<typename RM> ScopedRuntimeSystem (RM&);
+    ScopedRuntimeSystem (interface::ResourceManager&);
 
     std::unordered_map
       < remote_interface::Hostname
@@ -501,6 +501,8 @@ namespace gspc
     void remove (Forest<resource::ID> const&);
 
   private:
+    interface::ResourceManager& _resource_manager;
+
     //! \todo thread count based on parameter or?
     fhg::util::scoped_boost_asio_io_service_with_threads
       _remote_interface_io_service {1};

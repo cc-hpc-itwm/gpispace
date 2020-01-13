@@ -275,6 +275,11 @@ namespace gspc
 
 namespace gspc
 {
+  ScopedRuntimeSystem::ScopedRuntimeSystem
+      (interface::ResourceManager& resource_manager)
+    : _resource_manager (resource_manager)
+  {}
+
   std::unordered_map
     < remote_interface::Hostname
     , ErrorOr<remote_interface::ConnectionAndPID*>
