@@ -1755,17 +1755,34 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 
 namespace
 {
+  we::type::multi_module_call_t create_dummy_multi_mod
+    (std::list<we::type::preference_t> const& preferences)
+  {
+    we::type::multi_module_call_t multi_mod;
+
+    for (auto const& target : preferences)
+    {
+      multi_mod.emplace
+        ( target
+        , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, std::string>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
+        );
+    }
+
+    return multi_mod;
+  }
+
   we::type::activity_t activity_with_preferences
    (std::list<we::type::preference_t> const& preferences)
   {
     we::type::transition_t transition
      ( fhg::util::testing::random_string()
-     , we::type::module_call_t ( fhg::util::testing::random_string()
-                               , fhg::util::testing::random_string()
-                               , std::unordered_map<std::string, std::string>()
-                               , std::list<we::type::memory_transfer>()
-                               , std::list<we::type::memory_transfer>()
-                               )
+     , create_dummy_multi_mod (preferences)
      , boost::none
      , we::type::property::type()
      , we::priority_type()
