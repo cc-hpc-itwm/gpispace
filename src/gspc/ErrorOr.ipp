@@ -85,7 +85,7 @@ namespace gspc
 
   template<typename T>
     template<typename Function, typename U, typename>
-    ErrorOr<U> ErrorOr<T>::operator>>= (Function&& function) && noexcept
+    ErrorOr<U> ErrorOr<T>::operator>> (Function&& function) && noexcept
   {
     return fhg::util::visit<ErrorOr<U>>
       ( static_cast<Base&&> (*this)
@@ -101,7 +101,7 @@ namespace gspc
   }
 
   template<typename Function, typename U, typename Key, typename T, typename>
-    std::unordered_map<Key, ErrorOr<U>> operator>>=
+    std::unordered_map<Key, ErrorOr<U>> operator>>
       ( std::unordered_map<Key, ErrorOr<T>>&& xs
       , Function&& function
       )
@@ -113,7 +113,7 @@ namespace gspc
       ys.emplace
         ( x.first
         , std::move (x.second)
-          >>= [&] (T z) { return function (x.first, std::move (z)); }
+          >> [&] (T z) { return function (x.first, std::move (z)); }
         );
     }
 

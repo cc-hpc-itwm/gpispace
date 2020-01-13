@@ -40,7 +40,7 @@ namespace gspc
       , typename U = fhg::util::return_type<Function>
       , typename = std::enable_if_t<fhg::util::is_callable<Function, U (T)>{}>
       >
-      ErrorOr<U> operator>>= (Function&& function) && noexcept;
+      ErrorOr<U> operator>> (Function&& function) && noexcept;
 
     // unbind
     T const& value() const;
@@ -74,7 +74,7 @@ namespace gspc
     , typename T
     , typename = std::enable_if<fhg::util::is_callable<Function, U (Key const&, T)>{}>
     >
-    std::unordered_map<Key, ErrorOr<U>> operator>>=
+    std::unordered_map<Key, ErrorOr<U>> operator>>
       ( std::unordered_map<Key, ErrorOr<T>>&&
       , Function&&
       );

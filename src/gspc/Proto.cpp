@@ -291,7 +291,7 @@ namespace gspc
   {
     // syntax goal:
     // return hostnames
-    //   >>=  [&] ...
+    //   >>  [&] ...
 
     std::unordered_map
       < remote_interface::Hostname
@@ -348,50 +348,50 @@ namespace gspc
       , Forest<Resource> const& resources
       ) noexcept
   {
-    return (remote_interfaces (std::move (hostnames), std::move (strategy))
-      >>= [&] ( remote_interface::Hostname const&
-              , remote_interface::ConnectionAndPID* connection
-              )
-          {
-            //! \todo if adding the resources fails, we do *not*
-            //! stop the rif again. is this bad? is this good
-            //! because 99% there will be a retry anyway? what is
-            //! our post-condition? (note: we do not leak it, we
-            //! remember we started one.)
+    return remote_interfaces (std::move (hostnames), std::move (strategy))
+      >> [&] ( remote_interface::Hostname const&
+             , remote_interface::ConnectionAndPID* connection
+             )
+         {
+           //! \todo if adding the resources fails, we do *not* stop
+           //! the rif again. is this bad? is this good because 99%
+           //! there will be a retry anyway? what is our
+           //! post-condition? (note: we do not leak it, we remember
+           //! we started one.)
 
-            //! \note to try-catch and remove rif on error is _not_
-            //! enough: the rif might have been started in a
-            //! previous call
+           //! \note to try-catch and remove rif on error is _not_
+           //! enough: the rif might have been started in a previous
+           //! call
 
-            //! \note if the post condition of connection->add
-            //! (resources) is "all or nothing", then it would be
-            //! enough to remove the rif if there are not other
-            //! resources on the same rif (in this case the rif _was_
-            //! started by this incarnation)
-            return connection->add (resources);
-          })
-      >>= [&] ( remote_interface::Hostname const&
-              , Forest<Resource, ErrorOr<resource::ID>> result
-              )
-          {
-            using Node = forest::Node<Resource, ErrorOr<resource::ID>>;
+           //! \note if the post condition of connection->add
+           //! (resources) is "all or nothing", then it would be
+           //! enough to remove the rif if there are not other
+           //! resources on the same rif (in this case the rif _was_
+           //! started by this incarnation)
+           return connection->add (resources);
+         }
+      >> [&] ( remote_interface::Hostname const&
+             , Forest<Resource, ErrorOr<resource::ID>> result
+             )
+         {
+           using Node = forest::Node<Resource, ErrorOr<resource::ID>>;
 
-            //! split (result).first.unordered_transform () -> Resources::Node
-            _resource_manager.add
-              ( Forest<Resource, ErrorOr<resource::ID>> (result)
-              . remove_root_if
-                  ([] (Node const& node) { return !node.second; })
-              . unordered_transform
-                  ( [] (Node const& node)
-                    {
-                      return interface::ResourceManager::Resources::Node
-                        (node.second.value(), node.first.resource_class);
-                    }
-                  )
-              );
+           //! split (result).first.unordered_transform () -> Resources::Node
+           _resource_manager.add
+             ( Forest<Resource, ErrorOr<resource::ID>> (result)
+             . remove_root_if
+                 ([] (Node const& node) { return !node.second; })
+             . unordered_transform
+                 ( [] (Node const& node)
+                   {
+                     return interface::ResourceManager::Resources::Node
+                       (node.second.value(), node.first.resource_class);
+                   }
+                 )
+             );
 
-            return result;
-          };
+           return result;
+         };
       //! \todo
       //      |= [&] ( remote_interface::Hostname const& // hostname
       //             , MaybeError<Forest<Resource, ErrorOr<resource::ID>>> // result
