@@ -20,6 +20,7 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <iterator>
 #include <map>
 #include <numeric>
 #include <random>
@@ -2586,10 +2587,12 @@ BOOST_FIXTURE_TEST_CASE
     };
 
   sdpa::worker_id_t const worker_0 (worker_name_pool());
+  auto const first_pref (preferences.begin());
+
   _worker_manager.addWorker
     ( worker_0
     , { sdpa::Capability (common_capability, worker_0)
-      , sdpa::Capability (preferences[0], worker_0)
+      , sdpa::Capability (*first_pref, worker_0)
       }
     , random_ulong()
     , false
@@ -2601,7 +2604,7 @@ BOOST_FIXTURE_TEST_CASE
   _worker_manager.addWorker
     ( worker_1
     , { sdpa::Capability (common_capability, worker_1)
-      , sdpa::Capability (preferences[1], worker_1)
+      , sdpa::Capability (*std::next (first_pref, 1), worker_1)
       }
     , random_ulong()
     , false
@@ -2613,7 +2616,7 @@ BOOST_FIXTURE_TEST_CASE
   _worker_manager.addWorker
     ( worker_2
     , { sdpa::Capability (common_capability, worker_2)
-      , sdpa::Capability (preferences[2], worker_2)
+      , sdpa::Capability (*std::next (first_pref, 2), worker_2)
       }
     , random_ulong()
     , false
@@ -2625,19 +2628,19 @@ BOOST_FIXTURE_TEST_CASE
   add_job (job0, require (common_capability, preferences));
   _scheduler.enqueueJob (job0);
   _scheduler.assignJobsToWorkers();
-  require_worker_and_implementation (job0, worker_0, preferences[0]);
+  require_worker_and_implementation (job0, worker_0, *first_pref);
 
   sdpa::job_id_t const job1 (job_name_pool());
   add_job (job1, require (common_capability, preferences));
   _scheduler.enqueueJob (job1);
   _scheduler.assignJobsToWorkers();
-  require_worker_and_implementation (job1, worker_1, preferences[1]);
+  require_worker_and_implementation (job1, worker_1, *std::next (first_pref, 1));
 
   sdpa::job_id_t const job2 (job_name_pool());
   add_job (job2, require (common_capability, preferences));
   _scheduler.enqueueJob (job2);
   _scheduler.assignJobsToWorkers();
-  require_worker_and_implementation (job2, worker_2, preferences[2]);
+  require_worker_and_implementation (job2, worker_2, *std::next (first_pref, 2));
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -2696,14 +2699,20 @@ BOOST_FIXTURE_TEST_CASE
     , capability_pool()
     };
 
+  auto const first_pref (preferences.begin());
+
   sdpa::worker_id_t const worker
     (fhg::util::testing::random_identifier_without_leading_underscore());
 
   auto const preference_id
-    ( fhg::util::testing::random_integral<unsigned char>()
+    ( fhg::util::testing::random_integral<std::size_t>()
     % preferences.size()
     );
-  std::string const preference (preferences[preference_id]);
+  std::string const preference
+    ( (preference_id == 0)
+    ? *first_pref
+    : *std::next (first_pref, preference_id)
+    );
 
   _worker_manager.addWorker
     ( worker

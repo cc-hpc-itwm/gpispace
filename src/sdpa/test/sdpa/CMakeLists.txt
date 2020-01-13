@@ -152,3 +152,11 @@ fhg_add_test (NAME forbid_equal_preferences_for_tasks
   LIBRARIES sdpa
             test-utilities
 )
+
+fhg_add_test (NAME sdpa_Preferences
+  SOURCES Preferences.cpp
+  USE_BOOST
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
