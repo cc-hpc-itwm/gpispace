@@ -526,7 +526,7 @@ namespace gspc
 {
   namespace resource_manager
   {
-    void Trivial::interrupt()
+    void WithPreferences::interrupt()
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
@@ -535,7 +535,7 @@ namespace gspc
       _resources_became_available_or_interrupted.notify_all();
     }
 
-    void Trivial::add (Resources new_resources)
+    void WithPreferences::add (Resources new_resources)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
@@ -555,7 +555,7 @@ namespace gspc
       _resources_became_available_or_interrupted.notify_all();
     }
 
-    void Trivial::remove (Resources to_remove)
+    void WithPreferences::remove (Resources to_remove)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
@@ -597,17 +597,44 @@ namespace gspc
       {
         return *collection.begin();
       }
+
+      //! \note traversal includes `start`
+      //! \todo move to Forest or ResourceManager, is likely required
+      //! by all resource managers.
+      template<typename Forest, typename Callback, typename T>
+        void for_each_down_up_reachable_node
+          (Forest const& forest, T&& start, Callback&& callback)
+      {
+        forest.down
+          ( start
+          , [&] (typename Forest::Node const& forward_dependent)
+            {
+              forest.up (forward_dependent.first, callback);
+            }
+          );
+      }
     }
 
-    Trivial::Acquired Trivial::acquire (resource::Class resource_class)
+    WithPreferences::Acquired WithPreferences::acquire
+      (std::list<resource::Class> resource_classes)
     {
       std::unique_lock<std::mutex> resources_lock (_resources_guard);
+
+      auto const has_available_resource
+        ( [&] (resource::Class resource_class)
+          {
+            return !_available_resources_by_class.at (resource_class).empty();
+          }
+        );
 
       _resources_became_available_or_interrupted.wait
         ( resources_lock
         , [&]
           {
-            return !_available_resources_by_class.at (resource_class).empty()
+            return std::any_of ( resource_classes.begin()
+                               , resource_classes.end()
+                               , has_available_resource
+                               )
               || _interrupted
               ;
           }
@@ -618,69 +645,229 @@ namespace gspc
         throw Interrupted{};
       }
 
+      auto const resource_class
+        ( *std::find_if ( resource_classes.begin()
+                        , resource_classes.end()
+                        , has_available_resource
+                        )
+        );
+
       auto const requested
         (select_any (_available_resources_by_class.at (resource_class)));
 
       //! \todo ascii art why we block what
 
-      //! \note traversal includes `requested`.
-      //! \todo name in Forest, is likely required by all resource managers.
-      _resources.down
-        ( requested
-        , [&] (Resources::Node const& forward_dependent)
+      for_each_down_up_reachable_node
+        ( _resources
+        , requested
+        , [&] (Resources::Node const& x)
           {
-            _resources.up
-              ( forward_dependent.first
-              , [&] (Resources::Node const& backward_dependent)
-                {
-                  if (++_resource_usage_by_id.at (backward_dependent.first))
-                  {
-                    _available_resources_by_class
-                      . at (backward_dependent.second)
-                        . erase (backward_dependent.first)
-                      ;
-                  }
-                }
-              );
+            if (0 != ++_resource_usage_by_id.at (x.first))
+            {
+              _available_resources_by_class.at (x.second).erase (x.first);
+            }
           }
         );
 
       return Acquired {requested /*, up-visited*/};
     }
 
-    void Trivial::release (Acquired const& to_release)
+    void WithPreferences::release (Acquired const& to_release)
     {
       return release (to_release.requested);
     }
-    void Trivial::release (resource::ID const& to_release)
+    void WithPreferences::release (resource::ID const& to_release)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
-      //! \note traversal includes `to_release`.
-      _resources.down
-        ( to_release
-        , [&] (Resources::Node const& forward_dependent)
+      for_each_down_up_reachable_node
+        ( _resources
+        , to_release
+        , [&] (Resources::Node const& x)
           {
-            _resources.up
-              ( forward_dependent.first
-              , [&] (Resources::Node const& backward_dependent)
+            if (0 == --_resource_usage_by_id.at (x.first))
+            {
+              _available_resources_by_class.at (x.second).emplace (x.first);
+            }
+          }
+        );
+
+      _resources_became_available_or_interrupted.notify_all();
+    }
+
+    bool Coallocation::is_strictly_forward_disjoint_by_resource_class
+      (Resources const&)
+    {
+      throw std::logic_error
+        ("nyi: is_strictly_forward_disjoint_by_resource_class");
+    }
+
+    void Coallocation::interrupt()
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      _interrupted = true;
+
+      _resources_became_available_or_interrupted.notify_all();
+    }
+
+    void Coallocation::add (Resources new_resources)
+    {
+      //! \note We can't add connections to existing resources, so
+      //! checking addition is enough.
+      if (!is_strictly_forward_disjoint_by_resource_class (new_resources))
+      {
+        throw std::invalid_argument ("Not forward-disjoint by resource class.");
+      }
+
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      //! \note already asserts precondition of uniqueness
+      _resources.merge (new_resources);
+
+      new_resources.for_each_node
+        ( [&] (Resources::Node const& resource)
+          {
+            _resource_usage_by_id.emplace (resource.first, 0);
+            _available_resources_by_class[resource.second]
+              . emplace (resource.first)
+              ;
+          }
+        );
+
+      _resources_became_available_or_interrupted.notify_all();
+    }
+
+    void Coallocation::remove (Resources to_remove)
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      to_remove.for_each_node
+        ( [&] (Resources::Node const& resource)
+          {
+            if (!_resource_usage_by_id.count (resource.first))
+            {
+              throw std::invalid_argument ("Unknown.");
+            }
+            if (_resource_usage_by_id.at (resource.first))
+            {
+              throw std::invalid_argument ("In use.");
+            }
+          }
+        );
+
+      //! \todo Forest::upward_apply
+      to_remove.upward_combine_transform
+        ( [&] ( Resources::Node const& resource
+              , std::list<Resources::Node const*> const& // unused children
+              )
+          {
+            _resource_usage_by_id.erase (resource.first);
+            _available_resources_by_class.at (resource.second)
+              . erase (resource.first)
+              ;
+            _resources.remove_leaf (resource.first);
+            return resource;
+          }
+        );
+    }
+
+    namespace
+    {
+      template<typename ResourceIDs>
+        std::unordered_set<resource::ID> select_any
+          (ResourceIDs& collection, std::size_t count)
+      {
+        auto begin (collection.begin());
+        return {begin, std::next (begin, count)};
+      }
+    }
+
+    Coallocation::Acquired Coallocation::acquire
+      (resource::Class resource_class, std::size_t count)
+    {
+      std::unique_lock<std::mutex> resources_lock (_resources_guard);
+
+      auto const has_available_resources
+        ( [&] (resource::Class resource_class)
+          {
+            return _available_resources_by_class.at (resource_class).size()
+              >= count;
+          }
+        );
+
+      _resources_became_available_or_interrupted.wait
+        ( resources_lock
+        , [&]
+          {
+            return has_available_resources (resource_class) || _interrupted;
+          }
+        );
+
+      if (_interrupted)
+      {
+        throw Interrupted{};
+      }
+
+      auto const requesteds
+        (select_any (_available_resources_by_class.at (resource_class), count));
+
+      //! \note Forward-disjoint is required here: All traversals are
+      //! downwards independent (they may reach the same resources
+      //! upwards though), but one element of requesteds will never
+      //! lock another one.
+      std::for_each
+        ( requesteds.begin()
+        , requesteds.end()
+        , [&] (auto const& requested)
+          {
+            for_each_down_up_reachable_node
+              ( _resources
+              , requested
+              , [&] (Resources::Node const& x)
                 {
-                  if (!--_resource_usage_by_id.at (backward_dependent.first))
+                  if (0 != ++_resource_usage_by_id.at (x.first))
                   {
-                    _available_resources_by_class
-                      . at (backward_dependent.second)
-                        . emplace (backward_dependent.first)
-                      ;
+                    _available_resources_by_class.at (x.second).erase (x.first);
                   }
                 }
               );
           }
         );
 
+      return Acquired {requesteds /*, up-visited*/};
+    }
+
+    void Coallocation::release (Acquired const& to_release)
+    {
+      std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+
+      std::for_each ( to_release.requesteds.begin()
+                    , to_release.requesteds.end()
+                    , [&] (resource::ID const& id)
+                      {
+                        release (id);
+                      }
+                    );
+
       _resources_became_available_or_interrupted.notify_all();
     }
+    void Coallocation::release (resource::ID const& to_release)
+    {
+      for_each_down_up_reachable_node
+        ( _resources
+        , to_release
+        , [&] (Resources::Node const& x)
+          {
+            if (0 == --_resource_usage_by_id.at (x.first))
+            {
+              _available_resources_by_class.at (x.second).emplace (x.first);
+            }
+          }
+        );
+    }
   }
-};
+}
 
 int main()
 try

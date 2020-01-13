@@ -138,14 +138,18 @@ namespace gspc
   namespace interface
   {
     //! \todo what is base class, what is implementation specific!?
+    //! likely: _resources, _resource_usage_by_id, add+remove base,
+    //! NOT available_by_x
     class ResourceManager
     {
     public:
+      using Resources = Forest<resource::ID, resource::Class>;
+
       virtual ~ResourceManager() = default;
 
       // - shall throw on duplicate id
-      virtual void add (Forest<resource::ID, resource::Class>) = 0;
-      virtual void remove (Forest<resource::ID, resource::Class>) = 0;
+      virtual void add (Resources) = 0;
+      virtual void remove (Resources) = 0;
 
       struct Interrupted : public std::exception{};
       //! \note once called all running and future acquire will throw
@@ -156,7 +160,7 @@ namespace gspc
       //! \todo maybe return optional<...> instead of throwing Interrupted
       // virtual ? acquire (?)
       // virtual void release (?)
-   };
+    };
     class Scheduler;
     class WorkflowEngine;
   }
@@ -188,11 +192,11 @@ namespace gspc
 
   namespace resource_manager
   {
-    class Trivial : public interface::ResourceManager
+    class WithPreferences : public interface::ResourceManager
     {
     public:
-      virtual void add (Forest<resource::ID, resource::Class>) override;
-      virtual void remove (Forest<resource::ID, resource::Class>) override;
+      virtual void add (Resources) override;
+      virtual void remove (Resources) override;
 
       struct Acquired
       {
@@ -206,7 +210,7 @@ namespace gspc
 
       //! blocks if no resource of that class available/exists
       //! (not-block-on-not-exists would race with add).
-      Acquired acquire (resource::Class);
+      Acquired acquire (std::list<resource::Class>);
       void release (Acquired const&);
       virtual void interrupt() override;
 
@@ -215,7 +219,6 @@ namespace gspc
       std::condition_variable _resources_became_available_or_interrupted;
       bool _interrupted {false};
 
-      using Resources = Forest<resource::ID, resource::Class>;
       Resources _resources;
       std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;
       std::unordered_map<resource::Class, std::unordered_set<resource::ID>>
@@ -224,8 +227,60 @@ namespace gspc
       void release (resource::ID const&);
     };
 
-    class Coallocation;
-    class WithPreferences;
+    class Trivial : public WithPreferences
+    {
+    public:
+      Acquired acquire (resource::Class resource_class)
+      {
+        return WithPreferences::acquire ({resource_class});
+      }
+    };
+
+    class Coallocation : public interface::ResourceManager
+    {
+    public:
+      //! \note Only supports forward-disjoint classes.
+      virtual void add (Resources) override;
+      virtual void remove (Resources) override;
+
+      struct Acquired
+      {
+        std::unordered_set<resource::ID> requesteds;
+        //! \note not shown to the user but implicitly locked, in
+        //! order to avoid partial release. note: disallows freeing
+        //! only requested but keeping dependent, e.g. (A -> B,
+        //! request B, get {B, A}, release only B, still have A.)
+        // std::unordered_set<resource::ID> dependent;
+      };
+
+      Acquired acquire (resource::Class, std::size_t);
+      void release (Acquired const&);
+      virtual void interrupt() override;
+
+    private:
+      //! C is not forward disjoint: C -> D <- C, but C -> D <- B is,
+      //! also transitive! No acquire of a C-class resource shall
+      //! implicitly block a different C-class resource.
+      static bool is_strictly_forward_disjoint_by_resource_class
+        (Resources const&);
+
+      std::mutex _resources_guard;
+      std::condition_variable _resources_became_available_or_interrupted;
+      bool _interrupted {false};
+
+      Resources _resources;
+      std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;
+      std::unordered_map<resource::Class, std::unordered_set<resource::ID>>
+        _available_resources_by_class;
+
+      void release (resource::ID const&);
+    };
+
+    // class CoallocationWithPreference : public interface::ResourceManager
+    // {
+    //   // `[(rc, count)]` or `[rc], count` or both?
+    //   Acquired acquire (std::list<std::pair<resource::Class, std::size_t>>);
+    // };
   }
 }
 
