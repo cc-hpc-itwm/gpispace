@@ -318,18 +318,21 @@ namespace gspc
 {
   namespace remote_interface
   {
-    namespace protocol
+    namespace runtime_system_to_remote_interface
     {
-      FHG_RPC_FUNCTION_DESCRIPTION
-        ( add
-        , Forest<Resource, ErrorOr<resource::ID>>
-            (Forest<Resource> /* \todo RPC: const& */)
-        );
+      namespace protocol
+      {
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( add
+          , Forest<Resource, ErrorOr<resource::ID>>
+              (Forest<Resource> /* \todo RPC: const& */)
+          );
 
-      FHG_RPC_FUNCTION_DESCRIPTION
-        ( remove
-        , Forest<resource::ID, ErrorOr<>> (Forest<resource::ID>)
-        );
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( remove
+          , Forest<resource::ID, ErrorOr<>> (Forest<resource::ID>)
+          );
+      }
     }
   }
 
@@ -384,8 +387,8 @@ namespace gspc
     rpc::service_dispatcher _service_dispatcher;
     fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
 
-    rpc::service_handler<remote_interface::protocol::add> const _add;
-    rpc::service_handler<remote_interface::protocol::remove> const _remove;
+    rpc::service_handler<remote_interface::runtime_system_to_remote_interface::protocol::add> const _add;
+    rpc::service_handler<remote_interface::runtime_system_to_remote_interface::protocol::remove> const _remove;
 
     rpc::service_socket_provider const _service_socket_provider;
     rpc::service_tcp_provider const _service_tcp_provider;
@@ -407,18 +410,22 @@ namespace gspc
 
   namespace remote_interface
   {
-    struct RuntimeSystemToRemoteInterface
+    namespace runtime_system_to_remote_interface
     {
-    public:
-      RuntimeSystemToRemoteInterface (boost::asio::io_service&, rpc::endpoint);
+      struct Client
+      {
 
-    private:
-      std::unique_ptr<rpc::remote_endpoint> _endpoint;
+      public:
+        Client (boost::asio::io_service&, rpc::endpoint);
 
-    public:
-      rpc::remote_function<protocol::add> add;
-      rpc::remote_function<protocol::remove> remove;
-    };
+      private:
+        std::unique_ptr<rpc::remote_endpoint> _endpoint;
+
+      public:
+        rpc::remote_function<protocol::add> add;
+        rpc::remote_function<protocol::remove> remove;
+      };
+    }
 
     namespace strategy
     {
@@ -480,7 +487,7 @@ namespace gspc
     private:
       Hostname _hostname;
       Strategy _strategy;
-      RuntimeSystemToRemoteInterface _client;
+      runtime_system_to_remote_interface::Client _client;
     };
   }
 }

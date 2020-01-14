@@ -235,12 +235,15 @@ namespace gspc
 {
   namespace remote_interface
   {
-    RuntimeSystemToRemoteInterface::RuntimeSystemToRemoteInterface
+    namespace runtime_system_to_remote_interface
+    {
+      Client::Client
         (boost::asio::io_service& io_service, rpc::endpoint endpoint)
-      : _endpoint {rpc::make_endpoint (io_service, endpoint)}
-      , add {*_endpoint}
-      , remove {*_endpoint}
-    {}
+          : _endpoint {rpc::make_endpoint (io_service, endpoint)}
+          , add {*_endpoint}
+          , remove {*_endpoint}
+      {}
+    }
 
     ConnectionAndPID::ConnectionAndPID
       ( boost::asio::io_service& io_service
