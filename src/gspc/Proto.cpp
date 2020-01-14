@@ -652,19 +652,14 @@ namespace gspc
           }
         );
 
-      //! \todo Forest::upward_apply
-      to_remove.upward_combine_transform
-        ( [&] ( Resources::Node const& resource
-              , std::list<Resources::Node const*> const& // unused children
-              )
+      to_remove.upward_apply
+        ( [&] (Resources::Node const& resource)
           {
             Resources::Node const a = _resources.remove_leaf (resource.first);
             _resource_usage_by_id.erase (resource.first);
             _available_resources_by_class.at (a.second)
               . erase (resource.first)
               ;
-
-            return resource;
           }
         );
     }
@@ -850,21 +845,18 @@ namespace gspc
           }
         );
 
-      //! \todo Forest::upward_apply, required: upwards or downwards
-      //! per unconnected sub-tree, just *not random*. Every block
-      //! that happened before removal has to still block during (or
-      //! have one side of the block vanished).
-      to_remove.upward_combine_transform
-        ( [&] ( Resources::Node const& resource
-              , std::list<Resources::Node const*> const& // unused children
-              )
+      //! required: upwards or downwards per unconnected sub-tree,
+      //! just *not random*. Every block that happened before removal
+      //! has to still block during (or have one side of the block
+      //! vanished).
+      to_remove.upward_apply
+        ( [&] (Resources::Node const& resource)
           {
             _resource_usage_by_id.erase (resource.first);
             _available_resources_by_class.at (resource.second)
               . erase (resource.first)
               ;
             _resources.remove_leaf (resource.first);
-            return resource;
           }
         );
     }

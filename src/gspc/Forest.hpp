@@ -129,6 +129,13 @@ namespace gspc
       std::unordered_map<Key, Forest<T, A>> multiway_split (SplitKey&&) const;
 
     //! \todo: iterate
+
+    //! traverse children before parents
+    template< typename Callback
+            , typename = std::enable_if<is_callback<Callback>{}>
+            >
+      void upward_apply (Callback&&) const;
+
     //! unspecified order
     template< typename Callback
             , typename = std::enable_if_t<is_callback<Callback>{}>

@@ -599,6 +599,22 @@ namespace gspc
   }
 
   template<typename T, typename A>
+    template<typename Callback, typename>
+    void Forest<T, A>::upward_apply (Callback&& function) const
+  {
+    upward_combine_transform
+      ( [&] ( Node const& node
+            , std::list<Node const*> const& // unused children
+            )
+        {
+          function (node);
+
+          return node;
+        }
+      );
+  }
+
+  template<typename T, typename A>
     template<typename Archive>
     void Forest<T, A>::serialize (Archive& ar, unsigned int /* version */)
   {
