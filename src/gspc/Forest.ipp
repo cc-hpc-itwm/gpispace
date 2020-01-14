@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <exception>
+#include <iterator>
 #include <stack>
 
 namespace gspc
@@ -516,14 +517,25 @@ namespace gspc
       }
     }
 
-    //! \todo move from other
-    _suc.insert (other._suc.begin(), other._suc.end());
-    _pre.insert (other._pre.begin(), other._pre.end());
-    _annotations.insert (other._annotations.begin(), other._annotations.end());
+    return UNSAFE_merge (std::move (other));
   }
   catch (...)
   {
     std::throw_with_nested (std::runtime_error ("Forest::merge: (other)"));
+  }
+
+  template<typename T, typename A>
+    void Forest<T, A>::UNSAFE_merge (Forest<T, A> other)
+  {
+    _suc.insert ( std::make_move_iterator (other._suc.begin())
+                , std::make_move_iterator (other._suc.end())
+                );
+    _pre.insert ( std::make_move_iterator (other._pre.begin())
+                , std::make_move_iterator (other._pre.end())
+                );
+    _annotations.insert ( std::make_move_iterator (other._annotations.begin())
+                        , std::make_move_iterator (other._annotations.end())
+                        );
   }
 
   template<typename T, typename A>

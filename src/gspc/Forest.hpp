@@ -112,6 +112,8 @@ namespace gspc
 
     //! throw if node already known
     void merge (Forest<T, A> other);
+    //! no check for duplicates
+    void UNSAFE_merge (Forest<T, A> other);
 
     //! \todo: iterate
     //! unspecified order

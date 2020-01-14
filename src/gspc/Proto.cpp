@@ -478,8 +478,8 @@ namespace gspc
       ( to_remove_by_host.begin(), to_remove_by_host.end()
       , [&] (auto const& host_and_to_remove)
         {
-          //! \todo use unsafe_merge: known no duplicates
-          results.merge
+          //! SAFE: each forest was part of `to_remove`
+          results.UNSAFE_merge
             ( _remote_interface_by_hostname
               . at (host_and_to_remove.first)
                 . remove (host_and_to_remove.second)
@@ -570,7 +570,8 @@ namespace gspc
       }
       else
       {
-        successes.merge
+        //! SAFE: each host includes its (unique) remote_interface_id
+        successes.UNSAFE_merge
           ( host_result.second.value()
           . unordered_transform
               ( [&] (forest::Node<Resource, ErrorOr<resource::ID>> const& node)
