@@ -137,6 +137,35 @@ namespace gspc
 {
   namespace interface
   {
+    class ResourceManager;
+  }
+
+  namespace comm
+  {
+    namespace runtime_system
+    {
+      namespace resource_manager
+      {
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( add
+          , void (Forest<resource::ID, resource::Class>)
+          );
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( remove
+          , void (Forest<resource::ID>)
+          );
+
+        using Client = interface::ResourceManager&;
+        struct Server{};
+      }
+    }
+  }
+}
+
+namespace gspc
+{
+  namespace interface
+  {
     //! \todo what is base class, what is implementation specific!?
     //! likely: _resources, _resource_usage_by_id, add+remove base,
     //! NOT available_by_x
@@ -165,6 +194,8 @@ namespace gspc
       //! \todo maybe return optional<...> instead of throwing Interrupted
       // virtual ? acquire (?)
       // virtual void release (?)
+    private:
+      comm::runtime_system::resource_manager::Server _comm_server_for_runtime_system;
     };
     class Scheduler;
     class WorkflowEngine;
@@ -316,22 +347,86 @@ FHG_UTIL_MAKE_COMBINED_STD_HASH
 
 namespace gspc
 {
-  namespace remote_interface
+  namespace comm
   {
-    namespace runtime_system_to_remote_interface
+    namespace runtime_system
     {
-      namespace protocol
+      namespace remote_interface
       {
         FHG_RPC_FUNCTION_DESCRIPTION
           ( add
-          , Forest<Resource, ErrorOr<resource::ID>>
-              (Forest<Resource> /* \todo RPC: const& */)
+          , Forest<Resource, ErrorOr<resource::ID>> (Forest<Resource>)
           );
 
         FHG_RPC_FUNCTION_DESCRIPTION
           ( remove
           , Forest<resource::ID, ErrorOr<>> (Forest<resource::ID>)
           );
+
+        //! \todo syntax goal:
+        //! RPC_CLIENT (Client, add, remove);
+        //! RPC_SERVER (Server, add, remove);
+        struct Client
+        {
+        public:
+          Client (boost::asio::io_service&, rpc::endpoint);
+
+        private:
+          std::unique_ptr<rpc::remote_endpoint> _endpoint;
+
+        public:
+          rpc::remote_function<remote_interface::add> add;
+          rpc::remote_function<remote_interface::remove> remove;
+        };
+      }
+    }
+    namespace scheduler
+    {
+      namespace workflow_engine
+      {
+        // next
+        // inject
+        // extract
+      }
+      namespace resource_manager
+      {
+        // acquire
+        // release
+        // interrupt
+      }
+      namespace worker
+      {
+        // submit
+        // cancel
+        // status
+      }
+    }
+    namespace worker
+    {
+      namespace scheduler
+      {
+        // FHG_RPC_FUNCTION_DESCRIPTION
+        //   ( finished
+        //   , void (job::ID, job::FinishReason)
+        //   );
+      }
+    }
+    namespace user
+    {
+      namespace workflow_engine
+      {
+        // dump_state
+      }
+      namespace scheduler
+      {
+        // wait
+        // stop
+        // status
+      }
+      namespace runtime_system
+      {
+        // add
+        // remove
       }
     }
   }
@@ -384,15 +479,18 @@ namespace gspc
   private:
     resource::ID _next_resource_id;
 
+    //! BEGIN Syntax goal:
+    //! comm::runtime_system::remote_interface::Server _comm_server;
     rpc::service_dispatcher _service_dispatcher;
     fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
 
-    rpc::service_handler<remote_interface::runtime_system_to_remote_interface::protocol::add> const _add;
-    rpc::service_handler<remote_interface::runtime_system_to_remote_interface::protocol::remove> const _remove;
+    rpc::service_handler<comm::runtime_system::remote_interface::add> const _add;
+    rpc::service_handler<comm::runtime_system::remote_interface::remove> const _remove;
 
     rpc::service_socket_provider const _service_socket_provider;
     rpc::service_tcp_provider const _service_tcp_provider;
     rpc::endpoint const _local_endpoint;
+    //! END Syntax goal
 
     //! \note process proxy
     struct WorkerServer
@@ -410,23 +508,6 @@ namespace gspc
 
   namespace remote_interface
   {
-    namespace runtime_system_to_remote_interface
-    {
-      struct Client
-      {
-
-      public:
-        Client (boost::asio::io_service&, rpc::endpoint);
-
-      private:
-        std::unique_ptr<rpc::remote_endpoint> _endpoint;
-
-      public:
-        rpc::remote_function<protocol::add> add;
-        rpc::remote_function<protocol::remove> remove;
-      };
-    }
-
     namespace strategy
     {
       // class ssh;
@@ -487,7 +568,7 @@ namespace gspc
     private:
       Hostname _hostname;
       Strategy _strategy;
-      runtime_system_to_remote_interface::Client _client;
+      comm::runtime_system::remote_interface::Client _client;
     };
   }
 }
@@ -499,7 +580,7 @@ namespace gspc
   class ScopedRuntimeSystem
   {
   public:
-    ScopedRuntimeSystem (interface::ResourceManager&);
+    ScopedRuntimeSystem (comm::runtime_system::resource_manager::Client);
 
     std::unordered_map
       < remote_interface::Hostname
@@ -523,7 +604,7 @@ namespace gspc
     Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
   private:
-    interface::ResourceManager& _resource_manager;
+    comm::runtime_system::resource_manager::Client _resource_manager;
 
     //! \todo thread count based on parameter or?
     fhg::util::scoped_boost_asio_io_service_with_threads

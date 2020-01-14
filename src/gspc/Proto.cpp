@@ -87,12 +87,19 @@ namespace gspc
     : _next_resource_id {id}
     , _service_dispatcher()
     , _io_service (1)
+      //! BEGIN Syntax goal
+      //! _comm_server ( fhg::util::bind_this (this, &RemoteInterface::add)
+      //!              , fhg::util::bind_this (this, &RemoteInterface::remove)
+      //!              )
+      //! Even better:
+      //! _comm_server (this)
     , _add ( _service_dispatcher
            , fhg::util::bind_this (this, &RemoteInterface::add)
            )
     , _remove ( _service_dispatcher
               , fhg::util::bind_this (this, &RemoteInterface::remove)
               )
+      //! END Syntax goal
     , _service_socket_provider (_io_service, _service_dispatcher)
     , _service_tcp_provider (_io_service, _service_dispatcher)
     , _local_endpoint ( fhg::util::connectable_to_address_string
@@ -233,18 +240,27 @@ namespace gspc
 
 namespace gspc
 {
+  namespace comm
+  {
+    namespace runtime_system
+    {
+      namespace remote_interface
+      {
+        Client::Client
+          (boost::asio::io_service& io_service, rpc::endpoint endpoint)
+            : _endpoint {rpc::make_endpoint (io_service, endpoint)}
+            , add {*_endpoint}
+            , remove {*_endpoint}
+        {}
+      }
+    }
+  }
+}
+
+namespace gspc
+{
   namespace remote_interface
   {
-    namespace runtime_system_to_remote_interface
-    {
-      Client::Client
-        (boost::asio::io_service& io_service, rpc::endpoint endpoint)
-          : _endpoint {rpc::make_endpoint (io_service, endpoint)}
-          , add {*_endpoint}
-          , remove {*_endpoint}
-      {}
-    }
-
     ConnectionAndPID::ConnectionAndPID
       ( boost::asio::io_service& io_service
       , Hostname hostname
@@ -289,7 +305,7 @@ namespace gspc
 namespace gspc
 {
   ScopedRuntimeSystem::ScopedRuntimeSystem
-      (interface::ResourceManager& resource_manager)
+      (comm::runtime_system::resource_manager::Client resource_manager)
     : _resource_manager (resource_manager)
   {}
 
