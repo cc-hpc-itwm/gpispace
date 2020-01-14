@@ -115,6 +115,19 @@ namespace gspc
     //! no check for duplicates
     void UNSAFE_merge (Forest<T, A> other);
 
+    //! multiway split:
+    //! - throws when connected component has more than one key
+    //! - call split_key function at most once for each node
+    template<typename F, typename Key>
+      using is_split_function =
+        fhg::util::is_callable<F, Key (forest::Node<T, A> const&)>;
+
+    template< typename SplitKey
+            , typename Key = fhg::util::return_type<SplitKey>
+            , typename = std::enable_if_t<is_split_function<SplitKey, Key>{}>
+            >
+      std::unordered_map<Key, Forest<T, A>> multiway_split (SplitKey&&) const;
+
     //! \todo: iterate
     //! unspecified order
     template< typename Callback

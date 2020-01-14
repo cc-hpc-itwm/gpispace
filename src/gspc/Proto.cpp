@@ -415,61 +415,20 @@ namespace gspc
       //         };
   }
 
-  namespace
-  {
-    std::unordered_set<resource::ID> child_ts
-      (std::list<forest::Node<resource::ID> const*> const& children)
-    {
-      std::unordered_set<resource::ID> result;
-      std::transform ( children.begin(), children.end()
-                     , std::inserter (result, result.end())
-                     , [] (auto const& node) { return node->first; }
-                     );
-      return result;
-    }
-
-    template<typename Others>
-      void require_all_rif_ids_equal
-        (remote_interface::ID lhs, Others const& rhs)
-    {
-      if ( !std::all_of ( rhs.begin()
-                        , rhs.end()
-                        , [&] (forest::Node<resource::ID> const* child)
-                          {
-                            return child->first.remote_interface == lhs;
-                          }
-                        )
-         )
-      {
-        throw std::invalid_argument
-          ( "ScopedRuntimeSystem::remove: connected component crosses "
-            "remote_interface boundary"
-          );
-      }
-    }
-  }
-
   Forest<resource::ID, ErrorOr<>>
     ScopedRuntimeSystem::remove (Forest<resource::ID> const& to_remove)
   {
     std::unordered_map < remote_interface::Hostname
                        , Forest<resource::ID>
-                       > to_remove_by_host;
-
-    //! upward_combine, no transform -- multiway-split by pred
-    to_remove.upward_combine_transform
-      ( [&] ( forest::Node<resource::ID> const& resource_id
-            , std::list<forest::Node<resource::ID> const*> const& children
-            )
-        {
-          auto const rif_id (resource_id.first.remote_interface);
-          require_all_rif_ids_equal (rif_id, children);
-
-          auto const hostname (_hostname_by_remote_interface_id.at (rif_id));
-
-          to_remove_by_host[hostname].insert (resource_id, child_ts (children));
-          return resource_id;
-        }
+                       > const to_remove_by_host
+      ( to_remove.multiway_split
+        ( [&] (forest::Node<resource::ID> const& resource_id)
+          {
+            return _hostname_by_remote_interface_id
+              . at (resource_id.first.remote_interface)
+              ;
+          }
+        )
       );
 
     Forest<resource::ID, ErrorOr<>> results;

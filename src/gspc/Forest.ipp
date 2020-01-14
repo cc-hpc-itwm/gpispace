@@ -539,6 +539,66 @@ namespace gspc
   }
 
   template<typename T, typename A>
+    template<typename SplitKey, typename Key, typename>
+      std::unordered_map<Key, Forest<T, A>>
+        Forest<T, A>::multiway_split (SplitKey&& split_key) const
+  {
+    auto node_keys
+      ( [&] (auto const& children)
+        {
+          std::unordered_set<T> ts;
+          std::transform ( children.cbegin(), children.cend()
+                         , std::inserter (ts, ts.end())
+                         , [] (auto const* child) { return child->first; }
+                         );
+          return ts;
+        }
+      );
+
+    std::unordered_map<T, Key> split_keys_by_node_key;
+
+    auto assert_all_children_have_the_same_split_key
+      ( [&] (auto const& key, auto const& children)
+        {
+          if ( !std::all_of
+                  ( children.cbegin(), children.cend()
+                  , [&] (auto const* child)
+                    {
+                      return key == split_keys_by_node_key.at (child->first);
+                    }
+                  )
+             )
+          {
+            throw std::invalid_argument
+              ("Forest::multiway_split: "
+              " Connected component crosses key boundary."
+              );
+          }
+        }
+      );
+
+    std::unordered_map<Key, Forest<T, A>> result;
+
+    upward_combine_transform
+      ( [&] (Node const& node, std::list<Node const*> const& children)
+        {
+          auto const key
+            ( split_keys_by_node_key.emplace (node.first, split_key (node))
+            . first->second
+            );
+
+          assert_all_children_have_the_same_split_key (key, children);
+
+          result[key].insert (node, node_keys (children));
+
+          return node;
+        }
+      );
+
+    return result;
+  }
+
+  template<typename T, typename A>
     template<typename Archive>
     void Forest<T, A>::serialize (Archive& ar, unsigned int /* version */)
   {
