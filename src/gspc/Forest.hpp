@@ -122,6 +122,11 @@ namespace gspc
             >
       void for_each_node (Callback&&) const;
 
+    template< typename Callback
+            , typename = std::enable_if_t<is_callback<Callback>{}>
+            >
+      void for_each_leaf (Callback&&) const;
+
   private:
     Relation _suc;
     Relation _pre;
@@ -139,11 +144,6 @@ namespace gspc
             , typename = std::enable_if_t<is_callback<Callback>{}>
             >
       void for_each_root (Callback&&) const;
-
-    template< typename Callback
-            , typename = std::enable_if_t<is_callback<Callback>{}>
-            >
-      void for_each_leaf (Callback&&) const;
 
     friend boost::serialization::access;
     template<typename Archive>

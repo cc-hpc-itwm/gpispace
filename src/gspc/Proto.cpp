@@ -806,11 +806,28 @@ namespace gspc
       _resources_became_available_or_interrupted.notify_all();
     }
 
-    bool Coallocation::is_strictly_forward_disjoint_by_resource_class
-      (Resources const&)
+    void Coallocation::assert_is_strictly_forward_disjoint_by_resource_class
+      (Resources const& resources)
     {
-      throw std::logic_error
-        ("nyi: is_strictly_forward_disjoint_by_resource_class");
+      resources.for_each_leaf
+        ( [&] (Resources::Node const& start)
+          {
+            std::unordered_map<resource::Class, std::size_t>
+              visible_resources_by_class;
+
+            resources.up
+              ( start.first
+              , [&] (Resources::Node const& visible)
+                {
+                  if (visible_resources_by_class[visible.second]++)
+                  {
+                    throw std::logic_error
+                      ("not strictly_forward_disjoint_by_resource_class");
+                  }
+                }
+              );
+          }
+        );
     }
 
     void Coallocation::interrupt()
@@ -826,10 +843,7 @@ namespace gspc
     {
       //! \note We can't add connections to existing resources, so
       //! checking addition is enough.
-      if (!is_strictly_forward_disjoint_by_resource_class (new_resources))
-      {
-        throw std::invalid_argument ("Not forward-disjoint by resource class.");
-      }
+      assert_is_strictly_forward_disjoint_by_resource_class (new_resources);
 
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 

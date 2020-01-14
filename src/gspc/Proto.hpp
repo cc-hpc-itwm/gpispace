@@ -261,7 +261,7 @@ namespace gspc
       //! C is not forward disjoint: C -> D <- C, but C -> D <- B is,
       //! also transitive! No acquire of a C-class resource shall
       //! implicitly block a different C-class resource.
-      static bool is_strictly_forward_disjoint_by_resource_class
+      static void assert_is_strictly_forward_disjoint_by_resource_class
         (Resources const&);
 
       std::mutex _resources_guard;
