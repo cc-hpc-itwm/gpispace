@@ -672,22 +672,6 @@ namespace gspc
       {
         return *collection.begin();
       }
-
-      //! \note traversal includes `start`
-      //! \todo move to Forest or ResourceManager, is likely required
-      //! by all resource managers.
-      template<typename Forest, typename Callback, typename T>
-        void for_each_down_up_reachable_node
-          (Forest const& forest, T&& start, Callback&& callback)
-      {
-        forest.down
-          ( start
-          , [&] (typename Forest::Node const& forward_dependent)
-            {
-              forest.up (forward_dependent.first, callback);
-            }
-          );
-      }
     }
 
     WithPreferences::Acquired WithPreferences::acquire
@@ -732,9 +716,8 @@ namespace gspc
 
       //! \todo ascii art why we block what
 
-      for_each_down_up_reachable_node
-        ( _resources
-        , requested
+      _resources.down_up
+        ( requested
         , [&] (Resources::Node const& x)
           {
             if (0 != ++_resource_usage_by_id.at (x.first))
@@ -755,9 +738,8 @@ namespace gspc
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
-      for_each_down_up_reachable_node
-        ( _resources
-        , to_release
+      _resources.down_up
+        ( to_release
         , [&] (Resources::Node const& x)
           {
             if (0 == --_resource_usage_by_id.at (x.first))
@@ -910,9 +892,8 @@ namespace gspc
         , requesteds.end()
         , [&] (auto const& requested)
           {
-            for_each_down_up_reachable_node
-              ( _resources
-              , requested
+            _resources.down_up
+              ( requested
               , [&] (Resources::Node const& x)
                 {
                   if (0 != ++_resource_usage_by_id.at (x.first))
@@ -943,9 +924,8 @@ namespace gspc
     }
     void Coallocation::release (resource::ID const& to_release)
     {
-      for_each_down_up_reachable_node
-        ( _resources
-        , to_release
+      _resources.down_up
+        ( to_release
         , [&] (Resources::Node const& x)
           {
             if (0 == --_resource_usage_by_id.at (x.first))

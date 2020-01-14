@@ -328,6 +328,15 @@ namespace gspc
   }
 
   template<typename T, typename A>
+    template<typename Callback, typename>
+      void Forest<T, A>::down_up (T root, Callback&& callback) const
+  {
+    return down ( std::move (root)
+                , [&] (Node const& child) { up (child.first, callback); }
+                );
+  }
+
+  template<typename T, typename A>
     template< typename CombiningTransformer
             , typename U
             , typename B

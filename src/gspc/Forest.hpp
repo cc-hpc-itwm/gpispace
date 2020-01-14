@@ -77,6 +77,12 @@ namespace gspc
             >
       void up (T, Callback) const;
 
+    //! go up for each transitive down-child
+    template< typename Callback
+            , typename = std::enable_if_t<is_callback<Callback>{}>
+            >
+      void down_up (T, Callback&&) const;
+
     //! combining transformer
     template<typename F, typename U, typename B>
       using is_combining_transformer = std::enable_if_t
