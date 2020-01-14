@@ -63,16 +63,23 @@ namespace gspc
     }
 
     template<typename T, typename Relation, typename Annotations>
-      void erase_all ( T x
-                     , Relation& forward
-                     , Relation& backward
-                     , Annotations& annotations
-                     )
+      typename Annotations::value_type
+        erase_all ( T x
+                  , Relation& forward
+                  , Relation& backward
+                  , Annotations& annotations
+                  )
     {
-      if (!annotations.erase (x))
+      auto const node_it (annotations.find (x));
+
+      if (node_it == annotations.end())
       {
         throw std::invalid_argument ("Unknown.");
       }
+
+      auto node (*node_it);
+
+      annotations.erase (node_it);
 
       auto pos {forward.find (x)};
 
@@ -89,7 +96,7 @@ namespace gspc
         forward.erase (pos);
       }
 
-      return;
+      return node;
     }
 
     template< typename T
@@ -285,10 +292,10 @@ namespace gspc
   }
 
   template<typename T, typename A>
-    void Forest<T, A>::remove_leaf (T x)
+    auto Forest<T, A>::remove_leaf (T x) -> Node
   try
   {
-    detail::erase_all<T> (assert_is_leaf (x), _pre, _suc, _annotations);
+    return detail::erase_all<T> (assert_is_leaf (x), _pre, _suc, _annotations);
   }
   catch (...)
   {
@@ -299,10 +306,10 @@ namespace gspc
   }
 
   template<typename T, typename A>
-    void Forest<T, A>::remove_root (T x)
+    auto Forest<T, A>::remove_root (T x) -> Node
   try
   {
-    detail::erase_all<T> (assert_is_root (x), _suc, _pre, _annotations);
+    return detail::erase_all<T> (assert_is_root (x), _suc, _pre, _annotations);
   }
   catch (...)
   {

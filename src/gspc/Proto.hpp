@@ -149,7 +149,7 @@ namespace gspc
 
       // - shall throw on duplicate id
       virtual void add (Resources) = 0;
-      virtual void remove (Resources) = 0;
+      virtual void remove (Forest<resource::ID>) = 0;
 
       struct Interrupted : public std::exception{};
       //! \note once called all running and future acquire will throw
@@ -196,7 +196,7 @@ namespace gspc
     {
     public:
       virtual void add (Resources) override;
-      virtual void remove (Resources) override;
+      virtual void remove (Forest<resource::ID>) override;
 
       struct Acquired
       {
@@ -241,7 +241,7 @@ namespace gspc
     public:
       //! \note Only supports forward-disjoint classes.
       virtual void add (Resources) override;
-      virtual void remove (Resources) override;
+      virtual void remove (Forest<resource::ID>) override;
 
       struct Acquired
       {

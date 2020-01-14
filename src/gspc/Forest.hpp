@@ -47,8 +47,8 @@ namespace gspc
     //! throw when unknown
     //! throw when not leaf/root
     //! disconnects and removes node
-    void remove_leaf (T);
-    void remove_root (T);
+    Node remove_leaf (T);
+    Node remove_root (T);
 
     template<typename F>
       using is_predicate =

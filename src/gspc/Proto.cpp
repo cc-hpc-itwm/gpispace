@@ -427,6 +427,8 @@ namespace gspc
   Forest<resource::ID, ErrorOr<>>
     ScopedRuntimeSystem::remove (Forest<resource::ID> const& to_remove)
   {
+    //! \note checks connected components do not cross
+    //! remote_interface boundaries
     std::unordered_map < remote_interface::ID
                        , Forest<resource::ID>
                        > const to_remove_by_host
@@ -438,16 +440,37 @@ namespace gspc
         )
       );
 
-    Forest<resource::ID, ErrorOr<>> results;
+    //! \note checks resource is known (before doing anything)
+    _resource_manager.remove (to_remove);
+
+    using Results = Forest<resource::ID, ErrorOr<>>;
+
+    Results results;
 
     std::for_each
       ( to_remove_by_host.begin(), to_remove_by_host.end()
-      , [&] (auto const& remote_interface_and_to_remove)
+      , [&] (auto const& rif_and_to_remove)
         {
           //! SAFE: each forest was part of `to_remove`
           results.UNSAFE_merge
-            ( remote_interface_by_id (remote_interface_and_to_remove.first)
-               . remove (remote_interface_and_to_remove.second)
+            ( [&]
+              {
+                try
+                {
+                  return remote_interface_by_id (rif_and_to_remove.first)
+                    . remove (rif_and_to_remove.second);
+                }
+                catch (...)
+                {
+                  return rif_and_to_remove.second.unordered_transform
+                    ( [&] (forest::Node<resource::ID> const& resource_id)
+                      {
+                        return Results::Node
+                          {resource_id.first, std::current_exception()};
+                      }
+                    );
+                }
+              }()
             );
         }
       );
@@ -574,19 +597,20 @@ namespace gspc
 
     if (!failures.empty())
     {
-      try
-      {
-        remove (successes);
-      }
-      catch (...)
-      {
-        failures.emplace_back
-          ( nest_with_runtime_error
-              ( std::current_exception()
-              , "when trying to clean up successfully started resources"
-              )
-          );
-      }
+      remove (successes).for_each_node
+        ( [&] (forest::Node<resource::ID, ErrorOr<>> const& remove_result)
+          {
+            if (!remove_result.second)
+            {
+              failures.emplace_back
+                ( nest_with_runtime_error
+                  ( remove_result.second.error()
+                  , "when trying to clean up successfully started resources"
+                  )
+                );
+            }
+          }
+        );
 
       fhg::util::nest_exceptions<std::runtime_error>
         ( [&] { fhg::util::throw_collected_exceptions (failures); }
@@ -631,12 +655,12 @@ namespace gspc
       _resources_became_available_or_interrupted.notify_all();
     }
 
-    void WithPreferences::remove (Resources to_remove)
+    void WithPreferences::remove (Forest<resource::ID> to_remove)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
       to_remove.for_each_node
-        ( [&] (Resources::Node const& resource)
+        ( [&] (forest::Node<resource::ID> const& resource)
           {
             if (!_resource_usage_by_id.count (resource.first))
             {
@@ -650,13 +674,13 @@ namespace gspc
         );
 
       to_remove.upward_apply
-        ( [&] (Resources::Node const& resource)
+        ( [&] (forest::Node<resource::ID> const& resource)
           {
-            _resource_usage_by_id.erase (resource.first);
-            _available_resources_by_class.at (resource.second)
-              . erase (resource.first)
+            auto const removed_node (_resources.remove_leaf (resource.first));
+            _resource_usage_by_id.erase (removed_node.first);
+            _available_resources_by_class.at (removed_node.second)
+              . erase (removed_node.first)
               ;
-            _resources.remove_leaf (resource.first);
           }
         );
     }
@@ -806,12 +830,12 @@ namespace gspc
       _resources_became_available_or_interrupted.notify_all();
     }
 
-    void Coallocation::remove (Resources to_remove)
+    void Coallocation::remove (Forest<resource::ID> to_remove)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
       to_remove.for_each_node
-        ( [&] (Resources::Node const& resource)
+        ( [&] (forest::Node<resource::ID> const& resource)
           {
             if (!_resource_usage_by_id.count (resource.first))
             {
@@ -829,13 +853,13 @@ namespace gspc
       //! has to still block during (or have one side of the block
       //! vanished).
       to_remove.upward_apply
-        ( [&] (Resources::Node const& resource)
+        ( [&] (forest::Node<resource::ID> const& resource)
           {
-            _resource_usage_by_id.erase (resource.first);
-            _available_resources_by_class.at (resource.second)
-              . erase (resource.first)
+            auto const removed_node (_resources.remove_leaf (resource.first));
+            _resource_usage_by_id.erase (removed_node.first);
+            _available_resources_by_class.at (removed_node.second)
+              . erase (removed_node.first)
               ;
-            _resources.remove_leaf (resource.first);
           }
         );
     }
