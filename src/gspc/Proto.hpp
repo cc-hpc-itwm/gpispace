@@ -135,6 +135,96 @@ namespace gspc
 
 namespace gspc
 {
+  namespace task
+  {
+    struct ID
+    {
+      //! \todo  more complex:
+      //! - hierarchy with user_context
+      //! - information for scheduler
+      std::uint64_t id;
+
+      ID& operator++() { ++id; return *this; }
+    };
+    bool operator== (ID const&, ID const&);
+
+    struct Result{};
+  }
+
+  struct Task
+  {
+    resource::Class resource_class;
+    task::ID id;
+  };
+}
+
+ FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( gspc::task::ID
+  , x
+  , x.id
+  )
+
+namespace gspc
+{
+  namespace job
+  {
+    struct ID
+    {
+      //! \todo  more complex:
+      //! - hierarchy with user_context
+      //! - information for scheduler
+      std::uint64_t id;
+
+      ID& operator++() { ++id; return *this; }
+
+      //! \todo multiple tasks per job!?
+      task::ID task_id;
+    };
+  }
+
+  //! between Scheduler and Worker
+  struct Job
+  {
+    //! ? resource::Class resource_class;
+  };
+
+  namespace job
+  {
+    struct Result
+    {
+      //! \todo multiple tasks per job!?
+      task::Result task_result;
+    };
+
+    namespace finish_reason
+    {
+      //! \todo avoid the activity_t hell and only transfer the parts
+      //! needed, i.e. output tokens in this case?
+      struct Success { Result result; };
+      struct JobFailure { std::exception_ptr exception; };
+      struct WorkerFailure { std::exception_ptr exception; };
+      struct Cancelled {};
+    }
+
+    //! \todo Highly likely to be predetermined by us, not virtual
+    //! infrastructure as Workers need to be able to tell *any*
+    //! scheduler what happened. Is worker failure a finish though?
+    using FinishReason = boost::variant < finish_reason::Success
+                                        , finish_reason::JobFailure
+                                        , finish_reason::WorkerFailure
+                                        , finish_reason::Cancelled
+                                        >;
+  }
+}
+
+FHG_UTIL_MAKE_COMBINED_STD_HASH
+  ( gspc::job::ID
+  , x
+  , x.id
+  )
+
+namespace gspc
+{
   namespace interface
   {
     class ResourceManager;
@@ -195,31 +285,58 @@ namespace gspc
       // virtual ? acquire (?)
       // virtual void release (?)
     private:
-      comm::runtime_system::resource_manager::Server _comm_server_for_runtime_system;
+      //! \todo
+      // comm::runtime_system::resource_manager::Server _comm_server_for_runtime_system;
     };
-    class Scheduler;
-    class WorkflowEngine;
+
+    class Scheduler
+    {
+    public:
+      virtual ~Scheduler() = default;
+
+      // called by user
+      virtual void wait() = 0;
+      virtual void stop() = 0;
+
+      //! \todo Do we require the called to also know they have to call
+      //! the workflow engine or should we automatically query that here
+      //! as well? Effectively this is we.status().extracted_tasks +
+      //! their state.
+      //      virtual std::unordered_map<job::Description, job::State> status() const;
+
+      // called by worker
+      virtual void finished (job::ID, job::FinishReason) = 0;
+    };
+
+    class WorkflowEngine
+    {
+    public:
+      virtual ~WorkflowEngine() = default;
+      //! extract.is_bool && extract.second == false: workflow has not
+      //! finished yet, e.g. because it waits for external events
+      //! \note workflow engine shall not say "true" when there are
+      //! extacted tasks
+      virtual boost::variant<Task, bool> extract() = 0;
+      virtual void inject (task::ID, task::Result) = 0;
+
+      // virtual std::vector<char> dump() const;
+    };
   }
 
   class PetriNetWorkflow{};
-  class PetriNetWorkflowEngine
+  class PetriNetWorkflowEngine : public interface::WorkflowEngine
   {
   public:
     PetriNetWorkflowEngine (PetriNetWorkflow);
+
+    virtual boost::variant<Task, bool> extract() override;
+    virtual void inject (task::ID, task::Result) override;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;
   class MapReduceWorkflow;
   class MapReduceWorkflowEngine;
 
-  class GreedyScheduler
-  {
-  public:
-    template<typename WE, typename RM, typename RTS>
-      GreedyScheduler (WE&, RM&, RTS const&);
-
-    void wait();
-  };
   class ReschedulingGreedyScheduler;
   class LookaheadScheduler;
   class WorkStealingScheduler;
@@ -387,6 +504,8 @@ namespace gspc
         // next
         // inject
         // extract
+
+        using Client = interface::WorkflowEngine&;
       }
       namespace resource_manager
       {
@@ -444,6 +563,12 @@ namespace gspc
     ~Worker() = default;
 
     rpc::endpoint const& local_endpoint() const;
+
+    // called by scheduler (via rif)
+    void submit (job::ID, Job);
+    void cancel (job::ID);
+    // called by user via scheduler (via rif)
+    // TaskState status (job::ID);
 
   private:
     Resource _resource;
@@ -633,5 +758,37 @@ namespace gspc
                         ) noexcept;
 
     //! \todo OPTIMIZE access to hostname via map<hostID, hostName>
+  };
+}
+
+namespace gspc
+{
+  class GreedyScheduler : public interface::Scheduler
+  {
+  public:
+    //! \note: workflow_engine can not be shared with other schedulers
+    //! because alien inject would break the finish condition
+    GreedyScheduler ( comm::scheduler::workflow_engine::Client
+                    , resource_manager::Trivial& //! \todo: Client
+                    , ScopedRuntimeSystem& //! \todo UnscopedBase
+                    );
+
+    virtual void wait() override;
+    virtual void stop() override;
+    virtual void finished (job::ID, job::FinishReason) override;
+
+  private:
+    comm::scheduler::workflow_engine::Client _workflow_engine;
+    resource_manager::Trivial& _resource_manager;
+    // ScopedRuntimeSystem& _runtime_system;
+
+    std::atomic<bool> _stopped {false};
+
+    std::mutex _guard_state;
+    std::condition_variable _task_removed_or_stopped;
+    std::unordered_map<task::ID, resource::ID> _tasks;
+
+    std::thread _thread;
+    void scheduling_thread();
   };
 }

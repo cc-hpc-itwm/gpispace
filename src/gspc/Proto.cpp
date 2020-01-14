@@ -53,6 +53,13 @@ namespace gspc
       return os << x.remote_interface << " resource " << x.id;
     }
   }
+  namespace task
+  {
+    bool operator== (ID const& lhs, ID const& rhs)
+    {
+      return std::tie (lhs.id) == std::tie (rhs.id);
+    }
+  }
 
   bool operator== (Resource const& lhs, Resource const& rhs)
   {
@@ -975,6 +982,151 @@ namespace gspc
           }
         );
     }
+  }
+}
+
+namespace gspc
+{
+  GreedyScheduler::GreedyScheduler
+    ( comm::scheduler::workflow_engine::Client workflow_engine
+    , resource_manager::Trivial& resource_manager
+    , ScopedRuntimeSystem& // runtime_system
+    )
+      : _workflow_engine (workflow_engine)
+      , _resource_manager (resource_manager)
+        //         , _runtime_system (runtime_system)
+      , _thread (fhg::util::bind_this ( this
+                                      , &GreedyScheduler::scheduling_thread
+                                      )
+                )
+  {}
+
+  void GreedyScheduler::scheduling_thread()
+  {
+    while (!_stopped)
+    {
+      fhg::util::visit<void>
+        ( _workflow_engine.extract()
+        , [&] (Task const& task)
+          {
+            try
+            {
+              auto const acquired
+                (_resource_manager.acquire (task.resource_class));
+
+              std::unique_lock<std::mutex> lock (_guard_state);
+
+              if (!_tasks.emplace (task.id, acquired.requested).second)
+              {
+                throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
+              }
+
+              // _runtime_system.submit (resource_id, task);
+            }
+            catch (interface::ResourceManager::Interrupted const&)
+            {
+              assert (_stopped);
+            }
+          }
+        , [&] (bool has_finished)
+          {
+            if (has_finished)
+            {
+              if (!_tasks.empty())
+              {
+                throw std::logic_error
+                  ("INCONSISTENCY: finished while tasks are running.");
+              }
+
+              _stopped = true;
+            }
+            else
+            {
+              std::unique_lock<std::mutex> lock (_guard_state);
+
+              auto const size (_tasks.size());
+
+              _task_removed_or_stopped
+                .wait ( lock
+                      , [&] { return _tasks.size() != size || _stopped; }
+                      );
+            }
+          }
+        );
+      }
+
+    std::unique_lock<std::mutex> lock (_guard_state);
+
+    // for (auto const& task : _tasks)
+    // {
+    //   // _runtime_system.cancel (task);
+    // }
+
+    _task_removed_or_stopped.wait (lock, [&] { return _tasks.empty(); });
+  }
+
+  void GreedyScheduler::finished
+    (job::ID job_id, job::FinishReason finish_reason)
+  {
+    auto const task_id (job_id.task_id);
+
+    FHG_UTIL_FINALLY
+      (  [&]
+      {
+        {
+          std::lock_guard<std::mutex> const lock (_guard_state);
+
+          if (!_tasks.erase (task_id))
+          {
+            throw std::logic_error
+              ("INCONSISTENCY: finished unknown tasks");
+          }
+        }
+
+        _task_removed_or_stopped.notify_one();
+      }
+      );
+
+    fhg::util::visit<void>
+      ( finish_reason
+      , [&] (job::finish_reason::Success const& success)
+      {
+        std::lock_guard<std::mutex> const lock (_guard_state);
+
+        _workflow_engine.inject (task_id, success.result.task_result);
+      }
+      , [&] (job::finish_reason::JobFailure const&)
+      {
+        stop();
+      }
+      , [] (job::finish_reason::WorkerFailure const&)
+      {
+        //! \todo re-schedule?
+        throw std::logic_error ("NYI: finished (WorkerFailure)");
+      }
+      , [] (job::finish_reason::Cancelled const&)
+      {
+        //! \todo sanity!?
+        //! do nothing, just remove task
+      }
+      );
+  }
+
+  void GreedyScheduler::wait()
+  {
+    if (_thread.joinable())
+    {
+      _thread.join();
+    }
+  }
+
+  void GreedyScheduler::stop()
+  {
+    _stopped = true;
+
+    _resource_manager.interrupt();
+
+    _task_removed_or_stopped.notify_one();
   }
 }
 
