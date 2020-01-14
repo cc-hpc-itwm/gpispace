@@ -140,6 +140,11 @@ namespace gspc
     //! \todo what is base class, what is implementation specific!?
     //! likely: _resources, _resource_usage_by_id, add+remove base,
     //! NOT available_by_x
+    //! _resources -> what about the lock
+    //! _resource_usage_by_id -> is ref counting always needed?
+    //! e.g. what if assert_singletons_only
+    //! add+remove -> into/from what state?
+    //! Alternative: Factor shared states
     class ResourceManager
     {
     public:
