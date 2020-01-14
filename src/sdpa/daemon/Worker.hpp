@@ -38,8 +38,8 @@ namespace sdpa
       bool has_pending_jobs() const;
       bool has_running_jobs() const;
 
-      void delete_submitted_job (const job_id_t job_id);
-      void delete_pending_job (const job_id_t job_id);
+      void delete_submitted_job (const job_id_t job_id, double);
+      void delete_pending_job (const job_id_t job_id, double);
 
       // methods related to reservation
       bool isReserved() const;
@@ -49,7 +49,6 @@ namespace sdpa
       // cost
       double cost_assigned_jobs() const;
       double _cost_assigned_jobs;
-      std::unordered_map<job_id_t, double> _cost_by_job_id;
 
       bool stealing_allowed() const;
 
