@@ -528,6 +528,9 @@ namespace gspc
                       , remote_interface::Hostname
                       > _hostname_by_remote_interface_id;
 
+    remote_interface::ConnectionAndPID&
+      remote_interface_by_id (remote_interface::ID);
+
     std::unordered_map
       < remote_interface::Hostname
       , ErrorOr<remote_interface::ConnectionAndPID*>

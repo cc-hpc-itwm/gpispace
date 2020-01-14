@@ -352,6 +352,15 @@ namespace gspc
     return remote_interfaces;
   }
 
+  remote_interface::ConnectionAndPID&
+    ScopedRuntimeSystem::remote_interface_by_id
+      (remote_interface::ID remote_interface_id)
+  {
+    return _remote_interface_by_hostname
+      .at (_hostname_by_remote_interface_id.at (remote_interface_id))
+      ;
+  }
+
   std::unordered_map
     < remote_interface::Hostname
     , ErrorOr<Forest<Resource, ErrorOr<resource::ID>>>
@@ -437,11 +446,8 @@ namespace gspc
         {
           //! SAFE: each forest was part of `to_remove`
           results.UNSAFE_merge
-            ( _remote_interface_by_hostname
-              . at ( _hostname_by_remote_interface_id
-                       . at (remote_interface_and_to_remove.first)
-                   )
-                . remove (remote_interface_and_to_remove.second)
+            ( remote_interface_by_id (remote_interface_and_to_remove.first)
+               . remove (remote_interface_and_to_remove.second)
             );
         }
       );
