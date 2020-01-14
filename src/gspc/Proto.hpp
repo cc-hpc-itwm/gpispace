@@ -504,8 +504,8 @@ namespace gspc
                     , Forest<Resource> const& resources
                     );
 
-    //! \todo return value and noexcept!? is Forest<resource::ID>
-    //! required? Or would unordered_set be enough?
+    //! \todo is Forest<resource::ID> required? Or would unordered_set
+    //! be enough?
     //! \note Assumes that two connected resource IDs have the same
     //! RemoteInterface ID.
     Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
