@@ -418,15 +418,13 @@ namespace gspc
   Forest<resource::ID, ErrorOr<>>
     ScopedRuntimeSystem::remove (Forest<resource::ID> const& to_remove)
   {
-    std::unordered_map < remote_interface::Hostname
+    std::unordered_map < remote_interface::ID
                        , Forest<resource::ID>
                        > const to_remove_by_host
       ( to_remove.multiway_split
         ( [&] (forest::Node<resource::ID> const& resource_id)
           {
-            return _hostname_by_remote_interface_id
-              . at (resource_id.first.remote_interface)
-              ;
+            return resource_id.first.remote_interface;
           }
         )
       );
@@ -435,13 +433,15 @@ namespace gspc
 
     std::for_each
       ( to_remove_by_host.begin(), to_remove_by_host.end()
-      , [&] (auto const& host_and_to_remove)
+      , [&] (auto const& remote_interface_and_to_remove)
         {
           //! SAFE: each forest was part of `to_remove`
           results.UNSAFE_merge
             ( _remote_interface_by_hostname
-              . at (host_and_to_remove.first)
-                . remove (host_and_to_remove.second)
+              . at ( _hostname_by_remote_interface_id
+                       . at (remote_interface_and_to_remove.first)
+                   )
+                . remove (remote_interface_and_to_remove.second)
             );
         }
       );
