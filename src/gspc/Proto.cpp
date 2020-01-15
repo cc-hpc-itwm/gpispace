@@ -1163,6 +1163,9 @@ namespace gspc
     auto remove_task
       ( [&]
         {
+          _resource_manager.release
+            (resource_manager::Trivial::Acquired {_tasks.at (task_id)});
+
           if (!_tasks.erase (task_id))
           {
             throw std::logic_error ("INCONSISTENCY: finished unknown tasks");
