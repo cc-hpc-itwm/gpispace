@@ -1275,7 +1275,7 @@ namespace gspc
                     {
                       finished ( {0, task.id}
                                , job::finish_reason::WorkerFailure
-                                 {std::current_exception()}
+                                   {std::current_exception()}
                                );
                     }
                   }
