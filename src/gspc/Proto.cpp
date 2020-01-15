@@ -1241,7 +1241,7 @@ namespace gspc
                         ( _runtime_system.worker_endpoint_for_scheduler
                             (acquired.requested)
                         );
-                      //! \todo
+                      //! \todo job_id
                       comm::scheduler::worker::Client ( _io_service_for_workers
                                                       , worker_endpoint
                                                       )
