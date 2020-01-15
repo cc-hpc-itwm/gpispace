@@ -1247,7 +1247,7 @@ namespace gspc
                                                       )
                         . submit ( _comm_server_for_worker.local_endpoint()
                                  , job::ID {0, task.id}
-                                 , Job{}
+                                 , Job {task}
                                  );
                     }
                     catch (...)

@@ -222,11 +222,13 @@ namespace gspc
   //! between Scheduler and Worker
   struct Job
   {
-    //! ? resource::Class resource_class;
+    //! \todo multiple tasks per job!?
+    Task task;
 
     template<typename Archive>
-      void serialize (Archive&, unsigned int)
+      void serialize (Archive& ar, unsigned int)
     {
+      ar & task;
     }
   };
 
