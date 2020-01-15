@@ -309,13 +309,13 @@ namespace gspc
     UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
       ConnectionAndPID::add (UniqueForest<Resource> const& resources)
     {
-      return _client.add (resources).get();
+      return _client.add (resources);
     }
 
     Forest<resource::ID, ErrorOr<>>
       ConnectionAndPID::remove (Forest<resource::ID> const& resources)
     {
-      return _client.remove (resources).get();
+      return _client.remove (resources);
     }
   }
 }

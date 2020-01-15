@@ -55,7 +55,7 @@ namespace rpc
   template<typename Protocol>
     using service_handler = fhg::rpc::service_handler<Protocol>;
   template<typename Protocol>
-    using remote_function = fhg::rpc::remote_function<Protocol>;
+    using sync_remote_function = fhg::rpc::sync_remote_function<Protocol>;
 
   std::unique_ptr<remote_endpoint> make_endpoint
     (boost::asio::io_service& io_service, endpoint);
@@ -501,8 +501,8 @@ namespace gspc
           std::unique_ptr<rpc::remote_endpoint> _endpoint;
 
         public:
-          rpc::remote_function<remote_interface::add> add;
-          rpc::remote_function<remote_interface::remove> remove;
+          rpc::sync_remote_function<remote_interface::add> add;
+          rpc::sync_remote_function<remote_interface::remove> remove;
         };
       }
     }
