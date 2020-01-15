@@ -174,9 +174,6 @@ namespace gspc
       //! - hierarchy with user_context
       //! - information for scheduler
       std::uint64_t id;
-
-      ID& operator++() { ++id; return *this; }
-
       //! \todo multiple tasks per job!?
       task::ID task_id;
     };
