@@ -522,9 +522,10 @@ namespace gspc
     virtual void inject (task::ID, task::Result) override;
 
   private:
+    task::ID _next_task_id {0};
     std::uint64_t _N;
     std::uint64_t _i {0};
-    std::unordered_set<std::uint64_t> _extracted;
+    std::unordered_set<task::ID> _extracted;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;

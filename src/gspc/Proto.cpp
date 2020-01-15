@@ -1391,10 +1391,10 @@ namespace gspc
 
   boost::variant<Task, bool> MapWorkflowEngine::extract()
   {
-    if (_i < _N)
+    if (_i++ < _N)
     {
       return Task { "core"
-                  , {*_extracted.emplace (_i++).first}
+                  , {*_extracted.emplace (++_next_task_id).first}
                   , {}
                   , {}
                   , {}
@@ -1408,7 +1408,7 @@ namespace gspc
 
   void MapWorkflowEngine::inject (task::ID id, task::Result)
   {
-    if (!_extracted.erase (id.id))
+    if (!_extracted.erase (id))
     {
       throw std::logic_error ("MapWorkflowEngine::inject: Unknown task.");
     }
