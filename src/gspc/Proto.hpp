@@ -137,7 +137,7 @@ namespace gspc
 
 namespace gspc
 {
-  using value_type = int;
+  using value_type = std::size_t;
 
   namespace task
   {

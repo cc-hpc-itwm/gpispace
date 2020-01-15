@@ -160,11 +160,32 @@ namespace gspc
     return _comm_server_for_scheduler.local_endpoint();
   }
 
-  void Worker::submit (rpc::endpoint scheduler, job::ID job_id, Job)
+  void Worker::submit (rpc::endpoint scheduler, job::ID job_id, Job job)
   {
-    // assert (job.outputs.size() == 0);
-    comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-      .finished (job_id, job::finish_reason::Success ({}));
+    auto const& task (job.task);
+
+    if (task.so == "map_so" && task.symbol == "map_symbol")
+    {
+      auto const& inputs (task.inputs);
+
+      if (  inputs.size() != 3
+         || inputs.count ("input") != 1
+         || inputs.count ("output") != 1
+         || inputs.count ("N") != 1
+         || inputs.at ("input") != task.id.id
+         || inputs.at ("input") + inputs.at ("output") != inputs.at ("N")
+         )
+      {
+        throw std::logic_error ("Worker::submit: Corrupted task.");
+      }
+
+      comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+        .finished (job_id, job::finish_reason::Success ({inputs}));
+
+      return;
+    }
+
+    throw std::invalid_argument ("Worker::submit: non-Map: NYI.");
   }
   void Worker::cancel (job::ID)
   {
@@ -1395,9 +1416,9 @@ namespace gspc
     {
       return Task { "core"
                   , {*_extracted.emplace (++_next_task_id).first}
-                  , {}
-                  , {}
-                  , {}
+                  , {{"input", _i}, {"output", _N - _i}, {"N", _N}}
+                  , {"map_so"}
+                  , {"map_symbol"}
                   };
     }
     else
@@ -1406,11 +1427,24 @@ namespace gspc
     }
   }
 
-  void MapWorkflowEngine::inject (task::ID id, task::Result)
+  void MapWorkflowEngine::inject (task::ID id, task::Result result)
   {
     if (!_extracted.erase (id))
     {
       throw std::logic_error ("MapWorkflowEngine::inject: Unknown task.");
+    }
+
+    auto const& outputs (result.outputs);
+
+    if (  outputs.size() != 3
+       || outputs.count ("input") != 1
+       || outputs.count ("output") != 1
+       || outputs.count ("N") != 1
+       || outputs.at ("input") != id.id
+       || outputs.at ("input") + outputs.at ("output") != outputs.at ("N")
+       )
+    {
+      throw std::logic_error ("MapWorkflowEngine::inject: Unexpected result.");
     }
   }
 }
