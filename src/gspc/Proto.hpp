@@ -206,9 +206,7 @@ namespace gspc
       struct Cancelled {};
     }
 
-    //! \todo Highly likely to be predetermined by us, not virtual
-    //! infrastructure as Workers need to be able to tell *any*
-    //! scheduler what happened. Is worker failure a finish though?
+    //! \todo Is worker failure a finish though?
     using FinishReason = boost::variant < finish_reason::Success
                                         , finish_reason::JobFailure
                                         , finish_reason::WorkerFailure
@@ -605,9 +603,6 @@ namespace gspc
     UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
       add (UniqueForest<Resource> const&);
 
-    //! \todo is unordered_set<resource::ID> enough? instead of
-    //! Forest<resource::id>? because ther traversal is unordered
-    //! anyways
     Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
     rpc::endpoint const& local_endpoint() const;
@@ -736,8 +731,6 @@ namespace gspc
                     , UniqueForest<Resource> const& resources
                     );
 
-    //! \todo is Forest<resource::ID> required? Or would unordered_set
-    //! be enough?
     //! \note Assumes that two connected resource IDs have the same
     //! RemoteInterface ID.
     Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
@@ -751,7 +744,7 @@ namespace gspc
 
     remote_interface::ID _next_remote_interface_id;
 
-    //! \todo earlier cleanup, e.g. when last resource using them is
+    //! \todo cleanup, e.g. when last resource using them is
     //! removed.
     std::unordered_map< remote_interface::Hostname
                       , remote_interface::ConnectionAndPID

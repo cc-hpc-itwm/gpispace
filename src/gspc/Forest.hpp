@@ -182,7 +182,9 @@ namespace gspc
       using Node = forest::Node<T, A>;
   }
 
-
+  //! \todo merge Forest and UniqueForest:
+  //! allow for client id. if not provided, then generate, avoid tuple
+  //! like: Forest<Annotations&&..., typename T = std::uint64_t>
   template<typename A, typename T = std::uint64_t>
     class UniqueForest : private Forest<T, A>
   {

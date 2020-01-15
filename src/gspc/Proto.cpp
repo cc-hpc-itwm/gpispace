@@ -1116,7 +1116,7 @@ namespace gspc
     //! \todo
     // for (auto const& task : _tasks)
     // {
-    //   // _runtime_system.cancel (task);
+    //   _runtime_system.cancel (task);
     // }
 
     _task_removed_or_stopped.wait (lock, [&] { return _tasks.empty(); });
