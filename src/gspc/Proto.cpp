@@ -729,7 +729,9 @@ namespace gspc
       auto const has_available_resource
         ( [&] (resource::Class resource_class)
           {
-            return !_available_resources_by_class.at (resource_class).empty();
+            return _available_resources_by_class.count (resource_class)
+              && !_available_resources_by_class.at (resource_class).empty()
+              ;
           }
         );
 
@@ -948,8 +950,10 @@ namespace gspc
       auto const has_available_resources
         ( [&] (resource::Class resource_class)
           {
-            return _available_resources_by_class.at (resource_class).size()
-              >= count;
+            return _available_resources_by_class.count (resource_class)
+              && _available_resources_by_class.at (resource_class).size()
+                 >= count
+              ;
           }
         );
 
