@@ -761,7 +761,46 @@ namespace gspc
       auto const requested
         (select_any (_available_resources_by_class.at (resource_class)));
 
-      //! \todo ascii art why we block what
+      //! block every resource `child*` that is down-reachable because
+      //! `requested` is a (transitive) parent of `child*`
+
+      //! block every (transitive) parent `(other_)parent*` of all
+      //! down-reachable resources `child*` because one of their child
+      //! has been blocked
+
+      //! parent -> requested -> child1 -> child11
+      //!        -> sibling~            -> child12
+      //!                     -> child2 <- other_parent2
+      //!                     -> child3 <- other_parent31 <- other_parent311
+      //!                               <- other_parent32
+      //!               other_child321~ <-
+
+      //! Note: sibling~ and other_child321~ are _not_ blocked
+
+      //! In this forest when requested is blocked, then all resources
+      //! marked by * or # are blocked, too. The numbers after the *
+      //! are the changes in the values of the reference counters, the
+      //! number after the # are the exact values of the reference
+      //! counters (they must have been zero before the acquisition)
+      //!
+      //!       A*4 --+       G*4 ..>       J*1
+      //!       |     |       |             |
+      //!       v     |       v             v
+      //!       B     +-> requested#4 --+   H*1 --> I
+      //!       |             |         |   |
+      //!       v             v         |   v
+      //!       F             C#2       +-> E#1
+      //!                     |
+      //!                     v
+      //!                     D#1
+
+      //! Note:
+      //! - G ..> means that G might have more children. If not, then * is #.
+      //! - B and F are not blocked as it would require going down
+      //! from A again.
+      //! - While blocking E blocks it's parent H, again, I is not
+      //! blocked due to up-down required.
+      //! - To release anything but `requested` will lead to chaos!
 
       _resources.down_up
         ( requested
