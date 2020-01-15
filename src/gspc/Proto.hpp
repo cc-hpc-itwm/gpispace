@@ -18,6 +18,7 @@
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hash/combined_hash.hpp>
+#include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
@@ -25,6 +26,7 @@
 
 #include <boost/variant.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <cstdint>
 #include <cstdlib>
@@ -135,6 +137,8 @@ namespace gspc
 
 namespace gspc
 {
+  using value_type = int;
+
   namespace task
   {
     struct ID
@@ -145,16 +149,45 @@ namespace gspc
       std::uint64_t id;
 
       ID& operator++() { ++id; return *this; }
+
+      template<typename Archive>
+        void serialize (Archive& ar, unsigned int)
+      {
+        ar & id;
+      }
     };
     bool operator== (ID const&, ID const&);
 
-    struct Result{};
+    struct Result
+    {
+      std::unordered_map<std::string, value_type> outputs;
+
+      template<typename Archive>
+        void serialize (Archive& ar, unsigned int)
+      {
+        ar & outputs;
+      }
+    };
   }
 
   struct Task
   {
     resource::Class resource_class;
     task::ID id;
+
+    std::unordered_map<std::string, value_type> inputs;
+    boost::filesystem::path so;
+    std::string symbol;
+
+    template<typename Archive>
+      void serialize (Archive& ar, unsigned int)
+    {
+      ar & resource_class;
+      ar & id;
+      ar & inputs;
+      ar & so;
+      ar & symbol;
+    }
   };
 }
 
@@ -176,6 +209,13 @@ namespace gspc
       std::uint64_t id;
       //! \todo multiple tasks per job!?
       task::ID task_id;
+
+      template<typename Archive>
+        void serialize (Archive& ar, unsigned int)
+      {
+        ar & id;
+        ar & task_id;
+      }
     };
   }
 
@@ -183,6 +223,11 @@ namespace gspc
   struct Job
   {
     //! ? resource::Class resource_class;
+
+    template<typename Archive>
+      void serialize (Archive&, unsigned int)
+    {
+    }
   };
 
   namespace job
@@ -191,16 +236,50 @@ namespace gspc
     {
       //! \todo multiple tasks per job!?
       task::Result task_result;
+      template<typename Archive>
+        void serialize (Archive& ar, unsigned int)
+      {
+        ar & task_result;
+      }
     };
 
     namespace finish_reason
     {
       //! \todo avoid the activity_t hell and only transfer the parts
       //! needed, i.e. output tokens in this case?
-      struct Success { Result result; };
-      struct JobFailure { std::exception_ptr exception; };
-      struct WorkerFailure { std::exception_ptr exception; };
-      struct Cancelled {};
+      struct Success
+      {
+        Result result;
+        template<typename Archive>
+          void serialize (Archive& ar, unsigned int)
+        {
+          ar & result;
+        }
+      };
+      struct JobFailure
+      {
+        std::exception_ptr exception;
+        template<typename Archive>
+          void serialize (Archive& ar, unsigned int)
+        {
+          ar & exception;
+        }
+      };
+      struct WorkerFailure
+      {
+        std::exception_ptr exception;
+        template<typename Archive>
+          void serialize (Archive& ar, unsigned int)
+        {
+          ar & exception;
+        }
+      };
+      struct Cancelled
+      {
+        template<typename Archive>
+          void serialize (Archive&, unsigned int)
+        {}
+      };
     }
 
     //! \todo Is worker failure a finish though?
@@ -242,6 +321,106 @@ namespace gspc
 
         using Client = interface::ResourceManager&;
         struct Server{};
+      }
+    }
+
+    namespace scheduler
+    {
+      namespace worker
+      {
+        //! \todo worker::scheduler::Server::endpoint?
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( submit
+          , void (rpc::endpoint, job::ID, Job)
+          );
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( cancel
+          , void (job::ID)
+          );
+        // status
+
+        struct Client
+        {
+        public:
+          Client (boost::asio::io_service&, rpc::endpoint);
+
+        private:
+          std::unique_ptr<rpc::remote_endpoint> _endpoint;
+
+        public:
+          rpc::sync_remote_function<worker::submit> submit;
+          rpc::sync_remote_function<worker::cancel> cancel;
+        };
+
+        struct Server
+        {
+        private:
+          rpc::service_dispatcher _service_dispatcher;
+          fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
+
+        public:
+          rpc::service_handler<worker::submit> const _submit;
+          rpc::service_handler<worker::cancel> const _cancel;
+
+        private:
+          rpc::service_socket_provider const _service_socket_provider;
+          rpc::service_tcp_provider const _service_tcp_provider;
+          rpc::endpoint const _local_endpoint;
+
+        public:
+          template<typename Submit, typename Cancel>
+            Server (Submit&&, Cancel&&);
+          template<typename That>
+            Server (That*);
+
+          rpc::endpoint local_endpoint() const;
+        };
+      }
+    }
+
+    namespace worker
+    {
+      namespace scheduler
+      {
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( finished
+          , void (job::ID, job::FinishReason)
+          );
+
+        struct Client
+        {
+        public:
+          Client (boost::asio::io_service&, rpc::endpoint);
+
+        private:
+          std::unique_ptr<rpc::remote_endpoint> _endpoint;
+
+        public:
+          rpc::sync_remote_function<scheduler::finished> finished;
+        };
+
+        struct Server
+        {
+        private:
+          rpc::service_dispatcher _service_dispatcher;
+          fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
+
+        public:
+          rpc::service_handler<scheduler::finished> const _finished;
+
+        private:
+          rpc::service_socket_provider const _service_socket_provider;
+          rpc::service_tcp_provider const _service_tcp_provider;
+          rpc::endpoint const _local_endpoint;
+
+        public:
+          template<typename Finished>
+            Server (Finished&&);
+          template<typename That>
+            Server (That*);
+
+          rpc::endpoint local_endpoint() const;
+        };
       }
     }
   }
@@ -287,6 +466,8 @@ namespace gspc
     class Scheduler
     {
     public:
+      template<typename Derived>
+        Scheduler (Derived*);
       virtual ~Scheduler() = default;
 
       // called by user
@@ -301,6 +482,9 @@ namespace gspc
 
       // called by worker
       virtual void finished (job::ID, job::FinishReason) = 0;
+
+    protected:
+      comm::worker::scheduler::Server const _comm_server_for_worker;
     };
 
     class WorkflowEngine
@@ -489,9 +673,14 @@ namespace gspc
           , Forest<resource::ID, ErrorOr<>> (Forest<resource::ID>)
           );
 
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( worker_endpoint_for_scheduler
+          , rpc::endpoint (resource::ID)
+          );
+
         //! \todo syntax goal:
-        //! RPC_CLIENT (Client, add, remove);
-        //! RPC_SERVER (Server, add, remove);
+        //! RPC_CLIENT (Client, add, remove, worker_endpoint_for_scheduler);
+        //! RPC_SERVER (Server, add, remove, worker_endpoint_for_scheduler);
         struct Client
         {
         public:
@@ -503,6 +692,9 @@ namespace gspc
         public:
           rpc::sync_remote_function<remote_interface::add> add;
           rpc::sync_remote_function<remote_interface::remove> remove;
+          rpc::sync_remote_function
+            <remote_interface::worker_endpoint_for_scheduler>
+              worker_endpoint_for_scheduler;
         };
       }
     }
@@ -521,22 +713,6 @@ namespace gspc
         // acquire
         // release
         // interrupt
-      }
-      namespace worker
-      {
-        // submit
-        // cancel
-        // status
-      }
-    }
-    namespace worker
-    {
-      namespace scheduler
-      {
-        // FHG_RPC_FUNCTION_DESCRIPTION
-        //   ( finished
-        //   , void (job::ID, job::FinishReason)
-        //   );
       }
     }
     namespace user
@@ -571,25 +747,19 @@ namespace gspc
     //! \note dtor waits? cancels?
     ~Worker() = default;
 
-    rpc::endpoint const& local_endpoint() const;
+    rpc::endpoint endpoint_for_scheduler() const;
 
     // called by scheduler (via rif)
-    void submit (job::ID, Job);
+    void submit (rpc::endpoint, job::ID, Job);
     void cancel (job::ID);
+
     // called by user via scheduler (via rif)
     // TaskState status (job::ID);
 
   private:
     Resource _resource;
 
-    rpc::service_dispatcher _service_dispatcher;
-    fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
-
-    // rpc::service_handler<worker::protocol::submit> const _submit;
-
-    rpc::service_socket_provider const _service_socket_provider;
-    rpc::service_tcp_provider const _service_tcp_provider;
-    rpc::endpoint const _local_endpoint;
+    comm::scheduler::worker::Server const _comm_server_for_scheduler;
   };
 
   class RemoteInterface
@@ -603,9 +773,7 @@ namespace gspc
     Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
     rpc::endpoint const& local_endpoint() const;
-
-    //! \todo or alternative: be a proxy and forward to worker
-    //    rpc::endpoint const& local_endpoint (resource::ID) const;
+    rpc::endpoint worker_endpoint_for_scheduler (resource::ID) const;
 
   private:
     resource::ID _next_resource_id;
@@ -617,6 +785,7 @@ namespace gspc
 
     rpc::service_handler<comm::runtime_system::remote_interface::add> const _add;
     rpc::service_handler<comm::runtime_system::remote_interface::remove> const _remove;
+    rpc::service_handler<comm::runtime_system::remote_interface::worker_endpoint_for_scheduler> const _worker_endpoint_for_scheduler;
 
     rpc::service_socket_provider const _service_socket_provider;
     rpc::service_tcp_provider const _service_tcp_provider;
@@ -628,7 +797,7 @@ namespace gspc
     {
       WorkerServer (Resource const&);
 
-      rpc::endpoint local_endpoint() const;
+      rpc::endpoint endpoint_for_scheduler() const;
 
     private:
       Worker _worker;
@@ -694,6 +863,8 @@ namespace gspc
         add (UniqueForest<Resource> const&);
       Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
+      rpc::endpoint worker_endpoint_for_scheduler (resource::ID);
+
       Strategy const& strategy() const;
 
     private:
@@ -731,6 +902,8 @@ namespace gspc
     //! \note Assumes that two connected resource IDs have the same
     //! RemoteInterface ID.
     Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
+
+    rpc::endpoint worker_endpoint_for_scheduler (resource::ID) const;
 
   private:
     comm::runtime_system::resource_manager::Client _resource_manager;
@@ -789,7 +962,7 @@ namespace gspc
   private:
     comm::scheduler::workflow_engine::Client _workflow_engine;
     resource_manager::Trivial& _resource_manager;
-    // ScopedRuntimeSystem& _runtime_system;
+    ScopedRuntimeSystem& _runtime_system;
 
     std::atomic<bool> _stopped {false};
 

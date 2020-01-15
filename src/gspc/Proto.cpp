@@ -70,25 +70,109 @@ namespace gspc
     return os << "resource " << r.resource_class;
   }
 
+  namespace comm
+  {
+    namespace scheduler
+    {
+      namespace worker
+      {
+        Client::Client
+            (boost::asio::io_service& io_service, rpc::endpoint endpoint)
+          : _endpoint {rpc::make_endpoint (io_service, std::move (endpoint))}
+          , submit {*_endpoint}
+          , cancel {*_endpoint}
+        {}
+
+        template<typename Submit, typename Cancel>
+            Server::Server (Submit&& submit, Cancel&& cancel)
+          : _service_dispatcher()
+          , _io_service (1)
+          , _submit (_service_dispatcher, std::forward<Submit> (submit))
+          , _cancel (_service_dispatcher, std::forward<Cancel> (cancel))
+          , _service_socket_provider (_io_service, _service_dispatcher)
+          , _service_tcp_provider (_io_service, _service_dispatcher)
+          , _local_endpoint ( fhg::util::connectable_to_address_string
+                                (_service_tcp_provider.local_endpoint())
+                            , _service_socket_provider.local_endpoint()
+                            )
+        {}
+
+        template<typename That>
+          Server::Server (That* that)
+            : Server ( fhg::util::bind_this (that, &That::submit)
+                     , fhg::util::bind_this (that, &That::cancel)
+                     )
+        {}
+
+        rpc::endpoint Server::local_endpoint() const
+        {
+          return _local_endpoint;
+        }
+      }
+    }
+  }
+
+  namespace comm
+  {
+    namespace worker
+    {
+      namespace scheduler
+      {
+        Client::Client
+            (boost::asio::io_service& io_service, rpc::endpoint endpoint)
+          : _endpoint {rpc::make_endpoint (io_service, std::move (endpoint))}
+          , finished {*_endpoint}
+        {}
+
+        template<typename Finished>
+            Server::Server (Finished&& submit)
+          : _service_dispatcher()
+          , _io_service (1)
+          , _finished (_service_dispatcher, std::forward<Finished> (submit))
+          , _service_socket_provider (_io_service, _service_dispatcher)
+          , _service_tcp_provider (_io_service, _service_dispatcher)
+          , _local_endpoint ( fhg::util::connectable_to_address_string
+                                (_service_tcp_provider.local_endpoint())
+                            , _service_socket_provider.local_endpoint()
+                            )
+        {}
+
+        template<typename That>
+          Server::Server (That* that)
+            : Server (fhg::util::bind_this (that, &That::finished))
+        {}
+
+        rpc::endpoint Server::local_endpoint() const
+        {
+          return _local_endpoint;
+        }
+      }
+    }
+  }
+
   Worker::Worker (Resource resource)
     : _resource {std::move (resource)}
-    , _service_dispatcher()
-    , _io_service (1)
-    // , _add ( _service_dispatcher
-    //        , fhg::util::bind_this (this, &Worker::add)
-    //        )
-    , _service_socket_provider (_io_service, _service_dispatcher)
-    , _service_tcp_provider (_io_service, _service_dispatcher)
-    , _local_endpoint ( fhg::util::connectable_to_address_string
-                          (_service_tcp_provider.local_endpoint())
-                      , _service_socket_provider.local_endpoint()
-                      )
+    , _comm_server_for_scheduler (this)
   {}
 
-  rpc::endpoint const& Worker::local_endpoint() const
+  rpc::endpoint Worker::endpoint_for_scheduler() const
   {
-    return _local_endpoint;
+    return _comm_server_for_scheduler.local_endpoint();
   }
+
+  void Worker::submit (rpc::endpoint scheduler, job::ID job_id, Job)
+  {
+    // assert (job.outputs.size() == 0);
+    //! \todo use a fixed io_service
+    fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+    comm::worker::scheduler::Client (io_service, scheduler)
+      .finished (job_id, job::finish_reason::Success ({}));
+  }
+  void Worker::cancel (job::ID)
+  {
+    throw std::runtime_error ("Worker::cancel: NYI");
+  }
+
 
   RemoteInterface::RemoteInterface (remote_interface::ID id)
     : _next_resource_id {id}
@@ -97,6 +181,8 @@ namespace gspc
       //! BEGIN Syntax goal
       //! _comm_server ( fhg::util::bind_this (this, &RemoteInterface::add)
       //!              , fhg::util::bind_this (this, &RemoteInterface::remove)
+      //!              , fhg::util::bind_this
+      //!                  (this, &RemoteInterface::worker_endpoint_for_scheduler)
       //!              )
       //! Even better:
       //! _comm_server (this)
@@ -106,6 +192,11 @@ namespace gspc
     , _remove ( _service_dispatcher
               , fhg::util::bind_this (this, &RemoteInterface::remove)
               )
+    , _worker_endpoint_for_scheduler
+        ( _service_dispatcher
+        , fhg::util::bind_this
+            (this, &RemoteInterface::worker_endpoint_for_scheduler)
+        )
       //! END Syntax goal
     , _service_socket_provider (_io_service, _service_dispatcher)
     , _service_tcp_provider (_io_service, _service_dispatcher)
@@ -120,12 +211,24 @@ namespace gspc
     return _local_endpoint;
   }
 
+  rpc::endpoint RemoteInterface::worker_endpoint_for_scheduler
+    (resource::ID resource_id) const
+  {
+    auto worker (_workers.find (resource_id));
+    if (worker == _workers.end())
+    {
+      throw std::invalid_argument
+        ("worker_endpoint_for_scheduler (unknown resource)");
+    }
+    return worker->second.endpoint_for_scheduler();
+  }
+
   RemoteInterface::WorkerServer::WorkerServer (Resource const& resource)
     : _worker (resource)
   {}
-  rpc::endpoint RemoteInterface::WorkerServer::local_endpoint() const
+  rpc::endpoint RemoteInterface::WorkerServer::endpoint_for_scheduler() const
   {
-    return _worker.local_endpoint();
+    return _worker.endpoint_for_scheduler();
   }
 
   UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
@@ -261,9 +364,10 @@ namespace gspc
       {
         Client::Client
           (boost::asio::io_service& io_service, rpc::endpoint endpoint)
-            : _endpoint {rpc::make_endpoint (io_service, endpoint)}
+            : _endpoint {rpc::make_endpoint (io_service, std::move (endpoint))}
             , add {*_endpoint}
             , remove {*_endpoint}
+            , worker_endpoint_for_scheduler {*_endpoint}
         {}
       }
     }
@@ -311,6 +415,12 @@ namespace gspc
       ConnectionAndPID::remove (Forest<resource::ID> const& resources)
     {
       return _client.remove (resources);
+    }
+
+    rpc::endpoint ConnectionAndPID::worker_endpoint_for_scheduler
+      (resource::ID resource_id)
+    {
+      return _client.worker_endpoint_for_scheduler (resource_id);
     }
   }
 }
@@ -522,6 +632,13 @@ namespace gspc
       );
 
     return results;
+  }
+
+  rpc::endpoint ScopedRuntimeSystem::worker_endpoint_for_scheduler
+    (resource::ID resource_id) const
+  {
+    return remote_interface_by_id (resource_id.remote_interface)
+      ->worker_endpoint_for_scheduler (resource_id);
   }
 
   namespace
@@ -1052,18 +1169,32 @@ namespace gspc
 
 namespace gspc
 {
+  namespace interface
+  {
+    template<typename Derived>
+        Scheduler::Scheduler (Derived* derived)
+      : _comm_server_for_worker (derived)
+    {}
+  }
+}
+
+namespace gspc
+{
   GreedyScheduler::GreedyScheduler
-    ( comm::scheduler::workflow_engine::Client workflow_engine
-    , resource_manager::Trivial& resource_manager
-    , ScopedRuntimeSystem& // runtime_system
-    )
-      : _workflow_engine (workflow_engine)
-      , _resource_manager (resource_manager)
-        //         , _runtime_system (runtime_system)
-      , _thread (fhg::util::bind_this ( this
-                                      , &GreedyScheduler::scheduling_thread
-                                      )
-                )
+      ( comm::scheduler::workflow_engine::Client workflow_engine
+      , resource_manager::Trivial& resource_manager
+      , ScopedRuntimeSystem& runtime_system
+      )
+        //! \todo Is it okay to construct the server before
+        //! constructing the state?!
+    : Scheduler (this)
+    , _workflow_engine (workflow_engine)
+    , _resource_manager (resource_manager)
+    , _runtime_system (runtime_system)
+    , _thread (fhg::util::bind_this ( this
+                                    , &GreedyScheduler::scheduling_thread
+                                    )
+              )
   {}
 
   template<typename Lock, typename Fun, typename... Args>
@@ -1102,8 +1233,34 @@ namespace gspc
                 throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
               }
 
-              //! \todo
-              // _runtime_system.submit (resource_id, task);
+              call_unlocked
+                ( lock
+                , [&]
+                  {
+                    try
+                    {
+                      auto const worker_endpoint
+                        ( _runtime_system.worker_endpoint_for_scheduler
+                            (acquired.requested)
+                        );
+                      //! \todo use a fixed io_service
+                      fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+                      //! \todo
+                      comm::scheduler::worker::Client (io_service, worker_endpoint)
+                        . submit ( _comm_server_for_worker.local_endpoint()
+                                 , job::ID {0, task.id}
+                                 , Job{}
+                                 );
+                    }
+                    catch (...)
+                    {
+                      finished ( {0, task.id}
+                               , job::finish_reason::WorkerFailure
+                                 {std::current_exception()}
+                               );
+                    }
+                  }
+                );
             }
             catch (interface::ResourceManager::Interrupted const&)
             {
@@ -1238,7 +1395,12 @@ namespace gspc
   {
     if (_i < _N)
     {
-      return Task {"core", {*_extracted.emplace (_i++).first}};
+      return Task { "core"
+                  , {*_extracted.emplace (_i++).first}
+                  , {}
+                  , {}
+                  , {}
+                  };
     }
     else
     {
