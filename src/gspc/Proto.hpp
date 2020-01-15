@@ -332,6 +332,19 @@ namespace gspc
     virtual boost::variant<Task, bool> extract() override;
     virtual void inject (task::ID, task::Result) override;
   };
+  class MapWorkflow : public interface::WorkflowEngine
+  {
+  public:
+    MapWorkflow (std::uint64_t);
+
+    virtual boost::variant<Task, bool> extract() override;
+    virtual void inject (task::ID, task::Result) override;
+
+  private:
+    std::uint64_t _N;
+    std::uint64_t _i {0};
+    std::unordered_set<std::uint64_t> _extracted;
+  };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;
   class MapReduceWorkflow;

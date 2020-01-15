@@ -1130,6 +1130,33 @@ namespace gspc
   }
 }
 
+namespace gspc
+{
+  MapWorkflow::MapWorkflow (std::uint64_t N)
+    : _N (N)
+  {}
+
+  boost::variant<Task, bool> MapWorkflow::extract()
+  {
+    if (_i < _N)
+    {
+      return Task {"core", {*_extracted.emplace (_i++).first}};
+    }
+    else
+    {
+      return _extracted.empty();
+    }
+  }
+
+  void MapWorkflow::inject (task::ID id, task::Result)
+  {
+    if (!_extracted.erase (id.id))
+    {
+      throw std::logic_error ("MapWorkflow::inject: Unknown task.");
+    }
+  }
+}
+
 int main()
 try
 {
