@@ -1267,8 +1267,10 @@ try
   //   );
   // FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids3); });
 
-  gspc::PetriNetWorkflow workflow;
-  gspc::PetriNetWorkflowEngine workflow_engine (workflow);
+  // gspc::PetriNetWorkflow workflow;
+  // gspc::PetriNetWorkflowEngine workflow_engine (workflow);
+
+  gspc::MapWorkflowEngine workflow_engine (100);
 
   gspc::GreedyScheduler scheduler
     ( workflow_engine
