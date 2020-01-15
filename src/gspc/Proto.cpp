@@ -222,12 +222,7 @@ namespace gspc
         ) const
       {
         auto const remote_interface
-          (_remote_interfaces_by_hostname->emplace
-             ( std::piecewise_construct
-             , std::forward_as_tuple (hostname)
-             , std::forward_as_tuple (id)
-             )
-          );
+          (_remote_interfaces_by_hostname->emplace (hostname, id));
 
         if (!remote_interface.second)
         {
@@ -359,13 +354,13 @@ namespace gspc
               auto const id (++_next_remote_interface_id);
 
               remote_interface = _remote_interface_by_hostname.emplace
-                ( std::piecewise_construct
-                , std::forward_as_tuple (hostname)
-                , std::forward_as_tuple ( _remote_interface_io_service
-                                        , hostname
-                                        , strategy
-                                        , id
-                                        )
+                ( hostname
+                , std::make_unique<remote_interface::ConnectionAndPID>
+                    ( _remote_interface_io_service
+                    , hostname
+                    , strategy
+                    , id
+                    )
                 ).first;
 
               _hostname_by_remote_interface_id.emplace (id, hostname);
@@ -381,7 +376,7 @@ namespace gspc
             //   }
             // }
 
-            return &remote_interface->second;
+            return remote_interface->second.get();
           }
         );
     }
@@ -389,13 +384,23 @@ namespace gspc
     return remote_interfaces;
   }
 
-  remote_interface::ConnectionAndPID&
+  remote_interface::ConnectionAndPID*
     ScopedRuntimeSystem::remote_interface_by_id
-      (remote_interface::ID remote_interface_id)
+      (remote_interface::ID remote_interface_id) const
+  try
   {
     return _remote_interface_by_hostname
-      .at (_hostname_by_remote_interface_id.at (remote_interface_id))
+      .at (_hostname_by_remote_interface_id.at (remote_interface_id)).get()
       ;
+  }
+  catch (...)
+  {
+    std::throw_with_nested
+      ( std::invalid_argument
+          ( "ScopedRuntimeSystem::remote_interface_by_id: "
+            "Unknown remote_interface_id"
+          )
+      );
   }
 
   std::unordered_map
@@ -499,7 +504,7 @@ namespace gspc
                 try
                 {
                   return remote_interface_by_id (rif_and_to_remove.first)
-                    . remove (rif_and_to_remove.second);
+                    ->remove (rif_and_to_remove.second);
                 }
                 catch (...)
                 {

@@ -744,14 +744,14 @@ namespace gspc
     //! \todo cleanup, e.g. when last resource using them is
     //! removed.
     std::unordered_map< remote_interface::Hostname
-                      , remote_interface::ConnectionAndPID
+                      , std::unique_ptr<remote_interface::ConnectionAndPID>
                       > _remote_interface_by_hostname;
     std::unordered_map< remote_interface::ID
                       , remote_interface::Hostname
                       > _hostname_by_remote_interface_id;
 
-    remote_interface::ConnectionAndPID&
-      remote_interface_by_id (remote_interface::ID);
+    remote_interface::ConnectionAndPID*
+      remote_interface_by_id (remote_interface::ID) const;
 
     std::unordered_map
       < remote_interface::Hostname
