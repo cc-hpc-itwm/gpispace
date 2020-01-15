@@ -128,39 +128,44 @@ namespace gspc
     return _worker.local_endpoint();
   }
 
-  Forest<Resource, ErrorOr<resource::ID>>
-    RemoteInterface::add (Forest<Resource> const& resources)
+  UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
+    RemoteInterface::add (UniqueForest<Resource> const& resources)
   {
-    using ResultNode = forest::Node<Resource, ErrorOr<resource::ID>>;
+    using ResultNode
+      = unique_forest::Node<std::tuple<Resource, ErrorOr<resource::ID>>>;
 
     return resources.upward_combine_transform
-      ( [&] ( forest::Node<Resource> const& resource
+      ( [&] ( unique_forest::Node<Resource> const& resource
             , std::list<ResultNode const*> const& children
             ) -> ResultNode
         {
-          if (std::any_of ( children.cbegin()
-                          , children.cend()
-                          , [] (auto const& child)
-                            {
-                              return !child->second;
-                            }
-                          )
-             )
-          {
-            throw std::runtime_error
-              (str ( boost::format ("Skip start of '%1%': Child failure.")
-                   % resource.first
-                   )
-              );
-          }
-
           return
             { resource.first
-            , _workers.emplace
-              ( std::piecewise_construct
-              , std::forward_as_tuple (++_next_resource_id)
-              , std::forward_as_tuple (resource.first)
-              ).first->first
+            , std::tuple<Resource, ErrorOr<resource::ID>>
+              ( resource.second
+              , [&]
+                {
+                  if (std::any_of ( children.cbegin()
+                                  , children.cend()
+                                  , [] (auto const& child)
+                                    {
+                                      return !std::get<1> (child->second);
+                                    }
+                                  )
+                     )
+                  {
+                    throw std::runtime_error
+                      (str ( boost::format ("Skip start of '%1%': Child failure.")
+                           % resource.second
+                           )
+                      );
+                  }
+
+                  return _workers.emplace ( ++_next_resource_id
+                                          , resource.second
+                                          ).first->first;
+                }
+              )
             };
         }
       );
@@ -295,8 +300,8 @@ namespace gspc
         );
     }
 
-    Forest<Resource, ErrorOr<resource::ID>>
-      ConnectionAndPID::add (Forest<Resource> const& resources)
+    UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
+      ConnectionAndPID::add (UniqueForest<Resource> const& resources)
     {
       return _client.add (resources).get();
     }
@@ -389,12 +394,12 @@ namespace gspc
 
   std::unordered_map
     < remote_interface::Hostname
-    , ErrorOr<Forest<Resource, ErrorOr<resource::ID>>>
+    , ErrorOr<UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>>
     >
     ScopedRuntimeSystem::add
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
-      , Forest<Resource> const& resources
+      , UniqueForest<Resource> const& resources
       ) noexcept
   {
     return remote_interfaces (std::move (hostnames), std::move (strategy))
@@ -420,21 +425,25 @@ namespace gspc
            return connection->add (resources);
          }
       >> [&] ( remote_interface::Hostname const&
-             , Forest<Resource, ErrorOr<resource::ID>> result
+             , UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>> result
              )
          {
-           using Node = forest::Node<Resource, ErrorOr<resource::ID>>;
+           using Node
+             = unique_forest::Node<std::tuple<Resource, ErrorOr<resource::ID>>>;
 
            //! split (result).first.unordered_transform () -> Resources::Node
            _resource_manager.add
-             ( Forest<Resource, ErrorOr<resource::ID>> (result)
+             ( UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
+                 (result)
              . remove_root_if
-                 ([] (Node const& node) { return !node.second; })
+                 ([] (Node const& node) { return !std::get<1> (node.second); })
              . unordered_transform
                  ( [] (Node const& node)
                    {
                      return interface::ResourceManager::Resources::Node
-                       (node.second.value(), node.first.resource_class);
+                       ( std::get<1> (node.second).value()
+                       , std::get<0> (node.second).resource_class
+                       );
                    }
                  )
              );
@@ -443,7 +452,7 @@ namespace gspc
          };
       //! \todo
       //      |= [&] ( remote_interface::Hostname const& // hostname
-      //             , MaybeError<Forest<Resource, ErrorOr<resource::ID>>> // result
+      //             , MaybeError<UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>> // result
       //             )
       //         {
       //           // teardown rif if empty
@@ -565,7 +574,7 @@ namespace gspc
     ScopedRuntimeSystem::add_or_throw
       ( std::unordered_set<remote_interface::Hostname> hostnames
       , remote_interface::Strategy strategy
-      , Forest<Resource> const& resources
+      , UniqueForest<Resource> const& resources
       )
   {
     std::vector<std::exception_ptr> failures;
@@ -588,33 +597,35 @@ namespace gspc
         successes.UNSAFE_merge
           ( host_result.second.value()
           . unordered_transform
-              ( [&] (forest::Node<Resource, ErrorOr<resource::ID>> const& node)
+              ( [&] (unique_forest::Node<std::tuple<Resource, ErrorOr<resource::ID>>> const& node)
                 {
-                  if (!node.second)
+                  if (!std::get<1> (node.second))
                   {
                     failures.emplace_back
                       ( nest_with_runtime_error
-                          ( node.second.error()
+                          ( std::get<1> (node.second).error()
                           , "failure on " + host_result.first
                           + " for resource "
-                          + boost::lexical_cast<std::string> (node.first)
+                          + boost::lexical_cast<std::string>
+                              (std::get<0> (node.second))
                           )
                       );
                   }
 
-                  return forest::Node<ErrorOr<resource::ID>> (node.second, {});
+                  return unique_forest::Node<ErrorOr<resource::ID>>
+                    (node.first, std::get<1> (node.second));
                 }
               )
           . remove_root_if
-              ( [] (forest::Node<ErrorOr<resource::ID>> const& node)
+              ( [] (unique_forest::Node<ErrorOr<resource::ID>> const& node)
                 {
-                  return !node.first;
+                  return !node.second;
                 }
               )
           . unordered_transform
-              ( [] (forest::Node<ErrorOr<resource::ID>> const& node)
+              ( [] (unique_forest::Node<ErrorOr<resource::ID>> const& node)
                 {
-                  return forest::Node<resource::ID> (node.first.value(), {});
+                  return forest::Node<resource::ID> (node.second.value(), {});
                 }
               )
           );
@@ -1213,39 +1224,29 @@ try
   gspc::remote_interface::strategy::Thread::State strategy_state;
   gspc::remote_interface::strategy::Thread thread_strategy {&strategy_state};
 
-  //! \todo broken: Resource versus ResourceDescription
-  gspc::Forest<gspc::Resource> node;
+  gspc::UniqueForest<gspc::Resource> host_topology;
   // n -> s0 -> c0 <- gpu --|
   //         -> c1 <- gpu ---> gpu_exclusive
   //   -> s1 -> c2 <- gpu --|
   //         -> c3 <- gpu -|
-  // gspc::Resource c0 {"core", 0};
-  // gspc::Resource c1 {"core", 1};
-  // gspc::Resource c2 {"core", 2};
-  // gspc::Resource c3 {"core", 3};
-  // gspc::Resource s0 {"socket", 0};
-  // gspc::Resource s1 {"socket", 1};
-  // gspc::Resource n {"node", 0};
-  // gspc::Resource gpu_exclusive {"gpu_exclusive", 0};
-  // gspc::Resource gpu {"gpu", 0};
-  // node.insert (c0, {}, {});
-  // node.insert (c1, {}, {});
-  // node.insert (c2, {}, {});
-  // node.insert (c3, {}, {});
-  // node.insert (s0, {}, {c0, c1});
-  // node.insert (s1, {}, {c2, c3});
-  // node.insert (n, {}, {s0, s1});
-  // node.insert (gpu_exclusive, {}, {});
-  // node.insert (gpu, {}, {c0, gpu_exclusive});
-  // node.insert (gpu, {}, {c1, gpu_exclusive});
-  // node.insert (gpu, {}, {c2, gpu_exclusive});
-  // node.insert (gpu, {}, {c3, gpu_exclusive});
+  auto const c0 (host_topology.insert ({"core"}, {}));
+  auto const c1 (host_topology.insert ({"core"}, {}));
+  auto const c2 (host_topology.insert ({"core"}, {}));
+  auto const c3 (host_topology.insert ({"core"}, {}));
+  auto const s0 (host_topology.insert ({"socket"}, {c0, c1}));
+  auto const s1 (host_topology.insert ({"socket"}, {c2, c3}));
+  host_topology.insert ({"node"}, {s0, s1});
+  auto const gpu_exclusive (host_topology.insert ({"gpu_exclusive"}, {}));
+  host_topology.insert ({"gpu"}, {c0, gpu_exclusive});
+  host_topology.insert ({"gpu"}, {c1, gpu_exclusive});
+  host_topology.insert ({"gpu"}, {c2, gpu_exclusive});
+  host_topology.insert ({"gpu"}, {c3, gpu_exclusive});
 
   auto const resource_ids1
     ( runtime_system.add_or_throw
       ( {"hostname1", "hostname2"}
       , thread_strategy
-      , node
+      , host_topology
       )
     );
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids1); });
@@ -1254,7 +1255,7 @@ try
     ( runtime_system.add_or_throw
       ( {"hostname3", "hostname4"}
       , thread_strategy
-      , node
+      , host_topology
       )
     );
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });

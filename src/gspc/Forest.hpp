@@ -153,7 +153,7 @@ namespace gspc
             >
       void for_each_leaf (Callback&&) const;
 
-  private:
+  protected:
     Relation _suc;
     Relation _pre;
     Annotations _annotations;
@@ -174,6 +174,37 @@ namespace gspc
     friend boost::serialization::access;
     template<typename Archive>
       void serialize (Archive&, unsigned int);
+  };
+
+  namespace unique_forest
+  {
+    template<typename A, typename T = std::uint64_t>
+      using Node = forest::Node<T, A>;
+  }
+
+
+  template<typename A, typename T = std::uint64_t>
+    class UniqueForest : private Forest<T, A>
+  {
+  public:
+    using Forest<T, A>::Forest;
+
+    UniqueForest (Forest<T, A>);
+
+    T insert (A, typename Forest<T, A>::Children const&);
+
+    //! \todo: free client from key management (e.g. resource.first)
+    using Forest<T, A>::upward_combine_transform;
+    using Forest<T, A>::remove_root_if;
+    using Forest<T, A>::unordered_transform;
+
+    template<typename Archive>
+      void serialize (Archive&, unsigned int);
+
+  private:
+    static_assert (std::is_integral<T>{}, "UniqueForest: Key not integral.");
+
+    T _next_key {0};
   };
 }
 

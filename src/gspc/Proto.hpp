@@ -485,7 +485,8 @@ namespace gspc
       {
         FHG_RPC_FUNCTION_DESCRIPTION
           ( add
-          , Forest<Resource, ErrorOr<resource::ID>> (Forest<Resource>)
+          , UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
+              (UniqueForest<Resource>)
           );
 
         FHG_RPC_FUNCTION_DESCRIPTION
@@ -601,8 +602,8 @@ namespace gspc
   public:
     RemoteInterface (remote_interface::ID);
 
-    Forest<Resource, ErrorOr<resource::ID>>
-      add (Forest<Resource> const&);
+    UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
+      add (UniqueForest<Resource> const&);
 
     //! \todo is unordered_set<resource::ID> enough? instead of
     //! Forest<resource::id>? because ther traversal is unordered
@@ -697,8 +698,8 @@ namespace gspc
       ConnectionAndPID& operator= (ConnectionAndPID const&) = delete;
       ConnectionAndPID& operator= (ConnectionAndPID&&) = delete;
 
-      Forest<Resource, ErrorOr<resource::ID>>
-        add (Forest<Resource> const&);
+      UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
+        add (UniqueForest<Resource> const&);
       Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
 
       Strategy const& strategy() const;
@@ -722,17 +723,17 @@ namespace gspc
 
     std::unordered_map
       < remote_interface::Hostname
-      , ErrorOr<Forest<Resource, ErrorOr<resource::ID>>>
+      , ErrorOr<UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>>
       >
       add ( std::unordered_set<remote_interface::Hostname>
           , remote_interface::Strategy
-          , Forest<Resource> const&
+          , UniqueForest<Resource> const&
           ) noexcept;
 
     Forest<resource::ID>
       add_or_throw  ( std::unordered_set<remote_interface::Hostname> hostnames
                     , remote_interface::Strategy strategy
-                    , Forest<Resource> const& resources
+                    , UniqueForest<Resource> const& resources
                     );
 
     //! \todo is Forest<resource::ID> required? Or would unordered_set

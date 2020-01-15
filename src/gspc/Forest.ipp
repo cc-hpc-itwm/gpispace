@@ -638,4 +638,43 @@ namespace gspc
     ar & _pre;
     ar & _annotations;
   }
+
+  template<typename A, typename T>
+    UniqueForest<A, T>::UniqueForest (Forest<T, A> forest)
+      : Forest<T, A> (std::move (forest))
+      , _next_key
+        ( [&]
+          {
+            return this->_annotations.empty()
+              ? 0
+              : 1 + std::max_element ( this->_annotations.begin()
+                                     , this->_annotations.end()
+                                     , [&] (auto const& lhs, auto const& rhs)
+                                       {
+                                         return lhs.first < rhs.first;
+                                       }
+                                     )->first
+              ;
+          }()
+        )
+  {}
+
+  template<typename A, typename T>
+    T UniqueForest<A, T>::insert
+      ( A value
+      , typename Forest<T, A>::Children const& children
+      )
+  {
+    return Forest<T, A>::insert
+      (_next_key++, std::move (value), std::move (children)).first;
+  }
+
+  template<typename A, typename T>
+    template<typename Archive>
+      void UniqueForest<A, T>::serialize
+        (Archive& ar, unsigned int /* version */)
+  {
+    ar & static_cast<Forest<T, A>&> (*this);
+    ar & _next_key;
+  }
 }
