@@ -1045,6 +1045,7 @@ namespace gspc
             {
               std::unique_lock<std::mutex> lock (_guard_state);
 
+              //! \note: broken, race -> sticky _injected is required
               auto const size (_tasks.size());
 
               _task_removed_or_stopped
