@@ -1055,8 +1055,19 @@ namespace gspc
                 )
   {}
 
+  template<typename Lock, typename Fun, typename... Args>
+    auto call_unlocked (Lock& lock, Fun&& fun, Args&&... args)
+      -> decltype (std::forward<Fun> (fun) (std::forward<Args> (args)...))
+  {
+    FHG_UTIL_FINALLY ([&] { lock.lock(); });
+    lock.unlock();
+    return std::forward<Fun> (fun) (std::forward<Args> (args)...);
+  }
+
   void GreedyScheduler::scheduling_thread()
   {
+    std::unique_lock<std::mutex> lock (_guard_state);
+
     while (!_stopped)
     {
       fhg::util::visit<void>
@@ -1066,9 +1077,14 @@ namespace gspc
             try
             {
               auto const acquired
-                (_resource_manager.acquire (task.resource_class));
-
-              std::unique_lock<std::mutex> lock (_guard_state);
+                ( call_unlocked
+                    ( lock
+                    , [&]
+                      {
+                        return _resource_manager.acquire (task.resource_class);
+                      }
+                    )
+                );
 
               if (!_tasks.emplace (task.id, acquired.requested).second)
               {
@@ -1085,8 +1101,6 @@ namespace gspc
           }
         , [&] (bool has_finished)
           {
-            std::unique_lock<std::mutex> lock (_guard_state);
-
             if (!has_finished && !_tasks.empty())
             {
               _injected_or_stopped
@@ -1123,8 +1137,6 @@ namespace gspc
           }
         );
     }
-
-    std::unique_lock<std::mutex> lock (_guard_state);
 
     //! \todo
     // for (auto const& task : _tasks)
