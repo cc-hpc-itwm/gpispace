@@ -1255,10 +1255,11 @@ try
 {
   gspc::resource_manager::Trivial resource_manager;
 
-  gspc::ScopedRuntimeSystem runtime_system (resource_manager);
-
+  //! \note strategy must be alive when runtime system is shut down
   gspc::remote_interface::strategy::Thread::State strategy_state;
   gspc::remote_interface::strategy::Thread thread_strategy {&strategy_state};
+
+  gspc::ScopedRuntimeSystem runtime_system (resource_manager);
 
   gspc::UniqueForest<gspc::Resource> host_topology;
   // n -> s0 -> c0 <- gpu --|
