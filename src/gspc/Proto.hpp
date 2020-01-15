@@ -332,10 +332,10 @@ namespace gspc
     virtual boost::variant<Task, bool> extract() override;
     virtual void inject (task::ID, task::Result) override;
   };
-  class MapWorkflow : public interface::WorkflowEngine
+  class MapWorkflowEngine : public interface::WorkflowEngine
   {
   public:
-    MapWorkflow (std::uint64_t);
+    MapWorkflowEngine (std::uint64_t);
 
     virtual boost::variant<Task, bool> extract() override;
     virtual void inject (task::ID, task::Result) override;

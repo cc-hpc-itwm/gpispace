@@ -1174,11 +1174,11 @@ namespace gspc
 
 namespace gspc
 {
-  MapWorkflow::MapWorkflow (std::uint64_t N)
+  MapWorkflowEngine::MapWorkflowEngine (std::uint64_t N)
     : _N (N)
   {}
 
-  boost::variant<Task, bool> MapWorkflow::extract()
+  boost::variant<Task, bool> MapWorkflowEngine::extract()
   {
     if (_i < _N)
     {
@@ -1190,11 +1190,11 @@ namespace gspc
     }
   }
 
-  void MapWorkflow::inject (task::ID id, task::Result)
+  void MapWorkflowEngine::inject (task::ID id, task::Result)
   {
     if (!_extracted.erase (id.id))
     {
-      throw std::logic_error ("MapWorkflow::inject: Unknown task.");
+      throw std::logic_error ("MapWorkflowEngine::inject: Unknown task.");
     }
   }
 }
