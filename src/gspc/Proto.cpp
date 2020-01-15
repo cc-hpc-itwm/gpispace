@@ -179,17 +179,23 @@ namespace gspc
     return resources.unordered_transform
       ( [&] (forest::Node<resource::ID> const& id) -> ResultNode
         {
-          if (!_workers.erase (id.first))
-          {
-            throw std::invalid_argument
-              (str ( boost::format
-                       ("RemoteInterface::remove: Unknown worker '%1%'.")
-                   % id.first
-                   )
-              );
-          }
+          return
+            { id.first
+            , [&] () -> boost::blank
+              {
+                if (!_workers.erase (id.first))
+                {
+                  throw std::invalid_argument
+                    (str ( boost::format
+                         ("RemoteInterface::remove: Unknown worker '%1%'.")
+                         % id.first
+                         )
+                    );
+                }
 
-          return {id.first, {}};
+                return {};
+              }
+            };
         }
       );
   }
