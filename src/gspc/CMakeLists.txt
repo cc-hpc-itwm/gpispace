@@ -16,23 +16,6 @@ install (FILES
   DESTINATION include/gspc/stencil_cache/
 )
 
-extended_add_library (NAME gspc19
-  SOURCES "ExecutionEnvironment.cpp"
-          "ResourceManager.cpp"
-          "Resource.cpp"
-          "RemoteInterface.cpp"
-          "Scheduler.cpp"
-          "Workflow.cpp"
-  LIBRARIES Util::Generic
-            Boost::base
-)
-
-extended_add_executable (NAME GSPC19
-  SOURCES "GSPC19.cpp"
-  LIBRARIES gspc19
-            Util::Generic
-)
-
 extended_add_library (NAME util
   NAMESPACE GSPC
   # SOURCES "gspc/util/Forest.ipp"
