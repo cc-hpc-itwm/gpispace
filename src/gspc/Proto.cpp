@@ -163,9 +163,7 @@ namespace gspc
   void Worker::submit (rpc::endpoint scheduler, job::ID job_id, Job)
   {
     // assert (job.outputs.size() == 0);
-    //! \todo use a fixed io_service
-    fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
-    comm::worker::scheduler::Client (io_service, scheduler)
+    comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
       .finished (job_id, job::finish_reason::Success ({}));
   }
   void Worker::cancel (job::ID)
@@ -1243,10 +1241,10 @@ namespace gspc
                         ( _runtime_system.worker_endpoint_for_scheduler
                             (acquired.requested)
                         );
-                      //! \todo use a fixed io_service
-                      fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
                       //! \todo
-                      comm::scheduler::worker::Client (io_service, worker_endpoint)
+                      comm::scheduler::worker::Client ( _io_service_for_workers
+                                                      , worker_endpoint
+                                                      )
                         . submit ( _comm_server_for_worker.local_endpoint()
                                  , job::ID {0, task.id}
                                  , Job{}

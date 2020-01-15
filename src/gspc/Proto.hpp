@@ -484,6 +484,8 @@ namespace gspc
       virtual void finished (job::ID, job::FinishReason) = 0;
 
     protected:
+      fhg::util::scoped_boost_asio_io_service_with_threads
+        _io_service_for_workers {1};
       comm::worker::scheduler::Server const _comm_server_for_worker;
     };
 
@@ -759,6 +761,8 @@ namespace gspc
   private:
     Resource _resource;
 
+    fhg::util::scoped_boost_asio_io_service_with_threads
+      _io_service_for_scheduler {1};
     comm::scheduler::worker::Server const _comm_server_for_scheduler;
   };
 
