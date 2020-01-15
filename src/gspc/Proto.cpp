@@ -1170,11 +1170,35 @@ try
   gspc::remote_interface::strategy::Thread::State strategy_state;
   gspc::remote_interface::strategy::Thread thread_strategy {&strategy_state};
 
+  //! \todo broken: Resource versus ResourceDescription
+  gspc::Forest<gspc::Resource> node;
+  // gspc::Resource c0 {"core", 0};
+  // gspc::Resource c1 {"core", 1};
+  // gspc::Resource c2 {"core", 2};
+  // gspc::Resource c3 {"core", 3};
+  // gspc::Resource s0 {"socket", 0};
+  // gspc::Resource s1 {"socket", 1};
+  // gspc::Resource n {"node", 0};
+  // gspc::Resource gpu_exclusive {"gpu_exclusive", 0};
+  // gspc::Resource gpu {"gpu", 0};
+  // node.insert (c0, {}, {});
+  // node.insert (c1, {}, {});
+  // node.insert (c2, {}, {});
+  // node.insert (c3, {}, {});
+  // node.insert (s0, {}, {c0, c1});
+  // node.insert (s1, {}, {c2, c3});
+  // node.insert (n, {}, {s0, s1});
+  // node.insert (gpu_exclusive, {}, {});
+  // node.insert (gpu, {}, {c0, gpu_exclusive});
+  // node.insert (gpu, {}, {c1, gpu_exclusive});
+  // node.insert (gpu, {}, {c2, gpu_exclusive});
+  // node.insert (gpu, {}, {c3, gpu_exclusive});
+
   auto const resource_ids1
     ( runtime_system.add_or_throw
       ( {"hostname1", "hostname2"}
       , thread_strategy
-      , gspc::Forest<gspc::Resource> {}
+      , node
       )
     );
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids1); });
@@ -1183,7 +1207,7 @@ try
     ( runtime_system.add_or_throw
       ( {"hostname3", "hostname4"}
       , thread_strategy
-      , gspc::Forest<gspc::Resource> {}
+      , node
       )
     );
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });
