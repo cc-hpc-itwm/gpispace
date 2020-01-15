@@ -1215,6 +1215,10 @@ try
 
   //! \todo broken: Resource versus ResourceDescription
   gspc::Forest<gspc::Resource> node;
+  // n -> s0 -> c0 <- gpu --|
+  //         -> c1 <- gpu ---> gpu_exclusive
+  //   -> s1 -> c2 <- gpu --|
+  //         -> c3 <- gpu -|
   // gspc::Resource c0 {"core", 0};
   // gspc::Resource c1 {"core", 1};
   // gspc::Resource c2 {"core", 2};
