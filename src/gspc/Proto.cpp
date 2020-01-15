@@ -1085,31 +1085,44 @@ namespace gspc
           }
         , [&] (bool has_finished)
           {
-            if (has_finished)
-            {
-              if (!_tasks.empty())
-              {
-                throw std::logic_error
-                  ("INCONSISTENCY: finished while tasks are running.");
-              }
+            std::unique_lock<std::mutex> lock (_guard_state);
 
+            if (!has_finished && !_tasks.empty())
+            {
+              _injected_or_stopped
+                .wait (lock, [&] { return _injected || !!_stopped; });
+
+              if (_injected)
+              {
+                _injected = false;
+              }
+            }
+            else if (!has_finished && _tasks.empty())
+            {
+              // \todo wait for external event (put_token), go again
+              // into extract if not stopped
+              _injected_or_stopped
+                .wait ( lock
+                      , [&] { return /* _put_token || */ !!_stopped; }
+                      );
+
+              // if (_put_token)
+              // {
+              //   _put_token = false;
+              // }
+            }
+            else if (has_finished && _tasks.empty())
+            {
               _stopped = true;
             }
-            else
+            else // if (has_finished && !_tasks.empty())
             {
-              std::unique_lock<std::mutex> lock (_guard_state);
-
-              //! \note: broken, race -> sticky _injected is required
-              auto const size (_tasks.size());
-
-              _task_removed_or_stopped
-                .wait ( lock
-                      , [&] { return _tasks.size() != size || _stopped; }
-                      );
+              throw std::logic_error
+                ("INCONSISTENCY: finished while tasks are running.");
             }
           }
         );
-      }
+    }
 
     std::unique_lock<std::mutex> lock (_guard_state);
 
@@ -1119,7 +1132,7 @@ namespace gspc
     //   _runtime_system.cancel (task);
     // }
 
-    _task_removed_or_stopped.wait (lock, [&] { return _tasks.empty(); });
+    _injected_or_stopped.wait (lock, [&] { return _tasks.empty(); });
   }
 
   void GreedyScheduler::finished
@@ -1127,20 +1140,15 @@ namespace gspc
   {
     auto const task_id (job_id.task_id);
 
-    FHG_UTIL_FINALLY
+    std::lock_guard<std::mutex> const lock (_guard_state);
+
+    auto remove_task
       ( [&]
         {
+          if (!_tasks.erase (task_id))
           {
-            std::lock_guard<std::mutex> const lock (_guard_state);
-
-            if (!_tasks.erase (task_id))
-            {
-              throw std::logic_error
-                ("INCONSISTENCY: finished unknown tasks");
-            }
+            throw std::logic_error ("INCONSISTENCY: finished unknown tasks");
           }
-
-          _task_removed_or_stopped.notify_one();
         }
       );
 
@@ -1148,23 +1156,30 @@ namespace gspc
       ( finish_reason
       , [&] (job::finish_reason::Success const& success)
         {
-          std::lock_guard<std::mutex> const lock (_guard_state);
-
           _workflow_engine.inject (task_id, success.result.task_result);
+
+          remove_task();
+
+          _injected = true;
+
+          _injected_or_stopped.notify_one();
         }
       , [&] (job::finish_reason::JobFailure const&)
         {
+          remove_task();
+
           stop();
         }
       , [] (job::finish_reason::WorkerFailure const&)
         {
-          //! \todo re-schedule?
+          //! \todo re-schedule? Beware: May be _stopped already!
           throw std::logic_error ("NYI: finished (WorkerFailure)");
         }
-      , [] (job::finish_reason::Cancelled const&)
+      , [&] (job::finish_reason::Cancelled const&)
         {
           //! \todo sanity!?
           //! do nothing, just remove task
+          remove_task();
         }
       );
   }
@@ -1183,7 +1198,7 @@ namespace gspc
 
     _resource_manager.interrupt();
 
-    _task_removed_or_stopped.notify_one();
+    _injected_or_stopped.notify_one();
   }
 }
 
