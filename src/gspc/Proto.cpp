@@ -1021,6 +1021,7 @@ namespace gspc
                 throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
               }
 
+              //! \todo
               // _runtime_system.submit (resource_id, task);
             }
             catch (interface::ResourceManager::Interrupted const&)
@@ -1057,6 +1058,7 @@ namespace gspc
 
     std::unique_lock<std::mutex> lock (_guard_state);
 
+    //! \todo
     // for (auto const& task : _tasks)
     // {
     //   // _runtime_system.cancel (task);
@@ -1071,44 +1073,44 @@ namespace gspc
     auto const task_id (job_id.task_id);
 
     FHG_UTIL_FINALLY
-      (  [&]
-      {
+      ( [&]
         {
-          std::lock_guard<std::mutex> const lock (_guard_state);
-
-          if (!_tasks.erase (task_id))
           {
-            throw std::logic_error
-              ("INCONSISTENCY: finished unknown tasks");
-          }
-        }
+            std::lock_guard<std::mutex> const lock (_guard_state);
 
-        _task_removed_or_stopped.notify_one();
-      }
+            if (!_tasks.erase (task_id))
+            {
+              throw std::logic_error
+                ("INCONSISTENCY: finished unknown tasks");
+            }
+          }
+
+          _task_removed_or_stopped.notify_one();
+        }
       );
 
     fhg::util::visit<void>
       ( finish_reason
       , [&] (job::finish_reason::Success const& success)
-      {
-        std::lock_guard<std::mutex> const lock (_guard_state);
+        {
+          std::lock_guard<std::mutex> const lock (_guard_state);
 
-        _workflow_engine.inject (task_id, success.result.task_result);
-      }
+          _workflow_engine.inject (task_id, success.result.task_result);
+        }
       , [&] (job::finish_reason::JobFailure const&)
-      {
-        stop();
-      }
+        {
+          stop();
+        }
       , [] (job::finish_reason::WorkerFailure const&)
-      {
-        //! \todo re-schedule?
-        throw std::logic_error ("NYI: finished (WorkerFailure)");
-      }
+        {
+          //! \todo re-schedule?
+          throw std::logic_error ("NYI: finished (WorkerFailure)");
+        }
       , [] (job::finish_reason::Cancelled const&)
-      {
-        //! \todo sanity!?
-        //! do nothing, just remove task
-      }
+        {
+          //! \todo sanity!?
+          //! do nothing, just remove task
+        }
       );
   }
 
