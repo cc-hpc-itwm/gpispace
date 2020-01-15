@@ -1415,7 +1415,7 @@ namespace gspc
   }
 }
 
-int main()
+int main (int, char** argv)
 try
 {
   gspc::resource_manager::Trivial resource_manager;
@@ -1477,7 +1477,7 @@ try
   // gspc::PetriNetWorkflow workflow;
   // gspc::PetriNetWorkflowEngine workflow_engine (workflow);
 
-  gspc::MapWorkflowEngine workflow_engine (100);
+  gspc::MapWorkflowEngine workflow_engine (std::stoul (argv[1]));
 
   gspc::GreedyScheduler scheduler
     ( workflow_engine
