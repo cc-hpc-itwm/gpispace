@@ -5,6 +5,12 @@
 
 #include <boost/lexical_cast.hpp>
 
+#include <boost/archive/binary_iarchive.hpp>
+#include <boost/archive/binary_oarchive.hpp>
+#include <boost/iostreams/device/array.hpp>
+#include <boost/iostreams/device/back_inserter.hpp>
+#include <boost/iostreams/filtering_stream.hpp>
+
 #include <exception>
 #include <vector>
 
@@ -1454,39 +1460,81 @@ namespace gspc
 namespace gspc
 {
   MapWorkflowEngine::MapWorkflowEngine (std::uint64_t N)
-    : _N (N)
-  {}
+  {
+    _workflow_state.N = N;
+  }
+
+  bool MapWorkflowEngine::workflow_finished() const
+  {
+    return !(_workflow_state.i < _workflow_state.N);
+  }
+
+  interface::WorkflowEngineState MapWorkflowEngine::state() const
+  {
+    std::vector<char> data;
+    {
+      boost::iostreams::filtering_ostream zos
+        (boost::iostreams::back_inserter (data));
+      boost::archive::binary_oarchive oa (zos);
+
+      oa & _workflow_state;
+    }
+
+    return {std::move (data), _processing_state, workflow_finished()};
+  }
+
+  MapWorkflowEngine::MapWorkflowEngine (interface::WorkflowEngineState state)
+    : _processing_state (state.processing_state)
+  {
+    //! \todo see aloma::core::data::serialization
+    auto const& data (state.engine_specific);
+
+    boost::iostreams::filtering_istream zis
+      (boost::iostreams::array_source (data.data(), data.size()));
+    boost::archive::binary_iarchive ia (zis);
+
+    ia & _workflow_state;
+
+    if (state.workflow_finished != workflow_finished())
+    {
+      throw std::logic_error ("INCONSISTENCY: finished or not!?");
+    }
+  }
 
   boost::variant<Task, bool> MapWorkflowEngine::extract()
   {
-    if (_i++ < _N)
+    if (workflow_finished())
     {
-      auto const& task_id {*_extracted.emplace (++_next_task_id).first};
-
-      std::unordered_map<std::string, value_type> const inputs
-        {{"input", _i}, {"output", _N - _i}, {"N", _N}};
-
-      return _tasks.emplace
-        ( task_id
-        , Task {"core", task_id, inputs, "map_so", "identity"}
-        ).first->second;
+      return _processing_state.extracted.empty();
     }
-    else
-    {
-      return _extracted.empty();
-    }
+
+    ++_workflow_state.i;
+
+    auto const task_id
+      {*_processing_state.extracted.emplace (++_processing_state.next_task_id).first};
+
+    std::unordered_map<std::string, value_type> const inputs
+      { {"input", _workflow_state.i}
+      , {"output", _workflow_state.N - _workflow_state.i}
+      , {"N", _workflow_state.N}
+      };
+
+    return _processing_state.tasks.emplace
+      ( task_id
+      , Task {"core", task_id, inputs, "map_so", "identity"}
+      ).first->second;
   }
 
   void MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)
   {
-    if (!_extracted.erase (id))
+    if (!_processing_state.extracted.erase (id))
     {
       throw std::invalid_argument ("MapWorkflowEngine::inject: Unknown task.");
     }
 
-    auto task (_tasks.find (id));
+    auto task (_processing_state.tasks.find (id));
 
-    if (task == _tasks.end())
+    if (task == _processing_state.tasks.end())
     {
       throw std::logic_error
         ("MapWorkflowEngine::inject: INCONSISTENCY: Tasks data missing");
@@ -1508,7 +1556,7 @@ namespace gspc
           }
           catch (...)
           {
-            _failed_to_post_process.emplace
+            _processing_state.failed_to_post_process.emplace
               (id, std::make_pair (result, std::current_exception()));
 
             return false;
@@ -1518,11 +1566,11 @@ namespace gspc
 
     if (!result)
     {
-      _failed_to_execute.emplace (id, result.error());
+      _processing_state.failed_to_execute.emplace (id, result.error());
     }
     else if (result_successfully_post_processed (result.value()))
     {
-      _tasks.erase (task);
+      _processing_state.tasks.erase (task);
     }
   }
 }
