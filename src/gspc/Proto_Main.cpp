@@ -77,6 +77,23 @@ try
 
   scheduler.wait();
 
+  auto const workflow_engine_state (workflow_engine.state());
+
+  std::cout << "workflow_finished: "
+            << std::boolalpha << workflow_engine_state.workflow_finished
+            << "\n"
+    ;
+
+  auto const& pstate (workflow_engine_state.processing_state);
+
+  std::cout << "pstate:\n"
+            << "next_task_id: " << pstate.next_task_id << "\n"
+            << "tasks: " << pstate.tasks.size() << "\n"
+            << "extracted: " << pstate.extracted.size() << "\n"
+            << "failed_to_post_process: " << pstate.failed_to_post_process.size() << "\n"
+            << "failed_to_execute: " << pstate.failed_to_execute.size() << "\n"
+    ;
+
   return EXIT_SUCCESS;
 }
 catch (...)
