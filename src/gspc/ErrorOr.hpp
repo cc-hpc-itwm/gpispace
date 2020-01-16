@@ -2,6 +2,7 @@
 
 #include <util-generic/callable_signature.hpp>
 #include <util-generic/cxx17/void_t.hpp>
+#include <util-generic/serialization/exception.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/blank.hpp>
@@ -52,7 +53,39 @@ namespace gspc
     template<typename Archive>
       void serialize (Archive& ar, unsigned int)
     {
-      ar & static_cast<Base&> (*this);
+      bool is_error (!*this);
+      ar & is_error;
+
+      if (is_error)
+      {
+        if (typename Archive::is_saving{})
+        {
+          auto e (error());
+          std::string s (fhg::util::serialization::exception::serialize (e));
+          ar & s;
+        }
+        if (typename Archive::is_loading{})
+        {
+          std::string s;
+          ar & s;
+          auto e (fhg::util::serialization::exception::deserialize (s));
+          static_cast<Base&> (*this) = std::move (e);
+        }
+      }
+      else
+      {
+        if (typename Archive::is_saving{})
+        {
+          auto x (value());
+          ar & x;
+        }
+        if (typename Archive::is_loading{})
+        {
+          T x;
+          ar & x;
+          static_cast<Base&> (*this) = std::move (x);
+        }
+      }
     }
 
     template<typename U>
