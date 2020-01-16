@@ -203,20 +203,11 @@ namespace gspc
       auto const& job_id (work_item.job_id);
       auto const& job (work_item.job);
 
-      try
-      {
-        comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-          .finished ( job_id
-                    , job::finish_reason::Success {execute_job (job)}
-                    );
-      }
-      catch (...)
-      {
-        comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-          .finished ( job_id
-                    , job::finish_reason::JobFailure {std::current_exception()}
-                    );
-      }
+      comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+        .finished ( job_id
+                  , job::finish_reason::Finished
+                      {[&] { return execute_job (job); }}
+                  );
     }
   }
   catch (WorkQueue::interrupted const&)
@@ -1403,22 +1394,27 @@ namespace gspc
 
     fhg::util::visit<void>
       ( finish_reason
-      , [&] (job::finish_reason::Success const& success)
+      , [&] (job::finish_reason::Finished const& finished)
         {
-          _workflow_engine.inject (task_id, success.result.task_result);
+          auto const& result (finished.result);
 
-          remove_task();
+          if (result)
+          {
+            _workflow_engine.inject (task_id, result.value().task_result);
 
-          _injected = true;
+            remove_task();
 
-          _injected_or_stopped.notify_one();
-        }
-      , [&] (job::finish_reason::JobFailure const&)
-        {
-          //! \todo tell workflow_engine about task's result or rollback
-          remove_task();
+            _injected = true;
 
-          stop();
+            _injected_or_stopped.notify_one();
+          }
+          else
+          {
+            //! \todo tell workflow_engine about task's result or rollback
+            remove_task();
+
+            stop();
+          }
         }
       , [] (job::finish_reason::WorkerFailure const&)
         {

@@ -250,22 +250,13 @@ namespace gspc
     {
       //! \todo avoid the activity_t hell and only transfer the parts
       //! needed, i.e. output tokens in this case?
-      struct Success
+      struct Finished
       {
-        Result result;
+        ErrorOr<Result> result;
         template<typename Archive>
           void serialize (Archive& ar, unsigned int)
         {
           ar & result;
-        }
-      };
-      struct JobFailure
-      {
-        std::exception_ptr exception;
-        template<typename Archive>
-          void serialize (Archive& ar, unsigned int)
-        {
-          ar & exception;
         }
       };
       struct WorkerFailure
@@ -286,8 +277,7 @@ namespace gspc
     }
 
     //! \todo Is worker failure a finish though?
-    using FinishReason = boost::variant < finish_reason::Success
-                                        , finish_reason::JobFailure
+    using FinishReason = boost::variant < finish_reason::Finished
                                         , finish_reason::WorkerFailure
                                         , finish_reason::Cancelled
                                         >;
