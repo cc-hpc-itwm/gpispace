@@ -20,13 +20,18 @@ extended_add_library (NAME util
   NAMESPACE GSPC
   # SOURCES "gspc/util/Forest.ipp"
   LIBRARIES Boost::serialization
-)
-
-extended_add_executable (NAME Proto
+  )
+extended_add_library (NAME proto
+  NAMESPACE GSPC
   SOURCES "Proto.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic
             RPC
             Boost::base
+)
+
+extended_add_executable (NAME Proto
+  SOURCES "Proto_Main.cpp"
+  LIBRARIES GSPC::proto
 )
