@@ -59,6 +59,10 @@ namespace gspc
     {
       return std::tie (lhs.id) == std::tie (rhs.id);
     }
+    std::ostream& operator<< (std::ostream& os, ID const& x)
+    {
+      return os << "task " << x.id;
+    }
   }
 
   bool operator== (Resource const& lhs, Resource const& rhs)

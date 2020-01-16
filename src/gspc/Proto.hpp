@@ -158,6 +158,7 @@ namespace gspc
       }
     };
     bool operator== (ID const&, ID const&);
+    std::ostream& operator<< (std::ostream&, ID const&);
 
     struct Result
     {
