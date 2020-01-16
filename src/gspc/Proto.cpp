@@ -1407,12 +1407,14 @@ namespace gspc
         }
       , [&] (job::finish_reason::JobFailure const&)
         {
+          //! \todo tell workflow_engine about task's result or rollback
           remove_task();
 
           stop();
         }
       , [] (job::finish_reason::WorkerFailure const&)
         {
+          //! \todo tell workflow_engine about task's result or rollback
           //! \todo re-schedule? Beware: May be _stopped already!
           throw std::logic_error ("NYI: finished (WorkerFailure)");
         }
@@ -1420,6 +1422,7 @@ namespace gspc
         {
           //! \todo sanity!?
           //! do nothing, just remove task
+          //! \todo tell workflow_engine about task's result or rollback
           remove_task();
         }
       );
