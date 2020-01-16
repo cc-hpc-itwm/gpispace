@@ -153,7 +153,68 @@ namespace gspc
   Worker::Worker (Resource resource)
     : _resource {std::move (resource)}
     , _comm_server_for_scheduler (this)
+    , _worker_thread (fhg::util::bind_this (this, &Worker::work))
   {}
+
+  Worker::~Worker()
+  {
+    _work_queue.interrupt();
+
+    if (_worker_thread.joinable())
+    {
+      _worker_thread.join();
+    }
+  }
+
+  void Worker::work()
+  try
+  {
+    while (true)
+    {
+      auto const work_item (_work_queue.get());
+      auto const& scheduler (work_item.scheduler);
+      auto const& job_id (work_item.job_id);
+      auto const& job (work_item.job);
+      auto const& task (job.task);
+
+      try
+      {
+        auto const& inputs (task.inputs);
+
+        if (task.so == "map_so" && task.symbol == "map_symbol")
+        {
+          if (  inputs.size() != 3
+             || inputs.count ("input") != 1
+             || inputs.count ("output") != 1
+             || inputs.count ("N") != 1
+             || inputs.at ("input") != task.id.id
+             || inputs.at ("input") + inputs.at ("output") != inputs.at ("N")
+             )
+          {
+            throw std::logic_error ("Worker::work: Corrupted task.");
+          }
+
+          comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+            .finished (job_id, job::finish_reason::Success ({inputs}));
+        }
+        else
+        {
+          throw std::invalid_argument ("Worker::submit: non-Map: NYI.");
+        }
+      }
+      catch (...)
+      {
+        comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+          .finished ( job_id
+                    , job::finish_reason::JobFailure {std::current_exception()}
+                    );
+      }
+    }
+  }
+  catch (WorkQueue::interrupted const&)
+  {
+    // do nothing
+  }
 
   rpc::endpoint Worker::endpoint_for_scheduler() const
   {
@@ -162,30 +223,8 @@ namespace gspc
 
   void Worker::submit (rpc::endpoint scheduler, job::ID job_id, Job job)
   {
-    auto const& task (job.task);
-
-    if (task.so == "map_so" && task.symbol == "map_symbol")
-    {
-      auto const& inputs (task.inputs);
-
-      if (  inputs.size() != 3
-         || inputs.count ("input") != 1
-         || inputs.count ("output") != 1
-         || inputs.count ("N") != 1
-         || inputs.at ("input") != task.id.id
-         || inputs.at ("input") + inputs.at ("output") != inputs.at ("N")
-         )
-      {
-        throw std::logic_error ("Worker::submit: Corrupted task.");
-      }
-
-      comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-        .finished (job_id, job::finish_reason::Success ({inputs}));
-
-      return;
-    }
-
-    throw std::invalid_argument ("Worker::submit: non-Map: NYI.");
+    _work_queue.put
+      (WorkItem {std::move (scheduler), std::move (job_id), std::move (job)});
   }
   void Worker::cancel (job::ID)
   {

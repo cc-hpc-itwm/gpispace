@@ -23,6 +23,7 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/this_bound_mem_fn.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <boost/variant.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -750,7 +751,7 @@ namespace gspc
     Worker& operator= (Worker const&) = delete;
     Worker& operator= (Worker&&) = delete;
     //! \note dtor waits? cancels?
-    ~Worker() = default;
+    ~Worker();
 
     rpc::endpoint endpoint_for_scheduler() const;
 
@@ -767,6 +768,18 @@ namespace gspc
     fhg::util::scoped_boost_asio_io_service_with_threads
       _io_service_for_scheduler {1};
     comm::scheduler::worker::Server const _comm_server_for_scheduler;
+
+    //! \todo name: Job? Task?
+    struct WorkItem
+    {
+      rpc::endpoint scheduler;
+      job::ID job_id;
+      Job job;
+    };
+    using WorkQueue = fhg::util::interruptible_threadsafe_queue<WorkItem>;
+    WorkQueue _work_queue;
+    std::thread _worker_thread;
+    void work();
   };
 
   class RemoteInterface
