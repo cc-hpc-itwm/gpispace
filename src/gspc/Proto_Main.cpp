@@ -1,8 +1,13 @@
 #include <gspc/Proto.hpp>
 
-int main (int, char** argv)
+int main (int argc, char** argv)
 try
 {
+  if (argc != 2)
+  {
+    throw std::invalid_argument ("usage: Proto.exe num_tasks");
+  }
+
   gspc::resource_manager::Trivial resource_manager;
 
   //! \note strategy must be alive when runtime system is shut down
