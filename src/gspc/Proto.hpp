@@ -248,8 +248,6 @@ namespace gspc
 
     namespace finish_reason
     {
-      //! \todo avoid the activity_t hell and only transfer the parts
-      //! needed, i.e. output tokens in this case?
       struct Finished
       {
         ErrorOr<Result> result;
