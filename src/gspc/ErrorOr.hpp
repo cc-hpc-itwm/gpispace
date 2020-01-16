@@ -53,39 +53,7 @@ namespace gspc
     template<typename Archive>
       void serialize (Archive& ar, unsigned int)
     {
-      bool is_error (!*this);
-      ar & is_error;
-
-      if (is_error)
-      {
-        if (typename Archive::is_saving{})
-        {
-          auto e (error());
-          std::string s (fhg::util::serialization::exception::serialize (e));
-          ar & s;
-        }
-        if (typename Archive::is_loading{})
-        {
-          std::string s;
-          ar & s;
-          auto e (fhg::util::serialization::exception::deserialize (s));
-          static_cast<Base&> (*this) = std::move (e);
-        }
-      }
-      else
-      {
-        if (typename Archive::is_saving{})
-        {
-          auto x (value());
-          ar & x;
-        }
-        if (typename Archive::is_loading{})
-        {
-          T x;
-          ar & x;
-          static_cast<Base&> (*this) = std::move (x);
-        }
-      }
+      ar & static_cast<Base&> (*this);
     }
 
     template<typename U>
@@ -123,7 +91,7 @@ namespace boost
   namespace serialization
   {
     template<typename Archive>
-      void serialize (Archive& ar, std::exception_ptr ptr, unsigned int)
+      void serialize (Archive& ar, std::exception_ptr& ptr, unsigned int)
     {
       std::string s;
       if (typename Archive::is_saving{})
