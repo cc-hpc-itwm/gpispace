@@ -174,9 +174,9 @@ namespace gspc
 
   struct Task
   {
-    resource::Class resource_class;
     task::ID id;
 
+    resource::Class resource_class;
     std::unordered_map<std::string, value_type> inputs;
     boost::filesystem::path so;
     std::string symbol;
@@ -184,8 +184,8 @@ namespace gspc
     template<typename Archive>
       void serialize (Archive& ar, unsigned int)
     {
-      ar & resource_class;
       ar & id;
+      ar & resource_class;
       ar & inputs;
       ar & so;
       ar & symbol;
@@ -410,6 +410,76 @@ namespace gspc
 
 namespace gspc
 {
+  namespace workflow_engine
+  {
+    struct ProcessingState
+    {
+    public:
+      Task extract
+        ( resource::Class resource_class
+        , std::unordered_map<std::string, value_type> inputs
+        , boost::filesystem::path so
+        , std::string symbol
+        );
+
+      template<typename Function>
+        using is_post_process =
+          fhg::util::is_callable< Function
+                                , void (Task const&, task::Result const&)
+                                >;
+
+      template< typename Function
+              , typename = std::enable_if_t<is_post_process<Function>{}>
+              >
+      void inject
+        ( task::ID task_id
+        , ErrorOr<task::Result> error_or_result
+        , Function&& post_process_result
+        );
+
+      bool has_extracted_tasks() const;
+
+      friend std::ostream& operator<< (std::ostream&, ProcessingState const&);
+
+    private:
+      task::ID _next_task_id {0};
+
+      //! every task in tasks is either
+      //! - in flight: _extracted
+      //! - failed executing: _failed_to_execute
+      //! - failed to post process: _failed_to_post_process
+      //! note: finished tasks are forgotten (they changed state when
+      //! post processed).
+      //! \note would be enough to remember data required to reconstruct task
+      std::unordered_map<task::ID, Task> _tasks;
+
+      //! \note keys of _extracted, _failed_to_post_process,
+      //! _failed_to_execute are
+      //! - disjoint
+      //! - subset of keys (_tasks)
+      std::unordered_set<task::ID> _extracted;
+      std::unordered_map< task::ID
+                        , std::pair<task::Result, std::exception_ptr>
+                        > _failed_to_post_process;
+      std::unordered_map<task::ID, std::exception_ptr> _failed_to_execute;
+    };
+
+    struct State
+    {
+      friend std::ostream& operator<< (std::ostream&, State const&);
+
+      //! \todo ctor
+      // private:
+      std::vector<char> engine_specific;
+      bool workflow_finished;
+
+      ProcessingState processing_state;
+    };
+  }
+}
+
+namespace gspc
+{
   namespace interface
   {
     //! \todo what is base class, what is implementation specific!?
@@ -471,37 +541,6 @@ namespace gspc
       comm::worker::scheduler::Server const _comm_server_for_worker;
     };
 
-    struct WorkflowEngineProcessingState
-    {
-      task::ID next_task_id {0};
-
-      //! every task in tasks is either
-      //! - in flight: _extracted
-      //! - failed executing: _failed_to_execute
-      //! - failed to post process: _failed_to_post_process
-      //! note: finished tasks are forgotten (they changed state when
-      //! post processed).
-      //! \note would be enough to remember data required to reconstruct task
-      std::unordered_map<task::ID, Task> tasks;
-
-      //! \note keys of _extracted, _failed_to_post_process,
-      //! _failed_to_execute are
-      //! - disjoint
-      //! - subset of keys (_tasks)
-      std::unordered_set<task::ID> extracted;
-      std::unordered_map< task::ID
-                        , std::pair<task::Result, std::exception_ptr>
-                        > failed_to_post_process;
-      std::unordered_map<task::ID, std::exception_ptr> failed_to_execute;
-    };
-
-    struct WorkflowEngineState
-    {
-      std::vector<char> engine_specific;
-      WorkflowEngineProcessingState processing_state;
-      bool workflow_finished;
-    };
-
     class WorkflowEngine
     {
     public:
@@ -514,8 +553,8 @@ namespace gspc
       virtual void inject (task::ID, ErrorOr<task::Result>) = 0;
 
 
-      virtual WorkflowEngineState state() const = 0;
-      //! \required: WorkflowEngine (WorkflowEngineState)
+      virtual workflow_engine::State state() const = 0;
+      //! \required: WorkflowEngine (workflow_engine::State)
 
       // virtual std::vector<char> dump() const;
     };
@@ -538,8 +577,8 @@ namespace gspc
     virtual boost::variant<Task, bool> extract() override;
     virtual void inject (task::ID, ErrorOr<task::Result>) override;
 
-    virtual interface::WorkflowEngineState state() const override;
-    MapWorkflowEngine (interface::WorkflowEngineState);
+    virtual workflow_engine::State state() const override;
+    MapWorkflowEngine (workflow_engine::State);
 
   private:
     struct
@@ -557,7 +596,7 @@ namespace gspc
 
     bool workflow_finished() const;
 
-    interface::WorkflowEngineProcessingState _processing_state;
+    workflow_engine::ProcessingState _processing_state;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;

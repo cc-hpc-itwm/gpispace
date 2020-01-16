@@ -1459,6 +1459,100 @@ namespace gspc
 
 namespace gspc
 {
+  namespace workflow_engine
+  {
+    Task ProcessingState::extract
+        ( resource::Class resource_class
+        , std::unordered_map<std::string, value_type> inputs
+        , boost::filesystem::path so
+        , std::string symbol
+        )
+    {
+      auto const task_id {*_extracted.emplace (++_next_task_id).first};
+
+      return _tasks.emplace
+        ( task_id
+        , Task {task_id, resource_class, inputs, so, symbol}
+        ).first->second;
+    }
+
+    bool ProcessingState::has_extracted_tasks() const
+    {
+      return !_extracted.empty();
+    }
+
+    template<typename Function, typename>
+      void ProcessingState::inject
+        ( task::ID task_id
+        , ErrorOr<task::Result> error_or_result
+        , Function&& post_process_result
+        )
+    {
+      if (!_extracted.erase (task_id))
+      {
+        throw std::invalid_argument ("ProcessingState::inject: Unknown task.");
+      }
+
+      auto task (_tasks.find (task_id));
+
+      if (task == _tasks.end())
+      {
+        throw std::logic_error
+          ("ProcessingState::inject: INCONSISTENCY: Tasks data missing.");
+      }
+
+      auto result_successfully_post_processed
+        ( [&] (task::Result const& result) noexcept
+          {
+            try
+            {
+              post_process_result (task->second, result);
+
+              return true;
+            }
+            catch (...)
+            {
+              _failed_to_post_process.emplace
+                (task_id, std::make_pair (result, std::current_exception()));
+
+              return false;
+            }
+          }
+          );
+
+      if (!error_or_result)
+      {
+        _failed_to_execute.emplace (task_id, error_or_result.error());
+      }
+      else if (result_successfully_post_processed (error_or_result.value()))
+      {
+        _tasks.erase (task);
+      }
+    }
+
+    std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
+    {
+      return os
+        << "next_task_id: " << s._next_task_id << "\n"
+        << "tasks: " << s._tasks.size() << "\n"
+        << "extracted: " << s._extracted.size() << "\n"
+        << "failed_to_post_process: " << s._failed_to_post_process.size() << "\n"
+        << "failed_to_execute: " << s._failed_to_execute.size()
+        ;
+    }
+
+    std::ostream& operator<< (std::ostream& os, State const& s)
+    {
+      return os
+        << "workflow_finished: "
+        << std::boolalpha << s.workflow_finished << "\n"
+        << "processing_state:\n{\n" << s.processing_state << "\n}"
+        ;
+    }
+  }
+}
+namespace gspc
+{
   MapWorkflowEngine::MapWorkflowEngine (std::uint64_t N)
   {
     _workflow_state.N = N;
@@ -1469,7 +1563,7 @@ namespace gspc
     return !(_workflow_state.i < _workflow_state.N);
   }
 
-  interface::WorkflowEngineState MapWorkflowEngine::state() const
+  workflow_engine::State MapWorkflowEngine::state() const
   {
     std::vector<char> data;
     {
@@ -1480,10 +1574,10 @@ namespace gspc
       oa & _workflow_state;
     }
 
-    return {std::move (data), _processing_state, workflow_finished()};
+    return {std::move (data), workflow_finished(), _processing_state};
   }
 
-  MapWorkflowEngine::MapWorkflowEngine (interface::WorkflowEngineState state)
+  MapWorkflowEngine::MapWorkflowEngine (workflow_engine::State state)
     : _processing_state (state.processing_state)
   {
     //! \todo see aloma::core::data::serialization
@@ -1505,13 +1599,10 @@ namespace gspc
   {
     if (workflow_finished())
     {
-      return _processing_state.extracted.empty();
+      return !_processing_state.has_extracted_tasks();
     }
 
     ++_workflow_state.i;
-
-    auto const task_id
-      {*_processing_state.extracted.emplace (++_processing_state.next_task_id).first};
 
     std::unordered_map<std::string, value_type> const inputs
       { {"input", _workflow_state.i}
@@ -1519,58 +1610,22 @@ namespace gspc
       , {"N", _workflow_state.N}
       };
 
-    return _processing_state.tasks.emplace
-      ( task_id
-      , Task {"core", task_id, inputs, "map_so", "identity"}
-      ).first->second;
+    return _processing_state.extract ("core", inputs, "map_so", "identity");
   }
 
   void MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)
   {
-    if (!_processing_state.extracted.erase (id))
-    {
-      throw std::invalid_argument ("MapWorkflowEngine::inject: Unknown task.");
-    }
-
-    auto task (_processing_state.tasks.find (id));
-
-    if (task == _processing_state.tasks.end())
-    {
-      throw std::logic_error
-        ("MapWorkflowEngine::inject: INCONSISTENCY: Tasks data missing");
-    }
-
-    auto result_successfully_post_processed
-      ( [&] (task::Result const& result) noexcept
+    return _processing_state.inject
+      ( std::move (id)
+      , std::move (result)
+      , [] (Task const& input_task, task::Result const& result)
         {
-          //! \note gspc::we::engine::put_token might throw, too
-          try
+          if (input_task.inputs != result.outputs)
           {
-            if (task->second.inputs != result.outputs)
-            {
-              throw std::logic_error
-                ("MapWorkflowEngine::inject: Unexpected result.");
-            }
-
-            return true;
-          }
-          catch (...)
-          {
-            _processing_state.failed_to_post_process.emplace
-              (id, std::make_pair (result, std::current_exception()));
-
-            return false;
+            throw std::logic_error
+              ("MapWorkflowEngine::inject: Unexpected result.");
           }
         }
       );
-
-    if (!result)
-    {
-      _processing_state.failed_to_execute.emplace (id, result.error());
-    }
-    else if (result_successfully_post_processed (result.value()))
-    {
-      _processing_state.tasks.erase (task);
-    }
   }
 }
