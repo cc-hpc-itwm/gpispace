@@ -166,6 +166,33 @@ namespace gspc
     }
   }
 
+  namespace
+  {
+    job::Result execute_job (Job const& job)
+    {
+      auto const& task (job.task);
+      auto const& inputs (task.inputs);
+
+      if (task.so == "map_so" && task.symbol == "map_symbol")
+      {
+        if (  inputs.size() != 3
+           || inputs.count ("input") != 1
+           || inputs.count ("output") != 1
+           || inputs.count ("N") != 1
+           || inputs.at ("input") != task.id.id
+           || inputs.at ("input") + inputs.at ("output") != inputs.at ("N")
+           )
+        {
+          throw std::logic_error ("Worker::execute: Map: Corrupted task.");
+        }
+
+        return {task::Result {inputs}};
+      }
+
+      throw std::invalid_argument ("Worker:execute: non-Map: NYI.");
+    }
+  }
+
   void Worker::work()
   try
   {
@@ -175,32 +202,13 @@ namespace gspc
       auto const& scheduler (work_item.scheduler);
       auto const& job_id (work_item.job_id);
       auto const& job (work_item.job);
-      auto const& task (job.task);
 
       try
       {
-        auto const& inputs (task.inputs);
-
-        if (task.so == "map_so" && task.symbol == "map_symbol")
-        {
-          if (  inputs.size() != 3
-             || inputs.count ("input") != 1
-             || inputs.count ("output") != 1
-             || inputs.count ("N") != 1
-             || inputs.at ("input") != task.id.id
-             || inputs.at ("input") + inputs.at ("output") != inputs.at ("N")
-             )
-          {
-            throw std::logic_error ("Worker::work: Corrupted task.");
-          }
-
-          comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-            .finished (job_id, job::finish_reason::Success ({inputs}));
-        }
-        else
-        {
-          throw std::invalid_argument ("Worker::submit: non-Map: NYI.");
-        }
+        comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+          .finished ( job_id
+                    , job::finish_reason::Success {execute_job (job)}
+                    );
       }
       catch (...)
       {
