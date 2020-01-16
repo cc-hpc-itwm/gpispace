@@ -164,6 +164,8 @@ namespace gspc
     {
       std::unordered_map<std::string, value_type> outputs;
 
+      friend std::ostream& operator<< (std::ostream&, Result const&);
+
       template<typename Archive>
         void serialize (Archive& ar, unsigned int)
       {
@@ -180,6 +182,8 @@ namespace gspc
     std::unordered_map<std::string, value_type> inputs;
     boost::filesystem::path so;
     std::string symbol;
+
+    friend std::ostream& operator<< (std::ostream&, Task const&);
 
     template<typename Archive>
       void serialize (Archive& ar, unsigned int)
