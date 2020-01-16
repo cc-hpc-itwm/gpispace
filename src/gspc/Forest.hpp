@@ -1,6 +1,7 @@
 #pragma once
 
 #include <util-generic/callable_signature.hpp>
+#include <util-generic/ostream/modifier.hpp>
 
 #include <boost/blank.hpp>
 #include <boost/serialization/access.hpp>
@@ -182,6 +183,8 @@ namespace gspc
       using Node = forest::Node<T, A>;
   }
 
+  template<typename T, typename A> struct ToDot;
+
   //! \todo merge Forest and UniqueForest:
   //! allow for client id. if not provided, then generate, avoid tuple
   //! like: Forest<Annotations&&..., typename T = std::uint64_t>
@@ -206,7 +209,19 @@ namespace gspc
   private:
     static_assert (std::is_integral<T>{}, "UniqueForest: Key not integral.");
 
+    friend struct ToDot<T, A>;
+
     T _next_key {0};
+  };
+
+  template<typename T, typename A>
+    struct ToDot : public fhg::util::ostream::modifier
+  {
+    ToDot (Forest<T, A> const&);
+    ToDot (UniqueForest<A, T> const&);
+    virtual std::ostream& operator() (std::ostream&) const override;
+  private:
+    Forest<T, A> const& _forest;
   };
 }
 

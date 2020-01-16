@@ -677,4 +677,46 @@ namespace gspc
     ar & static_cast<Forest<T, A>&> (*this);
     ar & _next_key;
   }
+
+  template<typename T, typename A>
+      ToDot<T, A>::ToDot (Forest<T, A> const& forest)
+    : _forest (forest)
+  {}
+  template<typename T, typename A>
+    ToDot<T, A>::ToDot (UniqueForest<A, T> const& unique_forest)
+    : _forest (unique_forest)
+  {}
+
+  template<typename T, typename A>
+    std::ostream& ToDot<T, A>::operator() (std::ostream& os) const
+  {
+    os << "digraph {\n";
+
+    using Node = forest::Node<T, A>;
+
+    _forest.upward_combine_transform
+      ( [&] ( Node const& node
+            , std::list<Node const*> const& children
+            )
+        {
+          os << "\"" << node.first << "\""
+             << " [label=\""
+             << node.first << "\\n" << node.second
+             << "\"]\n";
+
+          std::for_each ( children.cbegin(), children.cend()
+                        , [&] (Node const* child)
+                          {
+                            os << "\"" << node.first << "\" -> \""
+                               << child->first << "\"\n"
+                              ;
+                          }
+                        );
+
+          return node;
+        }
+      );
+
+    return os << "}\n";
+  }
 }
