@@ -235,26 +235,16 @@ namespace gspc
 
   namespace job
   {
-    struct Result
-    {
-      //! \todo multiple tasks per job!?
-      task::Result task_result;
-      template<typename Archive>
-        void serialize (Archive& ar, unsigned int)
-      {
-        ar & task_result;
-      }
-    };
-
     namespace finish_reason
     {
       struct Finished
       {
-        ErrorOr<Result> result;
+        //! \todo multiple tasks per job!?
+        ErrorOr<task::Result> task_result;
         template<typename Archive>
           void serialize (Archive& ar, unsigned int)
         {
-          ar & result;
+          ar & task_result;
         }
       };
       struct WorkerFailure
@@ -489,7 +479,7 @@ namespace gspc
       //! \note workflow engine shall not say "true" when there are
       //! extacted tasks
       virtual boost::variant<Task, bool> extract() = 0;
-      virtual void inject (task::ID, task::Result) = 0;
+      virtual void inject (task::ID, ErrorOr<task::Result>) = 0;
 
       // virtual std::vector<char> dump() const;
     };
@@ -502,7 +492,7 @@ namespace gspc
     PetriNetWorkflowEngine (PetriNetWorkflow);
 
     virtual boost::variant<Task, bool> extract() override;
-    virtual void inject (task::ID, task::Result) override;
+    virtual void inject (task::ID, ErrorOr<task::Result>) override;
   };
   class MapWorkflowEngine : public interface::WorkflowEngine
   {
@@ -510,13 +500,34 @@ namespace gspc
     MapWorkflowEngine (std::uint64_t);
 
     virtual boost::variant<Task, bool> extract() override;
-    virtual void inject (task::ID, task::Result) override;
+    virtual void inject (task::ID, ErrorOr<task::Result>) override;
 
   private:
     task::ID _next_task_id {0};
+
+    //! workflow state
     std::uint64_t _N;
     std::uint64_t _i {0};
+
+    //! processing state
+    //! every task in tasks is either
+    //! - in flight: _extracted
+    //! - failed executing: _failed_to_execute
+    //! - failed to post process: _failed_to_post_process
+    //! note: finished tasks are forgotten (they changed state when
+    //! post processed).
+    //! \note would be enough to remember data required to reconstruct task
+    std::unordered_map<task::ID, Task> _tasks;
+
+    //! \note keys of _extracted, _failed_to_post_process,
+    //! _failed_to_execute are
+    //! - disjoint
+    //! - subset of keys (_tasks)
     std::unordered_set<task::ID> _extracted;
+    std::unordered_map< task::ID
+                      , std::pair<task::Result, std::exception_ptr>
+                      > _failed_to_post_process;
+    std::unordered_map<task::ID, std::exception_ptr> _failed_to_execute;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;

@@ -168,12 +168,11 @@ namespace gspc
 
   namespace
   {
-    job::Result execute_job (Job const& job)
+    task::Result execute_task (Task const& task)
     {
-      auto const& task (job.task);
       auto const& inputs (task.inputs);
 
-      if (task.so == "map_so" && task.symbol == "map_symbol")
+      if (task.so == "map_so" && task.symbol == "identity")
       {
         if (  inputs.size() != 3
            || inputs.count ("input") != 1
@@ -186,10 +185,15 @@ namespace gspc
           throw std::logic_error ("Worker::execute: Map: Corrupted task.");
         }
 
-        return {task::Result {inputs}};
+        return {inputs};
       }
 
-      throw std::invalid_argument ("Worker:execute: non-Map: NYI.");
+      throw std::invalid_argument ("Worker:execute_task: non-Map: NYI.");
+    }
+
+    job::finish_reason::Finished execute_job (Job const& job)
+    {
+      return {[&] { return execute_task (job.task); }};
     }
   }
 
@@ -204,16 +208,14 @@ namespace gspc
       auto const& job (work_item.job);
 
       comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-        .finished ( job_id
-                  , job::finish_reason::Finished
-                      {[&] { return execute_job (job); }}
-                  );
+        .finished (job_id, execute_job (job));
     }
   }
   catch (WorkQueue::interrupted const&)
   {
     // do nothing
   }
+  //! \todo terminates when Client ctor throws
 
   rpc::endpoint Worker::endpoint_for_scheduler() const
   {
@@ -1396,23 +1398,20 @@ namespace gspc
       ( finish_reason
       , [&] (job::finish_reason::Finished const& finished)
         {
-          auto const& result (finished.result);
+          auto const& task_result (finished.task_result);
 
-          if (result)
+          _workflow_engine.inject (task_id, task_result);
+
+          remove_task();
+
+          if (task_result)
           {
-            _workflow_engine.inject (task_id, result.value().task_result);
-
-            remove_task();
-
             _injected = true;
 
             _injected_or_stopped.notify_one();
           }
           else
           {
-            //! \todo tell workflow_engine about task's result
-            remove_task();
-
             stop();
           }
         }
@@ -1458,12 +1457,15 @@ namespace gspc
   {
     if (_i++ < _N)
     {
-      return Task { "core"
-                  , {*_extracted.emplace (++_next_task_id).first}
-                  , {{"input", _i}, {"output", _N - _i}, {"N", _N}}
-                  , {"map_so"}
-                  , {"map_symbol"}
-                  };
+      auto const& task_id {*_extracted.emplace (++_next_task_id).first};
+
+      std::unordered_map<std::string, value_type> const inputs
+        {{"input", _i}, {"output", _N - _i}, {"N", _N}};
+
+      return _tasks.emplace
+        ( task_id
+        , Task {"core", task_id, inputs, "map_so", "identity"}
+        ).first->second;
     }
     else
     {
@@ -1471,24 +1473,52 @@ namespace gspc
     }
   }
 
-  void MapWorkflowEngine::inject (task::ID id, task::Result result)
+  void MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)
   {
     if (!_extracted.erase (id))
     {
-      throw std::logic_error ("MapWorkflowEngine::inject: Unknown task.");
+      throw std::invalid_argument ("MapWorkflowEngine::inject: Unknown task.");
     }
 
-    auto const& outputs (result.outputs);
+    auto task (_tasks.find (id));
 
-    if (  outputs.size() != 3
-       || outputs.count ("input") != 1
-       || outputs.count ("output") != 1
-       || outputs.count ("N") != 1
-       || outputs.at ("input") != id.id
-       || outputs.at ("input") + outputs.at ("output") != outputs.at ("N")
-       )
+    if (task == _tasks.end())
     {
-      throw std::logic_error ("MapWorkflowEngine::inject: Unexpected result.");
+      throw std::logic_error
+        ("MapWorkflowEngine::inject: INCONSISTENCY: Tasks data missing");
+    }
+
+    auto result_successfully_post_processed
+      ( [&] (task::Result const& result) noexcept
+        {
+          //! \note gspc::we::engine::put_token might throw, too
+          try
+          {
+            if (task->second.inputs != result.outputs)
+            {
+              throw std::logic_error
+                ("MapWorkflowEngine::inject: Unexpected result.");
+            }
+
+            return true;
+          }
+          catch (...)
+          {
+            _failed_to_post_process.emplace
+              (id, std::make_pair (result, std::current_exception()));
+
+            return false;
+          }
+        }
+      );
+
+    if (!result)
+    {
+      _failed_to_execute.emplace (id, result.error());
+    }
+    else if (result_successfully_post_processed (result.value()))
+    {
+      _tasks.erase (task);
     }
   }
 }
