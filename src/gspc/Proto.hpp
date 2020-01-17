@@ -4,6 +4,7 @@
 #include <gspc/Forest.hpp>
 
 #include <gspc/remote_interface/ID.hpp>
+#include <gspc/remote_interface/Hostname.hpp>
 
 #include <gspc/rpc/TODO.hpp>
 
@@ -34,14 +35,6 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-
-namespace gspc
-{
-  namespace remote_interface
-  {
-    using Hostname = std::string;
-  }
-}
 
 namespace gspc
 {
