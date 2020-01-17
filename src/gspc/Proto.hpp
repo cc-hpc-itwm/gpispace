@@ -11,6 +11,7 @@
 
 #include <gspc/rpc/TODO.hpp>
 
+#include <gspc/Task.hpp>
 #include <gspc/task/ID.hpp>
 #include <gspc/task/Result.hpp>
 
@@ -44,31 +45,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-
-namespace gspc
-{
-  struct Task
-  {
-    task::ID id;
-
-    resource::Class resource_class;
-    std::unordered_map<std::string, value_type> inputs;
-    boost::filesystem::path so;
-    std::string symbol;
-
-    friend std::ostream& operator<< (std::ostream&, Task const&);
-
-    template<typename Archive>
-      void serialize (Archive& ar, unsigned int)
-    {
-      ar & id;
-      ar & resource_class;
-      ar & inputs;
-      ar & so;
-      ar & symbol;
-    }
-  };
-}
 
 
 namespace gspc
