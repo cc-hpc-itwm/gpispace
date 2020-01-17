@@ -39,6 +39,28 @@ namespace gspc
   {
     std::unique_lock<std::mutex> lock (_guard_state);
 
+    auto const do_worker_call
+      ( [&] (resource::ID resource_id, job::ID job_id, auto const& fun)
+        {
+          try
+          {
+            auto const worker_endpoint
+              (_runtime_system.worker_endpoint_for_scheduler (resource_id));
+
+            comm::scheduler::worker::Client client
+              (_io_service_for_workers, worker_endpoint);
+            fun (client);
+          }
+          catch (...)
+          {
+            finished ( job_id
+                     , job::finish_reason::WorkerFailure
+                         {std::current_exception()}
+                     );
+          }
+        }
+      );
+
     while (!_stopped)
     {
       fhg::util::visit<void>
@@ -68,28 +90,18 @@ namespace gspc
                 ( lock
                 , [&]
                   {
-                    try
-                    {
-                      auto const worker_endpoint
-                        ( _runtime_system.worker_endpoint_for_scheduler
-                            (acquired.requested)
-                        );
-
-                      comm::scheduler::worker::Client ( _io_service_for_workers
-                                                      , worker_endpoint
-                                                      )
-                        . submit ( _comm_server_for_worker.local_endpoint()
-                                 , job_id
-                                 , Job {task}
-                                 );
-                    }
-                    catch (...)
-                    {
-                      finished ( job_id
-                               , job::finish_reason::WorkerFailure
-                                   {std::current_exception()}
-                               );
-                    }
+                    do_worker_call
+                      ( acquired.requested
+                      , job_id
+                      , [&] (comm::scheduler::worker::Client& client)
+                        {
+                          return client.submit
+                            ( _comm_server_for_worker.local_endpoint()
+                            , job_id
+                            , Job {task}
+                            );
+                        }
+                      );
                   }
                 );
             }
@@ -137,13 +149,25 @@ namespace gspc
         );
     }
 
-    //! \todo
-    // for (auto const& task : _tasks)
-    // {
-    //   _runtime_system.cancel (task);
-    // }
+    call_unlocked ( lock
+                  , [&] (std::unordered_map<job::ID, resource::ID> jobs)
+                    {
+                      for (auto const& job : jobs)
+                      {
+                        do_worker_call
+                          ( job.second
+                          , job.first
+                          , [&] (comm::scheduler::worker::Client& client)
+                            {
+                              return client.cancel (job.first);
+                            }
+                          );
+                      }
+                    }
+                  , _jobs
+                  );
 
-    _injected_or_stopped.wait (lock, [&] { return _tasks.empty(); });
+    _injected_or_stopped.wait (lock, [&] { return _jobs.empty(); });
   }
 
   void GreedyScheduler::finished
