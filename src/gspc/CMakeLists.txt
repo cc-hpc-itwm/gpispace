@@ -44,6 +44,7 @@ extended_add_library (NAME proto
           "resource_manager/Trivial.cpp"
           "comm/runtime_system/remote_interface/Client.cpp"
           "RemoteInterface.cpp"
+          "MapWorkflowEngine.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic

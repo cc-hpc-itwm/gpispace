@@ -39,6 +39,7 @@
 
 #include <gspc/Worker.hpp>
 
+#include <gspc/MapWorkflowEngine.hpp>
 #include <gspc/workflow_engine/ProcessingState.hpp>
 #include <gspc/workflow_engine/State.hpp>
 
@@ -81,35 +82,6 @@ namespace gspc
 
     virtual boost::variant<Task, bool> extract() override;
     virtual void inject (task::ID, ErrorOr<task::Result>) override;
-  };
-  class MapWorkflowEngine : public interface::WorkflowEngine
-  {
-  public:
-    MapWorkflowEngine (std::uint64_t);
-
-    virtual boost::variant<Task, bool> extract() override;
-    virtual void inject (task::ID, ErrorOr<task::Result>) override;
-
-    virtual workflow_engine::State state() const override;
-    MapWorkflowEngine (workflow_engine::State);
-
-  private:
-    struct
-    {
-      std::uint64_t N;
-      std::uint64_t i {0};
-
-      template<typename Archive>
-        void serialize (Archive& ar, unsigned int /* version */)
-      {
-        ar & N;
-        ar & i;
-      }
-    } _workflow_state;
-
-    bool workflow_finished() const;
-
-    workflow_engine::ProcessingState _processing_state;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;
