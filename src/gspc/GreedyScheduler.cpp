@@ -209,10 +209,13 @@ namespace gspc
             stop();
           }
         }
-      , [] (job::finish_reason::WorkerFailure const&)
+      , [] (job::finish_reason::WorkerFailure const& failure)
         {
           //! \todo re-schedule? Beware: May be _stopped already!
-          throw std::logic_error ("NYI: finished (WorkerFailure)");
+          throw std::logic_error
+            ( "NYI: finished (WorkerFailure): "
+            + fhg::util::exception_printer (failure.exception).string()
+            );
         }
       , [&] (job::finish_reason::Cancelled const&)
         {
