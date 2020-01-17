@@ -44,7 +44,8 @@ namespace gspc
     std::mutex _guard_state;
     std::condition_variable _injected_or_stopped;
     bool _injected {false};
-    std::unordered_map<task::ID, resource::ID> _tasks;
+    std::unordered_map<job::ID, resource::ID> _jobs;
+    std::uint64_t _next_job_id {0};
 
     std::thread _thread;
     void scheduling_thread();

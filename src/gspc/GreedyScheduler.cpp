@@ -57,7 +57,9 @@ namespace gspc
                     )
                 );
 
-              if (!_tasks.emplace (task.id, acquired.requested).second)
+              job::ID const job_id {_next_job_id++, task.id};
+
+              if (!_jobs.emplace (job_id, acquired.requested).second)
               {
                 throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
               }
@@ -72,18 +74,18 @@ namespace gspc
                         ( _runtime_system.worker_endpoint_for_scheduler
                             (acquired.requested)
                         );
-                      //! \todo job_id
+
                       comm::scheduler::worker::Client ( _io_service_for_workers
                                                       , worker_endpoint
                                                       )
                         . submit ( _comm_server_for_worker.local_endpoint()
-                                 , job::ID {0, task.id}
+                                 , job_id
                                  , Job {task}
                                  );
                     }
                     catch (...)
                     {
-                      finished ( {0, task.id}
+                      finished ( job_id
                                , job::finish_reason::WorkerFailure
                                    {std::current_exception()}
                                );
@@ -98,7 +100,7 @@ namespace gspc
           }
         , [&] (bool has_finished)
           {
-            if (!has_finished && !_tasks.empty())
+            if (!has_finished && !_jobs.empty())
             {
               _injected_or_stopped
                 .wait (lock, [&] { return _injected || !!_stopped; });
@@ -108,7 +110,7 @@ namespace gspc
                 _injected = false;
               }
             }
-            else if (!has_finished && _tasks.empty())
+            else if (!has_finished && _jobs.empty())
             {
               // \todo wait for external event (put_token), go again
               // into extract if not stopped
@@ -122,11 +124,11 @@ namespace gspc
               //   _put_token = false;
               // }
             }
-            else if (has_finished && _tasks.empty())
+            else if (has_finished && _jobs.empty())
             {
               _stopped = true;
             }
-            else // if (has_finished && !_tasks.empty())
+            else // if (has_finished && !_jobs.empty())
             {
               throw std::logic_error
                 ("INCONSISTENCY: finished while tasks are running.");
@@ -147,19 +149,17 @@ namespace gspc
   void GreedyScheduler::finished
     (job::ID job_id, job::FinishReason finish_reason)
   {
-    auto const task_id (job_id.task_id);
-
     std::lock_guard<std::mutex> const lock (_guard_state);
 
-    auto remove_task
+    auto remove_job
       ( [&]
         {
           _resource_manager.release
-            (resource_manager::Trivial::Acquired {_tasks.at (task_id)});
+            (resource_manager::Trivial::Acquired {_jobs.at (job_id)});
 
-          if (!_tasks.erase (task_id))
+          if (!_jobs.erase (job_id))
           {
-            throw std::logic_error ("INCONSISTENCY: finished unknown tasks");
+            throw std::logic_error ("INCONSISTENCY: finished unknown job");
           }
         }
       );
@@ -170,9 +170,9 @@ namespace gspc
         {
           auto const& task_result (finished.task_result);
 
-          _workflow_engine.inject (task_id, task_result);
+          _workflow_engine.inject (job_id.task_id, task_result);
 
-          remove_task();
+          remove_job();
 
           if (task_result)
           {
@@ -193,8 +193,8 @@ namespace gspc
       , [&] (job::finish_reason::Cancelled const&)
         {
           //! \todo sanity!?
-          //! do nothing, just remove task
-          remove_task();
+          //! do nothing, just remove job
+          remove_job();
         }
       );
   }
