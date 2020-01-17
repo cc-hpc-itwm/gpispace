@@ -37,6 +37,12 @@
 
 #include <gspc/value_type.hpp>
 
+#include <gspc/GreedyScheduler.hpp>
+#include <gspc/ScopedRuntimeSystem.hpp>
+#include <gspc/remote_interface/ConnectionAndPID.hpp>
+#include <gspc/remote_interface/Strategy.hpp>
+#include <gspc/remote_interface/strategy/Thread.hpp>
+
 #include <gspc/Worker.hpp>
 
 #include <gspc/MapWorkflowEngine.hpp>
@@ -71,7 +77,6 @@
 #include <unordered_map>
 #include <unordered_set>
 
-
 namespace gspc
 {
   class PetriNetWorkflow{};
@@ -102,176 +107,4 @@ namespace gspc
     //   Acquired acquire (std::list<std::pair<resource::Class, std::size_t>>);
     // };
   }
-}
-
-namespace gspc
-{
-  namespace remote_interface
-  {
-    namespace strategy
-    {
-      // class ssh;
-
-      class Thread
-      {
-        struct RemoteInterfaceServer
-        {
-          RemoteInterfaceServer (ID);
-
-          rpc::endpoint local_endpoint() const;
-
-        private:
-          RemoteInterface _remote_interface;
-        };
-
-      public:
-        using State = std::unordered_map<Hostname, RemoteInterfaceServer>;
-
-        Thread (State*);
-        rpc::endpoint boot (Hostname, ID) const;
-        void teardown (Hostname) const;
-
-      private:
-        State* _remote_interfaces_by_hostname;
-      };
-    }
-
-    //! Strategy must not contain state but only information
-    //! (e.g. pointer, filename, ...) about to get a state, Strategies
-    //! _are_ copied!
-    using Strategy = boost::variant< strategy::Thread
-                                   // , strategy::ssh
-                                   >;
-
-    class ConnectionAndPID
-    {
-    public:
-      ConnectionAndPID ( boost::asio::io_service&
-                       , Hostname
-                       , Strategy
-                       , ID
-                       );
-      ~ConnectionAndPID();
-
-      ConnectionAndPID() = delete;
-      ConnectionAndPID (ConnectionAndPID const&) = delete;
-      ConnectionAndPID (ConnectionAndPID&&) = delete;
-      ConnectionAndPID& operator= (ConnectionAndPID const&) = delete;
-      ConnectionAndPID& operator= (ConnectionAndPID&&) = delete;
-
-      UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
-        add (UniqueForest<Resource> const&);
-      Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
-
-      rpc::endpoint worker_endpoint_for_scheduler (resource::ID);
-
-      Strategy const& strategy() const;
-
-    private:
-      Hostname _hostname;
-      Strategy _strategy;
-      comm::runtime_system::remote_interface::Client _client;
-    };
-  }
-}
-
-namespace gspc
-{
-  //! \todo Scoped because ConnectionAndPID is scoped. Is unscoped
-  //! actually needed?
-  class ScopedRuntimeSystem
-  {
-  public:
-    ScopedRuntimeSystem (comm::runtime_system::resource_manager::Client);
-
-    std::unordered_map
-      < remote_interface::Hostname
-      , ErrorOr<UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>>
-      >
-      add ( std::unordered_set<remote_interface::Hostname>
-          , remote_interface::Strategy
-          , UniqueForest<Resource> const&
-          ) noexcept;
-
-    Forest<resource::ID>
-      add_or_throw  ( std::unordered_set<remote_interface::Hostname> hostnames
-                    , remote_interface::Strategy strategy
-                    , UniqueForest<Resource> const& resources
-                    );
-
-    //! \note Assumes that two connected resource IDs have the same
-    //! RemoteInterface ID.
-    Forest<resource::ID, ErrorOr<>> remove (Forest<resource::ID> const&);
-
-    rpc::endpoint worker_endpoint_for_scheduler (resource::ID) const;
-
-  private:
-    comm::runtime_system::resource_manager::Client _resource_manager;
-
-    //! \todo thread count based on parameter or?
-    fhg::util::scoped_boost_asio_io_service_with_threads
-      _remote_interface_io_service {1};
-
-    remote_interface::ID _next_remote_interface_id;
-
-    //! \todo cleanup, e.g. when last resource using them is
-    //! removed.
-    std::unordered_map< remote_interface::Hostname
-                      , std::unique_ptr<remote_interface::ConnectionAndPID>
-                      > _remote_interface_by_hostname;
-    std::unordered_map< remote_interface::ID
-                      , remote_interface::Hostname
-                      > _hostname_by_remote_interface_id;
-
-    remote_interface::ConnectionAndPID*
-      remote_interface_by_id (remote_interface::ID) const;
-
-    std::unordered_map
-      < remote_interface::Hostname
-      , ErrorOr<remote_interface::ConnectionAndPID*>
-      >
-      remote_interfaces ( std::unordered_set<remote_interface::Hostname>
-                        , remote_interface::Strategy
-                        ) noexcept;
-
-    //! \todo OPTIMIZE access to hostname via map<hostID, hostName>
-  };
-}
-
-namespace gspc
-{
-  class GreedyScheduler : public interface::Scheduler
-  {
-  public:
-    //! \note: workflow_engine can not be shared with other schedulers
-    //! because alien inject would break the finish condition
-
-    //! \todo also applies to put_token: either managed by scheduler
-    //! or requires notification from workflow_engine to
-    //! scheduler. Possible change in API: let
-    //! workflow_engine::extract() block
-    GreedyScheduler ( comm::scheduler::workflow_engine::Client
-                    , resource_manager::Trivial& //! \todo: Client
-                    , ScopedRuntimeSystem& //! \todo UnscopedBase
-                    );
-
-    virtual void wait() override;
-    virtual void stop() override;
-    virtual void finished (job::ID, job::FinishReason) override;
-
-  private:
-    comm::scheduler::workflow_engine::Client _workflow_engine;
-    resource_manager::Trivial& _resource_manager;
-    ScopedRuntimeSystem& _runtime_system;
-
-    std::atomic<bool> _stopped {false};
-
-    std::mutex _guard_state;
-    std::condition_variable _injected_or_stopped;
-    bool _injected {false};
-    std::unordered_map<task::ID, resource::ID> _tasks;
-
-    std::thread _thread;
-    void scheduling_thread();
-  };
 }
