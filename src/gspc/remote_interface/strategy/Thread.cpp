@@ -16,7 +16,7 @@ namespace gspc
         return _remote_interface.local_endpoint();
       }
 
-      Thread::Thread (State* state)
+      Thread::Thread (std::shared_ptr<State> state)
         : _remote_interfaces_by_hostname {state}
       {}
 

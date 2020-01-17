@@ -10,6 +10,7 @@
 #include <util-generic/print_exception.hpp>
 
 #include <iostream>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -22,10 +23,6 @@ try
   }
 
   gspc::resource_manager::Trivial resource_manager;
-
-  //! \note strategy must be alive when runtime system is shut down
-  gspc::remote_interface::strategy::Thread::State strategy_state;
-  gspc::remote_interface::strategy::Thread thread_strategy {&strategy_state};
 
   gspc::ScopedRuntimeSystem runtime_system (resource_manager);
 
@@ -46,6 +43,9 @@ try
   host_topology.insert ({"gpu"}, {c1, gpu_exclusive});
   host_topology.insert ({"gpu"}, {c2, gpu_exclusive});
   host_topology.insert ({"gpu"}, {c3, gpu_exclusive});
+
+  gspc::remote_interface::strategy::Thread thread_strategy
+    (std::make_shared<gspc::remote_interface::strategy::Thread::State>());
 
   auto const resource_ids1
     ( runtime_system.add_or_throw

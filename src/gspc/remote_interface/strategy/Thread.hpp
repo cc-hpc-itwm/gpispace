@@ -5,6 +5,7 @@
 #include <gspc/remote_interface/ID.hpp>
 #include <gspc/rpc/TODO.hpp>
 
+#include <memory>
 #include <unordered_map>
 
 namespace gspc
@@ -28,12 +29,12 @@ namespace gspc
       public:
         using State = std::unordered_map<Hostname, RemoteInterfaceServer>;
 
-        Thread (State*);
+        Thread (std::shared_ptr<State>);
         rpc::endpoint boot (Hostname, ID) const;
         void teardown (Hostname) const;
 
       private:
-        State* _remote_interfaces_by_hostname;
+        std::shared_ptr<State> _remote_interfaces_by_hostname;
       };
     }
   }
