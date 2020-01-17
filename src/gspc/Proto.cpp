@@ -1,6 +1,7 @@
 #include <gspc/Proto.hpp>
 
 #include <gspc/comm/scheduler/worker/Client.hpp>
+#include <gspc/comm/worker/scheduler/Client.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
@@ -39,44 +40,6 @@ namespace gspc
 
 namespace gspc
 {
-  namespace comm
-  {
-    namespace worker
-    {
-      namespace scheduler
-      {
-        Client::Client
-            (boost::asio::io_service& io_service, rpc::endpoint endpoint)
-          : _endpoint {rpc::make_endpoint (io_service, std::move (endpoint))}
-          , finished {*_endpoint}
-        {}
-
-        template<typename Finished>
-            Server::Server (Finished&& finished)
-          : _service_dispatcher()
-          , _io_service (1)
-          , _finished (_service_dispatcher, std::forward<Finished> (finished))
-          , _service_socket_provider (_io_service, _service_dispatcher)
-          , _service_tcp_provider (_io_service, _service_dispatcher)
-          , _local_endpoint ( fhg::util::connectable_to_address_string
-                                (_service_tcp_provider.local_endpoint())
-                            , _service_socket_provider.local_endpoint()
-                            )
-        {}
-
-        template<typename That>
-          Server::Server (That* that)
-            : Server (fhg::util::bind_this (that, &That::finished))
-        {}
-
-        rpc::endpoint Server::local_endpoint() const
-        {
-          return _local_endpoint;
-        }
-      }
-    }
-  }
-
   Worker::Worker (Resource resource)
     : _resource {std::move (resource)}
     , _comm_server_for_scheduler (this)

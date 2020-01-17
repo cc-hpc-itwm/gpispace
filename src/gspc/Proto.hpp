@@ -3,6 +3,7 @@
 #include <gspc/comm/runtime_system/resource_manager/Client.hpp>
 #include <gspc/comm/runtime_system/resource_manager/Server.hpp>
 #include <gspc/comm/scheduler/worker/Server.hpp>
+#include <gspc/comm/worker/scheduler/Server.hpp>
 
 #include <gspc/ErrorOr.hpp>
 #include <gspc/Forest.hpp>
@@ -54,58 +55,6 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-
-namespace gspc
-{
-  namespace comm
-  {
-    namespace worker
-    {
-      namespace scheduler
-      {
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( finished
-          , void (job::ID, job::FinishReason)
-          );
-
-        struct Client
-        {
-        public:
-          Client (boost::asio::io_service&, rpc::endpoint);
-
-        private:
-          std::unique_ptr<rpc::remote_endpoint> _endpoint;
-
-        public:
-          rpc::sync_remote_function<scheduler::finished> finished;
-        };
-
-        struct Server
-        {
-        private:
-          rpc::service_dispatcher _service_dispatcher;
-          fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
-
-        public:
-          rpc::service_handler<scheduler::finished> const _finished;
-
-        private:
-          rpc::service_socket_provider const _service_socket_provider;
-          rpc::service_tcp_provider const _service_tcp_provider;
-          rpc::endpoint const _local_endpoint;
-
-        public:
-          template<typename Finished>
-            Server (Finished&&);
-          template<typename That>
-            Server (That*);
-
-          rpc::endpoint local_endpoint() const;
-        };
-      }
-    }
-  }
-}
 
 namespace gspc
 {
