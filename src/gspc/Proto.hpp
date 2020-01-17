@@ -3,8 +3,10 @@
 #include <gspc/ErrorOr.hpp>
 #include <gspc/Forest.hpp>
 
-#include <gspc/remote_interface/ID.hpp>
 #include <gspc/remote_interface/Hostname.hpp>
+#include <gspc/remote_interface/ID.hpp>
+
+#include <gspc/resource/ID.hpp>
 
 #include <gspc/rpc/TODO.hpp>
 
@@ -40,27 +42,6 @@ namespace gspc
 {
   namespace resource
   {
-    struct ID
-    {
-      ID (remote_interface::ID rif) : remote_interface (rif), id (0) {}
-
-      remote_interface::ID remote_interface;
-      std::uint64_t id;
-
-      ID& operator++() { ++id; return *this; }
-
-      //! \note for serialization
-      ID() = default;
-      template<typename Archive>
-        void serialize (Archive& ar, unsigned int)
-      {
-        ar & remote_interface;
-        ar & id;
-      }
-    };
-    bool operator== (ID const& lhs, ID const& rhs);
-    std::ostream& operator<< (std::ostream&, ID const&);
-
     //! \note *not* a set, if users want a single worker to have more
     //! than one resource, they need to explicitly model that in the
     //! forest. (e.g. "CPU+Compute" -> ["CPU", "Compute"], which
@@ -71,8 +52,6 @@ namespace gspc
     using Class = std::string;
   }
 }
-
-UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::resource::ID);
 
 namespace gspc
 {

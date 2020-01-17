@@ -16,13 +16,6 @@
 #include <vector>
 
 UTIL_MAKE_COMBINED_STD_HASH_DEFINE
-  ( gspc::resource::ID
-  , x
-  , x.id
-  , x.remote_interface
-  );
-
-UTIL_MAKE_COMBINED_STD_HASH_DEFINE
   ( gspc::task::ID
   , x
   , x.id
@@ -42,18 +35,6 @@ UTIL_MAKE_COMBINED_STD_HASH_DEFINE
 
 namespace gspc
 {
-  namespace resource
-  {
-    bool operator== (ID const& lhs, ID const& rhs)
-    {
-      return std::tie (lhs.remote_interface, lhs.id)
-        == std::tie (rhs.remote_interface, rhs.id);
-    }
-    std::ostream& operator<< (std::ostream& os, ID const& x)
-    {
-      return os << x.remote_interface << " resource " << x.id;
-    }
-  }
   namespace task
   {
     bool operator== (ID const& lhs, ID const& rhs)
