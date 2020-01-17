@@ -35,6 +35,37 @@ namespace rpc
   }
 }
 
+UTIL_MAKE_COMBINED_STD_HASH_DEFINE
+  ( gspc::remote_interface::ID
+  , x
+  , x.id
+  );
+
+UTIL_MAKE_COMBINED_STD_HASH_DEFINE
+  ( gspc::resource::ID
+  , x
+  , x.id
+  , x.remote_interface
+  );
+
+UTIL_MAKE_COMBINED_STD_HASH_DEFINE
+  ( gspc::task::ID
+  , x
+  , x.id
+  );
+
+UTIL_MAKE_COMBINED_STD_HASH_DEFINE
+  ( gspc::job::ID
+  , x
+  , x.id
+  );
+
+UTIL_MAKE_COMBINED_STD_HASH_DEFINE
+  ( gspc::Resource
+  , r
+  , r.resource_class
+  );
+
 namespace gspc
 {
   namespace remote_interface

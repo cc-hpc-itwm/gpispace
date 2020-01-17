@@ -15,6 +15,7 @@
 #include <rpc/service_socket_provider.hpp>
 #include <rpc/service_tcp_provider.hpp>
 
+#include <gspc/util-generic_hash_forward_declare.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hash/combined_hash.hpp>
@@ -87,11 +88,7 @@ namespace gspc
   }
 }
 
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::remote_interface::ID
-  , x
-  , x.id
-  )
+UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::remote_interface::ID);
 
 namespace gspc
 {
@@ -129,12 +126,7 @@ namespace gspc
   }
 }
 
-  FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::resource::ID
-  , x
-  , x.id
-  , x.remote_interface
-  )
+UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::resource::ID);
 
 namespace gspc
 {
@@ -197,11 +189,7 @@ namespace gspc
   };
 }
 
- FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::task::ID
-  , x
-  , x.id
-  )
+UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::task::ID);
 
 namespace gspc
 {
@@ -277,11 +265,7 @@ namespace gspc
   }
 }
 
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::job::ID
-  , x
-  , x.id
-  )
+UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::job::ID);
 
 namespace gspc
 {
@@ -726,11 +710,7 @@ namespace gspc
   std::ostream& operator<< (std::ostream&, Resource const&);
 }
 
-FHG_UTIL_MAKE_COMBINED_STD_HASH
-  ( gspc::Resource
-  , r
-  , r.resource_class
-  )
+UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::Resource);
 
 namespace gspc
 {
