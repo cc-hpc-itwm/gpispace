@@ -42,6 +42,7 @@ extended_add_library (NAME proto
           "resource_manager/Coallocation.cpp"
           "resource_manager/WithPreferences.cpp"
           "resource_manager/Trivial.cpp"
+          "comm/runtime_system/remote_interface/Client.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic

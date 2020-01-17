@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gspc/comm/runtime_system/remote_interface/Client.hpp>
+#include <gspc/comm/runtime_system/remote_interface/protocol.hpp>
 #include <gspc/comm/runtime_system/resource_manager/Client.hpp>
 #include <gspc/comm/runtime_system/resource_manager/Server.hpp>
 #include <gspc/comm/worker/scheduler/Server.hpp>
@@ -133,46 +135,6 @@ namespace gspc
 {
   namespace comm
   {
-    namespace runtime_system
-    {
-      namespace remote_interface
-      {
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( add
-          , UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>
-              (UniqueForest<Resource>)
-          );
-
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( remove
-          , Forest<resource::ID, ErrorOr<>> (Forest<resource::ID>)
-          );
-
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( worker_endpoint_for_scheduler
-          , rpc::endpoint (resource::ID)
-          );
-
-        //! \todo syntax goal:
-        //! RPC_CLIENT (Client, add, remove, worker_endpoint_for_scheduler);
-        //! RPC_SERVER (Server, add, remove, worker_endpoint_for_scheduler);
-        struct Client
-        {
-        public:
-          Client (boost::asio::io_service&, rpc::endpoint);
-
-        private:
-          std::unique_ptr<rpc::remote_endpoint> _endpoint;
-
-        public:
-          rpc::sync_remote_function<remote_interface::add> add;
-          rpc::sync_remote_function<remote_interface::remove> remove;
-          rpc::sync_remote_function
-            <remote_interface::worker_endpoint_for_scheduler>
-              worker_endpoint_for_scheduler;
-        };
-      }
-    }
     namespace scheduler
     {
       namespace workflow_engine
