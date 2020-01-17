@@ -39,6 +39,9 @@ extended_add_library (NAME proto
           "Worker.cpp"
           "workflow_engine/State.cpp"
           "workflow_engine/ProcessingState.cpp"
+          "resource_manager/Coallocation.cpp"
+          "resource_manager/WithPreferences.cpp"
+          "resource_manager/Trivial.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic

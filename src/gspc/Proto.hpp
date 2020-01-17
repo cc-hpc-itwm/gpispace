@@ -22,6 +22,10 @@
 #include <gspc/resource/Class.hpp>
 #include <gspc/resource/ID.hpp>
 
+#include <gspc/resource_manager/Coallocation.hpp>
+#include <gspc/resource_manager/Trivial.hpp>
+#include <gspc/resource_manager/WithPreferences.hpp>
+
 #include <gspc/rpc/TODO.hpp>
 
 #include <gspc/Task.hpp>
@@ -117,90 +121,6 @@ namespace gspc
 
   namespace resource_manager
   {
-    class WithPreferences : public interface::ResourceManager
-    {
-    public:
-      virtual void add (Resources) override;
-      virtual void remove (Forest<resource::ID>) override;
-
-      struct Acquired
-      {
-        resource::ID requested;
-        //! \note not shown to the user but implicitly locked, in
-        //! order to avoid partial release. note: disallows freeing
-        //! only requested but keeping dependent, e.g. (A -> B,
-        //! request B, get {B, A}, release only B, still have A.)
-        // std::unordered_set<resource::ID> dependent;
-      };
-
-      //! blocks if no resource of that class available/exists
-      //! (not-block-on-not-exists would race with add).
-      Acquired acquire (std::list<resource::Class>);
-      void release (Acquired const&);
-      virtual void interrupt() override;
-
-    private:
-      std::mutex _resources_guard;
-      std::condition_variable _resources_became_available_or_interrupted;
-      bool _interrupted {false};
-
-      Resources _resources;
-      std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;
-      std::unordered_map<resource::Class, std::unordered_set<resource::ID>>
-        _available_resources_by_class;
-
-      void release (resource::ID const&);
-    };
-
-    class Trivial : public WithPreferences
-    {
-    public:
-      Acquired acquire (resource::Class resource_class)
-      {
-        return WithPreferences::acquire ({resource_class});
-      }
-    };
-
-    class Coallocation : public interface::ResourceManager
-    {
-    public:
-      //! \note Only supports forward-disjoint classes.
-      virtual void add (Resources) override;
-      virtual void remove (Forest<resource::ID>) override;
-
-      struct Acquired
-      {
-        std::unordered_set<resource::ID> requesteds;
-        //! \note not shown to the user but implicitly locked, in
-        //! order to avoid partial release. note: disallows freeing
-        //! only requested but keeping dependent, e.g. (A -> B,
-        //! request B, get {B, A}, release only B, still have A.)
-        // std::unordered_set<resource::ID> dependent;
-      };
-
-      Acquired acquire (resource::Class, std::size_t);
-      void release (Acquired const&);
-      virtual void interrupt() override;
-
-    private:
-      //! C is not forward disjoint: C -> D <- C, but C -> D <- B is,
-      //! also transitive! No acquire of a C-class resource shall
-      //! implicitly block a different C-class resource.
-      static void assert_is_strictly_forward_disjoint_by_resource_class
-        (Resources const&);
-
-      std::mutex _resources_guard;
-      std::condition_variable _resources_became_available_or_interrupted;
-      bool _interrupted {false};
-
-      Resources _resources;
-      std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;
-      std::unordered_map<resource::Class, std::unordered_set<resource::ID>>
-        _available_resources_by_class;
-
-      void release (resource::ID const&);
-    };
-
     // class CoallocationWithPreference : public interface::ResourceManager
     // {
     //   // `[(rc, count)]` or `[rc], count` or both?
