@@ -17,6 +17,7 @@
 #include <gspc/remote_interface/Hostname.hpp>
 #include <gspc/remote_interface/ID.hpp>
 
+#include <gspc/Resource.hpp>
 #include <gspc/resource/Class.hpp>
 #include <gspc/resource/ID.hpp>
 
@@ -317,27 +318,6 @@ namespace gspc
     // };
   }
 }
-
-namespace gspc
-{
-  class Resource
-  {
-  public:
-    //! \todo individual-worker-specific, non-resource attributes,
-    //! e.g. socket binding, port, memory…
-    resource::Class resource_class;
-
-    template<typename Archive> void serialize (Archive& ar, unsigned int)
-    {
-      ar & resource_class;
-    }
-  };
-
-  bool operator== (Resource const&, Resource const&);
-  std::ostream& operator<< (std::ostream&, Resource const&);
-}
-
-UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::Resource);
 
 namespace gspc
 {
