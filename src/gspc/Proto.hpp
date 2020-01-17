@@ -1,5 +1,8 @@
 #pragma once
 
+#include <gspc/comm/runtime_system/resource_manager/Client.hpp>
+#include <gspc/comm/runtime_system/resource_manager/Server.hpp>
+
 #include <gspc/ErrorOr.hpp>
 #include <gspc/Forest.hpp>
 
@@ -55,24 +58,6 @@ namespace gspc
 {
   namespace comm
   {
-    namespace runtime_system
-    {
-      namespace resource_manager
-      {
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( add
-          , void (Forest<resource::ID, resource::Class>)
-          );
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( remove
-          , void (Forest<resource::ID>)
-          );
-
-        using Client = interface::ResourceManager&;
-        struct Server{};
-      }
-    }
-
     namespace scheduler
     {
       namespace worker
