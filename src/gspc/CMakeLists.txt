@@ -27,6 +27,7 @@ extended_add_library (NAME proto
           "rpc/TODO.cpp"
           "remote_interface/ID.cpp"
           "resource/ID.cpp"
+          "task/ID.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic

@@ -11,6 +11,8 @@
 
 #include <gspc/rpc/TODO.hpp>
 
+#include <gspc/task/ID.hpp>
+
 #include <gspc/util-generic_hash_forward_declare.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
@@ -46,24 +48,6 @@ namespace gspc
 
   namespace task
   {
-    struct ID
-    {
-      //! \todo  more complex:
-      //! - hierarchy with user_context
-      //! - information for scheduler
-      std::uint64_t id;
-
-      ID& operator++() { ++id; return *this; }
-
-      template<typename Archive>
-        void serialize (Archive& ar, unsigned int)
-      {
-        ar & id;
-      }
-    };
-    bool operator== (ID const&, ID const&);
-    std::ostream& operator<< (std::ostream&, ID const&);
-
     struct Result
     {
       std::unordered_map<std::string, value_type> outputs;
@@ -101,7 +85,6 @@ namespace gspc
   };
 }
 
-UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::task::ID);
 
 namespace gspc
 {
