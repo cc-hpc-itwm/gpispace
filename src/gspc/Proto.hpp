@@ -134,45 +134,6 @@ namespace gspc
 
 namespace gspc
 {
-  namespace comm
-  {
-    namespace scheduler
-    {
-      namespace workflow_engine
-      {
-        // next
-        // inject
-        // extract
-
-        using Client = interface::WorkflowEngine&;
-      }
-      namespace resource_manager
-      {
-        // acquire
-        // release
-        // interrupt
-      }
-    }
-    namespace user
-    {
-      namespace workflow_engine
-      {
-        // dump_state
-      }
-      namespace scheduler
-      {
-        // wait
-        // stop
-        // status
-      }
-      namespace runtime_system
-      {
-        // add
-        // remove
-      }
-    }
-  }
-
   namespace remote_interface
   {
     namespace strategy
