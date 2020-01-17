@@ -21,6 +21,9 @@ namespace gspc
 
       template<typename Archive>
         void serialize (Archive& ar, unsigned int);
+
+      friend std::ostream& operator<< (std::ostream&, ID const&);
+      friend bool operator== (ID const&, ID const&);
     };
   }
 }
