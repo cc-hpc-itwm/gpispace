@@ -3,6 +3,7 @@
 #include <gspc/ErrorOr.hpp>
 #include <gspc/Forest.hpp>
 
+#include <gspc/Job.hpp>
 #include <gspc/job/ID.hpp>
 
 #include <gspc/remote_interface/Hostname.hpp>
@@ -49,19 +50,6 @@
 
 namespace gspc
 {
-  //! between Scheduler and Worker
-  struct Job
-  {
-    //! \todo multiple tasks per job!?
-    Task task;
-
-    template<typename Archive>
-      void serialize (Archive& ar, unsigned int)
-    {
-      ar & task;
-    }
-  };
-
   namespace job
   {
     namespace finish_reason
