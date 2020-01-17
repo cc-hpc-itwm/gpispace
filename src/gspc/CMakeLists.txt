@@ -36,6 +36,7 @@ extended_add_library (NAME proto
           "comm/worker/scheduler/Server.cpp"
           "comm/worker/scheduler/Client.cpp"
           "Resource.cpp"
+          "Worker.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic

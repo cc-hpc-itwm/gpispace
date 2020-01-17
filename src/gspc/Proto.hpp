@@ -2,7 +2,6 @@
 
 #include <gspc/comm/runtime_system/resource_manager/Client.hpp>
 #include <gspc/comm/runtime_system/resource_manager/Server.hpp>
-#include <gspc/comm/scheduler/worker/Server.hpp>
 #include <gspc/comm/worker/scheduler/Server.hpp>
 
 #include <gspc/ErrorOr.hpp>
@@ -28,6 +27,8 @@
 #include <gspc/task/Result.hpp>
 
 #include <gspc/value_type.hpp>
+
+#include <gspc/Worker.hpp>
 
 #include <gspc/util-generic_hash_forward_declare.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
@@ -399,47 +400,6 @@ namespace gspc
       }
     }
   }
-
-  class Worker
-  {
-  public:
-    Worker (Resource);
-
-    Worker (Worker const&) = delete;
-    Worker (Worker&&) = delete;
-    Worker& operator= (Worker const&) = delete;
-    Worker& operator= (Worker&&) = delete;
-    //! \note dtor waits? cancels?
-    ~Worker();
-
-    rpc::endpoint endpoint_for_scheduler() const;
-
-    // called by scheduler (via rif)
-    void submit (rpc::endpoint, job::ID, Job);
-    void cancel (job::ID);
-
-    // called by user via scheduler (via rif)
-    // TaskState status (job::ID);
-
-  private:
-    Resource _resource;
-
-    fhg::util::scoped_boost_asio_io_service_with_threads
-      _io_service_for_scheduler {1};
-    comm::scheduler::worker::Server const _comm_server_for_scheduler;
-
-    //! \todo name: Job? Task?
-    struct WorkItem
-    {
-      rpc::endpoint scheduler;
-      job::ID job_id;
-      Job job;
-    };
-    using WorkQueue = fhg::util::interruptible_threadsafe_queue<WorkItem>;
-    WorkQueue _work_queue;
-    std::thread _worker_thread;
-    void work();
-  };
 
   class RemoteInterface
   {

@@ -1,3 +1,7 @@
+#include <util-generic/serialization/boost/filesystem/path.hpp>
+
+#include <boost/serialization/unordered_map.hpp>
+
 namespace gspc
 {
   template<typename Archive>
