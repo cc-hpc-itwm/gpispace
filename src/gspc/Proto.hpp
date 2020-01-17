@@ -4,6 +4,7 @@
 #include <gspc/Forest.hpp>
 
 #include <gspc/Job.hpp>
+#include <gspc/job/FinishReason.hpp>
 #include <gspc/job/ID.hpp>
 
 #include <gspc/remote_interface/Hostname.hpp>
@@ -47,47 +48,6 @@
 #include <tuple>
 #include <unordered_map>
 #include <unordered_set>
-
-namespace gspc
-{
-  namespace job
-  {
-    namespace finish_reason
-    {
-      struct Finished
-      {
-        //! \todo multiple tasks per job!?
-        ErrorOr<task::Result> task_result;
-        template<typename Archive>
-          void serialize (Archive& ar, unsigned int)
-        {
-          ar & task_result;
-        }
-      };
-      struct WorkerFailure
-      {
-        std::exception_ptr exception;
-        template<typename Archive>
-          void serialize (Archive& ar, unsigned int)
-        {
-          ar & exception;
-        }
-      };
-      struct Cancelled
-      {
-        template<typename Archive>
-          void serialize (Archive&, unsigned int)
-        {}
-      };
-    }
-
-    //! \todo Is worker failure a finish though?
-    using FinishReason = boost::variant < finish_reason::Finished
-                                        , finish_reason::WorkerFailure
-                                        , finish_reason::Cancelled
-                                        >;
-  }
-}
 
 namespace gspc
 {
