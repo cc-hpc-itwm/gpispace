@@ -3,6 +3,8 @@
 #include <gspc/ErrorOr.hpp>
 #include <gspc/Forest.hpp>
 
+#include <gspc/remote_interface/ID.hpp>
+
 #include <gspc/rpc/TODO.hpp>
 
 #include <gspc/util-generic_hash_forward_declare.hpp>
@@ -37,26 +39,9 @@ namespace gspc
 {
   namespace remote_interface
   {
-    struct ID
-    {
-      std::uint64_t id {0};
-
-      ID& operator++() { ++id; return *this; }
-
-      template<typename Archive>
-        void serialize (Archive& ar, unsigned int)
-      {
-        ar & id;
-      }
-    };
-    bool operator== (ID const& lhs, ID const& rhs);
-    std::ostream& operator<< (std::ostream&, ID const&);
-
     using Hostname = std::string;
   }
 }
-
-UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::remote_interface::ID);
 
 namespace gspc
 {

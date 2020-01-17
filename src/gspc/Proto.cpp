@@ -16,12 +16,6 @@
 #include <vector>
 
 UTIL_MAKE_COMBINED_STD_HASH_DEFINE
-  ( gspc::remote_interface::ID
-  , x
-  , x.id
-  );
-
-UTIL_MAKE_COMBINED_STD_HASH_DEFINE
   ( gspc::resource::ID
   , x
   , x.id
@@ -48,17 +42,6 @@ UTIL_MAKE_COMBINED_STD_HASH_DEFINE
 
 namespace gspc
 {
-  namespace remote_interface
-  {
-    bool operator== (ID const& lhs, ID const& rhs)
-    {
-      return std::tie (lhs.id) == std::tie (rhs.id);
-    }
-    std::ostream& operator<< (std::ostream& os, ID const& x)
-    {
-      return os << "remote_interface " << x.id;
-    }
-  }
   namespace resource
   {
     bool operator== (ID const& lhs, ID const& rhs)
