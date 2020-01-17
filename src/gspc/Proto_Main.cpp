@@ -1,4 +1,17 @@
-#include <gspc/Proto.hpp>
+#include <gspc/Forest.hpp>
+#include <gspc/GreedyScheduler.hpp>
+#include <gspc/MapWorkflowEngine.hpp>
+#include <gspc/Resource.hpp>
+#include <gspc/ScopedRuntimeSystem.hpp>
+#include <gspc/remote_interface/strategy/Thread.hpp>
+#include <gspc/resource_manager/Trivial.hpp>
+
+#include <util-generic/finally.hpp>
+#include <util-generic/print_exception.hpp>
+
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 int main (int argc, char** argv)
 try
