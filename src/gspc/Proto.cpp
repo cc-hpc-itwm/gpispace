@@ -1014,17 +1014,6 @@ namespace gspc
 
 namespace gspc
 {
-  namespace interface
-  {
-    template<typename Derived>
-        Scheduler::Scheduler (Derived* derived)
-      : _comm_server_for_worker (derived)
-    {}
-  }
-}
-
-namespace gspc
-{
   GreedyScheduler::GreedyScheduler
       ( comm::scheduler::workflow_engine::Client workflow_engine
       , resource_manager::Trivial& resource_manager
