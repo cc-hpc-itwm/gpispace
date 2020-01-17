@@ -15,26 +15,6 @@
 #include <exception>
 #include <vector>
 
-namespace rpc
-{
-  std::unique_ptr<remote_endpoint> make_endpoint
-    (boost::asio::io_service& io_service, endpoint ep)
-  {
-    return fhg::util::visit<std::unique_ptr<remote_endpoint>>
-      ( ep.best (fhg::util::hostname())
-      , [&] (socket_endpoint const& as_socket)
-        {
-          return std::make_unique<remote_socket_endpoint>
-            (io_service, as_socket.socket);
-        }
-      , [&] (tcp_endpoint const& as_tcp)
-        {
-          return std::make_unique<remote_tcp_endpoint> (io_service, as_tcp);
-        }
-      );
-  }
-}
-
 UTIL_MAKE_COMBINED_STD_HASH_DEFINE
   ( gspc::remote_interface::ID
   , x
