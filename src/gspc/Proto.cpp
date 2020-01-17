@@ -30,22 +30,6 @@ UTIL_MAKE_COMBINED_STD_HASH_DEFINE
 
 namespace gspc
 {
-  namespace task
-  {
-    std::ostream& operator<< (std::ostream& os, Result const& result)
-    {
-      return os << "Result:"
-        << fhg::util::print_container
-           ( "  ", "\n  ", "\n", result.outputs
-           , [&] (auto& s, auto const& x) -> decltype (s)
-             {
-               return s << x.first << " -> " << x.second;
-             }
-           )
-        ;
-    }
-  }
-
   bool operator== (Resource const& lhs, Resource const& rhs)
   {
     return std::tie (lhs.resource_class) == std::tie (rhs.resource_class);

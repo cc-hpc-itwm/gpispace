@@ -12,6 +12,9 @@
 #include <gspc/rpc/TODO.hpp>
 
 #include <gspc/task/ID.hpp>
+#include <gspc/task/Result.hpp>
+
+#include <gspc/value_type.hpp>
 
 #include <gspc/util-generic_hash_forward_declare.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
@@ -44,24 +47,6 @@
 
 namespace gspc
 {
-  using value_type = std::size_t;
-
-  namespace task
-  {
-    struct Result
-    {
-      std::unordered_map<std::string, value_type> outputs;
-
-      friend std::ostream& operator<< (std::ostream&, Result const&);
-
-      template<typename Archive>
-        void serialize (Archive& ar, unsigned int)
-      {
-        ar & outputs;
-      }
-    };
-  }
-
   struct Task
   {
     task::ID id;
