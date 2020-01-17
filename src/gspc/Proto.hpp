@@ -2,6 +2,7 @@
 
 #include <gspc/comm/runtime_system/resource_manager/Client.hpp>
 #include <gspc/comm/runtime_system/resource_manager/Server.hpp>
+#include <gspc/comm/scheduler/worker/Server.hpp>
 
 #include <gspc/ErrorOr.hpp>
 #include <gspc/Forest.hpp>
@@ -58,60 +59,6 @@ namespace gspc
 {
   namespace comm
   {
-    namespace scheduler
-    {
-      namespace worker
-      {
-        //! \todo worker::scheduler::Server::endpoint?
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( submit
-          , void (rpc::endpoint, job::ID, Job)
-          );
-        FHG_RPC_FUNCTION_DESCRIPTION
-          ( cancel
-          , void (job::ID)
-          );
-        // status
-
-        struct Client
-        {
-        public:
-          Client (boost::asio::io_service&, rpc::endpoint);
-
-        private:
-          std::unique_ptr<rpc::remote_endpoint> _endpoint;
-
-        public:
-          rpc::sync_remote_function<worker::submit> submit;
-          rpc::sync_remote_function<worker::cancel> cancel;
-        };
-
-        struct Server
-        {
-        private:
-          rpc::service_dispatcher _service_dispatcher;
-          fhg::util::scoped_boost_asio_io_service_with_threads _io_service;
-
-        public:
-          rpc::service_handler<worker::submit> const _submit;
-          rpc::service_handler<worker::cancel> const _cancel;
-
-        private:
-          rpc::service_socket_provider const _service_socket_provider;
-          rpc::service_tcp_provider const _service_tcp_provider;
-          rpc::endpoint const _local_endpoint;
-
-        public:
-          template<typename Submit, typename Cancel>
-            Server (Submit&&, Cancel&&);
-          template<typename That>
-            Server (That*);
-
-          rpc::endpoint local_endpoint() const;
-        };
-      }
-    }
-
     namespace worker
     {
       namespace scheduler
