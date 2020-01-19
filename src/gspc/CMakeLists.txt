@@ -56,7 +56,7 @@ extended_add_library (NAME proto
             Boost::base
 )
 
-extended_add_executable (NAME Proto
-  SOURCES "Proto_Main.cpp"
+extended_add_executable (NAME Proto_Map
+  SOURCES "Proto_Main_Map.cpp"
   LIBRARIES GSPC::proto
 )
