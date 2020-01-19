@@ -39,14 +39,21 @@ namespace gspc
     {
       auto const& inputs (task.inputs);
 
+      auto value_at
+        ( [&] (auto key)
+          {
+            return inputs.equal_range (key).first->second;
+          }
+        );
+
       if (task.so == "map_so" && task.symbol == "identity")
       {
         if (  inputs.size() != 3
            || inputs.count ("input") != 1
            || inputs.count ("output") != 1
            || inputs.count ("N") != 1
-           || inputs.at ("input") != task.id.id
-           || inputs.at ("input") + inputs.at ("output") != inputs.at ("N")
+           || value_at ("input") != task.id.id
+           || value_at ("input") + value_at ("output") != value_at ("N")
            )
         {
           throw std::logic_error ("Worker::execute: Map: Corrupted task.");

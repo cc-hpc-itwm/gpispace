@@ -73,7 +73,7 @@ namespace gspc
 
     ++_workflow_state.i;
 
-    std::unordered_map<std::string, value_type> const inputs
+    Task::Inputs const inputs
       { {"input", _workflow_state.i}
       , {"output", _workflow_state.N - _workflow_state.i}
       , {"N", _workflow_state.N}

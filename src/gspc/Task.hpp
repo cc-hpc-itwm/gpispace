@@ -18,7 +18,8 @@ namespace gspc
 
     resource::Class resource_class;
     //! \todo why not std::vector<char>?
-    std::unordered_map<std::string, value_type> inputs;
+    using Inputs = std::unordered_multimap<std::string, value_type>;
+    Inputs inputs;
     boost::filesystem::path so;
     std::string symbol;
 

@@ -27,7 +27,7 @@ namespace gspc
     public:
       Task extract
         ( resource::Class resource_class
-        , std::unordered_map<std::string, value_type> inputs
+        , Task::Inputs inputs
         , boost::filesystem::path so
         , std::string symbol
         );
