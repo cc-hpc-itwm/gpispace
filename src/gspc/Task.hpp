@@ -17,6 +17,7 @@ namespace gspc
     task::ID id;
 
     resource::Class resource_class;
+    //! \todo why not std::vector<char>?
     std::unordered_map<std::string, value_type> inputs;
     boost::filesystem::path so;
     std::string symbol;
