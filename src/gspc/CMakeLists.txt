@@ -71,3 +71,7 @@ extended_add_executable (NAME Proto_Graph_Dynamic_Map
   LIBRARIES GSPC::proto
 )
 
+extended_add_executable (NAME Proto_Graph_Nary_Tree
+  SOURCES "Proto_Main_Graph_Nary_Tree.cpp"
+  LIBRARIES GSPC::proto
+)
