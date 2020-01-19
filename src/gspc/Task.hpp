@@ -21,7 +21,8 @@ namespace gspc
     using Inputs = std::unordered_multimap<std::string, value_type>;
     Inputs inputs;
     boost::filesystem::path so;
-    std::string symbol;
+    using Symbol = std::string;
+    Symbol symbol;
 
     friend std::ostream& operator<< (std::ostream&, Task const&);
 
