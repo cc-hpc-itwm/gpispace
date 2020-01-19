@@ -57,6 +57,8 @@ namespace gspc
       Task::Symbol _symbol;
       Task::Inputs _inputs;
 
+      bool _got_heureka {false};
+
       template<typename Archive>
         void serialize (Archive& ar, unsigned int /* version */);
     } _workflow_state;

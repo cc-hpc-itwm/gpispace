@@ -54,7 +54,7 @@ namespace gspc
 
   bool GraphTraversalWorkflowEngine::workflow_finished() const
   {
-    return _workflow_state._open.empty();
+    return _workflow_state._got_heureka || _workflow_state._open.empty();
   }
 
   template<typename Archive>
@@ -66,6 +66,7 @@ namespace gspc
     ar & _open;
     ar & _symbol;
     ar & _inputs;
+    ar & _got_heureka;
   }
 
   workflow_engine::State GraphTraversalWorkflowEngine::state() const
@@ -129,7 +130,7 @@ namespace gspc
     inputs.emplace ("parent", parent);
 
     return _processing_state.extract
-      ("core", inputs, "graph_so", _workflow_state._symbol);
+      ("core", {{0}}, inputs, "graph_so", _workflow_state._symbol);
   }
 
   void GraphTraversalWorkflowEngine::inject
@@ -153,6 +154,9 @@ namespace gspc
           if (  outputs.count ("parent") != 1
              || inputs.count ("parent") != 1
              || value_at (outputs, "parent") != value_at (inputs, "parent")
+             || (  result.heureka_group
+                && !(*result.heureka_group == heureka::Group {0})
+                )
              )
           {
             throw std::logic_error
@@ -169,6 +173,11 @@ namespace gspc
               _workflow_state._open.emplace (child->second);
               _workflow_state._structure.insert (child->second, {}, {parent});
             }
+          }
+
+          if (result.heureka_group)
+          {
+            _workflow_state._got_heureka = true;
           }
         }
       );
