@@ -12,7 +12,9 @@ namespace gspc
   {
     struct Result
     {
-      std::unordered_map<std::string, value_type> outputs;
+      //! \todo why not std::vector<char>
+      using Outputs = std::unordered_multimap<std::string, value_type>;
+      Outputs outputs;
 
       friend std::ostream& operator<< (std::ostream&, Result const&);
 
