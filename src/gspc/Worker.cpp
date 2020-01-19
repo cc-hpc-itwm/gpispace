@@ -109,8 +109,7 @@ namespace gspc
 
       if (task.so == "graph_so" && task.symbol == "nary_tree")
       {
-        if (  inputs.size() != 3
-           || inputs.count ("parent") != 1
+        if (  inputs.count ("parent") != 1
            || inputs.count ("N") != 1
            || inputs.count ("B") != 1
            || !(value_at ("parent") < value_at ("N"))
@@ -124,7 +123,18 @@ namespace gspc
 
         auto b (value_at ("B"));
         auto const n (value_at ("N"));
-        auto const child_base (b * value_at ("parent") + 1);
+        auto const parent (value_at ("parent"));
+
+        if (  inputs.count ("heureka_value")
+           && parent == value_at ("heureka_value")
+           )
+        {
+          std::cout << "Worker::Heureka! " << parent << std::endl;
+
+          return {inputs, {{0}}};
+        }
+
+        auto const child_base (b * parent + 1);
 
         while (b --> 0)
         {

@@ -19,10 +19,10 @@
 int main (int argc, char** argv)
 try
 {
-  if (argc < 3)
+  if (argc < 4)
   {
     throw std::invalid_argument
-      ("usage: Proto_Graph_Nary_Tree.exe maxnode branchfactor [structure_file]");
+      ("usage: Proto_Graph_Nary_Tree.exe maxnode branchfactor heureka_value [structure_file]");
   }
 
   gspc::resource_manager::Trivial resource_manager;
@@ -71,7 +71,10 @@ try
   gspc::GraphTraversalWorkflowEngine workflow_engine
     ( {0}
     , "nary_tree"
-    , {{"N", std::stoul (argv[1])}, {"B", std::stoul (argv[2])}}
+    , { {"N", std::stoul (argv[1])}
+      , {"B", std::stoul (argv[2])}
+      , {"heureka_value", std::stoul (argv[3])}
+      }
     );
 
   gspc::GreedyScheduler scheduler
@@ -90,9 +93,9 @@ try
     << std::endl
     ;
 
-  if (argc > 3)
+  if (argc > 4)
   {
-    std::ofstream (argv[3])
+    std::ofstream (argv[4])
       << gspc::ToDot<gspc::value_type> (workflow_engine.structure());
   }
 
