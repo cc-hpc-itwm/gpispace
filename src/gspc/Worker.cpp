@@ -59,7 +59,7 @@ namespace gspc
           throw std::logic_error ("Worker::execute: Map: Corrupted task.");
         }
 
-        return {inputs};
+        return {inputs, {}};
       }
 
       if (task.so == "graph_so" && task.symbol == "static_map")
@@ -73,7 +73,7 @@ namespace gspc
             ("Worker::execute: Graph: Static Map: Corrupted task.");
         }
 
-        return {inputs};
+        return {inputs, {}};
       }
 
       if (task.so == "graph_so" && task.symbol == "dynamic_map")
@@ -104,7 +104,7 @@ namespace gspc
           }
         }
 
-        return {outputs};
+        return {outputs, {}};
       }
 
       if (task.so == "graph_so" && task.symbol == "nary_tree")
@@ -136,7 +136,7 @@ namespace gspc
           }
         }
 
-        return {outputs};
+        return {outputs, {}};
       }
 
       throw std::invalid_argument

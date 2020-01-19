@@ -79,7 +79,7 @@ namespace gspc
       , {"N", _workflow_state.N}
       };
 
-    return _processing_state.extract ("core", inputs, "map_so", "identity");
+    return _processing_state.extract ("core", {}, inputs, "map_so", "identity");
   }
 
   void MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)

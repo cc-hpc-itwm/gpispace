@@ -6,6 +6,7 @@ namespace gspc
       void Result::serialize (Archive& ar, unsigned int)
     {
       ar & outputs;
+      ar & heureka_group;
     }
   }
 }

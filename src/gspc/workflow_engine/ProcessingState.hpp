@@ -27,6 +27,7 @@ namespace gspc
     public:
       Task extract
         ( resource::Class resource_class
+        , boost::optional<heureka::Group> heureka_group
         , Task::Inputs inputs
         , boost::filesystem::path so
         , std::string symbol

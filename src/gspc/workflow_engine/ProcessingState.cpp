@@ -9,6 +9,7 @@ namespace gspc
   {
     Task ProcessingState::extract
         ( resource::Class resource_class
+        , boost::optional<heureka::Group> heureka_group
         , Task::Inputs inputs
         , boost::filesystem::path so
         , std::string symbol
@@ -18,7 +19,7 @@ namespace gspc
 
       return _tasks.emplace
         ( task_id
-        , Task {task_id, resource_class, inputs, so, symbol}
+        , Task {task_id, resource_class, heureka_group, inputs, so, symbol}
         ).first->second;
     }
 
