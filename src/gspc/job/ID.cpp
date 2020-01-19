@@ -12,6 +12,10 @@ namespace gspc
     {
       return os << "job " << x.id << " " << x.task_id;
     }
+    std::size_t hash_value (ID const& id)
+    {
+      return std::hash<ID>{} (id);
+    }
   }
 }
 

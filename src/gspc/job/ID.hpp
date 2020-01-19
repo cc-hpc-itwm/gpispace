@@ -25,6 +25,8 @@ namespace gspc
       friend std::ostream& operator<< (std::ostream&, ID const&);
       friend bool operator== (ID const&, ID const&);
     };
+
+    std::size_t hash_value (ID const&);
   }
 }
 
