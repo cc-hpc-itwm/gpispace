@@ -177,7 +177,7 @@ namespace gspc
   void GreedyScheduler::finished
     (job::ID job_id, job::FinishReason finish_reason)
   {
-    std::lock_guard<std::mutex> const lock (_guard_state);
+    std::unique_lock<std::mutex> lock (_guard_state);
 
     auto remove_job
       ( [&]
@@ -206,6 +206,52 @@ namespace gspc
 
           if (task_result)
           {
+            if (task_result.value().heureka_group)
+            {
+              auto heureka_group
+                ( _heureka_groups.left
+                . equal_range (*task_result.value().heureka_group)
+                );
+
+              std::unordered_map<job::ID, resource::ID> jobs_to_cancel;
+
+              std::transform
+                ( heureka_group.first
+                , heureka_group.second
+                , std::inserter (jobs_to_cancel, jobs_to_cancel.end())
+                , [&] (auto const& job_in_heureka_group)
+                  {
+                    auto const& job_id (job_in_heureka_group.second);
+
+                    return std::make_pair (job_id, _jobs.at (job_id));
+                  }
+                );
+
+              _heureka_groups.left.erase (*task_result.value().heureka_group);
+
+              if (!jobs_to_cancel.empty())
+              {
+                call_unlocked
+                  ( lock
+                  , [&] (std::unordered_map<job::ID, resource::ID>&& jobs)
+                    {
+                      for (auto const& job : jobs)
+                      {
+                        do_worker_call
+                          ( job.second
+                          , job.first
+                          , [&] (comm::scheduler::worker::Client& client)
+                            {
+                              return client.cancel (job.first);
+                            }
+                          );
+                      }
+                    }
+                  , std::move (jobs_to_cancel)
+                  );
+              }
+            }
+
             _injected = true;
 
             _injected_or_stopped.notify_one();
