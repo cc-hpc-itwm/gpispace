@@ -24,6 +24,7 @@ extended_add_library (NAME util
 extended_add_library (NAME proto
   NAMESPACE GSPC
   SOURCES "Proto.cpp"
+          "GraphTraversalWorkflowEngine.cpp"
           "GreedyScheduler.cpp"
           "MapWorkflowEngine.cpp"
           "RemoteInterface.cpp"
