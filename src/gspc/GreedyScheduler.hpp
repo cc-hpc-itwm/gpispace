@@ -50,5 +50,8 @@ namespace gspc
 
     std::thread _thread;
     void scheduling_thread();
+
+    template<typename Function>
+      void do_worker_call (resource::ID, job::ID, Function&& function) noexcept;
   };
 }
