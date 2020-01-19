@@ -76,6 +76,37 @@ namespace gspc
         return {inputs};
       }
 
+      if (task.so == "graph_so" && task.symbol == "dynamic_map")
+      {
+        // when parent == 0 then generate all tasks [1..N]
+        // when parent != 0 then verify its less or equal to N
+        if (  inputs.size() != 2
+           || inputs.count ("parent") != 1
+           || inputs.count ("N") != 1
+           || value_at ("parent") > value_at ("N")
+           )
+        {
+          throw std::logic_error
+            ("Worker::execute: Graph: Dynamic Map: Corrupted task.");
+        }
+
+        auto outputs (inputs);
+
+        auto const parent (value_at ("parent"));
+
+        if (parent == 0)
+        {
+          auto n (value_at ("N"));
+
+          while (n --> 0)
+          {
+            outputs.emplace ("children", n + 1);
+          }
+        }
+
+        return {outputs};
+      }
+
       throw std::invalid_argument
         ("Worker:execute_task: non-Map, non-Graph: NYI.");
     }

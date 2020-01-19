@@ -66,3 +66,8 @@ extended_add_executable (NAME Proto_Graph_Static_Map
   LIBRARIES GSPC::proto
 )
 
+extended_add_executable (NAME Proto_Graph_Dynamic_Map
+  SOURCES "Proto_Main_Graph_Dynamic_Map.cpp"
+  LIBRARIES GSPC::proto
+)
+
