@@ -214,7 +214,7 @@ namespace gspc
     T _next_key {0};
   };
 
-  template<typename T, typename A>
+  template<typename T, typename A = boost::blank>
     struct ToDot : public fhg::util::ostream::modifier
   {
     ToDot (Forest<T, A> const&);
