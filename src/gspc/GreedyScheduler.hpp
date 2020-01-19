@@ -2,10 +2,15 @@
 
 #include <gspc/ScopedRuntimeSystem.hpp>
 #include <gspc/comm/scheduler/workflow_engine/Client.hpp>
+#include <gspc/heureka/Group.hpp>
 #include <gspc/interface/Scheduler.hpp>
 #include <gspc/job/FinishReason.hpp>
 #include <gspc/job/ID.hpp>
 #include <gspc/resource_manager/Trivial.hpp>
+
+#include <boost/bimap.hpp>
+#include <boost/bimap/unordered_multiset_of.hpp>
+#include <boost/bimap/unordered_set_of.hpp>
 
 #include <atomic>
 #include <condition_variable>
@@ -46,6 +51,13 @@ namespace gspc
     std::condition_variable _injected_or_stopped;
     bool _injected {false};
     std::unordered_map<job::ID, resource::ID> _jobs;
+
+    using HeurekaGroups = boost::bimap
+      < boost::bimaps::unordered_multiset_of<heureka::Group>
+      , boost::bimaps::unordered_set_of<job::ID>
+      >;
+
+    HeurekaGroups _heureka_groups;
     std::uint64_t _next_job_id {0};
 
     std::thread _thread;

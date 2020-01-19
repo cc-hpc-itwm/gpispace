@@ -84,6 +84,12 @@ namespace gspc
                 throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
               }
 
+              if (task.heureka_group)
+              {
+                _heureka_groups.insert
+                  (HeurekaGroups::value_type (*task.heureka_group, job_id));
+              }
+
               call_unlocked
                 ( lock
                 , [&]
@@ -183,6 +189,8 @@ namespace gspc
           {
             throw std::logic_error ("INCONSISTENCY: finished unknown job");
           }
+
+          _heureka_groups.right.erase (job_id);
         }
       );
 
