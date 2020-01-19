@@ -62,7 +62,22 @@ namespace gspc
         return {inputs};
       }
 
-      throw std::invalid_argument ("Worker:execute_task: non-Map: NYI.");
+      if (task.so == "graph_so" && task.symbol == "static_map")
+      {
+        // do not generate children
+        if (  inputs.size() != 1
+           || inputs.count ("parent") != 1
+           )
+        {
+          throw std::logic_error
+            ("Worker::execute: Graph: Static Map: Corrupted task.");
+        }
+
+        return {inputs};
+      }
+
+      throw std::invalid_argument
+        ("Worker:execute_task: non-Map, non-Graph: NYI.");
     }
 
     job::finish_reason::Finished execute_job (Job const& job)
