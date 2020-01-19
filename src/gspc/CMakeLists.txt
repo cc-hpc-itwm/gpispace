@@ -37,6 +37,7 @@ extended_add_library (NAME proto
           "comm/scheduler/worker/Server.cpp"
           "comm/worker/scheduler/Client.cpp"
           "comm/worker/scheduler/Server.cpp"
+          "heureka/Group.cpp"
           "job/ID.cpp"
           "remote_interface/ConnectionAndPID.cpp"
           "remote_interface/ID.cpp"
