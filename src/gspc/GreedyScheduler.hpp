@@ -34,7 +34,7 @@ namespace gspc
                     , resource_manager::Trivial& //! \todo: Client
                     , ScopedRuntimeSystem& //! \todo UnscopedBase
                     );
-    //! \todo ~GreedyScheduler -> wait()
+    ~GreedyScheduler();
 
     virtual void wait() override;
     virtual void stop() override;

@@ -292,6 +292,11 @@ namespace gspc
       );
   }
 
+  GreedyScheduler::~GreedyScheduler()
+  {
+    wait();
+  }
+
   void GreedyScheduler::wait()
   {
     if (_thread.joinable())
