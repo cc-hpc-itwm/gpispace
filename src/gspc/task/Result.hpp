@@ -19,6 +19,7 @@ namespace gspc
       using Outputs = std::unordered_multimap<std::string, value_type>;
       Outputs outputs;
 
+      //! \todo any group? only the group the task is a member? multiple?
       boost::optional<heureka::Group> heureka_group;
 
       friend std::ostream& operator<< (std::ostream&, Result const&);
