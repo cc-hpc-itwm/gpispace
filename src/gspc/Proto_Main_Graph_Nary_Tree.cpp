@@ -96,7 +96,18 @@ try
   if (argc > 4)
   {
     std::ofstream (argv[4])
-      << gspc::ToDot<gspc::value_type> (workflow_engine.structure().mirrored());
+      << gspc::ToDot<gspc::value_type>
+           ( workflow_engine.structure().mirrored()
+           , [&] (auto const& node)
+             {
+               if (workflow_engine.open().count (node.first))
+               {
+                 return ",fillcolor=\"lightgrey\",style=\"filled\"";
+               }
+
+               return "";
+             }
+           );
   }
 
   return EXIT_SUCCESS;
