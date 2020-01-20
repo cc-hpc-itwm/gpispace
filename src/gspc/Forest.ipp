@@ -136,6 +136,19 @@ namespace gspc
   }
 
   template<typename T, typename A>
+    Forest<T, A>::Forest (Annotations annotation, Relation suc, Relation pre)
+      : _suc (std::move (suc))
+      , _pre (std::move (pre))
+      , _annotations (std::move (annotation))
+  {}
+
+  template<typename T, typename A>
+    Forest<T, A> Forest<T, A>::mirrored() const
+  {
+    return {_annotations, _pre, _suc};
+  }
+
+  template<typename T, typename A>
     bool Forest<T, A>::is_unknown (T const& x) const
   {
     return !detail::is_member (x, _annotations);

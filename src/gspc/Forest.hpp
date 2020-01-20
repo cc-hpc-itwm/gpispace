@@ -154,10 +154,15 @@ namespace gspc
             >
       void for_each_leaf (Callback&&) const;
 
+    //! turn all arrows
+    Forest<T, A> mirrored() const;
+
   protected:
     Relation _suc;
     Relation _pre;
     Annotations _annotations;
+
+    Forest (Annotations, Relation, Relation);
 
     bool is_unknown (T const&) const;
     bool is_leaf (T const&) const;
