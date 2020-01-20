@@ -2,6 +2,8 @@
 
 #include <gspc/comm/scheduler/worker/Client.hpp>
 
+#include <util-generic/make_optional.hpp>
+
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
@@ -190,7 +192,14 @@ namespace gspc
             throw std::logic_error ("INCONSISTENCY: finished unknown job");
           }
 
-          _heureka_groups.right.erase (job_id);
+          FHG_UTIL_FINALLY ([&] {_heureka_groups.right.erase (job_id);});
+
+          auto heureka_group (_heureka_groups.right.find (job_id));
+
+          return FHG_UTIL_MAKE_OPTIONAL
+            ( heureka_group != _heureka_groups.right.end()
+            , heureka_group->second
+            );
         }
       );
 
@@ -202,12 +211,17 @@ namespace gspc
 
           _workflow_engine.inject (job_id.task_id, task_result);
 
-          remove_job();
+          auto const maybe_heureka_group (remove_job());
 
           if (task_result)
           {
             if (task_result.value().heureka_group)
             {
+              if (maybe_heureka_group != task_result.value().heureka_group)
+              {
+                throw std::logic_error ("Wrong heureka group.");
+              }
+
               auto heureka_group
                 ( _heureka_groups.left
                 . equal_range (*task_result.value().heureka_group)
