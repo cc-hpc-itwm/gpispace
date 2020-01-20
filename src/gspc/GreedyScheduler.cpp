@@ -299,6 +299,7 @@ namespace gspc
 
   void GreedyScheduler::wait()
   {
+    //! \todo allow multiple (concurrent) calls
     if (_thread.joinable())
     {
       _thread.join();

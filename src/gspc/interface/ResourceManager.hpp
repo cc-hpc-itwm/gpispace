@@ -38,6 +38,10 @@ namespace gspc
       //! \todo maybe return optional<...> instead of throwing Interrupted
       // virtual ? acquire (?)
       // virtual void release (?)
+
+      //! \todo crash recovery: maybe record clients in order to
+      //! release all resources acquired by a crashed client -> maybe
+      //! required for interrupt anyways
     private:
       //! \todo
       // comm::runtime_system::resource_manager::Server _comm_server_for_runtime_system;

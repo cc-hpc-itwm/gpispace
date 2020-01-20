@@ -49,6 +49,12 @@ namespace gspc
 
     rpc::endpoint worker_endpoint_for_scheduler (resource::ID) const;
 
+    //! \todo observation for IML and advanced scheduler
+    //! std::string hostname (NodeID) const;
+    //! std::string hostname (ResourceID) const;
+    //! std::map<std::string /*hostname*/, std::set<ResourceID>>
+    //!   resources_by_host() const;
+
   private:
     comm::runtime_system::resource_manager::Client _resource_manager;
 

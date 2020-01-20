@@ -155,7 +155,7 @@ namespace gspc
 
            return result;
          };
-      //! \todo
+      //! \todo cleanup on error
       //      |= [&] ( remote_interface::Hostname const& // hostname
       //             , MaybeError<UniqueForest<std::tuple<Resource, ErrorOr<resource::ID>>>> // result
       //             )
@@ -214,6 +214,8 @@ namespace gspc
             );
         }
       );
+
+    //! \todo teardown rif if empty
 
     return results;
   }

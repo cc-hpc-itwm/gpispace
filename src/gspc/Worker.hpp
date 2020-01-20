@@ -45,7 +45,6 @@ namespace gspc
       _io_service_for_scheduler {1};
     comm::scheduler::worker::Server const _comm_server_for_scheduler;
 
-    //! \todo name: Job? Task?
     struct WorkItem
     {
       rpc::endpoint scheduler;

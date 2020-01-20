@@ -194,6 +194,7 @@ namespace gspc
   {
     if (auto const work_item = _work_queue.remove (id))
     {
+      //! \todo steal work == cancel_only_when_not_yet_started
       auto const& scheduler (work_item->scheduler);
       auto const& job_id (work_item->job_id);
       assert (job_id == id);
