@@ -96,7 +96,7 @@ try
   if (argc > 4)
   {
     std::ofstream (argv[4])
-      << gspc::ToDot<gspc::value_type> (workflow_engine.structure());
+      << gspc::ToDot<gspc::value_type> (workflow_engine.structure().mirrored());
   }
 
   return EXIT_SUCCESS;
