@@ -222,11 +222,18 @@ namespace gspc
   template<typename T, typename A = boost::blank>
     struct ToDot : public fhg::util::ostream::modifier
   {
-    ToDot (Forest<T, A> const&);
-    ToDot (UniqueForest<A, T> const&);
+    using Decorator = std::function<std::string (forest::Node<T, A> const&)>;
+
+    ToDot ( Forest<T, A> const&
+          , Decorator = [] (auto) -> std::string { return {}; }
+          );
+    ToDot ( UniqueForest<A, T> const&
+          , Decorator = [] (auto) -> std::string { return {}; }
+          );
     virtual std::ostream& operator() (std::ostream&) const override;
   private:
     Forest<T, A> const& _forest;
+    Decorator _decorate;
   };
 }
 
