@@ -9,7 +9,6 @@ namespace gspc
   {
     ar & id;
     ar & resource_class;
-    ar & heureka_group;
     ar & inputs;
     ar & so;
     ar & symbol;

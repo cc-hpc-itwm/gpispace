@@ -59,7 +59,7 @@ namespace gspc
           throw std::logic_error ("Worker::execute: Map: Corrupted task.");
         }
 
-        return {inputs, {}};
+        return {inputs};
       }
 
       if (task.so == "graph_so" && task.symbol == "static_map")
@@ -73,7 +73,7 @@ namespace gspc
             ("Worker::execute: Graph: Static Map: Corrupted task.");
         }
 
-        return {inputs, {}};
+        return {inputs};
       }
 
       if (task.so == "graph_so" && task.symbol == "dynamic_map")
@@ -104,7 +104,7 @@ namespace gspc
           }
         }
 
-        return {outputs, {}};
+        return {outputs};
       }
 
       if (task.so == "graph_so" && task.symbol == "nary_tree")
@@ -125,14 +125,11 @@ namespace gspc
         auto const n (value_at ("N"));
         auto const parent (value_at ("parent"));
 
-        if (  inputs.count ("heureka_value")
-           && parent == value_at ("heureka_value")
-           )
-        {
-          std::cout << "Worker::Heureka! " << parent << std::endl;
-
-          return {inputs, {{0}}};
-        }
+        outputs.emplace
+          ( "heureka"
+          , inputs.count ("heureka_value")
+          && parent == value_at ("heureka_value")
+          );
 
         auto const child_base (b * parent + 1);
 
@@ -146,7 +143,7 @@ namespace gspc
           }
         }
 
-        return {outputs, {}};
+        return {outputs};
       }
 
       throw std::invalid_argument

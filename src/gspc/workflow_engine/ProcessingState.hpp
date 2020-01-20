@@ -27,7 +27,6 @@ namespace gspc
     public:
       Task extract
         ( resource::Class resource_class
-        , boost::optional<heureka::Group> heureka_group
         , Task::Inputs inputs
         , boost::filesystem::path so
         , std::string symbol
@@ -49,6 +48,8 @@ namespace gspc
         );
 
       bool has_extracted_tasks() const;
+
+      std::unordered_set<task::ID> extracted() const;
 
       friend std::ostream& operator<< (std::ostream&, ProcessingState const&);
 

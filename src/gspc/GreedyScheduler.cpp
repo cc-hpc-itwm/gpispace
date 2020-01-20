@@ -81,15 +81,11 @@ namespace gspc
 
               job::ID const job_id {_next_job_id++, task.id};
 
-              if (!_jobs.emplace (job_id, acquired.requested).second)
+              if (  !_jobs.emplace (job_id, acquired.requested).second
+                 || !_job_by_task.emplace (task.id, job_id).second
+                 )
               {
                 throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
-              }
-
-              if (task.heureka_group)
-              {
-                _heureka_groups.insert
-                  (HeurekaGroups::value_type (*task.heureka_group, job_id));
               }
 
               call_unlocked
@@ -187,19 +183,13 @@ namespace gspc
           _resource_manager.release
             (resource_manager::Trivial::Acquired {_jobs.at (job_id)});
 
-          if (!_jobs.erase (job_id))
+          if (  !_jobs.erase (job_id)
+             || !_job_by_task.erase (job_id.task_id)
+             )
           {
             throw std::logic_error ("INCONSISTENCY: finished unknown job");
           }
 
-          FHG_UTIL_FINALLY ([&] {_heureka_groups.right.erase (job_id);});
-
-          auto heureka_group (_heureka_groups.right.find (job_id));
-
-          return FHG_UTIL_MAKE_OPTIONAL
-            ( heureka_group != _heureka_groups.right.end()
-            , heureka_group->second
-            );
         }
       );
 
@@ -209,63 +199,60 @@ namespace gspc
         {
           auto const& task_result (finished.task_result);
 
-          _workflow_engine.inject (job_id.task_id, task_result);
+          auto const inject_result
+            (_workflow_engine.inject (job_id.task_id, task_result));
 
-          auto const maybe_heureka_group (remove_job());
+          std::unordered_map<job::ID, resource::ID> jobs_to_cancel;
+
+          std::transform
+            ( inject_result.tasks_with_ignored_result.begin()
+            , inject_result.tasks_with_ignored_result.end()
+            , std::inserter (jobs_to_cancel, jobs_to_cancel.end())
+            , [&] (task::ID const& task_id)
+              {
+                auto const& job_id (_job_by_task.at (task_id));
+
+                return std::make_pair (job_id, _jobs.at (job_id));
+              }
+            );
+          std::transform
+            ( inject_result.tasks_with_optional_result.begin()
+            , inject_result.tasks_with_optional_result.end()
+            , std::inserter (jobs_to_cancel, jobs_to_cancel.end())
+            , [&] (task::ID const& task_id)
+              {
+                auto const& job_id (_job_by_task.at (task_id));
+
+                return std::make_pair (job_id, _jobs.at (job_id));
+              }
+            );
+
+          remove_job();
+
+          if (!jobs_to_cancel.empty())
+          {
+            call_unlocked
+              ( lock
+              , [&] (std::unordered_map<job::ID, resource::ID> jobs)
+                {
+                  for (auto const& job : jobs)
+                  {
+                    do_worker_call
+                      ( job.second
+                      , job.first
+                      , [&] (comm::scheduler::worker::Client& client)
+                        {
+                          return client.cancel (job.first);
+                        }
+                      );
+                  }
+                }
+              , std::move (jobs_to_cancel)
+              );
+          }
 
           if (task_result)
           {
-            if (task_result.value().heureka_group)
-            {
-              if (maybe_heureka_group != task_result.value().heureka_group)
-              {
-                throw std::logic_error ("Wrong heureka group.");
-              }
-
-              auto heureka_group
-                ( _heureka_groups.left
-                . equal_range (*task_result.value().heureka_group)
-                );
-
-              std::unordered_map<job::ID, resource::ID> jobs_to_cancel;
-
-              std::transform
-                ( heureka_group.first
-                , heureka_group.second
-                , std::inserter (jobs_to_cancel, jobs_to_cancel.end())
-                , [&] (auto const& job_in_heureka_group)
-                  {
-                    auto const& job_id (job_in_heureka_group.second);
-
-                    return std::make_pair (job_id, _jobs.at (job_id));
-                  }
-                );
-
-              _heureka_groups.left.erase (*task_result.value().heureka_group);
-
-              if (!jobs_to_cancel.empty())
-              {
-                call_unlocked
-                  ( lock
-                  , [&] (std::unordered_map<job::ID, resource::ID>&& jobs)
-                    {
-                      for (auto const& job : jobs)
-                      {
-                        do_worker_call
-                          ( job.second
-                          , job.first
-                          , [&] (comm::scheduler::worker::Client& client)
-                            {
-                              return client.cancel (job.first);
-                            }
-                          );
-                      }
-                    }
-                  , std::move (jobs_to_cancel)
-                  );
-              }
-            }
-
             _injected = true;
 
             _injected_or_stopped.notify_one();

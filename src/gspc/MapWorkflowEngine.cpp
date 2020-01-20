@@ -79,12 +79,13 @@ namespace gspc
       , {"N", _workflow_state.N}
       };
 
-    return _processing_state.extract ("core", {}, inputs, "map_so", "identity");
+    return _processing_state.extract ("core", inputs, "map_so", "identity");
   }
 
-  void MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)
+  interface::WorkflowEngine::InjectResult
+    MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)
   {
-    return _processing_state.inject
+    _processing_state.inject
       ( std::move (id)
       , std::move (result)
       , [] (Task const& input_task, task::Result const& result)
@@ -96,5 +97,7 @@ namespace gspc
           }
         }
       );
+
+    return {};
   }
 }

@@ -1,6 +1,5 @@
 #pragma once
 
-#include <gspc/heureka/Group.hpp>
 #include <gspc/resource/Class.hpp>
 #include <gspc/task/ID.hpp>
 #include <gspc/value_type.hpp>
@@ -19,7 +18,6 @@ namespace gspc
     task::ID id;
 
     resource::Class resource_class;
-    boost::optional<heureka::Group> heureka_group;
     //! \todo why not std::vector<char>?
     using Inputs = std::unordered_multimap<std::string, value_type>;
     Inputs inputs;

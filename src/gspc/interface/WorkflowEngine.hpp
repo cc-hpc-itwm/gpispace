@@ -19,7 +19,18 @@ namespace gspc
       //! \note workflow engine shall not say "true" when there are
       //! extacted tasks
       virtual boost::variant<Task, bool> extract() = 0;
-      virtual void inject (task::ID, ErrorOr<task::Result>) = 0;
+
+      struct InjectResult
+      {
+        //! \note ignored or optional is important for the
+        //! workflow_engine but not for the scheduler. It is okay to
+        //! cancel, it is okay to run and inject the results
+
+        //! shall not contain the injected task
+        std::unordered_set<task::ID> tasks_with_ignored_result;
+        std::unordered_set<task::ID> tasks_with_optional_result;
+      };
+      virtual InjectResult inject (task::ID, ErrorOr<task::Result>) = 0;
 
       virtual workflow_engine::State state() const = 0;
       //! \required: WorkflowEngine (workflow_engine::State)

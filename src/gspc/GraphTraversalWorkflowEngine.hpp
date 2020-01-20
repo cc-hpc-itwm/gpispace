@@ -42,7 +42,7 @@ namespace gspc
     Task::Inputs const& inputs() const;
 
     virtual boost::variant<Task, bool> extract() override;
-    virtual void inject (task::ID, ErrorOr<task::Result>) override;
+    virtual InjectResult inject (task::ID, ErrorOr<task::Result>) override;
 
     virtual workflow_engine::State state() const override;
     GraphTraversalWorkflowEngine (workflow_engine::State);

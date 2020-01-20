@@ -130,13 +130,15 @@ namespace gspc
     inputs.emplace ("parent", parent);
 
     return _processing_state.extract
-      ("core", {{0}}, inputs, "graph_so", _workflow_state._symbol);
+      ("core", inputs, "graph_so", _workflow_state._symbol);
   }
 
-  void GraphTraversalWorkflowEngine::inject
+  interface::WorkflowEngine::InjectResult GraphTraversalWorkflowEngine::inject
     (task::ID id, ErrorOr<task::Result> result)
   {
-    return _processing_state.inject
+    bool got_first_heureka {false};
+
+    _processing_state.inject
       ( std::move (id)
       , std::move (result)
       , [&] (Task const& input_task, task::Result const& result)
@@ -154,9 +156,6 @@ namespace gspc
           if (  outputs.count ("parent") != 1
              || inputs.count ("parent") != 1
              || value_at (outputs, "parent") != value_at (inputs, "parent")
-             || (  result.heureka_group
-                && !(*result.heureka_group == heureka::Group {0})
-                )
              )
           {
             throw std::logic_error
@@ -175,11 +174,18 @@ namespace gspc
             }
           }
 
-          if (result.heureka_group)
+          if (outputs.count ("heureka") && value_at (outputs, "heureka"))
           {
+            got_first_heureka = !_workflow_state._got_heureka;
+
             _workflow_state._got_heureka = true;
           }
         }
       );
+
+    return got_first_heureka
+      ? InjectResult {{}, _processing_state.extracted()}
+      : InjectResult {}
+    ;
   }
 }
