@@ -55,6 +55,11 @@ namespace gspc
       job::ID job_id;
       ErrorOr<task::Result> task_result;
     };
+    struct Inject
+    {
+      task::ID task_id;
+      ErrorOr<task::Result> task_result;
+    };
     struct Cancelled
     {
       job::ID job_id;
@@ -64,6 +69,7 @@ namespace gspc
                                    , Extract
                                    , CancelAllTasks
                                    , Finished
+                                   , Inject
                                    , Cancelled
                                    >;
 

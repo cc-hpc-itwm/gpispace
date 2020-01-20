@@ -5,6 +5,7 @@
 #include <util-generic/make_optional.hpp>
 
 #include <boost/range/adaptor/map.hpp>
+#include <boost/format.hpp>
 
 #include <algorithm>
 #include <exception>
@@ -211,10 +212,23 @@ namespace gspc
           {
             remove_job (finished.job_id);
 
+            _command_queue.put
+              (Inject {finished.job_id.task_id, finished.task_result});
+
+            if (!finished.task_result)
+            {
+              stop();
+            }
+          }
+        , [&] (Inject inject)
+          {
             auto const inject_result
-              ( _workflow_engine.inject
-                  (finished.job_id.task_id, finished.task_result)
-              );
+              (_workflow_engine.inject (inject.task_id, inject.task_result));
+
+            //! \note *each* inject requires an Extract, also the
+            //! failures in order to get 'has_finished' (and not block
+            //! with no task)
+            _command_queue.put (Extract{});
 
             auto cancel_task
               ( [&] (task::ID const& task_id)
@@ -222,7 +236,7 @@ namespace gspc
                   //! beware: might be in the schedule/command queue
                   //!                                      handled
                   //! 1 : not extracted -> INCONSISTENCY       [-]
-                  //! 2 : extract but in schedule_queue        [ ]
+                  //! 2 : extracted but in schedule_queue      [x]
                   //!   : extracted, not in schedule_queue
                   //! 3   : in (blocking) acquire              [ ]
                   //!     : in command queue (submit)
@@ -230,14 +244,34 @@ namespace gspc
                   //! 5     : after this entry                 [ ]
                   //! 6   : in command queue (finished)        [x] // worker will ignore cancel
 
-                  //! \todo case 2: if (!_schedule_queue.remove (task_id)))
-                  auto job_id (_job_by_task.find (task_id));
-
-                  if (job_id != _job_by_task.end())
+                  //! case 2:
+                  if (_schedule_queue.remove (task_id))
                   {
-                    cancel_job (job_id->second);
+                    // no job was created
+                    _command_queue.put
+                      ( Inject
+                        { task_id
+                        , [&]() -> task::Result
+                          {
+                            throw std::runtime_error
+                              (str ( boost::format ("Cancelled: Heureka by %1%")
+                                   % inject.task_id
+                                   )
+                              );
+                          }
+                        }
+                      );
                   }
-                  // \todo else: mark for cancellation when submit (cases 3 and 5)
+                  else
+                  {
+                    auto job_id (_job_by_task.find (task_id));
+
+                    if (job_id != _job_by_task.end())
+                    {
+                      cancel_job (job_id->second);
+                    }
+                    // \todo else: mark for cancellation when submit (cases 3 and 5)
+                  }
                 }
               );
 
@@ -251,15 +285,6 @@ namespace gspc
               , inject_result.tasks_with_optional_result.end()
               , cancel_task
               );
-
-            if (finished.task_result)
-            {
-              _command_queue.put (Extract{});
-            }
-            else
-            {
-              stop();
-            }
           }
         , [&] (Cancelled cancelled)
           {
