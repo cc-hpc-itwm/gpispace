@@ -296,8 +296,7 @@ namespace sdpa
 
         fhg_assert (it_job != richest_worker.pending_.end());
 
-        auto const job_id (*it_job);
-        reservation (job_id)->replace_worker
+        reservation (*it_job)->replace_worker
           ( richest->first
           , thief->first
           , [&thief] (const std::string& cpb)
@@ -306,8 +305,8 @@ namespace sdpa
             }
           );
 
-        thief->second.assign (job_id, cost (job_id));
-        richest_worker.delete_pending_job (job_id);
+        thief->second.assign (*it_job, cost (*it_job));
+        richest_worker.delete_pending_job (*it_job);
 
         thieves.pop();
         to_steal_from.pop();
