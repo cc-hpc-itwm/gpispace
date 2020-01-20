@@ -18,6 +18,13 @@ namespace gspc
       //! finished yet, e.g. because it waits for external events
       //! \note workflow engine shall not say "true" when there are
       //! extacted tasks
+
+      //! \todo the bool should probably become
+      //! enum { InjectMayProduceATask         = false
+      //!      , ExternalEventMayProduceATask  = false // equal to the first case when put_token implies inject
+      //!      , NoMoreTasksWillBeProducedEver = false // inject missing
+      //!      , Done                          = true  // inject would be an error
+      //!      };
       virtual boost::variant<Task, bool> extract() = 0;
 
       struct InjectResult
