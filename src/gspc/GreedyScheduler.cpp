@@ -60,13 +60,13 @@ namespace gspc
     {
       while (!_stopped)
       {
-        auto const task (_schedule_queue.get());
+        auto const task (_schedule_queue.pop().first);
 
         _command_queue.put
           (Submit {task, _resource_manager.acquire (task.resource_class)});
       }
     }
-    catch (ScheduleQueue::interrupted const&)
+    catch (ScheduleQueue::Interrupted const&)
     {
       assert (_stopped);
     }
@@ -171,7 +171,7 @@ namespace gspc
               //! failed probably leading to a duplicated task
               remove_job (job_id);
 
-              _schedule_queue.put (task);
+              _schedule_queue.push (task, task.id);
             }
           }
         , [&] (Extract)
@@ -185,7 +185,7 @@ namespace gspc
               ( _workflow_engine.extract()
               , [&] (Task task)
                 {
-                  _schedule_queue.put (std::move (task));
+                  _schedule_queue.push (task, task.id);
                   _command_queue.put (Extract{});
                 }
               , [&] (bool has_finished)

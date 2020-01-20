@@ -6,6 +6,7 @@
 #include <gspc/job/FinishReason.hpp>
 #include <gspc/job/ID.hpp>
 #include <gspc/resource_manager/Trivial.hpp>
+#include <gspc/threadsafe_interruptible_queue_with_remove.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
 
@@ -67,7 +68,8 @@ namespace gspc
                                    >;
 
     using CommandQueue = fhg::util::threadsafe_queue<Command>;
-    using ScheduleQueue = fhg::util::interruptible_threadsafe_queue<Task>;
+    using ScheduleQueue =
+      gspc::threadsafe_interruptible_queue_with_remove<Task, task::ID>;
 
     ScheduleQueue _schedule_queue;
     CommandQueue _command_queue;
