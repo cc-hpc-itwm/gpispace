@@ -53,8 +53,10 @@ namespace gspc
     std::unordered_map<job::ID, resource::ID> _jobs;
 
     using HeurekaGroups = boost::bimap
-      < boost::bimaps::unordered_multiset_of<heureka::Group>
-      , boost::bimaps::unordered_set_of<job::ID>
+      < boost::bimaps::unordered_multiset_of< heureka::Group
+                                            , std::hash<heureka::Group>
+                                            >
+      , boost::bimaps::unordered_set_of<job::ID, std::hash<job::ID>>
       >;
 
     HeurekaGroups _heureka_groups;

@@ -20,8 +20,6 @@ namespace gspc
       friend std::ostream& operator<< (std::ostream&, Group const&);
       friend bool operator== (Group const&, Group const&);
     };
-
-    std::size_t hash_value (Group const&);
   }
 }
 

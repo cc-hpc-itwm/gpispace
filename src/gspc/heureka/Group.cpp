@@ -17,10 +17,6 @@ namespace gspc
     {
       return os << "heureka_group " << x.id;
     }
-    std::size_t hash_value (Group const& g)
-    {
-      return std::hash<Group>{} (g);
-    }
   }
 }
 
