@@ -4,6 +4,8 @@
 
 #include <util-generic/make_optional.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
@@ -22,11 +24,13 @@ namespace gspc
     , _workflow_engine (workflow_engine)
     , _resource_manager (resource_manager)
     , _runtime_system (runtime_system)
-    , _thread (fhg::util::bind_this ( this
-                                    , &GreedyScheduler::scheduling_thread
-                                    )
-              )
-  {}
+    , _schedule_thread
+        (fhg::util::bind_this (this, &GreedyScheduler::schedule_thread))
+    , _command_thread
+        (fhg::util::bind_this (this, &GreedyScheduler::command_thread))
+  {
+    _command_queue.put (Extract{});
+  }
 
   template<typename Lock, typename Fun, typename... Args>
     auto call_unlocked (Lock& lock, Fun&& fun, Args&&... args)
@@ -39,8 +43,7 @@ namespace gspc
 
   template<typename Function>
     void GreedyScheduler::do_worker_call
-      (resource::ID resource_id, job::ID job_id, Function&& function) noexcept
-  try
+      (resource::ID resource_id, Function&& function)
   {
     auto const worker_endpoint
       (_runtime_system.worker_endpoint_for_scheduler (resource_id));
@@ -50,246 +53,264 @@ namespace gspc
 
     std::move (function) (client);
   }
-  catch (...)
+
+  void GreedyScheduler::schedule_thread()
   {
-    finished ( job_id
-             , job::finish_reason::WorkerFailure {std::current_exception()}
-             );
+    try
+    {
+      while (!_stopped)
+      {
+        auto const task (_schedule_queue.get());
+
+        _command_queue.put
+          (Submit {task, _resource_manager.acquire (task.resource_class)});
+      }
+    }
+    catch (ScheduleQueue::interrupted const&)
+    {
+      assert (_stopped);
+    }
+    catch (interface::ResourceManager::Interrupted const&)
+    {
+      assert (_stopped);
+    }
   }
 
-  void GreedyScheduler::scheduling_thread()
+  void GreedyScheduler::command_thread()
   {
-    std::unique_lock<std::mutex> lock (_guard_state);
+    //! can not be a command, must be atomic in inject
+    //! \todo RACE: What if finished before cancel(led), what if
+    //! multiple finished, cancel(ed)
+    auto remove_job
+      ( [&] (job::ID job_id)
+        {
+          try
+          {
+            _resource_manager.release
+              (resource_manager::Trivial::Acquired {_jobs.at (job_id)});
 
-    while (!_stopped)
+            if (!_jobs.erase (job_id) || !_job_by_task.erase (job_id.task_id))
+            {
+              throw std::logic_error ("INCONSISTENCY: finished unknown job");
+            }
+          }
+          catch (...)
+          {
+            std::throw_with_nested
+              ( std::runtime_error
+                  (str (boost::format ("remove job '%1%'") % job_id))
+              );
+          }
+
+          //! \todo _command_queue.erase (job_id)!?
+          //! \todo _command_queue.erase (task_id)!?
+        }
+      );
+
+    //! \note not a command to avoid race between finished/cancel (_jobs.at)
+    auto cancel_job
+      ( [&] (job::ID job_id)
+        {
+          try
+          {
+            do_worker_call
+              ( _jobs.at (job_id)
+              , [&] (comm::scheduler::worker::Client& client)
+                {
+                  return client.cancel (job_id);
+                }
+              );
+          }
+          catch (...)
+          {
+            _command_queue.put (Cancelled {job_id});
+          }
+        }
+      );
+
+    while (! (_stopped && _jobs.empty()))
     {
       fhg::util::visit<void>
-        ( _workflow_engine.extract()
-        , [&] (Task const& task)
+        ( _command_queue.get()
+        , [&] (Submit submit)
           {
+            if (_stopped)
+            {
+              return;
+            }
+
+            auto const& task (submit.task);
+            auto const& acquired (submit.acquired);
+
+            job::ID const job_id {_next_job_id++, task.id};
+
+            if (  !_jobs.emplace (job_id, acquired.requested).second
+               || !_job_by_task.emplace (task.id, job_id).second
+               )
+            {
+              throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
+            }
+
             try
             {
-              auto const acquired
-                ( call_unlocked
-                    ( lock
-                    , [&]
-                      {
-                        return _resource_manager.acquire (task.resource_class);
-                      }
-                    )
-                );
-
-              job::ID const job_id {_next_job_id++, task.id};
-
-              if (  !_jobs.emplace (job_id, acquired.requested).second
-                 || !_job_by_task.emplace (task.id, job_id).second
-                 )
-              {
-                throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
-              }
-
-              call_unlocked
-                ( lock
-                , [&]
+              do_worker_call
+                ( acquired.requested
+                , [&] (comm::scheduler::worker::Client& client)
                   {
-                    do_worker_call
-                      ( acquired.requested
+                    return client.submit
+                      ( _comm_server_for_worker.local_endpoint()
                       , job_id
-                      , [&] (comm::scheduler::worker::Client& client)
-                        {
-                          return client.submit
-                            ( _comm_server_for_worker.local_endpoint()
-                            , job_id
-                            , Job {task}
-                            );
-                        }
+                      , Job {task}
                       );
                   }
                 );
             }
-            catch (interface::ResourceManager::Interrupted const&)
+            catch (...)
             {
-              assert (_stopped);
+              //! \note submit might be successful but communication
+              //! failed probably leading to a duplicated task
+              remove_job (job_id);
+
+              _schedule_queue.put (task);
             }
           }
-        , [&] (bool has_finished)
+        , [&] (Extract)
           {
-            if (!has_finished && !_jobs.empty())
+            if (_stopped)
             {
-              _injected_or_stopped
-                .wait (lock, [&] { return _injected || !!_stopped; });
+              return;
+            }
 
-              if (_injected)
-              {
-                _injected = false;
-              }
-            }
-            else if (!has_finished && _jobs.empty())
-            {
-              // \todo wait for external event (put_token), go again
-              // into extract if not stopped
-              _injected_or_stopped
-                .wait ( lock
-                      , [&] { return /* _put_token || */ !!_stopped; }
-                      );
+            fhg::util::visit<void>
+              ( _workflow_engine.extract()
+              , [&] (Task task)
+                {
+                  _schedule_queue.put (std::move (task));
+                  _command_queue.put (Extract{});
+                }
+              , [&] (bool has_finished)
+                {
+                  if (has_finished)
+                  {
+                    assert (_jobs.empty());
 
-              // if (_put_token)
-              // {
-              //   _put_token = false;
-              // }
-            }
-            else if (has_finished && _jobs.empty())
+                    stop();
+                  }
+                }
+              );
+          }
+        , [&] (CancelAllTasks)
+          {
+            for (auto const& job : _jobs | boost::adaptors::map_keys)
             {
-              _stopped = true;
+              cancel_job (job);
             }
-            else // if (has_finished && !_jobs.empty())
+          }
+
+        , [&] (Finished finished)
+          {
+            remove_job (finished.job_id);
+
+            auto const inject_result
+              ( _workflow_engine.inject
+                  (finished.job_id.task_id, finished.task_result)
+              );
+
+            auto cancel_task
+              ( [&] (task::ID const& task_id)
+                {
+                  //! beware: might be in the schedule/command queue
+                  //!                                      handled
+                  //! 1 : not extracted -> INCONSISTENCY       [-]
+                  //! 2 : extract but in schedule_queue        [ ]
+                  //!   : extracted, not in schedule_queue
+                  //! 3   : in (blocking) acquire              [ ]
+                  //!     : in command queue (submit)
+                  //! 4     : before this entry                [x]
+                  //! 5     : after this entry                 [ ]
+                  //! 6   : in command queue (finished)        [x] // worker will ignore cancel
+
+                  //! \todo case 2: if (!_schedule_queue.remove (task_id)))
+                  auto job_id (_job_by_task.find (task_id));
+
+                  if (job_id != _job_by_task.end())
+                  {
+                    cancel_job (job_id->second);
+                  }
+                  // \todo else: mark for cancellation when submit (cases 3 and 5)
+                }
+              );
+
+            std::for_each
+              ( inject_result.tasks_with_ignored_result.begin()
+              , inject_result.tasks_with_ignored_result.end()
+              , cancel_task
+              );
+            std::for_each
+              ( inject_result.tasks_with_optional_result.begin()
+              , inject_result.tasks_with_optional_result.end()
+              , cancel_task
+              );
+
+            if (finished.task_result)
             {
-              throw std::logic_error
-                ("INCONSISTENCY: finished while tasks are running.");
+              _command_queue.put (Extract{});
             }
+            else
+            {
+              stop();
+            }
+          }
+        , [&] (Cancelled cancelled)
+          {
+            //! \todo sanity!?
+            //! do nothing, just remove job
+            remove_job (cancelled.job_id);
           }
         );
     }
-
-    call_unlocked ( lock
-                  , [&] (std::unordered_map<job::ID, resource::ID> jobs)
-                    {
-                      for (auto const& job : jobs)
-                      {
-                        do_worker_call
-                          ( job.second
-                          , job.first
-                          , [&] (comm::scheduler::worker::Client& client)
-                            {
-                              return client.cancel (job.first);
-                            }
-                          );
-                      }
-                    }
-                  , _jobs
-                  );
-
-    _injected_or_stopped.wait (lock, [&] { return _jobs.empty(); });
   }
 
   void GreedyScheduler::finished
     (job::ID job_id, job::FinishReason finish_reason)
   {
-    std::unique_lock<std::mutex> lock (_guard_state);
-
-    auto remove_job
-      ( [&]
-        {
-          _resource_manager.release
-            (resource_manager::Trivial::Acquired {_jobs.at (job_id)});
-
-          if (  !_jobs.erase (job_id)
-             || !_job_by_task.erase (job_id.task_id)
-             )
-          {
-            throw std::logic_error ("INCONSISTENCY: finished unknown job");
-          }
-
-        }
-      );
-
     fhg::util::visit<void>
       ( finish_reason
-      , [&] (job::finish_reason::Finished const& finished)
+      , [&] (job::finish_reason::Finished finished)
         {
-          auto const& task_result (finished.task_result);
-
-          auto const inject_result
-            (_workflow_engine.inject (job_id.task_id, task_result));
-
-          std::unordered_map<job::ID, resource::ID> jobs_to_cancel;
-
-          std::transform
-            ( inject_result.tasks_with_ignored_result.begin()
-            , inject_result.tasks_with_ignored_result.end()
-            , std::inserter (jobs_to_cancel, jobs_to_cancel.end())
-            , [&] (task::ID const& task_id)
-              {
-                auto const& job_id (_job_by_task.at (task_id));
-
-                return std::make_pair (job_id, _jobs.at (job_id));
-              }
-            );
-          std::transform
-            ( inject_result.tasks_with_optional_result.begin()
-            , inject_result.tasks_with_optional_result.end()
-            , std::inserter (jobs_to_cancel, jobs_to_cancel.end())
-            , [&] (task::ID const& task_id)
-              {
-                auto const& job_id (_job_by_task.at (task_id));
-
-                return std::make_pair (job_id, _jobs.at (job_id));
-              }
-            );
-
-          remove_job();
-
-          if (!jobs_to_cancel.empty())
-          {
-            call_unlocked
-              ( lock
-              , [&] (std::unordered_map<job::ID, resource::ID> jobs)
-                {
-                  for (auto const& job : jobs)
-                  {
-                    do_worker_call
-                      ( job.second
-                      , job.first
-                      , [&] (comm::scheduler::worker::Client& client)
-                        {
-                          return client.cancel (job.first);
-                        }
-                      );
-                  }
-                }
-              , std::move (jobs_to_cancel)
-              );
-          }
-
-          if (task_result)
-          {
-            _injected = true;
-
-            _injected_or_stopped.notify_one();
-          }
-          else
-          {
-            stop();
-          }
+          _command_queue.put
+            (Finished {job_id, std::move (finished.task_result)});
         }
-      , [] (job::finish_reason::WorkerFailure const& failure)
+      , [&] (job::finish_reason::WorkerFailure failure)
         {
-          //! \todo re-schedule? Beware: May be _stopped already!
           throw std::logic_error
             ( "NYI: finished (WorkerFailure): "
             + fhg::util::exception_printer (failure.exception).string()
             );
         }
-      , [&] (job::finish_reason::Cancelled const&)
+      , [&] (job::finish_reason::Cancelled)
         {
-          //! \todo sanity!?
-          //! do nothing, just remove job
-          remove_job();
+          _command_queue.put (Cancelled {job_id});
         }
       );
   }
 
   GreedyScheduler::~GreedyScheduler()
   {
+    stop();
     wait();
   }
 
   void GreedyScheduler::wait()
   {
     //! \todo allow multiple (concurrent) calls
-    if (_thread.joinable())
+    if (_schedule_thread.joinable())
     {
-      _thread.join();
+      _schedule_thread.join();
+    }
+    if (_command_thread.joinable())
+    {
+      _command_thread.join();
     }
   }
 
@@ -297,8 +318,9 @@ namespace gspc
   {
     _stopped = true;
 
-    _resource_manager.interrupt();
+    _command_queue.put (CancelAllTasks{});
 
-    _injected_or_stopped.notify_one();
+    _resource_manager.interrupt();
+    _schedule_queue.interrupt();
   }
 }

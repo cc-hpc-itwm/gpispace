@@ -7,6 +7,8 @@
 #include <gspc/job/ID.hpp>
 #include <gspc/resource_manager/Trivial.hpp>
 
+#include <util-generic/threadsafe_queue.hpp>
+
 #include <atomic>
 #include <condition_variable>
 #include <mutex>
@@ -40,19 +42,50 @@ namespace gspc
     resource_manager::Trivial& _resource_manager;
     ScopedRuntimeSystem& _runtime_system;
 
+    struct Submit
+    {
+      Task task;
+      resource_manager::Trivial::Acquired acquired;
+    };
+    struct Extract{};
+    struct CancelAllTasks{};
+    struct Finished
+    {
+      job::ID job_id;
+      ErrorOr<task::Result> task_result;
+    };
+    struct Cancelled
+    {
+      job::ID job_id;
+    };
+
+    using Command = boost::variant < Submit
+                                   , Extract
+                                   , CancelAllTasks
+                                   , Finished
+                                   , Cancelled
+                                   >;
+
+    using CommandQueue = fhg::util::threadsafe_queue<Command>;
+    using ScheduleQueue = fhg::util::interruptible_threadsafe_queue<Task>;
+
+    ScheduleQueue _schedule_queue;
+    CommandQueue _command_queue;
+
     std::atomic<bool> _stopped {false};
 
-    std::mutex _guard_state;
-    std::condition_variable _injected_or_stopped;
-    bool _injected {false};
+    //! state only modified by command_thread
     std::unordered_map<job::ID, resource::ID> _jobs;
     std::unordered_map<task::ID, job::ID> _job_by_task;
     std::uint64_t _next_job_id {0};
 
-    std::thread _thread;
-    void scheduling_thread();
+    std::thread _schedule_thread;
+    void schedule_thread();
+
+    std::thread _command_thread;
+    void command_thread();
 
     template<typename Function>
-      void do_worker_call (resource::ID, job::ID, Function&& function) noexcept;
+      void do_worker_call (resource::ID, Function&& function);
   };
 }

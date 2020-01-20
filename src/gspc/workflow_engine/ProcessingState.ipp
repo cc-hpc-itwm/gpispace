@@ -13,6 +13,7 @@ namespace gspc
     {
       if (!_extracted.erase (task_id))
       {
+        //! \todo collect information: multiple result
         throw std::invalid_argument ("ProcessingState::inject: Unknown task.");
       }
 
