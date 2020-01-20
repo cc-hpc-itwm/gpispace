@@ -10,6 +10,8 @@
 #include <util-generic/print_container.hpp>
 #include <util-generic/print_exception.hpp>
 
+#include <boost/format.hpp>
+
 #include <fstream>
 #include <iostream>
 #include <memory>
@@ -100,12 +102,19 @@ try
            ( workflow_engine.structure().mirrored()
            , [&] (auto const& node)
              {
+               std::string decoration
+                 (str ( boost::format (R"EOS(label="%1% (%2%)")EOS")
+                      % node.first
+                      % workflow_engine.seen().at (node.first)
+                      )
+                 );
+
                if (workflow_engine.open().count (node.first))
                {
-                 return ",fillcolor=\"lightgrey\",style=\"filled\"";
+                 decoration += R"EOS(,fillcolor="lightgrey",style="filled")EOS";
                }
 
-               return "";
+               return decoration;
              }
            );
   }

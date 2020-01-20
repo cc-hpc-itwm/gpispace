@@ -692,13 +692,13 @@ namespace gspc
   }
 
   template<typename T, typename A>
-    ToDot<T, A>::ToDot (Forest<T, A> const& forest, Decorator decorate)
+    ToDot<T, A>::ToDot (Forest<T, A> const& forest, Decorator<T, A> decorate)
     : _forest (forest)
     , _decorate (decorate)
   {}
   template<typename T, typename A>
     ToDot<T, A>::ToDot ( UniqueForest<A, T> const& unique_forest
-                       , Decorator decorate
+                       , Decorator<T, A> decorate
                        )
     : _forest (unique_forest)
     , _decorate (decorate)
@@ -716,10 +716,7 @@ namespace gspc
             , std::list<Node const*> const& children
             )
         {
-          os << "\"" << node.first << "\""
-             << " [label=\""
-             << node.first << "\\n" << node.second
-             << "\"" << _decorate (node) << "]\n";
+          os << "\"" << node.first << "\"[" << _decorate (node) << "]\n";
 
           std::for_each ( children.cbegin(), children.cend()
                         , [&] (Node const* child)

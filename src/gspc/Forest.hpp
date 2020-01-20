@@ -4,6 +4,7 @@
 #include <util-generic/ostream/modifier.hpp>
 
 #include <boost/blank.hpp>
+#include <boost/format.hpp>
 #include <boost/serialization/access.hpp>
 
 #include <list>
@@ -220,20 +221,30 @@ namespace gspc
   };
 
   template<typename T, typename A = boost::blank>
-    struct ToDot : public fhg::util::ostream::modifier
-  {
     using Decorator = std::function<std::string (forest::Node<T, A> const&)>;
 
-    ToDot ( Forest<T, A> const&
-          , Decorator = [] (auto) -> std::string { return {}; }
-          );
-    ToDot ( UniqueForest<A, T> const&
-          , Decorator = [] (auto) -> std::string { return {}; }
-          );
+  namespace decorate
+  {
+    template<typename T, typename A = boost::blank>
+      std::string label (forest::Node<T, A> const& node)
+    {
+      return str
+        ( boost::format (R"EOS(label="%1%\n%2%")EOS")
+        % node.first
+        % node.second
+        );
+    }
+  }
+
+  template<typename T, typename A = boost::blank>
+    struct ToDot : public fhg::util::ostream::modifier
+  {
+    ToDot (Forest<T, A> const&, Decorator<T, A> = &decorate::label<T, A>);
+    ToDot (UniqueForest<A, T> const&, Decorator<T, A> = &decorate::label<T, A>);
     virtual std::ostream& operator() (std::ostream&) const override;
   private:
     Forest<T, A> const& _forest;
-    Decorator _decorate;
+    Decorator<T, A> _decorate;
   };
 }
 
