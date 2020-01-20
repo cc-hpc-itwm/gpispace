@@ -33,6 +33,8 @@ namespace gspc
         rpc::endpoint boot (Hostname, ID) const;
         void teardown (Hostname) const;
 
+        friend bool operator== (Thread const&, Thread const&);
+
       private:
         std::shared_ptr<State> _remote_interfaces_by_hostname;
       };

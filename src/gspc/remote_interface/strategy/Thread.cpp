@@ -1,6 +1,7 @@
 #include <gspc/remote_interface/strategy/Thread.hpp>
 
 #include <stdexcept>
+#include <tuple>
 
 namespace gspc
 {
@@ -20,6 +21,12 @@ namespace gspc
         : _remote_interfaces_by_hostname {state}
       {}
 
+      bool operator== (Thread const& lhs, Thread const& rhs)
+      {
+        return std::tie (lhs._remote_interfaces_by_hostname)
+          == std::tie (rhs._remote_interfaces_by_hostname)
+          ;
+      }
       rpc::endpoint Thread::boot
         ( Hostname hostname
         , ID id

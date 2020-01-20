@@ -61,16 +61,14 @@ namespace gspc
 
               _hostname_by_remote_interface_id.emplace (id, hostname);
             }
-            //! \todo specify: would it be okay to use a second
-            //! strategy for the same host?
-            // else
-            // {
-            //   if (remote_interface->second.strategy() != strategy)
-            //   {
-            //     //! \todo more information in exception!?
-            //     throw std::invalid_argument ("Different strategy");
-            //   }
-            // }
+            else
+            {
+              if (remote_interface->second->strategy() != strategy)
+              {
+                //! \todo more information in exception!?
+                throw std::invalid_argument ("Different strategy");
+              }
+            }
 
             return remote_interface->second.get();
           }
