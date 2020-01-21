@@ -320,7 +320,7 @@ namespace gspc
           if (finished.task_result)
           {
             _command_queue.put
-              (Finished {job_id, std::move (finished.task_result.value())});
+              (Finished {job_id, finished.task_result.value()});
           }
           else
           {
