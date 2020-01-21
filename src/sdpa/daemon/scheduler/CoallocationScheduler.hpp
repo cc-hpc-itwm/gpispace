@@ -177,7 +177,7 @@ namespace sdpa
       //! \note to be able to call releaseReservation instead of
       //! reimplementing in reschedule_worker_jobs
       mutable std::recursive_mutex mtx_alloc_table_;
-      typedef std::unordered_map<sdpa::job_id_t, Reservation*>
+      typedef std::unordered_map<sdpa::job_id_t, std::unique_ptr<Reservation>>
         allocation_table_t;
       allocation_table_t allocation_table_;
       std::unordered_set<job_id_t> _pending_jobs;
