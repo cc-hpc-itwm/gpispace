@@ -49,27 +49,25 @@ namespace gspc
       resource_manager::Trivial::Acquired acquired;
     };
     struct Extract{};
-    struct CancelAllTasks{};
+    struct CancelAllTasks
+    {
+      std::string reason;
+    };
     struct Finished
     {
       job::ID job_id;
       task::Result task_result;
     };
-    struct Inject
-    {
-      task::ID task_id;
-      task::Result task_result;
-    };
     struct Cancelled
     {
       job::ID job_id;
+      task::result::Premature reason;
     };
 
     using Command = boost::variant < Submit
                                    , Extract
                                    , CancelAllTasks
                                    , Finished
-                                   , Inject
                                    , Cancelled
                                    >;
 
@@ -92,8 +90,13 @@ namespace gspc
 
     std::thread _command_thread;
     void command_thread();
+    void remove_job (job::ID);
+    void cancel_job (job::ID, task::result::Premature);
+    void cancel_task (task::ID, task::result::Premature);
+    void inject (task::ID, task::Result);
 
     template<typename Function>
       void do_worker_call (resource::ID, Function&& function);
+    void stop_with_reason (std::string);
   };
 }

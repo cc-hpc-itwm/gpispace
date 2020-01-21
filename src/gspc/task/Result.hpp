@@ -69,6 +69,12 @@ namespace gspc
         template<typename Archive>
           void serialize (Archive& ar, unsigned int);
       };
+
+      //! \todo better name!? Dropped?
+      using Premature = boost::variant< CancelIgnored
+                                      , CancelOptional
+                                      , Postponed
+                                      >;
     }
 
     using Result = boost::variant < result::Success

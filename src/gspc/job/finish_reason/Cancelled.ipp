@@ -5,8 +5,9 @@ namespace gspc
     namespace finish_reason
     {
       template<typename Archive>
-        void Cancelled::serialize (Archive&, unsigned int)
+        void Cancelled::serialize (Archive& ar, unsigned int)
       {
+        ar & reason;
       }
     }
   }

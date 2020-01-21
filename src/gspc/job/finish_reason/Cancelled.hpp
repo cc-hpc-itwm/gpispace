@@ -1,5 +1,7 @@
 #pragma once
 
+#include <gspc/task/Result.hpp>
+
 namespace gspc
 {
   namespace job
@@ -8,6 +10,8 @@ namespace gspc
     {
       struct Cancelled
       {
+        task::result::Premature reason;
+
         template<typename Archive>
           void serialize (Archive& ar, unsigned int);
       };

@@ -3,6 +3,7 @@
 #include <gspc/Job.hpp>
 #include <gspc/job/ID.hpp>
 #include <gspc/rpc/TODO.hpp>
+#include <gspc/task/Result.hpp>
 
 namespace gspc
 {
@@ -19,7 +20,7 @@ namespace gspc
           );
         FHG_RPC_FUNCTION_DESCRIPTION
           ( cancel
-          , void (job::ID)
+          , void (job::ID, task::result::Premature)
           );
         // status
       }

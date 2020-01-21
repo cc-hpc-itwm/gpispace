@@ -30,7 +30,7 @@ namespace gspc
     // called by scheduler (via rif)
     //! \note WorkQueue implies fifo for submitted jobs.
     void submit (rpc::endpoint, job::ID, Job);
-    void cancel (job::ID);
+    void cancel (job::ID, task::result::Premature);
 
     // called by user via scheduler (via rif)
     // TaskState status (job::ID);

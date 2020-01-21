@@ -187,7 +187,7 @@ namespace gspc
       (WorkItem {std::move (scheduler), std::move (job)}, std::move (job_id));
   }
 
-  void Worker::cancel (job::ID id)
+  void Worker::cancel (job::ID id, task::result::Premature reason)
   {
     if (auto const work_item = _work_queue.remove (id))
     {
@@ -197,11 +197,12 @@ namespace gspc
       assert (job_id == id);
 
       comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
-        .finished (job_id, job::finish_reason::Cancelled{});
+        .finished (job_id, job::finish_reason::Cancelled {reason});
     }
     else
     {
       //! \todo
+      //! - remember reason
       //! - interrupt execution
       //! - if task succeeds after getting cancel: success or cancelled?
       //!   - vote: success
