@@ -3,11 +3,7 @@
 #include <gspc/comm/worker/scheduler/Client.hpp>
 #include <gspc/job/FinishReason.hpp>
 #include <gspc/job/finish_reason/Cancelled.hpp>
-#include <gspc/job/finish_reason/Finished.hpp>
 #include <gspc/module_api.hpp>
-#include <gspc/task/Result.hpp>
-
-#include <util-generic/dynamic_linking.hpp>
 
 #include <boost/format.hpp>
 
@@ -36,20 +32,22 @@ namespace gspc
     }
   }
 
-  namespace
+  task::result::Success Worker::execute_task (Task const& task)
   {
-    task::result::Success execute_task (Task const& task)
+    auto dl (_so_handles.find (task.so));
+    if (dl == _so_handles.end())
     {
-      fhg::util::scoped_dlhandle const dl {task.so};
-      auto const functions
-        (FHG_UTIL_SCOPED_DLHANDLE_SYMBOL (dl, gspc_module_functions));
-      return {functions->at (task.symbol) (task.inputs)};
+      dl = _so_handles.emplace
+        (task.so, std::make_unique<fhg::util::scoped_dlhandle> (task.so)).first;
     }
+    auto const functions
+      (FHG_UTIL_SCOPED_DLHANDLE_SYMBOL (*dl->second, gspc_module_functions));
+    return {functions->at (task.symbol) (task.inputs)};
+  }
 
-    job::finish_reason::Finished execute_job (Job const& job)
-    {
-      return {[&] { return execute_task (job.task); }};
-    }
+  job::finish_reason::Finished Worker::execute_job (Job const& job)
+  {
+    return {[&] { return execute_task (job.task); }};
   }
 
   void Worker::work()
