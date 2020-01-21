@@ -2,14 +2,13 @@
 
 #include <gspc/resource/Class.hpp>
 #include <gspc/task/ID.hpp>
-#include <gspc/value_type.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
 #include <ostream>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 namespace gspc
 {
@@ -18,9 +17,8 @@ namespace gspc
     task::ID id;
 
     resource::Class resource_class;
-    //! \todo why not std::vector<char>?
-    using Inputs = std::unordered_multimap<std::string, value_type>;
-    Inputs inputs;
+    using Input = std::vector<char>;
+    Input input;
     boost::filesystem::path so;
     using Symbol = std::string;
     Symbol symbol;

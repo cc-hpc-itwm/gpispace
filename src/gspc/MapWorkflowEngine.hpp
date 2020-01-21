@@ -16,6 +16,17 @@
 
 namespace gspc
 {
+  struct MapInput
+  {
+    std::uint64_t N;
+    std::uint64_t i;
+    std::uint64_t o;
+
+    template<typename Archive>
+      void serialize (Archive&, unsigned int);
+  };
+  using MapOutput = MapInput;
+
   class MapWorkflowEngine : public interface::WorkflowEngine
   {
   public:
@@ -43,4 +54,12 @@ namespace gspc
 
     workflow_engine::ProcessingState _processing_state;
   };
+
+  template<typename Archive>
+    void MapInput::serialize (Archive& ar, unsigned int)
+  {
+    ar & N;
+    ar & i;
+    ar & o;
+  }
 }

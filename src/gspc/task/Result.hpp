@@ -1,7 +1,6 @@
 #pragma once
 
 #include <gspc/task/ID.hpp>
-#include <gspc/value_type.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/variant.hpp>
@@ -9,7 +8,7 @@
 #include <exception>
 #include <ostream>
 #include <string>
-#include <unordered_map>
+#include <vector>
 
 namespace gspc
 {
@@ -20,9 +19,8 @@ namespace gspc
     {
       struct Success
       {
-        //! \todo why not std::vector<char>
-        using Outputs = std::unordered_multimap<std::string, value_type>;
-        Outputs outputs;
+        using Output = std::vector<char>;
+        Output output;
 
         friend std::ostream& operator<< (std::ostream&, Success const&);
 

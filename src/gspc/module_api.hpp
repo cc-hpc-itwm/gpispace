@@ -11,7 +11,7 @@
 
 namespace gspc
 {
-  using ModuleFunction = task::result::Success::Outputs (*) (Task::Inputs);
+  using ModuleFunction = task::result::Success::Output (*) (Task::Input);
   using ModuleFunctions = std::unordered_map<std::string, ModuleFunction>;
 }
 

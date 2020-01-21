@@ -27,7 +27,7 @@ namespace gspc
     public:
       Task extract
         ( resource::Class resource_class
-        , Task::Inputs inputs
+        , Task::Input input
         , boost::filesystem::path so
         , std::string symbol
         );

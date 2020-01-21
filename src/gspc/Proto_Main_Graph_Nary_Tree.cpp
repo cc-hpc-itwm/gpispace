@@ -99,7 +99,7 @@ try
   if (argc > 4)
   {
     std::ofstream (argv[4])
-      << gspc::ToDot<gspc::value_type>
+      << gspc::ToDot<std::uint64_t>
            ( workflow_engine.structure().mirrored()
            , [&] (auto const& node)
              {

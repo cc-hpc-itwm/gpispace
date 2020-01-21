@@ -9,7 +9,7 @@ namespace gspc
   {
     ar & id;
     ar & resource_class;
-    ar & inputs;
+    ar & input;
     ar & so;
     ar & symbol;
   }

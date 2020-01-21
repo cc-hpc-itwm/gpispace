@@ -42,7 +42,7 @@ namespace gspc
     }
     auto const functions
       (FHG_UTIL_SCOPED_DLHANDLE_SYMBOL (*dl->second, gspc_module_functions));
-    return {functions->at (task.symbol) (task.inputs)};
+    return {functions->at (task.symbol) (task.input)};
   }
 
   job::finish_reason::Finished Worker::execute_job (Job const& job)

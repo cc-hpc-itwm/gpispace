@@ -14,9 +14,9 @@ namespace gspc
 {
   GraphTraversalWorkflowEngine::GraphTraversalWorkflowEngine
     ( boost::filesystem::path module
-    , std::unordered_set<value_type> open
+    , std::unordered_set<Node> open
     , Task::Symbol symbol
-    , Task::Inputs inputs
+    , std::unordered_map<std::string, std::uint64_t> inputs
     )
   {
     _workflow_state._module = module;
@@ -25,19 +25,19 @@ namespace gspc
     _workflow_state._inputs = inputs;
   }
 
-  Forest<value_type> const& GraphTraversalWorkflowEngine::structure() const
+  auto GraphTraversalWorkflowEngine::structure() const -> Forest<Node> const&
   {
     return _workflow_state._structure;
   }
 
-  std::unordered_map<value_type, std::size_t> const&
-    GraphTraversalWorkflowEngine::seen() const
+  auto GraphTraversalWorkflowEngine::seen() const
+    -> std::unordered_map<Node, std::size_t> const&
   {
     return _workflow_state._seen;
   }
 
-  std::unordered_set<value_type> const&
-    GraphTraversalWorkflowEngine::open() const
+  auto GraphTraversalWorkflowEngine::open() const
+    -> std::unordered_set<Node> const&
   {
     return _workflow_state._open;
   }
@@ -45,11 +45,6 @@ namespace gspc
   Task::Symbol const& GraphTraversalWorkflowEngine::symbol() const
   {
     return _workflow_state._symbol;
-  }
-
-  Task::Inputs const& GraphTraversalWorkflowEngine::inputs() const
-  {
-    return _workflow_state._inputs;
   }
 
   bool GraphTraversalWorkflowEngine::workflow_finished() const
@@ -91,7 +86,8 @@ namespace gspc
 
   namespace
   {
-    value_type pop_any (std::unordered_set<value_type>& values)
+    GraphTraversalWorkflowEngine::Node pop_any
+      (std::unordered_set<GraphTraversalWorkflowEngine::Node>& values)
     {
       auto selected (values.begin());
       auto value (*selected);
@@ -113,11 +109,25 @@ namespace gspc
       _workflow_state._structure.insert (parent, {}, {});
     }
 
-    Task::Inputs inputs (_workflow_state._inputs);
-    inputs.emplace ("parent", parent);
+    auto const& inputs (_workflow_state._inputs);
 
     return _processing_state.extract
-      ("core", inputs, _workflow_state._module, _workflow_state._symbol);
+      ( "core"
+      , _workflow_state._symbol == "static_map"
+         ? bytes_save (StaticMapInput {parent})
+      : _workflow_state._symbol == "dynamic_map"
+         ? bytes_save (DynamicMapInput {parent, inputs.at ("N")})
+      : _workflow_state._symbol == "nary_tree"
+         ? bytes_save ( NaryTreeInput { parent
+                                      , inputs.at ("N")
+                                      , inputs.at ("B")
+                                      , inputs.at ("heureka_value")
+                                      }
+                      )
+      : throw std::logic_error ("todo: symbol should be an enum here")
+      , _workflow_state._module
+      , _workflow_state._symbol
+      );
   }
 
   interface::WorkflowEngine::InjectResult GraphTraversalWorkflowEngine::inject
@@ -130,42 +140,52 @@ namespace gspc
       , std::move (result)
       , [&] (Task const& input_task, task::result::Success const& success)
         {
-          auto const& outputs (success.outputs);
-          auto const& inputs (input_task.inputs);
-
-          auto value_at
-            ( [&] (auto const& xs, auto x)
+          auto mark_seen
+            ( [&] (GraphTraversalOutput const& children, std::uint64_t parent)
               {
-                return xs.equal_range (x).first->second;
+                for (auto child : children)
+                {
+                  if (!_workflow_state._seen[child]++)
+                  {
+                    _workflow_state._open.emplace (child);
+                    _workflow_state._structure.insert (child, {}, {parent});
+                  }
+                }
               }
             );
 
-          if (  outputs.count ("parent") != 1
-             || inputs.count ("parent") != 1
-             || value_at (outputs, "parent") != value_at (inputs, "parent")
-             )
+          if (input_task.symbol == "static_map")
           {
-            throw std::logic_error
-              ("GraphTraversalWorkflowEngine::inject: Unexpected outputs");
+            auto output (bytes_load<GraphTraversalOutput> (success.output));
+            auto input (bytes_load<StaticMapInput> (input_task.input));
+
+            mark_seen (output, input.parent);
           }
-
-          auto const& parent (value_at (outputs, "parent"));
-          auto children (outputs.equal_range ("children"));
-
-          for (auto child (children.first); child != children.second; ++child)
+          else if (input_task.symbol == "dynamic_map")
           {
-            if (!_workflow_state._seen[child->second]++)
+            auto output (bytes_load<GraphTraversalOutput> (success.output));
+            auto input (bytes_load<DynamicMapInput> (input_task.input));
+
+            mark_seen (output, input.parent);
+          }
+          else if (input_task.symbol == "nary_tree")
+          {
+            auto output
+              (bytes_load<GraphTraversalOutputWithHeureka> (success.output));
+            auto input (bytes_load<NaryTreeInput> (input_task.input));
+
+            mark_seen (output.children, input.parent);
+
+            if (output.heureka)
             {
-              _workflow_state._open.emplace (child->second);
-              _workflow_state._structure.insert (child->second, {}, {parent});
+              got_first_heureka = !_workflow_state._got_heureka;
+
+              _workflow_state._got_heureka = true;
             }
           }
-
-          if (outputs.count ("heureka") && value_at (outputs, "heureka"))
+          else
           {
-            got_first_heureka = !_workflow_state._got_heureka;
-
-            _workflow_state._got_heureka = true;
+            throw std::logic_error ("task with symbol GTWE can't send");
           }
         }
       );

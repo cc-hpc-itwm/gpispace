@@ -60,14 +60,16 @@ namespace gspc
 
     ++_workflow_state.i;
 
-    Task::Inputs const inputs
-      { {"input", _workflow_state.i}
-      , {"output", _workflow_state.N - _workflow_state.i}
-      , {"N", _workflow_state.N}
-      };
-
     return _processing_state.extract
-      ("core", inputs, _workflow_state.module, "identity");
+      ( "core"
+      , bytes_save ( MapInput { _workflow_state.N
+                              , _workflow_state.i
+                              , _workflow_state.N - _workflow_state.i
+                              }
+                   )
+      , _workflow_state.module
+      , "identity"
+      );
   }
 
   interface::WorkflowEngine::InjectResult
@@ -78,7 +80,7 @@ namespace gspc
       , std::move (result)
       , [] (Task const& input_task, task::result::Success const& success)
         {
-          if (input_task.inputs != success.outputs)
+          if (input_task.input != success.output)
           {
             throw std::logic_error
               ("MapWorkflowEngine::inject: Unexpected outputs.");

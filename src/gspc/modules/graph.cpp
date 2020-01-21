@@ -1,94 +1,56 @@
 #include <gspc/module_api.hpp>
 
+#include <gspc/GraphTraversalWorkflowEngine.hpp>
+#include <gspc/serialization.hpp>
+
 #include <stdexcept>
 
 namespace graph_so
 {
-  gspc::task::result::Success::Outputs static_map
-    (gspc::Task::Inputs inputs)
+  gspc::GraphTraversalOutput static_map (gspc::StaticMapInput)
   {
-    // do not generate children
-    if (  inputs.size() != 1
-       || inputs.count ("parent") != 1
-       )
-    {
-      throw std::logic_error
-        ("Worker::execute: Graph: Static Map: Corrupted task.");
-    }
-
-    return inputs;
+    return {};
   }
 
-  gspc::task::result::Success::Outputs dynamic_map
-    (gspc::Task::Inputs inputs)
+  gspc::GraphTraversalOutput dynamic_map (gspc::DynamicMapInput input)
   {
-    auto value_at
-      ( [&] (auto key)
-        {
-          return inputs.equal_range (key).first->second;
-        }
-      );
-
     // when parent == 0 then generate all tasks [1..N]
     // when parent != 0 then verify its less or equal to N
-    if (  inputs.size() != 2
-       || inputs.count ("parent") != 1
-       || inputs.count ("N") != 1
-       || value_at ("parent") > value_at ("N")
-       )
+    if (input.parent > input.N)
     {
       throw std::logic_error
         ("Worker::execute: Graph: Dynamic Map: Corrupted task.");
     }
 
-    auto outputs (inputs);
+    gspc::GraphTraversalOutput children;
 
-    auto const parent (value_at ("parent"));
-
-    if (parent == 0)
+    if (input.parent == 0)
     {
-      auto n (value_at ("N"));
-
+      auto n (input.N);
       while (n --> 0)
       {
-        outputs.emplace ("children", n + 1);
+        children.emplace (n + 1);
       }
     }
 
-    return outputs;
+    return children;
   }
 
-  gspc::task::result::Success::Outputs nary_tree
-    (gspc::Task::Inputs inputs)
+  gspc::GraphTraversalOutputWithHeureka nary_tree (gspc::NaryTreeInput input)
   {
-    auto value_at
-      ( [&] (auto key)
-        {
-          return inputs.equal_range (key).first->second;
-        }
-      );
-
-    if (  inputs.count ("parent") != 1
-       || inputs.count ("N") != 1
-       || inputs.count ("B") != 1
-       || !(value_at ("parent") < value_at ("N"))
-       )
+    if (!(input.parent < input.N))
     {
       throw std::logic_error
         ("Worker::execute: Graph: Dynamic Map: Corrupted task.");
     }
 
-    auto outputs (inputs);
+    gspc::GraphTraversalOutputWithHeureka output;
 
-    auto b (value_at ("B"));
-    auto const n (value_at ("N"));
-    auto const parent (value_at ("parent"));
+    auto b (input.B);
+    auto const n (input.N);
+    auto const parent (input.parent);
 
-    outputs.emplace
-      ( "heureka"
-      , inputs.count ("heureka_value")
-      && parent == value_at ("heureka_value")
-      );
+    output.heureka = parent == input.heureka_value;
 
     auto const child_base (b * parent + 1);
 
@@ -98,16 +60,37 @@ namespace graph_so
 
       if (child < n)
       {
-        outputs.emplace ("children", child);
+        output.children.emplace (child);
       }
     }
 
-    return outputs;
+    return output;
+  }
+}
+
+namespace autogen
+{
+  gspc::task::result::Success::Output static_map (gspc::Task::Input input)
+  {
+    return gspc::bytes_save
+      (graph_so::static_map (gspc::bytes_load<gspc::StaticMapInput> (input)));
+  }
+
+  gspc::task::result::Success::Output dynamic_map (gspc::Task::Input input)
+  {
+    return gspc::bytes_save
+      (graph_so::dynamic_map (gspc::bytes_load<gspc::DynamicMapInput> (input)));
+  }
+
+  gspc::task::result::Success::Output nary_tree (gspc::Task::Input input)
+  {
+    return gspc::bytes_save
+      (graph_so::nary_tree (gspc::bytes_load<gspc::NaryTreeInput> (input)));
   }
 }
 
 extern "C" FHG_UTIL_DLLEXPORT gspc::ModuleFunctions const gspc_module_functions
-  = { {"static_map", &graph_so::static_map}
-    , {"dynamic_map", &graph_so::dynamic_map}
-    , {"nary_tree", &graph_so::nary_tree}
+  = { {"static_map", &autogen::static_map}
+    , {"dynamic_map", &autogen::dynamic_map}
+    , {"nary_tree", &autogen::nary_tree}
     };

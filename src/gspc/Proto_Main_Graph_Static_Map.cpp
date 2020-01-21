@@ -68,7 +68,7 @@ try
     );
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });
 
-  std::unordered_set<gspc::value_type> values;
+  std::unordered_set<std::uint64_t> values;
   {
     auto n (std::stoul (argv[1]));
 
@@ -104,7 +104,7 @@ try
   if (argc > 2)
   {
     std::ofstream (argv[2])
-      << gspc::ToDot<gspc::value_type> (workflow_engine.structure());
+      << gspc::ToDot<std::uint64_t> (workflow_engine.structure());
   }
 
   return EXIT_SUCCESS;

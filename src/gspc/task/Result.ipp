@@ -9,7 +9,7 @@ namespace gspc
       template<typename Archive>
         void Success::serialize (Archive& ar, unsigned int)
       {
-        ar & outputs;
+        ar & output;
       }
       template<typename Archive>
         void Failure::serialize (Archive& ar, unsigned int)

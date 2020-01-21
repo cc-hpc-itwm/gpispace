@@ -90,7 +90,7 @@ try
   if (argc > 2)
   {
     std::ofstream (argv[2])
-      << gspc::ToDot<gspc::value_type> (workflow_engine.structure());
+      << gspc::ToDot<std::uint64_t> (workflow_engine.structure());
   }
 
   return EXIT_SUCCESS;
