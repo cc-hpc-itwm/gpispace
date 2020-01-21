@@ -1,5 +1,7 @@
 #include <gspc/MapWorkflowEngine.hpp>
 
+#include <util-generic/serialization/boost/filesystem/path.hpp>
+
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -14,8 +16,10 @@
 
 namespace gspc
 {
-  MapWorkflowEngine::MapWorkflowEngine (std::uint64_t N)
+  MapWorkflowEngine::MapWorkflowEngine
+    (boost::filesystem::path module, std::uint64_t N)
   {
+    _workflow_state.module = module;
     _workflow_state.N = N;
   }
 
@@ -28,6 +32,7 @@ namespace gspc
     void MapWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)
   {
+    ar & module;
     ar & N;
     ar & i;
   }
@@ -79,7 +84,8 @@ namespace gspc
       , {"N", _workflow_state.N}
       };
 
-    return _processing_state.extract ("core", inputs, "map_so", "identity");
+    return _processing_state.extract
+      ("core", inputs, _workflow_state.module, "identity");
   }
 
   interface::WorkflowEngine::InjectResult

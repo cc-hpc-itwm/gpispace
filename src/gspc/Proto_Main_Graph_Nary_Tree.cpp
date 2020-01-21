@@ -71,7 +71,8 @@ try
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });
 
   gspc::GraphTraversalWorkflowEngine workflow_engine
-    ( {0}
+    ( MODULE
+    , {0}
     , "nary_tree"
     , { {"N", std::stoul (argv[1])}
       , {"B", std::stoul (argv[2])}

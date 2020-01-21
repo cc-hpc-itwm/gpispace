@@ -11,6 +11,7 @@
 #include <gspc/workflow_engine/ProcessingState.hpp>
 #include <gspc/workflow_engine/State.hpp>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/variant.hpp>
 
 #include <cstdint>
@@ -30,7 +31,8 @@ namespace gspc
   {
   public:
     GraphTraversalWorkflowEngine
-      ( std::unordered_set<value_type>
+      ( boost::filesystem::path module
+      , std::unordered_set<value_type>
       , Task::Symbol
       , Task::Inputs // default parameter for each task
       );
@@ -50,6 +52,8 @@ namespace gspc
   private:
     struct WorkflowState
     {
+      boost::filesystem::path _module;
+
       Forest<value_type> _structure;
       std::unordered_map<value_type, std::size_t> _seen;
       std::unordered_set<value_type> _open;

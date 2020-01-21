@@ -80,7 +80,7 @@ try
   // gspc::PetriNetWorkflow workflow;
   // gspc::PetriNetWorkflowEngine workflow_engine (workflow);
 
-  gspc::MapWorkflowEngine workflow_engine (std::stoul (argv[1]));
+  gspc::MapWorkflowEngine workflow_engine (MODULE, std::stoul (argv[1]));
 
   gspc::GreedyScheduler scheduler
     ( workflow_engine

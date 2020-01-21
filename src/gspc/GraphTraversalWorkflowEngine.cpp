@@ -1,5 +1,7 @@
 #include <gspc/GraphTraversalWorkflowEngine.hpp>
 
+#include <util-generic/serialization/boost/filesystem/path.hpp>
+
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
 #include <boost/iostreams/device/array.hpp>
@@ -15,11 +17,13 @@
 namespace gspc
 {
   GraphTraversalWorkflowEngine::GraphTraversalWorkflowEngine
-    ( std::unordered_set<value_type> open
+    ( boost::filesystem::path module
+    , std::unordered_set<value_type> open
     , Task::Symbol symbol
     , Task::Inputs inputs
     )
   {
+    _workflow_state._module = module;
     _workflow_state._open = open;
     _workflow_state._symbol = symbol;
     _workflow_state._inputs = inputs;
@@ -61,6 +65,7 @@ namespace gspc
     void GraphTraversalWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)
   {
+    ar & _module;
     ar & _structure;
     ar & _seen;
     ar & _open;
@@ -130,7 +135,7 @@ namespace gspc
     inputs.emplace ("parent", parent);
 
     return _processing_state.extract
-      ("core", inputs, "graph_so", _workflow_state._symbol);
+      ("core", inputs, _workflow_state._module, _workflow_state._symbol);
   }
 
   interface::WorkflowEngine::InjectResult GraphTraversalWorkflowEngine::inject
