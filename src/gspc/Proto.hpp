@@ -25,6 +25,9 @@ namespace gspc
   class MapReduceWorkflowEngine;
 
   class ReschedulingGreedyScheduler;
+  //! - schedule_queues needs a guard for at+emplace+iterate in stop
+  //! - cancel_task(id) needs resource class again (needs storing
+  //!   task, or query wfe?!)
   class LookaheadScheduler;
   class WorkStealingScheduler;
   class CoallocationScheduler;
