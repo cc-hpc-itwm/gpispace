@@ -291,6 +291,16 @@ namespace gspc
             //! \todo sanity!?
             //! do nothing, just remove job
             remove_job (cancelled.job_id);
+
+            _command_queue.put
+              ( Inject
+                { cancelled.job_id.task_id
+                , [&]() -> task::Result
+                  {
+                    throw std::runtime_error ("Cancelled");
+                  }
+                }
+              );
           }
         );
     }
