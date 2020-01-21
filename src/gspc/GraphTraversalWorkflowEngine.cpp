@@ -1,12 +1,8 @@
 #include <gspc/GraphTraversalWorkflowEngine.hpp>
 
-#include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <gspc/serialization.hpp>
 
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/iostreams/device/array.hpp>
-#include <boost/iostreams/device/back_inserter.hpp>
-#include <boost/iostreams/filtering_stream.hpp>
+#include <util-generic/serialization/boost/filesystem/path.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -76,31 +72,17 @@ namespace gspc
 
   workflow_engine::State GraphTraversalWorkflowEngine::state() const
   {
-    std::vector<char> data;
-    {
-      boost::iostreams::filtering_ostream zos
-        (boost::iostreams::back_inserter (data));
-      boost::archive::binary_oarchive oa (zos);
-
-      oa & _workflow_state;
-    }
-
-    return {std::move (data), workflow_finished(), _processing_state};
+    return { bytes_save (_workflow_state)
+           , workflow_finished()
+           , _processing_state
+           };
   }
 
   GraphTraversalWorkflowEngine::GraphTraversalWorkflowEngine
       (workflow_engine::State state)
-    : _processing_state (state.processing_state)
+    : _workflow_state (bytes_load<WorkflowState> (state.engine_specific))
+    , _processing_state (state.processing_state)
   {
-    //! \todo see aloma::core::data::serialization
-    auto const& data (state.engine_specific);
-
-    boost::iostreams::filtering_istream zis
-      (boost::iostreams::array_source (data.data(), data.size()));
-    boost::archive::binary_iarchive ia (zis);
-
-    ia & _workflow_state;
-
     if (state.workflow_finished != workflow_finished())
     {
       throw std::logic_error ("INCONSISTENCY: finished or not!?");
