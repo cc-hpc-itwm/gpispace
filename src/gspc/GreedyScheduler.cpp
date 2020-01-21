@@ -327,8 +327,7 @@ namespace gspc
             _command_queue.put
               ( Finished
                   { job_id
-                  , task::result::Failure
-                      {std::move (finished.task_result.error())}
+                  , task::result::Failure {finished.task_result.error()}
                   }
               );
           }
