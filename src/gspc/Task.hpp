@@ -19,7 +19,9 @@ namespace gspc
     resource::Class resource_class;
     using Input = std::vector<char>;
     Input input;
+    //! \todo search path + basename only? id? gspc: searchpath + basename - "lib"
     boost::filesystem::path so;
+    //! \todo string or index or hash? gspc: string (unmangled)
     using Symbol = std::string;
     Symbol symbol;
 
