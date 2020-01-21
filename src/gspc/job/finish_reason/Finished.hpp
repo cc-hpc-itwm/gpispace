@@ -12,7 +12,7 @@ namespace gspc
       struct Finished
       {
         //! \todo multiple tasks per job!?
-        ErrorOr<task::Result> task_result;
+        ErrorOr<task::result::Success> task_result;
 
         template<typename Archive>
           void serialize (Archive& ar, unsigned int);

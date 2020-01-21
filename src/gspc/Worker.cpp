@@ -35,7 +35,7 @@ namespace gspc
 
   namespace
   {
-    task::Result execute_task (Task const& task)
+    task::result::Success execute_task (Task const& task)
     {
       auto const& inputs (task.inputs);
 

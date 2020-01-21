@@ -7,8 +7,8 @@ namespace gspc
     template<typename Function, typename>
       void ProcessingState::inject
         ( task::ID task_id
-        , ErrorOr<task::Result> error_or_result
-        , Function&& post_process_result
+        , task::Result result
+        , Function&& post_process_success
         )
     {
       if (!_extracted.erase (task_id))
@@ -25,33 +25,61 @@ namespace gspc
           ("ProcessingState::inject: INCONSISTENCY: Tasks data missing.");
       }
 
-      auto result_successfully_post_processed
-        ( [&] (task::Result const& result) noexcept
+      auto forget_task
+        ( [&]
+          {
+            //! \todo Customization point here?
+            _tasks.erase (task);
+          }
+        );
+
+      auto success_successfully_post_processed
+        ( [&] (task::result::Success const& success) noexcept
           {
             try
             {
-              post_process_result (task->second, result);
+              post_process_success (task->second, success);
 
               return true;
             }
             catch (...)
             {
               _failed_to_post_process.emplace
-                (task_id, std::make_pair (result, std::current_exception()));
+                (task_id, std::make_pair (success, std::current_exception()));
 
               return false;
             }
           }
-          );
+        );
 
-      if (!error_or_result)
-      {
-        _failed_to_execute.emplace (task_id, error_or_result.error());
-      }
-      else if (result_successfully_post_processed (error_or_result.value()))
-      {
-        _tasks.erase (task);
-      }
+      return fhg::util::visit<void>
+        ( result
+        , [&] (task::result::Success const& success)
+          {
+            if (success_successfully_post_processed (success))
+            {
+              forget_task();
+            }
+          }
+        , [&] (task::result::Failure const& failure)
+          {
+            _failed_to_execute.emplace (task_id, failure);
+          }
+        , [&] (task::result::CancelIgnored const& cancel_ignored)
+          {
+            _cancelled_ignored.emplace (task_id, cancel_ignored);
+            forget_task();
+          }
+        , [&] (task::result::CancelOptional const& cancel_optional)
+          {
+            _cancelled_optional.emplace (task_id, cancel_optional);
+            forget_task();
+          }
+        , [&] (task::result::Postponed const& postponed)
+          {
+            _postponed.emplace (task_id, postponed);
+          }
+        );
     }
   }
 }

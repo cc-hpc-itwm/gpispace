@@ -34,20 +34,27 @@ namespace gspc
 
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
     {
-      return os
-        << "next_task_id: " << s._next_task_id << "\n"
-        << "tasks: " << s._tasks.size() << "\n"
-        << fhg::util::print_container
-           ( "  ", "\n  ", "\n", s._tasks
-           , [&] (auto& s, auto const& x) -> decltype (s)
-             {
-               return s << x.first << " -> " << x.second;
-             }
-           )
-        << "extracted: " << s._extracted.size() << "\n"
-        << fhg::util::print_container ( "  ", "\n  ", "\n", s._extracted)
-        << "failed_to_post_process: " << s._failed_to_post_process.size() << "\n"
-        << fhg::util::print_container
+      auto print_map
+        ( [&] (std::string name, auto const& map)
+          {
+            os << name << ": " << map.size() << "\n"
+               << fhg::util::print_container
+                    ( "  ", "\n  ", "\n", map
+                    , [&] (auto& s, auto const& x) -> decltype (s)
+                      {
+                        return s << x.first << " -> " << x.second;
+                      }
+                    )
+              ;
+          }
+        );
+
+      os << "next_task_id: " << s._next_task_id << "\n";
+      print_map ("tasks", s._tasks);
+      os << "extracted: " << s._extracted.size() << "\n"
+         << fhg::util::print_container ( "  ", "\n  ", "\n", s._extracted)
+         << "failed_to_post_process: " << s._failed_to_post_process.size() << "\n"
+         << fhg::util::print_container
            ( "  ", "\n  ", "\n", s._failed_to_post_process
            , [&] (auto& s, auto const& x) -> decltype (s)
              {
@@ -56,18 +63,12 @@ namespace gspc
                         << fhg::util::exception_printer (x.second.second)
                  ;
              }
-           )
-        << "failed_to_execute: " << s._failed_to_execute.size()
-        << fhg::util::print_container
-           ( "  ", "\n  ", "\n", s._failed_to_execute
-           , [&] (auto& s, auto const& x) -> decltype (s)
-             {
-               return s << x.first << " -> "
-                        << fhg::util::exception_printer (x.second)
-                 ;
-             }
-           )
-        ;
+           );
+      print_map ("failed_to_execute", s._failed_to_execute);
+      print_map ("cancelled_ignored", s._cancelled_ignored);
+      print_map ("cancelled_optional", s._cancelled_optional);
+      print_map ("postponed", s._postponed);
+      return os;
     }
   }
 }

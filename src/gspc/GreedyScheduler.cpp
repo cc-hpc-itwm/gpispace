@@ -215,10 +215,22 @@ namespace gspc
             _command_queue.put
               (Inject {finished.job_id.task_id, finished.task_result});
 
-            if (!finished.task_result)
-            {
-              stop();
-            }
+            //! \note scheduler policy to stop everything after the
+            //! first error, not strictly required
+            //! Alternatives:
+            //! - ask user
+            //! - do nothing but let workflow engine decide
+            fhg::util::visit<void>
+              ( finished.task_result
+              , [&] (task::result::Failure const&)
+                {
+                  stop();
+                }
+              , [] (auto const&)
+                {
+                  // do nothing
+                }
+              );
           }
         , [&] (Inject inject)
           {
@@ -231,7 +243,7 @@ namespace gspc
             _command_queue.put (Extract{});
 
             auto cancel_task
-              ( [&] (task::ID const& task_id)
+              ( [&] (task::ID const& task_id, task::Result result)
                 {
                   //! beware: might be in the schedule/command queue
                   //!                                      handled
@@ -248,19 +260,7 @@ namespace gspc
                   if (_schedule_queue.remove (task_id))
                   {
                     // no job was created
-                    _command_queue.put
-                      ( Inject
-                        { task_id
-                        , [&]() -> task::Result
-                          {
-                            throw std::runtime_error
-                              (str ( boost::format ("Cancelled: Heureka by %1%")
-                                   % inject.task_id
-                                   )
-                              );
-                          }
-                        }
-                      );
+                    _command_queue.put (Inject {task_id, result});
                   }
                   else
                   {
@@ -278,12 +278,20 @@ namespace gspc
             std::for_each
               ( inject_result.tasks_with_ignored_result.begin()
               , inject_result.tasks_with_ignored_result.end()
-              , cancel_task
+              , [&] (task::ID task_id)
+                {
+                  cancel_task
+                    (task_id, task::result::CancelIgnored {inject.task_id});
+                }
               );
             std::for_each
               ( inject_result.tasks_with_optional_result.begin()
               , inject_result.tasks_with_optional_result.end()
-              , cancel_task
+              , [&] (task::ID task_id)
+                {
+                  cancel_task
+                    (task_id, task::result::CancelOptional {inject.task_id});
+                }
               );
           }
         , [&] (Cancelled cancelled)
@@ -292,13 +300,11 @@ namespace gspc
             //! do nothing, just remove job
             remove_job (cancelled.job_id);
 
+            //! \todo store reason (cancelignore, canceloptional, stop)
             _command_queue.put
               ( Inject
                 { cancelled.job_id.task_id
-                , [&]() -> task::Result
-                  {
-                    throw std::runtime_error ("Cancelled");
-                  }
+                , task::result::Postponed {"UNKNOWN_REASON"}
                 }
               );
           }
@@ -313,8 +319,21 @@ namespace gspc
       ( finish_reason
       , [&] (job::finish_reason::Finished finished)
         {
-          _command_queue.put
-            (Finished {job_id, std::move (finished.task_result)});
+          if (finished.task_result)
+          {
+            _command_queue.put
+              (Finished {job_id, std::move (finished.task_result.value())});
+          }
+          else
+          {
+            _command_queue.put
+              ( Finished
+                  { job_id
+                  , task::result::Failure
+                      {std::move (finished.task_result.error())}
+                  }
+              );
+          }
         }
       , [&] (job::finish_reason::WorkerFailure failure)
         {

@@ -37,7 +37,7 @@ namespace gspc
         std::unordered_set<task::ID> tasks_with_ignored_result;
         std::unordered_set<task::ID> tasks_with_optional_result;
       };
-      virtual InjectResult inject (task::ID, ErrorOr<task::Result>) = 0;
+      virtual InjectResult inject (task::ID, task::Result) = 0;
 
       virtual workflow_engine::State state() const = 0;
       //! \required: WorkflowEngine (workflow_engine::State)

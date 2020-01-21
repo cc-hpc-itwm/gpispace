@@ -53,12 +53,12 @@ namespace gspc
     struct Finished
     {
       job::ID job_id;
-      ErrorOr<task::Result> task_result;
+      task::Result task_result;
     };
     struct Inject
     {
       task::ID task_id;
-      ErrorOr<task::Result> task_result;
+      task::Result task_result;
     };
     struct Cancelled
     {

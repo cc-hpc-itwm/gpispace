@@ -83,17 +83,17 @@ namespace gspc
   }
 
   interface::WorkflowEngine::InjectResult
-    MapWorkflowEngine::inject (task::ID id, ErrorOr<task::Result> result)
+    MapWorkflowEngine::inject (task::ID id, task::Result result)
   {
     _processing_state.inject
       ( std::move (id)
       , std::move (result)
-      , [] (Task const& input_task, task::Result const& result)
+      , [] (Task const& input_task, task::result::Success const& success)
         {
-          if (input_task.inputs != result.outputs)
+          if (input_task.inputs != success.outputs)
           {
             throw std::logic_error
-              ("MapWorkflowEngine::inject: Unexpected result.");
+              ("MapWorkflowEngine::inject: Unexpected outputs.");
           }
         }
       );

@@ -17,7 +17,7 @@ namespace gspc
     PetriNetWorkflowEngine (PetriNetWorkflow);
 
     virtual boost::variant<Task, bool> extract() override;
-    virtual InjectResult inject (task::ID, ErrorOr<task::Result>) override;
+    virtual InjectResult inject (task::ID, task::Result) override;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;

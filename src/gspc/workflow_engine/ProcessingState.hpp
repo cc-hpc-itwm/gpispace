@@ -34,17 +34,18 @@ namespace gspc
 
       template<typename Function>
         using is_post_process =
-          fhg::util::is_callable< Function
-                                , void (Task const&, task::Result const&)
-                                >;
+          fhg::util::is_callable
+            < Function
+            , void (Task const&, task::result::Success const&)
+            >;
 
       template< typename Function
               , typename = std::enable_if_t<is_post_process<Function>{}>
               >
       void inject
         ( task::ID task_id
-        , ErrorOr<task::Result> error_or_result
-        , Function&& post_process_result
+        , task::Result result
+        , Function&& post_process_success
         );
 
       bool has_extracted_tasks() const;
@@ -53,16 +54,27 @@ namespace gspc
 
       friend std::ostream& operator<< (std::ostream&, ProcessingState const&);
 
+      //! \todo missing api to restart/drop postponed/failed tasks
+
     private:
       task::ID _next_task_id {0};
 
       //! every task in tasks is either
       //! - in flight: _extracted
+      //!   - but postponed by scheduler: _postponed
       //! - failed executing: _failed_to_execute
       //! - failed to post process: _failed_to_post_process
+      //! - extracted, but no longer required after inject (heureka):
+      //!   - if flagged ignored: _cancelled_ignore
+      //!   - if flagged optional: _cancelled_optional
       //! note: finished tasks are forgotten (they changed state when
       //! post processed).
-      //! \note would be enough to remember data required to reconstruct task
+      //! \note would be enough to remember data required to
+      //! reconstruct task
+      //! \todo Let workflow engine implementation decide whether to
+      //! keep successes/cancels? -> may be answered with "no",
+      //! because workflow engine sees result and task before giving
+      //! it to this function, so can store there anyway.
       std::unordered_map<task::ID, Task> _tasks;
 
       //! \note keys of _extracted, _failed_to_post_process,
@@ -71,9 +83,12 @@ namespace gspc
       //! - subset of keys (_tasks)
       std::unordered_set<task::ID> _extracted;
       std::unordered_map< task::ID
-                        , std::pair<task::Result, std::exception_ptr>
+                        , std::pair<task::result::Success, std::exception_ptr>
                         > _failed_to_post_process;
-      std::unordered_map<task::ID, std::exception_ptr> _failed_to_execute;
+      std::unordered_map<task::ID, task::result::Failure> _failed_to_execute;
+      std::unordered_map<task::ID, task::result::Postponed> _postponed;
+      std::unordered_map<task::ID, task::result::CancelIgnored> _cancelled_ignored;
+      std::unordered_map<task::ID, task::result::CancelOptional> _cancelled_optional;
     };
   }
 }

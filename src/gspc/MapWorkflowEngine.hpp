@@ -20,7 +20,7 @@ namespace gspc
     MapWorkflowEngine (std::uint64_t);
 
     virtual boost::variant<Task, bool> extract() override;
-    virtual InjectResult inject (task::ID, ErrorOr<task::Result>) override;
+    virtual InjectResult inject (task::ID, task::Result) override;
 
     virtual workflow_engine::State state() const override;
     MapWorkflowEngine (workflow_engine::State);

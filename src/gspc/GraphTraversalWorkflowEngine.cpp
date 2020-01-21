@@ -134,16 +134,16 @@ namespace gspc
   }
 
   interface::WorkflowEngine::InjectResult GraphTraversalWorkflowEngine::inject
-    (task::ID id, ErrorOr<task::Result> result)
+    (task::ID id, task::Result result)
   {
     bool got_first_heureka {false};
 
     _processing_state.inject
       ( std::move (id)
       , std::move (result)
-      , [&] (Task const& input_task, task::Result const& result)
+      , [&] (Task const& input_task, task::result::Success const& success)
         {
-          auto const& outputs (result.outputs);
+          auto const& outputs (success.outputs);
           auto const& inputs (input_task.inputs);
 
           auto value_at
@@ -159,7 +159,7 @@ namespace gspc
              )
           {
             throw std::logic_error
-              ("GraphTraversalWorkflowEngine::inject: Unexpected result");
+              ("GraphTraversalWorkflowEngine::inject: Unexpected outputs");
           }
 
           auto const& parent (value_at (outputs, "parent"));
