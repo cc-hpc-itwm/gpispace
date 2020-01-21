@@ -186,6 +186,11 @@ namespace gspc
         ( to_release
         , [&] (Resources::Node const& x)
           {
+            if (_resource_usage_by_id.at (x.first) == 0)
+            {
+              throw std::invalid_argument ("Not in use.");
+            }
+
             if (0 == --_resource_usage_by_id.at (x.first))
             {
               _available_resources_by_class.at (x.second).emplace (x.first);
