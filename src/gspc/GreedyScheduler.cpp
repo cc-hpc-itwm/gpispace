@@ -59,25 +59,27 @@ namespace gspc
   }
 
   void GreedyScheduler::schedule_thread()
+  try
   {
-    try
+    while (true)
     {
-      while (!_stopped)
-      {
-        auto const task (_schedule_queue.pop().first);
+      auto const task (_schedule_queue.pop().first);
 
+      try
+      {
         _command_queue.put
           (Submit {task, _resource_manager.acquire (task.resource_class)});
       }
+      catch (...)
+      {
+        _command_queue.put (FailedToAcquire {task, std::current_exception()});
+      }
     }
-    catch (ScheduleQueue::Interrupted const&)
-    {
-      assert (_stopped);
-    }
-    catch (interface::ResourceManager::Interrupted const&)
-    {
-      assert (_stopped);
-    }
+  }
+  catch (ScheduleQueue::Interrupted const&)
+  {
+    // do nothing, not responsible for outstanding entries in the
+    // schedule_queue
   }
 
   //! can not be a command, must be atomic in inject
@@ -243,6 +245,18 @@ namespace gspc
               }
             }
           }
+        , [&] (FailedToAcquire failed_to_acquire)
+          {
+            auto const& task (failed_to_acquire.task);
+            auto const& error (failed_to_acquire.error);
+
+            //! \note is cancelled but without remove_job
+            inject ( task.id
+                   , task::result::Postponed
+                       {fhg::util::exception_printer (error).string()}
+                   );
+          }
+
         , [&] (Extract)
           {
             if (_stopped)
@@ -311,6 +325,9 @@ namespace gspc
           }
         );
     }
+
+    //! \todo might still contain task
+    _schedule_queue.interrupt();
   }
 
   void GreedyScheduler::finished
@@ -380,6 +397,5 @@ namespace gspc
     _command_queue.put (CancelAllTasks {reason});
 
     _resource_manager.interrupt();
-    _schedule_queue.interrupt();
   }
 }

@@ -50,6 +50,11 @@ namespace gspc
       Task task;
       resource_manager::Trivial::Acquired acquired;
     };
+    struct FailedToAcquire
+    {
+      Task task;
+      std::exception_ptr error;
+    };
     struct Extract{};
     struct CancelAllTasks
     {
@@ -67,6 +72,7 @@ namespace gspc
     };
 
     using Command = boost::variant < Submit
+                                   , FailedToAcquire
                                    , Extract
                                    , CancelAllTasks
                                    , Finished
