@@ -1,6 +1,6 @@
-#include <gspc/module_api.hpp>
+#include <gspc/interface/module_api.hpp>
 
-#include <gspc/MapWorkflowEngine.hpp>
+#include <gspc/example/workflow_engine/MapWorkflowEngine.hpp>
 #include <gspc/serialization.hpp>
 
 #include <stdexcept>

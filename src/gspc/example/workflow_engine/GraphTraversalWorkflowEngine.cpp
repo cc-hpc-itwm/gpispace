@@ -1,4 +1,4 @@
-#include <gspc/GraphTraversalWorkflowEngine.hpp>
+#include <gspc/example/workflow_engine/GraphTraversalWorkflowEngine.hpp>
 
 #include <gspc/serialization.hpp>
 

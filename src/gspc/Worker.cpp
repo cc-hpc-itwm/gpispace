@@ -2,7 +2,7 @@
 
 #include <gspc/job/FinishReason.hpp>
 #include <gspc/job/finish_reason/Cancelled.hpp>
-#include <gspc/module_api.hpp>
+#include <gspc/interface/module_api.hpp>
 
 #include <boost/format.hpp>
 

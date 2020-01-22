@@ -1,6 +1,6 @@
-#include <gspc/module_api.hpp>
+#include <gspc/interface/module_api.hpp>
 
-#include <gspc/SequenceWorkflowEngine.hpp>
+#include <gspc/example/workflow_engine/SequenceWorkflowEngine.hpp>
 #include <gspc/serialization.hpp>
 
 #include <stdexcept>

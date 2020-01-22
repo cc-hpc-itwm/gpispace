@@ -1,6 +1,6 @@
-#include <gspc/module_api.hpp>
+#include <gspc/interface/module_api.hpp>
 
-#include <gspc/GraphTraversalWorkflowEngine.hpp>
+#include <gspc/example/workflow_engine/GraphTraversalWorkflowEngine.hpp>
 #include <gspc/serialization.hpp>
 
 #include <stdexcept>

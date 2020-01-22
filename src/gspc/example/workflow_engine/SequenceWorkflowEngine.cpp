@@ -1,4 +1,4 @@
-#include <gspc/MapWorkflowEngine.hpp>
+#include <gspc/example/workflow_engine/SequenceWorkflowEngine.hpp>
 
 #include <gspc/serialization.hpp>
 
@@ -12,20 +12,20 @@
 
 namespace gspc
 {
-  MapWorkflowEngine::MapWorkflowEngine
+  SequenceWorkflowEngine::SequenceWorkflowEngine
     (boost::filesystem::path module, std::uint64_t N)
   {
     _workflow_state.module = module;
     _workflow_state.N = N;
   }
 
-  bool MapWorkflowEngine::workflow_finished() const
+  bool SequenceWorkflowEngine::workflow_finished() const
   {
     return !(_workflow_state.i < _workflow_state.N);
   }
 
   template<typename Archive>
-    void MapWorkflowEngine::WorkflowState::serialize
+    void SequenceWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)
   {
     ar & module;
@@ -33,7 +33,7 @@ namespace gspc
     ar & i;
   }
 
-  workflow_engine::State MapWorkflowEngine::state() const
+  workflow_engine::State SequenceWorkflowEngine::state() const
   {
     return { bytes_save (_workflow_state)
            , workflow_finished()
@@ -41,7 +41,7 @@ namespace gspc
            };
   }
 
-  MapWorkflowEngine::MapWorkflowEngine (workflow_engine::State state)
+  SequenceWorkflowEngine::SequenceWorkflowEngine (workflow_engine::State state)
     : _workflow_state (bytes_load<WorkflowState> (state.engine_specific))
     , _processing_state (state.processing_state)
   {
@@ -51,40 +51,45 @@ namespace gspc
     }
   }
 
-  boost::variant<Task, bool> MapWorkflowEngine::extract()
+  boost::variant<Task, bool> SequenceWorkflowEngine::extract()
   {
     if (workflow_finished())
     {
       return !_processing_state.has_extracted_tasks();
     }
 
+    if (!_workflow_state.step)
+    {
+      return false;
+    }
+
     ++_workflow_state.i;
+    _workflow_state.step = false;
+
 
     return _processing_state.extract
       ( "core"
-      , bytes_save ( MapInput { _workflow_state.N
-                              , _workflow_state.i
-                              , _workflow_state.N - _workflow_state.i
-                              }
-                   )
+      , bytes_save (SequenceInput {_workflow_state.i})
       , _workflow_state.module
       , "identity"
       );
   }
 
   interface::WorkflowEngine::InjectResult
-    MapWorkflowEngine::inject (task::ID id, task::Result result)
+    SequenceWorkflowEngine::inject (task::ID id, task::Result result)
   {
     _processing_state.inject
       ( std::move (id)
       , std::move (result)
-      , [] (Task const& input_task, task::result::Success const& success)
+      , [&] (Task const& input_task, task::result::Success const& success)
         {
           if (input_task.input != success.output)
           {
             throw std::logic_error
-              ("MapWorkflowEngine::inject: Unexpected outputs.");
+              ("SequenceWorkflowEngine::inject: Unexpected outputs.");
           }
+
+          _workflow_state.step = true;
         }
       );
 

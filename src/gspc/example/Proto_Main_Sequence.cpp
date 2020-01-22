@@ -1,6 +1,6 @@
 #include <gspc/Forest.hpp>
 #include <gspc/GreedyScheduler.hpp>
-#include <gspc/SequenceWorkflowEngine.hpp>
+#include <gspc/example/workflow_engine/SequenceWorkflowEngine.hpp>
 #include <gspc/Resource.hpp>
 #include <gspc/ScopedRuntimeSystem.hpp>
 #include <gspc/remote_interface/strategy/Thread.hpp>
