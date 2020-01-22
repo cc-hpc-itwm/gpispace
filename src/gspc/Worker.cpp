@@ -34,14 +34,14 @@ namespace gspc
 
   task::result::Success Worker::execute_task (Task const& task)
   {
-    auto dl (_so_handles.find (task.so));
-    if (dl == _so_handles.end())
-    {
-      dl = _so_handles.emplace
-        (task.so, std::make_unique<fhg::util::scoped_dlhandle> (task.so)).first;
-    }
+    auto& dl
+      ( _so_handles.at_or_create
+        ( task.so
+        , [&] { return std::make_unique<fhg::util::scoped_dlhandle> (task.so); }
+        )
+      );
     auto const functions
-      (FHG_UTIL_SCOPED_DLHANDLE_SYMBOL (*dl->second, gspc_module_functions));
+      (FHG_UTIL_SCOPED_DLHANDLE_SYMBOL (*dl, gspc_module_functions));
     return {functions->at (task.symbol) (task.input)};
   }
 

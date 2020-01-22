@@ -1,5 +1,6 @@
 #pragma once
 
+#include <gspc/BoundedStorageEvictMiddle.hpp>
 #include <gspc/Job.hpp>
 #include <gspc/Resource.hpp>
 #include <gspc/Task.hpp>
@@ -18,7 +19,6 @@
 
 #include <memory>
 #include <thread>
-#include <unordered_map>
 
 namespace gspc
 {
@@ -67,8 +67,9 @@ namespace gspc
     task::result::Success execute_task (Task const&);
     job::finish_reason::Finished execute_job (Job const&);
 
-    std::unordered_map< boost::filesystem::path
-                      , std::unique_ptr<fhg::util::scoped_dlhandle>
-                      > _so_handles;
+    //! \todo parameter for cache size
+    BoundedStorageEvictMiddle< boost::filesystem::path
+                             , std::unique_ptr<fhg::util::scoped_dlhandle>
+                             > _so_handles {20};
   };
 }
