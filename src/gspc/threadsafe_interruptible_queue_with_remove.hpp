@@ -22,13 +22,17 @@ namespace gspc
 
     //! empty: throw, queue unchanged
     //! return: oldest element (fifo)
+    //! \todo return optional, ErrorOr
     std::pair<T, ID> pop();
 
     //! unknown element: none, queue unchanged
     boost::optional<std::pair<T, ID>> remove (ID);
 
     //! interrupt all running and all future pop()
-    struct Interrupted {};
+    struct Interrupted :  std::runtime_error
+    {
+      Interrupted() : std::runtime_error (__PRETTY_FUNCTION__) {}
+    };
     void interrupt();
 
   private:

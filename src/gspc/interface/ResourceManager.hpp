@@ -29,7 +29,10 @@ namespace gspc
       virtual void add (Resources) = 0;
       virtual void remove (Forest<resource::ID>) = 0;
 
-      struct Interrupted : public std::exception{};
+      struct Interrupted :  std::runtime_error
+      {
+        Interrupted() : std::runtime_error (__PRETTY_FUNCTION__) {}
+      };
       //! \note once called all running and future acquire will throw
       //! Interrupted
       //! \todo Discuss this implies that a single resource manager can not be
