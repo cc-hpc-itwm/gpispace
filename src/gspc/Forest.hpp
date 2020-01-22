@@ -46,12 +46,6 @@ namespace gspc
     forest::Node<T, A> const& insert (T x, A a, Children cs);
     forest::Node<T, A> const& insert (forest::Node<T, A>, Children);
 
-    forest::Node<T, A> const& insert_leaf (T x, A a);
-    forest::Node<T, A> const& insert_leaf (forest::Node<T, A>);
-
-    forest::Node<T, A> const& insert_NO_DIAMOND_CHECK (T x, A a, Children cs);
-    forest::Node<T, A> const& insert_NO_DIAMOND_CHECK (forest::Node<T, A>, Children);
-
     //! throw when unknown
     //! throw when not leaf/root
     //! disconnects and removes node
@@ -185,11 +179,6 @@ namespace gspc
     friend boost::serialization::access;
     template<typename Archive>
       void serialize (Archive&, unsigned int);
-
-  private:
-    void assert_known_children_and_unknown_parent
-      (T const&, Children const&) const;
-    forest::Node<T, A> const& do_insert (T, A, Children);
   };
 
   namespace unique_forest
