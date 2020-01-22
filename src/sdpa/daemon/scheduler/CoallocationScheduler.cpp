@@ -90,8 +90,8 @@ namespace sdpa
               _worker_manager.assign_job_to_worker (jobId, worker);
             }
 
-            std::unique_ptr<Reservation> pReservation
-              (new Reservation
+            auto pReservation
+              (fhg::util::cxx14::make_unique<Reservation>
                  ( matching_workers
                  , compute_reservation_cost ( jobId
                                             , matching_workers
