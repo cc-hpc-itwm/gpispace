@@ -231,19 +231,8 @@ namespace gspc
   }
 
   template<typename T, typename A>
-    forest::Node<T, A> const&
-      Forest<T, A>::insert (forest::Node<T, A> node, Children tos)
-  {
-    return insert ( std::move (node.first)
-                  , std::move (node.second)
-                  , std::move (tos)
-                  );
-  }
-
-  template<typename T, typename A>
-    forest::Node<T, A> const&
-      Forest<T, A>::insert (T from, A annotation, Children tos)
-  try
+    void Forest<T, A>::assert_known_children_and_unknown_parent
+      (T const& from, Children const& tos) const
   {
     auto is_known
       ( [&] (auto const& x)
@@ -261,6 +250,39 @@ namespace gspc
     {
       throw std::invalid_argument ("Unknown child");
     }
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::do_insert (T from, A annotation, Children tos)
+  {
+    for (auto const& to : tos)
+    {
+      if (!_suc[from].emplace (to).second || !_pre[to].emplace (from).second)
+      {
+        throw std::logic_error ("INCONSISTENCY.");
+      }
+    }
+
+    return *_annotations.emplace (from, annotation).first;
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::insert (forest::Node<T, A> node, Children tos)
+  {
+    return insert ( std::move (node.first)
+                  , std::move (node.second)
+                  , std::move (tos)
+                  );
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::insert (T from, A annotation, Children tos)
+  try
+  {
+    assert_known_children_and_unknown_parent (from, tos);
 
     {
       Children seen;
@@ -282,21 +304,74 @@ namespace gspc
                     );
     }
 
-    for (auto const& to : tos)
-    {
-      if (!_suc[from].emplace (to).second || !_pre[to].emplace (from).second)
-      {
-        throw std::logic_error ("INCONSISTENCY.");
-      }
-    }
-
-    return *_annotations.emplace (from, annotation).first;
+    return do_insert
+      (std::move (from), std::move (annotation), std::move (tos));
   }
   catch (...)
   {
     std::throw_with_nested
       ( std::runtime_error
         ( ( boost::format ("Forest::insert: (from '%1%', to %2%)")
+          % from
+          % fhg::util::print_container ("{'", "', '", "'}", tos)
+          ).str()
+        )
+      );
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+    Forest<T, A>::insert_leaf (forest::Node<T, A> node)
+  {
+    return insert_leaf (std::move (node.first), std::move (node.second));
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::insert_leaf (T leaf, A annotation)
+  try
+  {
+    return insert_NO_DIAMOND_CHECK
+      (std::move (leaf), std::move (annotation), {});
+  }
+  catch (...)
+  {
+    std::throw_with_nested
+      ( std::runtime_error
+        ( ( boost::format ("Forest::insert_leaf: ('%1%')")
+          % leaf
+          ).str()
+        )
+      );
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::insert_NO_DIAMOND_CHECK
+        (forest::Node<T, A> node, Children tos)
+  {
+    return insert_NO_DIAMOND_CHECK ( std::move (node.first)
+                                   , std::move (node.second)
+                                   , std::move (tos)
+                                   );
+  }
+
+  template<typename T, typename A>
+    forest::Node<T, A> const&
+      Forest<T, A>::insert_NO_DIAMOND_CHECK
+        (T from, A annotation, Children tos)
+  try
+  {
+    assert_known_children_and_unknown_parent (from, tos);
+
+    return do_insert
+      (std::move (from), std::move (annotation), std::move (tos));
+  }
+  catch (...)
+  {
+    std::throw_with_nested
+      ( std::runtime_error
+        ( ( boost::format ("Forest::insert_NO_DIAMOND_CHECK: (from '%1%', to %2%)")
           % from
           % fhg::util::print_container ("{'", "', '", "'}", tos)
           ).str()
