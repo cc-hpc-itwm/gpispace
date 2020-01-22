@@ -239,6 +239,9 @@ namespace gspc
               }
               catch (...)
               {
+                //! \todo better handling, e.g. what if "too many open files"
+                //! \todo applies to all catch (...)!?
+
                 //! \note submit might be successful but communication
                 //! failed probably leading to a duplicated task
                 remove_job (job_id);
