@@ -5,6 +5,7 @@
 #include <gspc/Resource.hpp>
 #include <gspc/Task.hpp>
 #include <gspc/comm/scheduler/worker/Server.hpp>
+#include <gspc/comm/worker/scheduler/Client.hpp>
 #include <gspc/job/ID.hpp>
 #include <gspc/job/finish_reason/Finished.hpp>
 #include <gspc/rpc/TODO.hpp>
@@ -53,9 +54,15 @@ namespace gspc
 
     struct WorkItem
     {
+      //! \todo use scheduler id
       rpc::endpoint scheduler;
       Job job;
     };
+
+    //! \todo parameter for cache size
+    BoundedStorageEvictMiddle< rpc::endpoint
+                             , comm::worker::scheduler::Client
+                             > _scheduler_clients {1};
 
     using WorkQueue =
       threadsafe_interruptible_queue_with_remove<WorkItem, job::ID>;

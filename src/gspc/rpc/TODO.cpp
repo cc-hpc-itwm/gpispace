@@ -22,3 +22,14 @@ namespace rpc
       );
   }
 }
+
+namespace fhg
+{
+  namespace logging
+  {
+    bool operator== (endpoint const& lhs, endpoint const& rhs)
+    {
+      return lhs.to_string() == rhs.to_string();
+    }
+  }
+}

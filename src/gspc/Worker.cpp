@@ -1,6 +1,5 @@
 #include <gspc/Worker.hpp>
 
-#include <gspc/comm/worker/scheduler/Client.hpp>
 #include <gspc/job/FinishReason.hpp>
 #include <gspc/job/finish_reason/Cancelled.hpp>
 #include <gspc/module_api.hpp>
@@ -60,7 +59,9 @@ namespace gspc
       auto const& job_id (work_item.second);
       auto const& job (work_item.first.job);
 
-      comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+      _scheduler_clients.at_or_construct ( scheduler
+                                         , _io_service_for_scheduler, scheduler
+                                         )
         .finished (job_id, execute_job (job));
     }
   }
@@ -90,7 +91,9 @@ namespace gspc
       auto const& job_id (work_item->second);
       assert (job_id == id);
 
-      comm::worker::scheduler::Client (_io_service_for_scheduler, scheduler)
+      _scheduler_clients.at_or_construct ( scheduler
+                                         , _io_service_for_scheduler, scheduler
+                                         )
         .finished (job_id, job::finish_reason::Cancelled {reason});
     }
     else

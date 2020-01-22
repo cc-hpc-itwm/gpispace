@@ -35,3 +35,26 @@ namespace rpc
   std::unique_ptr<remote_endpoint> make_endpoint
     (boost::asio::io_service& io_service, endpoint);
 }
+
+namespace fhg
+{
+  namespace logging
+  {
+    bool operator== (endpoint const&, endpoint const&);
+  }
+}
+
+#include <functional>
+#include <string>
+
+namespace std
+{
+  template<>
+    struct hash<fhg::logging::endpoint>
+  {
+    std::size_t operator() (fhg::logging::endpoint const& ep) const
+    {
+      return std::hash<std::string>{} (ep.to_string());
+    }
+  };
+}
