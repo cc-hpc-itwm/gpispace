@@ -144,9 +144,9 @@ namespace gspc
     //! 6   : in command queue (finished)        [x] // worker will ignore cancel
 
     //! case 2:
-    if (_schedule_queue.remove (task_id))
+    if (schedule_queue_remove (task_id))
     {
-      // no job was created
+      //! no job was created (equiv with FailedToAcquire)
       inject (task_id, reason);
     }
     else
@@ -192,12 +192,14 @@ namespace gspc
 
   void GreedyScheduler::command_thread()
   {
-    while (! (_stopped && _jobs.empty()))
+    while (!_stopping || !_jobs.empty() || _scheduling_items)
     {
       fhg::util::visit<void>
         ( _command_queue.get()
         , [&] (Submit submit)
           {
+            --_scheduling_items;
+
             auto const& task (submit.task);
             auto const& acquired (submit.acquired);
 
@@ -210,7 +212,7 @@ namespace gspc
               throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
             }
 
-            if (_stopped)
+            if (_stopping)
             {
               _command_queue.put
                 ( Cancelled { job_id
@@ -241,16 +243,19 @@ namespace gspc
                 //! failed probably leading to a duplicated task
                 remove_job (job_id);
 
-                _schedule_queue.push (task, task.id);
+                schedule_queue_push (task);
               }
             }
           }
         , [&] (FailedToAcquire failed_to_acquire)
           {
+            --_scheduling_items;
+
             auto const& task (failed_to_acquire.task);
             auto const& error (failed_to_acquire.error);
 
             //! \note is cancelled but without remove_job
+            //! no job was created (equiv with cancel_task)
             inject ( task.id
                    , task::result::Postponed
                        {fhg::util::exception_printer (error).string()}
@@ -259,7 +264,7 @@ namespace gspc
 
         , [&] (Extract)
           {
-            if (_stopped)
+            if (_stopping)
             {
               return;
             }
@@ -268,7 +273,7 @@ namespace gspc
               ( _workflow_engine.extract()
               , [&] (Task task)
                 {
-                  _schedule_queue.push (task, task.id);
+                  schedule_queue_push (task);
                   _command_queue.put (Extract{});
                 }
               , [&] (bool has_finished)
@@ -282,14 +287,6 @@ namespace gspc
                   }
                 }
               );
-          }
-        , [&] (CancelAllTasks cancel_all_tasks)
-          {
-            for (auto const& job : _jobs | boost::adaptors::map_keys)
-            {
-              cancel_job
-                (job, task::result::Postponed {cancel_all_tasks.reason});
-            }
           }
 
         , [&] (Finished finished)
@@ -323,10 +320,26 @@ namespace gspc
 
             inject (cancelled.job_id.task_id, cancelled.reason);
           }
+
+        , [&] (Stop stop)
+          {
+            if (_stopping)
+            {
+              return;
+            }
+
+            _stopping = true;
+
+            for (auto const& job : _jobs | boost::adaptors::map_keys)
+            {
+              cancel_job (job, task::result::Postponed {stop.reason});
+            }
+
+            _resource_manager.interrupt();
+          }
         );
     }
 
-    //! \todo might still contain task
     _schedule_queue.interrupt();
   }
 
@@ -392,10 +405,23 @@ namespace gspc
 
   void GreedyScheduler::stop_with_reason (std::string reason)
   {
-    _stopped = true;
+    _command_queue.put (Stop {reason});
+  }
 
-    _command_queue.put (CancelAllTasks {reason});
+  void GreedyScheduler::schedule_queue_push (Task task)
+  {
+    _schedule_queue.push (task, task.id);
+    ++_scheduling_items;
+  }
+  bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
+  {
+    if (!_schedule_queue.remove (task_id))
+    {
+      return false;
+    }
 
-    _resource_manager.interrupt();
+    --_scheduling_items;
+
+    return true;
   }
 }

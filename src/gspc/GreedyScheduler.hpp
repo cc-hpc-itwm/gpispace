@@ -56,7 +56,7 @@ namespace gspc
       std::exception_ptr error;
     };
     struct Extract{};
-    struct CancelAllTasks
+    struct Stop
     {
       std::string reason;
     };
@@ -74,7 +74,7 @@ namespace gspc
     using Command = boost::variant < Submit
                                    , FailedToAcquire
                                    , Extract
-                                   , CancelAllTasks
+                                   , Stop
                                    , Finished
                                    , Cancelled
                                    >;
@@ -86,12 +86,17 @@ namespace gspc
     ScheduleQueue _schedule_queue;
     CommandQueue _command_queue;
 
-    std::atomic<bool> _stopped {false};
-
     //! state only modified by command_thread
     std::unordered_map<job::ID, resource::ID> _jobs;
     std::unordered_map<task::ID, job::ID> _job_by_task;
     std::uint64_t _next_job_id {0};
+
+    bool _stopping {false};
+
+    // manually maintained _schedule_queue.size() + in flight in schedule thread
+    std::size_t _scheduling_items {0};
+    void schedule_queue_push (Task);
+    bool schedule_queue_remove (task::ID);
 
     std::thread _schedule_thread;
     void schedule_thread();
