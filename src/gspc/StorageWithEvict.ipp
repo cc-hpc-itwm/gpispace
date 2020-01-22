@@ -33,8 +33,6 @@ namespace gspc
   {
     GET_AND_MAYBE_EVICT();
 
-    std::forward<Evict> (evict) (_elements);
-
     return _elements.emplace ( std::move (id)
                              , std::forward<Create> (create)()
                              ).first->second;
