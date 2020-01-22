@@ -4,14 +4,22 @@
 
 #include <gspc/util-generic_hash_forward_declare.hpp>
 
+#include <boost/optional.hpp>
+
 namespace gspc
 {
   class Resource
   {
   public:
+    Resource() = default;
+    Resource (resource::Class);
+    Resource (resource::Class, resource::Class);
+
     //! \todo individual-worker-specific, non-resource attributes,
     //! e.g. socket binding, port, memory…
     resource::Class resource_class;
+
+    boost::optional<resource::Class> proxy;
 
     template<typename Archive>
       void serialize (Archive& ar, unsigned int);

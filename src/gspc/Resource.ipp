@@ -4,5 +4,6 @@ namespace gspc
     void Resource::serialize (Archive& ar, unsigned int)
   {
     ar & resource_class;
+    ar & proxy;
   }
 }
