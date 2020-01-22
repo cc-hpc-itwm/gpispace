@@ -6,7 +6,7 @@ namespace gspc
   {
     bool operator== (ID const& lhs, ID const& rhs)
     {
-      return std::tie (lhs.id) == std::tie (rhs.id);
+      return std::tie (lhs.id, lhs.task_id) == std::tie (rhs.id, rhs.task_id);
     }
     std::ostream& operator<< (std::ostream& os, ID const& x)
     {
