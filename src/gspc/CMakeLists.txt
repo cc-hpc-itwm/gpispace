@@ -27,6 +27,7 @@ extended_add_library (NAME proto
           "GraphTraversalWorkflowEngine.cpp"
           "GreedyScheduler.cpp"
           "MapWorkflowEngine.cpp"
+          "SequenceWorkflowEngine.cpp"
           "RemoteInterface.cpp"
           "Resource.cpp"
           "ScopedRuntimeSystem.cpp"
@@ -63,6 +64,12 @@ extended_add_library (NAME map
   SOURCES "modules/map.cpp"
   LIBRARIES GSPC::proto
 )
+extended_add_library (NAME sequence
+  TYPE MODULE VISIBILITY_HIDDEN
+  NAMESPACE ExampleModule
+  SOURCES "modules/sequence.cpp"
+  LIBRARIES GSPC::proto
+)
 extended_add_library (NAME graph
   TYPE MODULE VISIBILITY_HIDDEN
   NAMESPACE ExampleModule
@@ -73,6 +80,11 @@ extended_add_library (NAME graph
 extended_add_executable (NAME Proto_Map
   SOURCES "Proto_Main_Map.cpp"
   COMPILE_DEFINITIONS MODULE="$<TARGET_FILE:ExampleModule-map>"
+  LIBRARIES GSPC::proto
+)
+extended_add_executable (NAME Proto_Sequence
+  SOURCES "Proto_Main_Sequence.cpp"
+  COMPILE_DEFINITIONS MODULE="$<TARGET_FILE:ExampleModule-sequence>"
   LIBRARIES GSPC::proto
 )
 extended_add_executable (NAME Proto_Graph_Static_Map
