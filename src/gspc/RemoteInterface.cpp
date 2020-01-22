@@ -1,6 +1,7 @@
 #include <gspc/RemoteInterface.hpp>
 
 #include <algorithm>
+#include <iterator>
 #include <list>
 #include <stdexcept>
 
@@ -46,6 +47,13 @@ namespace gspc
   rpc::endpoint RemoteInterface::worker_endpoint_for_scheduler
     (resource::ID resource_id) const
   {
+    auto proxy (_proxies.find (resource_id));
+
+    if (proxy != _proxies.end())
+    {
+      return worker_endpoint_for_scheduler (proxy->second);
+    }
+
     auto worker (_workers.find (resource_id));
     if (worker == _workers.end())
     {
@@ -80,6 +88,18 @@ namespace gspc
               ( resource.second
               , [&]
                 {
+                  auto fail
+                    ( [&] (auto reason)
+                      {
+                        throw std::runtime_error
+                          (str ( boost::format ("Skip start of '%1%': %2%.")
+                               % resource.second
+                               % reason
+                               )
+                          );
+                      }
+                    );
+
                   if (std::any_of ( children.cbegin()
                                   , children.cend()
                                   , [] (auto const& child)
@@ -89,11 +109,44 @@ namespace gspc
                                   )
                      )
                   {
-                    throw std::runtime_error
-                      (str ( boost::format ("Skip start of '%1%': Child failure.")
-                           % resource.second
-                           )
+                    fail ("Child failure.");
+                  }
+
+                  if (resource.second.proxy)
+                  {
+                    auto is_proxy
+                      ( [&] (auto const& child)
+                        {
+                          return *resource.second.proxy
+                            == std::get<0> (child->second).resource_class
+                            ;
+                        }
                       );
+
+                    auto proxying_child
+                      ( std::find_if ( children.cbegin(), children.cend()
+                                     , is_proxy
+                                     )
+                      );
+
+                    if (proxying_child == children.cend())
+                    {
+                      fail ("Missing proxying child.");
+                    }
+
+                    if (std::find_if ( std::next (proxying_child)
+                                     , children.cend()
+                                     , is_proxy
+                                     ) != children.cend()
+                       )
+                    {
+                      fail ("Multiple proxying children.");
+                    }
+
+                    return _proxies.emplace
+                      ( ++_next_resource_id
+                      , std::get<1> ((*proxying_child)->second).value()
+                      ).first->first;
                   }
 
                   return _workers.emplace ( ++_next_resource_id
@@ -118,7 +171,7 @@ namespace gspc
             { id.first
             , [&] () -> boost::blank
               {
-                if (!_workers.erase (id.first))
+                if (!_proxies.erase (id.first) && !_workers.erase (id.first))
                 {
                   throw std::invalid_argument
                     (str ( boost::format

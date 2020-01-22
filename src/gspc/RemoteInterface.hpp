@@ -58,5 +58,6 @@ namespace gspc
     };
 
     std::unordered_map<resource::ID, WorkerServer> _workers;
+    std::unordered_map<resource::ID, resource::ID> _proxies;
   };
 }
