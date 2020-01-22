@@ -1,6 +1,8 @@
 #pragma once
 
+#include <gspc/BoundedStorageEvictMiddle.hpp>
 #include <gspc/ScopedRuntimeSystem.hpp>
+#include <gspc/comm/scheduler/worker/Client.hpp>
 #include <gspc/comm/scheduler/workflow_engine/Client.hpp>
 #include <gspc/interface/Scheduler.hpp>
 #include <gspc/job/FinishReason.hpp>
@@ -94,6 +96,10 @@ namespace gspc
     void cancel_job (job::ID, task::result::Premature);
     void cancel_task (task::ID, task::result::Premature);
     void inject (task::ID, task::Result);
+
+    //! \todo parameter for cache size
+    BoundedStorageEvictMiddle<resource::ID, comm::scheduler::worker::Client>
+      _worker_clients {100};
 
     template<typename Function>
       void do_worker_call (resource::ID, Function&& function);

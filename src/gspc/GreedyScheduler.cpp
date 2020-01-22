@@ -1,7 +1,5 @@
 #include <gspc/GreedyScheduler.hpp>
 
-#include <gspc/comm/scheduler/worker/Client.hpp>
-
 #include <util-generic/make_optional.hpp>
 
 #include <boost/range/adaptor/map.hpp>
@@ -46,13 +44,18 @@ namespace gspc
     void GreedyScheduler::do_worker_call
       (resource::ID resource_id, Function&& function)
   {
-    auto const worker_endpoint
-      (_runtime_system.worker_endpoint_for_scheduler (resource_id));
-
-    comm::scheduler::worker::Client client
-      (_io_service_for_workers, worker_endpoint);
-
-    std::move (function) (client);
+    std::move (function)
+      ( _worker_clients.at_or_create
+          ( resource_id
+          , [&]() -> comm::scheduler::worker::Client
+            {
+              return
+                { _io_service_for_workers
+                , _runtime_system.worker_endpoint_for_scheduler (resource_id)
+                };
+            }
+          )
+      );
   }
 
   void GreedyScheduler::schedule_thread()
