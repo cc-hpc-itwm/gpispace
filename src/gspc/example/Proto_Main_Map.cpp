@@ -17,9 +17,9 @@
 int main (int argc, char** argv)
 try
 {
-  if (argc != 2)
+  if (argc != 3)
   {
-    throw std::invalid_argument ("usage: Proto.exe num_tasks");
+    throw std::invalid_argument ("usage: Proto.exe num_tasks num_host");
   }
 
   gspc::resource_manager::Trivial resource_manager;
@@ -47,38 +47,16 @@ try
   gspc::remote_interface::strategy::Thread thread_strategy
     (std::make_shared<gspc::remote_interface::strategy::Thread::State>());
 
+  std::unordered_set<std::string> hosts;
+  for (std::size_t n (0); n < std::stoul (argv[2]); ++n)
+  {
+    hosts.emplace (std::to_string (n));
+  }
+
   auto const resource_ids1
-    ( runtime_system.add_or_throw
-      ( {"hostname1", "hostname2"}
-      , thread_strategy
-      , host_topology
-      )
-    );
+   (runtime_system.add_or_throw (hosts, thread_strategy, host_topology));
+
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids1); });
-
-  auto const resource_ids2
-    ( runtime_system.add_or_throw
-      ( {"hostname3", "hostname4"}
-      , thread_strategy
-      , host_topology
-      )
-    );
-  FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });
-
-  // gspc::remote_interface::strategy::SSH ssh_strategy;
-
-  // //! \note will _not_ use SSH for hostname4 because it already uses THREAD
-  // auto const resource_ids3
-  //   ( runtime_system.add_or_throw
-  //     ( {"hostname4", "hostname6"}
-  //     , SSH_strategy
-  //     , gspc::Forest<gspc::Resource> {}
-  //     )
-  //   );
-  // FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids3); });
-
-  // gspc::PetriNetWorkflow workflow;
-  // gspc::PetriNetWorkflowEngine workflow_engine (workflow);
 
   gspc::MapWorkflowEngine workflow_engine (MODULE, std::stoul (argv[1]));
 
