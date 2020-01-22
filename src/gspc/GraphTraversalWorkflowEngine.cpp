@@ -106,7 +106,7 @@ namespace gspc
     auto const parent (pop_any (_workflow_state._open));
     if (!_workflow_state._seen[parent]++)
     {
-      _workflow_state._structure.insert (parent, {}, {});
+      _workflow_state._structure.insert_leaf (parent, {});
     }
 
     auto const& inputs (_workflow_state._inputs);
@@ -148,7 +148,8 @@ namespace gspc
                   if (!_workflow_state._seen[child]++)
                   {
                     _workflow_state._open.emplace (child);
-                    _workflow_state._structure.insert (child, {}, {parent});
+                    _workflow_state._structure.insert_NO_DIAMOND_CHECK
+                      (child, {}, {parent});
                   }
                 }
               }
