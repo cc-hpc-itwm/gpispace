@@ -1,17 +1,14 @@
 #pragma once
 
-//! \todo use vector<char>/string, remove include to gspc/
-#include <gspc/Task.hpp>
-#include <gspc/task/Result.hpp>
-
 #include <util-generic/dllexport.hpp>
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace gspc
 {
-  using ModuleFunction = task::result::Success::Output (*) (Task::Input);
+  using ModuleFunction = std::vector<char> (*) (std::vector<char>);
   using ModuleFunctions = std::unordered_map<std::string, ModuleFunction>;
 }
 
