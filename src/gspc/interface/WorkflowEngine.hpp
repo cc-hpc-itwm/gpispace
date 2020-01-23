@@ -39,6 +39,8 @@ namespace gspc
       };
       virtual InjectResult inject (task::ID, task::Result) = 0;
 
+      virtual Task at (task::ID) const = 0;
+
       virtual workflow_engine::State state() const = 0;
       //! \required: WorkflowEngine (workflow_engine::State)
     };

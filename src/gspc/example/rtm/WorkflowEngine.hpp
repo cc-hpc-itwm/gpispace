@@ -108,6 +108,8 @@ namespace gspc
       virtual workflow_engine::State state() const override;
       WorkflowEngine (workflow_engine::State);
 
+      virtual Task at (task::ID task_id) const override;
+
       boost::optional<PartialResult> final_result() const;
 
     private:

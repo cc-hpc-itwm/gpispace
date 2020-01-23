@@ -36,6 +36,8 @@ namespace gspc
     virtual workflow_engine::State state() const override;
     SequenceWorkflowEngine (workflow_engine::State);
 
+    virtual Task at (task::ID) const override;
+
   private:
     struct WorkflowState
     {

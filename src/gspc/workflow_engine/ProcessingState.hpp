@@ -52,6 +52,8 @@ namespace gspc
 
       std::unordered_set<task::ID> extracted() const;
 
+      Task at (task::ID) const;
+
       using FailedToPostprocess = std::pair< task::result::Success
                                            , std::exception_ptr
                                            >;

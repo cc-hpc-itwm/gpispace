@@ -32,6 +32,11 @@ namespace gspc
       return _extracted;
     }
 
+    Task ProcessingState::at (task::ID task_id) const
+    {
+      return _tasks.at (task_id);
+    }
+
     namespace
     {
       task::ID pop_any (std::unordered_set<task::ID>& task_ids)

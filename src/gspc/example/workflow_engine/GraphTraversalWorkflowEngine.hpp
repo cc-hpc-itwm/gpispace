@@ -84,6 +84,8 @@ namespace gspc
     virtual workflow_engine::State state() const override;
     GraphTraversalWorkflowEngine (workflow_engine::State);
 
+    virtual Task at (task::ID) const override;
+
   private:
     struct WorkflowState
     {

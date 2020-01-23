@@ -24,6 +24,11 @@ namespace gspc
     return !(_workflow_state.i < _workflow_state.N);
   }
 
+  Task SequenceWorkflowEngine::at (task::ID task_id) const
+  {
+    return _processing_state.at (task_id);
+  }
+
   template<typename Archive>
     void SequenceWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)

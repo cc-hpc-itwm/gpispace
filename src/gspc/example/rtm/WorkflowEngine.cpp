@@ -72,6 +72,11 @@ namespace gspc
       return _workflow_state.front.empty();
     }
 
+    Task WorkflowEngine::at (task::ID task_id) const
+    {
+      return _processing_state.at (task_id);
+    }
+
     boost::optional<PartialResult> WorkflowEngine::final_result() const
     {
       return _workflow_state.final_result;

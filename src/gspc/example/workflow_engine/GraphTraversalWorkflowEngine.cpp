@@ -30,6 +30,11 @@ namespace gspc
     return _workflow_state._structure;
   }
 
+  Task GraphTraversalWorkflowEngine::at (task::ID task_id) const
+  {
+    return _processing_state.at (task_id);
+  }
+
   auto GraphTraversalWorkflowEngine::seen() const
     -> std::unordered_map<Node, std::size_t> const&
   {
