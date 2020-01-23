@@ -92,8 +92,15 @@ try
   }
   else
   {
+    gspc::rtm::Parameter parameter;
+    parameter.number_of_shots = 20;
+    parameter.probability_of_failure.load = 0.0;
+    parameter.probability_of_failure.process = 0.0;
+    parameter.probability_of_failure.reduce = 0.0;
+    parameter.probability_of_failure.store = 0.0;
+
     workflow_engine = std::make_unique<gspc::rtm::WorkflowEngine>
-      (MODULE, gspc::rtm::Parameter{});
+      (MODULE, parameter);
   }
 
   echo.section ("create schedule and execute job");

@@ -69,7 +69,7 @@ namespace gspc
 
     struct Parameter
     {
-      Shot number_of_shots {10000};
+      Shot number_of_shots {0};
       ProbabilityOfFailure probability_of_failure;
 
       template<typename Archive>
