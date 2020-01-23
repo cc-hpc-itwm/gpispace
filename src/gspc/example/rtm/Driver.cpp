@@ -139,6 +139,8 @@ try
     ( *workflow_engine
     , resource_manager
     , runtime_system
+
+    , 3 // max_attempts
     );
 
   scheduler.wait();
