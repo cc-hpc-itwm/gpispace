@@ -86,6 +86,14 @@ namespace gspc
         void serialize (Archive&, unsigned int);
     };
 
+    struct print_task : public fhg::util::ostream::modifier
+    {
+      print_task (Task const&);
+      virtual std::ostream& operator() (std::ostream&) const override;
+    private:
+      Task const& _task;
+    };
+
     class WorkflowEngine : public interface::WorkflowEngine
     {
     public:

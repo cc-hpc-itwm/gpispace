@@ -12,6 +12,46 @@ namespace gspc
 {
   namespace rtm
   {
+    print_task::print_task (Task const& task) : _task (task) {}
+
+    std::ostream& print_task::operator() (std::ostream& os) const
+    {
+      if (_task.symbol == "load")
+      {
+        auto input (bytes_load<LoadInput> (_task.input));
+
+        return os << "Load (" << input.shot << ")";
+      }
+      else if (_task.symbol == "process")
+      {
+        auto input (bytes_load<ProcessInput> (_task.input));
+
+        return os << "Process (" << input.shot << ")";
+      }
+      else if (_task.symbol == "reduce")
+      {
+        auto input (bytes_load<ReduceInput> (_task.input));
+
+        return os << "Reduce ("
+                  << fhg::util::print_container ("{", ", ", "}", input.lhs)
+                  << " + "
+                  << fhg::util::print_container ("{", ", ", "}", input.rhs)
+                  << ")";
+      }
+      else if (_task.symbol == "store")
+      {
+        auto input (bytes_load<StoreInput> (_task.input));
+
+        return os << "Store ("
+                  << fhg::util::print_container ("{", ", ", "}", input.result)
+                  << ")";
+      }
+      else
+      {
+        throw std::logic_error ("task with unknown symbol " + _task.symbol);
+      }
+    }
+
     WorkflowEngine::WorkflowEngine
       ( boost::filesystem::path module
       , Parameter parameter
