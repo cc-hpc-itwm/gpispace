@@ -118,6 +118,11 @@ namespace gspc
 
     boost::variant<Task, bool> WorkflowEngine::extract()
     {
+      if (_processing_state.has_retry_task())
+      {
+        return _processing_state.retry_task();
+      }
+
       if (workflow_finished())
       {
         return !_processing_state.has_extracted_tasks();
