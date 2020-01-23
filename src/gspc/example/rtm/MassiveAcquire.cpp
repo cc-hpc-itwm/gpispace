@@ -74,30 +74,34 @@ try
                               )
     );
 
+  echo.section ("create resource trees");
+
+  using RS = gspc::Forest<gspc::resource::ID, gspc::resource::Class>;
+
+  RS resources;
+
+  gspc::remote_interface::ID next_remote_interface_id {0};
+
+  for (std::size_t n (0); n < num_nodes; ++n, ++next_remote_interface_id)
+  {
+    gspc::resource::ID next_resource_id {{next_remote_interface_id}};
+
+    resources.UNSAFE_merge
+      ( host_topology.unordered_transform
+        ( [&] (gspc::unique_forest::Node<gspc::Resource> const& r) -> RS::Node
+          {
+            return {++next_resource_id, r.second.resource_class};
+          }
+        )
+      );
+  }
+
   echo.section ("create resource manager and add resources");
 
   using RM = gspc::resource_manager::Trivial;
 
   RM resource_manager;
-
-  {
-    gspc::remote_interface::ID next_remote_interface_id {0};
-
-    for (std::size_t n (0); n < num_nodes; ++n, ++next_remote_interface_id)
-    {
-      gspc::resource::ID next_resource_id {{next_remote_interface_id}};
-
-      resource_manager.add
-        ( host_topology.unordered_transform
-          ( [&] (gspc::unique_forest::Node<gspc::Resource> const& r)
-            -> gspc::forest::Node<gspc::resource::ID, gspc::resource::Class>
-          {
-              return {++next_resource_id, r.second.resource_class};
-            }
-          )
-        );
-    }
-  }
+  resource_manager.add (resources);
 
   {
     acquisition<decltype (echo), RM> acquisition (echo, resource_manager);
