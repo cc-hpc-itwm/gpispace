@@ -6,17 +6,22 @@
 #include <gspc/ScopedRuntimeSystem.hpp>
 #include <gspc/remote_interface/strategy/Thread.hpp>
 #include <gspc/resource_manager/Trivial.hpp>
+#include <gspc/serialization.hpp>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/read_file.hpp>
 #include <util-generic/timer/application.hpp>
+
+#include <boost/format.hpp>
 
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <fstream>
 
-int main ()
+int main (int argc, char** argv)
 try
 {
   fhg::util::default_application_timer echo ("rtm");
@@ -76,14 +81,25 @@ try
 
   echo.section ("create workflow engine");
 
-  gspc::rtm::Parameter parameter;
+  std::unique_ptr<gspc::rtm::WorkflowEngine> workflow_engine;
 
-  gspc::rtm::WorkflowEngine workflow_engine (MODULE, parameter);
+  if (argc > 2)
+  {
+    workflow_engine = std::make_unique<gspc::rtm::WorkflowEngine>
+      ( gspc::bytes_load<gspc::workflow_engine::State>
+          (fhg::util::read_file<std::vector<char>> (argv[2]))
+      );
+  }
+  else
+  {
+    workflow_engine = std::make_unique<gspc::rtm::WorkflowEngine>
+      (MODULE, gspc::rtm::Parameter{});
+  }
 
   echo.section ("create schedule and execute job");
 
   gspc::GreedyScheduler scheduler
-    ( workflow_engine
+    ( *workflow_engine
     , resource_manager
     , runtime_system
     );
@@ -92,7 +108,24 @@ try
 
   echo.section ("sanity");
 
-  echo << workflow_engine.state() << std::endl;
+  auto const state (workflow_engine->state());
+
+  if (argc > 1)
+  {
+    std::ofstream stream (argv[1]);
+    auto serialized_state (gspc::bytes_save (state));
+    stream.write (serialized_state.data(), serialized_state.size());
+
+    if (!stream)
+    {
+      throw std::runtime_error
+        (str (boost::format ("Could not write to %1%.") % argv[1]));
+    }
+  }
+
+  echo << state << std::endl;
+
+  echo << (state.workflow_finished ? "FINISHED" : "NOT FINISHED") << std::endl;
 
   echo.section ("cleanup");
 
