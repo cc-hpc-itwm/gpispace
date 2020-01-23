@@ -52,9 +52,43 @@ namespace gspc
 
       std::unordered_set<task::ID> extracted() const;
 
-      friend std::ostream& operator<< (std::ostream&, ProcessingState const&);
+      using FailedToPostprocess = std::pair< task::result::Success
+                                           , std::exception_ptr
+                                           >;
+      using Failure = task::result::Failure;
+      using Postponed = task::result::Postponed;
+      using CancelIgnored = task::result::CancelIgnored;
+      using CancelOptional = task::result::CancelOptional;
 
-      //! \todo missing api to restart/drop postponed/failed tasks
+      using TaskState = boost::variant< FailedToPostprocess
+                                      , Failure
+                                      , Postponed
+                                      , CancelIgnored
+                                      , CancelOptional
+                                      >;
+
+      template<typename Predicate>
+        using is_retry_predicate =
+          fhg::util::is_callable
+           <Predicate, bool (Task const&, TaskState const&)>;
+
+      struct RetryAll
+      {
+        bool operator() (Task const&, TaskState const&) const
+        {
+          return true;
+        }
+      };
+
+      template< typename Predicate = RetryAll
+              , typename = std::enable_if_t<is_retry_predicate<Predicate>{}>
+              >
+        void mark_for_retry (Predicate&& = {});
+
+      bool has_retry_task() const;
+      Task retry_task();
+
+      friend std::ostream& operator<< (std::ostream&, ProcessingState const&);
 
       template<typename Archive>
         void serialize (Archive&, unsigned int);
@@ -70,6 +104,7 @@ namespace gspc
       //! - extracted, but no longer required after inject (heureka):
       //!   - if flagged ignored: _cancelled_ignore
       //!   - if flagged optional: _cancelled_optional
+      //! - marked for retry: _marked_for_retry
       //! note: finished tasks are forgotten (they changed state when
       //! post processed).
       //! \note would be enough to remember data required to
@@ -85,13 +120,12 @@ namespace gspc
       //! - disjoint
       //! - subset of keys (_tasks)
       std::unordered_set<task::ID> _extracted;
-      std::unordered_map< task::ID
-                        , std::pair<task::result::Success, std::exception_ptr>
-                        > _failed_to_post_process;
-      std::unordered_map<task::ID, task::result::Failure> _failed_to_execute;
-      std::unordered_map<task::ID, task::result::Postponed> _postponed;
-      std::unordered_map<task::ID, task::result::CancelIgnored> _cancelled_ignored;
-      std::unordered_map<task::ID, task::result::CancelOptional> _cancelled_optional;
+      std::unordered_map<task::ID, FailedToPostprocess> _failed_to_post_process;
+      std::unordered_map<task::ID, Failure> _failed_to_execute;
+      std::unordered_map<task::ID, Postponed> _postponed;
+      std::unordered_map<task::ID, CancelIgnored> _cancelled_ignored;
+      std::unordered_map<task::ID, CancelOptional> _cancelled_optional;
+      std::unordered_set<task::ID> _marked_for_retry;
     };
   }
 }

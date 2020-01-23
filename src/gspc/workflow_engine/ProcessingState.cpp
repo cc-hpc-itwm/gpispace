@@ -32,6 +32,28 @@ namespace gspc
       return _extracted;
     }
 
+    namespace
+    {
+      task::ID pop_any (std::unordered_set<task::ID>& task_ids)
+      {
+        auto selected (task_ids.begin());
+        auto task_id (*selected);
+        task_ids.erase (selected);
+        return task_id;
+      }
+    }
+
+    bool ProcessingState::has_retry_task() const
+    {
+      return !_marked_for_retry.empty();
+    }
+    Task ProcessingState::retry_task()
+    {
+      auto const task_id (pop_any (_marked_for_retry));
+
+      return _tasks.at (*_extracted.emplace (task_id).first);
+    }
+
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
     {
       auto print_map
@@ -48,12 +70,19 @@ namespace gspc
               ;
           }
         );
+      auto print_set
+        ( [&] (std::string name, auto const& set)
+          {
+            os << name << ": " << set.size() << "\n"
+               << fhg::util::print_container ("  ", "\n  ", "\n", set)
+              ;
+          }
+        );
 
       os << "next_task_id: " << s._next_task_id << "\n";
       print_map ("tasks", s._tasks);
-      os << "extracted: " << s._extracted.size() << "\n"
-         << fhg::util::print_container ( "  ", "\n  ", "\n", s._extracted)
-         << "failed_to_post_process: " << s._failed_to_post_process.size() << "\n"
+      print_set ("extracted", s._extracted);
+      os << "failed_to_post_process: " << s._failed_to_post_process.size() << "\n"
          << fhg::util::print_container
            ( "  ", "\n  ", "\n", s._failed_to_post_process
            , [&] (auto& s, auto const& x) -> decltype (s)
@@ -68,6 +97,7 @@ namespace gspc
       print_map ("cancelled_ignored", s._cancelled_ignored);
       print_map ("cancelled_optional", s._cancelled_optional);
       print_map ("postponed", s._postponed);
+      print_set ("marked_for_retry", s._marked_for_retry);
       return os;
     }
   }

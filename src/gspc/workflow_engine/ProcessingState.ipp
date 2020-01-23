@@ -86,6 +86,37 @@ namespace gspc
         );
     }
 
+    template<typename Predicate, typename>
+      void ProcessingState::mark_for_retry (Predicate&& predicate)
+    {
+      auto mark
+        ( [&] (auto& states)
+          {
+            auto task_state (states.begin());
+
+            while (task_state != states.end())
+            {
+              if (predicate (_tasks.at (task_state->first), task_state->second))
+              {
+                _marked_for_retry.emplace (task_state->first);
+
+                task_state = states.erase (task_state);
+              }
+              else
+              {
+                ++task_state;
+              }
+            }
+          }
+        );
+
+      mark (_failed_to_post_process);
+      mark (_failed_to_execute);
+      mark (_postponed);
+      mark (_cancelled_ignored);
+      mark (_cancelled_optional);
+    }
+
     template<typename Archive>
       void ProcessingState::serialize (Archive& ar, unsigned int)
     {
@@ -97,6 +128,7 @@ namespace gspc
       ar & _postponed;
       ar & _cancelled_ignored;
       ar & _cancelled_optional;
+      ar & _marked_for_retry;
     }
   }
 }
