@@ -7,6 +7,19 @@ namespace gspc
 {
   namespace rtm
   {
+    /* Topology (some sockets have a GPU, not necessary all)
+       NODE -> SOCKET -> CORE <- GPU -\
+                      -> CORE <- GPU --\ GPU
+                      -> CORE <- GPU --/ SINGLETON
+                      -> CORE <- CPU -/
+
+            -> SOCKET -> CORE <- IO-LOAD --------------------> LOAD2-SINGLETON
+                              <- IO-LOAD -> LOAD1-SINGLETON
+                      -> CORE <- IO-LOAD --------------------> LOAD2-SINGLETON
+                              <- IO-LOAD -> LOAD1-SINGLETON
+                      -> ...
+    */
+
     UniqueForest<Resource> host_topology
       ( std::size_t num_cores_per_socket
       , std::size_t num_sockets
@@ -16,9 +29,6 @@ namespace gspc
       );
 
     enum TaskType {LOAD, PROCESS, REDUCE, STORE};
-
-    // number_of_nodes
-    // working_directory
 
     // policy: reschedule job 3 times to different resources
     // policy: stop using failing resource after 3 consecutive failures
@@ -32,27 +42,6 @@ namespace gspc
     // STORE - i/o-store
     // REDUCE - Socket
     // PROCESS - {[GPU], [nodes]} // GPU: 1..6, node: 1..4
-
-    /* Topology (some sockets have a GPU, not necessary all)
-      NODE -> SOCKET -> CORE <- GPU -\
-                     -> CORE <- GPU --\ GPU
-                     -> CORE <- GPU --/ SINGLETON
-                     -> CORE <- CPU -/
-
-           -> SOCKET -> CORE <- IO-LOAD --------------------> LOAD2-SINGLETON
-                             <- IO-LOAD -> LOAD1-SINGLETON
-                     -> CORE <- IO-LOAD --------------------> LOAD2-SINGLETON
-                             <- IO-LOAD -> LOAD1-SINGLETON
-                     -> ...
-    */
-
-    // expected result:
-    // for each shot: wd/shot/result
-    // final: wd/final/result
-
-    // intermediate:
-    // for each intermediate: wd/{ids...}/result
-    // helps to restart when reduction not finished
 
     using Shot = std::uint64_t;
 
