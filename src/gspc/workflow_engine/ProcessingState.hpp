@@ -56,6 +56,9 @@ namespace gspc
 
       //! \todo missing api to restart/drop postponed/failed tasks
 
+      template<typename Archive>
+        void serialize (Archive&, unsigned int);
+
     private:
       task::ID _next_task_id {0};
 

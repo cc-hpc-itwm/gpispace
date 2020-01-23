@@ -1,5 +1,9 @@
 #include <stdexcept>
 
+#include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/unordered_set.hpp>
+#include <boost/serialization/utility.hpp>
+
 namespace gspc
 {
   namespace workflow_engine
@@ -80,6 +84,19 @@ namespace gspc
             _postponed.emplace (task_id, postponed);
           }
         );
+    }
+
+    template<typename Archive>
+      void ProcessingState::serialize (Archive& ar, unsigned int)
+    {
+      ar & _next_task_id;
+      ar & _tasks;
+      ar & _extracted;
+      ar & _failed_to_post_process;
+      ar & _failed_to_execute;
+      ar & _postponed;
+      ar & _cancelled_ignored;
+      ar & _cancelled_optional;
     }
   }
 }

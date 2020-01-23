@@ -19,6 +19,11 @@ namespace gspc
       bool workflow_finished;
 
       ProcessingState processing_state;
+
+      template<typename Archive>
+        void serialize (Archive&, unsigned int);
     };
   }
 }
+
+#include <gspc/workflow_engine/State.ipp>
