@@ -132,7 +132,16 @@ try
 
   echo << state << std::endl;
 
-  echo << (state.workflow_finished ? "FINISHED" : "NOT FINISHED") << std::endl;
+  if (auto final_result = workflow_engine->final_result())
+  {
+    echo << "Final result: "
+         << fhg::util::print_container ("{", ", ", "}", *final_result)
+         << std::endl;
+  }
+  else
+  {
+    echo << "Final result not yet produced.\n";
+  }
 
   echo.section ("cleanup");
 

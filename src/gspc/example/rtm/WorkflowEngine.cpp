@@ -72,6 +72,11 @@ namespace gspc
       return _workflow_state.front.empty();
     }
 
+    boost::optional<PartialResult> WorkflowEngine::final_result() const
+    {
+      return _workflow_state.final_result;
+    }
+
     template<typename Archive>
       void WorkflowEngine::WorkflowState::serialize
         (Archive& ar, unsigned int)
