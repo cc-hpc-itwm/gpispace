@@ -33,6 +33,8 @@ namespace gspc
     GreedyScheduler ( comm::scheduler::workflow_engine::Client
                     , resource_manager::Trivial& //! \todo: Client
                     , ScopedRuntimeSystem& //! \todo UnscopedBase
+
+                    , std::size_t max_attempt = 1
                     );
     ~GreedyScheduler();
 
@@ -44,6 +46,8 @@ namespace gspc
     comm::scheduler::workflow_engine::Client _workflow_engine;
     resource_manager::Trivial& _resource_manager;
     ScopedRuntimeSystem& _runtime_system;
+
+    std::size_t _max_attempts;
 
     struct Submit
     {
@@ -89,6 +93,7 @@ namespace gspc
     //! state only modified by command_thread
     std::unordered_map<job::ID, resource::ID> _jobs;
     std::unordered_map<task::ID, job::ID> _job_by_task;
+    std::unordered_map<task::ID, std::size_t> _failed_attempts;
     std::uint64_t _next_job_id {0};
 
     bool _stopping {false};

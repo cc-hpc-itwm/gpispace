@@ -16,6 +16,7 @@ namespace gspc
       ( comm::scheduler::workflow_engine::Client workflow_engine
       , resource_manager::Trivial& resource_manager
       , ScopedRuntimeSystem& runtime_system
+      , std::size_t max_attempts
       )
         //! \todo Is it okay to construct the server before
         //! constructing the state?!
@@ -23,6 +24,7 @@ namespace gspc
     , _workflow_engine (workflow_engine)
     , _resource_manager (resource_manager)
     , _runtime_system (runtime_system)
+    , _max_attempts (max_attempts)
     , _schedule_thread
         (fhg::util::bind_this (this, &GreedyScheduler::schedule_thread))
     , _command_thread
@@ -165,6 +167,8 @@ namespace gspc
   {
     auto const inject_result (_workflow_engine.inject (task_id, task_result));
 
+    _failed_attempts.erase (task_id);
+
     //! \note *each* inject requires an Extract, also the
     //! failures in order to get 'has_finished' (and not block
     //! with no task)
@@ -296,8 +300,6 @@ namespace gspc
           {
             remove_job (finished.job_id);
 
-            inject (finished.job_id.task_id, finished.task_result);
-
             //! \note scheduler policy to stop everything after the
             //! first error, not strictly required
             //! Alternatives:
@@ -307,12 +309,29 @@ namespace gspc
               ( finished.task_result
               , [&] (task::result::Failure const&)
                 {
-                  stop_with_reason
-                    ("scheduler policy: stop after first job failure");
+                  if ( ++_failed_attempts[finished.job_id.task_id]
+                     < _max_attempts
+                     )
+                  {
+                    //! \todo tell workflow engine!? -> list<task_result>
+                    //! \todo different resource!?
+                    schedule_queue_push
+                      (_workflow_engine.at (finished.job_id.task_id));
+                  }
+                  else
+                  {
+                    inject (finished.job_id.task_id, finished.task_result);
+
+                    stop_with_reason
+                      ( "scheduler policy: stop after first task with "
+                      + std::to_string (_max_attempts)
+                      + " failed attempts"
+                      );
+                  }
                 }
-              , [] (auto const&)
+              , [&] (auto const&)
                 {
-                  // do nothing
+                  inject (finished.job_id.task_id, finished.task_result);
                 }
               );
           }
