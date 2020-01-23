@@ -56,3 +56,8 @@ extended_add_library (NAME proto
 )
 
 add_subdirectory (example)
+
+extended_add_executable (NAME DumpState
+  SOURCES "Dump.cpp"
+  LIBRARIES GSPC::proto Util::Generic
+)
