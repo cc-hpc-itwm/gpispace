@@ -52,3 +52,13 @@ extended_add_executable (NAME Proto_Graph_Nary_Tree
   COMPILE_DEFINITIONS MODULE="$<TARGET_FILE:ExampleModule-graph>"
   LIBRARIES GSPC::proto GSPC::proto-example
 )
+
+extended_add_library (NAME Parameter
+  NAMESPACE RTM
+  SOURCES "rtm/Parameter.cpp"
+  LIBRARIES GSPC::proto
+)
+extended_add_executable (NAME Proto_MassiveAcquire
+  SOURCES "rtm/MassiveAcquire.cpp"
+  LIBRARIES RTM::Parameter
+)
