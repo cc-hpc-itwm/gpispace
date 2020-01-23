@@ -103,23 +103,14 @@ namespace gspc
     private:
       struct WorkflowState
       {
-        struct TaskHashEqual
-        {
-          std::size_t operator() (Task const& task) const
-          {
-            return std::hash<task::ID>{} (task.id);
-          }
-          bool operator() (Task const& lhs, Task const& rhs) const
-          {
-            return std::tie (lhs.id) == std::tie (rhs.id);
-          }
-        };
-
         boost::filesystem::path module;
         Parameter parameter;
 
-        std::unordered_set<Task, TaskHashEqual, TaskHashEqual> front;
-        //! \note order not required
+        using TaskInput =
+          boost::variant<LoadInput, ProcessInput, ReduceInput, StoreInput>;
+
+        //! \note order not required, neither for front nor for partial_results
+        std::vector<TaskInput> front;
         std::vector<PartialResult> partial_results;
         boost::optional<PartialResult> final_result;
 

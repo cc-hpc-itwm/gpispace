@@ -22,14 +22,8 @@ namespace gspc
 
       for (Shot shot {0}; shot < parameter.number_of_shots; ++shot)
       {
-        _workflow_state.front.emplace
-          ( _processing_state.extract
-            ( "load"
-            , bytes_save (LoadInput {_workflow_state.parameter, shot})
-            , _workflow_state.module
-            , "load"
-            )
-          );
+        _workflow_state.front.emplace_back
+          (LoadInput {_workflow_state.parameter, shot});
       }
     }
 
@@ -68,19 +62,12 @@ namespace gspc
 
     namespace
     {
-      template<typename Hash, typename Equal>
-        Task pop_any (std::unordered_set<Task, Hash, Equal>& tasks)
+      template<typename T>
+        T pop_any (std::vector<T>& xs)
       {
-        auto selected (tasks.begin());
-        auto task (*selected);
-        tasks.erase (selected);
-        return task;
-      }
-      PartialResult pop_any (std::vector<PartialResult>& partial_results)
-      {
-        auto partial_result (partial_results.back());
-        partial_results.pop_back();
-        return partial_result;
+        auto x (std::move (xs.back()));
+        xs.pop_back();
+        return x;
       }
     }
 
@@ -91,7 +78,30 @@ namespace gspc
         return !_processing_state.has_extracted_tasks();
       }
 
-      return pop_any (_workflow_state.front);
+      return fhg::util::visit<Task>
+        ( pop_any (_workflow_state.front)
+        , [&] (LoadInput input)
+          {
+            return _processing_state.extract
+              ("load", bytes_save (input), _workflow_state.module, "load");
+          }
+        , [&] (ProcessInput input)
+          {
+            //! \todo coallocation
+            return _processing_state.extract
+              ("node", bytes_save (input), _workflow_state.module, "process");
+          }
+        , [&] (ReduceInput input)
+          {
+            return _processing_state.extract
+              ("socket", bytes_save (input), _workflow_state.module, "reduce");
+          }
+        , [&] (StoreInput input)
+          {
+            return _processing_state.extract
+              ("store", bytes_save (input), _workflow_state.module, "store");
+          }
+        );
     }
 
     interface::WorkflowEngine::InjectResult
@@ -105,17 +115,8 @@ namespace gspc
             auto store
               ( [&] (auto result)
                 {
-                  _workflow_state.front.emplace
-                    ( _processing_state.extract
-                      ( "store"
-                      , bytes_save ( StoreInput { _workflow_state.parameter
-                                                , result
-                                                }
-                                   )
-                      , _workflow_state.module
-                      , "store"
-                      )
-                    );
+                  _workflow_state.front.emplace_back
+                    (StoreInput {_workflow_state.parameter, result});
                 }
               );
 
@@ -124,16 +125,8 @@ namespace gspc
               auto output (bytes_load<LoadOutput> (success.output));
               // auto input (bytes_load<LoadInput> (input_task.input));
 
-              //! \todo coallocation
-              _workflow_state.front.emplace
-                ( _processing_state.extract
-                  ( "node"
-                  , bytes_save
-                      (ProcessInput {_workflow_state.parameter, output.shot})
-                  , _workflow_state.module
-                  , "process"
-                  )
-                );
+              _workflow_state.front.emplace_back
+                (ProcessInput {_workflow_state.parameter, output.shot});
             }
             else if (input_task.symbol == "process")
             {
@@ -181,15 +174,8 @@ namespace gspc
               auto const lhs (pop_any (_workflow_state.partial_results));
               auto const rhs (pop_any (_workflow_state.partial_results));
 
-              _workflow_state.front.emplace
-                ( _processing_state.extract
-                    ( "socket"
-                    , bytes_save
-                        (ReduceInput { _workflow_state.parameter, lhs, rhs})
-                    , _workflow_state.module
-                    , "reduce"
-                    )
-                );
+              _workflow_state.front.emplace_back
+                (ReduceInput {_workflow_state.parameter, lhs, rhs});
             }
           }
         );
