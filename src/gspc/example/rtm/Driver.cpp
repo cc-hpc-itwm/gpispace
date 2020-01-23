@@ -85,10 +85,40 @@ try
 
   if (argc > 2)
   {
-    workflow_engine = std::make_unique<gspc::rtm::WorkflowEngine>
-      ( gspc::bytes_load<gspc::workflow_engine::State>
-          (fhg::util::read_file<std::vector<char>> (argv[2]))
+    echo << "Restart from existing state\n";
+
+    auto state ( gspc::bytes_load<gspc::workflow_engine::State>
+                   (fhg::util::read_file<std::vector<char>> (argv[2]))
+               );
+
+    state.processing_state.mark_for_retry
+      ( [&] ( gspc::Task const& task
+            , gspc::workflow_engine::ProcessingState::TaskState const& state
+            )
+        {
+          return fhg::util::visit<bool>
+            ( state
+            , [&] ( gspc::workflow_engine::ProcessingState::Postponed const&
+                     postponed
+                  )
+              {
+                echo << "mark for retry: postponed "
+                     << gspc::rtm::print_task (task)
+                     << ": " << postponed.reason
+                     << "\n"
+                  ;
+
+                return true;
+              }
+            , [] (auto const&)
+              {
+                return false;
+              }
+            );
+        }
       );
+
+    workflow_engine = std::make_unique<gspc::rtm::WorkflowEngine> (state);
   }
   else
   {
