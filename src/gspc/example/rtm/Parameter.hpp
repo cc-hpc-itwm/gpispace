@@ -54,19 +54,50 @@ namespace gspc
     // for each intermediate: wd/{ids...}/result
     // helps to restart when reduction not finished
 
+    using Shot = std::uint64_t;
+
+    struct ProbabilityOfFailure
+    {
+      double load {0.0};
+      double process {0.0};
+      double reduce {0.0};
+      double store {0.0};
+
+      template<typename Archive>
+        void serialize (Archive&, unsigned int);
+    };
+
     struct Parameter
     {
-      std::size_t number_of_shots {10000};
+      Shot number_of_shots {10000};
+      ProbabilityOfFailure probability_of_failure;
 
-      struct
-      {
-        double load {0.0};
-        double process {0.02};
-        double reduce {0.01};
-        double store {0.0};
-      } probability_of_failure;
+      template<typename Archive>
+        void serialize (Archive&, unsigned int);
     };
 
     // \future sequence
+  }
+}
+
+namespace gspc
+{
+  namespace rtm
+  {
+    template<typename Archive>
+      void ProbabilityOfFailure::serialize (Archive& ar, unsigned int)
+    {
+      ar & load;
+      ar & process;
+      ar & reduce;
+      ar & store;
+    }
+
+    template<typename Archive>
+      void Parameter::serialize (Archive& ar, unsigned int)
+    {
+      ar & number_of_shots;
+      ar & probability_of_failure;
+    }
   }
 }

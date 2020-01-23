@@ -54,11 +54,28 @@ extended_add_executable (NAME Proto_Graph_Nary_Tree
 )
 
 extended_add_library (NAME Parameter
+  TYPE SHARED
   NAMESPACE RTM
   SOURCES "rtm/Parameter.cpp"
   LIBRARIES GSPC::proto
 )
+extended_add_library (NAME WorkflowEngine
+  NAMESPACE RTM
+  SOURCES "rtm/WorkflowEngine.cpp"
+  LIBRARIES GSPC::proto RTM::Parameter
+)
 extended_add_executable (NAME Proto_MassiveAcquire
   SOURCES "rtm/MassiveAcquire.cpp"
   LIBRARIES RTM::Parameter
+)
+extended_add_library (NAME impl
+  TYPE MODULE VISIBILITY_HIDDEN
+  NAMESPACE RTM
+  SOURCES "rtm/impl.cpp"
+  LIBRARIES GSPC::proto RTM::Parameter
+)
+extended_add_executable (NAME Proto_RTM
+  SOURCES "rtm/Driver.cpp"
+  COMPILE_DEFINITIONS MODULE="$<TARGET_FILE:RTM-impl>"
+  LIBRARIES RTM::Parameter RTM::WorkflowEngine
 )
