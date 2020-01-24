@@ -8,7 +8,8 @@ namespace gspc
   struct Job
   {
     //! \todo multiple tasks per job!?
-    Task task;
+    task::Input task_input;
+    task::Implementation task_implementation;
 
     template<typename Archive>
       void serialize (Archive& ar, unsigned int);

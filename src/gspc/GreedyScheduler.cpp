@@ -12,6 +12,24 @@
 
 namespace gspc
 {
+  namespace
+  {
+    Task::SingleResource requirement (Task const& task)
+    {
+      return fhg::util::visit<Task::SingleResource>
+        ( task.requirements
+        , [&] (Task::SingleResource const& single_resource)
+          {
+            return single_resource;
+          }
+        , [] (auto const&) -> Task::SingleResource
+          {
+            throw std::logic_error ("Unsupport Requirement");
+          }
+        );
+    }
+  }
+
   GreedyScheduler::GreedyScheduler
       ( comm::scheduler::workflow_engine::Client workflow_engine
       , resource_manager::Trivial& resource_manager
@@ -70,7 +88,7 @@ namespace gspc
       try
       {
         _command_queue.put
-          (Submit {task, _resource_manager.acquire (task.resource_class)});
+          (Submit {task, _resource_manager.acquire (requirement (task).first)});
       }
       catch (...)
       {
@@ -236,7 +254,7 @@ namespace gspc
                       return client.submit
                         ( _comm_server_for_worker.local_endpoint()
                         , job_id
-                        , Job {task}
+                        , Job {task.input, requirement (task).second}
                         );
                     }
                   );

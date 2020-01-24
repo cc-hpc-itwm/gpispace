@@ -3,6 +3,7 @@
 #include <gspc/serialization.hpp>
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
+#include <util-generic/functor_visitor.hpp>
 
 #include <boost/serialization/optional.hpp>
 #include <boost/serialization/unordered_set.hpp>
@@ -12,23 +13,41 @@ namespace gspc
 {
   namespace rtm
   {
+    namespace
+    {
+      task::Implementation::Symbol symbol (Task const& task)
+      {
+        return fhg::util::visit<task::Implementation::Symbol>
+          ( task.requirements
+          , [&] (Task::SingleResource const& single_resource)
+            {
+              return single_resource.second.symbol;
+            }
+          , [] (auto const&) -> task::Implementation::Symbol
+            {
+              throw std::runtime_error ("Unknown Requirements");
+            }
+          );
+      }
+    }
+
     print_task::print_task (Task const& task) : _task (task) {}
 
     std::ostream& print_task::operator() (std::ostream& os) const
     {
-      if (_task.symbol == "load")
+      if (symbol (_task) == "load")
       {
         auto input (bytes_load<LoadInput> (_task.input));
 
         return os << "Load (" << input.shot << ")";
       }
-      else if (_task.symbol == "process")
+      else if (symbol (_task) == "process")
       {
         auto input (bytes_load<ProcessInput> (_task.input));
 
         return os << "Process (" << input.shot << ")";
       }
-      else if (_task.symbol == "reduce")
+      else if (symbol (_task) == "reduce")
       {
         auto input (bytes_load<ReduceInput> (_task.input));
 
@@ -38,7 +57,7 @@ namespace gspc
                   << fhg::util::print_container ("{", ", ", "}", input.rhs)
                   << ")";
       }
-      else if (_task.symbol == "store")
+      else if (symbol (_task) == "store")
       {
         auto input (bytes_load<StoreInput> (_task.input));
 
@@ -48,7 +67,7 @@ namespace gspc
       }
       else
       {
-        throw std::logic_error ("task with unknown symbol " + _task.symbol);
+        throw std::logic_error ("task with unknown symbol " + symbol (_task));
       }
     }
 
@@ -175,7 +194,7 @@ namespace gspc
                 }
               );
 
-            if (input_task.symbol == "load")
+            if (symbol (input_task) == "load")
             {
               auto output (bytes_load<LoadOutput> (success.output));
               // auto input (bytes_load<LoadInput> (input_task.input));
@@ -183,7 +202,7 @@ namespace gspc
               _workflow_state.front.emplace_back
                 (ProcessInput {_workflow_state.parameter, output.shot});
             }
-            else if (input_task.symbol == "process")
+            else if (symbol (input_task) == "process")
             {
               auto output (bytes_load<ProcessOutput> (success.output));
               // auto input (bytes_load<ProcessInput> (input_task.input));
@@ -192,7 +211,7 @@ namespace gspc
 
               store (output.result);
             }
-            else if (input_task.symbol == "reduce")
+            else if (symbol (input_task) == "reduce")
             {
               auto output (bytes_load<ReduceOutput> (success.output));
               // auto input (bytes_load<ReduceInput> (input_task.input));
@@ -206,7 +225,7 @@ namespace gspc
 
               store (output.result);
             }
-            else if (input_task.symbol == "store")
+            else if (symbol (input_task) == "store")
             {
               auto output (bytes_load<StoreOutput> (success.output));
               // auto input (bytes_load<StoreInput> (input_task.input));
@@ -221,7 +240,7 @@ namespace gspc
             else
             {
               throw std::logic_error
-                ("task with unknown symbol " + input_task.symbol);
+                ("task with unknown symbol " + symbol (input_task));
             }
 
             while (_workflow_state.partial_results.size() >= 2)

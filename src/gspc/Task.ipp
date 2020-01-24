@@ -1,6 +1,8 @@
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
+#include <boost/serialization/list.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/serialization/utility.hpp>
 
 namespace gspc
 {
@@ -8,9 +10,7 @@ namespace gspc
     void Task::serialize (Archive& ar, unsigned int)
   {
     ar & id;
-    ar & resource_class;
     ar & input;
-    ar & so;
-    ar & symbol;
+    ar & requirements;
   }
 }

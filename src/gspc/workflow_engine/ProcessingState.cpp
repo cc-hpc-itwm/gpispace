@@ -9,7 +9,7 @@ namespace gspc
   {
     Task ProcessingState::extract
         ( resource::Class resource_class
-        , Task::Input input
+        , task::Input input
         , boost::filesystem::path so
         , std::string symbol
         )
@@ -18,7 +18,12 @@ namespace gspc
 
       return _tasks.emplace
         ( task_id
-        , Task {task_id, resource_class, std::move (input), so, symbol}
+        , Task { task_id
+               , std::move (input)
+               , Task::SingleResource { resource_class
+                                      , task::Implementation {so, symbol}
+                                      }
+               }
         ).first->second;
     }
 

@@ -21,7 +21,7 @@ namespace map_so
 //! \todo automatically generate wrapper
 namespace autogen
 {
-  gspc::task::result::Success::Output identity (gspc::Task::Input input)
+  std::vector<char> identity (std::vector<char> input)
   {
     return gspc::bytes_save
       (map_so::identity (gspc::bytes_load<gspc::MapInput> (input)));

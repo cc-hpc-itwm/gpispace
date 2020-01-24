@@ -71,7 +71,8 @@ namespace gspc
     std::thread _worker_thread;
     void work();
 
-    task::result::Success execute_task (Task const&);
+    task::result::Success execute_task
+      (task::Input const&, task::Implementation const&);
     job::finish_reason::Finished execute_job (Job const&);
 
     //! \todo parameter for cache size

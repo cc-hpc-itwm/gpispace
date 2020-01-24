@@ -69,7 +69,7 @@ namespace gspc
     GraphTraversalWorkflowEngine
       ( boost::filesystem::path module
       , std::unordered_set<Node>
-      , Task::Symbol
+      , task::Implementation::Symbol
       , std::unordered_map<std::string, Node> // default parameter for each task
       );
 
@@ -80,7 +80,6 @@ namespace gspc
     Forest<Node> const& structure() const;
     std::unordered_map<Node, std::size_t> const& seen() const;
     std::unordered_set<Node> const& open() const;
-    Task::Symbol const& symbol() const;
 
     virtual boost::variant<Task, bool> extract() override;
     virtual InjectResult inject (task::ID, task::Result) override;
@@ -99,7 +98,7 @@ namespace gspc
       std::unordered_map<Node, std::size_t> _seen;
       std::unordered_set<Node> _open;
 
-      Task::Symbol _symbol;
+      task::Implementation::Symbol _symbol;
       std::unordered_map<std::string, Node> _inputs;
 
       bool _got_heureka {false};

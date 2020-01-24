@@ -16,7 +16,7 @@ namespace sequence_so
 //! \todo automatically generate wrapper
 namespace autogen
 {
-  gspc::task::result::Success::Output identity (gspc::Task::Input input)
+  std::vector<char> identity (std::vector<char> input)
   {
     return gspc::bytes_save
       (sequence_so::identity (gspc::bytes_load<gspc::SequenceInput> (input)));

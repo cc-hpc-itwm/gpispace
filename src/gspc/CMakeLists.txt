@@ -45,6 +45,7 @@ extended_add_library (NAME proto
           "resource_manager/WithPreferences.cpp"
           "rpc/TODO.cpp"
           "task/ID.cpp"
+          "task/Implementation.cpp"
           "task/Result.cpp"
           "workflow_engine/ProcessingState.cpp"
           "workflow_engine/State.cpp"

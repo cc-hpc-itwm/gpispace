@@ -2,6 +2,7 @@
 
 #include <gspc/serialization.hpp>
 
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
 #include <stdexcept>
@@ -12,10 +13,28 @@
 
 namespace gspc
 {
+  namespace
+  {
+    task::Implementation::Symbol symbol (Task const& task)
+    {
+      return fhg::util::visit<task::Implementation::Symbol>
+        ( task.requirements
+        , [&] (Task::SingleResource const& single_resource)
+          {
+            return single_resource.second.symbol;
+          }
+        , [] (auto const&) -> task::Implementation::Symbol
+          {
+            throw std::logic_error ("unknown requirement");
+          }
+        );
+    }
+  }
+
   GraphTraversalWorkflowEngine::GraphTraversalWorkflowEngine
     ( boost::filesystem::path module
     , std::unordered_set<Node> open
-    , Task::Symbol symbol
+    , task::Implementation::Symbol symbol
     , std::unordered_map<std::string, std::uint64_t> inputs
     )
   {
@@ -45,11 +64,6 @@ namespace gspc
     -> std::unordered_set<Node> const&
   {
     return _workflow_state._open;
-  }
-
-  Task::Symbol const& GraphTraversalWorkflowEngine::symbol() const
-  {
-    return _workflow_state._symbol;
   }
 
   bool GraphTraversalWorkflowEngine::workflow_finished() const
@@ -159,21 +173,21 @@ namespace gspc
               }
             );
 
-          if (input_task.symbol == "static_map")
+          if (symbol (input_task) == "static_map")
           {
             auto output (bytes_load<GraphTraversalOutput> (success.output));
             auto input (bytes_load<StaticMapInput> (input_task.input));
 
             mark_seen (output, input.parent);
           }
-          else if (input_task.symbol == "dynamic_map")
+          else if (symbol (input_task) == "dynamic_map")
           {
             auto output (bytes_load<GraphTraversalOutput> (success.output));
             auto input (bytes_load<DynamicMapInput> (input_task.input));
 
             mark_seen (output, input.parent);
           }
-          else if (input_task.symbol == "nary_tree")
+          else if (symbol (input_task) == "nary_tree")
           {
             auto output
               (bytes_load<GraphTraversalOutputWithHeureka> (success.output));

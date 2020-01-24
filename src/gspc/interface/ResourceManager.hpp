@@ -18,6 +18,8 @@ namespace gspc
     //! e.g. what if assert_singletons_only
     //! add+remove -> into/from what state?
     //! Alternative: Factor shared states
+
+    //! \todo use Task::Requirements to specify base classes of acquire
     class ResourceManager
     {
     public:

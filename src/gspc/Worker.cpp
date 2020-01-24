@@ -31,22 +31,28 @@ namespace gspc
     }
   }
 
-  task::result::Success Worker::execute_task (Task const& task)
+  task::result::Success Worker::execute_task
+    (task::Input const& input, task::Implementation const& implementation)
   {
     auto& dl
       ( _so_handles.at_or_create
-        ( task.so
-        , [&] { return std::make_unique<fhg::util::scoped_dlhandle> (task.so); }
+        ( implementation.so
+        , [&]
+          {
+            return std::make_unique<fhg::util::scoped_dlhandle>
+              (implementation.so);
+          }
         )
       );
     auto const functions
       (FHG_UTIL_SCOPED_DLHANDLE_SYMBOL (*dl, gspc_module_functions));
-    return {functions->at (task.symbol) (task.input)};
+    return {functions->at (implementation.symbol) (input)};
   }
 
   job::finish_reason::Finished Worker::execute_job (Job const& job)
   {
-    return {[&] { return execute_task (job.task); }};
+    return
+      {[&] { return execute_task (job.task_input, job.task_implementation); }};
   }
 
   void Worker::work()

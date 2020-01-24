@@ -68,21 +68,28 @@ namespace graph_so
   }
 }
 
+//! SYNTAX GOAL: Replace Rest of file by:
+//! GSPC_MAKE_MODULE_FUNCTIONS
+//!   ( "static_map", &graph_so::static_map
+//!   , "dynamic_map", &graph_so::dynamic_map
+//!   , "nary_tree", &graph_so::nary_tree
+//!   );
+
 namespace autogen
 {
-  gspc::task::result::Success::Output static_map (gspc::Task::Input input)
+  std::vector<char> static_map (std::vector<char> input)
   {
     return gspc::bytes_save
       (graph_so::static_map (gspc::bytes_load<gspc::StaticMapInput> (input)));
   }
 
-  gspc::task::result::Success::Output dynamic_map (gspc::Task::Input input)
+  std::vector<char> dynamic_map (std::vector<char> input)
   {
     return gspc::bytes_save
       (graph_so::dynamic_map (gspc::bytes_load<gspc::DynamicMapInput> (input)));
   }
 
-  gspc::task::result::Success::Output nary_tree (gspc::Task::Input input)
+  std::vector<char> nary_tree (std::vector<char> input)
   {
     return gspc::bytes_save
       (graph_so::nary_tree (gspc::bytes_load<gspc::NaryTreeInput> (input)));
