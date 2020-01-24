@@ -1,6 +1,6 @@
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
-#include <boost/serialization/list.hpp>
+#include <boost/serialization/vector.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/utility.hpp>
 

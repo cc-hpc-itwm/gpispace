@@ -25,6 +25,7 @@ namespace gspc
       struct Acquired
       {
         resource::ID requested;
+        std::size_t selected;
         //! \note not shown to the user but implicitly locked, in
         //! order to avoid partial release. note: disallows freeing
         //! only requested but keeping dependent, e.g. (A -> B,
@@ -34,7 +35,7 @@ namespace gspc
 
       //! blocks if no resource of that class available/exists
       //! (not-block-on-not-exists would race with add).
-      Acquired acquire (std::list<resource::Class>);
+      Acquired acquire (std::vector<resource::Class>);
       void release (Acquired const&);
       virtual void interrupt() override;
 

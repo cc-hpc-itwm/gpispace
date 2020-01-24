@@ -14,15 +14,52 @@ namespace gspc
 {
   namespace
   {
-    Task::SingleResource requirement (Task const& task)
+    template<typename T, typename U>
+      std::vector<T> firsts (std::vector<std::pair<T, U>> const& xs)
     {
-      return fhg::util::visit<Task::SingleResource>
+      std::vector<T> ys;
+
+      std::transform ( xs.begin(), xs.end()
+                     , std::back_inserter (ys)
+                     , [] (auto const& x)
+                       {
+                         return x.first;
+                       }
+                     );
+
+      return ys;
+    }
+
+
+    Task::SingleResourceWithPreference requirement (Task const& task)
+    {
+      return fhg::util::visit<Task::SingleResourceWithPreference>
         ( task.requirements
         , [&] (Task::SingleResource const& single_resource)
           {
-            return single_resource;
+            return Task::SingleResourceWithPreference {single_resource};
           }
-        , [] (auto const&) -> Task::SingleResource
+        , [&] (Task::SingleResourceWithPreference const&
+                single_resource_with_preference
+              )
+          {
+            return single_resource_with_preference;
+          }
+        , [&] (Task::SingleResourceWithCost
+                single_resource_with_cost
+              )
+          {
+            std::sort ( single_resource_with_cost.begin()
+                      , single_resource_with_cost.end()
+                      , [] (auto const& lhs, auto const& rhs)
+                        {
+                          return lhs.second < rhs.second;
+                        }
+                      );
+
+            return firsts (single_resource_with_cost);
+          }
+        , [] (auto const&) -> Task::SingleResourceWithPreference
           {
             throw std::logic_error ("Unsupport Requirement");
           }
@@ -32,7 +69,7 @@ namespace gspc
 
   GreedyScheduler::GreedyScheduler
       ( comm::scheduler::workflow_engine::Client workflow_engine
-      , resource_manager::Trivial& resource_manager
+      , resource_manager::WithPreferences& resource_manager
       , ScopedRuntimeSystem& runtime_system
       , std::size_t max_attempts
       )
@@ -87,8 +124,10 @@ namespace gspc
 
       try
       {
-        _command_queue.put
-          (Submit {task, _resource_manager.acquire (requirement (task).first)});
+        auto const acquired
+          (_resource_manager.acquire (firsts (requirement (task))));
+
+        _command_queue.put (Submit {task, acquired});
       }
       catch (...)
       {
@@ -109,8 +148,7 @@ namespace gspc
   {
     try
     {
-      _resource_manager.release
-        (resource_manager::Trivial::Acquired {_jobs.at (job_id)});
+      _resource_manager.release (_jobs.at (job_id));
 
       if (!_jobs.erase (job_id) || !_job_by_task.erase (job_id.task_id))
       {
@@ -136,7 +174,7 @@ namespace gspc
     try
     {
       do_worker_call
-        ( _jobs.at (job_id)
+        ( _jobs.at (job_id).requested
         , [&] (comm::scheduler::worker::Client& client)
           {
             return client.cancel (job_id, reason);
@@ -227,7 +265,7 @@ namespace gspc
 
             job::ID const job_id {_next_job_id++, task.id};
 
-            if (  !_jobs.emplace (job_id, acquired.requested).second
+            if (  !_jobs.emplace (job_id, acquired).second
                || !_job_by_task.emplace (task.id, job_id).second
                )
             {
@@ -254,7 +292,10 @@ namespace gspc
                       return client.submit
                         ( _comm_server_for_worker.local_endpoint()
                         , job_id
-                        , Job {task.input, requirement (task).second}
+                        , Job { task.input
+                              , requirement (task)
+                              . at (acquired.selected).second
+                              }
                         );
                     }
                   );

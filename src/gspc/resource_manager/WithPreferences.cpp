@@ -1,6 +1,9 @@
 #include <gspc/resource_manager/WithPreferences.hpp>
 
+#include <util-generic/warning.hpp>
+
 #include <algorithm>
+#include <iterator>
 #include <stdexcept>
 
 namespace gspc
@@ -77,7 +80,7 @@ namespace gspc
     }
 
     WithPreferences::Acquired WithPreferences::acquire
-      (std::list<resource::Class> resource_classes)
+      (std::vector<resource::Class> resource_classes)
     {
       std::unique_lock<std::mutex> resources_lock (_resources_guard);
 
@@ -109,14 +112,14 @@ namespace gspc
       }
 
       auto const resource_class
-        ( *std::find_if ( resource_classes.begin()
-                        , resource_classes.end()
-                        , has_available_resource
-                        )
+        ( std::find_if ( resource_classes.begin()
+                       , resource_classes.end()
+                       , has_available_resource
+                       )
         );
 
       auto const requested
-        (select_any (_available_resources_by_class.at (resource_class)));
+        (select_any (_available_resources_by_class.at (*resource_class)));
 
       //! block every resource `child*` that is down-reachable because
       //! `requested` is a (transitive) parent of `child*`
@@ -170,7 +173,13 @@ namespace gspc
           }
         );
 
-      return Acquired {requested /*, up-visited*/};
+      return Acquired
+        { requested
+        , fhg::util::suppress_warning::sign_conversion<std::size_t>
+            ( std::distance (resource_classes.begin(), resource_class)
+            , "begin is not after std::find_if (begin, ...)"
+            )
+        };
     }
 
     void WithPreferences::release (Acquired const& to_release)

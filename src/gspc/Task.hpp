@@ -6,7 +6,6 @@
 
 #include <boost/variant.hpp>
 
-#include <list>
 #include <ostream>
 #include <utility>
 #include <vector>
@@ -25,11 +24,11 @@ namespace gspc
     task::Input input;
 
     using SingleResource = std::pair<resource::Class, task::Implementation>;
-    using SingleResourceWithPreference = std::list<SingleResource>;
-    using SingleResourceWithCost = std::list<std::pair<SingleResource, double>>;
+    using SingleResourceWithPreference = std::vector<SingleResource>;
+    using SingleResourceWithCost = std::vector<std::pair<SingleResource, double>>;
     using CoallocationSingleClass = std::pair<SingleResource, std::size_t>;
     using CoallocationSingleClassWithPreference =
-      std::list<CoallocationSingleClass>;
+      std::vector<CoallocationSingleClass>;
 
     using Requirements = boost::variant
       < SingleResource                        // "socket"

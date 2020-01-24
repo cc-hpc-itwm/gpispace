@@ -7,7 +7,7 @@
 #include <gspc/interface/Scheduler.hpp>
 #include <gspc/job/FinishReason.hpp>
 #include <gspc/job/ID.hpp>
-#include <gspc/resource_manager/Trivial.hpp>
+#include <gspc/resource_manager/WithPreferences.hpp>
 #include <gspc/threadsafe_interruptible_queue_with_remove.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
@@ -31,7 +31,7 @@ namespace gspc
     //! scheduler. Possible change in API: let
     //! workflow_engine::extract() block
     GreedyScheduler ( comm::scheduler::workflow_engine::Client
-                    , resource_manager::Trivial& //! \todo: Client
+                    , resource_manager::WithPreferences& //! \todo: Client
                     , ScopedRuntimeSystem& //! \todo UnscopedBase
 
                     , std::size_t max_attempt = 1
@@ -44,7 +44,7 @@ namespace gspc
 
   private:
     comm::scheduler::workflow_engine::Client _workflow_engine;
-    resource_manager::Trivial& _resource_manager;
+    resource_manager::WithPreferences& _resource_manager;
     ScopedRuntimeSystem& _runtime_system;
 
     std::size_t _max_attempts;
@@ -52,7 +52,7 @@ namespace gspc
     struct Submit
     {
       Task task;
-      resource_manager::Trivial::Acquired acquired;
+      resource_manager::WithPreferences::Acquired acquired;
     };
     struct FailedToAcquire
     {
@@ -91,7 +91,8 @@ namespace gspc
     CommandQueue _command_queue;
 
     //! state only modified by command_thread
-    std::unordered_map<job::ID, resource::ID> _jobs;
+    std::unordered_map<job::ID, resource_manager::WithPreferences::Acquired>
+      _jobs;
     std::unordered_map<task::ID, job::ID> _job_by_task;
     std::unordered_map<task::ID, std::size_t> _failed_attempts;
     std::uint64_t _next_job_id {0};
