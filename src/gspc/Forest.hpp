@@ -46,6 +46,13 @@ namespace gspc
     Node const& insert (T x, A a, Children cs);
     Node const& insert (Node, Children);
 
+    //! \todo support proxies in the forest (rather in the resource)
+    //! \todo better term than "proxy", "reverse proxy"!?
+    //! \todo even better: support "exclusion group"
+    Node const& insert (T x, A a, Children cs, Node const& proxy);
+    Node const& insert (Node, Children, Node const& proxy);
+    Node const& resolve_proxy (Node const&) const;
+
     //! throw when unknown
     //! throw when not leaf/root
     //! disconnects and removes node
