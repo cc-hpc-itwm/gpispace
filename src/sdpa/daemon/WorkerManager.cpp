@@ -292,62 +292,6 @@ namespace sdpa
       return std::make_pair (matching_req_and_pref_deg, *preference);
     }
 
-    mmap_match_deg_worker_id_t WorkerManager::getMatchingDegreesAndWorkers_TESTING_ONLY
-      ( const Requirements_and_preferences& requirements_and_preferences
-      ) const
-    {
-      std::lock_guard<std::mutex> const lock_worker_map (mtx_);
-
-      if (worker_map_.size() < requirements_and_preferences.numWorkers())
-      {
-        return {};
-      }
-
-      mmap_match_deg_worker_id_t mmap_match_deg_worker_id;
-
-      // note: the multimap container maintains the elements
-      // sorted according to the specified comparison criteria
-      // (here std::greater<int>, i.e. in the descending order of the matching degrees).
-      // Searching and insertion operations have logarithmic complexity, as the
-      // multimaps are implemented as binary search trees
-
-      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
-      {
-        if ( requirements_and_preferences.shared_memory_amount_required()
-           > worker.second._allocated_shared_memory_size
-           )
-          continue;
-
-        if (worker.second.backlog_full())
-          continue;
-
-        if ( requirements_and_preferences.numWorkers()>1
-           && worker.second._children_allowed
-           )
-          { continue; }
-
-        auto const matching_degree_and_implementation
-          (match_requirements_and_preferences
-             (worker.second.capability_names_, requirements_and_preferences)
-          );
-
-        if (matching_degree_and_implementation.first)
-        {
-          mmap_match_deg_worker_id.emplace
-            ( matching_degree_and_implementation.first.get()
-            , worker_id_host_info_t ( worker.first
-                                    , worker.second._hostname
-                                    , worker.second._allocated_shared_memory_size
-                                    , worker.second._last_time_idle
-                                    , matching_degree_and_implementation.second
-                                    )
-            );
-        }
-      }
-
-      return mmap_match_deg_worker_id;
-    }
-
     Workers_and_implementation WorkerManager::find_assignment
       (const Requirements_and_preferences& requirements_and_preferences) const
     {
@@ -414,44 +358,6 @@ namespace sdpa
       }
 
       return Workers_and_implementation ({}, boost::none);
-    }
-
-    Workers_and_implementation
-      WorkerManager::find_job_assignment_minimizing_total_cost
-        ( const mmap_match_deg_worker_id_t& mmap_matching_workers
-        , const Requirements_and_preferences& requirements_and_preferences
-        ) const
-    {
-      const size_t n_req_workers (requirements_and_preferences.numWorkers());
-
-      if (mmap_matching_workers.size() < n_req_workers)
-        return {};
-
-      bounded_priority_queue_t bpq (n_req_workers);
-
-      for ( std::pair<double const, worker_id_host_info_t> const& it
-          : mmap_matching_workers
-          )
-      {
-        const worker_id_host_info_t& worker_info = it.second;
-
-        double const total_cost
-          ( requirements_and_preferences.transfer_cost()
-              (worker_info.worker_host())
-          + requirements_and_preferences.computational_cost()
-          + worker_map_.at (worker_info.worker_id()).cost_assigned_jobs()
-          );
-
-        bpq.emplace ( total_cost
-                    , -1.0*it.first
-                    , worker_info.shared_memory_size()
-                    , worker_info.last_time_idle()
-                    , worker_info.worker_id()
-                    , worker_info.implementation()
-                    );
-      }
-
-      return bpq.assigned_workers_and_implementation();
     }
 
     bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE

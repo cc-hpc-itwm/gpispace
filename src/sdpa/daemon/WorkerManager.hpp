@@ -113,14 +113,6 @@ namespace sdpa
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
 
-      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY
-        (const Requirements_and_preferences&) const;
-      Workers_and_implementation
-        find_job_assignment_minimizing_total_cost
-          ( const mmap_match_deg_worker_id_t&
-          , const Requirements_and_preferences&
-          ) const;
-
       Workers_and_implementation find_assignment
         (const Requirements_and_preferences&) const;
 
