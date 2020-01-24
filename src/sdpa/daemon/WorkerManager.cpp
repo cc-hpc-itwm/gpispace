@@ -365,37 +365,52 @@ namespace sdpa
       // Searching and insertion operations have logarithmic complexity, as the
       // multimaps are implemented as binary search trees
 
-      for (std::pair<worker_id_t const, Worker> const& worker : worker_map_)
+      for (auto const& worker_class : worker_equiv_classes_)
       {
-        if ( requirements_and_preferences.shared_memory_amount_required()
-           > worker.second._allocated_shared_memory_size
-           )
-          {continue;}
-
-        if (worker.second.backlog_full())
-          {continue;}
-
-        if ( requirements_and_preferences.numWorkers()>1
-           && worker.second._children_allowed
-           )
-          { continue; }
-
         auto const matching_degree_and_implementation
           (match_requirements_and_preferences
-             (worker.second.capability_names_, requirements_and_preferences)
+             ( worker_class.first
+             , requirements_and_preferences
+             )
           );
 
-        if (matching_degree_and_implementation.first)
+        if (!matching_degree_and_implementation.first)
+          { continue; }
+
+        for (auto& worker_id : worker_class.second._worker_ids)
         {
-          mmap_matching_workers.emplace
-            ( matching_degree_and_implementation.first.get()
-            , worker_id_host_info_t ( worker.first
-                                    , worker.second._hostname
-                                    , worker.second._allocated_shared_memory_size
-                                    , worker.second._last_time_idle
-                                    , matching_degree_and_implementation.second
-                                    )
+          auto const& worker (worker_map_.at (worker_id));
+
+          if ( requirements_and_preferences.shared_memory_amount_required()
+             > worker._allocated_shared_memory_size
+             )
+            {continue;}
+
+          if (worker.backlog_full())
+            {continue;}
+
+          if ( requirements_and_preferences.numWorkers()>1
+             && worker._children_allowed
+             )
+            { continue; }
+
+          auto const matching_degree_and_implementation
+            (match_requirements_and_preferences
+               (worker.capability_names_, requirements_and_preferences)
             );
+
+          if (matching_degree_and_implementation.first)
+          {
+            mmap_matching_workers.emplace
+              ( matching_degree_and_implementation.first.get()
+              , worker_id_host_info_t ( worker_id
+                                      , worker._hostname
+                                      , worker._allocated_shared_memory_size
+                                      , worker._last_time_idle
+                                      , matching_degree_and_implementation.second
+                                      )
+              );
+          }
         }
       }
 

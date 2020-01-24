@@ -58,6 +58,8 @@ namespace sdpa
     private:
       class WorkerEquivalenceClass
       {
+        friend class WorkerManager;
+
       public:
         WorkerEquivalenceClass();
         WorkerEquivalenceClass (const WorkerEquivalenceClass&) = delete;
