@@ -12,18 +12,22 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/timer/application.hpp>
+#include <util-generic/interruption_handler.hpp>
 
 #include <boost/format.hpp>
 
+#include <fstream>
 #include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <string>
-#include <fstream>
+#include <thread>
 
 int main (int argc, char** argv)
 try
 {
+  fhg::util::interruption_handler interruption_handler;
+
   fhg::util::default_application_timer echo ("rtm");
 
   std::size_t const num_cores_per_socket (10);
@@ -143,7 +147,29 @@ try
     , 3 // max_attempts
     );
 
-  scheduler.wait();
+  std::thread async_wait
+    ( [&]
+      {
+        auto const finally (interruption_handler.notifier());
+
+        echo << "wait for completion..." << std::endl;
+
+        scheduler.wait();
+      }
+    );
+
+  {
+    FHG_UTIL_FINALLY ([&] { async_wait.join(); });
+
+    interruption_handler.wait_for_finish_or_interruption
+      ( [&]
+        {
+          echo << "CANCEL due to interruption...\n";
+
+          scheduler.stop();
+        }
+      );
+  }
 
   echo.section ("sanity");
 
