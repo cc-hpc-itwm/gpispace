@@ -174,7 +174,9 @@ namespace sdpa
 
       std::pair<boost::optional<double>, boost::optional<std::string>>
         match_requirements_and_preferences
-          ( Worker const&, const Requirements_and_preferences&) const;
+          ( std::set<std::string> const& capabilities
+          , const Requirements_and_preferences&
+          ) const;
 
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;

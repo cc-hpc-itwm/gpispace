@@ -230,20 +230,16 @@ namespace sdpa
 
     std::pair<boost::optional<double>, boost::optional<std::string>>
       WorkerManager::match_requirements_and_preferences
-        ( Worker const& worker
+        ( std::set<std::string> const& capabilities
         , const Requirements_and_preferences& requirements_and_preferences
         ) const
     {
       std::size_t matchingDeg (0);
-      if (requirements_and_preferences.numWorkers()>1 && worker._children_allowed)
-      {
-        return std::make_pair (boost::none, boost::none);
-      }
       for ( we::type::requirement_t const& req
           : requirements_and_preferences.requirements()
           )
       {
-        if (worker.hasCapability (req.value()))
+        if (capabilities.count (req.value()))
         {
           if (!req.is_mandatory())
           {
@@ -262,7 +258,7 @@ namespace sdpa
       {
         return std::make_pair
           ( ( ( matchingDeg + 1.0)
-            / (worker._capabilities.size() + 1.0)
+            / (capabilities.size() + 1.0)
             )
           , boost::none
           );
@@ -273,7 +269,7 @@ namespace sdpa
                        , preferences.cend()
                        , [&] (Preferences::value_type const& pref)
                          {
-                           return worker.hasCapability (pref);
+                           return capabilities.count (pref);
                          }
                        )
         );
@@ -289,7 +285,7 @@ namespace sdpa
           + 1.0
           )
           /
-          (worker._capabilities.size() + preferences.size() + 1.0)
+          (capabilities.size() + preferences.size() + 1.0)
         );
 
       return std::make_pair (matching_req_and_pref_deg, *preference);
@@ -324,9 +320,14 @@ namespace sdpa
         if (worker.second.backlog_full())
           continue;
 
+        if ( requirements_and_preferences.numWorkers()>1
+           && worker.second._children_allowed
+           )
+          { continue; }
+
         auto const matching_degree_and_implementation
           (match_requirements_and_preferences
-             (worker.second, requirements_and_preferences)
+             (worker.second.capability_names_, requirements_and_preferences)
           );
 
         if (matching_degree_and_implementation.first)
@@ -374,9 +375,14 @@ namespace sdpa
         if (worker.second.backlog_full())
           {continue;}
 
+        if ( requirements_and_preferences.numWorkers()>1
+           && worker.second._children_allowed
+           )
+          { continue; }
+
         auto const matching_degree_and_implementation
           (match_requirements_and_preferences
-             (worker.second, requirements_and_preferences)
+             (worker.second.capability_names_, requirements_and_preferences)
           );
 
         if (matching_degree_and_implementation.first)
