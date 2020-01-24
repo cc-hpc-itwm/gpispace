@@ -73,6 +73,10 @@ namespace gspc
       , std::unordered_map<std::string, Node> // default parameter for each task
       );
 
+    //! \todo do not use Forest -> cycle check implies O(N^2) but is
+    //! not required because "seen" is already maintained
+    //! instead: maintain the connections
+    //! still: let `structure` return a Forest is fine?
     Forest<Node> const& structure() const;
     std::unordered_map<Node, std::size_t> const& seen() const;
     std::unordered_set<Node> const& open() const;
