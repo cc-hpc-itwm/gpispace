@@ -43,8 +43,8 @@ namespace gspc
     //! 2 throw when any_of (cs: unknown)
     //!   1 + 2 imply: throw when cycle
     //! 3 throw when diamond
-    forest::Node<T, A> const& insert (T x, A a, Children cs);
-    forest::Node<T, A> const& insert (forest::Node<T, A>, Children);
+    Node const& insert (T x, A a, Children cs);
+    Node const& insert (Node, Children);
 
     //! throw when unknown
     //! throw when not leaf/root
@@ -53,8 +53,7 @@ namespace gspc
     Node remove_root (T);
 
     template<typename F>
-      using is_predicate =
-        fhg::util::is_callable<F, bool (forest::Node<T, A> const&)>;
+      using is_predicate = fhg::util::is_callable<F, bool (Node const&)>;
 
     //! downward iterate, stop subtree iteration if not removed
     //! post: \all root: !pred(root)
@@ -66,8 +65,7 @@ namespace gspc
     // throw when root is unknown
     // amortized O(#component)
     template<typename F>
-      using is_callback =
-        fhg::util::is_callable<F, void (forest::Node<T, A> const&)>;
+      using is_callback = fhg::util::is_callable<F, void (Node const&)>;
 
     template< typename Callback
             , typename = std::enable_if_t<is_callback<Callback>{}>
@@ -128,7 +126,7 @@ namespace gspc
     //! - call split_key function at most once for each node
     template<typename F, typename Key>
       using is_split_function =
-        fhg::util::is_callable<F, Key (forest::Node<T, A> const&)>;
+        fhg::util::is_callable<F, Key (Node const&)>;
 
     template< typename SplitKey
             , typename Key = fhg::util::return_type<SplitKey>
