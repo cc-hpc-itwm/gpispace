@@ -157,23 +157,34 @@ namespace gspc
         , [&] (LoadInput input)
           {
             return _processing_state.extract
-              ("load", bytes_save (input), _workflow_state.module, "load");
+              ( Task::SingleResource {"load", {_workflow_state.module, "load"}}
+              , bytes_save (input)
+              );
           }
         , [&] (ProcessInput input)
           {
             //! \todo coallocation
             return _processing_state.extract
-              ("node", bytes_save (input), _workflow_state.module, "process");
+              ( Task::SingleResource
+                  {"node", {_workflow_state.module, "process"}}
+              , bytes_save (input)
+              );
           }
         , [&] (ReduceInput input)
           {
             return _processing_state.extract
-              ("socket", bytes_save (input), _workflow_state.module, "reduce");
+              ( Task::SingleResource
+                  {"socket", {_workflow_state.module, "reduce"}}
+              , bytes_save (input)
+              );
           }
         , [&] (StoreInput input)
           {
             return _processing_state.extract
-              ("store", bytes_save (input), _workflow_state.module, "store");
+              ( Task::SingleResource
+                  {"store", {_workflow_state.module, "store"}}
+              , bytes_save (input)
+              );
           }
         );
     }

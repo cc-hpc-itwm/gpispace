@@ -25,12 +25,7 @@ namespace gspc
     struct ProcessingState
     {
     public:
-      Task extract
-        ( resource::Class resource_class
-        , task::Input input
-        , boost::filesystem::path so
-        , std::string symbol
-        );
+      Task extract (Task::Requirements, task::Input);
 
       template<typename Function>
         using is_post_process =

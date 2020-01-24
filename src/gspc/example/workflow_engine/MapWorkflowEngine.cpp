@@ -15,7 +15,7 @@ namespace gspc
   MapWorkflowEngine::MapWorkflowEngine
     (boost::filesystem::path module, std::uint64_t N)
   {
-    _workflow_state.module = module;
+    _workflow_state.implementation = {module, "identity"};
     _workflow_state.N = N;
   }
 
@@ -33,7 +33,7 @@ namespace gspc
     void MapWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)
   {
-    ar & module;
+    ar & implementation;
     ar & N;
     ar & i;
   }
@@ -66,14 +66,12 @@ namespace gspc
     ++_workflow_state.i;
 
     return _processing_state.extract
-      ( "core"
+      ( Task::SingleResource {"core", _workflow_state.implementation}
       , bytes_save ( MapInput { _workflow_state.N
                               , _workflow_state.i
                               , _workflow_state.N - _workflow_state.i
                               }
                    )
-      , _workflow_state.module
-      , "identity"
       );
   }
 

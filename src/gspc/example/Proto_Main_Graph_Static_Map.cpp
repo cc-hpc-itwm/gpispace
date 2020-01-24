@@ -79,9 +79,8 @@ try
   }
 
   gspc::GraphTraversalWorkflowEngine workflow_engine
-    ( MODULE
+    ( {MODULE, "static_map"}
     , values
-    , "static_map"
     , {} // static map has no parameters, does not produce any children
     );
 

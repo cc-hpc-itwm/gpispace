@@ -67,9 +67,8 @@ namespace gspc
     using Node = std::uint64_t;
 
     GraphTraversalWorkflowEngine
-      ( boost::filesystem::path module
+      ( task::Implementation
       , std::unordered_set<Node>
-      , task::Implementation::Symbol
       , std::unordered_map<std::string, Node> // default parameter for each task
       );
 
@@ -92,13 +91,12 @@ namespace gspc
   private:
     struct WorkflowState
     {
-      boost::filesystem::path _module;
+      task::Implementation _implementation;
 
       Forest<Node> _structure;
       std::unordered_map<Node, std::size_t> _seen;
       std::unordered_set<Node> _open;
 
-      task::Implementation::Symbol _symbol;
       std::unordered_map<std::string, Node> _inputs;
 
       bool _got_heureka {false};

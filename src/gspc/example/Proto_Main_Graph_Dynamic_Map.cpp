@@ -69,7 +69,7 @@ try
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids2); });
 
   gspc::GraphTraversalWorkflowEngine workflow_engine
-    (MODULE, {0}, "dynamic_map", {{"N", std::stoul (argv[1])}});
+    ({MODULE, "dynamic_map"}, {0}, {{"N", std::stoul (argv[1])}});
 
   gspc::GreedyScheduler scheduler
     ( workflow_engine

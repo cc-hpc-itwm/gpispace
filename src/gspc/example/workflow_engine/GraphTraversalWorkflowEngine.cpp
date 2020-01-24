@@ -13,34 +13,14 @@
 
 namespace gspc
 {
-  namespace
-  {
-    task::Implementation::Symbol symbol (Task const& task)
-    {
-      return fhg::util::visit<task::Implementation::Symbol>
-        ( task.requirements
-        , [&] (Task::SingleResource const& single_resource)
-          {
-            return single_resource.second.symbol;
-          }
-        , [] (auto const&) -> task::Implementation::Symbol
-          {
-            throw std::logic_error ("unknown requirement");
-          }
-        );
-    }
-  }
-
   GraphTraversalWorkflowEngine::GraphTraversalWorkflowEngine
-    ( boost::filesystem::path module
+    ( task::Implementation implementation
     , std::unordered_set<Node> open
-    , task::Implementation::Symbol symbol
     , std::unordered_map<std::string, std::uint64_t> inputs
     )
   {
-    _workflow_state._module = module;
+    _workflow_state._implementation = implementation;
     _workflow_state._open = open;
-    _workflow_state._symbol = symbol;
     _workflow_state._inputs = inputs;
   }
 
@@ -75,11 +55,10 @@ namespace gspc
     void GraphTraversalWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)
   {
-    ar & _module;
+    ar & _implementation;
     ar & _structure;
     ar & _seen;
     ar & _open;
-    ar & _symbol;
     ar & _inputs;
     ar & _got_heureka;
   }
@@ -131,12 +110,12 @@ namespace gspc
     auto const& inputs (_workflow_state._inputs);
 
     return _processing_state.extract
-      ( "core"
-      , _workflow_state._symbol == "static_map"
+      ( Task::SingleResource {"core", _workflow_state._implementation}
+      , _workflow_state._implementation.symbol == "static_map"
          ? bytes_save (StaticMapInput {parent})
-      : _workflow_state._symbol == "dynamic_map"
+      : _workflow_state._implementation.symbol == "dynamic_map"
          ? bytes_save (DynamicMapInput {parent, inputs.at ("N")})
-      : _workflow_state._symbol == "nary_tree"
+      : _workflow_state._implementation.symbol == "nary_tree"
          ? bytes_save ( NaryTreeInput { parent
                                       , inputs.at ("N")
                                       , inputs.at ("B")
@@ -144,8 +123,6 @@ namespace gspc
                                       }
                       )
       : throw std::logic_error ("todo: symbol should be an enum here")
-      , _workflow_state._module
-      , _workflow_state._symbol
       );
   }
 
@@ -173,21 +150,21 @@ namespace gspc
               }
             );
 
-          if (symbol (input_task) == "static_map")
+          if (_workflow_state._implementation.symbol == "static_map")
           {
             auto output (bytes_load<GraphTraversalOutput> (success.output));
             auto input (bytes_load<StaticMapInput> (input_task.input));
 
             mark_seen (output, input.parent);
           }
-          else if (symbol (input_task) == "dynamic_map")
+          else if (_workflow_state._implementation.symbol == "dynamic_map")
           {
             auto output (bytes_load<GraphTraversalOutput> (success.output));
             auto input (bytes_load<DynamicMapInput> (input_task.input));
 
             mark_seen (output, input.parent);
           }
-          else if (symbol (input_task) == "nary_tree")
+          else if (_workflow_state._implementation.symbol == "nary_tree")
           {
             auto output
               (bytes_load<GraphTraversalOutputWithHeureka> (success.output));

@@ -43,7 +43,7 @@ namespace gspc
   private:
     struct WorkflowState
     {
-      boost::filesystem::path module;
+      task::Implementation implementation;
 
       std::uint64_t N;
       std::uint64_t i {0};

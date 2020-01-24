@@ -15,7 +15,7 @@ namespace gspc
   SequenceWorkflowEngine::SequenceWorkflowEngine
     (boost::filesystem::path module, std::uint64_t N)
   {
-    _workflow_state.module = module;
+    _workflow_state.implementation = {module, "identity"};
     _workflow_state.N = N;
   }
 
@@ -33,7 +33,7 @@ namespace gspc
     void SequenceWorkflowEngine::WorkflowState::serialize
       (Archive& ar, unsigned int /* version */)
   {
-    ar & module;
+    ar & implementation;
     ar & N;
     ar & i;
   }
@@ -73,10 +73,8 @@ namespace gspc
 
 
     return _processing_state.extract
-      ( "core"
+      ( Task::SingleResource {"core", _workflow_state.implementation}
       , bytes_save (SequenceInput {_workflow_state.i})
-      , _workflow_state.module
-      , "identity"
       );
   }
 

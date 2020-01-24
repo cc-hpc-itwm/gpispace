@@ -8,22 +8,13 @@ namespace gspc
   namespace workflow_engine
   {
     Task ProcessingState::extract
-        ( resource::Class resource_class
-        , task::Input input
-        , boost::filesystem::path so
-        , std::string symbol
-        )
+      (Task::Requirements requirements, task::Input input)
     {
       auto const task_id {*_extracted.emplace (++_next_task_id).first};
 
       return _tasks.emplace
         ( task_id
-        , Task { task_id
-               , std::move (input)
-               , Task::SingleResource { resource_class
-                                      , task::Implementation {so, symbol}
-                                      }
-               }
+        , Task {task_id, std::move (input), std::move (requirements)}
         ).first->second;
     }
 
