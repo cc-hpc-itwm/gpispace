@@ -70,19 +70,6 @@ try
   gspc::remote_interface::strategy::Thread thread_strategy
     (std::make_shared<gspc::remote_interface::strategy::Thread::State>());
 
-  echo.section ("add resources");
-
-  std::unordered_set<gspc::remote_interface::Hostname> hostnames;
-
-  for (std::size_t node {0}; node < num_nodes; ++node)
-  {
-    hostnames.emplace (std::to_string (node));
-  }
-
-  auto const resource_ids
-    (runtime_system.add_or_throw (hostnames, thread_strategy, host_topology));
-  FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids); });
-
   echo.section ("create workflow engine");
 
   std::unique_ptr<gspc::rtm::WorkflowEngine> workflow_engine;
@@ -146,6 +133,19 @@ try
 
     , 3 // max_attempts
     );
+
+  echo.section ("add resources");
+
+  std::unordered_set<gspc::remote_interface::Hostname> hostnames;
+
+  for (std::size_t node {0}; node < num_nodes; ++node)
+  {
+    hostnames.emplace (std::to_string (node));
+  }
+
+  auto const resource_ids
+    (runtime_system.add_or_throw (hostnames, thread_strategy, host_topology));
+  FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids); });
 
   std::thread async_wait
     ( [&]
