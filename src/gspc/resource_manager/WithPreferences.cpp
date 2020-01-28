@@ -50,12 +50,24 @@ namespace gspc
             {
               throw std::invalid_argument ("Unknown.");
             }
+          }
+        );
+
+      //! \todo for (hard/soft)-remove: mark resources for removal, do
+      //! not acquire again, notify schedulers for (hard/soft)-cancel
+      //! by resource id, yield until:
+
+      to_remove.for_each_node
+        ( [&] (forest::Node<resource::ID> const& resource)
+          {
             if (_resource_usage_by_id.at (resource.first))
             {
               throw std::invalid_argument ("In use.");
             }
           }
         );
+
+      // here: all resources in `to_remove` are known and unused
 
       to_remove.upward_apply
         ( [&] (forest::Node<resource::ID> const& resource)
