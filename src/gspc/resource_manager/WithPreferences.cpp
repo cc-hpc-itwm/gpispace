@@ -74,9 +74,15 @@ namespace gspc
           {
             auto const removed_node (_resources.remove_leaf (resource.first));
             _resource_usage_by_id.erase (removed_node.first);
-            _available_resources_by_class.at (removed_node.second)
-              . erase (removed_node.first)
-              ;
+
+            auto available_resources_by_class
+              (_available_resources_by_class.find (removed_node.second));
+            available_resources_by_class->second.erase (removed_node.first);
+            if (available_resources_by_class->second.empty())
+            {
+              _available_resources_by_class.erase
+                (available_resources_by_class);
+            }
           }
         );
     }
