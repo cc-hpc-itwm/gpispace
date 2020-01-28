@@ -173,6 +173,10 @@ namespace sdpa
       std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
     private:
+      void assign_job_to_worker
+        (const job_id_t& job_id, worker_ptr worker, double cost);
+      void delete_job_from_worker
+        (const job_id_t &job_id, const worker_ptr worker);
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
       void change_equivalence_class (worker_ptr, std::set<std::string> const&);
 

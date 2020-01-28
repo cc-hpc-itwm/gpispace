@@ -426,10 +426,18 @@ namespace sdpa
       return workers_to_cancel;
     }
 
-    void WorkerManager::assign_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id, double cost)
+    void WorkerManager::assign_job_to_worker
+      (const job_id_t& job_id, const worker_id_t& worker_id, double cost)
     {
       std::lock_guard<std::mutex> const _(mtx_);
       auto worker (worker_map_.find (worker_id));
+      fhg_assert (worker != worker_map_.end());
+      assign_job_to_worker (job_id, worker, cost);
+    }
+
+    void WorkerManager::assign_job_to_worker
+      (const job_id_t& job_id, worker_ptr worker, double cost)
+    {
       worker->second.assign (job_id, cost);
 
       auto& worker_class
@@ -473,6 +481,17 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _(mtx_);
       auto worker (worker_map_.find (worker_id));
+      if (worker != worker_map_.end())
+      {
+        delete_job_from_worker (job_id, worker);
+      }
+    }
+
+    void WorkerManager::delete_job_from_worker
+      ( const job_id_t &job_id
+      , const worker_ptr worker
+      )
+    {
       if (worker != worker_map_.end())
       {
         auto& equivalence_class
