@@ -54,11 +54,20 @@ namespace sdpa
     class WorkerManager : boost::noncopyable
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
+      using worker_ptr = worker_map_t::iterator;
 
     private:
       class WorkerEquivalenceClass
       {
         friend class WorkerManager;
+
+        struct iterator_hash
+        {
+          size_t operator()(worker_ptr it) const
+          {
+            return std::hash<worker_id_t>() (it->first);
+          }
+        };
 
       public:
         WorkerEquivalenceClass();
@@ -78,8 +87,8 @@ namespace sdpa
         unsigned int n_idle_workers() const;
         unsigned int n_workers() const;
 
-        void add_worker_entry (worker_map_t::const_iterator);
-        void remove_worker_entry (worker_map_t::const_iterator);
+        void add_worker_entry (worker_ptr);
+        void remove_worker_entry (worker_ptr);
 
         template <typename Reservation>
         void steal_work
@@ -92,6 +101,7 @@ namespace sdpa
         unsigned int _n_running_jobs;
         unsigned int _n_idle_workers;
         std::unordered_set<worker_id_t> _worker_ids;
+        std::unordered_set<worker_ptr, iterator_hash> _idle_workers;
       };
 
     public:
@@ -164,7 +174,7 @@ namespace sdpa
 
     private:
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
-      void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
+      void change_equivalence_class (worker_ptr, std::set<std::string> const&);
 
       std::pair<boost::optional<double>, boost::optional<std::string>>
         match_requirements_and_preferences
@@ -207,8 +217,6 @@ namespace sdpa
       {
         return;
       }
-
-      using worker_ptr = worker_map_t::iterator;
 
       std::vector<worker_ptr> thief_candidates;
       for (worker_id_t const& w : _worker_ids)
