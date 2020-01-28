@@ -91,10 +91,8 @@ namespace sdpa
         void remove_worker_entry (worker_ptr);
 
         template <typename Reservation>
-        void steal_work
-          ( std::function<Reservation* (job_id_t const&)>
-          , worker_map_t&
-          );
+          void steal_work
+            (std::function<Reservation* (job_id_t const&)>, WorkerManager&);
 
       private:
         unsigned int _n_pending_jobs;
@@ -176,7 +174,7 @@ namespace sdpa
       void assign_job_to_worker
         (const job_id_t& job_id, worker_ptr worker, double cost);
       void delete_job_from_worker
-        (const job_id_t &job_id, const worker_ptr worker);
+        (const job_id_t &job_id, const worker_ptr worker, double cost);
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
       void change_equivalence_class (worker_ptr, std::set<std::string> const&);
 
@@ -202,14 +200,14 @@ namespace sdpa
                                         | boost::adaptors::map_values
           )
       {
-        weqc.steal_work (reservation, worker_map_);
+        weqc.steal_work (reservation, *this);
       }
     }
 
     template <typename Reservation>
     void WorkerManager::WorkerEquivalenceClass::steal_work
       ( std::function<Reservation* (job_id_t const&)> reservation
-      , worker_map_t& worker_map
+      , WorkerManager& worker_manager
       )
     {
       if (n_running_jobs() == n_workers())
@@ -222,20 +220,7 @@ namespace sdpa
         return;
       }
 
-      std::vector<worker_ptr> thief_candidates;
-      for (worker_id_t const& w : _worker_ids)
-      {
-        auto const& it (worker_map.find (w));
-        fhg_assert (it != worker_map.end());
-        Worker const& worker (it->second);
-
-        if (!worker.has_running_jobs() && !worker.has_pending_jobs())
-        {
-          thief_candidates.emplace_back (it);
-        }
-      }
-
-      if (thief_candidates.empty())
+      if (_idle_workers.empty())
       {
         return;
       }
@@ -271,11 +256,16 @@ namespace sdpa
       std::priority_queue < worker_ptr
                           , std::vector<worker_ptr>
                           , decltype (comp_thieves)
-                          > thieves (comp_thieves, thief_candidates);
+                          >
+        thieves ( comp_thieves
+                , std::vector<worker_ptr>
+                    (_idle_workers.begin(), _idle_workers.end())
+                );
 
       for (worker_id_t const& w : _worker_ids)
       {
-        auto const& it (worker_map.find (w));
+        auto const& it (worker_manager.worker_map_.find (w));
+        fhg_assert (it != worker_manager.worker_map_.end());
         Worker const& worker (it->second);
 
         if (worker.stealing_allowed())
@@ -313,8 +303,8 @@ namespace sdpa
             }
           );
 
-        thief->second.assign (*it_job, cost (*it_job));
-        richest_worker.delete_pending_job (*it_job, cost (*it_job));
+        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job));
+        worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
 
         thieves.pop();
         to_steal_from.pop();

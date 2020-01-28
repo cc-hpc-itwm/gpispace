@@ -483,13 +483,14 @@ namespace sdpa
       auto worker (worker_map_.find (worker_id));
       if (worker != worker_map_.end())
       {
-        delete_job_from_worker (job_id, worker);
+        delete_job_from_worker (job_id, worker, cost);
       }
     }
 
     void WorkerManager::delete_job_from_worker
       ( const job_id_t &job_id
       , const worker_ptr worker
+      , double cost
       )
     {
       if (worker != worker_map_.end())
