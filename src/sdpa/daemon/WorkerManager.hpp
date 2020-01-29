@@ -137,8 +137,6 @@ namespace sdpa
                            )> const& serve_job
       );
 
-    bool all_workers_busy_and_have_pending_jobs() const;
-
     template <typename T>
     std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
       ( worker_id_t const&

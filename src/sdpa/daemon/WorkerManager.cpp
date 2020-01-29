@@ -396,16 +396,6 @@ namespace sdpa
       return can_start;
     }
 
-    bool WorkerManager::all_workers_busy_and_have_pending_jobs() const
-    {
-      std::lock_guard<std::mutex> const _(mtx_);
-      return std::all_of ( worker_map_.begin()
-                         , worker_map_.end()
-                         , [](const worker_map_t::value_type& p)
-                             {return p.second.isReserved() && p.second.has_pending_jobs();}
-                         );
-    }
-
     std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel
       (job_id_t const& job_id)
     {
