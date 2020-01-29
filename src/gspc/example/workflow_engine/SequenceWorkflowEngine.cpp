@@ -40,21 +40,13 @@ namespace gspc
 
   workflow_engine::State SequenceWorkflowEngine::state() const
   {
-    return { bytes_save (_workflow_state)
-           , workflow_finished()
-           , _processing_state
-           };
+    return {bytes_save (_workflow_state), _processing_state};
   }
 
   SequenceWorkflowEngine::SequenceWorkflowEngine (workflow_engine::State state)
     : _workflow_state (bytes_load<WorkflowState> (state.engine_specific))
     , _processing_state (state.processing_state)
-  {
-    if (state.workflow_finished != workflow_finished())
-    {
-      throw std::logic_error ("INCONSISTENCY: finished or not!?");
-    }
-  }
+  {}
 
   boost::variant<Task, bool> SequenceWorkflowEngine::extract()
   {

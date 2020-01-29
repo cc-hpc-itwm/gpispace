@@ -8,7 +8,6 @@ namespace gspc
       void State::serialize (Archive& ar, unsigned int)
     {
       ar & engine_specific;
-      ar & workflow_finished;
       ar & processing_state;
     }
   }

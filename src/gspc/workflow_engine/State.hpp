@@ -16,8 +16,6 @@ namespace gspc
       //! \todo ctor
       // private:
       std::vector<char> engine_specific;
-      //! \note does not imply success
-      bool workflow_finished;
 
       ProcessingState processing_state;
 
