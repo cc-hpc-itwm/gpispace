@@ -2,7 +2,6 @@
 
 #include <gspc/workflow_engine/ProcessingState.hpp>
 
-#include <ostream>
 #include <vector>
 
 namespace gspc
@@ -11,8 +10,6 @@ namespace gspc
   {
     struct State
     {
-      friend std::ostream& operator<< (std::ostream&, State const&);
-
       //! \todo ctor
       // private:
       std::vector<char> engine_specific;

@@ -188,7 +188,7 @@ try
     }
   }
 
-  echo << state << std::endl;
+  echo << state.processing_state << std::endl;
 
   if (auto final_result = workflow_engine->final_result())
   {

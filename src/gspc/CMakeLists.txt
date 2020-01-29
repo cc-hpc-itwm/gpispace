@@ -48,7 +48,6 @@ extended_add_library (NAME proto
           "task/Implementation.cpp"
           "task/Result.cpp"
           "workflow_engine/ProcessingState.cpp"
-          "workflow_engine/State.cpp"
   LIBRARIES GSPC::util
             gspc::logging
             Util::Generic

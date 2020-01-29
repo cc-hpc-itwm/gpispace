@@ -13,7 +13,7 @@ try
                  (fhg::util::read_file<std::vector<char>> ("/dev/stdin"))
              );
 
-  std::cout << state << std::endl;
+  std::cout << state.processing_state << std::endl;
 
   return EXIT_SUCCESS;
 }

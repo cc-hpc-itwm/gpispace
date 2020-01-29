@@ -79,7 +79,7 @@ try
 
   scheduler.wait();
 
-  std::cout << workflow_engine.state() << std::endl;
+  std::cout << workflow_engine.state().processing_state << std::endl;
 
   std::cout
     << "open: "
