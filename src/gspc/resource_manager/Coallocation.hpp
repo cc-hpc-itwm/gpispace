@@ -25,11 +25,6 @@ namespace gspc
       struct Acquired
       {
         std::unordered_set<resource::ID> requesteds;
-        //! \note not shown to the user but implicitly locked, in
-        //! order to avoid partial release. note: disallows freeing
-        //! only requested but keeping dependent, e.g. (A -> B,
-        //! request B, get {B, A}, release only B, still have A.)
-        // std::unordered_set<resource::ID> dependent;
       };
 
       Acquired acquire
