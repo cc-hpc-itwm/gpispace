@@ -32,9 +32,10 @@ namespace gspc
         // std::unordered_set<resource::ID> dependent;
       };
 
-      Acquired acquire (resource::Class, std::size_t);
+      Acquired acquire
+        (InterruptionContext const&, resource::Class, std::size_t);
       void release (Acquired const&);
-      virtual void interrupt() override;
+      virtual void interrupt (InterruptionContext&) override;
 
     private:
       //! C is not forward disjoint: C -> D <- C, but C -> D <- B is,
@@ -45,7 +46,6 @@ namespace gspc
 
       std::mutex _resources_guard;
       std::condition_variable _resources_became_available_or_interrupted;
-      bool _interrupted {false};
 
       Resources _resources;
       std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;

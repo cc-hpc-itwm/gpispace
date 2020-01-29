@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gspc/Forest.hpp>
+#include <gspc/InterruptionContext.hpp>
 #include <gspc/resource/Class.hpp>
 #include <gspc/resource/ID.hpp>
 
@@ -35,12 +36,9 @@ namespace gspc
       {
         Interrupted() : std::runtime_error (__PRETTY_FUNCTION__) {}
       };
-      //! \note once called all running and future acquire will throw
-      //! Interrupted
-      //! \todo Discuss this implies that a single resource manager can not be
-      //! shared between multiple clients
-      virtual void interrupt() = 0;
       //! \todo maybe return optional<...> instead of throwing Interrupted
+      virtual void interrupt (InterruptionContext&) = 0;
+
       // virtual ? acquire (?)
       // virtual void release (?)
 

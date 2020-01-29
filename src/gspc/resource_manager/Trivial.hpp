@@ -20,7 +20,8 @@ namespace gspc
         // std::unordered_set<resource::ID> dependent;
       };
 
-      Acquired acquire (resource::Class resource_class);
+      Acquired acquire
+        (InterruptionContext const&, resource::Class resource_class);
       void release (Acquired const&);
     };
   }

@@ -44,6 +44,7 @@ namespace gspc
 
   private:
     comm::scheduler::workflow_engine::Client _workflow_engine;
+    InterruptionContext _resource_manager_interruption_context;
     resource_manager::WithPreferences& _resource_manager;
     ScopedRuntimeSystem& _runtime_system;
 

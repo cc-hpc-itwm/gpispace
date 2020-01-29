@@ -10,11 +10,11 @@ namespace gspc
 {
   namespace resource_manager
   {
-    void WithPreferences::interrupt()
+    void WithPreferences::interrupt (InterruptionContext& interruption_context)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
-      _interrupted = true;
+      interruption_context._interrupted = true;
 
       _resources_became_available_or_interrupted.notify_all();
     }
@@ -98,7 +98,9 @@ namespace gspc
     }
 
     WithPreferences::Acquired WithPreferences::acquire
-      (std::vector<resource::Class> resource_classes)
+      ( InterruptionContext const& interruption_context
+      , std::vector<resource::Class> resource_classes
+      )
     {
       std::unique_lock<std::mutex> resources_lock (_resources_guard);
 
@@ -119,12 +121,12 @@ namespace gspc
                                , resource_classes.end()
                                , has_available_resource
                                )
-              || _interrupted
+              || interruption_context._interrupted
               ;
           }
         );
 
-      if (_interrupted)
+      if (interruption_context._interrupted)
       {
         throw Interrupted{};
       }

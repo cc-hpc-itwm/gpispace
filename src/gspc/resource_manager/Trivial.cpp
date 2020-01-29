@@ -4,9 +4,14 @@ namespace gspc
 {
   namespace resource_manager
   {
-    Trivial::Acquired Trivial::acquire (resource::Class resource_class)
+    Trivial::Acquired
+      Trivial::acquire ( InterruptionContext const& interruption_context
+                       ,  resource::Class resource_class
+                       )
     {
-      return {WithPreferences::acquire ({resource_class}).requested};
+      return { WithPreferences::acquire (interruption_context, {resource_class})
+             . requested
+             };
     }
     void Trivial::release (Acquired const& acquired)
     {

@@ -32,11 +32,11 @@ namespace gspc
         );
     }
 
-    void Coallocation::interrupt()
+    void Coallocation::interrupt (InterruptionContext& interruption_context)
     {
       std::lock_guard<std::mutex> const resources_lock (_resources_guard);
 
-      _interrupted = true;
+      interruption_context._interrupted = true;
 
       _resources_became_available_or_interrupted.notify_all();
     }
@@ -117,7 +117,9 @@ namespace gspc
     }
 
     Coallocation::Acquired Coallocation::acquire
-      (resource::Class resource_class, std::size_t count)
+      ( InterruptionContext const& interruption_context
+      , resource::Class resource_class, std::size_t count
+      )
     {
       std::unique_lock<std::mutex> resources_lock (_resources_guard);
 
@@ -135,11 +137,12 @@ namespace gspc
         ( resources_lock
         , [&]
           {
-            return has_available_resources (resource_class) || _interrupted;
+            return has_available_resources (resource_class)
+              || interruption_context._interrupted;
           }
         );
 
-      if (_interrupted)
+      if (interruption_context._interrupted)
       {
         throw Interrupted{};
       }

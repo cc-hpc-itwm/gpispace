@@ -35,14 +35,14 @@ namespace gspc
 
       //! blocks if no resource of that class available/exists
       //! (not-block-on-not-exists would race with add).
-      Acquired acquire (std::vector<resource::Class>);
+      Acquired acquire
+        (InterruptionContext const&, std::vector<resource::Class>);
       void release (Acquired const&);
-      virtual void interrupt() override;
+      virtual void interrupt (InterruptionContext&) override;
 
     private:
       std::mutex _resources_guard;
       std::condition_variable _resources_became_available_or_interrupted;
-      bool _interrupted {false};
 
       Resources _resources;
       std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;

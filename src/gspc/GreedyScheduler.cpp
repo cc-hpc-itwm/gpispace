@@ -125,7 +125,11 @@ namespace gspc
       try
       {
         auto const acquired
-          (_resource_manager.acquire (firsts (requirement (task))));
+          ( _resource_manager.acquire
+              ( _resource_manager_interruption_context
+              , firsts (requirement (task))
+              )
+          );
 
         _command_queue.put (Submit {task, acquired});
       }
@@ -416,7 +420,8 @@ namespace gspc
               cancel_job (job, task::result::Postponed {stop.reason});
             }
 
-            _resource_manager.interrupt();
+            _resource_manager.interrupt
+              (_resource_manager_interruption_context);
           }
         );
     }

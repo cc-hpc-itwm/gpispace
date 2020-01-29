@@ -1,5 +1,6 @@
 #include <gspc/example/rtm/Parameter.hpp>
 
+#include <gspc/InterruptionContext.hpp>
 #include <gspc/Resource.hpp>
 #include <gspc/resource_manager/Trivial.hpp>
 
@@ -19,11 +20,14 @@ namespace
     void acquire
       (gspc::resource::Class resource_class, std::size_t N)
     {
+      gspc::InterruptionContext interruption_context;
+
       echo.section ("acquire " + std::to_string (N) + " x " + resource_class);
 
       while (N --> 0)
       {
-        acquired.emplace (rm.acquire (resource_class).requested);
+        acquired.emplace
+          (rm.acquire (interruption_context, resource_class).requested);
       }
     }
     ~acquisition()
