@@ -84,7 +84,14 @@ namespace gspc
                                    , Cancelled
                                    >;
 
-    using CommandQueue = fhg::util::threadsafe_queue<Command>;
+    struct CommandQueue
+    {
+      Command get();
+      void put (Command);
+
+    private:
+      fhg::util::threadsafe_queue<Command> _queue;
+    };
     using ScheduleQueue =
       gspc::threadsafe_interruptible_queue_with_remove<Task, task::ID>;
 

@@ -67,6 +67,15 @@ namespace gspc
     }
   }
 
+  GreedyScheduler::Command GreedyScheduler::CommandQueue::get()
+  {
+    return _queue.get();
+  }
+  void GreedyScheduler::CommandQueue::put (Command command)
+  {
+    _queue.put (std::move (command));
+  }
+
   GreedyScheduler::GreedyScheduler
       ( comm::scheduler::workflow_engine::Client workflow_engine
       , resource_manager::WithPreferences& resource_manager
