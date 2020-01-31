@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
+#include <typeinfo>
 #include <utility>
 
 namespace gspc
@@ -95,9 +96,10 @@ namespace gspc
   void GreedyScheduler::CommandQueue::put_extract()
   {
     std::lock_guard<std::mutex> const lock (_guard);
-    return put ( lock
-               , Extract{}
-               );
+    if (_commands.empty() || _commands.back().type() != typeid (Extract))
+    {
+      put (lock, Extract{});
+    }
   }
   void GreedyScheduler::CommandQueue::put_stop (std::string reason)
   {
