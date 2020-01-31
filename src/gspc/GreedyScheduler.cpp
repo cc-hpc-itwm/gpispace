@@ -76,9 +76,55 @@ namespace gspc
     _commands.pop_front();
     return command;
   }
-  void GreedyScheduler::CommandQueue::put (Command command)
+  void GreedyScheduler::CommandQueue::put_submit
+    (Task task, resource_manager::WithPreferences::Acquired acquired)
   {
-    std::lock_guard<std::mutex> const _ (_guard);
+    std::lock_guard<std::mutex> const lock (_guard);
+    return put ( lock
+               , Submit {std::move (task), std::move (acquired)}
+               );
+  }
+  void GreedyScheduler::CommandQueue::put_failed_to_acquire
+    (Task task, std::exception_ptr error)
+  {
+    std::lock_guard<std::mutex> const lock (_guard);
+    return put ( lock
+               , FailedToAcquire {std::move (task), std::move (error)}
+               );
+  }
+  void GreedyScheduler::CommandQueue::put_extract()
+  {
+    std::lock_guard<std::mutex> const lock (_guard);
+    return put ( lock
+               , Extract{}
+               );
+  }
+  void GreedyScheduler::CommandQueue::put_stop (std::string reason)
+  {
+    std::lock_guard<std::mutex> const lock (_guard);
+    return put ( lock
+               , Stop {std::move (reason)}
+               );
+  }
+  void GreedyScheduler::CommandQueue::put_finished
+    (job::ID job_id, task::Result result)
+  {
+    std::lock_guard<std::mutex> const lock (_guard);
+    return put ( lock
+               , Finished {std::move (job_id), std::move (result)}
+               );
+  }
+  void GreedyScheduler::CommandQueue::put_cancelled
+    (job::ID job_id, task::result::Premature premature_result)
+  {
+    std::lock_guard<std::mutex> const lock (_guard);
+    return put ( lock
+               , Cancelled {std::move (job_id), std::move (premature_result)}
+               );
+  }
+  void GreedyScheduler::CommandQueue::put
+    (std::lock_guard<std::mutex> const&, Command command)
+  {
     _commands.emplace_back (std::move (command));
     _command_added.notify_one();
   }
@@ -101,7 +147,7 @@ namespace gspc
     , _command_thread
         (fhg::util::bind_this (this, &GreedyScheduler::command_thread))
   {
-    _command_queue.put (Extract{});
+    _command_queue.put_extract();
   }
 
   template<typename Lock, typename Fun, typename... Args>
@@ -147,11 +193,11 @@ namespace gspc
               )
           );
 
-        _command_queue.put (Submit {task, acquired});
+        _command_queue.put_submit (task, acquired);
       }
       catch (...)
       {
-        _command_queue.put (FailedToAcquire {task, std::current_exception()});
+        _command_queue.put_failed_to_acquire (task, std::current_exception());
       }
     }
   }
@@ -203,7 +249,7 @@ namespace gspc
     }
     catch (...)
     {
-      _command_queue.put (Cancelled {job_id, reason});
+      _command_queue.put_cancelled (job_id, reason);
     }
   }
 
@@ -248,7 +294,7 @@ namespace gspc
     //! \note *each* inject requires an Extract, also the
     //! failures in order to get 'has_finished' (and not block
     //! with no task)
-    _command_queue.put (Extract{});
+    _command_queue.put_extract();
 
     std::for_each
       ( inject_result.tasks_with_ignored_result.begin()
@@ -294,11 +340,10 @@ namespace gspc
 
             if (_stopping)
             {
-              _command_queue.put
-                ( Cancelled { job_id
-                            , task::result::Postponed
-                                {"Allocated resource but scheduler stopped."}
-                            }
+              _command_queue.put_cancelled
+                ( job_id
+                , task::result::Postponed
+                    {"Allocated resource but scheduler stopped."}
                 );
             }
             else
@@ -360,7 +405,7 @@ namespace gspc
               , [&] (Task task)
                 {
                   schedule_queue_push (task);
-                  _command_queue.put (Extract{});
+                  _command_queue.put_extract();
                 }
               , [&] (bool has_finished)
                 {
@@ -454,16 +499,13 @@ namespace gspc
         {
           if (finished.task_result)
           {
-            _command_queue.put
-              (Finished {job_id, finished.task_result.value()});
+            _command_queue.put_finished (job_id, finished.task_result.value());
           }
           else
           {
-            _command_queue.put
-              ( Finished
-                  { job_id
-                  , task::result::Failure {finished.task_result.error()}
-                  }
+            _command_queue.put_finished
+              ( job_id
+              , task::result::Failure {finished.task_result.error()}
               );
           }
         }
@@ -476,7 +518,7 @@ namespace gspc
         }
       , [&] (job::finish_reason::Cancelled cancelled)
         {
-          _command_queue.put (Cancelled {job_id, cancelled.reason});
+          _command_queue.put_cancelled (job_id, cancelled.reason);
         }
       );
   }
@@ -507,7 +549,7 @@ namespace gspc
 
   void GreedyScheduler::stop_with_reason (std::string reason)
   {
-    _command_queue.put (Stop {reason});
+    _command_queue.put_stop (reason);
   }
 
   void GreedyScheduler::schedule_queue_push (Task task)

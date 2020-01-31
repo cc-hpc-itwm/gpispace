@@ -86,12 +86,19 @@ namespace gspc
     struct CommandQueue
     {
       Command get();
-      void put (Command);
+
+      void put_submit (Task, resource_manager::WithPreferences::Acquired);
+      void put_failed_to_acquire (Task, std::exception_ptr);
+      void put_extract();
+      void put_stop (std::string);
+      void put_finished (job::ID, task::Result);
+      void put_cancelled (job::ID, task::result::Premature);
 
     private:
       std::mutex _guard;
       std::condition_variable _command_added;
 
+      void put (std::lock_guard<std::mutex> const&, Command);
       std::list<Command> _commands;
     };
     using ScheduleQueue =
