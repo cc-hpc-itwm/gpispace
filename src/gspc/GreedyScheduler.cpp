@@ -69,11 +69,18 @@ namespace gspc
 
   GreedyScheduler::Command GreedyScheduler::CommandQueue::get()
   {
-    return _queue.get();
+    std::unique_lock<std::mutex> lock (_guard);
+    _command_added.wait (lock, [this] { return !_commands.empty(); });
+
+    auto command (std::move (_commands.front()));
+    _commands.pop_front();
+    return command;
   }
   void GreedyScheduler::CommandQueue::put (Command command)
   {
-    _queue.put (std::move (command));
+    std::lock_guard<std::mutex> const _ (_guard);
+    _commands.emplace_back (std::move (command));
+    _command_added.notify_one();
   }
 
   GreedyScheduler::GreedyScheduler

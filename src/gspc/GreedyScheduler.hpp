@@ -10,10 +10,9 @@
 #include <gspc/resource_manager/WithPreferences.hpp>
 #include <gspc/threadsafe_interruptible_queue_with_remove.hpp>
 
-#include <util-generic/threadsafe_queue.hpp>
-
 #include <atomic>
 #include <condition_variable>
+#include <list>
 #include <mutex>
 #include <thread>
 #include <unordered_map>
@@ -90,7 +89,10 @@ namespace gspc
       void put (Command);
 
     private:
-      fhg::util::threadsafe_queue<Command> _queue;
+      std::mutex _guard;
+      std::condition_variable _command_added;
+
+      std::list<Command> _commands;
     };
     using ScheduleQueue =
       gspc::threadsafe_interruptible_queue_with_remove<Task, task::ID>;
