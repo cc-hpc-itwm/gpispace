@@ -485,7 +485,7 @@ namespace gspc
         );
     }
 
-    schedule_queue_interrupt();
+    schedule_queue_interrupt_and_join_thread();
   }
 
   void GreedyScheduler::finished
@@ -530,10 +530,6 @@ namespace gspc
   void GreedyScheduler::wait()
   {
     //! \todo allow multiple (concurrent) calls
-    if (_schedule_thread.joinable())
-    {
-      _schedule_thread.join();
-    }
     if (_command_thread.joinable())
     {
       _command_thread.join();
@@ -567,8 +563,13 @@ namespace gspc
 
     return true;
   }
-  void GreedyScheduler::schedule_queue_interrupt()
+  void GreedyScheduler::schedule_queue_interrupt_and_join_thread()
   {
     _schedule_queue.interrupt();
+
+    if (_schedule_thread.joinable())
+    {
+      _schedule_thread.join();
+    }
   }
 }
