@@ -1,7 +1,6 @@
 #include <gspc/RemoteInterface.hpp>
 
 #include <algorithm>
-#include <iterator>
 #include <list>
 #include <stdexcept>
 
@@ -112,14 +111,14 @@ namespace gspc
                     fail ("Child failure.");
                   }
 
-                  if (resource.second.proxy)
+                  auto proxy (resources.resolve_proxy (resource.first));
+
+                  if (proxy != resource.first)
                   {
                     auto is_proxy
                       ( [&] (auto const& child)
                         {
-                          return *resource.second.proxy
-                            == std::get<0> (child->second).resource_class
-                            ;
+                          return child->first == proxy;
                         }
                       );
 
@@ -132,15 +131,6 @@ namespace gspc
                     if (proxying_child == children.cend())
                     {
                       fail ("Missing proxying child.");
-                    }
-
-                    if (std::find_if ( std::next (proxying_child)
-                                     , children.cend()
-                                     , is_proxy
-                                     ) != children.cend()
-                       )
-                    {
-                      fail ("Multiple proxying children.");
                     }
 
                     return _proxies.emplace

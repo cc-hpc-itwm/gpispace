@@ -683,12 +683,39 @@ namespace gspc
   }
 
   template<typename A, typename T>
+    T UniqueForest<A, T>::insert
+      ( A value
+      , typename Forest<T, A>::Children const& children
+      , T const& proxy
+      )
+  {
+    if (  std::find (children.cbegin(), children.cend(), proxy)
+       == children.cend()
+       )
+    {
+      throw std::runtime_error ("proxy must be a child");
+    }
+
+    return _proxies.emplace
+      (insert (std::move (value), children), proxy).first->first;
+  }
+
+  template<typename A, typename T>
+    T UniqueForest<A, T>::resolve_proxy (T const& id) const
+  {
+    auto proxy (_proxies.find (id));
+
+    return proxy == _proxies.end() ? id : resolve_proxy (proxy->second);
+  }
+
+  template<typename A, typename T>
     template<typename Archive>
       void UniqueForest<A, T>::serialize
         (Archive& ar, unsigned int /* version */)
   {
     ar & static_cast<Forest<T, A>&> (*this);
     ar & _next_key;
+    ar & _proxies;
   }
 
   template<typename T, typename A>

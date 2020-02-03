@@ -45,7 +45,7 @@ namespace gspc
 
           for (auto const& core : cores)
           {
-            topology.insert ({"gpu", "gpu_proxy"}, {core, gpu_proxy});
+            topology.insert ({"gpu"}, {core, gpu_proxy}, gpu_proxy);
           }
         }
 
@@ -53,11 +53,11 @@ namespace gspc
         {
           for (auto const& load_proxy : load_proxies)
           {
-            topology.insert ({"load", "load_proxy"}, {core, load_proxy});
+            topology.insert ({"load"}, {core, load_proxy}, load_proxy);
           }
           for (auto const& store_proxy : store_proxies)
           {
-            topology.insert ({"store", "store_proxy"}, {core, store_proxy});
+            topology.insert ({"store"}, {core, store_proxy}, store_proxy);
           }
         }
 

@@ -44,10 +44,10 @@ try
   auto const s1 (host_topology.insert ({"socket"}, {c2, c3}));
   host_topology.insert ({"node"}, {s0, s1});
   auto const gpu_exclusive (host_topology.insert ({"gpu_exclusive"}, {}));
-  host_topology.insert ({"gpu", "gpu_exclusive"}, {c0, gpu_exclusive});
-  host_topology.insert ({"gpu", "gpu_exclusive"}, {c1, gpu_exclusive});
-  host_topology.insert ({"gpu", "gpu_exclusive"}, {c2, gpu_exclusive});
-  host_topology.insert ({"gpu", "gpu_exclusive"}, {c3, gpu_exclusive});
+  host_topology.insert ({"gpu"}, {c0, gpu_exclusive}, gpu_exclusive);
+  host_topology.insert ({"gpu"}, {c1, gpu_exclusive}, gpu_exclusive);
+  host_topology.insert ({"gpu"}, {c2, gpu_exclusive}, gpu_exclusive);
+  host_topology.insert ({"gpu"}, {c3, gpu_exclusive}, gpu_exclusive);
 
   gspc::remote_interface::strategy::Thread thread_strategy
     (std::make_shared<gspc::remote_interface::strategy::Thread::State>());

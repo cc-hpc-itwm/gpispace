@@ -46,13 +46,6 @@ namespace gspc
     Node const& insert (T x, A a, Children cs);
     Node const& insert (Node, Children);
 
-    //! \todo support proxies in the forest (rather in the resource)
-    //! \todo better term than "proxy", "reverse proxy"!?
-    //! \todo even better: support "exclusion group"
-    Node const& insert (T x, A a, Children cs, Node const& proxy);
-    Node const& insert (Node, Children, Node const& proxy);
-    Node const& resolve_proxy (Node const&) const;
-
     //! throw when unknown
     //! throw when not leaf/root
     //! disconnects and removes node
@@ -206,6 +199,7 @@ namespace gspc
     UniqueForest (Forest<T, A>);
 
     T insert (A, typename Forest<T, A>::Children const&);
+    T insert (A, typename Forest<T, A>::Children const&, T const& proxy);
 
     //! \todo: free client from key management (e.g. resource.first)
     using Forest<T, A>::upward_combine_transform;
@@ -215,12 +209,16 @@ namespace gspc
     template<typename Archive>
       void serialize (Archive&, unsigned int);
 
+    T resolve_proxy (T const&) const;
+
   private:
     static_assert (std::is_integral<T>{}, "UniqueForest: Key not integral.");
 
     friend struct ToDot<T, A>;
 
     T _next_key {0};
+
+    std::unordered_map<T, T> _proxies;
   };
 
   template<typename T, typename A = boost::blank>
