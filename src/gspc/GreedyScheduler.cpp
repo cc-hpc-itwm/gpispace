@@ -2,11 +2,13 @@
 
 #include <util-generic/make_optional.hpp>
 
-#include <boost/range/adaptor/map.hpp>
 #include <boost/format.hpp>
+#include <boost/functional/hash.hpp>
+#include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
 #include <exception>
+#include <numeric>
 #include <stdexcept>
 #include <typeinfo>
 #include <utility>
@@ -72,14 +74,37 @@ namespace gspc
   std::size_t GreedyScheduler::RequirementsHashAndEqLeadingClassOnly::operator()
     (Task::SingleResourceWithPreference const& requirements) const
   {
-    return std::hash<resource::Class>{} (requirements.front().first);
+    auto h (std::hash<resource::Class>{});
+
+    return std::accumulate ( requirements.cbegin(), requirements.cend()
+                           , std::size_t {0}
+                           , [&] (auto value, auto const& x)
+                             {
+                               boost::hash_combine (value, h (x.first));
+                               return value;
+                             }
+                           );
   }
   bool GreedyScheduler::RequirementsHashAndEqLeadingClassOnly::operator()
     ( Task::SingleResourceWithPreference const& lhs
     , Task::SingleResourceWithPreference const& rhs
     ) const
   {
-    return lhs.front().first == rhs.front().first;
+    auto l (lhs.cbegin());
+    auto r (rhs.cbegin());
+
+    while (l != lhs.cend() && r != rhs.cend())
+    {
+      if (l->first != r->first)
+      {
+        return false;
+      }
+
+      ++l;
+      ++r;
+    }
+
+    return l == lhs.cend() && r == rhs.cend();
   }
 
   GreedyScheduler::Command GreedyScheduler::CommandQueue::get()
