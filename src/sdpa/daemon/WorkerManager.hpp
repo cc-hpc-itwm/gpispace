@@ -54,7 +54,7 @@ namespace sdpa
     class WorkerManager : boost::noncopyable
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
-      using worker_ptr = worker_map_t::iterator;
+      using worker_iterator = worker_map_t::iterator;
 
     private:
       class WorkerEquivalenceClass
@@ -63,7 +63,7 @@ namespace sdpa
 
         struct iterator_hash
         {
-          size_t operator()(worker_ptr it) const
+          size_t operator()(worker_iterator it) const
           {
             return std::hash<worker_id_t>() (it->first);
           }
@@ -87,8 +87,8 @@ namespace sdpa
         unsigned int n_idle_workers() const;
         unsigned int n_workers() const;
 
-        void add_worker_entry (worker_ptr);
-        void remove_worker_entry (worker_ptr);
+        void add_worker_entry (worker_iterator);
+        void remove_worker_entry (worker_iterator);
 
         template <typename Reservation>
           void steal_work
@@ -99,7 +99,7 @@ namespace sdpa
         unsigned int _n_running_jobs;
         unsigned int _n_idle_workers;
         std::unordered_set<worker_id_t> _worker_ids;
-        std::unordered_set<worker_ptr, iterator_hash> _idle_workers;
+        std::unordered_set<worker_iterator, iterator_hash> _idle_workers;
       };
 
     public:
@@ -170,11 +170,11 @@ namespace sdpa
 
     private:
       void assign_job_to_worker
-        (const job_id_t& job_id, worker_ptr worker, double cost);
+        (const job_id_t& job_id, worker_iterator worker, double cost);
       void delete_job_from_worker
-        (const job_id_t &job_id, const worker_ptr worker, double cost);
+        (const job_id_t &job_id, const worker_iterator worker, double cost);
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
-      void change_equivalence_class (worker_ptr, std::set<std::string> const&);
+      void change_equivalence_class (worker_iterator, std::set<std::string> const&);
 
       std::pair<boost::optional<double>, boost::optional<std::string>>
         match_requirements_and_preferences
@@ -230,33 +230,33 @@ namespace sdpa
           }
         };
 
-      std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp { [] (worker_ptr const& lhs, worker_ptr const& rhs)
+      std::function<bool (worker_iterator const&, worker_iterator const&)> const
+        comp { [] (worker_iterator const& lhs, worker_iterator const& rhs)
                {
                  return lhs->second.cost_assigned_jobs()
                    < rhs->second.cost_assigned_jobs();
                }
              };
 
-      std::priority_queue < worker_ptr
-                          , std::vector<worker_ptr>
+      std::priority_queue < worker_iterator
+                          , std::vector<worker_iterator>
                           , decltype (comp)
                           > to_steal_from (comp);
 
-      std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp_thieves { [] (worker_ptr const& lhs, worker_ptr const& rhs)
+      std::function<bool (worker_iterator const&, worker_iterator const&)> const
+        comp_thieves { [] (worker_iterator const& lhs, worker_iterator const& rhs)
                      {
                        return lhs->second._last_time_idle
                          > rhs->second._last_time_idle;
                      }
                    };
 
-      std::priority_queue < worker_ptr
-                          , std::vector<worker_ptr>
+      std::priority_queue < worker_iterator
+                          , std::vector<worker_iterator>
                           , decltype (comp_thieves)
                           >
         thieves ( comp_thieves
-                , std::vector<worker_ptr>
+                , std::vector<worker_iterator>
                     (_idle_workers.begin(), _idle_workers.end())
                 );
 
@@ -274,8 +274,8 @@ namespace sdpa
 
       while (!(thieves.empty() || to_steal_from.empty()))
       {
-        worker_ptr const richest (to_steal_from.top());
-        worker_ptr const& thief (thieves.top());
+        worker_iterator const richest (to_steal_from.top());
+        worker_iterator const& thief (thieves.top());
         Worker& richest_worker (richest->second);
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()

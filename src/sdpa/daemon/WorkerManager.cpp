@@ -426,7 +426,7 @@ namespace sdpa
     }
 
     void WorkerManager::assign_job_to_worker
-      (const job_id_t& job_id, worker_ptr worker, double cost)
+      (const job_id_t& job_id, worker_iterator worker, double cost)
     {
       worker->second.assign (job_id, cost);
 
@@ -479,7 +479,7 @@ namespace sdpa
 
     void WorkerManager::delete_job_from_worker
       ( const job_id_t &job_id
-      , const worker_ptr worker
+      , const worker_iterator worker
       , double cost
       )
     {
@@ -515,7 +515,7 @@ namespace sdpa
       return worker_map_.at (worker)._capabilities;
     }
 
-    void WorkerManager::change_equivalence_class ( worker_ptr worker
+    void WorkerManager::change_equivalence_class ( worker_iterator worker
                                                  , std::set<std::string> const& old_cpbs
                                                  )
     {
@@ -652,7 +652,8 @@ namespace sdpa
       return _worker_ids.size();
     }
 
-    void WorkerManager::WorkerEquivalenceClass::add_worker_entry (worker_ptr worker)
+    void WorkerManager::WorkerEquivalenceClass::add_worker_entry
+      (worker_iterator worker)
     {
       _worker_ids.insert (worker->first);
       inc_pending_jobs (worker->second.pending_.size());
@@ -662,7 +663,8 @@ namespace sdpa
       _idle_workers.emplace (worker);
     }
 
-    void WorkerManager::WorkerEquivalenceClass::remove_worker_entry (worker_ptr worker)
+    void WorkerManager::WorkerEquivalenceClass::remove_worker_entry
+      (worker_iterator worker)
     {
       _worker_ids.erase (worker->first);
       dec_pending_jobs (worker->second.pending_.size());
