@@ -354,12 +354,10 @@ namespace gspc
                   ( submit.acquired.requested
                   , [&] (comm::scheduler::worker::Client& client)
                     {
-                      auto const& task (_workflow_engine.at (submit.task_id));
-
                       return client.submit
                         ( _comm_server_for_worker.local_endpoint()
                         , job_id
-                        , Job { task.input
+                        , Job { _workflow_engine.at (submit.task_id).input
                               , submit.task_implementation
                               }
                         );
