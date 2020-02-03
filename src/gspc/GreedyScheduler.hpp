@@ -51,12 +51,12 @@ namespace gspc
 
     struct Submit
     {
-      Task task;
+      task::ID task_id;
       resource_manager::WithPreferences::Acquired acquired;
     };
     struct FailedToAcquire
     {
-      Task task;
+      task::ID task_id;
       std::exception_ptr error;
     };
     struct Extract{};
@@ -87,8 +87,8 @@ namespace gspc
     {
       Command get();
 
-      void put_submit (Task, resource_manager::WithPreferences::Acquired);
-      void put_failed_to_acquire (Task, std::exception_ptr);
+      void put_submit (task::ID, resource_manager::WithPreferences::Acquired);
+      void put_failed_to_acquire (task::ID, std::exception_ptr);
       void put_extract();
       void put_stop (std::string);
       void put_finished (job::ID, task::Result);
@@ -102,7 +102,8 @@ namespace gspc
       std::list<Command> _commands;
     };
     using ScheduleQueue =
-      gspc::threadsafe_interruptible_queue_with_remove<Task, task::ID>;
+      gspc::threadsafe_interruptible_queue_with_remove
+        <Task::SingleResourceWithPreference, task::ID>;
 
     ScheduleQueue _schedule_queue;
     CommandQueue _command_queue;

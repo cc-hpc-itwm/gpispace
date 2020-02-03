@@ -78,19 +78,19 @@ namespace gspc
     return command;
   }
   void GreedyScheduler::CommandQueue::put_submit
-    (Task task, resource_manager::WithPreferences::Acquired acquired)
+    (task::ID task_id, resource_manager::WithPreferences::Acquired acquired)
   {
     std::lock_guard<std::mutex> const lock (_guard);
     return put ( lock
-               , Submit {std::move (task), std::move (acquired)}
+               , Submit {std::move (task_id), std::move (acquired)}
                );
   }
   void GreedyScheduler::CommandQueue::put_failed_to_acquire
-    (Task task, std::exception_ptr error)
+    (task::ID task_id, std::exception_ptr error)
   {
     std::lock_guard<std::mutex> const lock (_guard);
     return put ( lock
-               , FailedToAcquire {std::move (task), std::move (error)}
+               , FailedToAcquire {std::move (task_id), std::move (error)}
                );
   }
   void GreedyScheduler::CommandQueue::put_extract()
@@ -174,22 +174,25 @@ namespace gspc
   {
     while (true)
     {
-      auto const task (schedule_queue.pop().first);
+      auto const task_requirements_and_id (schedule_queue.pop());
+      auto const& requirements (task_requirements_and_id.first);
+      auto const& task_id (task_requirements_and_id.second);
 
       try
       {
         auto const acquired
           ( _resource_manager.acquire
-              ( _resource_manager_interruption_context
-              , firsts (requirement (task))
-              )
+            ( _resource_manager_interruption_context
+            , firsts (requirements)
+            )
           );
 
-        _command_queue.put_submit (task, acquired);
+        _command_queue.put_submit (task_id, acquired);
       }
       catch (...)
       {
-        _command_queue.put_failed_to_acquire (task, std::current_exception());
+        _command_queue.put_failed_to_acquire
+          (task_id, std::current_exception());
       }
     }
   }
@@ -318,7 +321,7 @@ namespace gspc
           {
             --_scheduling_items;
 
-            auto const& task (submit.task);
+            auto const& task (_workflow_engine.at (submit.task_id));
             auto const& acquired (submit.acquired);
 
             job::ID const job_id {_next_job_id++, task.id};
@@ -374,12 +377,12 @@ namespace gspc
           {
             --_scheduling_items;
 
-            auto const& task (failed_to_acquire.task);
+            auto const& task_id (failed_to_acquire.task_id);
             auto const& error (failed_to_acquire.error);
 
             //! \note is cancelled but without remove_job
             //! no job was created (equiv with cancel_task)
-            inject ( task.id
+            inject ( task_id
                    , task::result::Postponed
                        {fhg::util::exception_printer (error).string()}
                    );
@@ -546,7 +549,7 @@ namespace gspc
 
   void GreedyScheduler::schedule_queue_push (Task task)
   {
-    _schedule_queue.push (task, task.id);
+    _schedule_queue.push (requirement (task), task.id);
     ++_scheduling_items;
   }
   bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
