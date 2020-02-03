@@ -78,11 +78,17 @@ namespace gspc
     return command;
   }
   void GreedyScheduler::CommandQueue::put_submit
-    (task::ID task_id, resource_manager::WithPreferences::Acquired acquired)
+    ( task::ID task_id
+    , resource_manager::WithPreferences::Acquired acquired
+    , task::Implementation task_implementation
+    )
   {
     std::lock_guard<std::mutex> const lock (_guard);
     return put ( lock
-               , Submit {std::move (task_id), std::move (acquired)}
+               , Submit { std::move (task_id)
+                        , std::move (acquired)
+                        , std::move (task_implementation)
+                        }
                );
   }
   void GreedyScheduler::CommandQueue::put_failed_to_acquire
@@ -187,7 +193,8 @@ namespace gspc
             )
           );
 
-        _command_queue.put_submit (task_id, acquired);
+        _command_queue.put_submit
+          (task_id, acquired, requirements.at (acquired.selected).second);
       }
       catch (...)
       {
@@ -321,11 +328,9 @@ namespace gspc
           {
             --_scheduling_items;
 
-            auto const& acquired (submit.acquired);
-
             job::ID const job_id {_next_job_id++, submit.task_id};
 
-            if (  !_jobs.emplace (job_id, acquired).second
+            if (  !_jobs.emplace (job_id, submit.acquired).second
                || !_job_by_task.emplace (submit.task_id, job_id).second
                )
             {
@@ -345,7 +350,7 @@ namespace gspc
               try
               {
                 do_worker_call
-                  ( acquired.requested
+                  ( submit.acquired.requested
                   , [&] (comm::scheduler::worker::Client& client)
                     {
                       auto const& task (_workflow_engine.at (submit.task_id));
@@ -354,8 +359,7 @@ namespace gspc
                         ( _comm_server_for_worker.local_endpoint()
                         , job_id
                         , Job { task.input
-                              , requirement (task)
-                              . at (acquired.selected).second
+                              , submit.task_implementation
                               }
                         );
                     }

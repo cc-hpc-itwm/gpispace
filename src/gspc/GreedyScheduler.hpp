@@ -53,6 +53,7 @@ namespace gspc
     {
       task::ID task_id;
       resource_manager::WithPreferences::Acquired acquired;
+      task::Implementation task_implementation;
     };
     struct FailedToAcquire
     {
@@ -87,7 +88,10 @@ namespace gspc
     {
       Command get();
 
-      void put_submit (task::ID, resource_manager::WithPreferences::Acquired);
+      void put_submit ( task::ID
+                      , resource_manager::WithPreferences::Acquired
+                      , task::Implementation
+                      );
       void put_failed_to_acquire (task::ID, std::exception_ptr);
       void put_extract();
       void put_stop (std::string);
