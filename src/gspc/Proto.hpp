@@ -21,26 +21,9 @@ namespace gspc
 
     virtual Task const& at (task::ID) const override;
   };
-  class TreeTraversalWorkflow;
-  class TreeTraversalWorkflowEngine;
-  class MapReduceWorkflow;
-  class MapReduceWorkflowEngine;
 
-  class ReschedulingGreedyScheduler;
-  //! - schedule_queues needs a guard for at+emplace+iterate in stop
-  //! - cancel_task(id) needs resource class again (needs storing
-  //!   task, or query wfe?!)
   class LookaheadScheduler;
   class WorkStealingScheduler;
   class CoallocationScheduler;
   class TransferCostAwareScheduler;
-
-  namespace resource_manager
-  {
-    // class CoallocationWithPreference : public interface::ResourceManager
-    // {
-    //   // `[(rc, count)]` or `[rc], count` or both?
-    //   Acquired acquire (std::list<std::pair<resource::Class, std::size_t>>);
-    // };
-  }
 }
