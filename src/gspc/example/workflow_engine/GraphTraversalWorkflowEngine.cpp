@@ -86,7 +86,7 @@ namespace gspc
     }
   }
 
-  boost::variant<Task, bool> GraphTraversalWorkflowEngine::extract()
+  boost::variant<task::ID, bool> GraphTraversalWorkflowEngine::extract()
   {
     if (workflow_finished())
     {

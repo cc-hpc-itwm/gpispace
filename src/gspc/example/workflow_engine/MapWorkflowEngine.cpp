@@ -48,7 +48,7 @@ namespace gspc
     , _processing_state (state.processing_state)
   {}
 
-  boost::variant<Task, bool> MapWorkflowEngine::extract()
+  boost::variant<task::ID, bool> MapWorkflowEngine::extract()
   {
     if (workflow_finished())
     {

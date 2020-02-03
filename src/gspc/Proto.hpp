@@ -16,7 +16,7 @@ namespace gspc
   public:
     PetriNetWorkflowEngine (PetriNetWorkflow);
 
-    virtual boost::variant<Task, bool> extract() override;
+    virtual boost::variant<task::ID, bool> extract() override;
     virtual InjectResult inject (task::ID, task::Result) override;
 
     virtual Task at (task::ID) const override;

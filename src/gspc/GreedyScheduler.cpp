@@ -401,9 +401,9 @@ namespace gspc
 
             fhg::util::visit<void>
               ( _workflow_engine.extract()
-              , [&] (Task task)
+              , [&] (task::ID task_id)
                 {
-                  schedule_queue_push (task.id);
+                  schedule_queue_push (task_id);
                   _command_queue.put_extract();
                 }
               , [&] (bool has_finished)

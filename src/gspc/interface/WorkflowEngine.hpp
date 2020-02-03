@@ -25,7 +25,7 @@ namespace gspc
       //!      , NoMoreTasksWillBeProducedEver = false // inject missing
       //!      , Done                          = true  // inject would be an error
       //!      };
-      virtual boost::variant<Task, bool> extract() = 0;
+      virtual boost::variant<task::ID, bool> extract() = 0;
 
       struct InjectResult
       {

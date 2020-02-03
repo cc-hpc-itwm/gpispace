@@ -7,7 +7,7 @@ namespace gspc
 {
   namespace workflow_engine
   {
-    Task ProcessingState::extract
+    task::ID ProcessingState::extract
       (Task::Requirements requirements, task::Input input)
     {
       auto const task_id {*_extracted.emplace (++_next_task_id).first};
@@ -15,7 +15,7 @@ namespace gspc
       return _tasks.emplace
         ( task_id
         , Task {task_id, std::move (input), std::move (requirements)}
-        ).first->second;
+        ).first->second.id;
     }
 
     bool ProcessingState::has_extracted_tasks() const
@@ -48,11 +48,11 @@ namespace gspc
     {
       return !_marked_for_retry.empty();
     }
-    Task ProcessingState::retry_task()
+    task::ID ProcessingState::retry_task()
     {
       auto const task_id (pop_any (_marked_for_retry));
 
-      return _tasks.at (*_extracted.emplace (task_id).first);
+      return _tasks.at (*_extracted.emplace (task_id).first).id;
     }
 
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)

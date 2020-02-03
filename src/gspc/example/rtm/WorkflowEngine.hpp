@@ -102,7 +102,7 @@ namespace gspc
         , Parameter
         );
 
-      virtual boost::variant<Task, bool> extract() override;
+      virtual boost::variant<task::ID, bool> extract() override;
       virtual InjectResult inject (task::ID, task::Result) override;
 
       virtual workflow_engine::State state() const override;

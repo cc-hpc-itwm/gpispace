@@ -132,7 +132,7 @@ namespace gspc
       }
     }
 
-    boost::variant<Task, bool> WorkflowEngine::extract()
+    boost::variant<task::ID, bool> WorkflowEngine::extract()
     {
       if (_processing_state.has_retry_task())
       {
@@ -144,7 +144,7 @@ namespace gspc
         return !_processing_state.has_extracted_tasks();
       }
 
-      return fhg::util::visit<Task>
+      return fhg::util::visit<task::ID>
         ( pop_any (_workflow_state.front)
         , [&] (LoadInput input)
           {

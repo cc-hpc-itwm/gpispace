@@ -47,7 +47,7 @@ namespace gspc
     , _processing_state (state.processing_state)
   {}
 
-  boost::variant<Task, bool> ClassConflictWorkflowEngine::extract()
+  boost::variant<task::ID, bool> ClassConflictWorkflowEngine::extract()
   {
     if (workflow_finished())
     {

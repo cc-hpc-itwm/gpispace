@@ -20,7 +20,7 @@ namespace gspc
     struct ProcessingState
     {
     public:
-      Task extract (Task::Requirements, task::Input);
+      task::ID extract (Task::Requirements, task::Input);
 
       template<typename Function>
         using is_post_process =
@@ -78,7 +78,7 @@ namespace gspc
         void mark_for_retry (Predicate&& = {});
 
       bool has_retry_task() const;
-      Task retry_task();
+      task::ID retry_task();
 
       friend std::ostream& operator<< (std::ostream&, ProcessingState const&);
 
