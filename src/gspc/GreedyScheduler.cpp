@@ -152,15 +152,6 @@ namespace gspc
     _command_queue.put_extract();
   }
 
-  template<typename Lock, typename Fun, typename... Args>
-    auto call_unlocked (Lock& lock, Fun&& fun, Args&&... args)
-      -> decltype (std::forward<Fun> (fun) (std::forward<Args> (args)...))
-  {
-    FHG_UTIL_FINALLY ([&] { lock.lock(); });
-    lock.unlock();
-    return std::forward<Fun> (fun) (std::forward<Args> (args)...);
-  }
-
   template<typename Function>
     void GreedyScheduler::do_worker_call
       (resource::ID resource_id, Function&& function)
