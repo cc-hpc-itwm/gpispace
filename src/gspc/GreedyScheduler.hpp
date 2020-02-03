@@ -12,6 +12,7 @@
 
 #include <atomic>
 #include <condition_variable>
+#include <functional>
 #include <list>
 #include <mutex>
 #include <thread>
@@ -43,7 +44,6 @@ namespace gspc
 
   private:
     comm::scheduler::workflow_engine::Client _workflow_engine;
-    InterruptionContext _resource_manager_interruption_context;
     resource_manager::WithPreferences& _resource_manager;
     ScopedRuntimeSystem& _runtime_system;
 
@@ -107,15 +107,32 @@ namespace gspc
     };
     using ScheduleQueue =
       gspc::threadsafe_interruptible_queue_with_remove
-        <Task::SingleResourceWithPreference, task::ID>;
+        <std::reference_wrapper<InterruptionContext>, task::ID>;
 
-    ScheduleQueue _schedule_queue;
+    struct RequirementsHashAndEqLeadingClassOnly
+    {
+      std::size_t operator() (Task::SingleResourceWithPreference const&) const;
+      bool operator() ( Task::SingleResourceWithPreference const&
+                      , Task::SingleResourceWithPreference const&
+                      ) const;
+    };
+    template<typename T>
+      using ByLeadingResourceClass
+        = std::unordered_map< Task::SingleResourceWithPreference
+                            , T
+                            , RequirementsHashAndEqLeadingClassOnly
+                            , RequirementsHashAndEqLeadingClassOnly
+                            >;
+
+    ByLeadingResourceClass<ScheduleQueue> _schedule_queues;
     CommandQueue _command_queue;
 
     //! state only modified by command_thread
     std::unordered_map<job::ID, resource_manager::WithPreferences::Acquired>
       _jobs;
     std::unordered_map<task::ID, job::ID> _job_by_task;
+    std::unordered_map<task::ID, InterruptionContext>
+      _interruption_context_by_task;
     std::unordered_map<task::ID, std::size_t> _failed_attempts;
     std::uint64_t _next_job_id {0};
 
@@ -125,10 +142,13 @@ namespace gspc
     std::size_t _scheduling_items {0};
     void schedule_queue_push (task::ID);
     bool schedule_queue_remove (task::ID);
-    void schedule_queue_interrupt_and_join_thread();
+    void schedule_queues_interrupt_and_join_threads();
 
-    std::thread _schedule_thread;
-    void schedule_thread (ScheduleQueue&);
+    ByLeadingResourceClass<std::thread> _schedule_threads;
+    void schedule_thread
+      ( Task::SingleResourceWithPreference
+      , std::reference_wrapper<ScheduleQueue>
+      );
 
     std::thread _command_thread;
     void command_thread();

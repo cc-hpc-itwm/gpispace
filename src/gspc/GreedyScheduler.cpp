@@ -69,6 +69,19 @@ namespace gspc
     }
   }
 
+  std::size_t GreedyScheduler::RequirementsHashAndEqLeadingClassOnly::operator()
+    (Task::SingleResourceWithPreference const& requirements) const
+  {
+    return std::hash<resource::Class>{} (requirements.front().first);
+  }
+  bool GreedyScheduler::RequirementsHashAndEqLeadingClassOnly::operator()
+    ( Task::SingleResourceWithPreference const& lhs
+    , Task::SingleResourceWithPreference const& rhs
+    ) const
+  {
+    return lhs.front().first == rhs.front().first;
+  }
+
   GreedyScheduler::Command GreedyScheduler::CommandQueue::get()
   {
     std::unique_lock<std::mutex> lock (_guard);
@@ -151,7 +164,6 @@ namespace gspc
     , _resource_manager (resource_manager)
     , _runtime_system (runtime_system)
     , _max_attempts (max_attempts)
-    , _schedule_thread ([&] { schedule_thread (_schedule_queue); })
     , _command_thread
         (fhg::util::bind_this (this, &GreedyScheduler::command_thread))
   {
@@ -176,23 +188,24 @@ namespace gspc
       );
   }
 
-  void GreedyScheduler::schedule_thread (ScheduleQueue& schedule_queue)
+  void GreedyScheduler::schedule_thread
+    ( Task::SingleResourceWithPreference requirements
+    , std::reference_wrapper<ScheduleQueue> schedule_queue
+    )
   try
   {
+    auto to_acquire (firsts (requirements));
+
     while (true)
     {
-      auto const task_requirements_and_id (schedule_queue.pop());
-      auto const& requirements (task_requirements_and_id.first);
-      auto const& task_id (task_requirements_and_id.second);
+      auto const interruption_context_and_task_id (schedule_queue.get().pop());
+      auto const& interruption_context (interruption_context_and_task_id.first);
+      auto const& task_id (interruption_context_and_task_id.second);
 
       try
       {
         auto const acquired
-          ( _resource_manager.acquire
-            ( _resource_manager_interruption_context
-            , firsts (requirements)
-            )
-          );
+          (_resource_manager.acquire (interruption_context.get(), to_acquire));
 
         _command_queue.put_submit
           (task_id, acquired, requirements.at (acquired.selected).second);
@@ -276,6 +289,11 @@ namespace gspc
       //! no job was created (equiv with FailedToAcquire)
       inject (task_id, reason);
     }
+    //! case 3
+    else if (_interruption_context_by_task.count (task_id))
+    {
+      _resource_manager.interrupt (_interruption_context_by_task.at (task_id));
+    }
     else
     {
       auto job_id (_job_by_task.find (task_id));
@@ -284,7 +302,7 @@ namespace gspc
       {
         cancel_job (job_id->second, reason);
       }
-      // \todo else: mark for cancellation when submit (cases 3 and 5)
+      // \todo else: mark for cancellation when submit (case 5)
     }
   }
 
@@ -328,6 +346,8 @@ namespace gspc
         , [&] (Submit submit)
           {
             --_scheduling_items;
+
+            _interruption_context_by_task.erase (submit.task_id);
 
             job::ID const job_id {_next_job_id++, submit.task_id};
 
@@ -379,10 +399,12 @@ namespace gspc
           }
         , [&] (FailedToAcquire failed_to_acquire)
           {
-            --_scheduling_items;
-
             auto const& task_id (failed_to_acquire.task_id);
             auto const& error (failed_to_acquire.error);
+
+            --_scheduling_items;
+
+            _interruption_context_by_task.erase (task_id);
 
             //! \note is cancelled but without remove_job
             //! no job was created (equiv with cancel_task)
@@ -479,13 +501,17 @@ namespace gspc
               cancel_job (job, task::result::Postponed {stop.reason});
             }
 
-            _resource_manager.interrupt
-              (_resource_manager_interruption_context);
+            for ( auto& interruption_context
+                : _interruption_context_by_task | boost::adaptors::map_values
+                )
+            {
+              _resource_manager.interrupt (interruption_context);
+            }
           }
         );
     }
 
-    schedule_queue_interrupt_and_join_thread();
+    schedule_queues_interrupt_and_join_threads();
   }
 
   void GreedyScheduler::finished
@@ -548,13 +574,45 @@ namespace gspc
 
   void GreedyScheduler::schedule_queue_push (task::ID task_id)
   {
-    _schedule_queue.push
-      (requirement (_workflow_engine.at (task_id).requirements), task_id);
+    auto requirements
+      (requirement (_workflow_engine.at (task_id).requirements));
+
+    auto schedule_queue (_schedule_queues.find (requirements));
+
+    if (schedule_queue == _schedule_queues.end())
+    {
+      schedule_queue =
+        _schedule_queues.emplace ( std::piecewise_construct
+                                 , std::forward_as_tuple (requirements)
+                                 , std::forward_as_tuple ()
+                                 ).first;
+
+      std::reference_wrapper<ScheduleQueue> schedule_queue_reference
+        (schedule_queue->second);
+
+      _schedule_threads.emplace
+        ( requirements
+        , [&, requirements, schedule_queue_reference]
+          {
+            return schedule_thread (requirements, schedule_queue_reference);
+          }
+        );
+    }
+
+    schedule_queue->second.push
+      ( _interruption_context_by_task
+        .emplace (task_id, InterruptionContext{}).first->second
+      , task_id
+      );
+
     ++_scheduling_items;
   }
   bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
   {
-    if (!_schedule_queue.remove (task_id))
+    auto requirements
+      (requirement (_workflow_engine.at (task_id).requirements));
+
+    if (!_schedule_queues.at (requirements).remove (task_id))
     {
       return false;
     }
@@ -563,13 +621,21 @@ namespace gspc
 
     return true;
   }
-  void GreedyScheduler::schedule_queue_interrupt_and_join_thread()
+  void GreedyScheduler::schedule_queues_interrupt_and_join_threads()
   {
-    _schedule_queue.interrupt();
+    using boost::adaptors::map_values;
 
-    if (_schedule_thread.joinable())
+    for (auto& schedule_queue : _schedule_queues | map_values)
     {
-      _schedule_thread.join();
+      schedule_queue.interrupt();
+    }
+
+    for (auto& schedule_thread : _schedule_threads | map_values)
+    {
+      if (schedule_thread.joinable())
+      {
+        schedule_thread.join();
+      }
     }
   }
 }
