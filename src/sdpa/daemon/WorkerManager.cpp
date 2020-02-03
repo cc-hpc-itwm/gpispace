@@ -471,10 +471,7 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _(mtx_);
       auto worker (worker_map_.find (worker_id));
-      if (worker != worker_map_.end())
-      {
-        delete_job_from_worker (job_id, worker, cost);
-      }
+      delete_job_from_worker (job_id, worker, cost);
     }
 
     void WorkerManager::delete_job_from_worker
