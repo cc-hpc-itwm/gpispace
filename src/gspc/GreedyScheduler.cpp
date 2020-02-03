@@ -480,7 +480,7 @@ namespace gspc
         );
     }
 
-    _schedule_queue.interrupt();
+    schedule_queue_interrupt();
   }
 
   void GreedyScheduler::finished
@@ -560,5 +560,9 @@ namespace gspc
     --_scheduling_items;
 
     return true;
+  }
+  void GreedyScheduler::schedule_queue_interrupt()
+  {
+    _schedule_queue.interrupt();
   }
 }
