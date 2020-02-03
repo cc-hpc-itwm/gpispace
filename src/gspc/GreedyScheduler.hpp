@@ -123,7 +123,7 @@ namespace gspc
     void schedule_queue_interrupt();
 
     std::thread _schedule_thread;
-    void schedule_thread();
+    void schedule_thread (ScheduleQueue&);
 
     std::thread _command_thread;
     void command_thread();

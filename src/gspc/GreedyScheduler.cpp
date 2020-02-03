@@ -144,8 +144,7 @@ namespace gspc
     , _resource_manager (resource_manager)
     , _runtime_system (runtime_system)
     , _max_attempts (max_attempts)
-    , _schedule_thread
-        (fhg::util::bind_this (this, &GreedyScheduler::schedule_thread))
+    , _schedule_thread ([&] { schedule_thread (_schedule_queue); })
     , _command_thread
         (fhg::util::bind_this (this, &GreedyScheduler::command_thread))
   {
@@ -170,12 +169,12 @@ namespace gspc
       );
   }
 
-  void GreedyScheduler::schedule_thread()
+  void GreedyScheduler::schedule_thread (ScheduleQueue& queue)
   try
   {
     while (true)
     {
-      auto const task (_schedule_queue.pop().first);
+      auto const task (queue.pop().first);
 
       try
       {
