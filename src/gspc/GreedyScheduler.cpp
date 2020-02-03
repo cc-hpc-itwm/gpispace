@@ -32,10 +32,11 @@ namespace gspc
     }
 
 
-    Task::SingleResourceWithPreference requirement (Task const& task)
+    Task::SingleResourceWithPreference requirement
+      (Task::Requirements const& task_requirements)
     {
       return fhg::util::visit<Task::SingleResourceWithPreference>
-        ( task.requirements
+        ( task_requirements
         , [&] (Task::SingleResource const& single_resource)
           {
             return Task::SingleResourceWithPreference {single_resource};
@@ -553,7 +554,8 @@ namespace gspc
 
   void GreedyScheduler::schedule_queue_push (task::ID task_id)
   {
-    _schedule_queue.push (requirement (_workflow_engine.at (task_id)), task_id);
+    _schedule_queue.push
+      (requirement (_workflow_engine.at (task_id).requirements), task_id);
     ++_scheduling_items;
   }
   bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
