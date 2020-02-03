@@ -83,8 +83,7 @@ namespace gspc
   std::ostream& operator<< (std::ostream& os, Task const& task)
   {
     os << "Task {"
-       << "id = " << task.id
-       << ", input = "
+       << "input = "
        << fhg::util::print_container
             ( "hex[", " ", "]", task.input
             , [&] (auto& s, auto const& x) -> decltype (s)

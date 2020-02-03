@@ -9,7 +9,6 @@ namespace gspc
   template<typename Archive>
     void Task::serialize (Archive& ar, unsigned int)
   {
-    ar & id;
     ar & input;
     ar & requirements;
   }

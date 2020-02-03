@@ -20,7 +20,6 @@ namespace gspc
   //! does a generic task exist?
   struct Task
   {
-    task::ID id;
     task::Input input;
 
     using SingleResource = std::pair<resource::Class, task::Implementation>;

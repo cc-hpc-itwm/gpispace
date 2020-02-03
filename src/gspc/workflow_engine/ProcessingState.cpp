@@ -14,8 +14,8 @@ namespace gspc
 
       return _tasks.emplace
         ( task_id
-        , Task {task_id, std::move (input), std::move (requirements)}
-        ).first->second.id;
+        , Task {std::move (input), std::move (requirements)}
+        ).first->first;
     }
 
     bool ProcessingState::has_extracted_tasks() const
@@ -52,7 +52,7 @@ namespace gspc
     {
       auto const task_id (pop_any (_marked_for_retry));
 
-      return _tasks.at (*_extracted.emplace (task_id).first).id;
+      return *_extracted.emplace (task_id).first;
     }
 
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
