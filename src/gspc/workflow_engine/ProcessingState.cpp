@@ -50,9 +50,7 @@ namespace gspc
     }
     task::ID ProcessingState::retry_task()
     {
-      auto const task_id (pop_any (_marked_for_retry));
-
-      return *_extracted.emplace (task_id).first;
+      return *_extracted.emplace (pop_any (_marked_for_retry)).first;
     }
 
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
