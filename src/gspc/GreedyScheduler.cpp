@@ -169,12 +169,12 @@ namespace gspc
       );
   }
 
-  void GreedyScheduler::schedule_thread (ScheduleQueue& queue)
+  void GreedyScheduler::schedule_thread (ScheduleQueue& schedule_queue)
   try
   {
     while (true)
     {
-      auto const task (queue.pop().first);
+      auto const task (schedule_queue.pop().first);
 
       try
       {
