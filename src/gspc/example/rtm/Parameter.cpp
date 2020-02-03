@@ -18,16 +18,16 @@ namespace gspc
 
       Children sockets;
 
-      Children loads;
-      Children stores;
+      Children load_proxies;
+      Children store_proxies;
 
       for (std::size_t load (0); load < num_loads; ++load)
       {
-        loads.emplace (topology.insert ({"load_proxy"}, {}));
+        load_proxies.emplace (topology.insert ({"load_proxy"}, {}));
       }
       for (std::size_t store (0); store < num_stores; ++store)
       {
-        stores.emplace (topology.insert ({"store_proxy"}, {}));
+        store_proxies.emplace (topology.insert ({"store_proxy"}, {}));
       }
 
       for (std::size_t socket (0); socket < num_sockets; ++socket)
@@ -51,13 +51,13 @@ namespace gspc
 
         for (auto const& core : cores)
         {
-          for (auto const& load : loads)
+          for (auto const& load_proxy : load_proxies)
           {
-            topology.insert ({"load", "load_proxy"}, {core, load});
+            topology.insert ({"load", "load_proxy"}, {core, load_proxy});
           }
-          for (auto const& store : stores)
+          for (auto const& store_proxy : store_proxies)
           {
-            topology.insert ({"store", "store_proxy"}, {core, store});
+            topology.insert ({"store", "store_proxy"}, {core, store_proxy});
           }
         }
 
