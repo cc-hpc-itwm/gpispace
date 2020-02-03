@@ -24,7 +24,7 @@ namespace gspc
     return !(_workflow_state.i < _workflow_state.N);
   }
 
-  Task MapWorkflowEngine::at (task::ID task_id) const
+  Task const& MapWorkflowEngine::at (task::ID task_id) const
   {
     return _processing_state.at (task_id);
   }

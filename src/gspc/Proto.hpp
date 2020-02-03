@@ -19,7 +19,7 @@ namespace gspc
     virtual boost::variant<task::ID, bool> extract() override;
     virtual InjectResult inject (task::ID, task::Result) override;
 
-    virtual Task at (task::ID) const override;
+    virtual Task const& at (task::ID) const override;
   };
   class TreeTraversalWorkflow;
   class TreeTraversalWorkflowEngine;

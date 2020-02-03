@@ -91,7 +91,7 @@ namespace gspc
       return _workflow_state.front.empty();
     }
 
-    Task WorkflowEngine::at (task::ID task_id) const
+    Task const& WorkflowEngine::at (task::ID task_id) const
     {
       return _processing_state.at (task_id);
     }

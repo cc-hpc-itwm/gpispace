@@ -23,7 +23,7 @@ namespace gspc
     return _workflow_state.extract == 2;
   }
 
-  Task ClassConflictWorkflowEngine::at (task::ID task_id) const
+  Task const& ClassConflictWorkflowEngine::at (task::ID task_id) const
   {
     return _processing_state.at (task_id);
   }

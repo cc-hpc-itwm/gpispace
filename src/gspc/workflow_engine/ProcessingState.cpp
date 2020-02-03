@@ -25,7 +25,7 @@ namespace gspc
       return _extracted;
     }
 
-    Task ProcessingState::at (task::ID task_id) const
+    Task const& ProcessingState::at (task::ID task_id) const
     {
       return _tasks.at (task_id);
     }

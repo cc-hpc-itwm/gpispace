@@ -29,7 +29,7 @@ namespace gspc
     return _workflow_state._structure;
   }
 
-  Task GraphTraversalWorkflowEngine::at (task::ID task_id) const
+  Task const& GraphTraversalWorkflowEngine::at (task::ID task_id) const
   {
     return _processing_state.at (task_id);
   }
