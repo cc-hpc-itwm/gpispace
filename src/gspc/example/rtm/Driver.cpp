@@ -188,7 +188,10 @@ try
     }
   }
 
-  echo << state.processing_state << std::endl;
+  echo << gspc::workflow_engine::print_processing_state<gspc::rtm::print_task>
+            (state.processing_state)
+       << std::endl
+    ;
 
   if (auto final_result = workflow_engine->final_result())
   {

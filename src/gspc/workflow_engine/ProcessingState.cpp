@@ -1,8 +1,5 @@
 #include <gspc/workflow_engine/ProcessingState.hpp>
 
-#include <util-generic/print_container.hpp>
-#include <util-generic/print_exception.hpp>
-
 namespace gspc
 {
   namespace workflow_engine
@@ -53,51 +50,23 @@ namespace gspc
       return *_extracted.emplace (pop_any (_marked_for_retry)).first;
     }
 
+    namespace
+    {
+      struct print_task : public fhg::util::ostream::modifier
+      {
+        print_task (Task const& task) : _task (task) {}
+        virtual std::ostream& operator() (std::ostream& os) const override
+        {
+          return os << _task;
+        }
+      private:
+        Task const& _task;
+      };
+    }
+
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
     {
-      auto print_map
-        ( [&] (std::string name, auto const& map)
-          {
-            os << name << ": " << map.size() << "\n"
-               << fhg::util::print_container
-                    ( "  ", "\n  ", "\n", map
-                    , [&] (auto& s, auto const& x) -> decltype (s)
-                      {
-                        return s << x.first << " -> " << x.second;
-                      }
-                    )
-              ;
-          }
-        );
-      auto print_set
-        ( [&] (std::string name, auto const& set)
-          {
-            os << name << ": " << set.size() << "\n"
-               << fhg::util::print_container ("  ", "\n  ", "\n", set)
-              ;
-          }
-        );
-
-      os << "next_task_id: " << s._next_task_id << "\n";
-      print_map ("tasks", s._tasks);
-      print_set ("extracted", s._extracted);
-      os << "failed_to_post_process: " << s._failed_to_post_process.size() << "\n"
-         << fhg::util::print_container
-           ( "  ", "\n  ", "\n", s._failed_to_post_process
-           , [&] (auto& s, auto const& x) -> decltype (s)
-             {
-               return s << x.first << " -> "
-                        << x.second.first << " -> "
-                        << fhg::util::exception_printer (x.second.second)
-                 ;
-             }
-           );
-      print_map ("failed_to_execute", s._failed_to_execute);
-      print_map ("cancelled_ignored", s._cancelled_ignored);
-      print_map ("cancelled_optional", s._cancelled_optional);
-      print_map ("postponed", s._postponed);
-      print_set ("marked_for_retry", s._marked_for_retry);
-      return os;
+      return os << print_processing_state<print_task> (s);
     }
   }
 }

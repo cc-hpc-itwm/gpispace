@@ -5,6 +5,7 @@
 #include <gspc/task/Result.hpp>
 
 #include <util-generic/callable_signature.hpp>
+#include <util-generic/ostream/modifier.hpp>
 
 #include <exception>
 #include <ostream>
@@ -86,6 +87,8 @@ namespace gspc
         void serialize (Archive&, unsigned int);
 
     private:
+      template<typename TaskPrinter> friend struct print_processing_state;
+
       task::ID _next_task_id {0};
 
       //! every task in tasks is either
@@ -118,6 +121,16 @@ namespace gspc
       std::unordered_map<task::ID, CancelIgnored> _cancelled_ignored;
       std::unordered_map<task::ID, CancelOptional> _cancelled_optional;
       std::unordered_set<task::ID> _marked_for_retry;
+    };
+
+    template<typename TaskPrinter>
+      struct print_processing_state : public fhg::util::ostream::modifier
+    {
+      print_processing_state (ProcessingState const&);
+      virtual std::ostream& operator() (std::ostream&) const override;
+
+    private:
+      ProcessingState const& _processing_state;
     };
   }
 }
