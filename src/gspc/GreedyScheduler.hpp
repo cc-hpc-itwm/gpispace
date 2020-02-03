@@ -119,7 +119,7 @@ namespace gspc
 
     // manually maintained _schedule_queue.size() + in flight in schedule thread
     std::size_t _scheduling_items {0};
-    void schedule_queue_push (Task);
+    void schedule_queue_push (task::ID);
     bool schedule_queue_remove (task::ID);
     void schedule_queue_interrupt();
 

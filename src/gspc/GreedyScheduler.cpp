@@ -321,13 +321,12 @@ namespace gspc
           {
             --_scheduling_items;
 
-            auto const& task (_workflow_engine.at (submit.task_id));
             auto const& acquired (submit.acquired);
 
-            job::ID const job_id {_next_job_id++, task.id};
+            job::ID const job_id {_next_job_id++, submit.task_id};
 
             if (  !_jobs.emplace (job_id, acquired).second
-               || !_job_by_task.emplace (task.id, job_id).second
+               || !_job_by_task.emplace (submit.task_id, job_id).second
                )
             {
               throw std::logic_error ("INCONSISTENCY: Duplicate task id.");
@@ -349,6 +348,8 @@ namespace gspc
                   ( acquired.requested
                   , [&] (comm::scheduler::worker::Client& client)
                     {
+                      auto const& task (_workflow_engine.at (submit.task_id));
+
                       return client.submit
                         ( _comm_server_for_worker.local_endpoint()
                         , job_id
@@ -369,7 +370,7 @@ namespace gspc
                 //! failed probably leading to a duplicated task
                 remove_job (job_id);
 
-                schedule_queue_push (task);
+                schedule_queue_push (submit.task_id);
               }
             }
           }
@@ -399,7 +400,7 @@ namespace gspc
               ( _workflow_engine.extract()
               , [&] (Task task)
                 {
-                  schedule_queue_push (task);
+                  schedule_queue_push (task.id);
                   _command_queue.put_extract();
                 }
               , [&] (bool has_finished)
@@ -434,8 +435,7 @@ namespace gspc
                   {
                     //! \todo tell workflow engine!? -> list<task_result>
                     //! \todo different resource!?
-                    schedule_queue_push
-                      (_workflow_engine.at (finished.job_id.task_id));
+                    schedule_queue_push (finished.job_id.task_id);
                   }
                   else
                   {
@@ -547,9 +547,9 @@ namespace gspc
     _command_queue.put_stop (reason);
   }
 
-  void GreedyScheduler::schedule_queue_push (Task task)
+  void GreedyScheduler::schedule_queue_push (task::ID task_id)
   {
-    _schedule_queue.push (requirement (task), task.id);
+    _schedule_queue.push (requirement (_workflow_engine.at (task_id)), task_id);
     ++_scheduling_items;
   }
   bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
