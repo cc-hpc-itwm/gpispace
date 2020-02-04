@@ -36,7 +36,7 @@ namespace gspc
                     , resource_manager::WithPreferences& //! \todo: Client
                     , ScopedRuntimeSystem& //! \todo UnscopedBase
 
-                    , std::size_t max_attempt = 1
+                    , std::size_t max_attempts = 1
                     , boost::optional<std::size_t> max_lookahead = 100000
                     );
     ~GreedyScheduler();
