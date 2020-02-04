@@ -13,9 +13,14 @@
 #include <memory>
 #include <stdexcept>
 
-int main()
+int main (int argc, char** argv)
 try
 {
+  if (argc != 2)
+  {
+    throw std::runtime_error ("usage: Proto.exe prefix_chain_length");
+  }
+
   gspc::resource_manager::Trivial resource_manager;
 
   gspc::ScopedRuntimeSystem runtime_system (resource_manager);
@@ -30,7 +35,10 @@ try
     (runtime_system.add_or_throw ({"host"}, thread_strategy, host_topology));
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids); });
 
-  gspc::ClassConflictWorkflowEngine workflow_engine (MODULE);
+  auto const prefix_chain_length (std::stoul (argv[1]));
+
+  gspc::ClassConflictWorkflowEngine workflow_engine
+    (MODULE, prefix_chain_length);
 
   gspc::GreedyScheduler scheduler
     ( workflow_engine
@@ -40,7 +48,10 @@ try
 
   scheduler.wait();
 
-  std::cout << workflow_engine.state().processing_state << std::endl;
+  if (prefix_chain_length < 100)
+  {
+    std::cout << workflow_engine.state().processing_state << std::endl;
+  }
 
   return EXIT_SUCCESS;
 }

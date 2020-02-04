@@ -13,14 +13,15 @@
 namespace gspc
 {
   ClassConflictWorkflowEngine::ClassConflictWorkflowEngine
-    (boost::filesystem::path module)
+    (boost::filesystem::path module, std::size_t prefix_chain_length)
   {
     _workflow_state.implementation = {module, "identity"};
+    _workflow_state.prefix_chain_length = prefix_chain_length;
   }
 
   bool ClassConflictWorkflowEngine::workflow_finished() const
   {
-    return _workflow_state.extract == 2;
+    return _workflow_state.extract == _workflow_state.prefix_chain_length + 1;
   }
 
   Task const& ClassConflictWorkflowEngine::at (task::ID task_id) const
@@ -34,6 +35,7 @@ namespace gspc
   {
     ar & implementation;
     ar & extract;
+    ar & prefix_chain_length;
   }
 
   workflow_engine::State ClassConflictWorkflowEngine::state() const
@@ -55,7 +57,10 @@ namespace gspc
     }
 
     resource::Class const resource_class
-      (_workflow_state.extract == 0 ? "A" : "B");
+      ( _workflow_state.extract < _workflow_state.prefix_chain_length
+      ? "A"
+      : "B"
+      );
 
     ++_workflow_state.extract;
 
@@ -68,12 +73,30 @@ namespace gspc
   interface::WorkflowEngine::InjectResult
     ClassConflictWorkflowEngine::inject (task::ID id, task::Result result)
   {
+    bool heureka {false};
+
     _processing_state.inject
       ( std::move (id)
       , std::move (result)
-      , [&] (Task const&, task::result::Success const&) {}
+      , [&] (Task const& task, task::result::Success const&)
+        {
+          heureka = fhg::util::visit<bool>
+            ( task.requirements
+            , [] (Task::SingleResource const& single_resource)
+              {
+                return single_resource.first == "B";
+              }
+            , [] (auto const&)
+              {
+                return false;
+              }
+            );
+        }
       );
 
-    return InjectResult {{}, _processing_state.extracted()};
+    return heureka
+      ? InjectResult {{}, _processing_state.extracted()}
+      : InjectResult {}
+    ;
   }
 }

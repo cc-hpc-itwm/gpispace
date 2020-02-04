@@ -18,7 +18,8 @@ namespace gspc
   class ClassConflictWorkflowEngine : public interface::WorkflowEngine
   {
   public:
-    ClassConflictWorkflowEngine (boost::filesystem::path);
+    ClassConflictWorkflowEngine
+      (boost::filesystem::path, std::size_t prefix_chain_length);
 
     virtual boost::variant<task::ID, bool> extract() override;
     virtual InjectResult inject (task::ID, task::Result) override;
@@ -33,6 +34,7 @@ namespace gspc
     {
       task::Implementation implementation;
       std::size_t extract {0};
+      std::size_t prefix_chain_length;
 
       template<typename Archive>
         void serialize (Archive& ar, unsigned int /* version */);
