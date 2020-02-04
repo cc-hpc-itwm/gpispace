@@ -434,10 +434,7 @@ namespace sdpa
         (worker_equiv_classes_.at (worker->second.capability_names_));
       worker_class.inc_pending_jobs (1);
 
-      if (worker_class._idle_workers.count (worker))
-      {
-        worker_class._idle_workers.erase (worker);
-      }
+      worker_class._idle_workers.erase (worker);
     }
 
     void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
