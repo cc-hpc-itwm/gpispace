@@ -532,6 +532,7 @@ namespace sdpa
 
     void WorkerManager::delete_job_from_worker ( const job_id_t &job_id
                                                , const worker_id_t& worker_id
+                                               , double cost
                                                )
     {
       std::lock_guard<std::mutex> const _(mtx_);
@@ -543,12 +544,12 @@ namespace sdpa
 
         if (worker->second.pending_.count (job_id))
         {
-          worker->second.delete_pending_job (job_id);
+          worker->second.delete_pending_job (job_id, cost);
           equivalence_class.dec_pending_jobs (1);
         }
         else
         {
-          worker->second.delete_submitted_job (job_id);
+          worker->second.delete_submitted_job (job_id, cost);
           equivalence_class.dec_running_jobs (1);
         }
       }

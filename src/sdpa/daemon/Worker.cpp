@@ -15,7 +15,6 @@ namespace sdpa
                    , const std::string& hostname
                    )
       : _cost_assigned_jobs (0)
-      , _cost_by_job_id ({})
       , _capabilities (capabilities)
       , capability_names_()
       , _allocated_shared_memory_size (allocated_shared_memory_size)
@@ -44,7 +43,6 @@ namespace sdpa
     void Worker::assign (const job_id_t& jobId, double cost)
     {
       pending_.insert (jobId);
-      _cost_by_job_id.emplace (jobId, cost);
       _cost_assigned_jobs += cost;
     }
 
@@ -70,7 +68,7 @@ namespace sdpa
       acknowledged_.insert (job_id);
     }
 
-    void Worker::delete_submitted_job(const job_id_t job_id)
+    void Worker::delete_submitted_job(const job_id_t job_id, double cost)
     {
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
@@ -80,20 +78,10 @@ namespace sdpa
         reserved_ = false;
       }
 
-      auto const it (_cost_by_job_id.find (job_id));
-      if (it != _cost_by_job_id.end())
-      {
-        _cost_assigned_jobs -= it->second;
-        _cost_by_job_id.erase (it);
-      }
-      else
-      {
-        throw std::runtime_error
-          ("No cost associated with the job " + job_id + " was found in the worker!");
-      }
+      _cost_assigned_jobs -= cost;
     }
 
-    void Worker::delete_pending_job (const job_id_t job_id)
+    void Worker::delete_pending_job (const job_id_t job_id, double cost)
     {
       if (0 == pending_.erase (job_id))
       {
@@ -102,17 +90,7 @@ namespace sdpa
                                  );
       }
 
-      auto const it (_cost_by_job_id.find (job_id));
-      if (it != _cost_by_job_id.end())
-      {
-        _cost_assigned_jobs -= it->second;
-        _cost_by_job_id.erase (it);
-      }
-      else
-      {
-        throw std::runtime_error
-          ("No cost associated with the job " + job_id + " was found in the worker!");
-      }
+      _cost_assigned_jobs -= cost;
     }
 
     bool Worker::addCapabilities( const capabilities_set_t& recvCpbSet )

@@ -90,16 +90,16 @@ namespace sdpa
             throw std::runtime_error ("already have reservation for job " + jobId);
           }
 
+          double cost
+            (compute_reservation_cost
+              ( jobId
+              , matching_workers_and_implementation.first
+              , requirements_and_preferences.computational_cost()
+              )
+            );
+
           try
           {
-            double cost
-              (compute_reservation_cost
-                 ( jobId
-                 ,  matching_workers_and_implementation.first
-                 , requirements_and_preferences.computational_cost()
-                 )
-              );
-
             for ( auto const& worker
                 : matching_workers_and_implementation.first
                 )
@@ -124,7 +124,7 @@ namespace sdpa
                 : matching_workers_and_implementation.first
                 )
             {
-              _worker_manager.delete_job_from_worker (jobId, worker);
+              _worker_manager.delete_job_from_worker (jobId, worker, cost);
             }
 
             jobs_to_schedule.push_front (jobId);
@@ -233,7 +233,8 @@ namespace sdpa
         {
           try
           {
-            _worker_manager.delete_job_from_worker (job_id, worker);
+            _worker_manager.delete_job_from_worker
+              (job_id, worker, ptr_reservation->cost());
           }
           catch (...)
           {
