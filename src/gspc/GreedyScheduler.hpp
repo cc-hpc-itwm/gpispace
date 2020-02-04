@@ -109,7 +109,7 @@ namespace gspc
       gspc::threadsafe_interruptible_queue_with_remove
         <std::reference_wrapper<InterruptionContext>, task::ID>;
 
-    struct RequirementsHashAndEqLeadingClassOnly
+    struct RequirementsHashAndEqByClass
     {
       std::size_t operator() (Task::SingleResourceWithPreference const&) const;
       bool operator() ( Task::SingleResourceWithPreference const&
@@ -120,8 +120,8 @@ namespace gspc
       using ByLeadingResourceClass
         = std::unordered_map< Task::SingleResourceWithPreference
                             , T
-                            , RequirementsHashAndEqLeadingClassOnly
-                            , RequirementsHashAndEqLeadingClassOnly
+                            , RequirementsHashAndEqByClass
+                            , RequirementsHashAndEqByClass
                             >;
 
     ByLeadingResourceClass<ScheduleQueue> _schedule_queues;

@@ -71,7 +71,7 @@ namespace gspc
     }
   }
 
-  std::size_t GreedyScheduler::RequirementsHashAndEqLeadingClassOnly::operator()
+  std::size_t GreedyScheduler::RequirementsHashAndEqByClass::operator()
     (Task::SingleResourceWithPreference const& requirements) const
   {
     auto h (std::hash<resource::Class>{});
@@ -85,7 +85,7 @@ namespace gspc
                              }
                            );
   }
-  bool GreedyScheduler::RequirementsHashAndEqLeadingClassOnly::operator()
+  bool GreedyScheduler::RequirementsHashAndEqByClass::operator()
     ( Task::SingleResourceWithPreference const& lhs
     , Task::SingleResourceWithPreference const& rhs
     ) const
