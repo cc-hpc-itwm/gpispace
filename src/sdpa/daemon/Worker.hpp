@@ -38,8 +38,8 @@ namespace sdpa
       bool has_pending_jobs() const;
       bool has_running_jobs() const;
 
-      void delete_submitted_job (const job_id_t &job_id);
-      void delete_pending_job (const job_id_t& job_id);
+      void delete_submitted_job (const job_id_t job_id);
+      void delete_pending_job (const job_id_t job_id);
 
       // methods related to reservation
       bool isReserved() const;

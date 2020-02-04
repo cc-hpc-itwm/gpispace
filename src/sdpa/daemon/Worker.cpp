@@ -70,7 +70,7 @@ namespace sdpa
       acknowledged_.insert (job_id);
     }
 
-    void Worker::delete_submitted_job(const job_id_t &job_id)
+    void Worker::delete_submitted_job(const job_id_t job_id)
     {
       submitted_.erase (job_id);
       acknowledged_.erase (job_id);
@@ -93,7 +93,7 @@ namespace sdpa
       }
     }
 
-    void Worker::delete_pending_job (const job_id_t& job_id)
+    void Worker::delete_pending_job (const job_id_t job_id)
     {
       if (0 == pending_.erase (job_id))
       {
