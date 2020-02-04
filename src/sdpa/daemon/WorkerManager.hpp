@@ -58,6 +58,8 @@ namespace sdpa
     private:
       class WorkerEquivalenceClass
       {
+        friend class WorkerManager;
+
       public:
         WorkerEquivalenceClass();
         WorkerEquivalenceClass (const WorkerEquivalenceClass&) = delete;
@@ -110,14 +112,6 @@ namespace sdpa
       void deleteWorker (const worker_id_t& workerId);
 
       void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
-
-      mmap_match_deg_worker_id_t getMatchingDegreesAndWorkers_TESTING_ONLY
-        (const Requirements_and_preferences&) const;
-      Workers_and_implementation
-        find_job_assignment_minimizing_total_cost
-          ( const mmap_match_deg_worker_id_t&
-          , const Requirements_and_preferences&
-          ) const;
 
       Workers_and_implementation find_assignment
         (const Requirements_and_preferences&) const;
@@ -174,7 +168,9 @@ namespace sdpa
 
       std::pair<boost::optional<double>, boost::optional<std::string>>
         match_requirements_and_preferences
-          ( Worker const&, const Requirements_and_preferences&) const;
+          ( std::set<std::string> const& capabilities
+          , const Requirements_and_preferences&
+          ) const;
 
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
