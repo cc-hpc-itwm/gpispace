@@ -142,6 +142,7 @@ namespace gspc
     std::size_t _scheduling_items {0};
     void schedule_queue_push (task::ID);
     bool schedule_queue_remove (task::ID);
+    void task_back_from_schedule_queue (task::ID);
     void schedule_queues_interrupt_and_join_threads();
 
     ByLeadingResourceClass<std::thread> _schedule_threads;

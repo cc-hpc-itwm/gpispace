@@ -370,9 +370,7 @@ namespace gspc
         ( _command_queue.get()
         , [&] (Submit submit)
           {
-            --_scheduling_items;
-
-            _interruption_context_by_task.erase (submit.task_id);
+            task_back_from_schedule_queue (submit.task_id);
 
             job::ID const job_id {_next_job_id++, submit.task_id};
 
@@ -427,9 +425,7 @@ namespace gspc
             auto const& task_id (failed_to_acquire.task_id);
             auto const& error (failed_to_acquire.error);
 
-            --_scheduling_items;
-
-            _interruption_context_by_task.erase (task_id);
+            task_back_from_schedule_queue (task_id);
 
             //! \note is cancelled but without remove_job
             //! no job was created (equiv with cancel_task)
@@ -631,6 +627,12 @@ namespace gspc
       );
 
     ++_scheduling_items;
+  }
+  void GreedyScheduler::task_back_from_schedule_queue (task::ID task_id)
+  {
+    --_scheduling_items;
+
+    _interruption_context_by_task.erase (task_id);
   }
   bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
   {
