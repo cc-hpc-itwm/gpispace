@@ -90,16 +90,18 @@ namespace sdpa
               _worker_manager.assign_job_to_worker (jobId, worker);
             }
 
-            Reservation* const pReservation
-              (new Reservation ( matching_workers
-                               , compute_reservation_cost ( jobId
-                                                          , matching_workers
-                                                          , requirements.computational_cost()
-                                                          )
-                               )
+            auto pReservation
+              (fhg::util::cxx14::make_unique<Reservation>
+                 ( matching_workers
+                 , compute_reservation_cost ( jobId
+                                            , matching_workers
+                                            , requirements.computational_cost()
+                                            )
+                 )
               );
 
-            allocation_table_.emplace (jobId, pReservation);
+            allocation_table_.emplace (jobId, std::move (pReservation));
+
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
@@ -128,7 +130,7 @@ namespace sdpa
       _worker_manager.steal_work<Reservation>
         ( [this] (job_id_t const& job)
           {
-            return allocation_table_.at (job);
+            return allocation_table_.at (job).get();
           }
         );
     }
@@ -148,7 +150,7 @@ namespace sdpa
               , get_job
               , [this] (job_id_t const& jobId)
                 {
-                  return allocation_table_.at (jobId);
+                  return allocation_table_.at (jobId).get();
                 }
               , cancel_worker_job
               )
@@ -202,8 +204,7 @@ namespace sdpa
 
       if (it != allocation_table_.end())
       {
-        Reservation const* const ptr_reservation(it->second);
-        for (std::string const& worker : ptr_reservation->workers())
+        for (std::string const& worker : it->second->workers())
         {
           try
           {
@@ -217,7 +218,6 @@ namespace sdpa
           }
         }
 
-        delete ptr_reservation;
         _pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }
