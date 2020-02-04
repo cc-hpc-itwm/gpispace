@@ -7,6 +7,7 @@
 #include <gspc/resource_manager/Trivial.hpp>
 
 #include <util-generic/finally.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <iostream>
@@ -16,9 +17,10 @@
 int main (int argc, char** argv)
 try
 {
-  if (argc != 2)
+  if (argc < 2 || 3 < argc)
   {
-    throw std::runtime_error ("usage: Proto.exe prefix_chain_length");
+    throw std::runtime_error
+      ("usage: Proto.exe prefix_chain_length [max_lookahead]");
   }
 
   gspc::resource_manager::Trivial resource_manager;
@@ -36,6 +38,8 @@ try
   FHG_UTIL_FINALLY ([&] { runtime_system.remove (resource_ids); });
 
   auto const prefix_chain_length (std::stoul (argv[1]));
+  auto const max_lookahead
+    (FHG_UTIL_MAKE_OPTIONAL (argc == 3, std::stoul (argv[2])));
 
   gspc::ClassConflictWorkflowEngine workflow_engine
     (MODULE, prefix_chain_length);
@@ -44,6 +48,9 @@ try
     ( workflow_engine
     , resource_manager
     , runtime_system
+
+    , 1 // max attempts
+    , max_lookahead
     );
 
   scheduler.wait();
