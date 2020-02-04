@@ -163,7 +163,7 @@ namespace gspc
               ( requested
               , [&] (Resources::Node const& x)
                 {
-                  if (0 != ++_resource_usage_by_id.at (x.first))
+                  if (1 == ++_resource_usage_by_id.at (x.first))
                   {
                     _available_resources_by_class.at (x.second).erase (x.first);
                   }
