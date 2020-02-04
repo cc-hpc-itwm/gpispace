@@ -644,7 +644,7 @@ namespace gspc
       return false;
     }
 
-    --_scheduling_items;
+    task_back_from_schedule_queue (task_id);
 
     return true;
   }
