@@ -447,10 +447,7 @@ namespace sdpa
       equivalence_class.dec_pending_jobs (1);
       equivalence_class.inc_running_jobs (1);
 
-      if (equivalence_class._idle_workers.count (worker))
-      {
-        equivalence_class._idle_workers.erase (worker);
-      }
+      equivalence_class._idle_workers.erase (worker);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
