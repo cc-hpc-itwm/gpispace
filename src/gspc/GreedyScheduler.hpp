@@ -10,6 +10,8 @@
 #include <gspc/resource_manager/WithPreferences.hpp>
 #include <gspc/threadsafe_interruptible_queue_with_remove.hpp>
 
+#include <boost/optional.hpp>
+
 #include <atomic>
 #include <condition_variable>
 #include <functional>
@@ -35,6 +37,7 @@ namespace gspc
                     , ScopedRuntimeSystem& //! \todo UnscopedBase
 
                     , std::size_t max_attempt = 1
+                    , boost::optional<std::size_t> max_lookahead = 100000
                     );
     ~GreedyScheduler();
 
@@ -48,6 +51,7 @@ namespace gspc
     ScopedRuntimeSystem& _runtime_system;
 
     std::size_t _max_attempts;
+    boost::optional<std::size_t> _max_lookahead;
 
     struct Submit
     {
@@ -140,6 +144,7 @@ namespace gspc
 
     // manually maintained _schedule_queue.size() + in flight in schedule thread
     std::size_t _scheduling_items {0};
+    bool _delayed_extract {false};
     void schedule_queue_push (task::ID);
     bool schedule_queue_remove (task::ID);
     void task_back_from_schedule_queue (task::ID);

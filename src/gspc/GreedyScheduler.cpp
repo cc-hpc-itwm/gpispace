@@ -181,6 +181,7 @@ namespace gspc
       , resource_manager::WithPreferences& resource_manager
       , ScopedRuntimeSystem& runtime_system
       , std::size_t max_attempts
+      , boost::optional<std::size_t> max_lookahead
       )
         //! \todo Is it okay to construct the server before
         //! constructing the state?!
@@ -189,6 +190,7 @@ namespace gspc
     , _resource_manager (resource_manager)
     , _runtime_system (runtime_system)
     , _max_attempts (max_attempts)
+    , _max_lookahead (max_lookahead)
     , _command_thread
         (fhg::util::bind_this (this, &GreedyScheduler::command_thread))
   {
@@ -447,7 +449,15 @@ namespace gspc
               , [&] (task::ID task_id)
                 {
                   schedule_queue_push (task_id);
-                  _command_queue.put_extract();
+
+                  if (!_max_lookahead || _scheduling_items < *_max_lookahead)
+                  {
+                    _command_queue.put_extract();
+                  }
+                  else
+                  {
+                    _delayed_extract = true;
+                  }
                 }
               , [&] (bool has_finished)
                 {
@@ -633,6 +643,12 @@ namespace gspc
     --_scheduling_items;
 
     _interruption_context_by_task.erase (task_id);
+
+    if (_delayed_extract)
+    {
+      _command_queue.put_extract();
+      _delayed_extract = false;
+    }
   }
   bool GreedyScheduler::schedule_queue_remove (task::ID task_id)
   {
