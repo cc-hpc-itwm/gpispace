@@ -591,7 +591,6 @@ namespace sdpa
     WorkerManager::WorkerEquivalenceClass::WorkerEquivalenceClass()
       : _n_pending_jobs (0)
       , _n_running_jobs (0)
-      , _n_idle_workers (0)
     {}
 
     void WorkerManager::WorkerEquivalenceClass::inc_pending_jobs (unsigned int k)
@@ -630,11 +629,6 @@ namespace sdpa
     unsigned int WorkerManager::WorkerEquivalenceClass::n_running_jobs() const
     {
       return _n_running_jobs;
-    }
-
-    unsigned int WorkerManager::WorkerEquivalenceClass::n_idle_workers() const
-    {
-      return _n_idle_workers;
     }
 
     unsigned int WorkerManager::WorkerEquivalenceClass::n_workers() const

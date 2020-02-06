@@ -76,7 +76,6 @@ namespace sdpa
 
         unsigned int n_pending_jobs() const;
         unsigned int n_running_jobs() const;
-        unsigned int n_idle_workers() const;
         unsigned int n_workers() const;
 
         void add_worker_entry (worker_iterator);
@@ -89,7 +88,6 @@ namespace sdpa
       private:
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;
-        unsigned int _n_idle_workers;
         std::unordered_set<worker_id_t> _worker_ids;
         std::unordered_set<worker_id_t> _idle_workers;
       };
