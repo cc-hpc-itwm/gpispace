@@ -2186,12 +2186,14 @@ BOOST_FIXTURE_TEST_CASE
   {
     auto const assignment (get_current_assignment());
 
-    // The worker which stayed longer idle should steal the only job to steal from
-    // the worker with 2 pending jobs. The worker that stayed idle for a shorter time
-    // should get nothing, as stealing is not allowed by any other worker
+    // One of the idle workers should steal the only job to steal from
+    // the worker with 2 pending jobs.
     BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 1);
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment), 1);
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment), 0);
+    BOOST_REQUIRE_EQUAL
+      ( n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment)
+      + n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment)
+      , 1
+      );
   }
 }
 
