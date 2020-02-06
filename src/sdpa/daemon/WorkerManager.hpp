@@ -61,14 +61,6 @@ namespace sdpa
       {
         friend class WorkerManager;
 
-        struct iterator_hash
-        {
-          size_t operator()(worker_iterator it) const
-          {
-            return std::hash<worker_id_t>() (it->first);
-          }
-        };
-
       public:
         WorkerEquivalenceClass();
         WorkerEquivalenceClass (const WorkerEquivalenceClass&) = delete;
@@ -99,7 +91,7 @@ namespace sdpa
         unsigned int _n_running_jobs;
         unsigned int _n_idle_workers;
         std::unordered_set<worker_id_t> _worker_ids;
-        std::unordered_set<worker_iterator, iterator_hash> _idle_workers;
+        std::unordered_set<worker_id_t> _idle_workers;
       };
 
     public:
@@ -243,20 +235,21 @@ namespace sdpa
                           , decltype (comp)
                           > to_steal_from (comp);
 
-      std::function<bool (worker_iterator const&, worker_iterator const&)> const
-        comp_thieves { [] (worker_iterator const& lhs, worker_iterator const& rhs)
-                     {
-                       return lhs->second._last_time_idle
-                         > rhs->second._last_time_idle;
-                     }
-                   };
+      std::function<bool (worker_id_t const&, worker_id_t const&)> const
+        comp_thieves
+          { [&worker_manager] (worker_id_t const& lhs, worker_id_t const& rhs)
+            {
+              return worker_manager.worker_map_.at (lhs)._last_time_idle
+                >  worker_manager.worker_map_.at (rhs)._last_time_idle;
+            }
+          };
 
-      std::priority_queue < worker_iterator
-                          , std::vector<worker_iterator>
+      std::priority_queue < worker_id_t
+                          , std::vector<worker_id_t>
                           , decltype (comp_thieves)
                           >
         thieves ( comp_thieves
-                , std::vector<worker_iterator>
+                , std::vector<worker_id_t>
                     (_idle_workers.begin(), _idle_workers.end())
                 );
 
@@ -275,7 +268,9 @@ namespace sdpa
       while (!(thieves.empty() || to_steal_from.empty()))
       {
         worker_iterator const richest (to_steal_from.top());
-        worker_iterator const& thief (thieves.top());
+        worker_iterator const& thief
+          (worker_manager.worker_map_.find (thieves.top()));
+        fhg_assert (thief != worker_manager.worker_map_.end());
         Worker& richest_worker (richest->second);
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()

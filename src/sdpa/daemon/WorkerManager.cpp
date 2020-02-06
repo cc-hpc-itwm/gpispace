@@ -434,7 +434,7 @@ namespace sdpa
         (worker_equiv_classes_.at (worker->second.capability_names_));
       worker_class.inc_pending_jobs (1);
 
-      worker_class._idle_workers.erase (worker);
+      worker_class._idle_workers.erase (worker->first);
     }
 
     void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
@@ -447,7 +447,7 @@ namespace sdpa
       equivalence_class.dec_pending_jobs (1);
       equivalence_class.inc_running_jobs (1);
 
-      equivalence_class._idle_workers.erase (worker);
+      equivalence_class._idle_workers.erase (worker->first);
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
@@ -490,12 +490,11 @@ namespace sdpa
           equivalence_class.dec_running_jobs (1);
         }
 
-        if ( !equivalence_class._idle_workers.count (worker)
-           && !worker->second.has_running_jobs()
+        if ( !worker->second.has_running_jobs()
            && !worker->second.has_pending_jobs()
            )
         {
-          equivalence_class._idle_workers.emplace (worker);
+          equivalence_class._idle_workers.emplace (worker->first);
         }
       }
     }
@@ -646,12 +645,12 @@ namespace sdpa
     void WorkerManager::WorkerEquivalenceClass::add_worker_entry
       (worker_iterator worker)
     {
-      _worker_ids.insert (worker->first);
+      _worker_ids.emplace (worker->first);
       inc_pending_jobs (worker->second.pending_.size());
       inc_running_jobs ( worker->second.submitted_.size()
                        + worker->second.acknowledged_.size()
                        );
-      _idle_workers.emplace (worker);
+      _idle_workers.emplace (worker->first);
     }
 
     void WorkerManager::WorkerEquivalenceClass::remove_worker_entry
@@ -662,7 +661,7 @@ namespace sdpa
       dec_running_jobs ( worker->second.submitted_.size()
                        + worker->second.acknowledged_.size()
                        );
-      _idle_workers.erase (worker);
+      _idle_workers.erase (worker->first);
     }
   }
 }
