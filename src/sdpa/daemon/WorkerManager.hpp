@@ -233,24 +233,6 @@ namespace sdpa
                           , decltype (comp)
                           > to_steal_from (comp);
 
-      std::function<bool (worker_id_t const&, worker_id_t const&)> const
-        comp_thieves
-          { [&worker_manager] (worker_id_t const& lhs, worker_id_t const& rhs)
-            {
-              return worker_manager.worker_map_.at (lhs)._last_time_idle
-                >  worker_manager.worker_map_.at (rhs)._last_time_idle;
-            }
-          };
-
-      std::priority_queue < worker_id_t
-                          , std::vector<worker_id_t>
-                          , decltype (comp_thieves)
-                          >
-        thieves ( comp_thieves
-                , std::vector<worker_id_t>
-                    (_idle_workers.begin(), _idle_workers.end())
-                );
-
       for (worker_id_t const& w : _worker_ids)
       {
         auto const& it (worker_manager.worker_map_.find (w));
@@ -263,12 +245,11 @@ namespace sdpa
         }
       }
 
-      while (!(thieves.empty() || to_steal_from.empty()))
+      while (!(_idle_workers.empty() || to_steal_from.empty()))
       {
         worker_iterator const richest (to_steal_from.top());
         worker_iterator const& thief
-          (worker_manager.worker_map_.find (thieves.top()));
-        fhg_assert (thief != worker_manager.worker_map_.end());
+          (worker_manager.worker_map_.find (*_idle_workers.begin()));
         Worker& richest_worker (richest->second);
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()
@@ -297,7 +278,6 @@ namespace sdpa
         worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job));
         worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
 
-        thieves.pop();
         to_steal_from.pop();
 
         if (richest_worker.stealing_allowed())
