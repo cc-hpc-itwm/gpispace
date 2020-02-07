@@ -198,11 +198,6 @@ namespace sdpa
       , WorkerManager& worker_manager
       )
     {
-      if (n_running_jobs() == n_workers())
-      {
-        return;
-      }
-
       if (n_pending_jobs() == 0)
       {
         return;
