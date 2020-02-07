@@ -54,6 +54,7 @@ namespace sdpa
     class WorkerManager : boost::noncopyable
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
+      using worker_iterator = worker_map_t::iterator;
 
     private:
       class WorkerEquivalenceClass
@@ -75,23 +76,20 @@ namespace sdpa
 
         unsigned int n_pending_jobs() const;
         unsigned int n_running_jobs() const;
-        unsigned int n_idle_workers() const;
         unsigned int n_workers() const;
 
-        void add_worker_entry (worker_map_t::const_iterator);
-        void remove_worker_entry (worker_map_t::const_iterator);
+        void add_worker_entry (worker_iterator);
+        void remove_worker_entry (worker_iterator);
 
         template <typename Reservation>
-        void steal_work
-          ( std::function<Reservation* (job_id_t const&)>
-          , worker_map_t&
-          );
+          void steal_work
+            (std::function<Reservation* (job_id_t const&)>, WorkerManager&);
 
       private:
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;
-        unsigned int _n_idle_workers;
         std::unordered_set<worker_id_t> _worker_ids;
+        std::unordered_set<worker_id_t> _idle_workers;
       };
 
     public:
@@ -129,8 +127,6 @@ namespace sdpa
                            )> const& serve_job
       );
 
-    bool all_workers_busy_and_have_pending_jobs() const;
-
     template <typename T>
     std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
       ( worker_id_t const&
@@ -163,8 +159,12 @@ namespace sdpa
       std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
 
     private:
+      void assign_job_to_worker
+        (const job_id_t& job_id, worker_iterator worker, double cost);
+      void delete_job_from_worker
+        (const job_id_t &job_id, const worker_iterator worker, double cost);
       void submit_job_to_worker (const job_id_t&, const worker_id_t&);
-      void change_equivalence_class (worker_map_t::const_iterator, std::set<std::string> const&);
+      void change_equivalence_class (worker_iterator, std::set<std::string> const&);
 
       std::pair<boost::optional<double>, boost::optional<std::string>>
         match_requirements_and_preferences
@@ -188,42 +188,22 @@ namespace sdpa
                                         | boost::adaptors::map_values
           )
       {
-        weqc.steal_work (reservation, worker_map_);
+        weqc.steal_work (reservation, *this);
       }
     }
 
     template <typename Reservation>
     void WorkerManager::WorkerEquivalenceClass::steal_work
       ( std::function<Reservation* (job_id_t const&)> reservation
-      , worker_map_t& worker_map
+      , WorkerManager& worker_manager
       )
     {
-      if (n_running_jobs() == n_workers())
-      {
-        return;
-      }
-
       if (n_pending_jobs() == 0)
       {
         return;
       }
 
-      using worker_ptr = worker_map_t::iterator;
-
-      std::vector<worker_ptr> thief_candidates;
-      for (worker_id_t const& w : _worker_ids)
-      {
-        auto const& it (worker_map.find (w));
-        fhg_assert (it != worker_map.end());
-        Worker const& worker (it->second);
-
-        if (!worker.has_running_jobs() && !worker.has_pending_jobs())
-        {
-          thief_candidates.emplace_back (it);
-        }
-      }
-
-      if (thief_candidates.empty())
+      if (_idle_workers.empty())
       {
         return;
       }
@@ -235,35 +215,23 @@ namespace sdpa
           }
         };
 
-      std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp { [] (worker_ptr const& lhs, worker_ptr const& rhs)
+      std::function<bool (worker_iterator const&, worker_iterator const&)> const
+        comp { [] (worker_iterator const& lhs, worker_iterator const& rhs)
                {
                  return lhs->second.cost_assigned_jobs()
                    < rhs->second.cost_assigned_jobs();
                }
              };
 
-      std::priority_queue < worker_ptr
-                          , std::vector<worker_ptr>
+      std::priority_queue < worker_iterator
+                          , std::vector<worker_iterator>
                           , decltype (comp)
                           > to_steal_from (comp);
 
-      std::function<bool (worker_ptr const&, worker_ptr const&)> const
-        comp_thieves { [] (worker_ptr const& lhs, worker_ptr const& rhs)
-                     {
-                       return lhs->second._last_time_idle
-                         > rhs->second._last_time_idle;
-                     }
-                   };
-
-      std::priority_queue < worker_ptr
-                          , std::vector<worker_ptr>
-                          , decltype (comp_thieves)
-                          > thieves (comp_thieves, thief_candidates);
-
       for (worker_id_t const& w : _worker_ids)
       {
-        auto const& it (worker_map.find (w));
+        auto const& it (worker_manager.worker_map_.find (w));
+        fhg_assert (it != worker_manager.worker_map_.end());
         Worker const& worker (it->second);
 
         if (worker.stealing_allowed())
@@ -272,10 +240,11 @@ namespace sdpa
         }
       }
 
-      while (!(thieves.empty() || to_steal_from.empty()))
+      while (!(_idle_workers.empty() || to_steal_from.empty()))
       {
-        worker_ptr const richest (to_steal_from.top());
-        worker_ptr const& thief (thieves.top());
+        worker_iterator const richest (to_steal_from.top());
+        worker_iterator const& thief
+          (worker_manager.worker_map_.find (*_idle_workers.begin()));
         Worker& richest_worker (richest->second);
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()
@@ -301,10 +270,9 @@ namespace sdpa
             }
           );
 
-        thief->second.assign (*it_job, cost (*it_job));
-        richest_worker.delete_pending_job (*it_job, cost (*it_job));
+        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job));
+        worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
 
-        thieves.pop();
         to_steal_from.pop();
 
         if (richest_worker.stealing_allowed())

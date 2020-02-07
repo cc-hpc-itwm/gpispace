@@ -54,10 +54,6 @@ namespace sdpa
     void CoallocationScheduler::assignJobsToWorkers()
     {
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      if (_worker_manager.all_workers_busy_and_have_pending_jobs())
-      {
-        return;
-      }
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
