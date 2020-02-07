@@ -5,6 +5,7 @@ ADD_LIBRARY(sdpa
   daemon/GenericDaemon.cpp
   daemon/Job.cpp
   daemon/scheduler/CoallocationScheduler.cpp
+  daemon/scheduler/Reservation.cpp
   daemon/Worker.cpp
   daemon/WorkerManager.cpp
   events/Codec.cpp

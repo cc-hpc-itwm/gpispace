@@ -105,7 +105,7 @@ namespace sdpa
 
             allocation_table_.emplace
               ( jobId
-              , fhg::util::cxx14::make_unique<Reservation>
+              , fhg::util::cxx14::make_unique<scheduler::Reservation>
                   ( matching_workers_and_implementation.first
                   , matching_workers_and_implementation.second
                   , cost
@@ -139,7 +139,7 @@ namespace sdpa
     void CoallocationScheduler::steal_work()
     {
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      _worker_manager.steal_work<Reservation>
+      _worker_manager.steal_work
         ( [this] (job_id_t const& job)
           {
             return allocation_table_.at (job).get();
@@ -157,7 +157,7 @@ namespace sdpa
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
 
       for ( job_id_t const& job_id
-          : _worker_manager.delete_or_cancel_worker_jobs<Reservation>
+          : _worker_manager.delete_or_cancel_worker_jobs
               ( worker
               , get_job
               , [this] (job_id_t const& jobId)
@@ -219,8 +219,7 @@ namespace sdpa
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      const allocation_table_t::const_iterator it
-       (allocation_table_.find (job_id));
+      auto const it (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
