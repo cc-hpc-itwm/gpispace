@@ -2,21 +2,21 @@
 
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
-#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
-#include <boost/range/algorithm.hpp>
-#include <boost/range/adaptor/filtered.hpp>
-#include <boost/range/adaptor/map.hpp>
 
-#include <algorithm>
-#include <queue>
+#include <functional>
+#include <map>
+#include <mutex>
+#include <set>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 
 namespace sdpa
 {

@@ -1,10 +1,22 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+
 #include <sdpa/types.hpp>
 
 #include <fhg/assert.hpp>
 
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm_ext/push_back.hpp>
+
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
+#include <queue>
+#include <stdexcept>
+#include <tuple>
+#include <vector>
 
 namespace sdpa
 {

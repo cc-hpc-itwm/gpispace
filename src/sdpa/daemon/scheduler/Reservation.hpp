@@ -38,9 +38,9 @@ namespace sdpa
 
         SDPA_DAEMON_SCHEDULER_RESERVATION_VIRTUAL_FOR_TESTING
           void replace_worker
-            ( worker_id_t const& w1
-            , worker_id_t const& w2
-            , std::function<bool (const std::string& cpb)> const&
+            ( worker_id_t const& current_worker
+            , worker_id_t const& new_worker
+            , std::function<bool (std::string const& capability)> const&
                 supports_implementation
             );
 
@@ -62,15 +62,14 @@ namespace sdpa
         //! served to being somewhere else (as it already has to be
         //! somewhere)
 
-        void store_result
-          (worker_id_t const& worker, terminal_state const& result);
+        void store_result (worker_id_t const&, terminal_state const&);
         void mark_as_canceled_if_no_result_stored_yet (worker_id_t const&);
 
         boost::optional<job_result_type>
           get_aggregated_results_if_all_terminated() const;
 
         bool apply_to_workers_without_result
-          (std::function <void (worker_id_t const&)> fun) const;
+          (std::function <void (worker_id_t const&)>) const;
 
         bool is_canceled() const;
 
