@@ -245,8 +245,6 @@ namespace we
 
       for (gspc::stencil_cache::Coordinate x (cBegin); x < cEnd; ++x)
       {
-        sync_callbacks.clear();
-
         sequential.exclusive
           ( Who {ALLOC}
           , Next {PUT}
@@ -255,13 +253,15 @@ namespace we
               allocation_context.bind_and_discard_ref
                 (Path {"stencil", "value"}, x);
 
+              sync_callbacks.clear();
+
               stencil_cache.alloc (allocation_context);
+
+              BOOST_REQUIRE_EQUAL (sync_callbacks.size(), 2);
+              BOOST_REQUIRE (sync_callbacks.count (place_neighbors));
+              BOOST_REQUIRE (sync_callbacks.count (place_neighbors_count));
             }
           );
-
-        BOOST_REQUIRE_EQUAL (sync_callbacks.size(), 2);
-        BOOST_REQUIRE (sync_callbacks.count (place_neighbors));
-        BOOST_REQUIRE (sync_callbacks.count (place_neighbors_count));
       }
 
       //! \note "long enough" to give the stencil cache time to

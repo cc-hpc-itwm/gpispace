@@ -103,15 +103,15 @@ namespace sdpa
               _worker_manager.assign_job_to_worker (jobId, worker, cost);
             }
 
-            Reservation* const pReservation
-              (new Reservation
-                 ( matching_workers_and_implementation.first
-                 , matching_workers_and_implementation.second
-                 , cost
-                 )
+            allocation_table_.emplace
+              ( jobId
+              , fhg::util::cxx14::make_unique<Reservation>
+                  ( matching_workers_and_implementation.first
+                  , matching_workers_and_implementation.second
+                  , cost
+                  )
               );
 
-            allocation_table_.emplace (jobId, pReservation);
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
@@ -142,7 +142,7 @@ namespace sdpa
       _worker_manager.steal_work<Reservation>
         ( [this] (job_id_t const& job)
           {
-            return allocation_table_.at (job);
+            return allocation_table_.at (job).get();
           }
         );
     }
@@ -162,7 +162,7 @@ namespace sdpa
               , get_job
               , [this] (job_id_t const& jobId)
                 {
-                  return allocation_table_.at (jobId);
+                  return allocation_table_.at (jobId).get();
                 }
               , cancel_worker_job
               )
@@ -224,13 +224,12 @@ namespace sdpa
 
       if (it != allocation_table_.end())
       {
-        Reservation const* const ptr_reservation(it->second);
-        for (std::string const& worker : ptr_reservation->workers())
+        for (std::string const& worker : it->second->workers())
         {
           try
           {
             _worker_manager.delete_job_from_worker
-              (job_id, worker, ptr_reservation->cost());
+              (job_id, worker, it->second->cost());
           }
           catch (...)
           {
@@ -240,7 +239,6 @@ namespace sdpa
           }
         }
 
-        delete ptr_reservation;
         _pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }

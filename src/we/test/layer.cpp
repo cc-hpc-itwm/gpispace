@@ -1555,7 +1555,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
     expect_workflow_response const workflow_response
       ( this
       , workflow_response_id
-      , std::make_exception_ptr (std::runtime_error ("workflow failed"))
+      , std::make_exception_ptr (std::runtime_error (fail_reason))
       );
 
     do_failed (child_id, fail_reason);
