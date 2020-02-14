@@ -179,6 +179,42 @@ struct fixture_scheduler_and_requirements_and_preferences
     BOOST_REQUIRE_EQUAL (sdpa::daemon::WorkerSet {worker}, workers (job));
     BOOST_REQUIRE_EQUAL (impl, implementation (job));
   }
+
+  void check_all_workers_have_at_least_one_task_assigned
+    (std::vector<sdpa::worker_id_t> const& test_workers)
+  {
+    for (unsigned int i (0); i < test_workers.size(); ++i)
+    {
+      BOOST_REQUIRE_GT
+        (count_assigned_jobs (get_current_assignment(), test_workers[i]), 0);
+    }
+  }
+
+  void check_all_workers_have_at_most_one_task_assigned
+    (std::vector<sdpa::worker_id_t> const& test_workers)
+  {
+    for (unsigned int i (0); i < test_workers.size(); ++i)
+    {
+      BOOST_REQUIRE_GE
+        (count_assigned_jobs (get_current_assignment(), test_workers[i]), 0);
+
+      BOOST_REQUIRE_LE
+        (count_assigned_jobs (get_current_assignment(), test_workers[i]), 1);
+    }
+  }
+
+  void check_task_is_started_with_the_expected_workers_and_implementation
+    ( sdpa::job_id_t const& job
+    , sdpa::daemon::WorkerSet const& assigned_workers
+    , sdpa::daemon::Implementation const& implementation
+    )
+  {
+    BOOST_REQUIRE_EQUAL
+      (_requirements_and_preferences.at (job).numWorkers(), 1);
+
+    BOOST_REQUIRE_EQUAL (this->workers (job), assigned_workers);
+    BOOST_REQUIRE_EQUAL (this->implementation (job), implementation);
+  }
 };
 
 namespace
@@ -2768,4 +2804,106 @@ BOOST_FIXTURE_TEST_CASE
 
   auto const assignment (get_current_assignment());
   BOOST_REQUIRE_EQUAL (assignment.count (job), 0);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( stealing_tasks_from_the_same_class
+  , fixture_scheduler_and_requirements_and_preferences
+  )
+{
+  using namespace std;
+
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
+
+  std::string const common_capability (capability_pool());
+
+  std::size_t const num_workers (100);
+  std::size_t const num_tasks (1000);
+
+  std::vector<sdpa::worker_id_t> test_workers;
+
+  for (unsigned int k (0); k < num_workers; ++k)
+  {
+    sdpa::worker_id_t const worker (worker_name_pool());
+    test_workers.emplace_back (worker);
+    _worker_manager.addWorker
+      ( worker
+      , {sdpa::Capability (common_capability, worker)}
+      , random_ulong()
+      , false
+      , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
+      );
+  }
+
+  for (unsigned int i {0}; i < num_tasks; ++i)
+  {
+    sdpa::job_id_t const task (job_name_pool());
+    add_job (task, require (common_capability));
+    _scheduler.enqueueJob (task);
+  }
+
+  _scheduler.assignJobsToWorkers();
+
+  unsigned int remaining_tasks (num_tasks);
+
+  std::vector<sdpa::job_id_t> running_tasks;
+
+  while (remaining_tasks > 0)
+  {
+    _scheduler.steal_work();
+
+    if (remaining_tasks > num_workers)
+    {
+      check_all_workers_have_at_least_one_task_assigned (test_workers);
+    }
+    else
+    {
+      check_all_workers_have_at_most_one_task_assigned (test_workers);
+    }
+
+    auto const started_tasks
+      (_scheduler.start_pending_jobs
+         ( [this]
+           ( sdpa::daemon::WorkerSet const& assigned_workers
+           , sdpa::daemon::Implementation const& implementation
+           , sdpa::job_id_t const& task
+           )
+           {
+             check_task_is_started_with_the_expected_workers_and_implementation
+               (task, assigned_workers, implementation);
+           }
+         )
+      );
+
+    running_tasks.insert
+      (running_tasks.end(), started_tasks.begin(), started_tasks.end());
+
+    // finish arbitrary number of tasks
+    std::shuffle ( running_tasks.begin()
+                 , running_tasks.end()
+                 , fhg::util::testing::detail::GLOBAL_random_engine()
+                 );
+
+    unsigned int num_tasks_to_finish
+      ( fhg::util::testing::random_integral<std::size_t>()
+      % std::min (num_workers, running_tasks.size())
+      + 1
+      );
+
+    for (unsigned int i (0) ; i < num_tasks_to_finish; ++i)
+    {
+      // finish arbitrary task
+      unsigned int id
+        ( fhg::util::testing::random_integral<unsigned int>()
+        % running_tasks.size()
+        );
+
+      _scheduler.releaseReservation (running_tasks[id]);
+      running_tasks.erase (running_tasks.begin() + id);
+      remaining_tasks--;
+    }
+  }
 }
