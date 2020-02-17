@@ -203,6 +203,12 @@ namespace we
                                   , value
                                   );
               }
+            , [this, parent] (heureka_ids_type const& h_ids)
+              {
+                heureka_response ( *parent
+                                 , h_ids
+                                 );
+              }
             );
           _running_jobs.terminated (*parent, id);
         }
@@ -277,6 +283,20 @@ namespace we
 
       if (!parent)
       {
+        return;
+      }
+
+      if (_ignore_heureka_cancel_for.erase (child))
+      {
+        _nets_to_extract_from.apply
+          ( *parent
+          , [this, child] (activity_data_type& activity_data)
+          {
+            id_type const parent_id (activity_data._id);
+            _running_jobs.terminated (parent_id, child);
+          }
+          );
+
         return;
       }
 
@@ -412,6 +432,36 @@ namespace we
     }
   }
 
+  void layer::heureka_response ( id_type id
+                               , heureka_ids_type const& heureka_ids
+                               )
+  {
+    //! \todo kill all children of this parent
+    //  for (heureka_id_type const& heureka : heureka_ids)
+    (void) heureka_ids;
+
+    _nets_to_extract_from.apply
+      ( id
+      , [this, id] (activity_data_type const& activity_data)
+      {
+        const std::function<void()> after
+          ([this, id]() {});
+
+        if (_running_jobs.contains (activity_data._id))
+        {
+          _running_jobs.apply
+            ( activity_data._id
+            , [&] (id_type child)
+              {
+                _ignore_heureka_cancel_for.emplace (child);
+                _rts_cancel (child);
+              }
+            );
+        }
+      }
+      );
+  }
+
     void layer::extract_from_nets()
     try
     {
@@ -445,6 +495,12 @@ namespace we
                                             , get_response_id (description)
                                             , value
                                             );
+                        }
+                      , [this, &activity_data] (heureka_ids_type const& h_ids)
+                        {
+                          heureka_response ( activity_data._id
+                                           , h_ids
+                                           );
                         }
                       , _plugins
                       , [this, id]
@@ -824,11 +880,12 @@ namespace we
     void layer::activity_data_type::child_finished
       ( type::activity_t child
       , we::workflow_response_callback const& workflow_response
+      , we::heureka_response_callback const& heureka_response
       )
     {
       //! \note We wrap all input activites in a net.
       boost::get<we::type::net_type> (_activity->transition().data())
-        .inject (child, workflow_response);
+        .inject (child, workflow_response, heureka_response);
     }
 
 

@@ -3,6 +3,8 @@
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/wrap.hpp>
+#include <we/type/value/unwrap.hpp>
 
 #include <we/require_type.hpp>
 
@@ -219,6 +221,20 @@ namespace we
       }
     }
 
+    void net_type::add_heureka ( transition_id_type transition_id
+                               , port_id_type port_id
+                               )
+    {
+      auto const& port_with_heureka
+        (_port_to_heureka.find (transition_id));
+      if (port_with_heureka != _port_to_heureka.end())
+      {
+        throw std::logic_error ("duplicate heureka");
+      }
+
+      _port_to_heureka[transition_id] = port_id;
+    }
+
     const std::unordered_map<place_id_type, place::type>&
       net_type::places() const
     {
@@ -254,6 +270,10 @@ namespace we
     net_type::port_to_response_type const& net_type::port_to_response() const
     {
       return _port_to_response;
+    }
+    net_type::port_to_heureka_type const& net_type::port_to_heureka() const
+    {
+      return _port_to_heureka;
     }
     net_type::place_to_port_type const& net_type::place_to_port() const
     {
@@ -482,6 +502,7 @@ namespace we
       ) const
     {
       std::forward_list<token_to_be_deleted_type> tokens_to_be_deleted;
+      int tokens_to_be_deleted_count = 0;
 
       for ( std::pair< place_id_type const
                      , std::pair<token_id_type, bool>
@@ -500,6 +521,7 @@ namespace we
         if (!is_read_connection)
         {
           tokens_to_be_deleted.emplace_front (pid, token_id);
+          tokens_to_be_deleted_count++;
         }
       }
 
@@ -601,6 +623,7 @@ namespace we
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
+      , we::heureka_response_callback const& heureka_response
       , gspc::we::plugin::Plugins& plugins
       , gspc::we::plugin::PutToken put_token
       )
@@ -704,7 +727,7 @@ namespace we
             );
         }
         else if (  _port_many_to_place.count (tid)
-                && _port_many_to_place.at (tid).count (p.first)
+                && _port_many_to_place.at (tid). count (p.first)
                 )
         {
           auto const& many_tokens
@@ -718,6 +741,29 @@ namespace we
                 ( _port_many_to_place.at (tid).at (p.first).first
                 , token
                 )
+              );
+          }
+        }
+        else if (  _port_to_heureka.count (tid)
+                && _port_to_heureka.at (tid) == p.first
+                )
+        {
+          auto const& ids
+            ( boost::get<std::set<pnet::type::value::value_type>>
+              (context.value ({p.second.name()}))
+            );
+
+          heureka_ids_type const heureka_ids
+            = pnet::type::value::unwrap<heureka_id_type>(ids);
+
+          if (heureka_ids.size())
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  heureka_response (heureka_ids);
+                }
+                , "inject result: sending heureka response failed"
               );
           }
         }
@@ -751,11 +797,12 @@ namespace we
 
     void net_type::inject ( activity_t const& child
                           , workflow_response_callback workflow_response
+                          , heureka_response_callback heureka_response
                           )
     {
       for (auto const& token_on_port : child.output())
       {
-        if ( _port_to_place.count (*child.transition_id())
+        if (  _port_to_place.count (*child.transition_id())
            && _port_to_place.at (*child.transition_id())
             . count (token_on_port.second)
            )
@@ -764,6 +811,7 @@ namespace we
                     . at (token_on_port.second).first
                     , token_on_port.first
                     );
+
         }
         else if (  _port_many_to_place.count (*child.transition_id())
                 && _port_many_to_place.at (*child.transition_id())
@@ -780,6 +828,35 @@ namespace we
                       . at (token_on_port.second).first
                       , token
                       );
+          }
+        }
+        else if (  _port_to_heureka.count (*child.transition_id())
+                && ( _port_to_heureka.at (*child.transition_id())
+                     == token_on_port.second
+                   )
+                )
+        {
+          std::set<heureka_id_type> const heureka_ids
+            ([this, &token_on_port]
+             {
+              auto const& ids
+              ( boost::get<std::set<pnet::type::value::value_type>>
+                 (token_on_port.first)
+              );
+
+              return pnet::type::value::unwrap<heureka_id_type>(ids);
+             }()
+            );
+
+          if (heureka_ids.size())
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  heureka_response (heureka_ids);
+                }
+                , "inject result: sending heureka response failed"
+              );
           }
         }
         else

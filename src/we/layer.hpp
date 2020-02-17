@@ -11,6 +11,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
+#include <we/heureka_response.hpp>
 
 #include <sdpa/discovery_info.hpp>
 #include <sdpa/types.hpp>
@@ -115,6 +116,10 @@ namespace we
                              );
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
+      void heureka_response ( id_type
+                            , heureka_ids_type const& ids
+                            );
+
       std::mutex _outstanding_responses_guard;
       std::unordered_map <id_type, std::unordered_set<std::string>>
         _outstanding_responses;
@@ -132,7 +137,10 @@ namespace we
         {}
 
         void child_finished
-          (type::activity_t, we::workflow_response_callback const&);
+          ( type::activity_t
+          , we::workflow_response_callback const&
+          , we::heureka_response_callback const&
+          );
 
         id_type _id;
         std::unique_ptr<type::activity_t> _activity;
@@ -201,6 +209,8 @@ namespace we
 
       std::unordered_map<id_type, std::function<void()>>
         _finalize_job_cancellation;
+
+      std::unordered_set<id_type> _ignore_heureka_cancel_for;
 
       mutable std::mutex _discover_state_mutex;
       std::unordered_map
