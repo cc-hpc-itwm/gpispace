@@ -30,6 +30,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/heureka.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
@@ -475,6 +476,19 @@ namespace xml
           );
       }
 
+
+      // **************************************************************** //
+
+      type::heureka_type heureka_type ( const xml_node_type* node
+                                      , state::type& state
+                                      )
+      {
+        return type::heureka_type
+          ( state.position (node)
+          , required ("heureka_type", node, "port", state)
+          );
+      }
+
       // **************************************************************** //
 
       type::place_map_type
@@ -811,6 +825,7 @@ namespace xml
         boost::optional<type::use_type> use;
         type::transition_type::connections_type connections;
         type::transition_type::responses_type responses;
+        type::transition_type::heurekas_type heurekas;
         type::transition_type::place_maps_type place_map;
         std::list<type::structure_type> structs;
         type::conditions_type conditions;
@@ -881,6 +896,11 @@ namespace xml
               responses.push<error::duplicate_response>
                 (response_type (child, state));
             }
+            else if (child_name == "connect-eureka")
+            {
+              heurekas.push<error::duplicate_heureka>
+                (heureka_type (child, state));
+            }
             else if (child_name == "condition")
             {
               auto const cs (parse_cdata (child, state));
@@ -937,6 +957,7 @@ namespace xml
                           )                                                \
           , connections                                                    \
           , responses                                                      \
+          , heurekas                                                       \
           , place_map                                                      \
           , structs                                                        \
           , conditions                                                     \

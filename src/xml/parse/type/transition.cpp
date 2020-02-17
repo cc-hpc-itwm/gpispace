@@ -37,6 +37,7 @@ namespace xml
         , const std::string& name
         , const connections_type& connections
         , responses_type const& responses
+        , heurekas_type const& heurekas
         , const place_maps_type& place_map
         , const structs_type& structs_
         , const conditions_type& conditions
@@ -50,6 +51,7 @@ namespace xml
         , _name (name)
         , _connections (connections)
         , _responses (responses)
+        , _heurekas (heurekas)
         , _place_map (place_map)
         , structs (structs_)
         , _conditions (conditions)
@@ -83,6 +85,7 @@ namespace xml
                , prefix + _name
                , connections
                , _responses
+               , _heurekas
                , place_map
                , structs
                , _conditions
@@ -120,6 +123,7 @@ namespace xml
                , fhg::util::remove_prefix (prefix, _name)
                , connections
                , _responses
+               , _heurekas
                , place_map
                , structs
                , _conditions
@@ -160,6 +164,10 @@ namespace xml
       transition_type::responses_type const& transition_type::responses() const
       {
         return _responses;
+      }
+      transition_type::heurekas_type const& transition_type::heurekas() const
+      {
+        return _heurekas;
       }
       const transition_type::place_maps_type&
         transition_type::place_map() const
@@ -774,6 +782,14 @@ namespace xml
                 );
             }
 
+            for (heureka_type const& heureka : trans.heurekas())
+            {
+              we_net.add_heureka
+                ( tid
+                , port_id_out.at (heureka.port())
+                );
+            }
+
             for (auto const& association : real_place_names)
             {
               we::type::property::type properties;
@@ -834,6 +850,7 @@ namespace xml
           dumps (s, t.place_map());
           dumps (s, t.connections());
           dumps (s, t.responses());
+          dumps (s, t.heurekas());
 
           for (const std::string& cond : t.conditions())
           {

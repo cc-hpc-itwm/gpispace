@@ -10,6 +10,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/heureka.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
@@ -549,6 +550,21 @@ namespace xml
             % late.port()
             % late.to()
             % early.to()
+            )
+      {}
+
+      duplicate_heureka::duplicate_heureka
+        ( const type::heureka_type& early
+        , const type::heureka_type& late
+        )
+          : generic_duplicate<type::heureka_type>
+            ( early
+            , late
+            , boost::format ( "connect-heureka %1%"
+                              " (existing heureka connects to %2%)"
+                            )
+            % late.port()
+            % early.port()
             )
       {}
 
