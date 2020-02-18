@@ -788,6 +788,7 @@ namespace sdpa
         reservation (*it_job)->replace_worker
           ( richest->first
           , thief->first
+          , reservation (*it_job)->implementation()
           , [&thief] (const std::string& cpb)
             {
               return thief->second.hasCapability (cpb);

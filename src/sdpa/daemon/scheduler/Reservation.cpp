@@ -26,6 +26,7 @@ namespace sdpa
       void Reservation::replace_worker
         ( worker_id_t const& current_worker
         , worker_id_t const& new_worker
+        , boost::optional<std::string> const& implementation
         , std::function<bool (std::string const&)> const&
             supports_implementation
         )
@@ -36,7 +37,30 @@ namespace sdpa
             ("Asked to replace the non-existent worker " + current_worker);
         }
 
-        if (_implementation && !supports_implementation (*_implementation))
+        if (!_preferences.empty() && !implementation)
+        {
+          throw std::logic_error
+            ("The implementation cannot be boost::none "
+             "if the set of preferences is not empty!"
+            );
+        }
+
+        if ( !_preferences.empty()
+           && ( std::find ( _preferences.begin()
+                          , _preferences.end()
+                          , *implementation
+                          )
+              == _preferences.end()
+              )
+           )
+        {
+          throw std::logic_error
+            ("The implementation must be set to one of "
+             "the preferences stored in the reservation!"
+            );
+        }
+
+        if (implementation && !supports_implementation (*implementation))
         {
           throw std::runtime_error
             ( ( boost::format
@@ -46,11 +70,12 @@ namespace sdpa
               % current_worker
               % new_worker
               % new_worker
-              % *_implementation
+              % *implementation
               ).str()
             );
         }
 
+        _implementation = implementation;
         _workers.emplace (new_worker);
         _workers.erase (current_worker);
       }
