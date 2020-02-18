@@ -17,32 +17,25 @@ namespace sdpa
     {
       class Reservation
       {
-        //! \todo Be able to test with real reservation? Before,
-        //! everything in WorkerManager was templated, so the test
-        //! could have an independent Reservation completely.
-#define SDPA_DAEMON_SCHEDULER_RESERVATION_VIRTUAL_FOR_TESTING virtual
-
       public:
         Reservation() = delete;
         Reservation (Reservation const&) = delete;
         Reservation (Reservation&&) = delete;
         Reservation& operator= (Reservation const&) = delete;
         Reservation& operator= (Reservation&&) = delete;
-        SDPA_DAEMON_SCHEDULER_RESERVATION_VIRTUAL_FOR_TESTING
-          ~Reservation() = default;
+        ~Reservation() = default;
 
         Reservation ( std::set<worker_id_t> const& workers
                     , Implementation const& implementation
                     , double cost
                     );
 
-        SDPA_DAEMON_SCHEDULER_RESERVATION_VIRTUAL_FOR_TESTING
-          void replace_worker
-            ( worker_id_t const& current_worker
-            , worker_id_t const& new_worker
-            , std::function<bool (std::string const& capability)> const&
-                supports_implementation
-            );
+        void replace_worker
+          ( worker_id_t const& current_worker
+          , worker_id_t const& new_worker
+          , std::function<bool (std::string const& capability)> const&
+              supports_implementation
+          );
 
         std::set<worker_id_t> workers() const;
         Implementation implementation() const;
