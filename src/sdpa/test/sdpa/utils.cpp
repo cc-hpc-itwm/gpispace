@@ -1,5 +1,6 @@
 #include <sdpa/test/sdpa/utils.hpp>
 
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/master_network_info.hpp>
 

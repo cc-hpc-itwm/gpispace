@@ -4,6 +4,7 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 
@@ -274,30 +275,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   // <boilerplate>
   sdpa::daemon::WorkerManager worker_manager;
 
-  struct mock_reservation
-  {
-    mock_reservation (double cost, bool allowed_to_be_stolen)
-      : _cost (cost)
-      , _allowed_to_be_stolen (allowed_to_be_stolen)
-    {}
-    double cost()
-    {
-      return _cost;
-    }
-    void replace_worker
-      ( sdpa::worker_id_t
-      , sdpa::worker_id_t
-      , std::function<bool (const std::string& cpb)> const&
-      )
-    {
-      BOOST_REQUIRE (_allowed_to_be_stolen);
-    }
-
-  private:
-    double _cost;
-    bool _allowed_to_be_stolen;
-  };
-  std::unordered_map<sdpa::job_id_t, mock_reservation> reservations;
+  std::unordered_map<sdpa::job_id_t, std::unique_ptr<sdpa::daemon::scheduler::Reservation>> reservations;
 
   std::string const capability_name (fhg::util::testing::random_string());
   auto&& add_worker ( [&] (sdpa::worker_id_t worker_id)
@@ -319,7 +297,15 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
           )
       {
         reservations.emplace
-          (job_id, mock_reservation (cost, allowed_to_be_stolen));
+          ( job_id
+          , fhg::util::cxx14::make_unique<sdpa::daemon::scheduler::Reservation>
+              ( allowed_to_be_stolen
+              ? std::set<sdpa::worker_id_t> {worker_id}
+              : std::set<sdpa::worker_id_t>{}
+              , sdpa::daemon::Implementation{}
+              , cost
+              )
+          );
         worker_manager.assign_job_to_worker (job_id, worker_id, cost);
       }
     );
@@ -347,10 +333,11 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   auto&& steal_work
     ( [&]
       {
-        std::function<mock_reservation* (sdpa::job_id_t const&)> reservation
+        auto const reservation
           ( [&] (sdpa::job_id_t const& job_id)
             {
-              return &reservations.at (job_id);
+              return static_cast<sdpa::daemon::scheduler::Reservation*>
+                (reservations.at (job_id).get());
             }
           );
         worker_manager.steal_work (reservation);
@@ -403,8 +390,13 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   add_worker (worker_id_pool());
 
 
-  // Has BOOST_REQUIRE inside via mock_reservation::replace_worker, so
-  // that only those expensive jobs are stolen. With the invalid-read,
-  // the second job is stolen from the cheaper worker.
+  // With the invalid-read, the second job is stolen from the
+  // cheaper worker.
+  // Note: If this throws a confusing "Asked to replace the non-existent
+  // worker", this is **not** because the worker doesn't exist, but
+  // because the test failed and we needed a way to let
+  // `Reservation::replace_worker()` fail. We do so by letting all
+  // those reservations we don't want to steal not have a worker to
+  // replace.
   steal_work();
 }

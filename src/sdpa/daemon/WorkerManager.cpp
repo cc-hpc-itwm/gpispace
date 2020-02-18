@@ -1,10 +1,22 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+
 #include <sdpa/types.hpp>
 
 #include <fhg/assert.hpp>
 
+#include <boost/range/adaptor/filtered.hpp>
+#include <boost/range/adaptor/map.hpp>
+#include <boost/range/algorithm.hpp>
 #include <boost/range/algorithm/count_if.hpp>
 #include <boost/range/algorithm_ext/push_back.hpp>
+
+#include <algorithm>
+#include <cstddef>
+#include <iterator>
+#include <queue>
+#include <stdexcept>
+#include <tuple>
+#include <vector>
 
 namespace sdpa
 {
@@ -656,6 +668,158 @@ namespace sdpa
                        + worker->second.acknowledged_.size()
                        );
       _idle_workers.erase (worker->first);
+    }
+
+    void WorkerManager::steal_work
+      (std::function<scheduler::Reservation* (job_id_t const&)> reservation)
+    {
+      std::lock_guard<std::mutex> const _(mtx_);
+      for (WorkerEquivalenceClass& weqc : worker_equiv_classes_
+                                        | boost::adaptors::map_values
+          )
+      {
+        weqc.steal_work (reservation, *this);
+      }
+    }
+
+    void WorkerManager::WorkerEquivalenceClass::steal_work
+      ( std::function<scheduler::Reservation* (job_id_t const&)> reservation
+      , WorkerManager& worker_manager
+      )
+    {
+      if (n_pending_jobs() == 0)
+      {
+        return;
+      }
+
+      if (_idle_workers.empty())
+      {
+        return;
+      }
+
+      std::function<double (job_id_t const& job_id)> const cost
+        { [&reservation] (job_id_t const& job_id)
+          {
+            return reservation (job_id)->cost();
+          }
+        };
+
+      std::function<bool (worker_iterator const&, worker_iterator const&)> const
+        comp { [] (worker_iterator const& lhs, worker_iterator const& rhs)
+               {
+                 return lhs->second.cost_assigned_jobs()
+                   < rhs->second.cost_assigned_jobs();
+               }
+             };
+
+      std::priority_queue < worker_iterator
+                          , std::vector<worker_iterator>
+                          , decltype (comp)
+                          > to_steal_from (comp);
+
+      for (worker_id_t const& w : _worker_ids)
+      {
+        auto const& it (worker_manager.worker_map_.find (w));
+        fhg_assert (it != worker_manager.worker_map_.end());
+        Worker const& worker (it->second);
+
+        if (worker.stealing_allowed())
+        {
+          to_steal_from.emplace (it);
+        }
+      }
+
+      while (!(_idle_workers.empty() || to_steal_from.empty()))
+      {
+        worker_iterator const richest (to_steal_from.top());
+        worker_iterator const& thief
+          (worker_manager.worker_map_.find (*_idle_workers.begin()));
+        Worker& richest_worker (richest->second);
+
+        auto it_job (std::max_element ( richest_worker.pending_.begin()
+                                      , richest_worker.pending_.end()
+                                      , [&reservation] ( job_id_t const& r
+                                                       , job_id_t const& l
+                                                       )
+                                        {
+                                          return reservation (r)->cost()
+                                            < reservation (l)->cost();
+                                        }
+                                      )
+                    );
+
+        fhg_assert (it_job != richest_worker.pending_.end());
+
+        reservation (*it_job)->replace_worker
+          ( richest->first
+          , thief->first
+          , [&thief] (const std::string& cpb)
+            {
+              return thief->second.hasCapability (cpb);
+            }
+          );
+
+        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job));
+        worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
+
+        to_steal_from.pop();
+
+        if (richest_worker.stealing_allowed())
+        {
+          to_steal_from.emplace (richest);
+        }
+      }
+    }
+
+    std::unordered_set<sdpa::job_id_t> WorkerManager::delete_or_cancel_worker_jobs
+      ( worker_id_t const& worker_id
+      , std::function<Job* (sdpa::job_id_t const&)> get_job
+      , std::function<scheduler::Reservation* (sdpa::job_id_t const&)> get_reservation
+      , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
+      )
+    {
+      std::lock_guard<std::mutex> const _(mtx_);
+
+      Worker const& worker (worker_map_.at (worker_id));
+
+      std::unordered_set<sdpa::job_id_t> jobs_to_reschedule
+        ( worker.pending_.begin()
+        , worker.pending_.end()
+        );
+
+      std::unordered_set<sdpa::job_id_t> jobs_to_cancel;
+      std::set_union ( worker.submitted_.begin()
+                     , worker.submitted_.end()
+                     , worker.acknowledged_.begin()
+                     , worker.acknowledged_.end()
+                     , std::inserter (jobs_to_cancel, jobs_to_cancel.begin())
+                      );
+
+      for (job_id_t const& jobId : jobs_to_cancel)
+      {
+        Job* const pJob = get_job (jobId);
+        fhg_assert (pJob);
+
+        scheduler::Reservation* reservation (get_reservation (jobId));
+        pJob->Reschedule();
+
+        //! \note would never be set otherwise (function is only
+        //! called after a worker died)
+        reservation->mark_as_canceled_if_no_result_stored_yet (worker_id);
+
+        if ( !reservation->apply_to_workers_without_result // false for worker 5, true for worker 4
+               ( [&jobId, &cancel_worker_job] (worker_id_t const& wid)
+                 {
+                   cancel_worker_job (wid, jobId);
+                 }
+               )
+           )
+        {
+          jobs_to_reschedule.emplace (jobId);
+        }
+      }
+
+      return jobs_to_reschedule;
     }
   }
 }
