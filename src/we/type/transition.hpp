@@ -11,6 +11,7 @@
 #include <we/type/property.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/value.hpp>
+#include <we/type/heureka.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/serialization/list.hpp>

@@ -117,7 +117,7 @@ namespace we
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
       void heureka_response ( id_type
-                            , heureka_ids_type const& ids
+                            , type::heureka_ids_type const& ids
                             );
 
       std::mutex _outstanding_responses_guard;

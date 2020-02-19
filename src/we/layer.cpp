@@ -203,7 +203,7 @@ namespace we
                                   , value
                                   );
               }
-            , [this, parent] (heureka_ids_type const& h_ids)
+            , [this, parent] (type::heureka_ids_type const& h_ids)
               {
                 heureka_response ( *parent
                                  , h_ids
@@ -433,7 +433,7 @@ namespace we
   }
 
   void layer::heureka_response ( id_type id
-                               , heureka_ids_type const& heureka_ids
+                               , type::heureka_ids_type const& heureka_ids
                                )
   {
     //! \todo kill all children of this parent
@@ -496,7 +496,7 @@ namespace we
                                             , value
                                             );
                         }
-                      , [this, &activity_data] (heureka_ids_type const& h_ids)
+                      , [this, &activity_data] (type::heureka_ids_type const& h_ids)
                         {
                           heureka_response ( activity_data._id
                                            , h_ids

@@ -753,8 +753,8 @@ namespace we
               (context.value ({p.second.name()}))
             );
 
-          heureka_ids_type const heureka_ids
-            = pnet::type::value::unwrap<heureka_id_type>(ids);
+          type::heureka_ids_type const heureka_ids
+            = pnet::type::value::unwrap<type::heureka_id_type>(ids);
 
           if (heureka_ids.size())
           {
@@ -836,7 +836,7 @@ namespace we
                    )
                 )
         {
-          std::set<heureka_id_type> const heureka_ids
+          std::set<type::heureka_id_type> const heureka_ids
             ([this, &token_on_port]
              {
               auto const& ids
@@ -844,7 +844,7 @@ namespace we
                  (token_on_port.first)
               );
 
-              return pnet::type::value::unwrap<heureka_id_type>(ids);
+              return pnet::type::value::unwrap<type::heureka_id_type>(ids);
              }()
             );
 
