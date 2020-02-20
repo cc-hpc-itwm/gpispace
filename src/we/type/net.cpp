@@ -509,12 +509,16 @@ namespace we
     void net_type::do_delete
       (std::forward_list<token_to_be_deleted_type> const& tokens_to_be_deleted)
     {
+      std::unordered_set<token_id_type> deleted_tokens;
+
       for ( token_to_be_deleted_type const& token_to_be_deleted
           : tokens_to_be_deleted
           )
       {
         _token_by_place_id
           .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
+
+        deleted_tokens.emplace (token_to_be_deleted.second);
       }
 
       for ( token_to_be_deleted_type const& token_to_be_deleted
@@ -529,7 +533,24 @@ namespace we
             | boost::adaptors::map_values
             )
         {
-          update_enabled (t);
+          auto const& priority (_tmap.at (t).priority());
+
+          if (_enabled.count (priority) && _enabled.at (priority).count (t))
+          {
+            auto const& choices (_enabled_choice.at (t));
+
+            if ( std::any_of
+                 ( choices.cbegin(), choices.cend()
+                 , [&] (decltype (*choices.cbegin()) choice)
+                   {
+                     return deleted_tokens.count (choice.second.first);
+                   }
+                 )
+               )
+            {
+              update_enabled (t);
+            }
+          }
         }
       }
     }
