@@ -107,6 +107,7 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="function" type="xsd:string" use="required"/>
+    <xsd:attribute name="eureka-group" type="xsd:string" use="optional"/>
     <xsd:attribute name="pass_context" type="xsd:boolean" use="optional"/>
     <xsd:attribute name="target" type="xsd:string" use="optional"/>
   </xsd:complexType>
@@ -225,6 +226,10 @@
     <xsd:attribute name="port" type="xsd:NCName" use="required"/>
   </xsd:complexType>
 
+  <xsd:complexType name="connect_eureka_type">
+    <xsd:attribute name="port" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="place_map_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="properties" type="property_map_type"/>
@@ -295,6 +300,7 @@
         <xsd:element name="connect-inout" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
         <xsd:element name="connect-response" type="connect_response_type"/>
+        <xsd:element name="connect-eureka" type="connect_eureka_type"/>
         <xsd:element name="place-map" type="place_map_type"/>
         <xsd:element name="condition" type="xsd:string"/>
       </xsd:choice>
