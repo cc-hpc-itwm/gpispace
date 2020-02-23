@@ -26,7 +26,7 @@
         <in name="in" type="unsigned long"/>
         <in name="heureka_group" type="string"/>
         <out name="out" type="long"/>
-        <module name="generate_heureka_with_exp" function="out generate_event(in)">
+        <module name="gen_heureka_with_exp" function="out generate_event(in)" eureka-group="find_small_value">
           <cinclude href="iostream"/>
           <cinclude href="stdlib.h"/>
           <cinclude href="time.h"/>

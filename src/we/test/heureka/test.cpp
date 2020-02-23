@@ -79,7 +79,7 @@ BOOST_AUTO_TEST_CASE (we_heureka_kill_all)
   {
     BOOST_TEST_CONTEXT ("With heureka transition: " << workflow.filename())
     {
-      for (unsigned long N (1UL); N <= 10UL; ++N)
+      for (unsigned long N (1UL); N <= 10UL; N+= 4)
       {
         std::list<unsigned long> token_list;
         token_list.resize (N);
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE (we_heureka_kill_all)
             ( gspc::client (drts).put_and_run
               ( gspc::workflow (workflow)
               , { {"ntokens", pnet::type::value::wrap (token_list)}
-                , {"heureka_gid", std::string("heureka_gid")}
+                , {"heureka_gid", std::string("find_small_value")}
                 }
               )
             );
