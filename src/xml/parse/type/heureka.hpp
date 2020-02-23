@@ -20,6 +20,8 @@ namespace xml
   {
     namespace type
     {
+      using heureka_id_type = std::string;
+
       struct heureka_type : with_position_of_definition
       {
       public:

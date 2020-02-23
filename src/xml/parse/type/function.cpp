@@ -620,6 +620,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
+            , mod.heureka_id()
             );
 
           add_ports (trans, fun.ports());
