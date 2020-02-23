@@ -59,6 +59,7 @@ namespace we
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
+                   , boost::optional<heureka_id_type> const& _heureka_id
                    , const std::list<we::type::preference_t>& preferences
                    )
         try
@@ -77,6 +78,7 @@ namespace we
           ,  _requirements()
           ,  _preferences  (preferences)
           ,  _priority  (priority)
+          ,  heureka_id_ (_heureka_id)
       {
         if (preferences.size() && data_.type() != typeid (multi_module_call_t))
         {
@@ -96,8 +98,28 @@ namespace we
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
+                   , const std::list<we::type::preference_t>& preferences
                    )
-        : transition_t (name, typ, _condition, prop, priority, {})
+        : transition_t ( name
+                       , typ
+                       , _condition
+                       , prop
+                       , priority
+                       , boost::none
+                       , preferences
+                       )
+      { }
+
+      template <typename Type>
+      transition_t ( const std::string& name
+                   , Type const& typ
+                   , boost::optional<expression_t> const& _condition
+                   , const we::type::property::type& prop
+                   , we::priority_type priority
+                   , boost::optional<heureka_id_type> const&
+                     _heureka_id = boost::none
+                   )
+        : transition_t (name, typ, _condition, prop, priority, _heureka_id, {})
       { }
 
       const std::string& name() const;
@@ -110,6 +132,7 @@ namespace we
       boost::optional<const module_call_t&> module_call() const;
 
       boost::optional<expression_t> const& condition() const;
+      boost::optional<heureka_id_type> const& heureka_id() const;
 
       we::port_id_type add_port (port_t const&);
 
@@ -151,6 +174,8 @@ namespace we
       std::list<we::type::preference_t> _preferences;
       we::priority_type _priority;
 
+      boost::optional<heureka_id_type> heureka_id_;
+
       friend class boost::serialization::access;
       template <typename Archive>
       void serialize(Archive & ar, const unsigned int)
@@ -166,6 +191,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP(_requirements);
         ar & BOOST_SERIALIZATION_NVP(_preferences);
         ar & BOOST_SERIALIZATION_NVP(_priority);
+        ar & BOOST_SERIALIZATION_NVP(heureka_id_);
       }
     };
   }
