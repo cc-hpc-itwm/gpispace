@@ -212,6 +212,12 @@ namespace sdpa
       if (equivalence_class->second.n_workers() == 0)
       {
         worker_equiv_classes_.erase (equivalence_class);
+
+        for (auto& worker_class : worker_equiv_classes_)
+        {
+          worker_class.second._stealing_allowed_classes.erase
+            (worker->second.capability_names_);
+        }
       }
 
       worker_map_.erase (worker);
