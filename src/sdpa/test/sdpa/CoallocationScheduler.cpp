@@ -9,6 +9,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/set.hpp>
 #include <util-generic/testing/random.hpp>
+#include <util-generic/testing/random/integral.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
@@ -2885,10 +2886,9 @@ BOOST_FIXTURE_TEST_CASE
                  , fhg::util::testing::detail::GLOBAL_random_engine()
                  );
 
-    unsigned int num_tasks_to_finish
-      ( fhg::util::testing::random_integral<std::size_t>()
-      % std::min (num_workers, running_tasks.size())
-      + 1
+    auto const num_tasks_to_finish
+      ( fhg::util::testing::random<std::size_t>{}
+          (std::min (num_workers, running_tasks.size()), 1)
       );
 
     for (unsigned int i (0) ; i < num_tasks_to_finish; ++i)
@@ -2997,10 +2997,9 @@ BOOST_FIXTURE_TEST_CASE
                  , fhg::util::testing::detail::GLOBAL_random_engine()
                  );
 
-    unsigned int num_tasks_to_finish
-      ( fhg::util::testing::random_integral<std::size_t>()
-      % std::min (num_workers, running_tasks.size())
-      + 1
+    auto const num_tasks_to_finish
+      ( fhg::util::testing::random<std::size_t>{}
+          (std::min (num_workers, running_tasks.size()), 1)
       );
 
     for (unsigned int i (0) ; i < num_tasks_to_finish; ++i)
