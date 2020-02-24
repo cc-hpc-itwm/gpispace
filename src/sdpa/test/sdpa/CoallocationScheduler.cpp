@@ -33,6 +33,40 @@
 #include <utility>
 #include <vector>
 
+#define CHECK_ALL_WORKERS_HAVE_AT_LEAST_ONE_TASK_ASSIGNED(_workers) \
+  for (unsigned int i (0); i < _workers.size(); ++i)                \
+  {                                                                 \
+    BOOST_REQUIRE_GT                                                \
+      ( count_assigned_jobs                                         \
+          (get_current_assignment(), _workers[i])                   \
+      , 0                                                           \
+      );                                                            \
+  }
+
+#define CHECK_ALL_WORKERS_HAVE_AT_MOST_ONE_TASK_ASSIGNED(_workers)  \
+  for (unsigned int i (0); i < _workers.size(); ++i)                \
+  {                                                                 \
+    BOOST_REQUIRE_GE                                                \
+      ( count_assigned_jobs                                         \
+          (get_current_assignment(), _workers[i])                   \
+      , 0                                                           \
+      );                                                            \
+                                                                    \
+    BOOST_REQUIRE_LE                                                \
+      ( count_assigned_jobs                                         \
+          (get_current_assignment(), _workers[i])                   \
+      , 1                                                           \
+      );                                                            \
+  }
+
+#define CHECK_EXPECTED_WORKERS_AND_IMPLEMENTATION(_job, _workers, _implementation)  \
+  do                                                                                \
+  {                                                                                 \
+    BOOST_REQUIRE_EQUAL (_workers.size(), 1);                                       \
+    BOOST_REQUIRE_EQUAL (this->workers (_job), _workers);                           \
+    BOOST_REQUIRE_EQUAL (this->implementation (_job), _implementation);             \
+  } while (false);
+
 namespace
 {
   std::string (&random_job_id)(void) = utils::random_peer_name;
@@ -179,42 +213,6 @@ struct fixture_scheduler_and_requirements_and_preferences
 
     BOOST_REQUIRE_EQUAL (sdpa::daemon::WorkerSet {worker}, workers (job));
     BOOST_REQUIRE_EQUAL (impl, implementation (job));
-  }
-
-  void check_all_workers_have_at_least_one_task_assigned
-    (std::vector<sdpa::worker_id_t> const& test_workers)
-  {
-    for (unsigned int i (0); i < test_workers.size(); ++i)
-    {
-      BOOST_REQUIRE_GT
-        (count_assigned_jobs (get_current_assignment(), test_workers[i]), 0);
-    }
-  }
-
-  void check_all_workers_have_at_most_one_task_assigned
-    (std::vector<sdpa::worker_id_t> const& test_workers)
-  {
-    for (unsigned int i (0); i < test_workers.size(); ++i)
-    {
-      BOOST_REQUIRE_GE
-        (count_assigned_jobs (get_current_assignment(), test_workers[i]), 0);
-
-      BOOST_REQUIRE_LE
-        (count_assigned_jobs (get_current_assignment(), test_workers[i]), 1);
-    }
-  }
-
-  void check_task_is_started_with_the_expected_workers_and_implementation
-    ( sdpa::job_id_t const& job
-    , sdpa::daemon::WorkerSet const& assigned_workers
-    , sdpa::daemon::Implementation const& implementation
-    )
-  {
-    BOOST_REQUIRE_EQUAL
-      (_requirements_and_preferences.at (job).numWorkers(), 1);
-
-    BOOST_REQUIRE_EQUAL (this->workers (job), assigned_workers);
-    BOOST_REQUIRE_EQUAL (this->implementation (job), implementation);
   }
 };
 
@@ -2856,11 +2854,11 @@ BOOST_FIXTURE_TEST_CASE
 
     if (remaining_tasks > num_workers)
     {
-      check_all_workers_have_at_least_one_task_assigned (test_workers);
+      CHECK_ALL_WORKERS_HAVE_AT_LEAST_ONE_TASK_ASSIGNED (test_workers);
     }
     else
     {
-      check_all_workers_have_at_most_one_task_assigned (test_workers);
+      CHECK_ALL_WORKERS_HAVE_AT_MOST_ONE_TASK_ASSIGNED (test_workers);
     }
 
     auto const started_tasks
@@ -2871,7 +2869,7 @@ BOOST_FIXTURE_TEST_CASE
            , sdpa::job_id_t const& task
            )
            {
-             check_task_is_started_with_the_expected_workers_and_implementation
+             CHECK_EXPECTED_WORKERS_AND_IMPLEMENTATION
                (task, assigned_workers, implementation);
            }
          )
@@ -2967,11 +2965,11 @@ BOOST_FIXTURE_TEST_CASE
 
     if (remaining_tasks > num_workers)
     {
-      check_all_workers_have_at_least_one_task_assigned (test_workers);
+      CHECK_ALL_WORKERS_HAVE_AT_LEAST_ONE_TASK_ASSIGNED (test_workers);
     }
     else
     {
-      check_all_workers_have_at_most_one_task_assigned (test_workers);
+      CHECK_ALL_WORKERS_HAVE_AT_MOST_ONE_TASK_ASSIGNED (test_workers);
     }
 
     auto const started_tasks
@@ -2982,7 +2980,7 @@ BOOST_FIXTURE_TEST_CASE
            , sdpa::job_id_t const& task
            )
            {
-             check_task_is_started_with_the_expected_workers_and_implementation
+             CHECK_EXPECTED_WORKERS_AND_IMPLEMENTATION
                (task, assigned_workers, implementation);
            }
          )
