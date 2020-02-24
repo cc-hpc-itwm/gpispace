@@ -286,7 +286,7 @@ namespace we
         return;
       }
 
-      if (_ignore_heureka_cancel_for.erase (child))
+      if (_ignore_canceled_by_heureka.erase (child))
       {
         _nets_to_extract_from.apply
           ( *parent
@@ -436,27 +436,26 @@ namespace we
                                , type::heureka_ids_type const& heureka_ids
                                )
   {
-    //! \todo kill all children of this parent
-    //  for (heureka_id_type const& heureka : heureka_ids)
-    (void) heureka_ids;
-
     _nets_to_extract_from.apply
       ( id
-      , [this, id] (activity_data_type const& activity_data)
+      , [this, id, heureka_ids] (activity_data_type const& activity_data)
       {
         const std::function<void()> after
           ([this, id]() {});
 
         if (_running_jobs.contains (activity_data._id))
         {
-          _running_jobs.apply
-            ( activity_data._id
-            , [&] (id_type child)
-              {
-                _ignore_heureka_cancel_for.emplace (child);
-                _rts_cancel (child);
-              }
-            );
+          for (type::heureka_id_type const& h_id : heureka_ids)
+          {
+            _running_jobs.apply_and_remove_heureka
+              ( h_id
+              , [&] (id_type t_id)
+                {
+                  _ignore_canceled_by_heureka.emplace (t_id);
+                  _rts_cancel (t_id);
+                }
+              );
+          }
         }
       }
       );
@@ -537,7 +536,10 @@ namespace we
         if (activity)
         {
           const id_type child_id (_rts_id_generator());
-          _running_jobs.started (activity_data._id, child_id);
+          _running_jobs.started ( activity_data._id
+                                , child_id
+                                , activity->transition().heureka_id()
+                                );
           _rts_submit (child_id, *activity);
           was_active = true;
         }
@@ -892,9 +894,18 @@ namespace we
     // locked_parent_child_relation_type
 
     void layer::locked_parent_child_relation_type::started
-      (id_type parent, id_type child)
+      ( id_type parent
+      , id_type child
+      , boost::optional<type::heureka_id_type> const& h_id
+      )
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      if (h_id)
+      {
+        _heureka_in_progress.insert
+          (relation_type::value_type (*h_id, child));
+      }
 
       _relation.insert (relation_type::value_type (parent, child));
     }
@@ -903,6 +914,8 @@ namespace we
       (id_type parent, id_type child)
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      _heureka_in_progress.right.erase (child);
 
       _relation.erase (relation_type::value_type (parent, child));
 
@@ -944,5 +957,21 @@ namespace we
       {
         fun (child);
       }
+    }
+
+    void layer::locked_parent_child_relation_type::apply_and_remove_heureka
+      (type::heureka_id_type h_id, std::function<void (id_type)> fun)
+    {
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      for ( id_type child
+          : _heureka_in_progress.left.equal_range (h_id)
+          | boost::adaptors::map_values
+          )
+      {
+        fun (child);
+      }
+
+      _heureka_in_progress.left.erase (h_id);
     }
 }

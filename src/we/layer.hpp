@@ -210,8 +210,6 @@ namespace we
       std::unordered_map<id_type, std::function<void()>>
         _finalize_job_cancellation;
 
-      std::unordered_set<id_type> _ignore_heureka_cancel_for;
-
       mutable std::mutex _discover_state_mutex;
       std::unordered_map
         < id_type, std::pair<std::size_t, sdpa::discovery_info_t >
@@ -219,7 +217,11 @@ namespace we
 
       struct locked_parent_child_relation_type
       {
-        void started (id_type parent, id_type child);
+        void started
+          ( id_type parent
+          , id_type child
+          , boost::optional<type::heureka_id_type> const& hid
+          );
         bool terminated (id_type parent, id_type child);
 
         boost::optional<id_type> parent (id_type child);
@@ -227,8 +229,19 @@ namespace we
 
         void apply (id_type parent, std::function<void (id_type)>) const;
 
+        void apply_and_remove_heureka ( type::heureka_id_type id
+                                      , std::function<void (id_type)>
+                                      );
+
       private:
         mutable std::mutex _relation_mutex;
+        typedef boost::bimaps::bimap
+          < boost::bimaps::unordered_multiset_of<type::heureka_id_type>
+          , boost::bimaps::unordered_set_of<id_type>
+          , boost::bimaps::set_of_relation<>
+          > heureka_by_id_type;
+        heureka_by_id_type _heureka_in_progress;
+
         typedef boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<id_type>
           , boost::bimaps::unordered_set_of<id_type>
@@ -236,6 +249,8 @@ namespace we
           > relation_type;
         relation_type _relation;
       } _running_jobs;
+
+      std::unordered_set<id_type> _ignore_canceled_by_heureka;
 
       boost::strict_scoped_thread<> _extract_from_nets_thread;
       fhg::util::finally_t<std::function<void()>> _stop_extracting;
