@@ -2811,8 +2811,6 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  using namespace std;
-
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
   fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
