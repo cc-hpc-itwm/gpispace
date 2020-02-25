@@ -267,14 +267,8 @@ struct fixture_scheduler_and_requirements_and_preferences
 
       for (unsigned int i (0) ; i < num_tasks_to_finish; ++i)
       {
-        // finish arbitrary task
-        unsigned int id
-          ( fhg::util::testing::random_integral<unsigned int>()
-          % running_tasks.size()
-          );
-
-        _scheduler.releaseReservation (running_tasks[id]);
-        running_tasks.erase (running_tasks.begin() + id);
+        _scheduler.releaseReservation (running_tasks.back());
+        running_tasks.pop_back();
         remaining_tasks--;
       }
     }
