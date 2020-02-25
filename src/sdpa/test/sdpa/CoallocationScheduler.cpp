@@ -2875,8 +2875,11 @@ BOOST_FIXTURE_TEST_CASE
 
   std::string const common_capability (capability_pool());
 
-  std::size_t const num_workers (100);
-  std::size_t const num_tasks (1000);
+  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
+  auto const num_tasks
+    ( fhg::util::testing::random<std::size_t>{} (10, 2)
+    * num_workers
+    );
 
   std::vector<sdpa::worker_id_t> test_workers;
 
@@ -2925,8 +2928,11 @@ BOOST_FIXTURE_TEST_CASE
                   , capability_pool
                   );
 
-  std::size_t const num_workers (100);
-  std::size_t const num_tasks (1000);
+  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
+  auto const num_tasks
+     ( fhg::util::testing::random<std::size_t>{} (10, 2)
+     * num_workers
+     );
 
   std::vector<sdpa::worker_id_t> test_workers;
 
