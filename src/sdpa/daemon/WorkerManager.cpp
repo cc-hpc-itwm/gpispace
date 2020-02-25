@@ -723,108 +723,11 @@ namespace sdpa
                                         | boost::adaptors::map_values
           )
       {
-        if (weqc.stealing_allowed_classes().empty())
-        {
-          weqc.steal_work (reservation, *this);
-        }
-        else
-        {
-          weqc.steal_tasks_with_preferences (reservation, *this);
-        }
+        weqc.steal_work (reservation, *this);
       }
     }
 
     void WorkerManager::WorkerEquivalenceClass::steal_work
-      ( std::function<scheduler::Reservation* (job_id_t const&)> reservation
-      , WorkerManager& worker_manager
-      )
-    {
-      if (n_pending_jobs() == 0)
-      {
-        return;
-      }
-
-      if (_idle_workers.empty())
-      {
-        return;
-      }
-
-      std::function<double (job_id_t const& job_id)> const cost
-        { [&reservation] (job_id_t const& job_id)
-          {
-            return reservation (job_id)->cost();
-          }
-        };
-
-      std::function<bool (worker_iterator const&, worker_iterator const&)> const
-        comp { [] (worker_iterator const& lhs, worker_iterator const& rhs)
-               {
-                 return lhs->second.cost_assigned_jobs()
-                   < rhs->second.cost_assigned_jobs();
-               }
-             };
-
-      std::priority_queue < worker_iterator
-                          , std::vector<worker_iterator>
-                          , decltype (comp)
-                          > to_steal_from (comp);
-
-      for (worker_id_t const& w : _worker_ids)
-      {
-        auto const& it (worker_manager.worker_map_.find (w));
-        fhg_assert (it != worker_manager.worker_map_.end());
-        Worker const& worker (it->second);
-
-        if (worker.stealing_allowed())
-        {
-          to_steal_from.emplace (it);
-        }
-      }
-
-      while (!(_idle_workers.empty() || to_steal_from.empty()))
-      {
-        worker_iterator const richest (to_steal_from.top());
-        worker_iterator const& thief
-          (worker_manager.worker_map_.find (*_idle_workers.begin()));
-        Worker& richest_worker (richest->second);
-
-        auto it_job (std::max_element ( richest_worker.pending_.begin()
-                                      , richest_worker.pending_.end()
-                                      , [&reservation] ( job_id_t const& r
-                                                       , job_id_t const& l
-                                                       )
-                                        {
-                                          return reservation (r)->cost()
-                                            < reservation (l)->cost();
-                                        }
-                                      )
-                    );
-
-        fhg_assert (it_job != richest_worker.pending_.end());
-
-        reservation (*it_job)->replace_worker
-          ( richest->first
-          , thief->first
-          , reservation (*it_job)->implementation()
-          , [&thief] (const std::string& cpb)
-            {
-              return thief->second.hasCapability (cpb);
-            }
-          );
-
-        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job), {});
-        worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
-
-        to_steal_from.pop();
-
-        if (richest_worker.stealing_allowed())
-        {
-          to_steal_from.emplace (richest);
-        }
-      }
-    }
-
-    void WorkerManager::WorkerEquivalenceClass::steal_tasks_with_preferences
       ( std::function<scheduler::Reservation* (job_id_t const&)> reservation
       , WorkerManager& worker_manager
       )
@@ -872,6 +775,7 @@ namespace sdpa
       for (worker_id_t const& w : _worker_ids)
       {
         auto const& it (worker_manager.worker_map_.find (w));
+        fhg_assert (it != worker_manager.worker_map_.end());
         Worker const& worker (it->second);
 
         if (worker.stealing_allowed())
@@ -913,12 +817,12 @@ namespace sdpa
                         )
           );
 
-        if (preference != preferences.end())
+        if (preferences.empty() || preference != preferences.end())
         {
           reservation (*it_job)->replace_worker
             ( richest->first
             , thief->first
-            , *preference
+            , boost::make_optional (!preferences.empty(), *preference)
             , [&thief] (const std::string& cpb)
               {
                 return thief->second.hasCapability (cpb);
