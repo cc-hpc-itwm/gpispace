@@ -195,6 +195,10 @@ namespace sdpa
                                         );
 
       worker_equiv_classes_[result.first->second.capability_names_].add_worker_entry (result.first);
+
+      // allow to steal from itself
+      worker_equiv_classes_.at (result.first->second.capability_names_)
+        ._stealing_allowed_classes.emplace (result.first->second.capability_names_);
     }
 
 
