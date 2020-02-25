@@ -84,11 +84,6 @@ namespace sdpa
         void steal_work
           (std::function<scheduler::Reservation* (job_id_t const&)>, WorkerManager&);
 
-        std::set<std::set<std::string>> stealing_allowed_classes() const
-        {
-          return _stealing_allowed_classes;
-        }
-
         void allow_classes_matching_preferences_stealing
           ( std::map<std::set<std::string>, WorkerEquivalenceClass> const& worker_classes
           , Preferences const& preferences
