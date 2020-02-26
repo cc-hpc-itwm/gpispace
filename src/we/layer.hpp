@@ -235,12 +235,11 @@ namespace we
 
       private:
         mutable std::mutex _relation_mutex;
-        typedef boost::bimaps::bimap
+        boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<type::heureka_id_type>
           , boost::bimaps::unordered_set_of<id_type>
           , boost::bimaps::set_of_relation<>
-          > heureka_by_id_type;
-        heureka_by_id_type _heureka_in_progress;
+          > _heureka_in_progress;
 
         typedef boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<id_type>
