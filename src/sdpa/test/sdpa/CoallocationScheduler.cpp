@@ -202,6 +202,20 @@ struct fixture_scheduler_and_requirements_and_preferences
            );
   }
 
+  std::set<sdpa::job_id_t> assigned_tasks (sdpa::worker_id_t const& worker)
+  {
+    std::set<sdpa::job_id_t> tasks;
+    for (auto const& task_and_workers : get_current_assignment())
+    {
+      if (task_and_workers.second.count (worker))
+      {
+        tasks.emplace (task_and_workers.first);
+      }
+    }
+
+    return tasks;
+  }
+
   void require_worker_and_implementation
     ( sdpa::job_id_t const& job
     , sdpa::worker_id_t const& worker
@@ -272,6 +286,49 @@ struct fixture_scheduler_and_requirements_and_preferences
         remaining_tasks--;
       }
     }
+  }
+
+  void finish_tasks_assigned_to_worker_and_steal_work
+    (sdpa::worker_id_t const& worker)
+  {
+    auto worker_tasks (assigned_tasks (worker));
+    BOOST_REQUIRE (!worker_tasks.empty());
+
+    // finish all tasks assigned to the worker given as parameter
+    while (!worker_tasks.empty())
+    {
+      auto const started_tasks
+        (_scheduler.start_pending_jobs
+           ( [this]
+             ( sdpa::daemon::WorkerSet const& assigned_workers
+             , sdpa::daemon::Implementation const& implementation
+             , sdpa::job_id_t const& task
+             )
+             {
+               CHECK_EXPECTED_WORKERS_AND_IMPLEMENTATION
+                 (task, assigned_workers, implementation);
+             }
+           )
+        );
+
+      // terminate only the tasks assigned to the worker given as parameter
+      for (auto const& task : started_tasks)
+      {
+        if (worker_tasks.count (task))
+        {
+          _scheduler.releaseReservation (task);
+          worker_tasks.erase (task);
+        }
+      }
+    }
+
+    BOOST_REQUIRE_EQUAL
+      (count_assigned_jobs (get_current_assignment(), worker), 0);
+
+    _scheduler.steal_work();
+
+    BOOST_REQUIRE_EQUAL
+      (count_assigned_jobs (get_current_assignment(), worker), 1);
   }
 };
 
@@ -2966,4 +3023,52 @@ BOOST_FIXTURE_TEST_CASE
 
   finish_tasks_and_steal_work_when_idle_workers_exist
      (num_tasks, test_workers);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( worker_finishing_tasks_without_preferences_earlier_steals_work
+  , fixture_scheduler_and_requirements_and_preferences
+  )
+{
+  fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
+  fhg::util::testing::unique_random<std::string> capability_pool;
+  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
+
+  std::string const common_capability (capability_pool());
+
+  auto const num_workers (fhg::util::testing::random<std::size_t>{} (100, 10));
+  auto const num_tasks
+    ( fhg::util::testing::random<std::size_t>{} (10, 2)
+    * num_workers
+    );
+
+  std::vector<sdpa::worker_id_t> test_workers;
+  for (unsigned int k (0); k < num_workers; ++k)
+  {
+    sdpa::worker_id_t const worker (worker_name_pool());
+    test_workers.emplace_back (worker);
+    _worker_manager.addWorker
+      ( worker
+      , {sdpa::Capability (common_capability, worker)}
+      , random_ulong()
+      , false
+      , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
+      );
+  }
+
+  for (unsigned int i {0}; i < num_tasks; ++i)
+  {
+    sdpa::job_id_t const task (job_name_pool());
+    add_job (task, require (common_capability));
+    _scheduler.enqueueJob (task);
+  }
+
+  _scheduler.assignJobsToWorkers();
+
+  auto const worker_finishing_tasks_earlier
+    (test_workers[fhg::util::testing::random_integral<unsigned long>() % num_workers]);
+
+  finish_tasks_assigned_to_worker_and_steal_work
+    (worker_finishing_tasks_earlier);
 }
