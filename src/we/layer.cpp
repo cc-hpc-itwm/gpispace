@@ -959,8 +959,10 @@ namespace we
       }
     }
 
+
+    template <typename Func>
     void layer::locked_parent_child_relation_type::apply_and_remove_heureka
-      (type::heureka_id_type h_id, std::function<void (id_type)> fun)
+      (type::heureka_id_type const& h_id, Func fun)
     {
       std::lock_guard<std::mutex> const lock_for_heureka (_relation_mutex);
 

@@ -229,9 +229,10 @@ namespace we
 
         void apply (id_type parent, std::function<void (id_type)>) const;
 
-        void apply_and_remove_heureka ( type::heureka_id_type id
-                                      , std::function<void (id_type)>
-                                      );
+        template <typename Func>
+          void apply_and_remove_heureka ( type::heureka_id_type const& id
+                                        , Func f
+                                        );
 
       private:
         mutable std::mutex _relation_mutex;
