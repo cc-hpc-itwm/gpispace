@@ -1493,7 +1493,7 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
-        const boost::optional<type::heureka_id_type> heureka_id
+        const boost::optional<we::type::heureka_id_type> heureka_id
           (optional (node, "eureka-group"));
         const util::position_type pod (state.position (node));
         const boost::optional<std::string> target

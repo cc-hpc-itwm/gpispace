@@ -34,7 +34,7 @@ namespace xml
         , const std::list<std::string>& ldflags
         , const std::list<std::string>& cxxflags
         , const boost::optional<bool> &pass_context
-        , const boost::optional<heureka_id_type>& heureka_id
+        , const boost::optional<we::type::heureka_id_type>& heureka_id
         )
         : with_position_of_definition (pod)
         , _name (name)
@@ -116,7 +116,7 @@ namespace xml
       {
         return _target;
       }
-      const boost::optional<heureka_id_type>& module_type::heureka_id() const
+      const boost::optional<we::type::heureka_id_type>& module_type::heureka_id() const
       {
         return _heureka_id;
       }
