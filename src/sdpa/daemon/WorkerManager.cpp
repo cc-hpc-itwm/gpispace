@@ -4,6 +4,8 @@
 
 #include <fhg/assert.hpp>
 
+#include <util-generic/make_optional.hpp>
+
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm.hpp>
@@ -822,7 +824,7 @@ namespace sdpa
           reservation (*it_job)->replace_worker
             ( richest->first
             , thief->first
-            , boost::make_optional (!preferences.empty(), *preference)
+            , FHG_UTIL_MAKE_OPTIONAL (!preferences.empty(), *preference)
             , [&thief] (const std::string& cpb)
               {
                 return thief->second.hasCapability (cpb);
