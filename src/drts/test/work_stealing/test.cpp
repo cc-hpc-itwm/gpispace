@@ -105,9 +105,9 @@ BOOST_DATA_TEST_CASE
   std::function<std::string()> sep
     ([&]() { sep = [](){ return " "; }; return ""; });
 
-  for (auto const& capabilities : capabilities)
+  for (auto const& capability : capabilities)
   {
-    topology << sep() << capabilities << ":" << num_workers_of_a_type_per_host;
+    topology << sep() << capability << ":" << num_workers_of_a_type_per_host;
   }
 
   gspc::scoped_runtime_system const drts
