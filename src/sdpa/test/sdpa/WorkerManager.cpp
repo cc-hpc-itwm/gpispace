@@ -21,8 +21,6 @@
 
 namespace
 {
-  const double computational_cost = 1.0;
-
   std::vector<std::string> generate_worker_names (const int n)
   {
     std::vector<std::string> worker_ids (n);
