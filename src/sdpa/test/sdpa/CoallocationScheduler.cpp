@@ -216,6 +216,17 @@ struct fixture_scheduler_and_requirements_and_preferences
     return tasks;
   }
 
+  std::set<sdpa::job_id_t> all_assigned_tasks()
+  {
+    std::set<sdpa::job_id_t> tasks;
+    for (auto const& task_and_workers : get_current_assignment())
+    {
+      tasks.emplace (task_and_workers.first);
+    }
+
+    return tasks;
+  }
+
   void require_worker_and_implementation
     ( sdpa::job_id_t const& job
     , sdpa::worker_id_t const& worker
@@ -231,7 +242,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
   void finish_tasks_and_steal_work_when_idle_workers_exist
     ( std::size_t const& num_tasks
-    , std::vector<sdpa::worker_id_t> test_workers
+    , std::vector<sdpa::worker_id_t> const& test_workers
     )
   {
     unsigned int remaining_tasks (num_tasks);
@@ -289,7 +300,9 @@ struct fixture_scheduler_and_requirements_and_preferences
   }
 
   void finish_tasks_assigned_to_worker_and_steal_work
-    (sdpa::worker_id_t const& worker)
+    ( sdpa::worker_id_t const& worker
+    , std::vector<sdpa::worker_id_t> const& test_workers
+    )
   {
     auto worker_tasks (assigned_tasks (worker));
     BOOST_REQUIRE (!worker_tasks.empty());
@@ -325,10 +338,13 @@ struct fixture_scheduler_and_requirements_and_preferences
     BOOST_REQUIRE_EQUAL
       (count_assigned_jobs (get_current_assignment(), worker), 0);
 
+    auto const all_tasks_before_stealing (all_assigned_tasks());
+
     _scheduler.steal_work();
 
-    BOOST_REQUIRE_EQUAL
-      (count_assigned_jobs (get_current_assignment(), worker), 1);
+    CHECK_ALL_WORKERS_HAVE_AT_LEAST_ONE_TASK_ASSIGNED (test_workers);
+
+    BOOST_REQUIRE_EQUAL (all_tasks_before_stealing, all_assigned_tasks());
   }
 };
 
@@ -3070,7 +3086,7 @@ BOOST_FIXTURE_TEST_CASE
     (test_workers[fhg::util::testing::random_integral<unsigned long>() % num_workers]);
 
   finish_tasks_assigned_to_worker_and_steal_work
-    (worker_finishing_tasks_earlier);
+    (worker_finishing_tasks_earlier, test_workers);
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -3130,6 +3146,6 @@ BOOST_FIXTURE_TEST_CASE
     (test_workers[fhg::util::testing::random_integral<unsigned long>() % num_workers]);
 
   finish_tasks_assigned_to_worker_and_steal_work
-    (worker_finishing_tasks_earlier);
+    (worker_finishing_tasks_earlier, test_workers);
 }
 
