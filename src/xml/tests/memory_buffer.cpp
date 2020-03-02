@@ -22,6 +22,7 @@ BOOST_AUTO_TEST_CASE (name_is_stored)
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).name()
@@ -39,6 +40,7 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
         (nullptr, nullptr, fhg::util::testing::random_string())
       , fhg::util::testing::random_string()
       , size
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).size()
@@ -54,6 +56,7 @@ namespace
       , xml::parse::type::memory_buffer_type
         ( xml::parse::util::position_type
           (nullptr, nullptr, fhg::util::testing::random_string())
+        , fhg::util::testing::random_string()
         , fhg::util::testing::random_string()
         , fhg::util::testing::random_string()
         , read_only
@@ -81,6 +84,7 @@ BOOST_AUTO_TEST_CASE (name_is_unique_key)
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).unique_key()
@@ -93,12 +97,15 @@ namespace
   {
     std::string const name (fhg::util::testing::random_identifier());
     std::string const size (fhg::util::testing::random_string_without_zero());
+    std::string const alignment
+      (fhg::util::testing::random_string_without_zero());
 
       xml::parse::type::memory_buffer_type mb
       ( xml::parse::util::position_type
       (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , size
+      , alignment
       , read_only
       , we::type::property::type()
       );
@@ -112,6 +119,7 @@ namespace
     const std::string expected
       ( ( boost::format (R"EOS(<memory-buffer name="%1%"%3%>
   <size>%2%</size>
+  <alignment>%4%</alignment>
 </memory-buffer>)EOS")
         % name
         % size
@@ -120,6 +128,7 @@ namespace
             % (*read_only ? "true" : "false")
             ).str()
           )
+        % alignment
         ).str()
       );
 

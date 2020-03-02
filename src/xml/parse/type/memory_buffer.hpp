@@ -27,6 +27,7 @@ namespace xml
         memory_buffer_type ( const util::position_type&
                            , const std::string& name
                            , const std::string& size
+                           , const std::string& alignment
                            , const boost::optional<bool>& read_only
                            , const we::type::property::type& properties
                            );
@@ -38,6 +39,7 @@ namespace xml
 
         const std::string& name() const;
         const std::string& size() const;
+        const std::string& alignment() const;
         const boost::optional<bool>& read_only() const;
 
         const we::type::property::type& properties() const;
@@ -47,6 +49,7 @@ namespace xml
       private:
         std::string const _name;
         std::string _size;
+        std::string _alignment;
         boost::optional<bool> _read_only;
         we::type::property::type _properties;
       };
