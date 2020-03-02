@@ -179,6 +179,7 @@
         <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
       <xsd:element minOccurs="1" maxOccurs="1" name="size" type="xsd:string"/>
+      <xsd:element minOccurs="0" maxOccurs="1" name="alignment" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="read-only" type="xsd:boolean" use="optional"/>
