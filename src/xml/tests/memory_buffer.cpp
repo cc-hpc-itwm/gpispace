@@ -47,6 +47,24 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
     );
 }
 
+BOOST_AUTO_TEST_CASE (alignment_is_stored)
+{
+  std::string const alignment (fhg::util::testing::random_string());
+
+  BOOST_REQUIRE_EQUAL
+    ( alignment
+    , xml::parse::type::memory_buffer_type
+      ( xml::parse::util::position_type
+        (nullptr, nullptr, fhg::util::testing::random_string())
+      , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
+      , alignment
+      , boost::none
+      , we::type::property::type()
+      ).alignment()
+    );
+}
+
 namespace
 {
   void check_read_only_is_stored (boost::optional<bool> read_only)
