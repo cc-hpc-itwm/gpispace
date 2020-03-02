@@ -10,6 +10,7 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
+#include <util-generic/first_then.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -100,13 +101,11 @@ BOOST_DATA_TEST_CASE
     (fhg::util::testing::random<std::size_t>{} (50, 10));
 
   std::ostringstream topology;
-
-  std::function<std::string()> sep
-    ([&]() { sep = [](){ return " "; }; return ""; });
+  fhg::util::first_then<std::string> sep ("", " ");
 
   for (auto const& capability : capabilities)
   {
-    topology << sep() << capability << ":" << num_workers_of_a_type_per_host;
+    topology << sep << capability << ":" << num_workers_of_a_type_per_host;
   }
 
   gspc::scoped_runtime_system const drts
