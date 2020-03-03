@@ -203,9 +203,10 @@ namespace we
                                   , value
                                   );
               }
-            , [this, parent] (type::heureka_ids_type const& h_ids)
+            , [this, parent, id] (type::heureka_ids_type const& h_ids)
               {
                 heureka_response ( *parent
+                                 , id
                                  , h_ids
                                  );
               }
@@ -432,32 +433,32 @@ namespace we
     }
   }
 
-  void layer::heureka_response ( id_type id
+  void layer::heureka_response ( id_type parent
+                               , boost::optional<id_type> heureka_child
                                , type::heureka_ids_type const& heureka_ids
                                )
   {
     _nets_to_extract_from.apply
-      ( id
-      , [this, id, heureka_ids] (activity_data_type const& activity_data)
-      {
-        const std::function<void()> after
-          ([this, id]() {});
-
-        if (_running_jobs.contains (activity_data._id))
+      ( parent
+      , [this, parent, heureka_child, heureka_ids]
+          (activity_data_type const& activity_data)
         {
-          for (type::heureka_id_type const& h_id : heureka_ids)
+          if (_running_jobs.contains (activity_data._id))
           {
-            _running_jobs.apply_and_remove_heureka
-              ( h_id
-              , [&] (id_type t_id)
-                {
-                  _ignore_canceled_by_heureka.emplace (t_id);
-                  _rts_cancel (t_id);
-                }
-              );
+            for (type::heureka_id_type const& h_id : heureka_ids)
+            {
+              _running_jobs.apply_and_remove_heureka
+                ( h_id
+                , heureka_child
+                , [&] (id_type t_id)
+                  {
+                    _ignore_canceled_by_heureka.emplace (t_id);
+                    _rts_cancel (t_id);
+                  }
+                );
+            }
           }
         }
-      }
       );
   }
 
@@ -498,6 +499,7 @@ namespace we
                       , [this, &activity_data] (type::heureka_ids_type const& h_ids)
                         {
                           heureka_response ( activity_data._id
+                                           , boost::none
                                            , h_ids
                                            );
                         }
@@ -962,7 +964,10 @@ namespace we
 
     template <typename Func>
     void layer::locked_parent_child_relation_type::apply_and_remove_heureka
-      (type::heureka_id_type const& h_id, Func fun)
+      ( type::heureka_id_type const& h_id
+      , boost::optional<id_type> const& heureka_caller
+      , Func fun
+      )
     {
       std::lock_guard<std::mutex> const lock_for_heureka (_relation_mutex);
 
@@ -971,7 +976,10 @@ namespace we
           | boost::adaptors::map_values
           )
       {
-        fun (child);
+        if (heureka_caller != child)
+        {
+          fun (child);
+        }
       }
 
       _heureka_in_progress.left.erase (h_id);

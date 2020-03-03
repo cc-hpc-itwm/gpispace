@@ -117,6 +117,7 @@ namespace we
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
       void heureka_response ( id_type
+                            , boost::optional<id_type>
                             , type::heureka_ids_type const& ids
                             );
 
@@ -230,8 +231,9 @@ namespace we
         void apply (id_type parent, std::function<void (id_type)>) const;
 
         template <typename Func>
-          void apply_and_remove_heureka ( type::heureka_id_type const& id
-                                        , Func f
+          void apply_and_remove_heureka ( type::heureka_id_type const&
+                                        , boost::optional<id_type> const&
+                                        , Func
                                         );
 
       private:
