@@ -77,6 +77,12 @@ fhg_add_test (NAME we_net_performance
   PERFORMANCE_TEST
 )
 
+fhg_add_test (NAME we_heureka_response
+  SOURCES heureka_response.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
 add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)
 add_subdirectory (input_is_copied_to_output_in_module_calls)
 add_subdirectory (put_many)
