@@ -6,6 +6,7 @@
 #include <we/type/signature.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value/read.hpp>
+#include <we/type/value/wrap.hpp>
 
 namespace
 {
@@ -18,6 +19,7 @@ namespace
   {
     pnet::type::signature::signature_type CONTROL (std::string ("control"));
     pnet::type::signature::signature_type LONG (std::string ("long"));
+    pnet::type::signature::signature_type SET (std::string ("SET"));
   }
 }
 

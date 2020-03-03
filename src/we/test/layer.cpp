@@ -1901,3 +1901,242 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
 
   BOOST_REQUIRE_EQUAL (wfe.received_preferences(), preferences);
 }
+
+namespace
+{
+  std::set<we::type::heureka_id_type> const heurekaed_set {"group"};
+
+  boost::optional<we::type::heureka_id_type> const heureka_id ("group");
+
+  std::tuple< we::type::transition_t
+            , we::type::transition_t
+            , we::transition_id_type
+            >
+    net_with_childs_that_heureka (bool put_on_input, std::size_t token_count)
+  {
+    we::type::transition_t transition
+      ( "module call"
+      , we::type::module_call_t
+        ( "m"
+        , "f"
+        , std::unordered_map<std::string, std::string>()
+        , std::list<we::type::memory_transfer>()
+        , std::list<we::type::memory_transfer>()
+        )
+      , boost::none
+      , we::type::property::type()
+      , we::priority_type()
+      , heureka_id
+      );
+    we::port_id_type const port_id_in
+      ( transition.add_port ( we::type::port_t ( "in"
+                                               , we::type::PORT_IN
+                                               , signature::CONTROL
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+    we::port_id_type const port_id_out
+      ( transition.add_port ( we::type::port_t ( "out"
+                                               , we::type::PORT_OUT
+                                               , signature::SET
+                                               , we::type::property::type()
+                                               )
+                            )
+      );
+
+    we::type::net_type net;
+
+    we::place_id_type const place_id_in
+      (net.add_place (place::type ("in", signature::CONTROL, true)));
+
+    for (std::size_t i (0); put_on_input && i < token_count; ++i)
+    {
+      net.put_value (place_id_in, value::CONTROL);
+    }
+
+    we::transition_id_type const transition_id
+      (net.add_transition (transition));
+
+    {
+      using we::edge::PT;
+      we::type::property::type empty;
+
+      net.add_heureka (transition_id, port_id_out);
+      net.add_connection (PT, transition_id, place_id_in, port_id_in, empty);
+    }
+
+    return std::make_tuple
+      ( we::type::transition_t ( "net"
+                               , net
+                               , boost::none
+                               , we::type::property::type()
+                               , we::priority_type()
+                               )
+      , transition
+      , transition_id
+      );
+  }
+
+  std::tuple< we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            , we::type::activity_t
+            >
+    activity_with_child_heureka (std::size_t token_count)
+  {
+    we::transition_id_type transition_id_child;
+    we::type::transition_t transition_in;
+    we::type::transition_t transition_out;
+    we::type::transition_t transition_child;
+    std::tie (transition_in, transition_child, transition_id_child) =
+      net_with_childs_that_heureka (true, token_count);
+    std::tie (transition_out, std::ignore, std::ignore) =
+      net_with_childs_that_heureka (false, token_count);
+
+    we::type::activity_t activity_input (transition_in, boost::none);
+    we::type::activity_t activity_output (transition_out, boost::none);
+
+    we::type::activity_t activity_child
+      (transition_child, transition_id_child);
+    activity_child.add_input
+      (transition_child.input_port_by_name ("in"), value::CONTROL);
+
+    we::type::activity_t activity_result_no_heureka
+      (transition_child, transition_id_child);
+
+    we::type::activity_t activity_result_with_heureka
+      (transition_child, transition_id_child);
+    activity_result_with_heureka.add_output
+      ( transition_child.output_port_by_name ("out")
+      , pnet::type::value::wrap (heurekaed_set)
+      );
+
+    return std::make_tuple
+      ( activity_input
+      , activity_output
+      , activity_child
+      , activity_result_no_heureka
+      , activity_result_with_heureka);
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (first_child_task_calls_heureka, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  we::type::activity_t activity_heureka;
+  std::tie ( activity_input
+           , activity_output
+           , activity_child
+           , activity_result
+           , activity_heureka
+           )
+    = activity_with_child_heureka (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  //! \note assuming one child is still running (not "finished")
+  {
+    expect_cancel const _b_cancel (this, child_id_b);
+
+    do_finished (child_id_a, activity_heureka);
+  }
+
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_canceled (child_id_b);
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (no_child_task_calls_heureka, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  we::type::activity_t activity_heureka;
+  std::tie ( activity_input
+           , activity_output
+           , activity_child
+           , activity_result
+           , activity_heureka
+           )
+    = activity_with_child_heureka (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  do_finished (child_id_a, activity_result);
+  //! \note no tasks heureka, so normal exit
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id_b, activity_result);
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (last_of_the_child_tasks_call_heureka, daemon)
+{
+  we::type::activity_t activity_input;
+  we::type::activity_t activity_output;
+  we::type::activity_t activity_child;
+  we::type::activity_t activity_result;
+  we::type::activity_t activity_heureka;
+  std::tie ( activity_input
+           , activity_output
+           , activity_child
+           , activity_result
+           , activity_heureka
+           )
+    = activity_with_child_heureka (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
+
+    do_submit (id, activity_input);
+  }
+
+  do_finished (child_id_a, activity_result);
+  //! \note other child task completes, so normal exit
+  {
+    expect_finished const _ (this, id, activity_output);
+
+    do_finished (child_id_b, activity_heureka);
+  }
+}
