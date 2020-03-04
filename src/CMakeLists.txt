@@ -38,6 +38,7 @@ extended_add_library (NAME pnet
           "we/loader/module_call.cpp"
           "we/layer.cpp"
           "we/type/activity.cpp"
+          "we/type/memory_buffer_info_t.cpp"
           "we/type/module_call.cpp"
           "we/require_type.cpp"
           "we/signature_of.cpp"
