@@ -11,7 +11,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes_no_buffers)
   we::type::module_call_t const module_call
     ( fhg::util::testing::random_identifier()
     , fhg::util::testing::random_identifier()
-    , std::unordered_map<std::string, std::string> {}
+    , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
     , {}
     , {}
     );
@@ -61,16 +61,25 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
                 , []{ return fhg::util::testing::random_identifier(); }
                 );
 
-  std::unordered_map<std::string, std::string> memory_buffers;
+  std::unordered_map<std::string, we::type::memory_buffer_info_t>
+    memory_buffers;
   std::unordered_map<std::string, unsigned long> expected;
   expr::eval::context context;
   unsigned long total (0);
 
   for (std::string const& name : names)
   {
-    if (memory_buffers.emplace (name, "${" + name + "}").second)
+    if (memory_buffers.emplace
+          ( std::piecewise_construct
+          , std::forward_as_tuple (name)
+          , std::forward_as_tuple ( "${" + name + "}"
+                                  , fhg::util::testing::random_identifier()
+                                  )
+          ).second
+       )
     {
-      unsigned long const value {fhg::util::testing::random<unsigned long>()()};
+      unsigned long const value
+        {fhg::util::testing::random<unsigned long>()()};
       context.bind_and_discard_ref ({name}, value);
       expected.emplace (name, value);
       total += value;

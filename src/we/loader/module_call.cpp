@@ -19,14 +19,6 @@ namespace we
 {
   namespace
   {
-    unsigned long evaluate_size_or_die ( expr::eval::context context
-                                       , std::string const& expression
-                                       )
-    {
-      return boost::get<unsigned long>
-        (expr::parse::parser (expression).eval_all (context));
-    }
-
     class buffer
     {
     public:
@@ -156,7 +148,7 @@ namespace we
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
-      for (auto const& buffer_and_size : module_call.memory_buffers())
+      for (auto const& buffer_and_info : module_call.memory_buffers())
       {
         if (!virtual_memory_api || !shared_memory)
         {
@@ -176,11 +168,10 @@ namespace we
         char* const local_memory
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
 
-        unsigned long const size
-          (evaluate_size_or_die (input, buffer_and_size.second));
+        unsigned long const size (buffer_and_info.second.size (input));
 
-        memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
-        pointers.emplace (buffer_and_size.first, local_memory + position);
+        memory_buffer.emplace (buffer_and_info.first, buffer (position, size));
+        pointers.emplace (buffer_and_info.first, local_memory + position);
 
         position += size;
 

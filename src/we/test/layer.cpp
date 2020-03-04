@@ -560,7 +560,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     , we::type::module_call_t
       ( "m"
       , "f"
-      , std::unordered_map<std::string, std::string>()
+      , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
       , std::list<we::type::memory_transfer>()
       , std::list<we::type::memory_transfer>()
       )
@@ -1299,7 +1299,7 @@ namespace
       , we::type::module_call_t
         ( "m"
         , "f"
-        , std::unordered_map<std::string, std::string>()
+        , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
         , std::list<we::type::memory_transfer>()
         , std::list<we::type::memory_transfer>()
         )
@@ -1585,7 +1585,9 @@ namespace
       ( fhg::util::testing::random_string()
       , we::type::module_call_t ( fhg::util::testing::random_string()
                                 , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
+                                , std::unordered_map< std::string
+                                                    , we::type::memory_buffer_info_t
+                                                    >()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
                                 )
@@ -1767,7 +1769,7 @@ namespace
         , we::type::module_call_t
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, std::string>()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           )
