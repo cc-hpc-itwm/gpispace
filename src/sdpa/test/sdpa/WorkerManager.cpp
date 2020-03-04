@@ -21,8 +21,6 @@
 
 namespace
 {
-  const double computational_cost = 1.0;
-
   std::vector<std::string> generate_worker_names (const int n)
   {
     std::vector<std::string> worker_ids (n);
@@ -165,7 +163,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
 
-  worker_manager.assign_job_to_worker (job_id, worker_ids[0], 1);
+  worker_manager.assign_job_to_worker (job_id, worker_ids[0], 1, {});
   std::unordered_set<sdpa::worker_id_t> workers (worker_manager.findSubmOrAckWorkers (job_id));
   BOOST_REQUIRE (workers.empty());
 
@@ -219,7 +217,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
 
   for (unsigned int i=0; i<N; i++)
   {
-    worker_manager.assign_job_to_worker (job_id, worker_ids[i], 1.0);
+    worker_manager.assign_job_to_worker (job_id, worker_ids[i], 1.0, {});
     std::unordered_set<sdpa::worker_id_t> submitted_or_ack_workers (worker_manager.findSubmOrAckWorkers (job_id));
     BOOST_REQUIRE (submitted_or_ack_workers.empty());
   }
@@ -303,10 +301,11 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
               ? std::set<sdpa::worker_id_t> {worker_id}
               : std::set<sdpa::worker_id_t>{}
               , sdpa::daemon::Implementation{}
+              , Preferences{}
               , cost
               )
           );
-        worker_manager.assign_job_to_worker (job_id, worker_id, cost);
+        worker_manager.assign_job_to_worker (job_id, worker_id, cost, {});
       }
     );
   auto&& add_running_job

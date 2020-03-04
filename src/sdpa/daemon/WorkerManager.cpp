@@ -4,6 +4,8 @@
 
 #include <fhg/assert.hpp>
 
+#include <util-generic/make_optional.hpp>
+
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/algorithm.hpp>
@@ -195,6 +197,10 @@ namespace sdpa
                                         );
 
       worker_equiv_classes_[result.first->second.capability_names_].add_worker_entry (result.first);
+
+      // allow to steal from itself
+      worker_equiv_classes_.at (result.first->second.capability_names_)
+        ._stealing_allowed_classes.emplace (result.first->second.capability_names_);
     }
 
 
@@ -212,6 +218,12 @@ namespace sdpa
       if (equivalence_class->second.n_workers() == 0)
       {
         worker_equiv_classes_.erase (equivalence_class);
+
+        for (auto& worker_class : worker_equiv_classes_)
+        {
+          worker_class.second._stealing_allowed_classes.erase
+            (worker->second.capability_names_);
+        }
       }
 
       worker_map_.erase (worker);
@@ -429,16 +441,24 @@ namespace sdpa
     }
 
     void WorkerManager::assign_job_to_worker
-      (const job_id_t& job_id, const worker_id_t& worker_id, double cost)
+      ( const job_id_t& job_id
+      , const worker_id_t& worker_id
+      , double cost
+      , Preferences const& preferences
+      )
     {
       std::lock_guard<std::mutex> const _(mtx_);
       auto worker (worker_map_.find (worker_id));
       fhg_assert (worker != worker_map_.end());
-      assign_job_to_worker (job_id, worker, cost);
+      assign_job_to_worker (job_id, worker, cost, preferences);
     }
 
     void WorkerManager::assign_job_to_worker
-      (const job_id_t& job_id, worker_iterator worker, double cost)
+      ( const job_id_t& job_id
+      , const worker_iterator worker
+      , double cost
+      , Preferences const& preferences
+      )
     {
       worker->second.assign (job_id, cost);
 
@@ -447,6 +467,9 @@ namespace sdpa
       worker_class.inc_pending_jobs (1);
 
       worker_class._idle_workers.erase (worker->first);
+
+      worker_class.allow_classes_matching_preferences_stealing
+        (worker_equiv_classes_, preferences);
     }
 
     void WorkerManager::submit_job_to_worker (const job_id_t& job_id, const worker_id_t& worker_id)
@@ -670,6 +693,30 @@ namespace sdpa
       _idle_workers.erase (worker->first);
     }
 
+    void WorkerManager::WorkerEquivalenceClass::allow_classes_matching_preferences_stealing
+      ( std::map<std::set<std::string>, WorkerEquivalenceClass> const& worker_classes
+      , Preferences const& preferences
+      )
+    {
+      if (preferences.empty())
+      {
+        return;
+      }
+
+      for (auto const& worker_class : worker_classes)
+      {
+        if (std::any_of ( preferences.begin()
+                        , preferences.end()
+                        , [&worker_class] (std::string const& preference)
+                          { return worker_class.first.count (preference); }
+                        )
+           )
+        {
+          _stealing_allowed_classes.emplace (worker_class.first);
+        }
+      }
+    }
+
     void WorkerManager::steal_work
       (std::function<scheduler::Reservation* (job_id_t const&)> reservation)
     {
@@ -692,7 +739,17 @@ namespace sdpa
         return;
       }
 
-      if (_idle_workers.empty())
+      std::unordered_set<worker_id_t> thieves;
+
+      auto const& worker_classes (worker_manager.worker_equiv_classes_);
+      for (auto const& cls : _stealing_allowed_classes)
+      {
+        thieves.insert ( worker_classes.at (cls)._idle_workers.begin()
+                       , worker_classes.at (cls)._idle_workers.end()
+                       );
+      }
+
+      if (thieves.empty())
       {
         return;
       }
@@ -729,11 +786,11 @@ namespace sdpa
         }
       }
 
-      while (!(_idle_workers.empty() || to_steal_from.empty()))
+      while (!(thieves.empty() || to_steal_from.empty()))
       {
         worker_iterator const richest (to_steal_from.top());
         worker_iterator const& thief
-          (worker_manager.worker_map_.find (*_idle_workers.begin()));
+          (worker_manager.worker_map_.find (*thieves.begin()));
         Worker& richest_worker (richest->second);
 
         auto it_job (std::max_element ( richest_worker.pending_.begin()
@@ -750,24 +807,44 @@ namespace sdpa
 
         fhg_assert (it_job != richest_worker.pending_.end());
 
-        reservation (*it_job)->replace_worker
-          ( richest->first
-          , thief->first
-          , [&thief] (const std::string& cpb)
-            {
-              return thief->second.hasCapability (cpb);
-            }
+        Preferences const preferences (reservation (*it_job)->preferences());
+
+        auto const preference
+          (std::find_if ( preferences.begin()
+                        , preferences.end()
+                        , [&] (std::string const& pref)
+                          {
+                            return thief->second.hasCapability (pref);
+                          }
+                        )
           );
 
-        worker_manager.assign_job_to_worker (*it_job, thief, cost (*it_job));
-        worker_manager.delete_job_from_worker (*it_job, richest, cost (*it_job));
-
-        to_steal_from.pop();
-
-        if (richest_worker.stealing_allowed())
+        if (preferences.empty() || preference != preferences.end())
         {
-          to_steal_from.emplace (richest);
+          reservation (*it_job)->replace_worker
+            ( richest->first
+            , thief->first
+            , FHG_UTIL_MAKE_OPTIONAL (!preferences.empty(), *preference)
+            , [&thief] (const std::string& cpb)
+              {
+                return thief->second.hasCapability (cpb);
+              }
+            );
+
+          worker_manager.assign_job_to_worker
+            (*it_job, thief, cost (*it_job), preferences);
+          worker_manager.delete_job_from_worker
+            (*it_job, richest, cost (*it_job));
+
+          to_steal_from.pop();
+
+          if (richest_worker.stealing_allowed())
+          {
+            to_steal_from.emplace (richest);
+          }
         }
+
+        thieves.erase (thieves.begin());
       }
     }
 

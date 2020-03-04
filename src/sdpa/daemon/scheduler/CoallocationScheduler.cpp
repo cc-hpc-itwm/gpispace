@@ -100,7 +100,12 @@ namespace sdpa
                 : matching_workers_and_implementation.first
                 )
             {
-              _worker_manager.assign_job_to_worker (jobId, worker, cost);
+              _worker_manager.assign_job_to_worker
+                ( jobId
+                , worker
+                , cost
+                , requirements_and_preferences.preferences()
+                );
             }
 
             allocation_table_.emplace
@@ -108,6 +113,7 @@ namespace sdpa
               , fhg::util::cxx14::make_unique<scheduler::Reservation>
                   ( matching_workers_and_implementation.first
                   , matching_workers_and_implementation.second
+                  , requirements_and_preferences.preferences()
                   , cost
                   )
               );

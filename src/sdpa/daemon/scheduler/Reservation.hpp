@@ -27,24 +27,28 @@ namespace sdpa
 
         Reservation ( std::set<worker_id_t> const& workers
                     , Implementation const& implementation
+                    , Preferences const& preferences
                     , double cost
                     );
 
         void replace_worker
           ( worker_id_t const& current_worker
           , worker_id_t const& new_worker
+          , boost::optional<std::string> const& implementation
           , std::function<bool (std::string const& capability)> const&
               supports_implementation
           );
 
         std::set<worker_id_t> workers() const;
         Implementation implementation() const;
+        Preferences preferences() const;
 
         double cost() const;
 
       private:
         std::set<worker_id_t> _workers;
         Implementation _implementation;
+        Preferences _preferences;
         double _cost;
 
       public:
