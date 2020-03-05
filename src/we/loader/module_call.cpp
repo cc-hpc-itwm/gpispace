@@ -181,6 +181,21 @@ namespace we
               ).str()
             );
         }
+
+        auto const total_size_required
+          (module_call.memory_buffer_size_total (input));
+        if (total_size_required > shared_memory->size())
+        {
+          throw std::runtime_error
+            ( ( boost::format
+                  ("not enough local memory allocated: %1% bytes required, "
+                   "only %2% bytes allocated"
+                  )
+              % total_size_required
+              % shared_memory->size()
+              ).str()
+            );
+         }
       }
 
       for (auto const& buffer_and_info : module_call.memory_buffers())
