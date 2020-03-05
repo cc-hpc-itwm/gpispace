@@ -148,15 +148,32 @@ namespace we
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
-      for (auto const& buffer_and_info : module_call.memory_buffers())
+      if (!module_call.memory_buffers().empty())
       {
-        if (!virtual_memory_api || !shared_memory)
+        if (!virtual_memory_api)
         {
           throw std::logic_error
             ( ( boost::format
-                ( "module call '%1%::%2%' with %3% memory transfers scheduled "
-                  "to worker '%4%' that is unable to manage memory"
-                )
+                  ( "module call '%1%::%2%' with %3% memory transfers "
+                    "scheduled to worker '%4%' that is unable to manage "
+                    "memory: no handler for the virtual memory was provided."
+                  )
+              % module_call.module()
+              % module_call.function()
+              % module_call.memory_buffers().size()
+              % context->worker_name()
+              ).str()
+            );
+          }
+
+        if (!shared_memory)
+        {
+          throw std::logic_error
+            ( ( boost::format
+                  ( "module call '%1%::%2%' with %3% memory transfers "
+                    "scheduled to worker '%4%' that is unable to manage "
+                    "memory: no local shared memory was allocated."
+                  )
               % module_call.module()
               % module_call.function()
               % module_call.memory_buffers().size()
@@ -164,7 +181,10 @@ namespace we
               ).str()
             );
         }
+      }
 
+      for (auto const& buffer_and_info : module_call.memory_buffers())
+      {
         char* const local_memory
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
 
