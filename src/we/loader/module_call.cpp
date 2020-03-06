@@ -204,8 +204,22 @@ namespace we
           (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
 
         unsigned long const size (buffer_and_info.second.size (input));
+        unsigned long const alignment
+          (buffer_and_info.second.alignment (input));
 
-        memory_buffer.emplace (buffer_and_info.first, buffer (position, size));
+        auto const offset (local_memory + position);
+
+        if (reinterpret_cast<std::uintptr_t> (offset) % alignment)
+        {
+          position += ( alignment
+                      - reinterpret_cast<std::uintptr_t> (offset) % alignment
+                      );
+        }
+
+        memory_buffer.emplace ( std::piecewise_construct
+                              , std::forward_as_tuple (buffer_and_info.first)
+                              , std::forward_as_tuple (position, size)
+                              );
         pointers.emplace (buffer_and_info.first, local_memory + position);
 
         position += size;
@@ -214,7 +228,11 @@ namespace we
         {
           //! \todo specific exception
           throw std::runtime_error
-            ( ( boost::format ("not enough local memory: %1% > %2%")
+            ( ( boost::format
+                  ("Not enough local memory: %1% > %2%. "
+                   "Please take into account also the buffer alignments "
+                   "when allocating local shared memory!"
+                  )
               % position
               % shared_memory->size()
               ).str()
