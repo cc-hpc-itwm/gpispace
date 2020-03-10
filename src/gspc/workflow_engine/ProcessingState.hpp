@@ -8,6 +8,7 @@
 #include <util-generic/ostream/modifier.hpp>
 
 #include <exception>
+#include <functional>
 #include <ostream>
 #include <type_traits>
 #include <unordered_map>
@@ -87,7 +88,7 @@ namespace gspc
         void serialize (Archive&, unsigned int);
 
     private:
-      template<typename TaskPrinter> friend struct print_processing_state;
+      friend struct print_processing_state;
 
       task::ID _next_task_id {0};
 
@@ -123,14 +124,22 @@ namespace gspc
       std::unordered_set<task::ID> _marked_for_retry;
     };
 
-    template<typename TaskPrinter>
-      struct print_processing_state : public fhg::util::ostream::modifier
+    struct print_processing_state : public fhg::util::ostream::modifier
     {
-      print_processing_state (ProcessingState const&);
+      using TaskPrinter = std::function<void (std::ostream&, Task const&)>;
+
+      print_processing_state
+        ( ProcessingState const&
+        , TaskPrinter = [] (std::ostream& os, Task const& task)
+                        {
+                          os << task;
+                        }
+        );
       virtual std::ostream& operator() (std::ostream&) const override;
 
     private:
       ProcessingState const& _processing_state;
+      TaskPrinter _task_printer;
     };
   }
 }

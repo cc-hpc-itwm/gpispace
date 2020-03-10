@@ -1,5 +1,10 @@
 #include <gspc/workflow_engine/ProcessingState.hpp>
 
+#include <util-generic/print_container.hpp>
+#include <util-generic/print_exception.hpp>
+
+#include <utility>
+
 namespace gspc
 {
   namespace workflow_engine
@@ -50,23 +55,83 @@ namespace gspc
       return *_extracted.emplace (pop_any (_marked_for_retry)).first;
     }
 
-    namespace
-    {
-      struct print_task : public fhg::util::ostream::modifier
-      {
-        print_task (Task const& task) : _task (task) {}
-        virtual std::ostream& operator() (std::ostream& os) const override
-        {
-          return os << _task;
-        }
-      private:
-        Task const& _task;
-      };
-    }
-
     std::ostream& operator<< (std::ostream& os, ProcessingState const& s)
     {
-      return os << print_processing_state<print_task> (s);
+      return os << print_processing_state (s);
+    }
+
+    print_processing_state::print_processing_state
+      ( ProcessingState const& processing_state
+      , TaskPrinter task_printer
+      )
+        : _processing_state (processing_state)
+        , _task_printer (std::move (task_printer))
+    {}
+
+    std::ostream& print_processing_state::operator() (std::ostream& os) const
+    {
+      auto print_task_map
+        ( [&] (std::string name, auto const& map)
+          {
+            os << name << ": " << map.size() << "\n"
+               << fhg::util::print_container
+                    ( "  ", "\n  ", "\n", map
+                    , [&] (auto& s, auto const& x) -> decltype (s)
+                      {
+                        s << x.first << " -> ";
+
+                        _task_printer (s, x.second);
+
+                        return s;
+                      }
+                    )
+              ;
+          }
+        );
+      auto print_map
+        ( [&] (std::string name, auto const& map)
+          {
+            os << name << ": " << map.size() << "\n"
+               << fhg::util::print_container
+                    ( "  ", "\n  ", "\n", map
+                    , [&] (auto& s, auto const& x) -> decltype (s)
+                      {
+                        return s << x.first << " -> " << x.second;
+                      }
+                    )
+              ;
+          }
+        );
+      auto print_set
+        ( [&] (std::string name, auto const& set)
+          {
+            os << name << ": " << set.size() << "\n"
+               << fhg::util::print_container ("  ", "\n  ", "\n", set)
+              ;
+          }
+        );
+
+      os << "next_task_id: " << _processing_state._next_task_id << "\n";
+      print_task_map ("tasks", _processing_state._tasks);
+      print_set ("extracted", _processing_state._extracted);
+      os << "failed_to_post_process: " << _processing_state._failed_to_post_process.size() << "\n"
+         << fhg::util::print_container
+           ( "  ", "\n  ", "\n", _processing_state._failed_to_post_process
+           , [&] (auto& s, auto const& x) -> decltype (s)
+             {
+               return s << x.first << " -> "
+                        << x.second.first << " -> "
+                        << fhg::util::exception_printer (x.second.second)
+                 ;
+             }
+           );
+      print_map ("failed_to_execute", _processing_state._failed_to_execute);
+      print_map ("cancelled_ignored", _processing_state._cancelled_ignored);
+      print_map ("cancelled_optional", _processing_state._cancelled_optional);
+      print_map ("postponed", _processing_state._postponed);
+      print_set ("marked_for_retry", _processing_state._marked_for_retry);
+
+      return os;
     }
   }
 }

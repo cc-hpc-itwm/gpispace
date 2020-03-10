@@ -188,8 +188,13 @@ try
     }
   }
 
-  echo << gspc::workflow_engine::print_processing_state<gspc::rtm::print_task>
-            (state.processing_state)
+  echo << gspc::workflow_engine::print_processing_state
+            ( state.processing_state
+            , [] (auto& os, gspc::Task const& task)
+              {
+                os << gspc::rtm::print_task (task);
+              }
+            )
        << std::endl
     ;
 

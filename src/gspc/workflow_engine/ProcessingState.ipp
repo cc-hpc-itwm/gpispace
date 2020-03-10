@@ -1,8 +1,5 @@
 #include <stdexcept>
 
-#include <util-generic/print_container.hpp>
-#include <util-generic/print_exception.hpp>
-
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
 #include <boost/serialization/utility.hpp>
@@ -132,74 +129,6 @@ namespace gspc
       ar & _cancelled_ignored;
       ar & _cancelled_optional;
       ar & _marked_for_retry;
-    }
-
-    template<typename TaskPrinter>
-      print_processing_state<TaskPrinter>::print_processing_state
-        (ProcessingState const& processing_state)
-        : _processing_state (processing_state)
-    {}
-    template<typename TaskPrinter>
-      std::ostream& print_processing_state<TaskPrinter>::operator()
-        (std::ostream& os) const
-    {
-      auto print_task_map
-        ( [&] (std::string name, auto const& map)
-          {
-            os << name << ": " << map.size() << "\n"
-               << fhg::util::print_container
-                    ( "  ", "\n  ", "\n", map
-                    , [&] (auto& s, auto const& x) -> decltype (s)
-                      {
-                        return s << x.first << " -> " << TaskPrinter (x.second);
-                      }
-                    )
-              ;
-          }
-        );
-      auto print_map
-        ( [&] (std::string name, auto const& map)
-          {
-            os << name << ": " << map.size() << "\n"
-               << fhg::util::print_container
-                    ( "  ", "\n  ", "\n", map
-                    , [&] (auto& s, auto const& x) -> decltype (s)
-                      {
-                        return s << x.first << " -> " << x.second;
-                      }
-                    )
-              ;
-          }
-        );
-      auto print_set
-        ( [&] (std::string name, auto const& set)
-          {
-            os << name << ": " << set.size() << "\n"
-               << fhg::util::print_container ("  ", "\n  ", "\n", set)
-              ;
-          }
-        );
-
-      os << "next_task_id: " << _processing_state._next_task_id << "\n";
-      print_task_map ("tasks", _processing_state._tasks);
-      print_set ("extracted", _processing_state._extracted);
-      os << "failed_to_post_process: " << _processing_state._failed_to_post_process.size() << "\n"
-         << fhg::util::print_container
-           ( "  ", "\n  ", "\n", _processing_state._failed_to_post_process
-           , [&] (auto& s, auto const& x) -> decltype (s)
-             {
-               return s << x.first << " -> "
-                        << x.second.first << " -> "
-                        << fhg::util::exception_printer (x.second.second)
-                 ;
-             }
-           );
-      print_map ("failed_to_execute", _processing_state._failed_to_execute);
-      print_map ("cancelled_ignored", _processing_state._cancelled_ignored);
-      print_map ("cancelled_optional", _processing_state._cancelled_optional);
-      print_map ("postponed", _processing_state._postponed);
-      print_set ("marked_for_retry", _processing_state._marked_for_retry);
-      return os;
     }
   }
 }
