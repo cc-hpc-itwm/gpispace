@@ -907,7 +907,12 @@ namespace we
       if (h_id)
       {
         _heureka_in_progress.insert
-          (relation_type::value_type (*h_id, child));
+          (heureka_progress_type::value_type ( std::make_tuple ( *h_id
+                                                               , parent
+                                                               )
+                                             , child
+                                             )
+          );
       }
 
       _relation.insert (relation_type::value_type (parent, child));
@@ -966,14 +971,19 @@ namespace we
     template <typename Func>
     void layer::locked_parent_child_relation_type::apply_and_remove_heureka
       ( type::heureka_id_type const& h_id
+      , id_type const& parent
       , boost::optional<id_type> const& heureka_caller
       , Func fun
       )
     {
       std::lock_guard<std::mutex> const lock_for_heureka (_relation_mutex);
 
+      heureka_parent_id_type heureka_by_parent = std::make_tuple ( h_id
+                                                                 , parent
+                                                                 );
+
       for ( id_type child
-          : _heureka_in_progress.left.equal_range (h_id)
+          : _heureka_in_progress.left.equal_range (heureka_by_parent)
           | boost::adaptors::map_values
           )
       {
@@ -983,6 +993,6 @@ namespace we
         }
       }
 
-      _heureka_in_progress.left.erase (h_id);
+      _heureka_in_progress.left.erase (heureka_by_parent);
     }
 }

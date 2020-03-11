@@ -232,24 +232,31 @@ namespace we
 
         template <typename Func>
           void apply_and_remove_heureka ( type::heureka_id_type const&
+                                        , id_type const&
                                         , boost::optional<id_type> const&
                                         , Func
                                         );
 
       private:
         mutable std::mutex _relation_mutex;
-        boost::bimaps::bimap
-          < boost::bimaps::unordered_multiset_of<type::heureka_id_type>
-          , boost::bimaps::unordered_set_of<id_type>
-          , boost::bimaps::set_of_relation<>
-          > _heureka_in_progress;
-
         typedef boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<id_type>
           , boost::bimaps::unordered_set_of<id_type>
           , boost::bimaps::set_of_relation<>
           > relation_type;
         relation_type _relation;
+
+        using heureka_parent_id_type =
+          std::tuple < type::heureka_id_type
+                     , id_type
+                     >;
+        using heureka_progress_type =
+        boost::bimaps::bimap
+          < boost::bimaps::unordered_multiset_of<heureka_parent_id_type>
+          , boost::bimaps::unordered_set_of<id_type>
+          , boost::bimaps::set_of_relation<>
+          >;
+        heureka_progress_type _heureka_in_progress;
       } _running_jobs;
 
       std::unordered_set<id_type> _ignore_canceled_by_heureka;
