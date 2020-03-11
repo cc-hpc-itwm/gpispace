@@ -502,7 +502,6 @@ namespace we
       ) const
     {
       std::forward_list<token_to_be_deleted_type> tokens_to_be_deleted;
-      int tokens_to_be_deleted_count = 0;
 
       for ( std::pair< place_id_type const
                      , std::pair<token_id_type, bool>
@@ -521,7 +520,6 @@ namespace we
         if (!is_read_connection)
         {
           tokens_to_be_deleted.emplace_front (pid, token_id);
-          tokens_to_be_deleted_count++;
         }
       }
 
