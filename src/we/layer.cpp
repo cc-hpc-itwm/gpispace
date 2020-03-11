@@ -434,13 +434,13 @@ namespace we
   }
 
   void layer::heureka_response ( id_type parent
-                               , boost::optional<id_type> heureka_child
+                               , boost::optional<id_type> heureka_calling_child
                                , type::heureka_ids_type const& heureka_ids
                                )
   {
     _nets_to_extract_from.apply
       ( parent
-      , [this, parent, heureka_child, heureka_ids]
+      , [this, parent, heureka_calling_child, heureka_ids]
           (activity_data_type const& activity_data)
         {
           if (_running_jobs.contains (activity_data._id))
@@ -449,7 +449,8 @@ namespace we
             {
               _running_jobs.apply_and_remove_heureka
                 ( h_id
-                , heureka_child
+                , parent
+                , heureka_calling_child
                 , [&] (id_type t_id)
                   {
                     _ignore_canceled_by_heureka.emplace (t_id);
