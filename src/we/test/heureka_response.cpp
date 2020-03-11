@@ -118,15 +118,16 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_response
   long const heureka_value
     ([&to_heureka, &tokens]
      {
-       size_t const n_tokens = ( fhg::util::testing::unique_random<size_t>{}()
+       size_t const n_tokens = ( fhg::util::testing::random<size_t>{}()
                                % MAX_TOKENS
                                ) + 1;
-       tokens = fhg::util::testing::randoms < std::vector<long>
-                                            , fhg::util::testing::unique_random
-                                            > (n_tokens);
+       tokens = fhg::util::testing::randoms
+                < std::vector<long>
+                , fhg::util::testing::unique_random
+                > (n_tokens);
        if (to_heureka)
        {
-         return tokens.at ( fhg::util::testing::unique_random<long>{}()
+         return tokens.at ( fhg::util::testing::random<long>{}()
                           % n_tokens
                           );
        }
@@ -146,12 +147,11 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_response
     );
   heureka_net.put_tokens (tokens);
 
-  std::mt19937 _random_engine;
   boost::optional<we::type::heureka_id_type> heureka_received;
 
   BOOST_REQUIRE
     ( !heureka_net.net.fire_expressions_and_extract_activity_random
-        ( _random_engine
+        ( fhg::util::testing::detail::GLOBAL_random_engine()
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
              )
@@ -160,15 +160,8 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_response
           }
         , [&heureka_received] (we::type::heureka_ids_type const& ids)
           {
-            if (ids.size() == 1)
-            {
-              heureka_received
-                = boost::optional<we::type::heureka_id_type> (*ids.begin());
-            }
-            else if (ids.size())
-            {
-              throw std::logic_error ("more than one heureka id");
-            }
+            BOOST_TEST (ids.size() == 1);
+            heureka_received = *ids.begin();
           }
         )
     );
@@ -217,12 +210,11 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_heureka_responses)
     );
   heureka_net.put_tokens (tokens);
 
-  std::mt19937 _random_engine;
   size_t num_heureka_received = 0;
 
   BOOST_REQUIRE
     ( !heureka_net.net.fire_expressions_and_extract_activity_random
-        ( _random_engine
+        ( fhg::util::testing::detail::GLOBAL_random_engine()
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
              )
@@ -231,14 +223,8 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_heureka_responses)
           }
         , [&num_heureka_received] (we::type::heureka_ids_type const& ids)
           {
-            if (ids.size() == 1)
-            {
-              num_heureka_received++;
-            }
-            else if (ids.size())
-            {
-              throw std::logic_error ("more than one heureka id");
-            }
+            BOOST_TEST (ids.size() == 1);
+            num_heureka_received++;
           }
         )
     );
