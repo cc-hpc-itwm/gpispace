@@ -2,6 +2,7 @@
 
 #include <net_with_arbitrary_buffer_sizes_and_default_alignments.hpp>
 #include <net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory.hpp>
+#include <net_with_arbitrary_buffer_sizes_and_alignments.hpp>
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
@@ -169,5 +170,56 @@ BOOST_AUTO_TEST_CASE
            "when allocating local shared memory!"
           ) != std::string::npos;
       }
+    );
+}
+
+BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
+{
+  INSTALLATION_AND_RFIDS();
+
+  unsigned long memory_amount_including_alignments (0);
+
+  fhg::util::temporary_path const _workflow_dir
+   (shared_directory / boost::filesystem::unique_path());
+  boost::filesystem::path const workflow_dir (_workflow_dir);
+
+  boost::filesystem::ofstream ofs
+    ( workflow_dir
+    /"net_with_arbitrary_buffer_sizes_and_alignments.xpnet"
+    );
+  std::string net_description
+    ( net_with_arbitrary_buffer_sizes_and_alignments
+        (memory_amount_including_alignments)
+    );
+  ofs << net_description;
+  ofs.close();
+
+  test::make_net_lib_install const make
+     ( installation
+     , "net_with_arbitrary_buffer_sizes_and_alignments"
+     , workflow_dir
+     , installation_dir
+     );
+
+  gspc::scoped_runtime_system const drts
+     ( vm
+     , installation
+     , "worker:1," + std::to_string (memory_amount_including_alignments)
+     , rifds.entry_points()
+     );
+
+  std::multimap<std::string, pnet::type::value::value_type> result;
+
+  BOOST_REQUIRE_NO_THROW
+  ( result = gspc::client (drts).put_and_run
+      (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
+  );
+
+  BOOST_REQUIRE_EQUAL (result.size(), 1);
+
+  BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+  BOOST_CHECK_EQUAL
+    ( result.find ("done")->second
+    , pnet::type::value::value_type (we::type::literal::control())
     );
 }
