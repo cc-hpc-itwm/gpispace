@@ -151,6 +151,7 @@ namespace we
             ( Engine& engine
             , we::workflow_response_callback const& workflow_response
             , we::heureka_response_callback const& heureka_response
+              = &we::type::net_type::unexpected_heureka
             )
       {
         gspc::we::plugin::Plugins plugins;
@@ -166,30 +167,13 @@ namespace we
           );
       }
 
-      template<typename Engine>
-        boost::optional<we::type::activity_t>
-          fire_expressions_and_extract_activity_random
-            ( Engine& engine
-            , we::workflow_response_callback const& workflow_response
-            )
-      {
-        return fire_expressions_and_extract_activity_random
-          ( engine
-          , workflow_response
-          , [] (heureka_ids_type const&)
-            {
-              throw std::logic_error ("Unexpected call to heureka.");
-            }
-          );
-      }
-
       void inject ( activity_t const&
                   , workflow_response_callback
                   = [] ( pnet::type::value::value_type const&
                        , pnet::type::value::value_type const&
                        ) {}
                   , heureka_response_callback
-                  = [] (heureka_ids_type const&) {}
+                    = &we::type::net_type::unexpected_heureka
                   );
 
     private:
@@ -262,6 +246,11 @@ namespace we
       to_be_updated_type do_put_value
         (place_id_type, pnet::type::value::value_type const&);
       void do_update (to_be_updated_type const&);
+
+      static void unexpected_heureka (heureka_ids_type const&)
+      {
+        throw std::logic_error ("Unexpected call to heureka");
+      }
 
       friend class boost::serialization::access;
       template<typename Archive>
