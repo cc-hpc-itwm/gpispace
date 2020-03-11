@@ -23,7 +23,6 @@ namespace xml
       struct heureka_type : with_position_of_definition
       {
       public:
-        //! \note port
         using unique_key_type = we::type::heureka_id_type;
 
         heureka_type ( util::position_type const&
