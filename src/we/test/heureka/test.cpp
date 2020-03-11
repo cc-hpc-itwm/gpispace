@@ -81,20 +81,20 @@ BOOST_AUTO_TEST_CASE (we_heureka_kill_all)
     {
       for (unsigned long N (1UL); N <= 10UL; N+= 4)
       {
-        std::list<unsigned long> token_list;
-        token_list.resize (N);
-        std::iota (token_list.begin(), token_list.end(), 1);
-
         BOOST_TEST_CONTEXT ("#workers: " << N)
         {
-          std::multimap<std::string, pnet::type::value::value_type> const result
-            ( gspc::client (drts).put_and_run
-              ( gspc::workflow (workflow)
-              , { {"ntokens", pnet::type::value::wrap (token_list)}
-                , {"heureka_gid", std::string("find_small_value")}
-                }
-              )
-            );
+          std::multimap<std::string, pnet::type::value::value_type> tokens_on_port
+            {{"heureka_gid", std::string ("find_small_value")}};
+
+          for (unsigned long i (0); i < N; ++i)
+          {
+            tokens_on_port.emplace ("token", i);
+          }
+
+          auto const result
+          ( gspc::client (drts).put_and_run
+            (gspc::workflow (workflow), tokens_on_port)
+          );
         }
       }
     }

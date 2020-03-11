@@ -1,26 +1,13 @@
 <defun name="find_heureka">
 
-  <in name="ntokens" type="list" place="ntokens"/>
   <in name="heureka_gid" type="string" place="heureka_group"/>
+  <in name="token" type="unsigned long" place="token"/>
 
   <net>
 
-    <place name="ntokens" type="list"/>
     <place name="token" type="unsigned long"/>
     <place name="value" type="long"/>
-
     <place name="heureka_group" type="string"/>
-    <place name="heureka" type="set"/>
-
-    <transition name="generate_tokens">
-      <defun>
-        <inout name="in" type="list"/>
-        <expression>
-        </expression>
-      </defun>
-      <connect-in port="in" place="ntokens"/>
-      <connect-out-many port="in" place="token"/>
-    </transition>
 
     <transition name="generate_events">
       <defun>
