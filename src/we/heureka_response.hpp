@@ -2,6 +2,8 @@
 
 #include <we/type/heureka.hpp>
 
+#include <functional>
+
 namespace we
 {
   using heureka_response_callback
