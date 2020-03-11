@@ -19,8 +19,8 @@
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
-#include <sdpa/job_requirements.hpp>
 #include <sdpa/master_network_info.hpp>
+#include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
 #include <gpi-space/pc/client/api.hpp>
@@ -183,7 +183,8 @@ namespace sdpa {
       void job_canceled (Job*);
 
       // workers
-      void serveJob(std::set<worker_id_t> const&, const job_id_t&);
+      void serveJob
+        (WorkerSet const&, Implementation const&, const job_id_t&);
 
       // jobs
       std::string gen_id();
@@ -197,7 +198,7 @@ namespace sdpa {
                   , we::type::activity_t
                   , job_source
                   , job_handler
-                  , job_requirements_t
+                  , Requirements_and_preferences
                   );
 
       Job* findJob(const sdpa::job_id_t& job_id ) const;
@@ -304,7 +305,11 @@ namespace sdpa {
           (boost::optional<std::exception_ptr>) const;
 
         void submit_job
-          (boost::optional<job_id_t>, we::type::activity_t, std::set<worker_id_t> const&) const;
+          ( boost::optional<job_id_t>
+          , we::type::activity_t
+          , boost::optional<std::string> const&
+          , std::set<worker_id_t> const&
+          ) const;
         void cancel_job (job_id_t) const;
 
         void job_failed_ack (job_id_t) const;

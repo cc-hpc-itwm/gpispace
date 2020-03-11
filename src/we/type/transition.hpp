@@ -22,11 +22,20 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace we { namespace type {
+namespace we
+{
+  namespace type
+  {
+    using preference_t = std::string;
+    using multi_module_call_t = std::unordered_map < preference_t
+                                                   , module_call_t
+                                                   >;
+
     struct transition_t
     {
     private:
       typedef boost::variant< module_call_t
+                            , multi_module_call_t
                             , expression_t
                             , boost::recursive_wrapper<we::type::net_type>
                             > data_type;
@@ -49,21 +58,45 @@ namespace we { namespace type {
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
+                   , const std::list<we::type::preference_t>& preferences
                    )
-        : name_ (name)
-        , data_ (typ)
-          //! \todo better check user input earlier!?
-        , condition_
-          ( (!_condition || _condition.get().ast().is_const_true())
-          ? boost::none : _condition
-          )
-        , _ports_input()
-        , _ports_output()
-        , _ports_tunnel()
-        , port_id_counter_ (0)
-        , prop_(prop)
-        , _requirements()
-        , _priority (priority)
+        try
+          :  name_  (name)
+          ,  data_  (typ)
+              //!  \todo  better  check  user  input  earlier!?
+          ,  condition_
+              (  (!_condition  ||  _condition.get().ast().is_const_true())
+              ?  boost::none  :  _condition
+              )
+          ,  _ports_input()
+          ,  _ports_output()
+          ,  _ports_tunnel()
+          ,  port_id_counter_  (0)
+          ,  prop_(prop)
+          ,  _requirements()
+          ,  _preferences  (preferences)
+          ,  _priority  (priority)
+      {
+        if (preferences.size() && data_.type() != typeid (multi_module_call_t))
+        {
+          throw std::runtime_error
+            ("preferences defined without multiple modules with target");
+        }
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          (std::runtime_error ("Failed to create transition '" + name + "'"));
+      }
+
+      template <typename Type>
+      transition_t ( const std::string& name
+                   , Type const& typ
+                   , boost::optional<expression_t> const& _condition
+                   , const we::type::property::type& prop
+                   , we::priority_type priority
+                   )
+        : transition_t (name, typ, _condition, prop, priority, {})
       { }
 
       const std::string& name() const;
@@ -89,6 +122,7 @@ namespace we { namespace type {
       const we::type::property::type& prop() const;
 
       std::list<we::type::requirement_t> const& requirements() const;
+      std::list<we::type::preference_t> const& preferences() const;
       void add_requirement (we::type::requirement_t const&);
 
       we::priority_type priority() const;
@@ -113,6 +147,7 @@ namespace we { namespace type {
       we::type::property::type prop_;
 
       std::list<we::type::requirement_t> _requirements;
+      std::list<we::type::preference_t> _preferences;
       we::priority_type _priority;
 
       friend class boost::serialization::access;
@@ -128,6 +163,7 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_preferences);
         ar & BOOST_SERIALIZATION_NVP(_priority);
       }
     };

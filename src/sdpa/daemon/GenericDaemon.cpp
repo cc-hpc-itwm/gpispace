@@ -83,7 +83,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _worker_manager()
   , _scheduler ( [this] (job_id_t job_id)
                  {
-                   return findJob (job_id)->requirements();
+                   return findJob (job_id)->requirements_and_preferences();
                  }
                , _worker_manager
                )
@@ -173,24 +173,27 @@ const std::string& GenericDaemon::name() const
       return _network_strategy.local_endpoint();
     }
 
-void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
+void GenericDaemon::serveJob
+  ( WorkerSet const& workers
+  , Implementation const& implementation
+  , const job_id_t& jobId
+  )
 {
-  //take a job from the workers' queue and serve it
-  Job const* const ptrJob = findJob(jobId);
-  if(ptrJob)
+  Job const* const ptrJob = findJob (jobId);
+  if (ptrJob)
   {
-      // create a SubmitJobEvent for the job job_id serialize and attach description
-    _log_emitter.emit ( "The job " + ptrJob->id()
-                      + " was assigned the following workers: {"
-                      + fhg::util::join (workers, ", ").string() + '}'
-                      , fhg::logging::legacy::category_level_trace
-                      );
-
-      for (const worker_id_t& worker_id : workers)
-      {
-        child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->activity(), workers);
-      }
+    for (auto const& worker : workers)
+    {
+      child_proxy
+        ( this
+        , _worker_manager.address_by_worker (worker).get()->second
+        )
+        .submit_job ( ptrJob->id()
+                    , ptrJob->activity()
+                    , implementation
+                    , workers
+                    );
+    }
   }
 }
 
@@ -208,7 +211,7 @@ std::string GenericDaemon::gen_id()
     {
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
-      job_requirements_t requirements
+      Requirements_and_preferences requirements_and_preferences
         { activity.requirements()
         , activity.get_schedule_data()
         , [&]
@@ -243,13 +246,14 @@ std::string GenericDaemon::gen_id()
           }()
         , computational_cost
         , activity.memory_buffer_size_total()
+        , activity.preferences()
         };
 
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
                     , std::move (handler)
-                    , std::move (requirements)
+                    , std::move (requirements_and_preferences)
                     );
     }
 
@@ -258,7 +262,7 @@ std::string GenericDaemon::gen_id()
                                , we::type::activity_t activity
                                , job_source source
                                , job_handler handler
-                               , job_requirements_t requirements
+                               , Requirements_and_preferences requirements_and_preferences
                                )
     {
       Job* pJob = new Job
@@ -266,7 +270,7 @@ std::string GenericDaemon::gen_id()
         , std::move (activity)
         , std::move (source)
         , std::move (handler)
-        , std::move (requirements)
+        , std::move (requirements_and_preferences)
         );
 
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
@@ -439,7 +443,7 @@ void GenericDaemon::handleSubmitJobEvent
                           , hasWorkflowEngine()
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
-                          , {{}, {}, null_transfer_cost, 1.0, 0}
+                          , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
                           )
                   );
 
@@ -624,6 +628,17 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
+  auto const num_required_workers (activity.get_schedule_data().num_worker());
+
+  if ( num_required_workers
+     && *num_required_workers > 1
+     && !activity.preferences().empty()
+     )
+  {
+    throw std::runtime_error
+      ("Not allowed to use coallocation for activities with multiple module implementations!");
+  }
+
   addJob (job_id, activity, job_source_wfe(), job_handler_worker());
 
   _scheduler.enqueueJob (job_id);
@@ -1576,7 +1591,13 @@ namespace sdpa
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
-          (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
+          (std::bind ( &GenericDaemon::serveJob
+                     , this
+                     , std::placeholders::_1
+                     , std::placeholders::_2
+                     , std::placeholders::_3
+                     )
+          );
       }
     }
 
@@ -1602,11 +1623,12 @@ namespace sdpa
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
                                                 , we::type::activity_t activity
+                                                , boost::optional<std::string> const& implementation
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, activity, workers);
+        (_address, id, activity, implementation, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const

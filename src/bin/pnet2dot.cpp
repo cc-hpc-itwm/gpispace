@@ -280,6 +280,20 @@ namespace
       return s.str();
     }
 
+    std::string operator() (const we::type::multi_module_call_t& mod_calls) const
+    {
+      std::ostringstream s;
+
+      for (auto const& mod_call : mod_calls)
+      {
+        s << _indent
+          << name (id, "modcall")
+          << node (shape::modcall, boost::lexical_cast<std::string> (mod_call.second));
+      }
+
+      return s.str();
+    }
+
     std::string operator() (const we::type::net_type& net) const
     {
       std::ostringstream s;

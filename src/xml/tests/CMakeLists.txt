@@ -49,5 +49,17 @@ fhg_add_test (NAME xml_conditions_and_expressions_with_cdata
   LIBRARIES pnet
 )
 
+fhg_add_test (NAME xml_parse_invalid_preference_list
+  SOURCES parse_invalid_preference_list.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
+fhg_add_test (NAME xml_parse_valid_preference_list
+  SOURCES parse_valid_preference_list.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
 add_subdirectory (bytearray)
 add_subdirectory (diagnostics)

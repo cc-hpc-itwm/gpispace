@@ -113,7 +113,8 @@ namespace we
         && lhs.ports_output() == rhs.ports_output()
         && lhs.ports_tunnel() == rhs.ports_tunnel()
         && lhs.prop() == rhs.prop()
-        && lhs.requirements() == rhs.requirements();
+        && lhs.requirements() == rhs.requirements()
+        && lhs.preferences() == rhs.preferences();
     }
   }
 

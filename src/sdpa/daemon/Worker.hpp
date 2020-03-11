@@ -25,7 +25,7 @@ namespace sdpa
                       , const std::string& hostname
                       );
 
-      void assign (const job_id_t&);
+      void assign (const job_id_t&, double);
       void submit(const job_id_t&);
 
       void acknowledge(const job_id_t&);
@@ -38,8 +38,8 @@ namespace sdpa
       bool has_pending_jobs() const;
       bool has_running_jobs() const;
 
-      void delete_submitted_job (const job_id_t &job_id);
-      void delete_pending_job (const job_id_t& job_id);
+      void delete_submitted_job (const job_id_t job_id, double);
+      void delete_pending_job (const job_id_t job_id, double);
 
       // methods related to reservation
       bool isReserved() const;
@@ -47,7 +47,8 @@ namespace sdpa
       void set_backlog_full (bool);
 
       // cost
-      double cost_assigned_jobs (std::function<double (job_id_t job_id)>) const;
+      double cost_assigned_jobs() const;
+      double _cost_assigned_jobs;
 
       bool stealing_allowed() const;
 

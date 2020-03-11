@@ -87,6 +87,26 @@ fhg_add_test (NAME sdpa_RestartWorkersDummy
             test-utilities
 )
 
+fhg_add_test (NAME sdpa_Scheduler_no_preferences.performance
+  SOURCES Scheduler_no_preferences.performance.cpp
+  USE_BOOST
+  PERFORMANCE_TEST
+  RUN_SERIAL
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME sdpa_Scheduler_with_preferences.performance
+  SOURCES Scheduler_with_preferences.performance.cpp
+  USE_BOOST
+  PERFORMANCE_TEST
+  RUN_SERIAL
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
 fhg_add_test (NAME sdpa_Subscriber
   SOURCES Subscriber.cpp
   USE_BOOST
@@ -120,6 +140,21 @@ fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
 
 fhg_add_test (NAME remove_workers_in_a_coallocation_job_and_add_them_again
   SOURCES remove_workers_in_a_coallocation_job.cpp
+  USE_BOOST
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME forbid_equal_preferences_for_tasks
+  SOURCES forbid_equal_preferences_for_tasks.cpp
+  USE_BOOST
+  LIBRARIES sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME sdpa_Preferences
+  SOURCES Preferences.cpp
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa

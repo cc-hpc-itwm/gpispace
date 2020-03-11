@@ -4,6 +4,7 @@
 #include <we/type/requirement.hpp>
 #include <we/type/schedule_data.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 
@@ -20,8 +21,6 @@
 
 namespace
 {
-  const double computational_cost = 1.0;
-
   std::vector<std::string> generate_worker_names (const int n)
   {
     std::vector<std::string> worker_ids (n);
@@ -44,68 +43,6 @@ namespace
   {
     return fhg::util::testing::random_integral<unsigned long>();
   }
-}
-
-BOOST_AUTO_TEST_CASE (sorted_list_of_matching_workers)
-{
-  const std::vector<std::string> worker_ids (generate_worker_names (4));
-
-  sdpa::daemon::WorkerManager worker_manager;
-  worker_manager.addWorker ( worker_ids[0]
-                           , {sdpa::capability_t ("A", worker_ids[0])}
-                           , random_ulong()
-                           , random_bool()
-                           , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
-                           );
-
-  worker_manager.addWorker ( worker_ids[1]
-                           , {sdpa::capability_t ("B", worker_ids[1])}
-                           , random_ulong()
-                           , random_bool()
-                           , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
-                           );
-  worker_manager.addWorker ( worker_ids[2]
-                           , { sdpa::capability_t ("A", worker_ids[2])
-                             , sdpa::capability_t ("B", worker_ids[2])
-                             , sdpa::capability_t ("C", worker_ids[2])
-                             }
-                           , random_ulong()
-                           , random_bool()
-                           , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
-                           );
-
-  worker_manager.addWorker ( worker_ids[3]
-                           , { sdpa::capability_t ("A", worker_ids[3])
-                             , sdpa::capability_t ("B", worker_ids[3])
-                             }
-                           , random_ulong()
-                           , random_bool()
-                           , fhg::util::testing::random_string()
-                           , fhg::util::testing::random_string()
-                           );
-
-  const job_requirements_t job_req ({{ we::type::requirement_t ("A", true)
-                                     , we::type::requirement_t ("B", false)
-                                     , we::type::requirement_t ("C", false)
-                                     }
-                                    , we::type::schedule_data()
-                                    , null_transfer_cost
-                                    , computational_cost
-                                    , 0
-                                    }
-                                   );
-
-  auto const mmap_match_deg_worker_id
-    (worker_manager.getMatchingDegreesAndWorkers_TESTING_ONLY (job_req));
-
-  BOOST_REQUIRE_EQUAL (mmap_match_deg_worker_id.size(), worker_ids.size()-1);
-  auto it (mmap_match_deg_worker_id.begin());
-  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[2]);
-  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[3]);
-  BOOST_REQUIRE_EQUAL (it++->second.worker_id(), worker_ids[0]);
 }
 
 BOOST_AUTO_TEST_CASE (add_worker)
@@ -226,14 +163,18 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
 
-  worker_manager.assign_job_to_worker (job_id, worker_ids[0]);
+  worker_manager.assign_job_to_worker (job_id, worker_ids[0], 1, {});
   std::unordered_set<sdpa::worker_id_t> workers (worker_manager.findSubmOrAckWorkers (job_id));
   BOOST_REQUIRE (workers.empty());
 
   worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( job_id
     , {worker_ids[0]}
-    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
+    , boost::none
+    , [] ( sdpa::daemon::WorkerSet const&
+         , sdpa::daemon::Implementation const&
+         , sdpa::job_id_t const&
+         )
       {
         // do nothing, serve_job is merged with submit_if_can_start in
         // order to avoid races when workers are removed
@@ -257,6 +198,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
 
   sdpa::daemon::WorkerManager worker_manager;
 
+  sdpa::daemon::WorkerSet workers;
+
   for (unsigned int k=0; k<N; k++)
   {
     worker_manager.addWorker ( worker_ids[k]
@@ -266,46 +209,52 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
                              , fhg::util::testing::random_string()
                              , fhg::util::testing::random_string()
                              );
+
+    workers.emplace ( worker_ids[k]);
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
 
   for (unsigned int i=0; i<N; i++)
   {
-    worker_manager.assign_job_to_worker (job_id, worker_ids[i]);
-    std::unordered_set<sdpa::worker_id_t> workers (worker_manager.findSubmOrAckWorkers (job_id));
-    BOOST_REQUIRE (workers.empty());
+    worker_manager.assign_job_to_worker (job_id, worker_ids[i], 1.0, {});
+    std::unordered_set<sdpa::worker_id_t> submitted_or_ack_workers (worker_manager.findSubmOrAckWorkers (job_id));
+    BOOST_REQUIRE (submitted_or_ack_workers.empty());
   }
 
   worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
     ( job_id
-    , std::set<sdpa::worker_id_t> (worker_ids.begin(), worker_ids.end())
-    , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&)
+    , workers
+    , boost::none
+    , [] ( sdpa::daemon::WorkerSet const&
+         , sdpa::daemon::Implementation const&
+         , sdpa::job_id_t const&
+         )
       {
         // do nothing, serve_job is merged with submit_if_can_start in
         // order to avoid races when workers are removed
       }
     );
 
-  std::unordered_set<sdpa::worker_id_t>workers
+  std::unordered_set<sdpa::worker_id_t> submitted_or_ack_workers
     (worker_manager.findSubmOrAckWorkers (job_id));
 
-  BOOST_REQUIRE_EQUAL (workers.size(), N);
+  BOOST_REQUIRE_EQUAL (submitted_or_ack_workers.size(), N);
 
   for (unsigned int k=0; k<N; k++)
   {
-    BOOST_REQUIRE (workers.count (worker_ids[k]));
+    BOOST_REQUIRE (submitted_or_ack_workers.count (worker_ids[k]));
   }
 
   for (unsigned int k=0; k<N; k++)
   {
     worker_manager.acknowledge_job_sent_to_worker (job_id, worker_ids[k]);
-    workers = worker_manager.findSubmOrAckWorkers (job_id);
-    BOOST_REQUIRE_EQUAL (workers.size(), N);
+    submitted_or_ack_workers = worker_manager.findSubmOrAckWorkers (job_id);
+    BOOST_REQUIRE_EQUAL (submitted_or_ack_workers.size(), N);
 
     for (unsigned int i=0; i<N; i++)
     {
-      BOOST_REQUIRE (workers.count (worker_ids[i]));
+      BOOST_REQUIRE (submitted_or_ack_workers.count (worker_ids[i]));
     }
   }
 }
@@ -324,26 +273,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   // <boilerplate>
   sdpa::daemon::WorkerManager worker_manager;
 
-  struct mock_reservation
-  {
-    mock_reservation (double cost, bool allowed_to_be_stolen)
-      : _cost (cost)
-      , _allowed_to_be_stolen (allowed_to_be_stolen)
-    {}
-    double cost()
-    {
-      return _cost;
-    }
-    void replace_worker (sdpa::worker_id_t, sdpa::worker_id_t)
-    {
-      BOOST_REQUIRE (_allowed_to_be_stolen);
-    }
-
-  private:
-    double _cost;
-    bool _allowed_to_be_stolen;
-  };
-  std::unordered_map<sdpa::job_id_t, mock_reservation> reservations;
+  std::unordered_map<sdpa::job_id_t, std::unique_ptr<sdpa::daemon::scheduler::Reservation>> reservations;
 
   std::string const capability_name (fhg::util::testing::random_string());
   auto&& add_worker ( [&] (sdpa::worker_id_t worker_id)
@@ -365,8 +295,17 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
           )
       {
         reservations.emplace
-          (job_id, mock_reservation (cost, allowed_to_be_stolen));
-        worker_manager.assign_job_to_worker (job_id, worker_id);
+          ( job_id
+          , fhg::util::cxx14::make_unique<sdpa::daemon::scheduler::Reservation>
+              ( allowed_to_be_stolen
+              ? std::set<sdpa::worker_id_t> {worker_id}
+              : std::set<sdpa::worker_id_t>{}
+              , sdpa::daemon::Implementation{}
+              , Preferences{}
+              , cost
+              )
+          );
+        worker_manager.assign_job_to_worker (job_id, worker_id, cost, {});
       }
     );
   auto&& add_running_job
@@ -379,7 +318,12 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
           ( worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
             ( job_id
             , {worker_id}
-            , [] (std::set<sdpa::worker_id_t> const&, sdpa::job_id_t const&){}
+            , boost::none
+            , [] ( sdpa::daemon::WorkerSet const&
+                 , sdpa::daemon::Implementation const&
+                 , sdpa::job_id_t const&
+                 )
+              {}
             )
           );
       }
@@ -388,10 +332,11 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   auto&& steal_work
     ( [&]
       {
-        std::function<mock_reservation* (sdpa::job_id_t const&)> reservation
+        auto const reservation
           ( [&] (sdpa::job_id_t const& job_id)
             {
-              return &reservations.at (job_id);
+              return static_cast<sdpa::daemon::scheduler::Reservation*>
+                (reservations.at (job_id).get());
             }
           );
         worker_manager.steal_work (reservation);
@@ -444,8 +389,13 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
   add_worker (worker_id_pool());
 
 
-  // Has BOOST_REQUIRE inside via mock_reservation::replace_worker, so
-  // that only those expensive jobs are stolen. With the invalid-read,
-  // the second job is stolen from the cheaper worker.
+  // With the invalid-read, the second job is stolen from the
+  // cheaper worker.
+  // Note: If this throws a confusing "Asked to replace the non-existent
+  // worker", this is **not** because the worker doesn't exist, but
+  // because the test failed and we needed a way to let
+  // `Reservation::replace_worker()` fail. We do so by letting all
+  // those reservations we don't want to steal not have a worker to
+  // replace.
   steal_work();
 }

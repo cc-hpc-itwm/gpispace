@@ -53,11 +53,13 @@ public:
 
     Job ( std::string const& jobid
         , we::type::activity_t const& activity_
+        , boost::optional<std::string> const& target_impl_
         , owner_type const& owner_
         , std::set<std::string> const& workers_
         )
       : id (jobid)
       , activity (activity_)
+      , target_impl (target_impl_)
       , owner (owner_)
       , workers (workers_)
       , state (Job::PENDING)
@@ -67,6 +69,7 @@ public:
 
     std::string const id;
     we::type::activity_t const activity;
+    boost::optional<std::string> const target_impl;
     owner_type const owner;
     std::set<std::string> const workers;
     std::atomic<state_t> state;

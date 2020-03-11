@@ -1,5 +1,6 @@
 #include <sdpa/test/sdpa/utils.hpp>
 
+#include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/master_network_info.hpp>
 
@@ -784,7 +785,13 @@ namespace utils
   sdpa::status::code client::wait_for_terminal_state (sdpa::job_id_t const& id)
   {
     sdpa::client::job_info_t UNUSED_job_info;
-    return _.wait_for_terminal_state (id, UNUSED_job_info);
+    return wait_for_terminal_state (id, UNUSED_job_info);
+  }
+
+  sdpa::status::code client::wait_for_terminal_state
+    (sdpa::job_id_t const& id, sdpa::client::job_info_t& job_info)
+  {
+    return _.wait_for_terminal_state (id, job_info);
   }
 
   sdpa::status::code client::wait_for_terminal_state_and_cleanup_polling

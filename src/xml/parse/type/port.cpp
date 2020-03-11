@@ -163,6 +163,14 @@ namespace xml
               throw error::port_connected_place_nonexistent (_port, _path);
             }
           }
+
+          void operator() (const multi_module_type&) const
+          {
+            if (_port.place)
+            {
+              throw error::port_connected_place_nonexistent (_port, _path);
+            }
+          }
         };
       }
 

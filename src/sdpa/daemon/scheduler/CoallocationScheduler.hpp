@@ -2,12 +2,14 @@
 
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
+#include <functional>
 #include <mutex>
 
 namespace sdpa
@@ -18,7 +20,7 @@ namespace sdpa
     {
     public:
       CoallocationScheduler
-        ( std::function<job_requirements_t (const sdpa::job_id_t&)>
+        ( std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
         , WorkerManager&
         );
 
@@ -46,7 +48,12 @@ namespace sdpa
         );
 
       std::set<job_id_t> start_pending_jobs
-        (std::function<void (std::set<worker_id_t> const&, const job_id_t&)>);
+        (std::function<void ( WorkerSet const&
+                            , Implementation const&
+                            , const job_id_t&
+                            )
+                      >
+        );
 
       bool reservation_canceled (job_id_t const&) const;
     private:
@@ -56,8 +63,8 @@ namespace sdpa
         , const double computational_cost
         ) const;
 
-      std::function<job_requirements_t (const sdpa::job_id_t&)>
-        _job_requirements;
+      std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
+        _requirements_and_preferences;
 
       WorkerManager& _worker_manager;
 
@@ -76,109 +83,11 @@ namespace sdpa
         std::list<job_id_t> container_;
       } _jobs_to_schedule;
 
-      class Reservation : boost::noncopyable
-      {
-      public:
-        Reservation (std::set<worker_id_t> workers, double cost)
-          : _workers (workers)
-          , _cost (cost)
-        {}
-
-        void replace_worker (worker_id_t const& w1, worker_id_t w2)
-        {
-          if (!_workers.count (w1))
-          {
-            throw std::runtime_error ( "Asked to replace the non-existent worker " + w1);
-          }
-
-          _workers.erase (w1);
-          _workers.emplace (std::move (w2));
-        }
-
-        std::set<worker_id_t> workers() const
-        {
-          return _workers;
-        }
-
-        double cost() const {return _cost;}
-
-      private:
-        std::set<worker_id_t> _workers;
-        double _cost;
-
-      public:
-        //! \todo move to job statemachine instead: is duplicated
-        //! state and is irrelevant to the scheduler. instances of
-        //! this class should probably be deleted as soon as the
-        //! workers are served, with the knowledge of where a job is
-        //! served to being somewhere else (as it already has to be
-        //! somewhere)
-
-        void store_result
-          (worker_id_t const& worker, terminal_state const& result)
-        {
-          if (!_results.individual_results.emplace (worker, result).second)
-          {
-            throw std::logic_error ("store_result: second result");
-          }
-          if ( JobFSM_::s_finished const* f
-             = boost::get<JobFSM_::s_finished> (&result)
-             )
-          {
-            _results.last_success = *f;
-          }
-        }
-        void mark_as_canceled_if_no_result_stored_yet (worker_id_t const& worker)
-        {
-          _results.individual_results.emplace (worker, JobFSM_::s_canceled());
-        }
-
-        boost::optional<job_result_type>
-          get_aggregated_results_if_all_terminated() const
-        {
-          return boost::make_optional
-            (_results.individual_results.size() == _workers.size(), _results);
-        }
-
-        bool apply_to_workers_without_result
-          (std::function <void (worker_id_t const&)> fun) const
-        {
-          bool applied {false};
-
-          for (worker_id_t const& worker_id : _workers)
-          {
-            if (!_results.individual_results.count (worker_id))
-            {
-              fun (worker_id);
-
-              applied = true;
-            }
-          }
-
-          return applied;
-        }
-
-        bool is_canceled() const
-        {
-          return std::any_of
-            ( _results.individual_results.begin()
-            , _results.individual_results.end()
-            , [] (std::pair<sdpa::worker_id_t, terminal_state> const& result)
-              {
-                return boost::get<JobFSM_::s_canceled> (&result.second);
-              }
-            );
-        }
-
-      private:
-        job_result_type _results;
-      };
-
       //! \note to be able to call releaseReservation instead of
       //! reimplementing in reschedule_worker_jobs
       mutable std::recursive_mutex mtx_alloc_table_;
-      typedef std::unordered_map<sdpa::job_id_t, std::unique_ptr<Reservation>>
-        allocation_table_t;
+      using allocation_table_t
+        = std::unordered_map<job_id_t, std::unique_ptr<scheduler::Reservation>>;
       allocation_table_t allocation_table_;
       std::unordered_set<job_id_t> _pending_jobs;
 

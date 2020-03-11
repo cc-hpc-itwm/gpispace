@@ -13,10 +13,10 @@ namespace sdpa
   namespace daemon
   {
     CoallocationScheduler::CoallocationScheduler
-      ( std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
+      ( std::function<Requirements_and_preferences (const sdpa::job_id_t&)> requirements_and_preferences
       , WorkerManager& worker_manager
       )
-      : _job_requirements (job_requirements)
+      : _requirements_and_preferences (requirements_and_preferences)
       , _worker_manager (worker_manager)
     {}
 
@@ -40,11 +40,13 @@ namespace sdpa
         ( workers.begin()
         , workers.end()
         , 0.0
-        , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
+        , [this, &job_id] ( const double total
+                          , worker_id_t const& worker
+                          )
           {
             return total
-              + _job_requirements (job_id).transfer_cost()
-                  (_worker_manager.host_INDICATES_A_RACE (wid));
+              + _requirements_and_preferences (job_id).transfer_cost()
+                  (_worker_manager.host_INDICATES_A_RACE (worker));
           }
         ) + computational_cost;
     }
@@ -52,10 +54,6 @@ namespace sdpa
     void CoallocationScheduler::assignJobsToWorkers()
     {
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      if (_worker_manager.all_workers_busy_and_have_pending_jobs())
-      {
-        return;
-      }
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
@@ -65,50 +63,70 @@ namespace sdpa
         sdpa::job_id_t const jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const job_requirements_t requirements (_job_requirements (jobId));
-        const std::set<worker_id_t> matching_workers
-          (_worker_manager.find_assignment
-            ( requirements
-            , [this] (const job_id_t& job_id) -> double
-              {
-                return allocation_table_.at (job_id)->cost();
-              }
-            )
-          );
+        const Requirements_and_preferences requirements_and_preferences
+          (_requirements_and_preferences (jobId));
 
-        if (!matching_workers.empty())
+        if ( !requirements_and_preferences.preferences().empty()
+           && requirements_and_preferences.numWorkers() > 1
+           )
+        {
+          throw std::runtime_error
+            ("Coallocation with preferences is forbidden!");
+        }
+
+        const Workers_and_implementation
+          matching_workers_and_implementation
+            (_worker_manager.find_assignment (requirements_and_preferences)
+            );
+
+        if (!matching_workers_and_implementation.first.empty())
         {
           if (allocation_table_.find (jobId) != allocation_table_.end())
           {
             throw std::runtime_error ("already have reservation for job " + jobId);
           }
 
+          double cost
+            (compute_reservation_cost
+              ( jobId
+              , matching_workers_and_implementation.first
+              , requirements_and_preferences.computational_cost()
+              )
+            );
+
           try
           {
-            for (worker_id_t const& worker : matching_workers)
+            for ( auto const& worker
+                : matching_workers_and_implementation.first
+                )
             {
-              _worker_manager.assign_job_to_worker (jobId, worker);
+              _worker_manager.assign_job_to_worker
+                ( jobId
+                , worker
+                , cost
+                , requirements_and_preferences.preferences()
+                );
             }
 
-            auto pReservation
-              (fhg::util::cxx14::make_unique<Reservation>
-                 ( matching_workers
-                 , compute_reservation_cost ( jobId
-                                            , matching_workers
-                                            , requirements.computational_cost()
-                                            )
-                 )
+            allocation_table_.emplace
+              ( jobId
+              , fhg::util::cxx14::make_unique<scheduler::Reservation>
+                  ( matching_workers_and_implementation.first
+                  , matching_workers_and_implementation.second
+                  , requirements_and_preferences.preferences()
+                  , cost
+                  )
               );
-
-            allocation_table_.emplace (jobId, std::move (pReservation));
 
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
           {
-            for (const worker_id_t& wid : matching_workers)
+            for ( auto const&  worker
+                : matching_workers_and_implementation.first
+                )
             {
-              _worker_manager.delete_job_from_worker (jobId, wid);
+              _worker_manager.delete_job_from_worker (jobId, worker, cost);
             }
 
             jobs_to_schedule.push_front (jobId);
@@ -127,7 +145,7 @@ namespace sdpa
     void CoallocationScheduler::steal_work()
     {
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      _worker_manager.steal_work<Reservation>
+      _worker_manager.steal_work
         ( [this] (job_id_t const& job)
           {
             return allocation_table_.at (job).get();
@@ -145,7 +163,7 @@ namespace sdpa
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
 
       for ( job_id_t const& job_id
-          : _worker_manager.delete_or_cancel_worker_jobs<Reservation>
+          : _worker_manager.delete_or_cancel_worker_jobs
               ( worker
               , get_job
               , [this] (job_id_t const& jobId)
@@ -171,16 +189,24 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void (std::set<worker_id_t> const&, const job_id_t&)> serve_job)
+      (std::function<void ( WorkerSet const&
+                          , Implementation const& implementation
+                          , const job_id_t&
+                          )
+                    > serve_job
+      )
     {
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
       for (const job_id_t& job_id: _pending_jobs)
       {
-        std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-             (job_id, workers, serve_job)
+              ( job_id
+              , allocation_table_.at (job_id)->workers()
+              ,  allocation_table_.at (job_id)->implementation()
+              , serve_job
+              )
            )
         {
           jobs_started.insert (job_id);
@@ -199,8 +225,7 @@ namespace sdpa
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
       std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      const allocation_table_t::const_iterator it
-       (allocation_table_.find (job_id));
+      auto const it (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
@@ -208,7 +233,8 @@ namespace sdpa
         {
           try
           {
-            _worker_manager.delete_job_from_worker (job_id, worker);
+            _worker_manager.delete_job_from_worker
+              (job_id, worker, it->second->cost());
           }
           catch (...)
           {

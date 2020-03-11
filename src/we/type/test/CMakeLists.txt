@@ -71,3 +71,9 @@ fhg_add_test (NAME we_type_dynamic_requirements
   USE_BOOST
   LIBRARIES pnet
 )
+
+fhg_add_test (NAME we_type_transition_with_preferences
+  SOURCES transition_with_preferences.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)

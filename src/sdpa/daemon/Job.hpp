@@ -1,8 +1,8 @@
 #pragma once
 
-#include <sdpa/job_requirements.hpp>
 #include <sdpa/job_states.hpp>
 #include <sdpa/master_network_info.hpp>
+#include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
 #include <we/type/activity.hpp>
@@ -12,6 +12,7 @@
 
 #include <boost/msm/back/state_machine.hpp>
 #include <boost/msm/front/state_machine_def.hpp>
+#include <boost/optional.hpp>
 
 #include <mutex>
 
@@ -129,6 +130,8 @@ namespace sdpa
       JobFSM_::s_finished last_success;
     };
 
+    using Implementation = boost::optional<std::string>;
+
     struct job_source_wfe {};
     struct job_source_master
     {
@@ -151,7 +154,7 @@ namespace sdpa
           , we::type::activity_t
           , job_source
           , job_handler
-          , job_requirements_t
+          , Requirements_and_preferences
           );
 
       we::type::activity_t const& activity() const
@@ -161,7 +164,7 @@ namespace sdpa
       const job_id_t& id() const;
       job_source const& source() const;
       job_handler const& handler() const { return _handler; }
-      job_requirements_t requirements() const;
+      Requirements_and_preferences requirements_and_preferences() const;
 
       std::string error_message () const;
       const we::type::activity_t& result() const;
@@ -181,7 +184,7 @@ namespace sdpa
       job_id_t id_;
       job_source _source;
       job_handler _handler;
-      job_requirements_t _requirements;
+      Requirements_and_preferences _requirements_and_preferences;
 
       std::string m_error_message;
       we::type::activity_t result_;

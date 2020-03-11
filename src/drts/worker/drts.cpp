@@ -48,10 +48,12 @@ struct wfe_task_t
   std::string id;
   state_t state;
   we::type::activity_t activity;
+  boost::optional<std::string> const target_impl;
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
              , we::type::activity_t const& activity
+             , boost::optional<std::string> const& target_impl_
              , std::string worker_name
              , std::set<std::string> workers
              , fhg::logging::stream_emitter& logger
@@ -59,6 +61,7 @@ struct wfe_task_t
     : id (id_)
     , state (PENDING)
     , activity (activity)
+    , target_impl (target_impl_)
     , context
       (drts::worker::context_constructor (worker_name, workers, logger))
   {}
@@ -140,6 +143,34 @@ namespace
               ("call to '" + mod.module() + "::" + mod.function() + "' failed")
           );
       }
+    }
+
+    void operator() (we::type::multi_module_call_t& multi_mod) const
+    {
+      if (!task.target_impl)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "no target selected for multi-module transition '"
+                + _activity.transition().name()
+                + "' failed"
+              )
+          );
+      }
+
+      auto const& mod_it = multi_mod.find (*task.target_impl);
+      if (mod_it == multi_mod.end())
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "no module for target '" + *task.target_impl + "' found"
+                " found in multi-module transition '"
+                + _activity.transition().name() + "'"
+              )
+          );
+      }
+
+      return (*this) (mod_it->second);
     }
 
     void operator() (we::type::expression_t&) const
@@ -335,6 +366,7 @@ void DRTSImpl::handleSubmitJobEvent
   std::shared_ptr<DRTSImpl::Job> job
     ( std::make_shared<DRTSImpl::Job> ( *e->job_id()
                                       , e->activity()
+                                      , e->implementation()
                                       , master
                                       , e->workers()
                                       )
@@ -560,7 +592,7 @@ try
       job->result = we::type::activity_t();
 
       wfe_task_t task
-        (job->id, job->activity, m_my_name, job->workers, _log_emitter);
+        (job->id, job->activity, job->target_impl, m_my_name, job->workers, _log_emitter);
 
       emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
