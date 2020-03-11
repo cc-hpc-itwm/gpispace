@@ -225,14 +225,10 @@ namespace we
                                , port_id_type port_id
                                )
     {
-      auto const& port_with_heureka
-        (_port_to_heureka.find (transition_id));
-      if (port_with_heureka != _port_to_heureka.end())
+      if (!_port_to_heureka.emplace (transition_id, port_id).second)
       {
         throw std::logic_error ("duplicate heureka");
       }
-
-      _port_to_heureka[transition_id] = port_id;
     }
 
     const std::unordered_map<place_id_type, place::type>&
