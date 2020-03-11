@@ -560,10 +560,9 @@ namespace xml
           : generic_duplicate<type::heureka_type>
             ( early
             , late
-            , boost::format ( "connect-heureka %1%"
-                              " (existing heureka connects to %2%)"
+            , boost::format ( "duplicate connect-heureka"
+                              " for port: %1%"
                             )
-            % late.port()
             % early.port()
             )
       {}
