@@ -12,4 +12,5 @@ fhg_add_test (NAME use_fixed_ports_for_orchestrator_agents_and_workers
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  RUN_SERIAL
 )
