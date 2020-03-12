@@ -907,12 +907,7 @@ namespace we
       if (h_id)
       {
         _heureka_in_progress.insert
-          (heureka_progress_type::value_type ( std::make_tuple ( *h_id
-                                                               , parent
-                                                               )
-                                             , child
-                                             )
-          );
+          ({heureka_parent_id_type (*h_id, parent), child});
       }
 
       _relation.insert (relation_type::value_type (parent, child));
