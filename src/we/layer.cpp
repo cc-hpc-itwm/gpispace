@@ -978,9 +978,7 @@ namespace we
     {
       std::lock_guard<std::mutex> const lock_for_heureka (_relation_mutex);
 
-      heureka_parent_id_type heureka_by_parent = std::make_tuple ( h_id
-                                                                 , parent
-                                                                 );
+      heureka_parent_id_type const heureka_by_parent (h_id, parent);
 
       for ( id_type child
           : _heureka_in_progress.left.equal_range (heureka_by_parent)
