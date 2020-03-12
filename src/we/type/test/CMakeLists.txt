@@ -77,3 +77,9 @@ fhg_add_test (NAME we_type_transition_with_preferences
   USE_BOOST
   LIBRARIES pnet
 )
+
+fhg_add_test (NAME we_type_memory_buffer_info
+  SOURCES memory_buffer_info.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
