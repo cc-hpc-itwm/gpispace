@@ -2349,3 +2349,80 @@ BOOST_FIXTURE_TEST_CASE
                 );
   }
 }
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (one_of_two_heureka_jobs_call_heureka, daemon)
+{
+  activity_with_child (0);
+  activity_with_transitions test_job_A;
+  test_job_A.add_transition_and_create_child_activity
+    ( "A"
+    , heureka_id_1
+    , {heureka_id_1}
+    );
+  test_job_A.create_job (2);
+
+  activity_with_transitions test_job_B;
+  test_job_B.add_transition_and_create_child_activity
+    ( "B"
+    , heureka_id_1
+    , {heureka_id_1}
+    );
+  test_job_B.create_job (2);
+
+  we::layer::id_type const id_A (generate_id());
+  we::layer::id_type const id_B (generate_id());
+
+  we::layer::id_type child_id_A_1;
+  we::layer::id_type child_id_A_2;
+  we::layer::id_type child_id_B_1;
+  we::layer::id_type child_id_B_2;
+
+  //! \note starting job A with two tokens to fire
+  {
+    expect_submit const _a1
+      (this, &child_id_A_1, test_job_A.get_activity ("A", child));
+    expect_submit const _a2
+      (this, &child_id_A_2, test_job_A.get_activity ("A", child));
+    do_submit (id_A, test_job_A.input);
+  }
+
+  //! \note starting separate job B with same heureka ID as job A
+  {
+    expect_submit const _b1
+      (this, &child_id_B_1, test_job_B.get_activity ("B", child));
+    expect_submit const _b2
+      (this, &child_id_B_2, test_job_B.get_activity ("B", child));
+
+    do_submit (id_B, test_job_B.input);
+  }
+
+  //! \note assuming one child of job A heureka-ed
+  {
+    expect_cancel const _a2_cancel (this, child_id_A_2);
+
+    do_finished ( child_id_A_1
+                , test_job_A.get_activity ("A", heureka)
+                );
+  }
+
+  //! \note finish job A with a heureka
+  {
+    expect_finished const _a_finish (this, id_A, test_job_A.output);
+
+    do_canceled (child_id_A_2);
+  }
+
+  //! \note finish job B normally
+  do_finished ( child_id_B_1
+              , test_job_B.get_activity ("B", no_heureka)
+              );
+  {
+    expect_finished const _b_finish (this, id_B, test_job_B.output);
+
+    do_finished ( child_id_B_2
+                , test_job_B.get_activity ("B", no_heureka)
+                );
+  }
+}
