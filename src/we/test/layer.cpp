@@ -2193,3 +2193,159 @@ BOOST_FIXTURE_TEST_CASE
                 );
   }
 }
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (one_of_two_groups_call_heureka, daemon)
+{
+  activity_with_transitions test_job;
+
+  //! \note first activity with group 1
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , heureka_id_1
+    , {heureka_id_1}
+    );
+
+  //! \note second activity with group 2
+  test_job.add_transition_and_create_child_activity
+    ( "B"
+    , heureka_id_2
+    , {heureka_id_2}
+    );
+
+  //! \note third activity with group 1
+  test_job.add_transition_and_create_child_activity
+    ( "C"
+    , heureka_id_1
+    , {heureka_id_1}
+    );
+
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_A_1;
+  we::layer::id_type child_id_A_2;
+  we::layer::id_type child_id_B_1;
+  we::layer::id_type child_id_B_2;
+  we::layer::id_type child_id_C_1;
+  we::layer::id_type child_id_C_2;
+
+  {
+    expect_submit const _a1
+      (this, &child_id_A_1, test_job.get_activity ("A", child));
+    expect_submit const _b1
+      (this, &child_id_B_1, test_job.get_activity ("B", child));
+    expect_submit const _c1
+      (this, &child_id_C_1, test_job.get_activity ("C", child));
+    expect_submit const _a2
+      (this, &child_id_A_2, test_job.get_activity ("A", child));
+    expect_submit const _b2
+      (this, &child_id_B_2, test_job.get_activity ("B", child));
+    expect_submit const _c2
+      (this, &child_id_C_2, test_job.get_activity ("C", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child of group 1 (A or C) heureka-ed
+  {
+    expect_cancel const _c2_cancel (this, child_id_C_2);
+    expect_cancel const _a2_cancel (this, child_id_A_2);
+    expect_cancel const _c1_cancel (this, child_id_C_1);
+
+    do_finished (child_id_A_1, test_job.get_activity ("A", heureka));
+  }
+
+  //! \note no tasks heureka for B, so normal exit
+  do_finished (child_id_B_1, test_job.get_activity ("B", no_heureka));
+  {
+    expect_finished const _ (this, id, test_job.output);
+
+    do_canceled (child_id_C_2);
+    do_canceled (child_id_A_2);
+    do_canceled (child_id_C_1);
+    do_finished ( child_id_B_2
+                , test_job.get_activity ("B", no_heureka)
+                );
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (two_of_three_groups_call_heureka, daemon)
+{
+  activity_with_transitions test_job;
+
+  //! \note first activity with group 1
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , heureka_id_1
+    , {heureka_id_1, heureka_id_3}
+    );
+
+  //! \note second activity with group 2
+  test_job.add_transition_and_create_child_activity
+    ( "B"
+    , heureka_id_2
+    , {heureka_id_2}
+    );
+
+  //! \note third activity with group 1
+  test_job.add_transition_and_create_child_activity
+    ( "C"
+    , heureka_id_3
+    , {heureka_id_3}
+    );
+
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_A_1;
+  we::layer::id_type child_id_A_2;
+  we::layer::id_type child_id_B_1;
+  we::layer::id_type child_id_B_2;
+  we::layer::id_type child_id_C_1;
+  we::layer::id_type child_id_C_2;
+
+  {
+    expect_submit const _a1
+      (this, &child_id_A_1, test_job.get_activity ("A", child));
+    expect_submit const _b1
+      (this, &child_id_B_1, test_job.get_activity ("B", child));
+    expect_submit const _c1
+      (this, &child_id_C_1, test_job.get_activity ("C", child));
+    expect_submit const _a2
+      (this, &child_id_A_2, test_job.get_activity ("A", child));
+    expect_submit const _b2
+      (this, &child_id_B_2, test_job.get_activity ("B", child));
+    expect_submit const _c2
+      (this, &child_id_C_2, test_job.get_activity ("C", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child of group 1 (A or C) heureka-ed
+  {
+    expect_cancel const _c2_cancel (this, child_id_C_2);
+    expect_cancel const _a2_cancel (this, child_id_A_2);
+    expect_cancel const _c1_cancel (this, child_id_C_1);
+
+    do_finished (child_id_A_1, test_job.get_activity ("A", heureka));
+  }
+
+  //! \note heureka tasks canceled, rest finish and exit
+  do_finished (child_id_B_1, test_job.get_activity ("B", no_heureka));
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_canceled (child_id_C_2);
+    do_canceled (child_id_A_2);
+    do_canceled (child_id_C_1);
+    do_finished ( child_id_B_2
+                , test_job.get_activity ("B", no_heureka)
+                );
+  }
+}
