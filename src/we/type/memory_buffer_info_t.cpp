@@ -5,7 +5,8 @@ namespace we
 {
   namespace type
   {
-    memory_buffer_info_t::memory_buffer_info_t() {}
+    //! For deserialization only.
+    memory_buffer_info_t::memory_buffer_info_t() = default;
 
     memory_buffer_info_t::memory_buffer_info_t
         (std::string const& size, std::string const& alignment)
