@@ -209,11 +209,9 @@ namespace we
 
         auto const offset (local_memory + position);
 
-        if (reinterpret_cast<std::uintptr_t> (offset) % alignment)
+        if (auto rest = reinterpret_cast<std::uintptr_t> (offset) % alignment)
         {
-          position += ( alignment
-                      - reinterpret_cast<std::uintptr_t> (offset) % alignment
-                      );
+          position += alignment - rest;
         }
 
         memory_buffer.emplace ( std::piecewise_construct
