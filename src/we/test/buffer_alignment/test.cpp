@@ -85,9 +85,9 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
     ( workflow_dir
     / "net_with_arbitrary_buffer_sizes_and_default_alignments.xpnet"
     )
-   << net_with_arbitrary_buffer_sizes_and_default_alignments
-        (total_buffer_size)
-   ;
+  << net_with_arbitrary_buffer_sizes_and_default_alignments
+       (total_buffer_size)
+  ;
 
   test::make_net_lib_install const make
      ( installation
@@ -130,16 +130,13 @@ BOOST_AUTO_TEST_CASE
    (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const workflow_dir (_workflow_dir);
 
-  boost::filesystem::ofstream ofs
+  boost::filesystem::ofstream
     ( workflow_dir
-    /"net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory.xpnet"
-    );
-  std::string net_description
-    (net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
+    / "net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory.xpnet"
+    )
+  << net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
        (total_buffer_size)
-    );
-  ofs << net_description;
-  ofs.close();
+  ;
 
   test::make_net_lib_install const make
      ( installation
@@ -179,16 +176,13 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
    (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const workflow_dir (_workflow_dir);
 
-  boost::filesystem::ofstream ofs
+  boost::filesystem::ofstream
     ( workflow_dir
-    /"net_with_arbitrary_buffer_sizes_and_alignments.xpnet"
-    );
-  std::string net_description
-    ( net_with_arbitrary_buffer_sizes_and_alignments
-        (memory_amount_including_alignments)
-    );
-  ofs << net_description;
-  ofs.close();
+    / "net_with_arbitrary_buffer_sizes_and_alignments.xpnet"
+    )
+  << net_with_arbitrary_buffer_sizes_and_alignments
+       (memory_amount_including_alignments)
+  ;
 
   test::make_net_lib_install const make
      ( installation
