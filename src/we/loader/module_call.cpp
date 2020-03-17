@@ -207,8 +207,8 @@ namespace we
         unsigned long const alignment
           (buffer_and_info.second.alignment (input));
 
-        if ( auto const rest 
-           = std::reinterpret_cast<std::uintptr_t> (local_memory + position) % alignment
+        if ( auto const rest
+           = reinterpret_cast<std::uintptr_t> (local_memory + position) % alignment
            )
         {
           position += alignment - rest;
