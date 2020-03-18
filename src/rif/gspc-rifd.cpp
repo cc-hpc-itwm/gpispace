@@ -4,6 +4,8 @@
 
 #include <rif/entry_point.hpp>
 
+#include <vmem/netdev_id.hpp>
+
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/syscall.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -262,12 +264,14 @@ try
            , std::vector<std::string> nodes
            , std::string gaspi_master
            , std::size_t rank
+           , fhg::vmem::netdev_id netdev_id
            ) -> pid_t
         {
           std::vector<std::string> arguments
             { "--socket", socket.string()
             , "--port", std::to_string (gaspi_port)
             , "--gpi-timeout", std::to_string (proc_init_timeout.count())
+            , "--netdev", to_string (netdev_id)
             };
 
           //! \todo allow to specify folder to put temporary file in

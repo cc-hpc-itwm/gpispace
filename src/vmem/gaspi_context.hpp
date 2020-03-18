@@ -1,6 +1,7 @@
 #pragma once
 
 #include <gpi-space/types.hpp>
+#include <vmem/netdev_id.hpp>
 
 #include <chrono>
 #include <mutex>
@@ -30,6 +31,7 @@ namespace fhg
       gaspi_context ( gaspi_timeout&
                     , gpi::port_t gaspi_sn
                     , gpi::port_t local_communication
+                    , netdev_id netdev_id
                     );
       ~gaspi_context();
       gaspi_context (gaspi_context const&) = delete;

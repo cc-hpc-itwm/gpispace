@@ -1,5 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <vmem/netdev_id.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -34,6 +36,7 @@ namespace gspc
   ACCESS (virtual_memory_socket, boost::filesystem::path);
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
+  ACCESS (virtual_memory_netdev_id, fhg::vmem::netdev_id);
 
   ACCESS (rif_entry_points_file, boost::filesystem::path);
   ACCESS (rif_port, unsigned short);
