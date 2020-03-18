@@ -118,9 +118,10 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_eureka_id_on_eureka_responses
   long const eureka_value
     ([&to_eureka, &tokens]
      {
-       size_t const n_tokens = ( fhg::util::testing::random<size_t>{}()
-                               % MAX_TOKENS
-                               ) + 1;
+       auto const n_tokens ( fhg::util::testing::random<size_t>{}()
+                           % MAX_TOKENS
+                           + 1
+                           );
        tokens = fhg::util::testing::randoms
                 < std::vector<long>
                 , fhg::util::testing::unique_random
@@ -183,15 +184,16 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_eureka_responses)
   long const eureka_value
     ([&tokens, &num_eureka_expected]
      {
-       size_t const n_tokens = ( fhg::util::testing::unique_random<size_t>{}()
-                               % MAX_TOKENS
-                               ) + 1;
-       tokens = fhg::util::testing::randoms < std::vector<long>
-                                            , fhg::util::testing::unique_random
-                                            > (n_tokens);
-       long eureka = tokens.at ( fhg::util::testing::unique_random<long>{}()
-                                % n_tokens
-                                );
+       auto const n_tokens ( fhg::util::testing::random<size_t>{}()
+                           % MAX_TOKENS
+                           + 1
+                           );
+       tokens = fhg::util::testing::randoms
+                < std::vector<long>
+                , fhg::util::testing::unique_random
+                > (n_tokens);
+       auto const eureka
+        (tokens.at (fhg::util::testing::random<long>{}() % n_tokens));
        std::for_each ( tokens.begin()
                      , tokens.end()
                      , [&eureka, &num_eureka_expected] (long const& val)
