@@ -7,8 +7,8 @@ namespace we
 {
   namespace type
   {
-    using heureka_id_type = std::string;
+    using eureka_id_type = std::string;
 
-    using heureka_ids_type = std::set<heureka_id_type>;
+    using eureka_ids_type = std::set<eureka_id_type>;
   }
 }

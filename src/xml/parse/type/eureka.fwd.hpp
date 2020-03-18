@@ -6,7 +6,7 @@ namespace xml
   {
     namespace type
     {
-      struct heureka_type;
+      struct eureka_type;
     }
   }
 }

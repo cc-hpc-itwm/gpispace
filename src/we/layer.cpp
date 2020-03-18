@@ -203,9 +203,9 @@ namespace we
                                   , value
                                   );
               }
-            , [this, parent, id] (type::heureka_ids_type const& h_ids)
+            , [this, parent, id] (type::eureka_ids_type const& h_ids)
               {
-                heureka_response ( *parent
+                eureka_response ( *parent
                                  , id
                                  , h_ids
                                  );
@@ -287,7 +287,7 @@ namespace we
         return;
       }
 
-      if (_ignore_canceled_by_heureka.erase (child))
+      if (_ignore_canceled_by_eureka.erase (child))
       {
         _nets_to_extract_from.apply
           ( *parent
@@ -433,27 +433,27 @@ namespace we
     }
   }
 
-  void layer::heureka_response ( id_type parent
-                               , boost::optional<id_type> heureka_calling_child
-                               , type::heureka_ids_type const& heureka_ids
+  void layer::eureka_response ( id_type parent
+                               , boost::optional<id_type> eureka_calling_child
+                               , type::eureka_ids_type const& eureka_ids
                                )
   {
     _nets_to_extract_from.apply
       ( parent
-      , [this, parent, heureka_calling_child, heureka_ids]
+      , [this, parent, eureka_calling_child, eureka_ids]
           (activity_data_type const& activity_data)
         {
           if (_running_jobs.contains (activity_data._id))
           {
-            for (type::heureka_id_type const& h_id : heureka_ids)
+            for (type::eureka_id_type const& h_id : eureka_ids)
             {
-              _running_jobs.apply_and_remove_heureka
+              _running_jobs.apply_and_remove_eureka
                 ( h_id
                 , parent
-                , heureka_calling_child
+                , eureka_calling_child
                 , [&] (id_type t_id)
                   {
-                    _ignore_canceled_by_heureka.emplace (t_id);
+                    _ignore_canceled_by_eureka.emplace (t_id);
                     _rts_cancel (t_id);
                   }
                 );
@@ -497,9 +497,9 @@ namespace we
                                             , value
                                             );
                         }
-                      , [this, &activity_data] (type::heureka_ids_type const& h_ids)
+                      , [this, &activity_data] (type::eureka_ids_type const& h_ids)
                         {
-                          heureka_response ( activity_data._id
+                          eureka_response ( activity_data._id
                                            , boost::none
                                            , h_ids
                                            );
@@ -541,7 +541,7 @@ namespace we
           const id_type child_id (_rts_id_generator());
           _running_jobs.started ( activity_data._id
                                 , child_id
-                                , activity->transition().heureka_id()
+                                , activity->transition().eureka_id()
                                 );
           _rts_submit (child_id, *activity);
           was_active = true;
@@ -885,12 +885,12 @@ namespace we
     void layer::activity_data_type::child_finished
       ( type::activity_t child
       , we::workflow_response_callback const& workflow_response
-      , we::heureka_response_callback const& heureka_response
+      , we::eureka_response_callback const& eureka_response
       )
     {
       //! \note We wrap all input activites in a net.
       boost::get<we::type::net_type> (_activity->transition().data())
-        .inject (child, workflow_response, heureka_response);
+        .inject (child, workflow_response, eureka_response);
     }
 
 
@@ -899,15 +899,15 @@ namespace we
     void layer::locked_parent_child_relation_type::started
       ( id_type parent
       , id_type child
-      , boost::optional<type::heureka_id_type> const& h_id
+      , boost::optional<type::eureka_id_type> const& h_id
       )
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       if (h_id)
       {
-        _heureka_in_progress.insert
-          ({heureka_parent_id_type (*h_id, parent), child});
+        _eureka_in_progress.insert
+          ({eureka_parent_id_type (*h_id, parent), child});
       }
 
       _relation.insert (relation_type::value_type (parent, child));
@@ -918,7 +918,7 @@ namespace we
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
 
-      _heureka_in_progress.right.erase (child);
+      _eureka_in_progress.right.erase (child);
 
       _relation.erase (relation_type::value_type (parent, child));
 
@@ -964,28 +964,28 @@ namespace we
 
 
     template <typename Func>
-    void layer::locked_parent_child_relation_type::apply_and_remove_heureka
-      ( type::heureka_id_type const& h_id
+    void layer::locked_parent_child_relation_type::apply_and_remove_eureka
+      ( type::eureka_id_type const& h_id
       , id_type const& parent
-      , boost::optional<id_type> const& heureka_caller
+      , boost::optional<id_type> const& eureka_caller
       , Func fun
       )
     {
-      std::lock_guard<std::mutex> const lock_for_heureka (_relation_mutex);
+      std::lock_guard<std::mutex> const lock_for_eureka (_relation_mutex);
 
-      heureka_parent_id_type const heureka_by_parent (h_id, parent);
+      eureka_parent_id_type const eureka_by_parent (h_id, parent);
 
       for ( id_type child
-          : _heureka_in_progress.left.equal_range (heureka_by_parent)
+          : _eureka_in_progress.left.equal_range (eureka_by_parent)
           | boost::adaptors::map_values
           )
       {
-        if (heureka_caller != child)
+        if (eureka_caller != child)
         {
           fun (child);
         }
       }
 
-      _heureka_in_progress.left.erase (heureka_by_parent);
+      _eureka_in_progress.left.erase (eureka_by_parent);
     }
 }

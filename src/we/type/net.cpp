@@ -221,13 +221,13 @@ namespace we
       }
     }
 
-    void net_type::add_heureka ( transition_id_type transition_id
+    void net_type::add_eureka ( transition_id_type transition_id
                                , port_id_type port_id
                                )
     {
-      if (!_port_to_heureka.emplace (transition_id, port_id).second)
+      if (!_port_to_eureka.emplace (transition_id, port_id).second)
       {
-        throw std::logic_error ("duplicate heureka");
+        throw std::logic_error ("duplicate eureka");
       }
     }
 
@@ -267,9 +267,9 @@ namespace we
     {
       return _port_to_response;
     }
-    net_type::port_to_heureka_type const& net_type::port_to_heureka() const
+    net_type::port_to_eureka_type const& net_type::port_to_eureka() const
     {
-      return _port_to_heureka;
+      return _port_to_eureka;
     }
     net_type::place_to_port_type const& net_type::place_to_port() const
     {
@@ -617,7 +617,7 @@ namespace we
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
-      , we::heureka_response_callback const& heureka_response
+      , we::eureka_response_callback const& eureka_response
       , gspc::we::plugin::Plugins& plugins
       , gspc::we::plugin::PutToken put_token
       )
@@ -738,8 +738,8 @@ namespace we
               );
           }
         }
-        else if (  _port_to_heureka.count (tid)
-                && _port_to_heureka.at (tid) == p.first
+        else if (  _port_to_eureka.count (tid)
+                && _port_to_eureka.at (tid) == p.first
                 )
         {
           auto const& ids
@@ -747,17 +747,17 @@ namespace we
               (context.value ({p.second.name()}))
             );
 
-          type::heureka_ids_type const heureka_ids
-            = pnet::type::value::unwrap<type::heureka_id_type>(ids);
+          type::eureka_ids_type const eureka_ids
+            = pnet::type::value::unwrap<type::eureka_id_type>(ids);
 
-          if (heureka_ids.size())
+          if (eureka_ids.size())
           {
             fhg::util::nest_exceptions<std::runtime_error>
               ( [&]
                 {
-                  heureka_response (heureka_ids);
+                  eureka_response (eureka_ids);
                 }
-                , "inject result: sending heureka response failed"
+                , "inject result: sending eureka response failed"
               );
           }
         }
@@ -791,7 +791,7 @@ namespace we
 
     void net_type::inject ( activity_t const& child
                           , workflow_response_callback workflow_response
-                          , heureka_response_callback heureka_response
+                          , eureka_response_callback eureka_response
                           )
     {
       for (auto const& token_on_port : child.output())
@@ -824,13 +824,13 @@ namespace we
                       );
           }
         }
-        else if (  _port_to_heureka.count (*child.transition_id())
-                && ( _port_to_heureka.at (*child.transition_id())
+        else if (  _port_to_eureka.count (*child.transition_id())
+                && ( _port_to_eureka.at (*child.transition_id())
                      == token_on_port.second
                    )
                 )
         {
-          std::set<type::heureka_id_type> const heureka_ids
+          std::set<type::eureka_id_type> const eureka_ids
             ([this, &token_on_port]
              {
               auto const& ids
@@ -838,18 +838,18 @@ namespace we
                  (token_on_port.first)
               );
 
-              return pnet::type::value::unwrap<type::heureka_id_type>(ids);
+              return pnet::type::value::unwrap<type::eureka_id_type>(ids);
              }()
             );
 
-          if (heureka_ids.size())
+          if (eureka_ids.size())
           {
             fhg::util::nest_exceptions<std::runtime_error>
               ( [&]
                 {
-                  heureka_response (heureka_ids);
+                  eureka_response (eureka_ids);
                 }
-                , "inject result: sending heureka response failed"
+                , "inject result: sending eureka response failed"
               );
           }
         }

@@ -27,7 +27,7 @@ namespace we
       , _requirements()
       , _preferences()
       , _priority()
-      , heureka_id_ (boost::none)
+      , eureka_id_ (boost::none)
     {}
 
     boost::optional<const expression_t&> transition_t::expression() const
@@ -48,9 +48,9 @@ namespace we
       return condition_;
     }
 
-    boost::optional<heureka_id_type> const& transition_t::heureka_id() const
+    boost::optional<eureka_id_type> const& transition_t::eureka_id() const
     {
-      return heureka_id_;
+      return eureka_id_;
     }
 
     const std::string& transition_t::name() const

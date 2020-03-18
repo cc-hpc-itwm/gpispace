@@ -11,7 +11,7 @@
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
-#include <we/heureka_response.hpp>
+#include <we/eureka_response.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
@@ -57,7 +57,7 @@ namespace we
       typedef std::unordered_map
         < transition_id_type
         , port_id_type
-        > port_to_heureka_type;
+        > port_to_eureka_type;
       typedef std::unordered_map
         < transition_id_type
         , std::unordered_map< place_id_type
@@ -86,7 +86,7 @@ namespace we
                         , std::string const& to
                         , we::type::property::type const&
                         );
-      void add_heureka ( transition_id_type
+      void add_eureka ( transition_id_type
                        , port_id_type
                        );
 
@@ -97,7 +97,7 @@ namespace we
       port_to_place_type const& port_to_place() const;
       port_to_place_type const& port_many_to_place() const;
       port_to_response_type const& port_to_response() const;
-      port_to_heureka_type const& port_to_heureka() const;
+      port_to_eureka_type const& port_to_eureka() const;
       place_to_port_type const& place_to_port() const;
 
       void put_value (place_id_type, const pnet::type::value::value_type&);
@@ -112,7 +112,7 @@ namespace we
       fire_expressions_and_extract_activity_random
         ( Engine& engine
         , we::workflow_response_callback const& workflow_response
-        , we::heureka_response_callback const& heureka_response
+        , we::eureka_response_callback const& eureka_response
         , gspc::we::plugin::Plugins& plugins
         , gspc::we::plugin::PutToken put_token
         )
@@ -131,7 +131,7 @@ namespace we
             fire_expression ( transition_id
                             , transition
                             , workflow_response
-                            , heureka_response
+                            , eureka_response
                             , plugins
                             , put_token
                             );
@@ -150,15 +150,15 @@ namespace we
           fire_expressions_and_extract_activity_random
             ( Engine& engine
             , we::workflow_response_callback const& workflow_response
-            , we::heureka_response_callback const& heureka_response
-              = &we::type::net_type::unexpected_heureka
+            , we::eureka_response_callback const& eureka_response
+              = &we::type::net_type::unexpected_eureka
             )
       {
         gspc::we::plugin::Plugins plugins;
         return fire_expressions_and_extract_activity_random
           ( engine
           , workflow_response
-          , heureka_response
+          , eureka_response
           , plugins
           , [] (std::string, pnet::type::value::value_type)
             {
@@ -172,8 +172,8 @@ namespace we
                   = [] ( pnet::type::value::value_type const&
                        , pnet::type::value::value_type const&
                        ) {}
-                  , heureka_response_callback
-                    = &we::type::net_type::unexpected_heureka
+                  , eureka_response_callback
+                    = &we::type::net_type::unexpected_eureka
                   );
 
     private:
@@ -190,7 +190,7 @@ namespace we
 
       port_to_place_type _port_to_place;
       port_to_place_type _port_many_to_place;
-      port_to_heureka_type _port_to_heureka;
+      port_to_eureka_type _port_to_eureka;
       port_to_response_type _port_to_response;
       place_to_port_type _place_to_port;
 
@@ -229,7 +229,7 @@ namespace we
         ( transition_id_type
         , we::type::transition_t const&
         , we::workflow_response_callback const&
-        , we::heureka_response_callback const&
+        , we::eureka_response_callback const&
         , gspc::we::plugin::Plugins&
         , gspc::we::plugin::PutToken
         );
@@ -247,9 +247,9 @@ namespace we
         (place_id_type, pnet::type::value::value_type const&);
       void do_update (to_be_updated_type const&);
 
-      static void unexpected_heureka (heureka_ids_type const&)
+      static void unexpected_eureka (eureka_ids_type const&)
       {
-        throw std::logic_error ("Unexpected call to heureka");
+        throw std::logic_error ("Unexpected call to eureka");
       }
 
       friend class boost::serialization::access;
@@ -267,7 +267,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_many_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_to_response);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_heureka);
+        ar & BOOST_SERIALIZATION_NVP (_port_to_eureka);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
         ar & BOOST_SERIALIZATION_NVP (_token_id);
         ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);

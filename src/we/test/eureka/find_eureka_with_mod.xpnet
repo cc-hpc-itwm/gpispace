@@ -1,20 +1,20 @@
-<defun name="find_heureka">
+<defun name="find_eureka">
 
-  <in name="heureka_gid" type="string" place="heureka_group"/>
+  <in name="eureka_gid" type="string" place="eureka_group"/>
   <in name="token" type="unsigned long" place="token"/>
 
   <net>
 
     <place name="token" type="unsigned long"/>
     <place name="value" type="long"/>
-    <place name="heureka_group" type="string"/>
+    <place name="eureka_group" type="string"/>
 
     <transition name="generate_events">
       <defun>
         <in name="in" type="unsigned long"/>
-        <in name="heureka_group" type="string"/>
+        <in name="eureka_group" type="string"/>
         <out name="out" type="long"/>
-        <module name="gen_heureka_with_mod" function="out generate_events(in)" eureka-group="find_small_value">
+        <module name="gen_eureka_with_mod" function="out generate_events(in)" eureka-group="find_small_value">
           <cinclude href="iostream"/>
           <cinclude href="stdlib.h"/>
           <cinclude href="time.h"/>
@@ -38,35 +38,35 @@
       </defun>
       <connect-in port="in" place="token"/>
       <connect-out port="out" place="value"/>
-      <connect-read port="heureka_group" place="heureka_group"/>
+      <connect-read port="eureka_group" place="eureka_group"/>
     </transition>
 
-    <transition name="got_an_event_heureka">
+    <transition name="got_an_event_eureka">
       <defun>
         <in name="in" type="long"/>
-        <in name="heureka_group" type="string"/>
-        <out name="heureka_good" type="set"/> <!-- you heureka, then put it here" -->
-        <out name="heureka_bad" type="list"/> <!-- you do not heureka, then put it here" -->
-        <module name="got_an_event" function="check_for_heureka (in, heureka_group, heureka_good, heureka_bad)">
+        <in name="eureka_group" type="string"/>
+        <out name="eureka_good" type="set"/> <!-- you eureka, then put it here" -->
+        <out name="eureka_bad" type="list"/> <!-- you do not eureka, then put it here" -->
+        <module name="got_an_event" function="check_for_eureka (in, eureka_group, eureka_good, eureka_bad)">
           <cinclude href="iostream"/>
           <cinclude href="we/type/value/wrap.hpp"/>
           <code><![CDATA[
             if (in < 20L)
             {
               std::cout << "Eureka! [in = " << in << "]\n";
-              heureka_good.insert (heureka_group);
+              eureka_good.insert (eureka_group);
             }
             else
             {
-              heureka_bad.emplace_back (heureka_group);
+              eureka_bad.emplace_back (eureka_group);
             }
           ]]></code>
         </module>
       </defun>
       <connect-in port="in" place="value"/>
-      <connect-in port="heureka_group" place="heureka_group"/>
-      <connect-out-many port="heureka_bad" place="heureka_group"/> <!-- non-heureka pipe it back -->
-      <connect-eureka port="heureka_good"/>   <!-- heureka!! -->
+      <connect-in port="eureka_group" place="eureka_group"/>
+      <connect-out-many port="eureka_bad" place="eureka_group"/> <!-- non-eureka pipe it back -->
+      <connect-eureka port="eureka_good"/>   <!-- eureka!! -->
     </transition>
 
   </net>

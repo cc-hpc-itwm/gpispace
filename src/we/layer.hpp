@@ -11,7 +11,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
-#include <we/heureka_response.hpp>
+#include <we/eureka_response.hpp>
 
 #include <sdpa/discovery_info.hpp>
 #include <sdpa/types.hpp>
@@ -116,9 +116,9 @@ namespace we
                              );
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
-      void heureka_response ( id_type
+      void eureka_response ( id_type
                             , boost::optional<id_type>
-                            , type::heureka_ids_type const& ids
+                            , type::eureka_ids_type const& ids
                             );
 
       std::mutex _outstanding_responses_guard;
@@ -140,7 +140,7 @@ namespace we
         void child_finished
           ( type::activity_t
           , we::workflow_response_callback const&
-          , we::heureka_response_callback const&
+          , we::eureka_response_callback const&
           );
 
         id_type _id;
@@ -221,7 +221,7 @@ namespace we
         void started
           ( id_type parent
           , id_type child
-          , boost::optional<type::heureka_id_type> const& hid
+          , boost::optional<type::eureka_id_type> const& hid
           );
         bool terminated (id_type parent, id_type child);
 
@@ -231,7 +231,7 @@ namespace we
         void apply (id_type parent, std::function<void (id_type)>) const;
 
         template <typename Func>
-          void apply_and_remove_heureka ( type::heureka_id_type const&
+          void apply_and_remove_eureka ( type::eureka_id_type const&
                                         , id_type const&
                                         , boost::optional<id_type> const&
                                         , Func
@@ -246,20 +246,20 @@ namespace we
           > relation_type;
         relation_type _relation;
 
-        using heureka_parent_id_type =
-          std::tuple < type::heureka_id_type
+        using eureka_parent_id_type =
+          std::tuple < type::eureka_id_type
                      , id_type
                      >;
-        using heureka_progress_type =
+        using eureka_progress_type =
         boost::bimaps::bimap
-          < boost::bimaps::unordered_multiset_of<heureka_parent_id_type>
+          < boost::bimaps::unordered_multiset_of<eureka_parent_id_type>
           , boost::bimaps::unordered_set_of<id_type>
           , boost::bimaps::set_of_relation<>
           >;
-        heureka_progress_type _heureka_in_progress;
+        eureka_progress_type _eureka_in_progress;
       } _running_jobs;
 
-      std::unordered_set<id_type> _ignore_canceled_by_heureka;
+      std::unordered_set<id_type> _ignore_canceled_by_eureka;
 
       boost::strict_scoped_thread<> _extract_from_nets_thread;
       fhg::util::finally_t<std::function<void()>> _stop_extracting;

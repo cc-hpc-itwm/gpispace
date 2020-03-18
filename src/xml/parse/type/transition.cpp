@@ -37,7 +37,7 @@ namespace xml
         , const std::string& name
         , const connections_type& connections
         , responses_type const& responses
-        , heurekas_type const& heurekas
+        , eurekas_type const& eurekas
         , const place_maps_type& place_map
         , const structs_type& structs_
         , const conditions_type& conditions
@@ -51,7 +51,7 @@ namespace xml
         , _name (name)
         , _connections (connections)
         , _responses (responses)
-        , _heurekas (heurekas)
+        , _eurekas (eurekas)
         , _place_map (place_map)
         , structs (structs_)
         , _conditions (conditions)
@@ -85,7 +85,7 @@ namespace xml
                , prefix + _name
                , connections
                , _responses
-               , _heurekas
+               , _eurekas
                , place_map
                , structs
                , _conditions
@@ -123,7 +123,7 @@ namespace xml
                , fhg::util::remove_prefix (prefix, _name)
                , connections
                , _responses
-               , _heurekas
+               , _eurekas
                , place_map
                , structs
                , _conditions
@@ -165,9 +165,9 @@ namespace xml
       {
         return _responses;
       }
-      transition_type::heurekas_type const& transition_type::heurekas() const
+      transition_type::eurekas_type const& transition_type::eurekas() const
       {
-        return _heurekas;
+        return _eurekas;
       }
       const transition_type::place_maps_type&
         transition_type::place_map() const
@@ -782,11 +782,11 @@ namespace xml
                 );
             }
 
-            for (heureka_type const& heureka : trans.heurekas())
+            for (eureka_type const& eureka : trans.eurekas())
             {
-              we_net.add_heureka
+              we_net.add_eureka
                 ( tid
-                , port_id_out.at (heureka.port())
+                , port_id_out.at (eureka.port())
                 );
             }
 
@@ -850,7 +850,7 @@ namespace xml
           dumps (s, t.place_map());
           dumps (s, t.connections());
           dumps (s, t.responses());
-          dumps (s, t.heurekas());
+          dumps (s, t.eurekas());
 
           for (const std::string& cond : t.conditions())
           {

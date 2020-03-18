@@ -20,7 +20,7 @@
 
 #include <boost/program_options.hpp>
 
-BOOST_AUTO_TEST_CASE (we_heureka_kill_all)
+BOOST_AUTO_TEST_CASE (we_eureka_kill_all)
 {
   boost::program_options::options_description options_description;
 
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (we_heureka_kill_all)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "we_heureka_kill_all");
+    (test::shared_directory (vm) / "we_eureka_kill_all");
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -64,27 +64,27 @@ BOOST_AUTO_TEST_CASE (we_heureka_kill_all)
 
   test::make_net_lib_install const with_mod
     ( installation
-    , "find_heureka_with_mod"
+    , "find_eureka_with_mod"
     , test::source_directory (vm)
     , installation_dir
     );
   test::make_net_lib_install const with_exp
     ( installation
-    , "find_heureka_with_exp"
+    , "find_eureka_with_exp"
     , test::source_directory (vm)
     , installation_dir
     );
 
   for (auto workflow : {with_exp.pnet(), with_mod.pnet()})
   {
-    BOOST_TEST_CONTEXT ("With heureka transition: " << workflow.filename())
+    BOOST_TEST_CONTEXT ("With eureka transition: " << workflow.filename())
     {
       for (unsigned long N (1UL); N <= 10UL; N+= 4)
       {
         BOOST_TEST_CONTEXT ("#workers: " << N)
         {
           std::multimap<std::string, pnet::type::value::value_type> tokens_on_port
-            {{"heureka_gid", std::string ("find_small_value")}};
+            {{"eureka_gid", std::string ("find_small_value")}};
 
           for (unsigned long i (0); i < N; ++i)
           {

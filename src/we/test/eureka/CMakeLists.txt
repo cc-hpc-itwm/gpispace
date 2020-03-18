@@ -1,4 +1,4 @@
-fhg_add_test (NAME we_heureka
+fhg_add_test (NAME we_eureka
   SOURCES test.cpp
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"

@@ -8,7 +8,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/require.hpp>
 #include <xml/parse/type/response.hpp>
-#include <xml/parse/type/heureka.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/use.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
@@ -31,7 +31,7 @@ namespace xml
 
         typedef fhg::pnet::util::unique<connect_type> connections_type;
         using responses_type = fhg::pnet::util::unique<response_type>;
-        using heurekas_type = fhg::pnet::util::unique<heureka_type>;
+        using eurekas_type = fhg::pnet::util::unique<eureka_type>;
         using place_maps_type = fhg::pnet::util::unique<place_map_type>;
 
         typedef boost::variant <function_type, use_type>
@@ -42,7 +42,7 @@ namespace xml
                         , const std::string& name
                         , const connections_type& connections
                         , responses_type const&
-                        , heurekas_type const&
+                        , eurekas_type const&
                         , const place_maps_type& place_map
                         , const structs_type& structs
                         , const conditions_type&
@@ -63,7 +63,7 @@ namespace xml
 
         const connections_type& connections() const;
         responses_type const& responses() const;
-        heurekas_type const& heurekas() const;
+        eurekas_type const& eurekas() const;
         const place_maps_type& place_map() const;
 
         // ***************************************************************** //
@@ -113,7 +113,7 @@ namespace xml
         friend struct net_type;
         connections_type _connections;
         responses_type _responses;
-        heurekas_type _heurekas;
+        eurekas_type _eurekas;
         place_maps_type _place_map;
 
         bool is_connect_tp_many (const we::edge::type, const std::string &) const;

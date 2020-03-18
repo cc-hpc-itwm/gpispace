@@ -1,11 +1,11 @@
 #pragma once
 
-#include <we/type/heureka.hpp>
+#include <we/type/eureka.hpp>
 
 #include <functional>
 
 namespace we
 {
-  using heureka_response_callback
-    = std::function<void (type::heureka_ids_type const& ids)>;
+  using eureka_response_callback
+    = std::function<void (type::eureka_ids_type const& ids)>;
 }

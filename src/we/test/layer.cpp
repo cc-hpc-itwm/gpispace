@@ -1904,32 +1904,32 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
 
 namespace
 {
-  enum activity_type { child, heureka, no_heureka };
+  enum activity_type { child, eureka, no_eureka };
 
-  we::type::heureka_id_type const heureka_id_1 ("group1");
-  we::type::heureka_id_type const heureka_id_2 ("group2");
-  we::type::heureka_id_type const heureka_id_3 ("group3");
+  we::type::eureka_id_type const eureka_id_1 ("group1");
+  we::type::eureka_id_type const eureka_id_2 ("group2");
+  we::type::eureka_id_type const eureka_id_3 ("group3");
 
-  struct child_activity_with_heureka
+  struct child_activity_with_eureka
   {
     we::type::activity_t child;
-    we::type::activity_t result_heureka;
-    we::type::activity_t result_no_heureka;
+    we::type::activity_t result_eureka;
+    we::type::activity_t result_no_eureka;
 
-    child_activity_with_heureka
+    child_activity_with_eureka
       ( we::type::transition_t const& t
       , we::transition_id_type const& t_id
-      , std::set<we::type::heureka_id_type> const& h_set
+      , std::set<we::type::eureka_id_type> const& h_set
       )
       : child (t, t_id)
-      , result_heureka (child)
-      , result_no_heureka (child)
+      , result_eureka (child)
+      , result_no_eureka (child)
     {
       child.add_input
         ( t.input_port_by_name ("in")
         , value::CONTROL
         );
-      result_heureka.add_output
+      result_eureka.add_output
         ( t.output_port_by_name ("out")
         , pnet::type::value::wrap (h_set)
         );
@@ -1945,15 +1945,15 @@ namespace
     we::type::activity_t output;
 
     std::unordered_map < std::string
-                       , child_activity_with_heureka
+                       , child_activity_with_eureka
                        > activities;
 
     activity_with_transitions() = default;
 
     void add_transition_and_create_child_activity
       ( std::string place_name
-      , we::type::heureka_id_type const h_id
-      , std::set<we::type::heureka_id_type> const heurekaed_set
+      , we::type::eureka_id_type const h_id
+      , std::set<we::type::eureka_id_type> const eurekaed_set
       )
     {
       we::type::transition_t transition
@@ -2001,7 +2001,7 @@ namespace
         using we::edge::PT;
         we::type::property::type empty;
 
-        net.add_heureka (transition_id, port_id_out);
+        net.add_eureka (transition_id, port_id_out);
         net.add_connection ( PT
                            , transition_id
                            , place_id_in
@@ -2011,9 +2011,9 @@ namespace
       }
 
       activities.emplace ( place_name
-                         , child_activity_with_heureka ( transition
+                         , child_activity_with_eureka ( transition
                                                        , transition_id
-                                                       , heurekaed_set
+                                                       , eurekaed_set
                                                        )
                          );
     }
@@ -2065,13 +2065,13 @@ namespace
       {
         return acts->second.child;
       }
-      else if (type == heureka)
+      else if (type == eureka)
       {
-        return acts->second.result_heureka;
+        return acts->second.result_eureka;
       }
-      else if (type == no_heureka)
+      else if (type == no_eureka)
       {
-        return acts->second.result_no_heureka;
+        return acts->second.result_no_eureka;
       }
       else
       {
@@ -2083,13 +2083,13 @@ namespace
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
-  (first_child_task_calls_heureka, daemon)
+  (first_child_task_calls_eureka, daemon)
 {
   activity_with_transitions test_job;
   test_job.add_transition_and_create_child_activity
     ( "A"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
   test_job.create_job (2);
 
@@ -2111,7 +2111,7 @@ BOOST_FIXTURE_TEST_CASE
     expect_cancel const _b_cancel (this, child_id_b);
 
     do_finished ( child_id_a
-                , test_job.get_activity ("A", heureka)
+                , test_job.get_activity ("A", eureka)
                 );
   }
 
@@ -2124,13 +2124,13 @@ BOOST_FIXTURE_TEST_CASE
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
-  (no_child_task_calls_heureka, daemon)
+  (no_child_task_calls_eureka, daemon)
 {
   activity_with_transitions test_job;
   test_job.add_transition_and_create_child_activity
     ( "A"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
   test_job.create_job (2);
 
@@ -2147,26 +2147,26 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, test_job.input);
   }
 
-  do_finished (child_id_a, test_job.get_activity ("A", no_heureka));
-  //! \note no tasks heureka, so normal exit
+  do_finished (child_id_a, test_job.get_activity ("A", no_eureka));
+  //! \note no tasks eureka, so normal exit
   {
     expect_finished const _finish (this, id, test_job.output);
 
     do_finished ( child_id_b
-                , test_job.get_activity ("A", no_heureka)
+                , test_job.get_activity ("A", no_eureka)
                 );
   }
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
-  (last_of_the_child_tasks_call_heureka, daemon)
+  (last_of_the_child_tasks_call_eureka, daemon)
 {
   activity_with_transitions test_job;
   test_job.add_transition_and_create_child_activity
     ( "A"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
   test_job.create_job (2);
 
@@ -2183,42 +2183,42 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, test_job.input);
   }
 
-  do_finished (child_id_a, test_job.get_activity ("A", no_heureka));
-  //! \note no tasks heureka, so normal exit
+  do_finished (child_id_a, test_job.get_activity ("A", no_eureka));
+  //! \note no tasks eureka, so normal exit
   {
     expect_finished const _finish (this, id, test_job.output);
 
     do_finished ( child_id_b
-                , test_job.get_activity ("A", heureka)
+                , test_job.get_activity ("A", eureka)
                 );
   }
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
-  (one_of_two_groups_call_heureka, daemon)
+  (one_of_two_groups_call_eureka, daemon)
 {
   activity_with_transitions test_job;
 
   //! \note first activity with group 1
   test_job.add_transition_and_create_child_activity
     ( "A"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
 
   //! \note second activity with group 2
   test_job.add_transition_and_create_child_activity
     ( "B"
-    , heureka_id_2
-    , {heureka_id_2}
+    , eureka_id_2
+    , {eureka_id_2}
     );
 
   //! \note third activity with group 1
   test_job.add_transition_and_create_child_activity
     ( "C"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
 
   test_job.create_job (2);
@@ -2249,17 +2249,17 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, test_job.input);
   }
 
-  //! \note assuming one child of group 1 (A or C) heureka-ed
+  //! \note assuming one child of group 1 (A or C) eureka-ed
   {
     expect_cancel const _c2_cancel (this, child_id_C_2);
     expect_cancel const _a2_cancel (this, child_id_A_2);
     expect_cancel const _c1_cancel (this, child_id_C_1);
 
-    do_finished (child_id_A_1, test_job.get_activity ("A", heureka));
+    do_finished (child_id_A_1, test_job.get_activity ("A", eureka));
   }
 
-  //! \note no tasks heureka for B, so normal exit
-  do_finished (child_id_B_1, test_job.get_activity ("B", no_heureka));
+  //! \note no tasks eureka for B, so normal exit
+  do_finished (child_id_B_1, test_job.get_activity ("B", no_eureka));
   {
     expect_finished const _ (this, id, test_job.output);
 
@@ -2267,36 +2267,36 @@ BOOST_FIXTURE_TEST_CASE
     do_canceled (child_id_A_2);
     do_canceled (child_id_C_1);
     do_finished ( child_id_B_2
-                , test_job.get_activity ("B", no_heureka)
+                , test_job.get_activity ("B", no_eureka)
                 );
   }
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
-  (two_of_three_groups_call_heureka, daemon)
+  (two_of_three_groups_call_eureka, daemon)
 {
   activity_with_transitions test_job;
 
   //! \note first activity with group 1
   test_job.add_transition_and_create_child_activity
     ( "A"
-    , heureka_id_1
-    , {heureka_id_1, heureka_id_3}
+    , eureka_id_1
+    , {eureka_id_1, eureka_id_3}
     );
 
   //! \note second activity with group 2
   test_job.add_transition_and_create_child_activity
     ( "B"
-    , heureka_id_2
-    , {heureka_id_2}
+    , eureka_id_2
+    , {eureka_id_2}
     );
 
   //! \note third activity with group 1
   test_job.add_transition_and_create_child_activity
     ( "C"
-    , heureka_id_3
-    , {heureka_id_3}
+    , eureka_id_3
+    , {eureka_id_3}
     );
 
   test_job.create_job (2);
@@ -2327,17 +2327,17 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id, test_job.input);
   }
 
-  //! \note assuming one child of group 1 (A or C) heureka-ed
+  //! \note assuming one child of group 1 (A or C) eureka-ed
   {
     expect_cancel const _c2_cancel (this, child_id_C_2);
     expect_cancel const _a2_cancel (this, child_id_A_2);
     expect_cancel const _c1_cancel (this, child_id_C_1);
 
-    do_finished (child_id_A_1, test_job.get_activity ("A", heureka));
+    do_finished (child_id_A_1, test_job.get_activity ("A", eureka));
   }
 
-  //! \note heureka tasks canceled, rest finish and exit
-  do_finished (child_id_B_1, test_job.get_activity ("B", no_heureka));
+  //! \note eureka tasks canceled, rest finish and exit
+  do_finished (child_id_B_1, test_job.get_activity ("B", no_eureka));
   {
     expect_finished const _finish (this, id, test_job.output);
 
@@ -2345,29 +2345,29 @@ BOOST_FIXTURE_TEST_CASE
     do_canceled (child_id_A_2);
     do_canceled (child_id_C_1);
     do_finished ( child_id_B_2
-                , test_job.get_activity ("B", no_heureka)
+                , test_job.get_activity ("B", no_eureka)
                 );
   }
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_FIXTURE_TEST_CASE
-  (one_of_two_heureka_jobs_call_heureka, daemon)
+  (one_of_two_eureka_jobs_call_eureka, daemon)
 {
   activity_with_child (0);
   activity_with_transitions test_job_A;
   test_job_A.add_transition_and_create_child_activity
     ( "A"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
   test_job_A.create_job (2);
 
   activity_with_transitions test_job_B;
   test_job_B.add_transition_and_create_child_activity
     ( "B"
-    , heureka_id_1
-    , {heureka_id_1}
+    , eureka_id_1
+    , {eureka_id_1}
     );
   test_job_B.create_job (2);
 
@@ -2388,7 +2388,7 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id_A, test_job_A.input);
   }
 
-  //! \note starting separate job B with same heureka ID as job A
+  //! \note starting separate job B with same eureka ID as job A
   {
     expect_submit const _b1
       (this, &child_id_B_1, test_job_B.get_activity ("B", child));
@@ -2398,16 +2398,16 @@ BOOST_FIXTURE_TEST_CASE
     do_submit (id_B, test_job_B.input);
   }
 
-  //! \note assuming one child of job A heureka-ed
+  //! \note assuming one child of job A eureka-ed
   {
     expect_cancel const _a2_cancel (this, child_id_A_2);
 
     do_finished ( child_id_A_1
-                , test_job_A.get_activity ("A", heureka)
+                , test_job_A.get_activity ("A", eureka)
                 );
   }
 
-  //! \note finish job A with a heureka
+  //! \note finish job A with a eureka
   {
     expect_finished const _a_finish (this, id_A, test_job_A.output);
 
@@ -2416,13 +2416,13 @@ BOOST_FIXTURE_TEST_CASE
 
   //! \note finish job B normally
   do_finished ( child_id_B_1
-              , test_job_B.get_activity ("B", no_heureka)
+              , test_job_B.get_activity ("B", no_eureka)
               );
   {
     expect_finished const _b_finish (this, id_B, test_job_B.output);
 
     do_finished ( child_id_B_2
-                , test_job_B.get_activity ("B", no_heureka)
+                , test_job_B.get_activity ("B", no_eureka)
                 );
   }
 }

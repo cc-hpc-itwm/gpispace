@@ -1,4 +1,4 @@
-#include <xml/parse/type/heureka.hpp>
+#include <xml/parse/type/eureka.hpp>
 
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/util/position.hpp>
@@ -11,7 +11,7 @@ namespace xml
   {
     namespace type
     {
-      heureka_type::heureka_type ( util::position_type const& pod
+      eureka_type::eureka_type ( util::position_type const& pod
                                  , std::string const& port
                                  )
         : with_position_of_definition (pod)
@@ -20,9 +20,9 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream& s, heureka_type const& r)
+        void dump (::fhg::util::xml::xmlstream& s, eureka_type const& r)
         {
-          s.open ("connect-heureka");
+          s.open ("connect-eureka");
           s.attr ("port", r.port());
 
           s.close();

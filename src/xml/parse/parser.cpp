@@ -30,7 +30,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
-#include <xml/parse/type/heureka.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
@@ -479,13 +479,13 @@ namespace xml
 
       // **************************************************************** //
 
-      type::heureka_type heureka_type ( const xml_node_type* node
+      type::eureka_type eureka_type ( const xml_node_type* node
                                       , state::type& state
                                       )
       {
-        return type::heureka_type
+        return type::eureka_type
           ( state.position (node)
-          , required ("heureka_type", node, "port", state)
+          , required ("eureka_type", node, "port", state)
           );
       }
 
@@ -825,7 +825,7 @@ namespace xml
         boost::optional<type::use_type> use;
         type::transition_type::connections_type connections;
         type::transition_type::responses_type responses;
-        type::transition_type::heurekas_type heurekas;
+        type::transition_type::eurekas_type eurekas;
         type::transition_type::place_maps_type place_map;
         std::list<type::structure_type> structs;
         type::conditions_type conditions;
@@ -898,8 +898,8 @@ namespace xml
             }
             else if (child_name == "connect-eureka")
             {
-              heurekas.push<error::duplicate_heureka>
-                (heureka_type (child, state));
+              eurekas.push<error::duplicate_eureka>
+                (eureka_type (child, state));
             }
             else if (child_name == "condition")
             {
@@ -957,7 +957,7 @@ namespace xml
                           )                                                \
           , connections                                                    \
           , responses                                                      \
-          , heurekas                                                       \
+          , eurekas                                                       \
           , place_map                                                      \
           , structs                                                        \
           , conditions                                                     \
@@ -1493,7 +1493,7 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
-        const boost::optional<we::type::heureka_id_type> heureka_id
+        const boost::optional<we::type::eureka_id_type> eureka_id
           (optional (node, "eureka-group"));
         const util::position_type pod (state.position (node));
         const boost::optional<std::string> target
@@ -1600,7 +1600,7 @@ namespace xml
           , ldflags
           , cxxflags
           , pass_context
-          , heureka_id
+          , eureka_id
           );
       }
 

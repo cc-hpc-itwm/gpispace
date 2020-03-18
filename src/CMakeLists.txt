@@ -97,7 +97,7 @@ extended_add_library (NAME pnet
           "xml/parse/type/port.cpp"
           "xml/parse/type/require.cpp"
           "xml/parse/type/response.cpp"
-          "xml/parse/type/heureka.cpp"
+          "xml/parse/type/eureka.cpp"
           "xml/parse/type/specialize.cpp"
           "xml/parse/type/struct.cpp"
           "xml/parse/type/template.cpp"

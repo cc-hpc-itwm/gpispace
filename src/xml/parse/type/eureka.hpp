@@ -1,6 +1,6 @@
 #pragma once
 
-#include <xml/parse/type/heureka.fwd.hpp>
+#include <xml/parse/type/eureka.fwd.hpp>
 
 #include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
@@ -8,7 +8,7 @@
 
 #include <fhg/util/xml.fwd.hpp>
 
-#include <we/type/heureka.hpp>
+#include <we/type/eureka.hpp>
 
 #include <boost/optional.hpp>
 
@@ -20,12 +20,12 @@ namespace xml
   {
     namespace type
     {
-      struct heureka_type : with_position_of_definition
+      struct eureka_type : with_position_of_definition
       {
       public:
-        using unique_key_type = we::type::heureka_id_type;
+        using unique_key_type = we::type::eureka_id_type;
 
-        heureka_type ( util::position_type const&
+        eureka_type ( util::position_type const&
                      , std::string const& port
                      );
 
@@ -42,7 +42,7 @@ namespace xml
 
       namespace dump
       {
-        void dump (::fhg::util::xml::xmlstream&, heureka_type const&);
+        void dump (::fhg::util::xml::xmlstream&, eureka_type const&);
       }
     }
   }

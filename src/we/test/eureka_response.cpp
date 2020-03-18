@@ -15,28 +15,28 @@ namespace
   namespace signature = pnet::type::signature;
   namespace value = pnet::type::value;
 
-  we::type::heureka_id_type const heureka_id ("group");
+  we::type::eureka_id_type const eureka_id ("group");
 
   size_t const MAX_TOKENS = 1000;
   long const MAX_TOKEN_VALUE = 100;
 
-  struct net_with_heureka_transition
+  struct net_with_eureka_transition
   {
-    std::string const heureka_condition;
+    std::string const eureka_condition;
     we::type::net_type net;
     we::place_id_type pid_in;
 
-    net_with_heureka_transition ( we::type::heureka_id_type const id
+    net_with_eureka_transition ( we::type::eureka_id_type const id
                                 , std::string condition
                                 );
     void put_tokens (std::vector<long> const&);
   };
 
-  net_with_heureka_transition::net_with_heureka_transition
-      ( we::type::heureka_id_type const h_id
+  net_with_eureka_transition::net_with_eureka_transition
+      ( we::type::eureka_id_type const h_id
       , std::string condition
       )
-    : heureka_condition (condition)
+    : eureka_condition (condition)
     , pid_in
       (net.add_place (place::type ( "in"
                                   , signature::signature_type ("long")
@@ -45,15 +45,15 @@ namespace
                      )
       )
   {
-    we::type::transition_t trans_heureka
-      ( "generate_ids_on_heureka_port"
+    we::type::transition_t trans_eureka
+      ( "generate_ids_on_eureka_port"
         , we::type::expression_t ("${out} := set_insert (Set{}, ${id})")
-        , we::type::expression_t (heureka_condition)
+        , we::type::expression_t (eureka_condition)
         , {}
         , we::priority_type()
       );
     we::port_id_type const port_id_hid
-      ( trans_heureka.add_port ( we::type::port_t
+      ( trans_eureka.add_port ( we::type::port_t
                                  ( "id"
                                  , we::type::PORT_IN
                                  , signature::signature_type ("string")
@@ -62,7 +62,7 @@ namespace
                                )
       );
     we::port_id_type const port_id_in
-      ( trans_heureka.add_port ( we::type::port_t
+      ( trans_eureka.add_port ( we::type::port_t
                                  ( "in"
                                  , we::type::PORT_IN
                                  , signature::signature_type ("long")
@@ -71,7 +71,7 @@ namespace
                                )
       );
     we::port_id_type const port_id_out
-      ( trans_heureka.add_port ( we::type::port_t
+      ( trans_eureka.add_port ( we::type::port_t
                                  ( "out"
                                  , we::type::PORT_OUT
                                  , signature::signature_type ("set")
@@ -89,16 +89,16 @@ namespace
       );
 
     we::type::property::type empty;
-    we::transition_id_type const tid (net.add_transition (trans_heureka));
+    we::transition_id_type const tid (net.add_transition (trans_eureka));
 
     net.add_connection (we::edge::PT_READ, tid, pid_hid, port_id_hid, empty);
     net.add_connection (we::edge::PT, tid, pid_in, port_id_in, empty);
-    net.add_heureka (tid, port_id_out);
+    net.add_eureka (tid, port_id_out);
 
     net.put_value (pid_hid, h_id);
   }
 
-  void net_with_heureka_transition::put_tokens
+  void net_with_eureka_transition::put_tokens
     (std::vector<long> const& values)
   {
     for (auto const& v : values)
@@ -108,15 +108,15 @@ namespace
   }
 }
 
-BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_responses
+BOOST_DATA_TEST_CASE ( check_transition_generates_eureka_id_on_eureka_responses
                      , std::vector<bool> ({true, false})
-                     , to_heureka
+                     , to_eureka
                      )
 {
   std::vector<long> tokens;
 
-  long const heureka_value
-    ([&to_heureka, &tokens]
+  long const eureka_value
+    ([&to_eureka, &tokens]
      {
        size_t const n_tokens = ( fhg::util::testing::random<size_t>{}()
                                % MAX_TOKENS
@@ -125,7 +125,7 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_response
                 < std::vector<long>
                 , fhg::util::testing::unique_random
                 > (n_tokens);
-       if (to_heureka)
+       if (to_eureka)
        {
          return tokens.at ( fhg::util::testing::random<long>{}()
                           % n_tokens
@@ -141,16 +141,16 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_response
      }()
     );
 
-  net_with_heureka_transition heureka_net
-    ( heureka_id
-    , "${in} :eq: " + std::to_string (heureka_value) + "L"
+  net_with_eureka_transition eureka_net
+    ( eureka_id
+    , "${in} :eq: " + std::to_string (eureka_value) + "L"
     );
-  heureka_net.put_tokens (tokens);
+  eureka_net.put_tokens (tokens);
 
-  boost::optional<we::type::heureka_id_type> heureka_received;
+  boost::optional<we::type::eureka_id_type> eureka_received;
 
   BOOST_REQUIRE
-    ( !heureka_net.net.fire_expressions_and_extract_activity_random
+    ( !eureka_net.net.fire_expressions_and_extract_activity_random
         ( fhg::util::testing::detail::GLOBAL_random_engine()
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
@@ -158,30 +158,30 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_heureka_id_on_heureka_response
           {
             throw std::logic_error ("got workflow_response unsupported");
           }
-        , [&heureka_received] (we::type::heureka_ids_type const& ids)
+        , [&eureka_received] (we::type::eureka_ids_type const& ids)
           {
             BOOST_TEST (ids.size() == 1);
-            heureka_received = *ids.begin();
+            eureka_received = *ids.begin();
           }
         )
     );
 
-  boost::optional<we::type::heureka_id_type> heureka_expected =
-    to_heureka ? boost::optional<we::type::heureka_id_type> (heureka_id)
+  boost::optional<we::type::eureka_id_type> eureka_expected =
+    to_eureka ? boost::optional<we::type::eureka_id_type> (eureka_id)
                : boost::none;
 
-  BOOST_REQUIRE_EQUAL ( heureka_expected
-                      , heureka_received
+  BOOST_REQUIRE_EQUAL ( eureka_expected
+                      , eureka_received
                       );
 }
 
-BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_heureka_responses)
+BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_eureka_responses)
 {
-  size_t num_heureka_expected = 0;
+  size_t num_eureka_expected = 0;
   std::vector<long> tokens;
 
-  long const heureka_value
-    ([&tokens, &num_heureka_expected]
+  long const eureka_value
+    ([&tokens, &num_eureka_expected]
      {
        size_t const n_tokens = ( fhg::util::testing::unique_random<size_t>{}()
                                % MAX_TOKENS
@@ -189,31 +189,31 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_heureka_responses)
        tokens = fhg::util::testing::randoms < std::vector<long>
                                             , fhg::util::testing::unique_random
                                             > (n_tokens);
-       long heureka = tokens.at ( fhg::util::testing::unique_random<long>{}()
+       long eureka = tokens.at ( fhg::util::testing::unique_random<long>{}()
                                 % n_tokens
                                 );
        std::for_each ( tokens.begin()
                      , tokens.end()
-                     , [&heureka, &num_heureka_expected] (long const& val)
+                     , [&eureka, &num_eureka_expected] (long const& val)
                        {
-                         if (val >= heureka) num_heureka_expected++;
+                         if (val >= eureka) num_eureka_expected++;
                        }
                      );
 
-       return heureka;
+       return eureka;
      }()
     );
 
-  net_with_heureka_transition heureka_net
-    ( heureka_id
-    , "${in} :ge: " + std::to_string (heureka_value) + "L"
+  net_with_eureka_transition eureka_net
+    ( eureka_id
+    , "${in} :ge: " + std::to_string (eureka_value) + "L"
     );
-  heureka_net.put_tokens (tokens);
+  eureka_net.put_tokens (tokens);
 
-  size_t num_heureka_received = 0;
+  size_t num_eureka_received = 0;
 
   BOOST_REQUIRE
-    ( !heureka_net.net.fire_expressions_and_extract_activity_random
+    ( !eureka_net.net.fire_expressions_and_extract_activity_random
         ( fhg::util::testing::detail::GLOBAL_random_engine()
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
@@ -221,13 +221,13 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_heureka_responses)
           {
             throw std::logic_error ("got workflow_response unsupported");
           }
-        , [&num_heureka_received] (we::type::heureka_ids_type const& ids)
+        , [&num_eureka_received] (we::type::eureka_ids_type const& ids)
           {
             BOOST_TEST (ids.size() == 1);
-            num_heureka_received++;
+            num_eureka_received++;
           }
         )
     );
 
-  BOOST_REQUIRE_EQUAL (num_heureka_expected, num_heureka_received);
+  BOOST_REQUIRE_EQUAL (num_eureka_expected, num_eureka_received);
 }

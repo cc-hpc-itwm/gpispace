@@ -1,19 +1,19 @@
-<defun name="find_heureka">
+<defun name="find_eureka">
 
-  <in name="heureka_gid" type="string" place="heureka_group"/>
+  <in name="eureka_gid" type="string" place="eureka_group"/>
   <in name="token" type="unsigned long" place="token"/>
 
   <net>
     <place name="token" type="unsigned long"/>
     <place name="value" type="long"/>
-    <place name="heureka_group" type="string"/>
+    <place name="eureka_group" type="string"/>
 
     <transition name="generate_events">
       <defun>
         <in name="in" type="unsigned long"/>
-        <in name="heureka_group" type="string"/>
+        <in name="eureka_group" type="string"/>
         <out name="out" type="long"/>
-        <module name="gen_heureka_with_exp" function="out generate_event(in)" eureka-group="find_small_value">
+        <module name="gen_eureka_with_exp" function="out generate_event(in)" eureka-group="find_small_value">
           <cinclude href="iostream"/>
           <cinclude href="stdlib.h"/>
           <cinclude href="time.h"/>
@@ -37,25 +37,25 @@
       </defun>
       <connect-in port="in" place="token"/>
       <connect-out port="out" place="value"/>
-      <connect-read port="heureka_group" place="heureka_group"/>
+      <connect-read port="eureka_group" place="eureka_group"/>
     </transition>
 
-    <transition name="got_an_event_heureka">
+    <transition name="got_an_event_eureka">
       <defun>
         <in name="in" type="long"/>
-        <in name="heureka_group" type="string"/>
-        <out name="heureka_good" type="set"/> <!-- you heureka, then you are here" -->
+        <in name="eureka_group" type="string"/>
+        <out name="eureka_good" type="set"/> <!-- you eureka, then you are here" -->
         <expression>
-          ${heureka_good} := set_insert (Set{}, ${heureka_group})
+          ${eureka_good} := set_insert (Set{}, ${eureka_group})
         </expression>
         <condition>${in} :lt: 20L</condition>
       </defun>
       <connect-in port="in" place="value"/>
-      <connect-in port="heureka_group" place="heureka_group"/>
-      <connect-eureka port="heureka_good"/>   <!-- heureka!! -->
+      <connect-in port="eureka_group" place="eureka_group"/>
+      <connect-eureka port="eureka_good"/>   <!-- eureka!! -->
     </transition>
 
-    <transition name="no_event_heureka">
+    <transition name="no_event_eureka">
       <defun>
         <in name="in" type="long"/>
         <expression/>

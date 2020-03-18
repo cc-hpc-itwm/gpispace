@@ -13,7 +13,7 @@
 #include <xml/parse/type/place_map.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
-#include <xml/parse/type/heureka.fwd.hpp>
+#include <xml/parse/type/eureka.fwd.hpp>
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
@@ -292,7 +292,7 @@ namespace xml
       DUPLICATE (place_map, type::place_map_type);
       DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
-      DUPLICATE (heureka, type::heureka_type);
+      DUPLICATE (eureka, type::eureka_type);
       DUPLICATE (specialize, type::specialize_type);
       DUPLICATE (template, type::tmpl_type);
       DUPLICATE (transition, type::transition_type);
