@@ -203,11 +203,11 @@ namespace we
                                   , value
                                   );
               }
-            , [this, parent, id] (type::eureka_ids_type const& h_ids)
+            , [this, parent, id] (type::eureka_ids_type const& eureka_ids)
               {
                 eureka_response ( *parent
                                  , id
-                                 , h_ids
+                                 , eureka_ids
                                  );
               }
             );
@@ -445,10 +445,10 @@ namespace we
         {
           if (_running_jobs.contains (activity_data._id))
           {
-            for (type::eureka_id_type const& h_id : eureka_ids)
+            for (type::eureka_id_type const& eureka_id : eureka_ids)
             {
               _running_jobs.apply_and_remove_eureka
-                ( h_id
+                ( eureka_id
                 , parent
                 , eureka_calling_child
                 , [&] (id_type t_id)
@@ -497,11 +497,11 @@ namespace we
                                             , value
                                             );
                         }
-                      , [this, &activity_data] (type::eureka_ids_type const& h_ids)
+                      , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
                         {
                           eureka_response ( activity_data._id
                                            , boost::none
-                                           , h_ids
+                                           , eureka_ids
                                            );
                         }
                       , _plugins
@@ -899,15 +899,15 @@ namespace we
     void layer::locked_parent_child_relation_type::started
       ( id_type parent
       , id_type child
-      , boost::optional<type::eureka_id_type> const& h_id
+      , boost::optional<type::eureka_id_type> const& eureka_id
       )
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
 
-      if (h_id)
+      if (eureka_id)
       {
         _eureka_in_progress.insert
-          ({eureka_parent_id_type (*h_id, parent), child});
+          ({eureka_parent_id_type (*eureka_id, parent), child});
       }
 
       _relation.insert (relation_type::value_type (parent, child));
@@ -965,7 +965,7 @@ namespace we
 
     template <typename Func>
     void layer::locked_parent_child_relation_type::apply_and_remove_eureka
-      ( type::eureka_id_type const& h_id
+      ( type::eureka_id_type const& eureka_id
       , id_type const& parent
       , boost::optional<id_type> const& eureka_caller
       , Func fun
@@ -973,7 +973,7 @@ namespace we
     {
       std::lock_guard<std::mutex> const lock_for_eureka (_relation_mutex);
 
-      eureka_parent_id_type const eureka_by_parent (h_id, parent);
+      eureka_parent_id_type const eureka_by_parent (eureka_id, parent);
 
       for ( id_type child
           : _eureka_in_progress.left.equal_range (eureka_by_parent)
