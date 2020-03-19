@@ -13,7 +13,7 @@ BOOST_FIXTURE_TEST_CASE ( duplicate_eureka_connections
                         )
 {
   BOOST_REQUIRE_THROW
-    ( parse ("connect_heureka_duplicate_port.xpnet")
+    ( parse ("connect_eureka_duplicate_port.xpnet")
     , ::xml::parse::error::duplicate_eureka
     );
 }
