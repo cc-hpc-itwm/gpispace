@@ -33,7 +33,7 @@ namespace
   };
 
   net_with_eureka_transition::net_with_eureka_transition
-      ( we::type::eureka_id_type const h_id
+      ( we::type::eureka_id_type const eureka_id
       , std::string condition
       )
     : eureka_condition (condition)
@@ -95,7 +95,7 @@ namespace
     net.add_connection (we::edge::PT, tid, pid_in, port_id_in, empty);
     net.add_eureka (tid, port_id_out);
 
-    net.put_value (pid_hid, h_id);
+    net.put_value (pid_hid, eureka_id);
   }
 
   void net_with_eureka_transition::put_tokens

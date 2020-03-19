@@ -1952,7 +1952,7 @@ namespace
 
     void add_transition_and_create_child_activity
       ( std::string place_name
-      , we::type::eureka_id_type const h_id
+      , we::type::eureka_id_type const eureka_id
       , std::set<we::type::eureka_id_type> const eurekaed_set
       )
     {
@@ -1968,7 +1968,7 @@ namespace
         , boost::none
         , we::type::property::type()
         , we::priority_type()
-        , h_id
+        , eureka_id
         );
 
       we::port_id_type const port_id_in
