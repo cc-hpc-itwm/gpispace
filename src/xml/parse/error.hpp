@@ -543,6 +543,17 @@ namespace xml
 
       // ******************************************************************* //
 
+      class connect_eureka_to_nonexistent_out_port : public generic
+      {
+      public:
+        connect_eureka_to_nonexistent_out_port
+          ( type::transition_type const&
+          , const type::eureka_type&
+          );
+      };
+
+      // ******************************************************************* //
+
       class unknown_template : public generic
       {
       public:

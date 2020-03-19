@@ -265,6 +265,19 @@ namespace xml
                    )
         {}
 
+      connect_eureka_to_nonexistent_out_port::connect_eureka_to_nonexistent_out_port
+       ( type::transition_type const& transition
+       , const type::eureka_type& eureka
+       )
+         : generic ( boost::format ( "connect-eureka to non-existent output port %1%"
+                                     " in transition %2% at %3%"
+                                   )
+                   % eureka.port()
+                   % transition.name()
+                   % eureka.position_of_definition()
+                   )
+        {}
+
       connect_type_error::connect_type_error
         ( type::transition_type const& transition
         , const type::connect_type& connection

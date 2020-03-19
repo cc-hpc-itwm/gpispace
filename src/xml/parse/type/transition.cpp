@@ -278,6 +278,33 @@ namespace xml
         }
       }
 
+      // ***************************************************************** //
+
+
+      void transition_type::type_check ( eureka_type const& eureka
+                                       , state::type const&
+                                       ) const
+      {
+        auto const& ports (resolved_function().ports());
+
+        if ( std::find_if
+             ( std::begin (ports), std::end (ports)
+             , [&eureka] (port_type const& port)
+               {
+                 return (  port.direction() == we::type::PORT_OUT
+                        && port.name() == eureka.port()
+                        );
+               }
+             )
+           == std::end (ports)
+           )
+        {
+          throw error::connect_eureka_to_nonexistent_out_port (*this, eureka);
+        }
+      }
+
+      // ***************************************************************** //
+
       bool transition_type::is_connect_tp_many ( const we::edge::type direction
                                                , const std::string &port_type
                                                ) const
@@ -360,6 +387,10 @@ namespace xml
         for (response_type const& response : responses())
         {
           type_check (response, state);
+        }
+        for (eureka_type const& eureka : eurekas())
+        {
+          type_check (eureka, state);
         }
 
         boost::apply_visitor (transition_type_check (state), _function_or_use);

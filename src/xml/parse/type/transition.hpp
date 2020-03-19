@@ -93,6 +93,7 @@ namespace xml
         void type_check (response_type const&, state::type const&) const;
         void type_check (const connect_type&, const state::type&, net_type const& parent) const;
         void type_check (const state::type & state, net_type const& parent) const;
+        void type_check (eureka_type const&, state::type const&) const;
 
         void resolve_function_use_recursive
           (std::unordered_map<std::string, function_type const&> known);
