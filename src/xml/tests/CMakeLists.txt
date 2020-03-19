@@ -61,5 +61,13 @@ fhg_add_test (NAME xml_parse_valid_preference_list
   LIBRARIES pnet
 )
 
+fhg_add_test (NAME xml_parse_invalid_eureka
+  SOURCES parse_invalid_eureka.cpp
+  USE_BOOST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+  LIBRARIES pnet Boost::filesystem
+  DESCRIPTION "pnetc shall throw for mutiple eureka connections with the same port and no output port for eureka"
+)
+
 add_subdirectory (bytearray)
 add_subdirectory (diagnostics)

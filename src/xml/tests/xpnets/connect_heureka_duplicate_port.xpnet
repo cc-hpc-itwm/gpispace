@@ -1,0 +1,15 @@
+<defun>
+  <net>
+    <place name="P" type="t"/>
+    <transition name="foo">
+      <defun>
+        <in name="A" type="t"/>
+        <out name="A" type="t"/>
+        <expression/>
+      </defun>
+      <!-- Should throw: duplicate connect-eureka-->
+      <connect-eureka port="A"/>
+      <connect-eureka port="A"/>
+    </transition>
+  </net>
+</defun>
