@@ -8,6 +8,7 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <boost/align/align.hpp>
 #include <boost/format.hpp>
 
 #include <functional>
@@ -206,25 +207,11 @@ namespace we
         unsigned long const size (buffer_and_info.second.size (input));
         unsigned long const alignment
           (buffer_and_info.second.alignment (input));
-
-        if ( auto const rest
-           = reinterpret_cast<std::uintptr_t> (local_memory + position) % alignment
-           )
+     
+        void* buffer_ptr (local_memory + position);
+        std::size_t left_space (shared_memory->size() - position);
+        if (!boost::alignment::align (alignment, size, buffer_ptr, left_space))
         {
-          position += alignment - rest;
-        }
-
-        memory_buffer.emplace ( std::piecewise_construct
-                              , std::forward_as_tuple (buffer_and_info.first)
-                              , std::forward_as_tuple (position, size)
-                              );
-        pointers.emplace (buffer_and_info.first, local_memory + position);
-
-        position += size;
-
-        if (position > shared_memory->size())
-        {
-          //! \todo specific exception
           throw std::runtime_error
             ( ( boost::format
                   ("Not enough local memory: %1% > %2%. "
@@ -234,8 +221,17 @@ namespace we
               % position
               % shared_memory->size()
               ).str()
-            );
-        }
+	    );            
+	}
+ 
+        position = reinterpret_cast<char*> (buffer_ptr) - local_memory;
+        memory_buffer.emplace ( std::piecewise_construct
+                              , std::forward_as_tuple (buffer_and_info.first)
+                              , std::forward_as_tuple (position, size)
+                              );
+        pointers.emplace (buffer_and_info.first, buffer_ptr);
+
+        position += size;
       }
 
       transfer ( get_global_data, virtual_memory_api, shared_memory
