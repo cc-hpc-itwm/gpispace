@@ -250,13 +250,13 @@ namespace we
           std::tuple < type::eureka_id_type
                      , id_type
                      >;
-        using eureka_progress_type =
+        using eureka_in_progress_type =
         boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<eureka_parent_id_type>
           , boost::bimaps::unordered_set_of<id_type>
           , boost::bimaps::set_of_relation<>
           >;
-        eureka_progress_type _eureka_in_progress;
+        eureka_in_progress_type _eureka_in_progress;
       } _running_jobs;
 
       std::unordered_set<id_type> _ignore_canceled_by_eureka;
