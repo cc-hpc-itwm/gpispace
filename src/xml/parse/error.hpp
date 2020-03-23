@@ -552,6 +552,15 @@ namespace xml
           );
       };
 
+      class eureka_port_type_mismatch : public generic
+      {
+      public:
+        eureka_port_type_mismatch
+          ( type::transition_type const&
+          , const type::eureka_type&
+          );
+      };
+
       // ******************************************************************* //
 
       class unknown_template : public generic

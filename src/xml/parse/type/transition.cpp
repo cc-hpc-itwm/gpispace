@@ -301,6 +301,21 @@ namespace xml
         {
           throw error::connect_eureka_to_nonexistent_out_port (*this, eureka);
         }
+
+        if ( std::find_if
+             ( std::begin (ports), std::end (ports)
+             , [&eureka] (port_type const& port)
+               {
+                 return (  port.type() == pnet::type::value::SET()
+                        && port.name() == eureka.port()
+                        );
+               }
+             )
+           == std::end (ports)
+           )
+        {
+          throw error::eureka_port_type_mismatch (*this, eureka);
+        }
       }
 
       // ***************************************************************** //
