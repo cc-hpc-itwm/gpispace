@@ -1,4 +1,5 @@
 #include <generate_buffer_names.hpp>
+#include <net_description.hpp>
 #include <nets_using_buffers.hpp>
 
 #include <util-generic/print_container.hpp>
@@ -31,73 +32,16 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
 
     total_buffer_size += buffer_size + buffer_alignment - 1;
 
-    buffer_descriptions +=
-      ( boost::format (R"EOS(
-       <memory-buffer name="%1%" readonly="true">
-         <size>
-           %2%UL
-         </size>
-         <alignment>
-           %3%UL
-         </alignment>
-       </memory-buffer>)EOS")
-      % buffer_name
-      % buffer_size
-      % buffer_alignment
-      ).str();
+    buffer_descriptions += create_buffer_description 
+                             (buffer_name, buffer_size, buffer_alignment);
 
     buffer_names.emplace_back (buffer_name);
 
-    alignment_tests +=
-      ( boost::format (R"EOS(
-           if (!boost::alignment::is_aligned (%1%, %2%))
-           {
-             throw std::runtime_error ("Buffer not %1%-bytes aligned!");
-           })EOS")
-      % buffer_alignment
-      % buffer_name
-      ).str();
+    alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
   }
 
-  std::string const net_description
-    ( ( boost::format (R"EOS(
-<defun name="arbitrary_buffer_sizes_and_alignments">
-  <in name="start" type="control" place="start"/>
-  <out name="done" type="control" place="done"/>
-  <net>
-    <place name="start" type="control"/>
-    <place name="done" type="control"/>
-    <transition name="arbitrary_alignments">
-      <defun>
-        <in name="start" type="control"/>
-        <out name="done" type="control"/>
-        %1%
-        <module name="arbitrary_alignments"
-                function="done test (%2%)">
-          <cinclude href="stdexcept"/>
-          <cinclude href="inttypes.h"/>
-          <cinclude href="iostream"/>
-          <cinclude href="boost/align/is_aligned.hpp"/>
-          <cxx flag="--std=c++11"/>
-          <code><![CDATA[
-            %3%
-            return we::type::literal::control();
-          ]]></code>
-        </module>
-      </defun>
-      <connect-in port="start" place="start"/>
-      <connect-out port="done" place="done"/>
-    </transition>
-  </net>
-</defun>
- )EOS")
-      % buffer_descriptions
-      % fhg::util::print_container ("", ",", "", buffer_names) 
-      % alignment_tests
-      ).str()
-    );
-
-  return net_description;
+  return create_net_description 
+    (buffer_descriptions, buffer_names, alignment_tests);
 }
 
 std::string net_with_arbitrary_buffer_sizes_and_default_alignments
@@ -120,69 +64,16 @@ std::string net_with_arbitrary_buffer_sizes_and_default_alignments
 
     total_buffer_size += buffer_size;
 
-    buffer_descriptions +=
-      ( boost::format (R"EOS(
-       <memory-buffer name="%1%" readonly="true">
-         <size>
-           %2%UL
-         </size>
-       </memory-buffer>)EOS")
-      % buffer_name
-      % buffer_size
-      ).str();
-
+    buffer_descriptions += create_buffer_description 
+                             (buffer_name, buffer_size);
+  
     buffer_names.emplace_back (buffer_name);
 
-    alignment_tests +=
-      ( boost::format (R"EOS(
-           if (!boost::alignment::is_aligned (%1%, %2%))
-           {
-             throw std::runtime_error ("Buffer not %1%-bytes aligned!");
-           })EOS")
-      % default_alignment
-      % buffer_name
-      ).str();
+    alignment_tests += create_alignment_test (default_alignment, buffer_name);
   }
 
-  std::string const net_description
-    ( ( boost::format (R"EOS(
-<defun name="arbitrary_buffer_sizes_and_default_alignments">
-  <in name="start" type="control" place="start"/>
-  <out name="done" type="control" place="done"/>
-  <net>
-    <place name="start" type="control"/>
-    <place name="done" type="control"/>
-    <transition name="default_alignments">
-      <defun>
-        <in name="start" type="control"/>
-        <out name="done" type="control"/>
-        %1%
-        <module name="default_alignments"
-                function="done test (%2%)">
-          <cinclude href="boost/align/is_aligned.hpp"/>
-          <cinclude href="stdexcept"/>
-          <cinclude href="inttypes.h"/>
-          <cinclude href="iostream"/>
-          <cxx flag="--std=c++11"/>
-          <code><![CDATA[
-            %3%
-            return we::type::literal::control();
-          ]]></code>
-        </module>
-      </defun>
-      <connect-in port="start" place="start"/>
-      <connect-out port="done" place="done"/>
-    </transition>
-  </net>
-</defun>
- )EOS")
-      % buffer_descriptions
-      % fhg::util::print_container ("", ",", "", buffer_names) 
-      % alignment_tests
-      ).str()
-    );
-
-  return net_description;
+  return create_net_description 
+    (buffer_descriptions, buffer_names, alignment_tests);
 }
 
 std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
@@ -207,71 +98,14 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
 
     total_buffer_size += buffer_size;
 
-    buffer_descriptions +=
-      ( boost::format (R"EOS(
-       <memory-buffer name="%1%" readonly="true">
-         <size>
-           %2%UL
-         </size>
-         <alignment>
-           %3%UL
-         </alignment>
-       </memory-buffer>)EOS")
-      % buffer_name
-      % buffer_size
-      % buffer_alignment
-      ).str();
+    buffer_descriptions += create_buffer_description
+                             (buffer_name, buffer_size, buffer_alignment);
 
     buffer_names.emplace_back (buffer_name);
 
-    alignment_tests +=
-      ( boost::format (R"EOS(
-           if (!boost::alignment::is_aligned (%1%, %2%))
-           {
-             throw std::runtime_error ("Buffer not %1%-bytes aligned!");
-           })EOS")
-      % buffer_alignment
-      % buffer_name
-      ).str();
+    alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
   }
 
-  std::string const net_description
-    ( ( boost::format (R"EOS(
-<defun name="arbitrary_buffer_sizes_and_alignments_insufficient_memory">
-  <in name="start" type="control" place="start"/>
-  <out name="done" type="control" place="done"/>
-  <net>
-    <place name="start" type="control"/>
-    <place name="done" type="control"/>
-    <transition name="arbitrary_alignments">
-      <defun>
-        <in name="start" type="control"/>
-        <out name="done" type="control"/>
-        %1%
-        <module name="arbitrary_alignments"
-                function="done test (%2%)">
-          <cinclude href="boost/align/is_aligned.hpp"/>
-          <cinclude href="stdexcept"/>
-          <cinclude href="inttypes.h"/>
-          <cinclude href="iostream"/>
-          <cxx flag="--std=c++11"/>
-          <code><![CDATA[
-            %3%
-            return we::type::literal::control();
-          ]]></code>
-        </module>
-      </defun>
-      <connect-in port="start" place="start"/>
-      <connect-out port="done" place="done"/>
-    </transition>
-  </net>
-</defun>
- )EOS")
-      % buffer_descriptions
-      % fhg::util::print_container ("", ",", "", buffer_names) 
-      % alignment_tests
-      ).str()
-    );
-
-  return net_description;
+  return create_net_description 
+    (buffer_descriptions, buffer_names, alignment_tests);
 }
