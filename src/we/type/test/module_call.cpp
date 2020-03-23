@@ -6,6 +6,8 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <cmath>
+
 BOOST_AUTO_TEST_CASE (memory_buffer_sizes_no_buffers)
 {
   we::type::module_call_t const module_call
@@ -123,8 +125,8 @@ BOOST_AUTO_TEST_CASE (memory_buffer_alignments)
           ).second
        )
     {
-      unsigned long const value
-        {fhg::util::testing::random<unsigned long>()()};
+      unsigned long const value 
+        (std::pow (2, fhg::util::testing::random<unsigned long>{}(10,0)));
       context.bind_and_discard_ref ({name}, value);
       expected.emplace (name, value);
     }
