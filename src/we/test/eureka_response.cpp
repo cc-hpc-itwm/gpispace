@@ -9,6 +9,8 @@
 #include <we/type/value/wrap.hpp>
 
 #include <util-generic/testing/random.hpp>
+#include <vector>
+#include <string>
 
 namespace
 {
@@ -26,15 +28,15 @@ namespace
     we::type::net_type net;
     we::place_id_type pid_in;
 
-    net_with_eureka_transition ( we::type::eureka_id_type const id
-                                , std::string condition
-                                );
+    net_with_eureka_transition ( we::type::eureka_id_type const& id
+                               , std::string const& condition
+                               );
     void put_tokens (std::vector<long> const&);
   };
 
   net_with_eureka_transition::net_with_eureka_transition
-      ( we::type::eureka_id_type const eureka_id
-      , std::string condition
+      ( we::type::eureka_id_type const& eureka_id
+      , std::string const& condition
       )
     : eureka_condition (condition)
     , pid_in
@@ -108,37 +110,27 @@ namespace
   }
 }
 
-BOOST_DATA_TEST_CASE ( check_transition_generates_eureka_id_on_eureka_responses
-                     , std::vector<bool> ({true, false})
-                     , to_eureka
-                     )
+BOOST_AUTO_TEST_CASE (check_transition_generates_no_eureka_responses)
 {
   std::vector<long> tokens;
 
   long const eureka_value
-    ([&to_eureka, &tokens]
+    ([&tokens]
      {
+       //!note generate at least two tokens
        auto const n_tokens ( fhg::util::testing::random<size_t>{}()
                            % MAX_TOKENS
-                           + 1
+                           + 2
                            );
        tokens = fhg::util::testing::randoms
                 < std::vector<long>
                 , fhg::util::testing::unique_random
                 > (n_tokens);
-       if (to_eureka)
-       {
-         return tokens.at ( fhg::util::testing::random<long>{}()
-                          % n_tokens
-                          );
-       }
-       else
-       {
-         long _value = tokens.back();
-         tokens.pop_back ();
 
-         return _value;
-       }
+        long _value = tokens.back();
+        tokens.pop_back ();
+
+       return _value;
      }()
     );
 
@@ -167,12 +159,59 @@ BOOST_DATA_TEST_CASE ( check_transition_generates_eureka_id_on_eureka_responses
         )
     );
 
-  boost::optional<we::type::eureka_id_type> eureka_expected =
-    to_eureka ? boost::optional<we::type::eureka_id_type> (eureka_id)
-               : boost::none;
+  BOOST_REQUIRE_EQUAL ( eureka_received
+                      , boost::none
+                      );
+}
 
-  BOOST_REQUIRE_EQUAL ( eureka_expected
-                      , eureka_received
+BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
+{
+  std::vector<long> tokens;
+
+  long const eureka_value
+    ([&tokens]
+     {
+       auto const n_tokens ( fhg::util::testing::random<size_t>{}()
+                           % MAX_TOKENS
+                           + 1
+                           );
+       tokens = fhg::util::testing::randoms
+                < std::vector<long>
+                , fhg::util::testing::unique_random
+                > (n_tokens);
+       return tokens.at ( fhg::util::testing::random<long>{}()
+                        % n_tokens
+                        );
+     }()
+    );
+
+  net_with_eureka_transition eureka_net
+    ( eureka_id
+    , "${in} :eq: " + std::to_string (eureka_value) + "L"
+    );
+  eureka_net.put_tokens (tokens);
+
+  boost::optional<we::type::eureka_id_type> eureka_received;
+
+  BOOST_REQUIRE
+    ( !eureka_net.net.fire_expressions_and_extract_activity_random
+        ( fhg::util::testing::detail::GLOBAL_random_engine()
+        , [] ( pnet::type::value::value_type const&
+             , pnet::type::value::value_type const&
+             )
+          {
+            throw std::logic_error ("got workflow_response unsupported");
+          }
+        , [&eureka_received] (we::type::eureka_ids_type const& ids)
+          {
+            BOOST_TEST (ids.size() == 1);
+            eureka_received = *ids.begin();
+          }
+        )
+    );
+
+  BOOST_REQUIRE_EQUAL ( eureka_received
+                      , boost::optional<we::type::eureka_id_type> (eureka_id)
                       );
 }
 
