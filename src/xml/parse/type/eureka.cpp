@@ -12,8 +12,8 @@ namespace xml
     namespace type
     {
       eureka_type::eureka_type ( util::position_type const& pod
-                                 , std::string const& port
-                                 )
+                               , std::string const& port
+                               )
         : with_position_of_definition (pod)
         , _port (port)
       {}
