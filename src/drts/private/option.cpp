@@ -44,6 +44,8 @@ namespace gspc
         {"virtual-memory-port"};
       constexpr char const* const virtual_memory_startup_timeout
         {"virtual-memory-startup-timeout"};
+      constexpr char const* const virtual_memory_netdev_id
+        {"virtual-memory-netdev-id"};
 
       constexpr char const* const rif_entry_points_file {"rif-entry-points-file"};
       constexpr char const* const rif_port {"rif-port"};
@@ -205,6 +207,12 @@ namespace gspc
         ->required()
         , "timeout in seconds for the virtual memory manager to connect and start up."
         )
+        ( name::virtual_memory_netdev_id
+        , boost::program_options::value<fhg::vmem::netdev_id>()
+          ->default_value({})
+        , "propose a network device ID to use ('auto' for automatic detection"
+          ", or '0' or '1' to select a specific device)"
+        )
         ;
 
       return vmem;
@@ -344,6 +352,15 @@ namespace gspc
               )
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short)
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long)
+  SET (virtual_memory_netdev_id, fhg::vmem::netdev_id)
+  {
+    set_as<fhg::vmem::netdev_id>
+      (vm, name::virtual_memory_netdev_id, to_string (value));
+  }
+  GET_MAYBE
+    (virtual_memory_netdev_id, fhg::vmem::netdev_id, fhg::vmem::netdev_id)
+  REQUIRE
+    (virtual_memory_netdev_id, fhg::vmem::netdev_id, fhg::vmem::netdev_id)
 
   ACCESS_PATH (rif_entry_points_file, validators::nonempty_file)
   ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short)

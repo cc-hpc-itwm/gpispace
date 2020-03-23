@@ -12,6 +12,8 @@
 
 #include <logging/endpoint.hpp>
 
+#include <vmem/netdev_id.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/optional.hpp>
@@ -85,6 +87,7 @@ namespace fhg
                 , std::vector<std::string> nodes
                 , std::string gaspi_master
                 , std::size_t rank
+                , fhg::vmem::netdev_id netdev_id
                 )
         );
 

@@ -165,6 +165,7 @@ namespace gspc
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
+      , boost::optional<fhg::vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , std::ostream& info_output
@@ -193,6 +194,7 @@ namespace gspc
           , signal_handler_manager
           , vmem_startup_timeout
           , vmem_port
+          , vmem_netdev_id
           , rif_entry_points
           , _master
           , _processes_storage
@@ -359,6 +361,7 @@ namespace gspc
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
           , get_virtual_memory_port (vm)
+          , get_virtual_memory_netdev_id (vm)
           , !entry_points
             ? decltype (entry_points->_->_entry_points) {}
             : entry_points->_->_entry_points

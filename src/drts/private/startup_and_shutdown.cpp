@@ -491,6 +491,7 @@ namespace fhg
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
+      , boost::optional<vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , fhg::drts::processes_storage& processes
@@ -653,6 +654,7 @@ namespace fhg
                         , hostnames
                         , master.string()
                         , rank++
+                        , vmem_netdev_id.get()
                         )
                     );
                 }

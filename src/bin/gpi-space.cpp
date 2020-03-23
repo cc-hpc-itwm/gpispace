@@ -23,6 +23,7 @@
 #include <rif/started_process_promise.hpp>
 
 #include <vmem/gaspi_context.hpp>
+#include <vmem/netdev_id.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
@@ -41,6 +42,7 @@ namespace
     constexpr const char* const gpi_timeout ("gpi-timeout");
     constexpr const char* const port ("port");
     constexpr const char* const socket ("socket");
+    constexpr const char* const netdev ("netdev");
   }
 }
 
@@ -70,6 +72,10 @@ int main (int argc, char** argv)
           <fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
           ->required()
       , "path to open communication socket"
+      )
+      ( option::netdev
+      , boost::program_options::value<fhg::vmem::netdev_id>()->required()
+      , "the network device to use"
       )
       ;
 
@@ -117,6 +123,7 @@ int main (int argc, char** argv)
       ( initialization_timeout
       , port
       , topology_rpc_server->local_endpoint().port()
+      , vm.at (option::netdev).as<fhg::vmem::netdev_id>()
       );
 
     const gpi::pc::container::manager_t container_manager

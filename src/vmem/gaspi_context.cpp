@@ -58,11 +58,13 @@ namespace fhg
     gaspi_context::gaspi_context ( gaspi_timeout& time_left
                                  , unsigned short gaspi_sn_port
                                  , unsigned short local_communication_port
+                                 , netdev_id netdev_id
                                  )
     {
       gaspi_config_t config;
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = gaspi_sn_port;
+      config.netdev_id = netdev_id.value;
       FAIL_ON_NON_ZERO (gaspi_config_set, config);
 
       FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());

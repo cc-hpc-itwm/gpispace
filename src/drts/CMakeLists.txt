@@ -39,6 +39,7 @@ extended_add_library (NAME gspc
             rif-strategies
             gpi-space-pc-client-static
             gpi-space-pc-segment
+            GPISpace::vmem
             fhg-revision
             Util::Generic
             Boost::filesystem
