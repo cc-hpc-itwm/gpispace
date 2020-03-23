@@ -27,6 +27,10 @@
 #include <mutex>
 #include <random>
 #include <unordered_map>
+#include <unordered_set>
+#include <list>
+#include <string>
+#include <utility>
 
 namespace we
 {
