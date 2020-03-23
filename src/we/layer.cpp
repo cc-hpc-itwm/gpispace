@@ -249,7 +249,7 @@ namespace we
       //! \todo Don't forget that this child actually failed and
       //! store reason.
       if (  _finalize_job_cancellation.count (*parent)
-         || _ignore_canceled_by_eureka.erase (id)
+         || _ignore_canceled_by_eureka.count (id)
          )
       {
         canceled (id);
