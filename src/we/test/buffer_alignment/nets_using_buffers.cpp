@@ -1,6 +1,7 @@
 #include <generate_buffer_names.hpp>
 #include <nets_using_buffers.hpp>
 
+#include <util-generic/print_container.hpp>
 #include <util-generic/testing/random.hpp>
 
 #include <boost/align/is_aligned.hpp>
@@ -12,7 +13,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
   (unsigned long& total_buffer_size)
 {
   std::string buffer_descriptions;
-  std::string buffer_names;
+  std::list<std::string> buffer_names;
   std::string alignment_tests;
 
   unsigned long num_buffers
@@ -45,7 +46,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
       % buffer_alignment
       ).str();
 
-    buffer_names += buffer_name + ",";
+    buffer_names.emplace_back (buffer_name);
 
     alignment_tests +=
       ( boost::format (R"EOS(
@@ -57,8 +58,6 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
       % buffer_name
       ).str();
   }
-
-  buffer_names.pop_back();
 
   std::string const net_description
     ( ( boost::format (R"EOS(
@@ -93,7 +92,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
 </defun>
  )EOS")
       % buffer_descriptions
-      % buffer_names
+      % fhg::util::print_container ("", ",", "", buffer_names) 
       % alignment_tests
       ).str()
     );
@@ -105,7 +104,7 @@ std::string net_with_arbitrary_buffer_sizes_and_default_alignments
   (unsigned long& total_buffer_size)
 {
   std::string buffer_descriptions;
-  std::string buffer_names;
+  std::list<std::string> buffer_names;
   std::string alignment_tests;
 
   unsigned long const num_buffers
@@ -132,7 +131,7 @@ std::string net_with_arbitrary_buffer_sizes_and_default_alignments
       % buffer_size
       ).str();
 
-    buffer_names += buffer_name + ",";
+    buffer_names.emplace_back (buffer_name);
 
     alignment_tests +=
       ( boost::format (R"EOS(
@@ -144,8 +143,6 @@ std::string net_with_arbitrary_buffer_sizes_and_default_alignments
       % buffer_name
       ).str();
   }
-
-  buffer_names.pop_back();
 
   std::string const net_description
     ( ( boost::format (R"EOS(
@@ -180,7 +177,7 @@ std::string net_with_arbitrary_buffer_sizes_and_default_alignments
 </defun>
  )EOS")
       % buffer_descriptions
-      % buffer_names
+      % fhg::util::print_container ("", ",", "", buffer_names) 
       % alignment_tests
       ).str()
     );
@@ -192,7 +189,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
   (unsigned long& total_buffer_size)
 {
   std::string buffer_descriptions;
-  std::string buffer_names;
+  std::list<std::string> buffer_names;
   std::string alignment_tests;
 
   unsigned long num_buffers
@@ -225,7 +222,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
       % buffer_alignment
       ).str();
 
-    buffer_names += buffer_name + ",";
+    buffer_names.emplace_back (buffer_name);
 
     alignment_tests +=
       ( boost::format (R"EOS(
@@ -237,8 +234,6 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
       % buffer_name
       ).str();
   }
-
-  buffer_names.pop_back();
 
   std::string const net_description
     ( ( boost::format (R"EOS(
@@ -273,7 +268,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
 </defun>
  )EOS")
       % buffer_descriptions
-      % buffer_names
+      % fhg::util::print_container ("", ",", "", buffer_names) 
       % alignment_tests
       ).str()
     );
