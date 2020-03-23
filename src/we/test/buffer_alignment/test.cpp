@@ -1,8 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <net_with_arbitrary_buffer_sizes_and_default_alignments.hpp>
-#include <net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory.hpp>
-#include <net_with_arbitrary_buffer_sizes_and_alignments.hpp>
+#include <nets_using_buffers.hpp>
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
@@ -69,7 +67,6 @@
                                  , gspc::rifd::port {vm}                 \
                                  , installation                          \
                                  )
-
 
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 {
