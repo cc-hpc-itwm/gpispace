@@ -17,10 +17,16 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/program_options.hpp>
+#include <algorithm>
+#include <list>
+#include <map>
+#include <vector>
+#include <string>
 
-BOOST_AUTO_TEST_CASE (we_eureka_kill_all)
+BOOST_AUTO_TEST_CASE (we_eureka_random_test)
 {
   boost::program_options::options_description options_description;
 
@@ -39,7 +45,7 @@ BOOST_AUTO_TEST_CASE (we_eureka_kill_all)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "we_eureka_kill_all");
+    (test::shared_directory (vm) / "we_eureka_random_test");
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -68,6 +74,7 @@ BOOST_AUTO_TEST_CASE (we_eureka_kill_all)
     , test::source_directory (vm)
     , installation_dir
     );
+
   test::make_net_lib_install const with_exp
     ( installation
     , "find_eureka_with_exp"
@@ -83,10 +90,21 @@ BOOST_AUTO_TEST_CASE (we_eureka_kill_all)
       {
         BOOST_TEST_CONTEXT ("#workers: " << N)
         {
-          std::multimap<std::string, pnet::type::value::value_type> tokens_on_port
-            {{"eureka_gid", std::string ("find_small_value")}};
+          auto const in_values ( fhg::util::testing::randoms
+                                    < std::vector<long>
+                                    , fhg::util::testing::unique_random
+                                    > (N)
+                                );
+          auto const eureka
+            (in_values.at (fhg::util::testing::random<unsigned>{}() % N));
 
-          for (unsigned long i (0); i < N; ++i)
+          std::multimap<std::string, pnet::type::value::value_type>
+            tokens_on_port
+              { {"eureka_gid", std::string ("find_small_value")}
+              , {"eureka_value", eureka}
+              };
+
+          for (auto const &i : in_values)
           {
             tokens_on_port.emplace ("token", i);
           }
@@ -95,6 +113,35 @@ BOOST_AUTO_TEST_CASE (we_eureka_kill_all)
           ( gspc::client (drts).put_and_run
             (gspc::workflow (workflow), tokens_on_port)
           );
+
+          BOOST_REQUIRE (result.size() >= 1);
+          BOOST_REQUIRE (result.count ("result") >= 1);
+
+          int num_eurekas = 0;
+          auto const responses = result.equal_range ("result");
+
+          //!\note there may be one or more eureka responses for
+          //!\note mod.xpnet; eureka value will be output by only one
+          for (auto i = responses.first; i != responses.second; ++i)
+          {
+            auto const result_values
+              ( boost::get<std::list<pnet::type::value::value_type>>
+                (i->second)
+              );
+
+            if (result_values.size() == 1)
+            {
+              num_eurekas++;
+              std::list<long> eureka_response
+                (pnet::type::value::unwrap<long> (result_values));
+
+              BOOST_CHECK_EQUAL ( eureka_response.front()
+                                , eureka
+                                );
+            }
+          }
+
+          BOOST_CHECK_EQUAL (num_eurekas, 1);
         }
       }
     }
