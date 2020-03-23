@@ -12,7 +12,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <functional>
-#include <sstream>
+#include <algorithm>
 
 namespace we
 {
@@ -248,7 +248,9 @@ namespace we
 
       //! \todo Don't forget that this child actually failed and
       //! store reason.
-      if (_finalize_job_cancellation.count (*parent))
+      if (  _finalize_job_cancellation.count (*parent)
+         || _ignore_canceled_by_eureka.erase (id)
+         )
       {
         canceled (id);
         return;
