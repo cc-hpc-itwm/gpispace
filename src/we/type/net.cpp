@@ -9,6 +9,7 @@
 #include <we/require_type.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_container.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
@@ -887,6 +888,14 @@ namespace we
       }
     }
 
+    void net_type::unexpected_eureka (eureka_ids_type const& ids)
+    {
+      throw std::logic_error
+        (str ( boost::format ("Unexpected call to eureka: %1%")
+             % fhg::util::print_container ("{", ", ", "}", ids)
+             )
+        );
+    }
 
     // cross_type
 

@@ -248,10 +248,7 @@ namespace we
         (place_id_type, pnet::type::value::value_type const&);
       void do_update (to_be_updated_type const&);
 
-      static void unexpected_eureka (eureka_ids_type const&)
-      {
-        throw std::logic_error ("Unexpected call to eureka");
-      }
+      static void unexpected_eureka (eureka_ids_type const&);
 
       friend class boost::serialization::access;
       template<typename Archive>
