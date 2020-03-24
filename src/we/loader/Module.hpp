@@ -2,6 +2,7 @@
 
 #include <we/loader/IModule.hpp>
 
+#include <boost/filesystem/path.hpp>
 #include <boost/utility.hpp>
 
 #include <string>
@@ -17,7 +18,7 @@ namespace we
     class Module : public IModule, boost::noncopyable
     {
     public:
-      Module (const std::string& path);
+      Module (boost::filesystem::path const& path);
 
       void call ( const std::string& f
                 , drts::worker::context *context
@@ -29,12 +30,12 @@ namespace we
       virtual void add_function (const std::string&, WrapperFunction) override;
 
     private:
-      std::string path_;
+      boost::filesystem::path path_;
 
       class dlhandle
       {
       public:
-        dlhandle (std::string const& path, int flags);
+        dlhandle (boost::filesystem::path const& path, int flags);
         ~dlhandle();
         void* handle() const;
       private:

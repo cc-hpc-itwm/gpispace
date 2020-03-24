@@ -12,7 +12,7 @@ namespace we
 {
   namespace loader
   {
-    Module::Module (const std::string& path)
+    Module::Module (boost::filesystem::path const& path)
       : path_ (path)
       , _dlhandle (path, RTLD_NOW | RTLD_GLOBAL)
       , call_table_()
@@ -61,10 +61,10 @@ namespace we
       }
     }
 
-    Module::dlhandle::dlhandle ( std::string const& path
+    Module::dlhandle::dlhandle ( boost::filesystem::path const& path
                                , int flags
                                )
-      : _handle (dlopen (path.c_str(), flags))
+      : _handle (dlopen (path.string().c_str(), flags))
     {
       if (!_handle)
       {
