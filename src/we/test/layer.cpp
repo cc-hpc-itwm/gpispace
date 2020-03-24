@@ -2012,9 +2012,9 @@ namespace
 
       activities.emplace ( place_name
                          , child_activity_with_eureka ( transition
-                                                       , transition_id
-                                                       , eurekaed_set
-                                                       )
+                                                      , transition_id
+                                                      , eurekaed_set
+                                                      )
                          );
     }
 
