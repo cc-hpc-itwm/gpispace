@@ -2426,3 +2426,45 @@ BOOST_FIXTURE_TEST_CASE
                 );
   }
 }
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (calling_eureka_on_failed_child_tasks, daemon)
+{
+  activity_with_transitions test_job;
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a
+      (this, &child_id_a, test_job.get_activity ("A", child));
+    expect_submit const _b
+      (this, &child_id_b, test_job.get_activity ("A", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child is still running, and fails
+  {
+    expect_cancel const _b_cancel (this, child_id_b);
+
+    do_finished ( child_id_a
+                , test_job.get_activity ("A", eureka)
+                );
+  }
+
+  std::string const fail_reason (fhg::util::testing::random_string());
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_failed (child_id_b, fail_reason);
+  }
+}
