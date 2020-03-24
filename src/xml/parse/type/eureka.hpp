@@ -2,7 +2,6 @@
 
 #include <xml/parse/type/eureka.fwd.hpp>
 
-#include <xml/parse/type/transition.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/util/position.fwd.hpp>
 
