@@ -287,32 +287,25 @@ namespace xml
       {
         auto const& ports (resolved_function().ports());
 
-        if ( std::find_if
-             ( std::begin (ports), std::end (ports)
-             , [&eureka] (port_type const& port)
-               {
-                 return (  port.direction() == we::type::PORT_OUT
-                        && port.name() == eureka.port()
-                        );
-               }
-             )
-           == std::end (ports)
-           )
-        {
-          throw error::connect_eureka_to_nonexistent_out_port (*this, eureka);
-        }
+        auto const& eureka_port
+          ( std::find_if
+            ( std::begin (ports), std::end (ports)
+            , [&eureka] (port_type const& port)
+              {
+                return (  port.direction() == we::type::PORT_OUT
+                       && port.name() == eureka.port()
+                       );
+              }
+            )
+          );
 
-        if ( std::find_if
-             ( std::begin (ports), std::end (ports)
-             , [&eureka] (port_type const& port)
-               {
-                 return (  port.type() == pnet::type::value::SET()
-                        && port.name() == eureka.port()
-                        );
-               }
-             )
-           == std::end (ports)
-           )
+        if (eureka_port == std::end (ports))
+        {
+          throw error::connect_eureka_to_nonexistent_out_port ( *this
+                                                              , eureka
+                                                              );
+        }
+        else if (eureka_port->type() != pnet::type::value::SET())
         {
           throw error::eureka_port_type_mismatch (*this, eureka);
         }
