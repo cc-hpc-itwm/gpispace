@@ -10,12 +10,6 @@ namespace we
 {
   namespace loader
   {
-#define MEMBER(_name, _type...)                           \
-    public:                                               \
-      const _type& _name() const { return _ ## _name; }   \
-    private:                                              \
-      _type _ ## _name
-
     class module_load_failed : public std::runtime_error
     {
     public:
@@ -28,12 +22,7 @@ namespace we
             % reason
             ).str()
           )
-        , _file (file)
-        , _reason (reason)
       {}
-
-      MEMBER (file, boost::filesystem::path);
-      MEMBER (reason, std::string);
     };
 
     class module_not_found : public std::runtime_error
@@ -48,12 +37,7 @@ namespace we
             % search_path
             ).str()
           )
-        , _file (file)
-        , _search_path (search_path)
       {}
-
-      MEMBER (file, boost::filesystem::path);
-      MEMBER (search_path, std::string);
     };
 
     class function_not_found : public std::runtime_error
@@ -68,12 +52,7 @@ namespace we
             % name
             ).str()
           )
-        , _module (module)
-        , _name (name)
       {}
-
-      MEMBER (module, boost::filesystem::path);
-      MEMBER (name, std::string);
     };
 
     class duplicate_function : public std::runtime_error
@@ -88,13 +67,7 @@ namespace we
             % name
             ).str()
           )
-        , _module (module)
-        , _name (name)
       {}
-
-      MEMBER (module, boost::filesystem::path);
-      MEMBER (name, std::string);
     };
-#undef MEMBER
   }
 }
