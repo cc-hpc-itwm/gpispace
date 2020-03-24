@@ -2,14 +2,14 @@
 
 #include <we/loader/IModule.hpp>
 
+#include <util-generic/dynamic_linking.hpp>
+
 #include <boost/filesystem/path.hpp>
 #include <boost/utility.hpp>
 
 #include <string>
 #include <unordered_map>
 #include <map>
-
-#include <dlfcn.h>
 
 namespace we
 {
@@ -32,15 +32,7 @@ namespace we
     private:
       boost::filesystem::path path_;
 
-      class dlhandle
-      {
-      public:
-        dlhandle (boost::filesystem::path const& path, int flags);
-        ~dlhandle();
-        void* handle() const;
-      private:
-        void* _handle;
-      } _dlhandle;
+      fhg::util::scoped_dlhandle _dlhandle;
       std::unordered_map<std::string, WrapperFunction> call_table_;
     };
   }

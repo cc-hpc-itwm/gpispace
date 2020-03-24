@@ -25,7 +25,7 @@ BOOST_AUTO_TEST_CASE (ctor_load_failed)
     ( [] { we::loader::Module ("<path>"); }
     , we::loader::module_load_failed
         ( "<path>"
-        , "<path>: cannot open shared object file: No such file or directory"
+        , "dlopen: <path>: cannot open shared object file: No such file or directory"
         )
     );
 }
@@ -34,7 +34,10 @@ BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
   fhg::util::testing::require_exception
     ( [] { we::loader::Module ("./libinitialize_throws.so"); }
-    , std::runtime_error ("initialize_throws")
+    , we::loader::module_load_failed
+        ( "./libinitialize_throws.so"
+        , "initialize_throws"
+        )
     );
 }
 
@@ -47,7 +50,7 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
     , we::loader::module_load_failed
         ( "./libempty_not_linked_with_pnet.so"
         , ( boost::format
-              ("./libempty_not_linked_with_pnet.so: undefined symbol: %1%")
+              ("dlopen: ./libempty_not_linked_with_pnet.so: undefined symbol: %1%")
           % XSTR (WE_GUARD_SYMBOL)
           ).str()
         )
