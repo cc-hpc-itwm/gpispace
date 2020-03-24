@@ -88,8 +88,8 @@ namespace we
                         , we::type::property::type const&
                         );
       void add_eureka ( transition_id_type
-                       , port_id_type
-                       );
+                      , port_id_type
+                      );
 
       adj_tp_type const& transition_to_place() const;
       adj_pt_type const& place_to_transition_consume() const;

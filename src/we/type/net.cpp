@@ -222,8 +222,8 @@ namespace we
     }
 
     void net_type::add_eureka ( transition_id_type transition_id
-                               , port_id_type port_id
-                               )
+                              , port_id_type port_id
+                              )
     {
       if (!_port_to_eureka.emplace (transition_id, port_id).second)
       {
@@ -805,7 +805,6 @@ namespace we
                     . at (token_on_port.second).first
                     , token_on_port.first
                     );
-
         }
         else if (  _port_many_to_place.count (*child.transition_id())
                 && _port_many_to_place.at (*child.transition_id())

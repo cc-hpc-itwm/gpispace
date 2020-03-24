@@ -206,9 +206,9 @@ namespace we
             , [this, parent, id] (type::eureka_ids_type const& eureka_ids)
               {
                 eureka_response ( *parent
-                                 , id
-                                 , eureka_ids
-                                 );
+                                , id
+                                , eureka_ids
+                                );
               }
             );
           _running_jobs.terminated (*parent, id);
@@ -436,9 +436,9 @@ namespace we
   }
 
   void layer::eureka_response ( id_type parent
-                               , boost::optional<id_type> eureka_calling_child
-                               , type::eureka_ids_type const& eureka_ids
-                               )
+                              , boost::optional<id_type> eureka_calling_child
+                              , type::eureka_ids_type const& eureka_ids
+                              )
   {
     _nets_to_extract_from.apply
       ( parent
@@ -502,9 +502,9 @@ namespace we
                       , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
                         {
                           eureka_response ( activity_data._id
-                                           , boost::none
-                                           , eureka_ids
-                                           );
+                                          , boost::none
+                                          , eureka_ids
+                                          );
                         }
                       , _plugins
                       , [this, id]

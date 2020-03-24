@@ -121,9 +121,9 @@ namespace we
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
       void eureka_response ( id_type
-                            , boost::optional<id_type>
-                            , type::eureka_ids_type const& ids
-                            );
+                           , boost::optional<id_type>
+                           , type::eureka_ids_type const& ids
+                           );
 
       std::mutex _outstanding_responses_guard;
       std::unordered_map <id_type, std::unordered_set<std::string>>
@@ -225,7 +225,7 @@ namespace we
         void started
           ( id_type parent
           , id_type child
-          , boost::optional<type::eureka_id_type> const& hid
+          , boost::optional<type::eureka_id_type> const& eureka_id
           );
         bool terminated (id_type parent, id_type child);
 
@@ -236,10 +236,10 @@ namespace we
 
         template <typename Func>
           void apply_and_remove_eureka ( type::eureka_id_type const&
-                                        , id_type const&
-                                        , boost::optional<id_type> const&
-                                        , Func
-                                        );
+                                       , id_type const&
+                                       , boost::optional<id_type> const&
+                                       , Func
+                                       );
 
       private:
         mutable std::mutex _relation_mutex;
