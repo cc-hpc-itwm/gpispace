@@ -96,5 +96,31 @@ namespace we
             ).str()
           )
     {}
+
+    function_does_not_unload::function_does_not_unload
+        ( std::string module
+        , std::string name
+        , std::vector<boost::filesystem::path> before
+        , std::vector<boost::filesystem::path> after
+        )
+      : function_does_not_unload
+          (module, name, left_overs (after, before))
+    {}
+    function_does_not_unload::function_does_not_unload
+        ( std::string module
+        , std::string name
+        , std::vector<boost::filesystem::path> left_over
+        )
+      : std::runtime_error
+          ( ( boost::format ( "function %1%::%2% dynamically opened libraries "
+                              "but did not properly unload, leaking %3% "
+                              "loaded in the process"
+                            )
+            % module
+            % name
+            % fhg::util::print_container ("{", ", ", "}", left_over)
+            ).str()
+          )
+    {}
   }
 }

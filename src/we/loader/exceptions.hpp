@@ -49,5 +49,19 @@ namespace we
                              , std::vector<boost::filesystem::path> left_over
                              );
     };
+
+    struct function_does_not_unload : public std::runtime_error
+    {
+      function_does_not_unload ( std::string module
+                               , std::string name
+                               , std::vector<boost::filesystem::path> before
+                               , std::vector<boost::filesystem::path> after
+                               );
+
+      function_does_not_unload ( std::string module
+                               , std::string name
+                               , std::vector<boost::filesystem::path> left_over
+                               );
+    };
   }
 }

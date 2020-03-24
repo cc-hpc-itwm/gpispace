@@ -1,5 +1,7 @@
 #include <we/loader/module_call.hpp>
 
+#include <we/loader/exceptions.hpp>
+
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 #include <we/type/range.hpp>
@@ -214,8 +216,18 @@ namespace we
         drts::worker::redirect_output const cerr
           (context, fhg::logging::legacy::category_level_warn, std::cerr);
 
-        loader[module_call.module()].call
+        auto const& module (loader[module_call.module()]);
+
+        auto const before (fhg::util::currently_loaded_libraries());
+        module.call
           (module_call.function(), context, input, out, pointers);
+        auto const after (fhg::util::currently_loaded_libraries());
+
+        if (before != after)
+        {
+          throw function_does_not_unload
+            (module_call.module(), module_call.function(), before, after);
+        }
       }
 
       transfer ( put_global_data, virtual_memory_api, shared_memory
