@@ -144,7 +144,9 @@ namespace we
       , const we::type::module_call_t& module_call
       )
     {
-      unsigned long position (0);
+      char* local_memory (nullptr);
+      void* buffer_ptr (nullptr);
+      std::size_t space (0);
 
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
@@ -197,20 +199,20 @@ namespace we
               ).str()
             );
          }
+
+        local_memory =
+          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
+        buffer_ptr = local_memory;
+        space = shared_memory->size(); 
       }
 
       for (auto const& buffer_and_info : module_call.memory_buffers())
       {
-        char* const local_memory
-          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
-
         unsigned long const size (buffer_and_info.second.size (input));
         unsigned long const alignment
           (buffer_and_info.second.alignment (input));
      
-        void* buffer_ptr (local_memory + position);
-        std::size_t left_space (shared_memory->size() - position);
-        if (!boost::alignment::align (alignment, size, buffer_ptr, left_space))
+        if (!boost::alignment::align (alignment, size, buffer_ptr, space))
         {
           throw std::runtime_error
             ( ( boost::format
@@ -218,20 +220,22 @@ namespace we
                    "Please take into account also the buffer alignments "
                    "when allocating local shared memory!"
                   )
-              % position
+              % (reinterpret_cast<char*> (buffer_ptr) - local_memory + size)
               % shared_memory->size()
               ).str()
 	    );            
 	}
  
-        position = reinterpret_cast<char*> (buffer_ptr) - local_memory;
-        memory_buffer.emplace ( std::piecewise_construct
-                              , std::forward_as_tuple (buffer_and_info.first)
-                              , std::forward_as_tuple (position, size)
-                              );
+        memory_buffer.emplace 
+          ( std::piecewise_construct
+          , std::forward_as_tuple (buffer_and_info.first)
+          , std::forward_as_tuple 
+              (reinterpret_cast<char*> (buffer_ptr) - local_memory, size)
+          );
         pointers.emplace (buffer_and_info.first, buffer_ptr);
 
-        position += size;
+        buffer_ptr = reinterpret_cast<char*> (buffer_ptr) + size;
+        space -= size;
       }
 
       transfer ( get_global_data, virtual_memory_api, shared_memory
