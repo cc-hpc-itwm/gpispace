@@ -19,8 +19,6 @@ namespace we
     public:
       Module (const std::string& path);
 
-      const std::string &path() const;
-
       void call ( const std::string& f
                 , drts::worker::context *context
                 , const expr::eval::context& in

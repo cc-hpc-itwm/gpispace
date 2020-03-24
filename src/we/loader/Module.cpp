@@ -36,10 +36,6 @@ namespace we
 
       func_ptr.function (this);
     }
-    const std::string &Module::path() const
-    {
-      return path_;
-    }
     void Module::call ( const std::string& function
                       , drts::worker::context *info
                       , const expr::eval::context& input

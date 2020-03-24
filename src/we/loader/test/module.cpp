@@ -57,13 +57,6 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #undef XSTR
 }
 
-BOOST_AUTO_TEST_CASE (ctor_okay_path)
-{
-  we::loader::Module const m ("./libempty.so");
-
-  BOOST_REQUIRE_EQUAL (m.path(), "./libempty.so");
-}
-
 BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
