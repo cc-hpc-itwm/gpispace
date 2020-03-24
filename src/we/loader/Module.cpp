@@ -12,11 +12,9 @@ namespace we
 {
   namespace loader
   {
-    Module::Module ( const std::string& path
-                   , int flags
-                   )
+    Module::Module (const std::string& path)
       : path_ (path)
-      , _dlhandle (path, flags)
+      , _dlhandle (path, RTLD_NOW | RTLD_GLOBAL)
       , call_table_()
     {
       struct

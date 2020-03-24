@@ -17,9 +17,7 @@ namespace we
     class Module : public IModule, boost::noncopyable
     {
     public:
-      Module ( const std::string& path
-             , int flags = RTLD_NOW | RTLD_GLOBAL
-             );
+      Module (const std::string& path);
 
       const std::string &path() const;
 
