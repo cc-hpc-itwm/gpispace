@@ -9,8 +9,6 @@
 
 #include <we/type/eureka.hpp>
 
-#include <boost/optional.hpp>
-
 #include <string>
 
 namespace xml
@@ -25,8 +23,8 @@ namespace xml
         using unique_key_type = we::type::eureka_id_type;
 
         eureka_type ( util::position_type const&
-                     , std::string const& port
-                     );
+                    , std::string const& port
+                    );
 
         std::string const& port() const { return _port; }
 

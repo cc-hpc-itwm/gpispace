@@ -480,8 +480,8 @@ namespace xml
       // **************************************************************** //
 
       type::eureka_type eureka_type ( const xml_node_type* node
-                                      , state::type& state
-                                      )
+                                    , state::type& state
+                                    )
       {
         return type::eureka_type
           ( state.position (node)
@@ -957,7 +957,7 @@ namespace xml
                           )                                                \
           , connections                                                    \
           , responses                                                      \
-          , eurekas                                                       \
+          , eurekas                                                        \
           , place_map                                                      \
           , structs                                                        \
           , conditions                                                     \
