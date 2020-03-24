@@ -145,3 +145,21 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
     , we::loader::duplicate_function ("./libempty.so", "f")
     );
 }
+
+BOOST_AUTO_TEST_CASE (ensures_library_unloads_properly)
+{
+  // \note Relies on the library not linking anyone in additional to
+  // what is already loaded, so that the not-unloaded set is only
+  // exactly the library we know about.
+
+  auto const libempty_nodelete ("./libempty_nodelete.so");
+
+  fhg::util::testing::require_exception
+    ( [&] { we::loader::Module {libempty_nodelete}; }
+    , we::loader::module_load_failed
+        ( libempty_nodelete
+        , we::loader::module_does_not_unload
+            (libempty_nodelete, {libempty_nodelete}).what()
+        )
+    );
+}

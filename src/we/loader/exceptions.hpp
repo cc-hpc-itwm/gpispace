@@ -4,6 +4,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace we
 {
@@ -35,6 +36,18 @@ namespace we
       duplicate_function ( boost::filesystem::path const& module
                          , std::string const& name
                          );
+    };
+
+    struct module_does_not_unload : public std::runtime_error
+    {
+      module_does_not_unload ( boost::filesystem::path module
+                             , std::vector<boost::filesystem::path> before
+                             , std::vector<boost::filesystem::path> after
+                             );
+
+      module_does_not_unload ( boost::filesystem::path module
+                             , std::vector<boost::filesystem::path> left_over
+                             );
     };
   }
 }

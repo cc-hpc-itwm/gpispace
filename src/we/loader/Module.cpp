@@ -14,10 +14,30 @@ namespace we
 {
   namespace loader
   {
+    namespace
+    {
+      fhg::util::scoped_dlhandle
+        ensure_unloads_without_rest_and_load (boost::filesystem::path path)
+      {
+        auto const flags (RTLD_NOW | RTLD_GLOBAL);
+
+        auto const before (fhg::util::currently_loaded_libraries());
+        fhg::util::scoped_dlhandle (path, flags);
+        auto const after (fhg::util::currently_loaded_libraries());
+
+        if (before != after)
+        {
+          throw module_does_not_unload (path, before, after);
+        }
+
+        return {path, flags};
+      }
+    }
+
     Module::Module (boost::filesystem::path const& path)
     try
       : path_ (path)
-      , _dlhandle (path, RTLD_NOW | RTLD_GLOBAL)
+      , _dlhandle (ensure_unloads_without_rest_and_load (path))
       , call_table_()
     {
       _dlhandle.sym<void (IModule*)> ("we_mod_initialize") (this);

@@ -1,6 +1,12 @@
 #include <we/loader/exceptions.hpp>
 
+#include <util-generic/hash/boost/filesystem/path.hpp>
+#include <util-generic/print_container.hpp>
+
 #include <boost/format.hpp>
+
+#include <algorithm>
+#include <iterator>
 
 namespace we
 {
@@ -50,6 +56,43 @@ namespace we
           ( ( boost::format ("duplicate function %1%::%2%")
             % module
             % name
+            ).str()
+          )
+    {}
+
+    namespace
+    {
+      template<typename T>
+        std::vector<T> left_overs (std::vector<T> lhs, std::vector<T> rhs)
+      {
+        std::sort (lhs.begin(), lhs.end());
+        std::sort (rhs.begin(), rhs.end());
+        std::vector<T> diff;
+        std::set_difference
+          ( lhs.begin(), lhs.end(), rhs.begin(), rhs.end()
+          , std::inserter (diff, diff.begin())
+          );
+        return diff;
+      }
+    }
+
+    module_does_not_unload::module_does_not_unload
+        ( boost::filesystem::path module
+        , std::vector<boost::filesystem::path> before
+        , std::vector<boost::filesystem::path> after
+        )
+      : module_does_not_unload (module, left_overs (after, before))
+    {}
+    module_does_not_unload::module_does_not_unload
+        ( boost::filesystem::path module
+        , std::vector<boost::filesystem::path> left_over
+        )
+      : std::runtime_error
+          ( ( boost::format ( "module '%1%' does not properly unload on dlclose"
+                              ", leaking %2% loaded in the process"
+                            )
+            % module
+            % fhg::util::print_container ("{", ", ", "}", left_over)
             ).str()
           )
     {}
