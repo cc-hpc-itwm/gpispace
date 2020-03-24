@@ -1,9 +1,10 @@
 #pragma once
 
-#include <boost/filesystem.hpp>
+#include <boost/filesystem/path.hpp>
 #include <boost/format.hpp>
 
 #include <stdexcept>
+#include <string>
 
 namespace we
 {
@@ -18,7 +19,7 @@ namespace we
     class module_load_failed : public std::runtime_error
     {
     public:
-      explicit module_load_failed ( const std::string& file
+      explicit module_load_failed ( boost::filesystem::path const& file
                                   , const std::string& reason
                                   )
         : std::runtime_error
@@ -31,14 +32,14 @@ namespace we
         , _reason (reason)
       {}
 
-      MEMBER (file, std::string);
+      MEMBER (file, boost::filesystem::path);
       MEMBER (reason, std::string);
     };
 
     class module_not_found : public std::runtime_error
     {
     public:
-      explicit module_not_found ( const std::string& file
+      explicit module_not_found ( boost::filesystem::path const& file
                                 , const std::string& search_path
                                 )
         : std::runtime_error
@@ -51,7 +52,7 @@ namespace we
         , _search_path (search_path)
       {}
 
-      MEMBER (file, std::string);
+      MEMBER (file, boost::filesystem::path);
       MEMBER (search_path, std::string);
     };
 
