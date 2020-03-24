@@ -90,11 +90,11 @@ BOOST_AUTO_TEST_CASE (we_eureka_random_test)
       {
         BOOST_TEST_CONTEXT ("#workers: " << N)
         {
-          auto const in_values ( fhg::util::testing::randoms
-                                    < std::vector<long>
-                                    , fhg::util::testing::unique_random
-                                    > (N)
-                                );
+          auto const in_values (fhg::util::testing::randoms
+                                  < std::vector<long>
+                                  , fhg::util::testing::unique_random
+                                  > (N)
+                               );
           auto const eureka
             (in_values.at (fhg::util::testing::random<unsigned>{}() % N));
 
