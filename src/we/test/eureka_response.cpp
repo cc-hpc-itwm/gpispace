@@ -9,8 +9,10 @@
 #include <we/type/value/wrap.hpp>
 
 #include <util-generic/testing/random.hpp>
-#include <vector>
+
+#include <algorithm>
 #include <string>
+#include <vector>
 
 namespace
 {
@@ -54,7 +56,7 @@ namespace
         , {}
         , we::priority_type()
       );
-    we::port_id_type const port_id_hid
+    we::port_id_type const port_id_eureka_gid
       ( trans_eureka.add_port ( we::type::port_t
                                  ( "id"
                                  , we::type::PORT_IN
@@ -82,7 +84,7 @@ namespace
                                )
       );
 
-    we::place_id_type const pid_hid
+    we::place_id_type const pid_eureka_gid
       (net.add_place (place::type ( "id"
                                   , signature::signature_type ("string")
                                   , true
@@ -93,11 +95,16 @@ namespace
     we::type::property::type empty;
     we::transition_id_type const tid (net.add_transition (trans_eureka));
 
-    net.add_connection (we::edge::PT_READ, tid, pid_hid, port_id_hid, empty);
+    net.add_connection ( we::edge::PT_READ
+                       , tid
+                       , pid_eureka_gid
+                       , port_id_eureka_gid
+                       , empty
+                       );
     net.add_connection (we::edge::PT, tid, pid_in, port_id_in, empty);
     net.add_eureka (tid, port_id_out);
 
-    net.put_value (pid_hid, eureka_id);
+    net.put_value (pid_eureka_gid, eureka_id);
   }
 
   void net_with_eureka_transition::put_tokens
