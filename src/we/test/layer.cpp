@@ -2278,21 +2278,21 @@ BOOST_FIXTURE_TEST_CASE
 {
   activity_with_transitions test_job;
 
-  //! \note first activity with group 1
+  //! \note first activity with group 1, eurekas {1,3}
   test_job.add_transition_and_create_child_activity
     ( "A"
     , eureka_id_1
     , {eureka_id_1, eureka_id_3}
     );
 
-  //! \note second activity with group 2
+  //! \note second activity with group 2, eurekas {2}
   test_job.add_transition_and_create_child_activity
     ( "B"
     , eureka_id_2
     , {eureka_id_2}
     );
 
-  //! \note third activity with group 1
+  //! \note third activity with group 3, eurekas {3}
   test_job.add_transition_and_create_child_activity
     ( "C"
     , eureka_id_3
