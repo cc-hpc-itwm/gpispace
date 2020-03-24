@@ -34,6 +34,7 @@ extended_add_library (NAME pnet
           "we/expr/token/tokenizer.cpp"
           "we/expr/token/type.cpp"
           "we/field.cpp"
+          "we/loader/exceptions.cpp"
           "we/loader/loader.cpp"
           "we/loader/module_call.cpp"
           "we/layer.cpp"
