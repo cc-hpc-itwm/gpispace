@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (size_and_alignment_as_constants)
 
   unsigned long const exp
     {fhg::util::testing::random<unsigned long>{}(10,0)};
-  unsigned long const alignment (std::pow (2, exp));
+  unsigned long const alignment (1ul << exp);
 
   we::type::memory_buffer_info_t memory_buffer_info
     ( pnet::type::value::show (size).string()
