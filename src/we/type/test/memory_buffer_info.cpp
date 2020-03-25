@@ -65,7 +65,6 @@ BOOST_AUTO_TEST_CASE (size_and_alignment_as_expressions)
 BOOST_AUTO_TEST_CASE (size_and_alignment_as_constants)
 {
   expr::eval::context context;
-  std::unordered_map<std::string, unsigned long> expected;
 
   unsigned long const size
     {fhg::util::testing::random<unsigned long>()()};
