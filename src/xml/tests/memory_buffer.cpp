@@ -49,7 +49,7 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
 
 BOOST_AUTO_TEST_CASE (alignment_is_stored)
 {
-  std::string const alignment (fhg::util::testing::random_string());
+  auto const alignment (fhg::util::testing::random_string());
 
   BOOST_REQUIRE_EQUAL
     ( alignment
