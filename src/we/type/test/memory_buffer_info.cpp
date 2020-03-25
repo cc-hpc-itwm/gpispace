@@ -1,4 +1,5 @@
 #include <we/type/memory_buffer_info_t.hpp>
+#include <we/type/value/show.hpp>
 
 #include <util-generic/testing/random.hpp>
 
@@ -73,10 +74,12 @@ BOOST_AUTO_TEST_CASE (size_and_alignment_as_constants)
     {fhg::util::testing::random<unsigned long>{}(10,0)};
   unsigned long const alignment (1ul << exp);
 
+  std::ostringstream sstr_size;
+  sstr_size << pnet::type::value::show (size);
+  std::ostringstream sstr_alignment;
+  sstr_alignment << pnet::type::value::show (alignment);
   we::type::memory_buffer_info_t memory_buffer_info
-    ( pnet::type::value::show (size).string()
-    , pnet::type::value::show (alignment).string()
-    );
+    (sstr_size.str(), sstr_alignment.str());
 
   BOOST_REQUIRE_EQUAL (memory_buffer_info.size (context), size);
   BOOST_REQUIRE_EQUAL (memory_buffer_info.alignment (context), alignment);
