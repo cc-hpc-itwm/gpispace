@@ -1,0 +1,27 @@
+<defun name="top">
+  <out name="previous_invocations" place="previous_invocations" type="int"/>
+  <net>
+    <place name="trigger" type="control">
+      <token><value>[]</value></token>
+      <token><value>[]</value></token>
+      <token><value>[]</value></token>
+    </place>
+
+    <place name="previous_invocations" type="int"/>
+
+    <transition name="t">
+      <defun>
+        <in name="port" type="control"/>
+        <out name="previous_invocations" type="int"/>
+        <module name="m" function="previous_invocations f()">
+          <code>
+            static int previous_invocations = 0;
+            return previous_invocations++;
+          </code>
+        </module>
+      </defun>
+      <connect-in place="trigger" port="port"/>
+      <connect-out port="previous_invocations" place="previous_invocations"/>
+    </transition>
+  </net>
+</defun>
