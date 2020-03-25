@@ -83,4 +83,3 @@ BOOST_AUTO_TEST_CASE (size_and_alignment_as_constants)
   BOOST_REQUIRE_EQUAL (memory_buffer_info.size (context), size);
   BOOST_REQUIRE_EQUAL (memory_buffer_info.alignment (context), alignment);
 }
-
