@@ -52,7 +52,7 @@ BOOST_AUTO_TEST_CASE (size_and_alignment_as_expressions)
 
   unsigned long const exp
     {fhg::util::testing::random<unsigned long>{}(10,0)};
-  unsigned long const alignment (std::pow (2, exp));
+  unsigned long const alignment (1ul << exp);
   auto const alignment_expr (fhg::util::testing::random_identifier());
     context.bind_and_discard_ref ({alignment_expr}, alignment);
 
