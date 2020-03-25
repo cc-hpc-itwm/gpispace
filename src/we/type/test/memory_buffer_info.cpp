@@ -77,8 +77,8 @@ BOOST_AUTO_TEST_CASE (size_and_alignment_as_constants)
   unsigned long const alignment (std::pow (2, exp));
 
   we::type::memory_buffer_info_t memory_buffer_info
-    ( std::to_string (size) + "UL"
-    , std::to_string (alignment) + "UL"
+    ( pnet::type::value::show (size).string()
+    , pnet::type::value::show (alignment).string()
     );
 
   BOOST_REQUIRE_EQUAL (memory_buffer_info.size (context), size);
