@@ -126,7 +126,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_alignments)
        )
     {
       unsigned long const value 
-        (std::pow (2, fhg::util::testing::random<unsigned long>{}(10,0)));
+        (1ul << fhg::util::testing::random<unsigned long>{}(10,0));
       context.bind_and_discard_ref ({name}, value);
       expected.emplace (name, value);
     }
