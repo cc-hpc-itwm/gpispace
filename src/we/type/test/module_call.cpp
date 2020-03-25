@@ -6,7 +6,10 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <cmath>
+#include <algorithm>
+#include <list>
+#include <string>
+#include <unordered_map>
 
 BOOST_AUTO_TEST_CASE (memory_buffer_sizes_no_buffers)
 {
