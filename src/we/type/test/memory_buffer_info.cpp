@@ -8,7 +8,6 @@
 BOOST_AUTO_TEST_CASE (throw_if_the_alignment_is_not_a_power_of_2)
 {
   expr::eval::context context;
-  std::unordered_map<std::string, unsigned long> expected;
 
   unsigned long const size
     {fhg::util::testing::random<unsigned long>()()};
