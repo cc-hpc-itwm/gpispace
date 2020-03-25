@@ -94,7 +94,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
 
     auto const exp
       (fhg::util::testing::random<unsigned long>{} (10, 0));
-    unsigned long const buffer_alignment (std::pow (2, exp));
+    unsigned long const buffer_alignment (1ul << exp);
 
     total_buffer_size += buffer_size;
 
