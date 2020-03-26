@@ -831,7 +831,7 @@ namespace we
                 )
         {
           std::set<type::eureka_id_type> const eureka_ids
-            ([this, &token_on_port]
+            ([&token_on_port]
              {
               auto const& ids
               ( boost::get<std::set<pnet::type::value::value_type>>
