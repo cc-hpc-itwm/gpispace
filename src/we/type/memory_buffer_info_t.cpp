@@ -5,12 +5,6 @@ namespace we
 {
   namespace type
   {
-    //note: equivalent to std::has_single_bit (c++ 20)
-    bool is_power_of_2 (unsigned long n)
-    {
-      return n != 0 && (n & (n - 1)) == 0;
-    }
-
     //! For deserialization only.
     memory_buffer_info_t::memory_buffer_info_t() = default;
 
@@ -36,6 +30,13 @@ namespace we
          ( boost::get<unsigned long>
              (expr::parse::parser (_alignment).eval_all (context))
          );
+    
+       //note: equivalent to std::has_single_bit (c++ 20)
+       auto const is_power_of_2 =
+         [] (unsigned long n)
+         {
+           return n != 0 && (n & (n - 1)) == 0;
+         };
        
        if (!is_power_of_2 (alignment))
        {
