@@ -1,5 +1,6 @@
 #include <net_description.hpp>
 
+#include <we/type/value/show.hpp>
 #include <util-generic/print_container.hpp>
 
 #include <boost/format.hpp>
@@ -12,11 +13,11 @@ std::string create_buffer_description
   return ( boost::format (R"EOS(
        <memory-buffer name="%1%" readonly="true">
          <size>
-           %2%UL
+           %2%
          </size>
        </memory-buffer>)EOS")
          % name
-         % size
+         % pnet::type::value::show (size)
          ).str();
 }
 
@@ -29,15 +30,15 @@ std::string create_buffer_description
   return ( boost::format (R"EOS(
        <memory-buffer name="%1%" readonly="true">
          <size>
-           %2%UL
+           %2%
          </size>
          <alignment>
-           %3%UL
+           %3%
          </alignment>
        </memory-buffer>)EOS")
          % name
-         % size
-         % alignment
+         % pnet::type::value::show (size)
+         % pnet::type::value::show (alignment)
          ).str();
 }
 
