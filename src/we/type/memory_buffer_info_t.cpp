@@ -19,7 +19,7 @@ namespace we
     {
       expr::eval::context context (input);
       return boost::get<unsigned long>
-        (expr::parse::parser (_size).eval_all (context));
+        (_size.ast().eval_all (context));
     }
 
     unsigned long memory_buffer_info_t::alignment
@@ -28,7 +28,7 @@ namespace we
        expr::eval::context context (input);
        auto const alignment 
          ( boost::get<unsigned long>
-             (expr::parse::parser (_alignment).eval_all (context))
+             (_alignment.ast().eval_all (context))
          );
     
        //note: equivalent to std::has_single_bit (c++ 20)

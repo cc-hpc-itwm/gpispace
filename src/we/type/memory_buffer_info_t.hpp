@@ -1,6 +1,7 @@
 #pragma once
 
 #include <we/expr/eval/context.hpp>
+#include <we/type/expression.hpp>
 
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
@@ -23,8 +24,8 @@ namespace we
       unsigned long alignment (expr::eval::context const&) const;
 
     private:
-      std::string _size;
-      std::string _alignment;
+      we::type::expression_t _size;
+      we::type::expression_t _alignment;
 
       friend class boost::serialization::access;
 

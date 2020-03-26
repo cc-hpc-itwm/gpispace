@@ -57,7 +57,7 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
+BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_default_alignments)
 {
   std::list<std::string> names
     {fhg::util::testing::random<unsigned long>()() % 100};
@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
           ( std::piecewise_construct
           , std::forward_as_tuple (name)
           , std::forward_as_tuple ( "${" + name + "}"
-                                  , fhg::util::testing::random_identifier()
+                                  , "1UL"
                                   )
           ).second
        )
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes)
   BOOST_REQUIRE_EQUAL (module_call.memory_buffer_size_total (context), total);
 }
 
-BOOST_AUTO_TEST_CASE (memory_buffer_alignments)
+BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_and_alignments)
 {
   std::list<std::string> names
     {fhg::util::testing::random<unsigned long>()() % 100};
@@ -118,20 +118,28 @@ BOOST_AUTO_TEST_CASE (memory_buffer_alignments)
   expr::eval::context context;
 
   for (std::string const& name : names)
-  {
+  { 
+    std::string size_expr ("size_" + name);
+    std::string alignment_expr ("alignment_" + name);
+
     if (memory_buffers.emplace
           ( std::piecewise_construct
           , std::forward_as_tuple (name)
-          , std::forward_as_tuple ( fhg::util::testing::random_identifier()
-                                  , "${" + name + "}"
+          , std::forward_as_tuple ( "${" + size_expr + "}"
+                                  , "${" + alignment_expr + "}"
                                   )
           ).second
        )
     {
-      unsigned long const value 
+      unsigned long const size
+        (fhg::util::testing::random<unsigned long>{}(1000,0));
+      context.bind_and_discard_ref ({size_expr}, size);
+      expected.emplace (size_expr, size);
+
+      unsigned long const alignment
         (1ul << fhg::util::testing::random<unsigned long>{}(10,0));
-      context.bind_and_discard_ref ({name}, value);
-      expected.emplace (name, value);
+      context.bind_and_discard_ref ({alignment_expr}, alignment);
+      expected.emplace (alignment_expr, alignment);
     }
   }
 
@@ -146,8 +154,13 @@ BOOST_AUTO_TEST_CASE (memory_buffer_alignments)
   for (auto const& name_and_buffer_info : module_call.memory_buffers())
   {
     BOOST_REQUIRE_EQUAL
+      ( name_and_buffer_info.second.size (context)
+      , expected.at ("size_" + name_and_buffer_info.first)
+      );
+
+    BOOST_REQUIRE_EQUAL
       ( name_and_buffer_info.second.alignment (context)
-      , expected.at (name_and_buffer_info.first)
+      , expected.at ("alignment_" + name_and_buffer_info.first)
       );
   }
 }
