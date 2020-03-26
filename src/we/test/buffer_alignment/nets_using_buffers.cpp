@@ -50,7 +50,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
       (fhg::util::testing::random<unsigned long>{} (200, 100));
 
     auto const exp
-      (fhg::util::testing::random<unsigned long>{}(10,0));
+      (fhg::util::testing::random<unsigned long>{}(10, 0));
     unsigned long const buffer_alignment (1ul << exp);
 
     total_buffer_size += buffer_size + buffer_alignment - 1;
