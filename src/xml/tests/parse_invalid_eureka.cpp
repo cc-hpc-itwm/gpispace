@@ -111,3 +111,119 @@ BOOST_AUTO_TEST_CASE (output_port_for_eureka_type_mismatch)
     % "[<stdin>:9:5]"
     );
 }
+
+BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
+                        , parser_fixture
+                        )
+{
+  std::string const mod_name
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const target_a
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const target_b
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const eureka_a
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const eureka_b
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="foo">
+ <net>
+  <transition name="foo">
+    <defun>
+      <preferences>
+        <target>%2%</target>
+        <target>%3%</target>
+      </preferences>
+      <module name="%1%" function="func()" target="%2%" eureka-group="%4%"/>
+      <module name="%1%" function="func()" target="%3%" eureka-group="%5%"/>
+    </defun>
+  </transition>
+ </net>
+</defun>)EOS")
+      % mod_name
+      % target_a
+      % target_b
+      % eureka_a
+      % eureka_b
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::mismatching_eureka_for_module>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
+    , boost::format
+        ( "ERROR: mismatching eureka group for module '%1%'"
+          " in multi-module transition at %2%"
+        )
+    % (mod_name + "_" + target_a)
+    % "[<stdin>:5:5]"
+    );
+}
+
+BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
+                     , std::vector<bool> ({true, false})
+                     , eureka_missing_on_first
+                     )
+{
+  std::string const mod_name
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const target_a
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const target_b
+    (fhg::util::testing::random_identifier_without_leading_underscore());
+  std::string const eureka
+    ( " eureka-group=\""
+    + fhg::util::testing::random_identifier_without_leading_underscore()
+    + "\""
+    );
+  std::string const eureka_a
+    (eureka_missing_on_first ? "" : eureka);
+  std::string const eureka_b
+    (eureka_missing_on_first ? eureka : "");
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun name="foo">
+ <net>
+  <transition name="foo">
+    <defun>
+      <preferences>
+        <target>%2%</target>
+        <target>%3%</target>
+      </preferences>
+      <module name="%1%" function="func()" target="%2%"%4%/>
+      <module name="%1%" function="func()" target="%3%"%5%/>
+    </defun>
+  </transition>
+ </net>
+</defun>)EOS")
+      % mod_name
+      % target_a
+      % target_b
+      % eureka_a
+      % eureka_b
+      ).str()
+    );
+
+  fhg::util::testing::require_exception_with_message
+    <xml::parse::error::mismatching_eureka_for_module>
+    ( [&input]()
+      { xml::parse::state::type state;
+        std::istringstream input_stream (input);
+        xml::parse::just_parse (state, input_stream);
+      }
+    , boost::format
+        ( "ERROR: mismatching eureka group for module '%1%'"
+          " in multi-module transition at %2%"
+        )
+    % (mod_name + "_" + target_a)
+    % "[<stdin>:5:5]"
+    );
+}
