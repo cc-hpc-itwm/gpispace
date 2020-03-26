@@ -4,10 +4,12 @@ In GPI-Space the local memory buffers described by the users in the Petri net
 scheme are allocated in the local memory of each worker respecting a 1-byte
 alignment. However, the users have the possibility to specify for their
 buffers, as in the case of buffer sizes, expressions that are evaluated to 
-to positive numbers that represent the alignment to which the corresponding
-buffer must be aligned. For this purpose, the Petri net xml scheme used by 
+positive numbers that represent the alignment to which the corresponding
+buffer must be aligned. The alignments should be always powers of 2, in the
+contrary case an exception being thrown.  
+
 GPI-Space enables user specified alignments by providing the tag alignment 
-as in the example below:
+that can be used in Petri net XML descriptions, as in the example below:
 
 <memory-buffer name="data">
   <size>EXPRESSION</size>
