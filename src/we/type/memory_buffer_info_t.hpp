@@ -15,6 +15,7 @@ namespace we
     class memory_buffer_info_t
     {
     public:
+      //! For deserialization only.
       memory_buffer_info_t();
 
       memory_buffer_info_t

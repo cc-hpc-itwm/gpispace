@@ -5,7 +5,6 @@ namespace we
 {
   namespace type
   {
-    //! For deserialization only.
     memory_buffer_info_t::memory_buffer_info_t() = default;
 
     memory_buffer_info_t::memory_buffer_info_t
