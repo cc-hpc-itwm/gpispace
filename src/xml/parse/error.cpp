@@ -679,6 +679,16 @@ namespace xml
                     )
       {}
 
+      mismatching_eureka_for_module::mismatching_eureka_for_module
+        (const std::string& module, const util::position_type& position)
+          : generic ( boost::format ( "mismatching eureka group for module '%1%'"
+                                      " in multi-module transition at %2%"
+                                    )
+                    % module
+                    % position
+                    )
+      {}
+
       namespace
       {
         std::string print_target_list ( const std::string& _prefix

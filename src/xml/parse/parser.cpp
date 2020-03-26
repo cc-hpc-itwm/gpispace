@@ -269,16 +269,26 @@ namespace xml
         return target_list;
       }
 
-      void is_matching_preferences_and_modules
+      void is_matching_preferences_and_modules_with_eureka_id
         ( const xml_node_type* node
         , state::type const& state
         , type::preferences_type const& preferences
         , type::multi_module_type const& multi_mod
         )
       {
+        boost::optional<we::type::eureka_id_type> const& eureka_group
+          (multi_mod.eureka_id());
+
         std::list<type::preference_type> modules;
         for (auto const& mod : multi_mod.modules())
         {
+          if (mod.second.eureka_id() != eureka_group)
+          {
+            throw error::mismatching_eureka_for_module
+              ( mod.second.name()
+              , state.position (node)
+              );
+          }
           modules.push_back (mod.first);
         }
         modules.sort();
@@ -1986,11 +1996,11 @@ namespace xml
         }
         else if (!preferences.targets().empty())
         {
-          is_matching_preferences_and_modules ( node
-                                              , state
-                                              , preferences
-                                              , multi_module
-                                              );
+          is_matching_preferences_and_modules_with_eureka_id ( node
+                                                             , state
+                                                             , preferences
+                                                             , multi_module
+                                                             );
         }
 
 #define FUNCTION(_content) type::function_type  \

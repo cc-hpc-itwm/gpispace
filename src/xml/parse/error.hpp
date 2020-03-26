@@ -356,6 +356,16 @@ namespace xml
 
       // ******************************************************************* //
 
+      class mismatching_eureka_for_module : public generic
+      {
+      public:
+        mismatching_eureka_for_module ( const std::string&
+                                      , const util::position_type&
+                                      );
+      };
+
+      // ******************************************************************* //
+
       class port_with_unknown_type : public generic
       {
       public:
