@@ -144,10 +144,6 @@ namespace we
       , const we::type::module_call_t& module_call
       )
     {
-      char* local_memory (nullptr);
-      void* buffer_ptr (nullptr);
-      std::size_t space (0);
-
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
@@ -185,9 +181,10 @@ namespace we
             );
         }
 
+        std::size_t const shared_memory_size (shared_memory->size());
         auto const total_size_required
           (module_call.memory_buffer_size_total (input));
-        if (total_size_required > shared_memory->size())
+        if (total_size_required > shared_memory_size)
         {
           throw std::runtime_error
             ( ( boost::format
@@ -195,49 +192,49 @@ namespace we
                    "only %2% bytes allocated"
                   )
               % total_size_required
-              % shared_memory->size()
+              % shared_memory_size
               ).str()
             );
          }
 
-        local_memory =
-          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
-        buffer_ptr = local_memory;
-        space = shared_memory->size(); 
-      }
+        char* const local_memory
+          ((static_cast<char*> (virtual_memory_api->ptr (*shared_memory))));
+        void* buffer_ptr (local_memory);
+        std::size_t space (shared_memory_size); 
 
-      for (auto const& buffer_and_info : module_call.memory_buffers())
-      {
-        unsigned long const size (buffer_and_info.second.size (input));
-        unsigned long const alignment
-          (buffer_and_info.second.alignment (input));
-     
-        if (!boost::alignment::align (alignment, size, buffer_ptr, space))
+        for (auto const& buffer_and_info : module_call.memory_buffers())
         {
-          throw std::runtime_error
-            ( ( boost::format
-                  ("Not enough local memory: %1% > %2%. "
-                   "Please take into account also the buffer alignments "
-                   "when allocating local shared memory!"
-                  )
-              % (reinterpret_cast<char*> (buffer_ptr) - local_memory + size)
-              % shared_memory->size()
-              ).str()
-	    );            
-	}
+          unsigned long const size (buffer_and_info.second.size (input));
+          unsigned long const alignment
+            (buffer_and_info.second.alignment (input));
+     
+          if (!boost::alignment::align (alignment, size, buffer_ptr, space))
+          {
+            throw std::runtime_error
+              ( ( boost::format
+                    ("Not enough local memory: %1% > %2%. "
+                     "Please take into account also the buffer alignments "
+                     "when allocating local shared memory!"
+                    )
+                % (reinterpret_cast<char*> (buffer_ptr) - local_memory + size)
+                % shared_memory_size
+                ).str()
+	      );            
+       	  }
  
-        memory_buffer.emplace 
-          ( std::piecewise_construct
-          , std::forward_as_tuple (buffer_and_info.first)
-          , std::forward_as_tuple 
-              (reinterpret_cast<char*> (buffer_ptr) - local_memory, size)
-          );
-        pointers.emplace (buffer_and_info.first, buffer_ptr);
+          memory_buffer.emplace 
+            ( std::piecewise_construct
+            , std::forward_as_tuple (buffer_and_info.first)
+            , std::forward_as_tuple 
+                (reinterpret_cast<char*> (buffer_ptr) - local_memory, size)
+            );
+          pointers.emplace (buffer_and_info.first, buffer_ptr);
 
-        buffer_ptr = reinterpret_cast<char*> (buffer_ptr) + size;
-        space -= size;
+          buffer_ptr = reinterpret_cast<char*> (buffer_ptr) + size;
+          space -= size;
+        }
       }
-
+      
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input)
                );
