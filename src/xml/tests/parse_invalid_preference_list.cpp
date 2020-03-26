@@ -263,7 +263,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_duplicate_module_targets)
           xml::parse::just_parse (state, input_stream);
         }
       , boost::format ( "ERROR: duplicate module '%1%' for target '%2%'"
-                        "at %3%"
+                        " at %3%"
                       )
                       % (mod_name + "_" + target_name_first)
                       % target_name_first

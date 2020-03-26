@@ -340,18 +340,18 @@ namespace xml
       {
       public:
         duplicate_module_for_target ( const std::string&
-                                     , const std::string&
-                                     , const util::position_type&
-                                     );
+                                    , const std::string&
+                                    , const util::position_type&
+                                    );
       };
 
       class mismatching_modules_and_preferences : public generic
       {
       public:
         mismatching_modules_and_preferences ( const std::list<std::string>&
-                                             , const std::list<std::string>&
-                                             , const util::position_type&
-                                             );
+                                            , const std::list<std::string>&
+                                            , const util::position_type&
+                                            );
       };
 
       // ******************************************************************* //

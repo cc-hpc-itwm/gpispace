@@ -671,7 +671,7 @@ namespace xml
         , const util::position_type& position
         )
           : generic ( boost::format ( "duplicate module '%1%' for target '%2%'"
-                                      "at %3%"
+                                      " at %3%"
                                     )
                     % module
                     % target

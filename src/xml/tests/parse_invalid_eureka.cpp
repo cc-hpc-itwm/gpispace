@@ -101,13 +101,13 @@ BOOST_AUTO_TEST_CASE (output_port_for_eureka_type_mismatch)
         auto function (xml::parse::just_parse (state, input_stream));
         xml::parse::post_processing_passes (function, &state);
       }
-   , boost::format
-       ( "ERROR: connect-eureka output port %1%"
-         " is not of type \"set\""
-         " in transition %2% at %3%"
-       )
-   % port_name
-   % trans_name
-   % "[<stdin>:9:5]"
-   );
+    , boost::format
+        ( "ERROR: connect-eureka output port %1%"
+          " is not of type \"set\""
+          " in transition %2% at %3%"
+        )
+    % port_name
+    % trans_name
+    % "[<stdin>:9:5]"
+    );
 }
