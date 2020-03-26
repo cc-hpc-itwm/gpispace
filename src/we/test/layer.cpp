@@ -1781,13 +1781,14 @@ namespace
    (std::list<we::type::preference_t> const& preferences)
   {
     we::type::transition_t transition
-     ( fhg::util::testing::random_string()
-     , create_dummy_multi_mod (preferences)
-     , boost::none
-     , we::type::property::type()
-     , we::priority_type()
-     , preferences
-     );
+      ( fhg::util::testing::random_string()
+      , create_dummy_multi_mod (preferences)
+      , boost::none
+      , we::type::property::type()
+      , we::priority_type()
+      , boost::none
+      , preferences
+      );
 
    const std::string port_name (fhg::util::testing::random_string());
    transition.add_port ( we::type::port_t ( port_name
