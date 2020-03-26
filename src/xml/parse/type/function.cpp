@@ -677,6 +677,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
+            , multi_mod.eureka_id()
             , fun.preferences().targets()
             );
 
