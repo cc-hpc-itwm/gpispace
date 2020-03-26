@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE (output_port_for_eureka_type_mismatch)
 
   fhg::util::testing::require_exception_with_message
     <xml::parse::error::eureka_port_type_mismatch>
-    ( [&input, &port_name, &trans_name]()
+    ( [&input]()
       { xml::parse::state::type state;
         std::istringstream input_stream (input);
         auto function (xml::parse::just_parse (state, input_stream));
