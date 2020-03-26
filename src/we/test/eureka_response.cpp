@@ -22,7 +22,6 @@ namespace
   we::type::eureka_id_type const eureka_id ("group");
 
   size_t const MAX_TOKENS = 1000;
-  long const MAX_TOKEN_VALUE = 100;
 
   struct net_with_eureka_transition
   {
