@@ -26,7 +26,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-#define INSTALLATION_AND_RFIDS()                                         \
+#define START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET(NET)          \
   boost::program_options::options_description options_description;       \
   options_description.add (test::options::source_directory());           \
   options_description.add (test::options::shared_directory());           \
@@ -66,39 +66,36 @@
                                  , gspc::rifd::hostnames {vm}            \
                                  , gspc::rifd::port {vm}                 \
                                  , installation                          \
-                                 )
+                                 );	                                 \
+                                                                         \
+  unsigned long local_memory_size (0);                                   \
+                                                                         \
+  fhg::util::temporary_path const _workflow_dir                          \
+   (shared_directory / boost::filesystem::unique_path());                \
+  boost::filesystem::path const workflow_dir (_workflow_dir);            \
+                                                                         \
+  boost::filesystem::ofstream                                            \
+    (workflow_dir / (std::string (#NET) + ".xpnet"))                     \
+    << NET (local_memory_size);                                          \
+                                                                         \
+  test::make_net_lib_install const make                                  \
+     ( installation                                                      \
+     , #NET                                                              \
+     , workflow_dir                                                      \
+     , installation_dir                                                  \
+     );                                                                  \
+                                                                         \
+  gspc::scoped_runtime_system const drts                                 \
+     ( vm                                                                \
+     , installation                                                      \
+     , "worker:1," + std::to_string (local_memory_size)                  \
+     , rifds.entry_points()                                              \
+     );
 
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 {
-  INSTALLATION_AND_RFIDS();
-
-  unsigned long total_buffer_size (0);
-
-  fhg::util::temporary_path const _workflow_dir
-   (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const workflow_dir (_workflow_dir);
-
-  boost::filesystem::ofstream
-    ( workflow_dir
-    / "net_with_arbitrary_buffer_sizes_and_default_alignments.xpnet"
-    )
-  << net_with_arbitrary_buffer_sizes_and_default_alignments
-       (total_buffer_size)
-  ;
-
-  test::make_net_lib_install const make
-     ( installation
-     , "net_with_arbitrary_buffer_sizes_and_default_alignments"
-     , workflow_dir
-     , installation_dir
-     );
-
-  gspc::scoped_runtime_system const drts
-     ( vm
-     , installation
-     , "worker:1," + std::to_string (total_buffer_size)
-     , rifds.entry_points()
-     );
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET\
+    (net_with_arbitrary_buffer_sizes_and_default_alignments);
 
   std::multimap<std::string, pnet::type::value::value_type> result;
 
@@ -119,35 +116,8 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 BOOST_AUTO_TEST_CASE
   (arbitrary_buffer_sizes_and_alignments_insufficient_memory)
 {
-  INSTALLATION_AND_RFIDS();
-
-  unsigned long total_buffer_size (0);
-
-  fhg::util::temporary_path const _workflow_dir
-   (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const workflow_dir (_workflow_dir);
-
-  boost::filesystem::ofstream
-    ( workflow_dir
-    / "net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory.xpnet"
-    )
-  << net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
-       (total_buffer_size)
-  ;
-
-  test::make_net_lib_install const make
-     ( installation
-     , "net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory"
-     , workflow_dir
-     , installation_dir
-     );
-
-  gspc::scoped_runtime_system const drts
-     ( vm
-     , installation
-     , "worker:1," + std::to_string (total_buffer_size)
-     , rifds.entry_points()
-     );
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET\
+    (net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory);
 
   BOOST_REQUIRE_EXCEPTION
     ( gspc::client (drts).put_and_run
@@ -165,35 +135,8 @@ BOOST_AUTO_TEST_CASE
 
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
 {
-  INSTALLATION_AND_RFIDS();
-
-  unsigned long memory_amount_including_alignments (0);
-
-  fhg::util::temporary_path const _workflow_dir
-   (shared_directory / boost::filesystem::unique_path());
-  boost::filesystem::path const workflow_dir (_workflow_dir);
-
-  boost::filesystem::ofstream
-    ( workflow_dir
-    / "net_with_arbitrary_buffer_sizes_and_alignments.xpnet"
-    )
-  << net_with_arbitrary_buffer_sizes_and_alignments
-       (memory_amount_including_alignments)
-  ;
-
-  test::make_net_lib_install const make
-     ( installation
-     , "net_with_arbitrary_buffer_sizes_and_alignments"
-     , workflow_dir
-     , installation_dir
-     );
-
-  gspc::scoped_runtime_system const drts
-     ( vm
-     , installation
-     , "worker:1," + std::to_string (memory_amount_including_alignments)
-     , rifds.entry_points()
-     );
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET\
+    (net_with_arbitrary_buffer_sizes_and_alignments);
 
   std::multimap<std::string, pnet::type::value::value_type> result;
 
