@@ -420,6 +420,31 @@ std::string GenericDaemon::gen_id()
       return _log_emitter;
     }
 
+void GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
+{
+    try
+    {
+      const we::type::activity_t act (pJob->activity());
+      workflowEngine()->submit (job_id, act);
+
+      // Should set the workflow_id here, or send it together with the activity
+      pJob->Dispatch();
+
+      emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
+    }
+    catch (...)
+    {
+      fhg::util::current_exception_printer const error (": ");
+      _log_emitter.emit ( "Exception occurred: " + error.string()
+                        + ". Failed to submit the job " + job_id
+                        + " to the workflow engine!"
+                        , fhg::logging::legacy::category_level_error
+                        );
+
+      failed (job_id, error.string());
+    }
+}
+
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
 {
@@ -457,27 +482,7 @@ void GenericDaemon::handleSubmitJobEvent
   // if it comes from outside and the agent has an WFE, submit it to it
   if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
-    try
-    {
-      const we::type::activity_t act (pJob->activity());
-      workflowEngine()->submit (job_id, act);
-
-      // Should set the workflow_id here, or send it together with the activity
-      pJob->Dispatch();
-
-      emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
-    }
-    catch (...)
-    {
-      fhg::util::current_exception_printer const error (": ");
-      _log_emitter.emit ( "Exception occurred: " + error.string()
-                        + ". Failed to submit the job " + job_id
-                        + " to the workflow engine!"
-                        , fhg::logging::legacy::category_level_error
-                        );
-
-      failed (job_id, error.string());
-    }
+    workflow_engine_submit (job_id, pJob);
   }
   else {
     _scheduler.enqueueJob(job_id);
@@ -628,6 +633,13 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
+  if (activity.transition().net())
+  {
+    workflow_engine_submit
+      (job_id, addJob (job_id, activity, job_source_wfe(), job_handler_wfe()));
+  }
+  else
+  {
   auto const num_required_workers (activity.get_schedule_data().num_worker());
 
   if ( num_required_workers
@@ -643,6 +655,7 @@ try
 
   _scheduler.enqueueJob (job_id);
   request_scheduling();
+  }
 }
 catch (...)
 {
