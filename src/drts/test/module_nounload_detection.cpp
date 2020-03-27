@@ -13,8 +13,8 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/container.hpp>
-#include <util-generic/testing/printer/pair.hpp>
+#include <util-generic/testing/printer/map.hpp>
+#include <util-generic/testing/printer/set.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/filesystem/operations.hpp>
@@ -27,10 +27,10 @@
 
 #include <map>
 #include <regex>
+#include <set>
 #include <stdexcept>
 #include <string>
-
-FHG_UTIL_TESTING_PRINTER_CONTAINER_PRINTER (std::multimap, "multimap [", "]")
+#include <utility>
 
 //! Require an exception of type \a type_to be thrown in the snippet
 //! \a when_, where the expected \c .what() is regex-matching \a
@@ -153,6 +153,23 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
     );
 }
 
+namespace
+{
+  // \note multimap<Key, Value> maintains insertion order, and takes
+  // that into account when comparing...
+  template<typename Key, typename Value>
+    std::map<Key, std::set<Value>> with_known_order
+      (std::multimap<Key, Value> input)
+  {
+    std::map<Key, std::set<Value>> output;
+    for (auto&& elem : input)
+    {
+      output[std::move (elem.first)].emplace (std::move (elem.second));
+    }
+    return output;
+  }
+}
+
 BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
 {
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
@@ -169,10 +186,10 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
   auto const result (client.wait_and_extract (client.submit (make.pnet(), {})));
 
   decltype (result) const expected
-    { {"previous_invocations", 2}
+    { {"previous_invocations", 0}
     , {"previous_invocations", 1}
-    , {"previous_invocations", 0}
+    , {"previous_invocations", 2}
     };
 
-  BOOST_REQUIRE_EQUAL (result, expected);
+  BOOST_REQUIRE_EQUAL (with_known_order (result), with_known_order (expected));
 }
