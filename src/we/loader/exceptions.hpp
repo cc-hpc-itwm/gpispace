@@ -1,99 +1,67 @@
 #pragma once
 
-#include <boost/filesystem.hpp>
-#include <boost/format.hpp>
+#include <boost/filesystem/path.hpp>
 
 #include <stdexcept>
+#include <string>
+#include <vector>
 
 namespace we
 {
   namespace loader
   {
-#define MEMBER(_name, _type...)                           \
-    public:                                               \
-      const _type& _name() const { return _ ## _name; }   \
-    private:                                              \
-      _type _ ## _name
-
-    class module_load_failed : public std::runtime_error
+    struct module_load_failed : public std::runtime_error
     {
-    public:
-      explicit module_load_failed ( const std::string& file
-                                  , const std::string& reason
-                                  )
-        : std::runtime_error
-          ( ( boost::format ("could not load module '%1%': %2%")
-            % file
-            % reason
-            ).str()
-          )
-        , _file (file)
-        , _reason (reason)
-      {}
-
-      MEMBER (file, std::string);
-      MEMBER (reason, std::string);
+      module_load_failed ( boost::filesystem::path const& file
+                         , std::string const& reason
+                         );
     };
 
-    class module_not_found : public std::runtime_error
+    struct module_not_found : public std::runtime_error
     {
-    public:
-      explicit module_not_found ( const std::string& file
-                                , const std::string& search_path
-                                )
-        : std::runtime_error
-          ( ( boost::format ("module '%1%' not found in '%2%'")
-            % file
-            % search_path
-            ).str()
-          )
-        , _file (file)
-        , _search_path (search_path)
-      {}
-
-      MEMBER (file, std::string);
-      MEMBER (search_path, std::string);
+      module_not_found ( boost::filesystem::path const& file
+                       , std::string const& search_path
+                       );
     };
 
-    class function_not_found : public std::runtime_error
+    struct function_not_found : public std::runtime_error
     {
-    public:
-      explicit function_not_found ( boost::filesystem::path const& module
-                                  , std::string const& name
-                                  )
-        : std::runtime_error
-          ( ( boost::format ("function %1%::%2% not found")
-            % module
-            % name
-            ).str()
-          )
-        , _module (module)
-        , _name (name)
-      {}
-
-      MEMBER (module, boost::filesystem::path);
-      MEMBER (name, std::string);
+      function_not_found ( boost::filesystem::path const& module
+                         , std::string const& name
+                         );
     };
 
-    class duplicate_function : public std::runtime_error
+    struct duplicate_function : public std::runtime_error
     {
-    public:
-      explicit duplicate_function ( boost::filesystem::path const& module
-                                  , std::string const& name
-                                  )
-        : std::runtime_error
-          ( ( boost::format ("duplicate function %1%::%2%")
-            % module
-            % name
-            ).str()
-          )
-        , _module (module)
-        , _name (name)
-      {}
-
-      MEMBER (module, boost::filesystem::path);
-      MEMBER (name, std::string);
+      duplicate_function ( boost::filesystem::path const& module
+                         , std::string const& name
+                         );
     };
-#undef MEMBER
+
+    struct module_does_not_unload : public std::runtime_error
+    {
+      module_does_not_unload ( boost::filesystem::path module
+                             , std::vector<boost::filesystem::path> before
+                             , std::vector<boost::filesystem::path> after
+                             );
+
+      module_does_not_unload ( boost::filesystem::path module
+                             , std::vector<boost::filesystem::path> left_over
+                             );
+    };
+
+    struct function_does_not_unload : public std::runtime_error
+    {
+      function_does_not_unload ( std::string module
+                               , std::string name
+                               , std::vector<boost::filesystem::path> before
+                               , std::vector<boost::filesystem::path> after
+                               );
+
+      function_does_not_unload ( std::string module
+                               , std::string name
+                               , std::vector<boost::filesystem::path> left_over
+                               );
+    };
   }
 }

@@ -34,3 +34,9 @@ extended_add_library (NAME empty_not_linked_with_pnet
   LIBRARIES Boost::base
 )
 extended_add_library (NAME empty TYPE SHARED SOURCES "module/empty" LIBRARIES pnet)
+extended_add_library (NAME empty_nodelete
+  TYPE SHARED
+  SOURCES "module/empty.cpp"
+  LIBRARIES pnet
+)
+target_link_options (empty_nodelete PUBLIC LINKER:-z,nodelete)

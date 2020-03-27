@@ -20,6 +20,7 @@
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
 
+#include <we/loader/exceptions.hpp>
 #include <we/loader/module_call.hpp>
 #include <we/type/activity.hpp>
 
@@ -32,6 +33,7 @@
 #include <boost/range/adaptor/filtered.hpp>
 #include <boost/range/adaptor/map.hpp>
 
+#include <cstdlib>
 #include <random>
 
 struct wfe_task_t
@@ -559,8 +561,21 @@ try
   //! \todo let user supply a seed
   std::mt19937 engine;
 
+  bool worker_was_tainted (false);
+
   for (;;)
   {
+    if (worker_was_tainted)
+    {
+      _log_emitter.emit
+        ( "Worker process was tainted from previous job. "
+          "Aborting to avoid corrupt job execution."
+        , fhg::logging::legacy::category_level_error
+        );
+
+      std::abort();
+    }
+
     std::shared_ptr<DRTSImpl::Job> job;
     bool notify_can_take_jobs;
     std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
@@ -596,6 +611,14 @@ try
 
       emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
+      auto const generic_on_failure
+        ( [&]
+          {
+            task.state = wfe_task_t::FAILED;
+            job->message = fhg::util::current_exception_printer (": ").string();
+          }
+        );
+
       try
       {
         //! \todo there is a race between putting it into
@@ -622,10 +645,19 @@ try
       {
         task.state = wfe_task_t::CANCELED;
       }
+      catch (we::loader::module_does_not_unload const&)
+      {
+        worker_was_tainted = true;
+        generic_on_failure();
+      }
+      catch (we::loader::function_does_not_unload const&)
+      {
+        worker_was_tainted = true;
+        generic_on_failure();
+      }
       catch (...)
       {
-        task.state = wfe_task_t::FAILED;
-        job->message = fhg::util::current_exception_printer (": ").string();
+        generic_on_failure();
       }
 
       {

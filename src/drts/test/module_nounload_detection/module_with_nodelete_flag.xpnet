@@ -1,0 +1,18 @@
+<defun name="top">
+  <net>
+    <place name="trigger" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="t">
+      <defun>
+        <in name="port" type="control"/>
+        <module name="m" function="f()">
+          <ld flag="-z nodelete"/>
+          <code/>
+        </module>
+      </defun>
+      <connect-in place="trigger" port="port"/>
+    </transition>
+  </net>
+</defun>

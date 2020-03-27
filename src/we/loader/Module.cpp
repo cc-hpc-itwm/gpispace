@@ -4,6 +4,8 @@
 
 #include <we/loader/exceptions.hpp>
 
+#include <util-generic/print_exception.hpp>
+
 #include <boost/format.hpp>
 
 #include <exception>
@@ -12,35 +14,38 @@ namespace we
 {
   namespace loader
   {
-    Module::Module ( const std::string& path
-                   , int flags
-                   )
+    namespace
+    {
+      fhg::util::scoped_dlhandle
+        ensure_unloads_without_rest_and_load (boost::filesystem::path path)
+      {
+        auto const flags (RTLD_NOW | RTLD_GLOBAL);
+
+        auto const before (fhg::util::currently_loaded_libraries());
+        fhg::util::scoped_dlhandle (path, flags);
+        auto const after (fhg::util::currently_loaded_libraries());
+
+        if (before != after)
+        {
+          throw module_does_not_unload (path, before, after);
+        }
+
+        return {path, flags};
+      }
+    }
+
+    Module::Module (boost::filesystem::path const& path)
+    try
       : path_ (path)
-      , _dlhandle (path, flags)
+      , _dlhandle (ensure_unloads_without_rest_and_load (path))
       , call_table_()
     {
-      struct
-      {
-        union
-        {
-          void * symbol;
-          void (*function)(IModule*);
-        };
-      } func_ptr;
-
-      func_ptr.symbol = dlsym (_dlhandle.handle(), "we_mod_initialize");
-
-      if (func_ptr.function == nullptr)
-      {
-        throw std::logic_error
-          ((boost::format ("Missing initialize function in %1%") % path).str());
-      }
-
-      func_ptr.function (this);
+      _dlhandle.sym<void (IModule*)> ("we_mod_initialize") (this);
     }
-    const std::string &Module::path() const
+    catch (...)
     {
-      return path_;
+      throw module_load_failed
+        (path, fhg::util::current_exception_printer().string());
     }
     void Module::call ( const std::string& function
                       , drts::worker::context *info
@@ -65,25 +70,6 @@ namespace we
       {
         throw duplicate_function (path_, name);
       }
-    }
-
-    Module::dlhandle::dlhandle ( std::string const& path
-                               , int flags
-                               )
-      : _handle (dlopen (path.c_str(), flags))
-    {
-      if (!_handle)
-      {
-        throw module_load_failed (path, dlerror());
-      }
-    }
-    Module::dlhandle::~dlhandle()
-    {
-      dlclose (_handle);
-    }
-    void* Module::dlhandle::handle() const
-    {
-      return _handle;
     }
   }
 }

@@ -22,6 +22,7 @@ extended_add_library (NAME we-dev
           "type/value/serialize.cpp"
 
           "loader/Module.cpp"
+          "loader/exceptions.cpp"
   LIBRARIES fhg-util
             ${CMAKE_DL_LIBS}
   INSTALL

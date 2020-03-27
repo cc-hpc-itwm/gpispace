@@ -2,13 +2,14 @@
 
 #include <we/loader/IModule.hpp>
 
+#include <util-generic/dynamic_linking.hpp>
+
+#include <boost/filesystem/path.hpp>
 #include <boost/utility.hpp>
 
 #include <string>
 #include <unordered_map>
 #include <map>
-
-#include <dlfcn.h>
 
 namespace we
 {
@@ -17,11 +18,7 @@ namespace we
     class Module : public IModule, boost::noncopyable
     {
     public:
-      Module ( const std::string& path
-             , int flags = RTLD_NOW | RTLD_GLOBAL
-             );
-
-      const std::string &path() const;
+      Module (boost::filesystem::path const& path);
 
       void call ( const std::string& f
                 , drts::worker::context *context
@@ -33,17 +30,9 @@ namespace we
       virtual void add_function (const std::string&, WrapperFunction) override;
 
     private:
-      std::string path_;
+      boost::filesystem::path path_;
 
-      class dlhandle
-      {
-      public:
-        dlhandle (std::string const& path, int flags);
-        ~dlhandle();
-        void* handle() const;
-      private:
-        void* _handle;
-      } _dlhandle;
+      fhg::util::scoped_dlhandle _dlhandle;
       std::unordered_map<std::string, WrapperFunction> call_table_;
     };
   }

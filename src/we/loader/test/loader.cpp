@@ -76,15 +76,21 @@ BOOST_AUTO_TEST_CASE (bracket_okay_load)
 {
   we::loader::loader loader ({"."});
 
-  BOOST_REQUIRE_EQUAL (loader["answer"].path(), "./libanswer.so");
+  // \note Test was checking the side effect of observing path, but
+  // that accessor was removed, so now is testing it to not throw
+  // only.
+  loader["answer"];
 }
 
 BOOST_AUTO_TEST_CASE (load_order)
 {
   we::loader::loader loader ({"."});
 
-  BOOST_REQUIRE_EQUAL (loader["order_a"].path(), "./liborder_a.so");
-  BOOST_REQUIRE_EQUAL (loader["order_b"].path(), "./liborder_b.so");
+  // \note Test was checking the side effect of observing path, but
+  // that accessor was removed, so now is testing it to not throw
+  // only.
+  loader["order_a"];
+  loader["order_b"];
 
   BOOST_REQUIRE_EQUAL (start().size(), 2);
 }

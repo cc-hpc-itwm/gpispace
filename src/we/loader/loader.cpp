@@ -35,7 +35,7 @@ namespace we
         {
           return *_module_table
             .emplace ( module
-                     , fhg::util::cxx14::make_unique<Module> ((p / file_name).string())
+                     , fhg::util::cxx14::make_unique<Module> (p / file_name)
                      )
             .first->second;
         }

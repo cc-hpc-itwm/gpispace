@@ -1,0 +1,24 @@
+<defun name="top">
+  <in name="path" type="string" place="path"/>
+  <net>
+    <place name="path" type="string"/>
+
+    <transition name="t">
+      <defun>
+        <in name="path" type="string"/>
+        <module name="m" function="f (path)">
+          <cinclude href="dlfcn.h"/>
+          <cinclude href="stdexcept"/>
+          <ld flag="-ldl"/>
+          <code>
+            if (!dlopen (path.c_str(), RTLD_NOW | RTLD_NODELETE))
+            {
+              throw std::runtime_error ("failed to dlopen");
+            }
+          </code>
+        </module>
+      </defun>
+      <connect-in place="path" port="path"/>
+    </transition>
+  </net>
+</defun>
