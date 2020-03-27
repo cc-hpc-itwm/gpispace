@@ -16,7 +16,7 @@ BOOST_AUTO_TEST_CASE (throw_if_the_alignment_is_not_a_power_of_2)
   context.bind_and_discard_ref ({size_expr}, size);
  
   unsigned long const exp
-    (fhg::util::testing::random<unsigned long>{} (10, 1));
+    (fhg::util::testing::random<unsigned long>{} (10, 2));
   unsigned long const alignment
     { fhg::util::testing::random<unsigned long>{}
         ((1ul << exp) - 1, (1ul << (exp - 1)) + 1)
