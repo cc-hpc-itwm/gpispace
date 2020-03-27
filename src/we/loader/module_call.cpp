@@ -10,6 +10,7 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <boost/align/align.hpp>
 #include <boost/format.hpp>
 
 #include <functional>
@@ -21,14 +22,6 @@ namespace we
 {
   namespace
   {
-    unsigned long evaluate_size_or_die ( expr::eval::context context
-                                       , std::string const& expression
-                                       )
-    {
-      return boost::get<unsigned long>
-        (expr::parse::parser (expression).eval_all (context));
-    }
-
     class buffer
     {
     public:
@@ -142,6 +135,18 @@ namespace we
     }
   }
 
+  namespace
+  {
+    template<typename T>
+      bool align (std::size_t alignment, std::size_t size, T*& ptr, std::size_t& space)
+    {
+      void* ptr_void (ptr);
+      auto const result (boost::alignment::align (alignment, size, ptr_void, space));
+      ptr = static_cast<T*> (ptr_void);
+      return result != nullptr;
+    }
+  }
+
   namespace loader
   {
     expr::eval::context module_call
@@ -153,20 +158,35 @@ namespace we
       , const we::type::module_call_t& module_call
       )
     {
-      unsigned long position (0);
-
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
-      for (auto const& buffer_and_size : module_call.memory_buffers())
+      if (!module_call.memory_buffers().empty())
       {
-        if (!virtual_memory_api || !shared_memory)
+        if (!virtual_memory_api)
         {
           throw std::logic_error
             ( ( boost::format
-                ( "module call '%1%::%2%' with %3% memory transfers scheduled "
-                  "to worker '%4%' that is unable to manage memory"
-                )
+                  ( "module call '%1%::%2%' with %3% memory transfers "
+                    "scheduled to worker '%4%' that is unable to manage "
+                    "memory: no handler for the virtual memory was provided."
+                  )
+              % module_call.module()
+              % module_call.function()
+              % module_call.memory_buffers().size()
+              % context->worker_name()
+              ).str()
+            );
+          }
+
+        if (!shared_memory)
+        {
+          throw std::logic_error
+            ( ( boost::format
+                  ( "module call '%1%::%2%' with %3% memory transfers "
+                    "scheduled to worker '%4%' that is unable to manage "
+                    "memory: no local shared memory was allocated."
+                  )
               % module_call.module()
               % module_call.function()
               % module_call.memory_buffers().size()
@@ -175,29 +195,60 @@ namespace we
             );
         }
 
-        char* const local_memory
-          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
-
-        unsigned long const size
-          (evaluate_size_or_die (input, buffer_and_size.second));
-
-        memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
-        pointers.emplace (buffer_and_size.first, local_memory + position);
-
-        position += size;
-
-        if (position > shared_memory->size())
+        std::size_t const shared_memory_size (shared_memory->size());
+        auto const total_size_required
+          (module_call.memory_buffer_size_total (input));
+        if (total_size_required > shared_memory_size)
         {
-          //! \todo specific exception
           throw std::runtime_error
-            ( ( boost::format ("not enough local memory: %1% > %2%")
-              % position
-              % shared_memory->size()
+            ( ( boost::format
+                  ("not enough local memory allocated: %1% bytes required, "
+                   "only %2% bytes allocated"
+                  )
+              % total_size_required
+              % shared_memory_size
               ).str()
             );
+         }
+
+        char* const local_memory
+          ((static_cast<char*> (virtual_memory_api->ptr (*shared_memory))));
+        char* buffer_ptr (local_memory);
+        std::size_t space (shared_memory_size); 
+
+        for (auto const& buffer_and_info : module_call.memory_buffers())
+        {
+          unsigned long const size (buffer_and_info.second.size (input));
+          unsigned long const alignment
+            (buffer_and_info.second.alignment (input));
+     
+          if (!align (alignment, size, buffer_ptr, space))
+          {
+            throw std::runtime_error
+              ( ( boost::format
+                    ("Not enough local memory: %1% > %2%. "
+                     "Please take into account also the buffer alignments "
+                     "when allocating local shared memory!"
+                    )
+                % (buffer_ptr - local_memory + size)
+                % shared_memory_size
+                ).str()
+	      );            
+       	  }
+ 
+          memory_buffer.emplace 
+            ( std::piecewise_construct
+            , std::forward_as_tuple (buffer_and_info.first)
+            , std::forward_as_tuple 
+                (buffer_ptr - local_memory, size)
+            );
+          pointers.emplace (buffer_and_info.first, buffer_ptr);
+
+          buffer_ptr = buffer_ptr + size;
+          space -= size;
         }
       }
-
+      
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input)
                );

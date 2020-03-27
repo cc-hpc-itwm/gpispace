@@ -56,12 +56,13 @@ namespace utils
   {
     we::type::transition_t transition
       ( name
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
       , boost::none
       , we::type::property::type()
       , we::priority_type()
@@ -95,12 +96,13 @@ namespace utils
               );
     we::type::transition_t transition
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
       , boost::none
       , props
       , we::priority_type()
@@ -153,24 +155,26 @@ namespace utils
               );
     we::type::transition_t transition_0
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
       , boost::none
       , props
       , we::priority_type()
       );
     we::type::transition_t transition_1
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
       , boost::none
       , props
       , we::priority_type()

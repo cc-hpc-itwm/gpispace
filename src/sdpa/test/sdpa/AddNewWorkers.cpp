@@ -36,12 +36,13 @@ we::type::activity_t net_with_n_children (unsigned int n)
   {
     transitions.emplace_back
       ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
       , boost::none
       , props
       , we::priority_type()

@@ -83,7 +83,8 @@ fhg_add_test (NAME we_eureka_response
   LIBRARIES pnet
 )
 
-add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)
+add_subdirectory (buffer_alignment)
+add_subdirectory (eureka)
 add_subdirectory (input_is_copied_to_output_in_module_calls)
 add_subdirectory (put_many)
-add_subdirectory (eureka)
+add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)

@@ -16,12 +16,14 @@ namespace xml
         ( const util::position_type& position_of_definition
         , const std::string& name
         , const std::string& size
+        , const std::string& alignment
         , const boost::optional<bool>& read_only
         , const we::type::property::type& properties
         )
         : with_position_of_definition (position_of_definition)
         , _name (name)
         , _size (size)
+        , _alignment (alignment)
         , _read_only (read_only)
         , _properties (properties)
       {}
@@ -33,6 +35,10 @@ namespace xml
       const std::string& memory_buffer_type::size() const
       {
         return _size;
+      }
+      const std::string& memory_buffer_type::alignment() const
+      {
+        return _alignment;
       }
       const boost::optional<bool>& memory_buffer_type::read_only() const
       {
@@ -65,8 +71,12 @@ namespace xml
 
           s.open ("size");
           s.content (memory_buffer.size());
-
           s.close();
+
+          s.open ("alignment");
+          s.content (memory_buffer.alignment());
+          s.close();
+
           s.close();
         }
       }

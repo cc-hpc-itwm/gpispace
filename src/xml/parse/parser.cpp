@@ -710,6 +710,7 @@ namespace xml
           );
 
         boost::optional<std::string> size;
+        boost::optional<std::string> alignment;
 
         we::type::property::type properties;
 
@@ -741,6 +742,10 @@ namespace xml
             {
               size = fhg::util::join (parse_cdata (child, state), ';').string();
             }
+            else if (child_name == "alignment")
+            {
+              alignment = fhg::util::join (parse_cdata (child, state), ';').string();
+            }
             else
             {
               state.warn
@@ -763,6 +768,7 @@ namespace xml
           ( state.position (node)
           , name
           , *size
+          , alignment.get_value_or ("1UL")
           , fhg::util::boost::fmap<std::string, bool>
             (fhg::util::read_bool, optional (node, "read-only"))
           , properties

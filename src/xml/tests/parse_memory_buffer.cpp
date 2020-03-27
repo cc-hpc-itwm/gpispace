@@ -59,6 +59,42 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
       );
 }
 
+BOOST_AUTO_TEST_CASE
+  (the_default_value_1_is_used_when_no_alignment_is_specified_by_the_user)
+{
+  std::string const name (random_identifier_with_valid_prefix());
+  std::string const size (random_identifier_with_valid_prefix());
+  std::string const default_alignment ("1UL");
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun>
+  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
+  <module name="%3%" function="%4%"/>
+</defun>)EOS")
+      % name
+      % size
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  std::istringstream input_stream (input);
+
+  xml::parse::state::type state;
+  xml::parse::type::function_type const function
+    (xml::parse::just_parse (state, input_stream));
+
+  BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 1);
+  BOOST_REQUIRE_EQUAL (function.memory_buffers().begin()->name(), name);
+  BOOST_REQUIRE_EQUAL (function.memory_buffers().begin()->size(), size);
+
+  BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->alignment()
+                      , default_alignment
+                      );
+
+}
+
 BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
 {
   std::string const name (random_identifier_with_valid_prefix());
