@@ -71,7 +71,7 @@
   unsigned long local_memory_size (0);                                   \
                                                                          \
   fhg::util::temporary_path const _workflow_dir                          \
-   (shared_directory / boost::filesystem::unique_path());                \
+    (shared_directory / boost::filesystem::unique_path());               \
   boost::filesystem::path const workflow_dir (_workflow_dir);            \
                                                                          \
   boost::filesystem::ofstream                                            \
@@ -79,18 +79,18 @@
     << NET (local_memory_size);                                          \
                                                                          \
   test::make_net_lib_install const make                                  \
-     ( installation                                                      \
-     , #NET                                                              \
-     , workflow_dir                                                      \
-     , installation_dir                                                  \
-     );                                                                  \
+    ( installation                                                       \
+    , #NET                                                               \
+    , workflow_dir                                                       \
+    , installation_dir                                                   \
+    );                                                                   \
                                                                          \
   gspc::scoped_runtime_system const drts                                 \
-     ( vm                                                                \
-     , installation                                                      \
-     , "worker:1," + std::to_string (local_memory_size)                  \
-     , rifds.entry_points()                                              \
-     );
+    ( vm                                                                 \
+    , installation                                                       \
+    , "worker:1," + std::to_string (local_memory_size)                   \
+    , rifds.entry_points()                                               \
+    );
 
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 {
