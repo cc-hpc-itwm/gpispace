@@ -1,0 +1,95 @@
+<defun name="subnetwork">
+  <include-structs href="memory/global/range.xpnet"/>
+  <include-structs href="block.xpnet"/>
+
+  <in name="memory" type="global_memory_range" place="memory"/>
+  <in name="block_size" type="unsigned long" place="block_size"/>
+  <in name="number_of_blocks" type="unsigned long" place="number_of_blocks"/>
+
+  <out name="done" type="unsigned long" place="done"/>
+
+  <net>
+    <place name="memory" type="global_memory_range"/>
+    <place name="block_size" type="unsigned long"/>
+    <place name="number_of_blocks" type="unsigned long"/>
+
+    <place name="done" type="unsigned long"/>
+
+    <place name="block_ready" type="block"/>
+    <place name="block_done" type="block"/>
+
+    <place name="next_id" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="next_slot" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="available_slot" type="unsigned long"/>
+
+    <transition name="generate_slot">
+      <defun>
+        <in name="memory" type="global_memory_range"/>
+        <in name="block_size" type="unsigned long"/>
+        <inout name="next_slot" type="unsigned long"/>
+        <out name="available_slot" type="unsigned long"/>
+        <expression>
+          ${available_slot} := ${next_slot};
+          ${next_slot} := ${next_slot} + 1UL;
+        </expression>
+        <condition>
+          ((${next_slot} + 1UL) * 2UL * ${block_size})
+          :le:
+          ${memory.size}
+        </condition>
+      </defun>
+      <connect-read port="memory" place="memory"/>
+      <connect-read port="block_size" place="block_size"/>
+      <connect-inout port="next_slot" place="next_slot"/>
+      <connect-out port="available_slot" place="available_slot"/>
+    </transition>
+
+    <transition name="generate_block">
+      <defun>
+        <in name="number_of_blocks" type="unsigned long"/>
+        <inout name="next_id" type="unsigned long"/>
+        <in name="slot" type="unsigned long"/>
+        <out name="block" type="block"/>
+        <expression>
+          ${block.id} := ${next_id};
+          ${block.slot} := ${slot};
+          ${next_id} := ${next_id} + 1UL;
+        </expression>
+        <condition>
+          ${next_id} :lt: ${number_of_blocks}
+        </condition>
+      </defun>
+      <connect-read port="number_of_blocks" place="number_of_blocks"/>
+      <connect-inout port="next_id" place="next_id"/>
+      <connect-in port="slot" place="available_slot"/>
+      <connect-out port="block" place="block_ready"/>
+    </transition>
+
+    <transition name="process_single_block" inline="false">
+      <include-function href="process_single_block.xpnet"/>
+      <connect-read port="memory" place="memory"/>
+      <connect-read port="block_size" place="block_size"/>
+      <connect-in port="block_ready" place="block_ready"/>
+      <connect-out port="block_done" place="block_done"/>
+    </transition>
+
+    <transition name="post_process_block">
+      <defun>
+        <in name="block" type="block"/>
+        <out name="id" type="unsigned long"/>
+        <out name="slot" type="unsigned long"/>
+        <expression>
+          ${id} := ${block.id};
+          ${slot} := ${block.slot}
+        </expression>
+      </defun>
+      <connect-in port="block" place="block_done"/>
+      <connect-out port="id" place="done"/>
+      <connect-out port="slot" place="available_slot"/>
+    </transition>
+  </net>
+</defun>
