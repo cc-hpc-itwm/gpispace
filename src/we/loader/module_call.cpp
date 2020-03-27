@@ -133,6 +133,18 @@ namespace we
     }
   }
 
+  namespace
+  {
+    template<typename T>
+      bool align (std::size_t alignment, std::size_t size, T*& ptr, std::size_t& space)
+    {
+      void* ptr_void (ptr);
+      auto const result (boost::alignment::align (alignment, size, ptr_void, space));
+      ptr = static_cast<T*> (ptr_void);
+      return result != nullptr;
+    }
+  }
+
   namespace loader
   {
     expr::eval::context module_call
@@ -199,7 +211,7 @@ namespace we
 
         char* const local_memory
           ((static_cast<char*> (virtual_memory_api->ptr (*shared_memory))));
-        void* buffer_ptr (local_memory);
+        char* buffer_ptr (local_memory);
         std::size_t space (shared_memory_size); 
 
         for (auto const& buffer_and_info : module_call.memory_buffers())
@@ -208,7 +220,7 @@ namespace we
           unsigned long const alignment
             (buffer_and_info.second.alignment (input));
      
-          if (!boost::alignment::align (alignment, size, buffer_ptr, space))
+          if (!align (alignment, size, buffer_ptr, space))
           {
             throw std::runtime_error
               ( ( boost::format
@@ -216,7 +228,7 @@ namespace we
                      "Please take into account also the buffer alignments "
                      "when allocating local shared memory!"
                     )
-                % (reinterpret_cast<char*> (buffer_ptr) - local_memory + size)
+                % (buffer_ptr - local_memory + size)
                 % shared_memory_size
                 ).str()
 	      );            
@@ -226,11 +238,11 @@ namespace we
             ( std::piecewise_construct
             , std::forward_as_tuple (buffer_and_info.first)
             , std::forward_as_tuple 
-                (reinterpret_cast<char*> (buffer_ptr) - local_memory, size)
+                (buffer_ptr - local_memory, size)
             );
           pointers.emplace (buffer_and_info.first, buffer_ptr);
 
-          buffer_ptr = reinterpret_cast<char*> (buffer_ptr) + size;
+          buffer_ptr = buffer_ptr + size;
           space -= size;
         }
       }
