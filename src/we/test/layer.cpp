@@ -1781,13 +1781,14 @@ namespace
    (std::list<we::type::preference_t> const& preferences)
   {
     we::type::transition_t transition
-     ( fhg::util::testing::random_string()
-     , create_dummy_multi_mod (preferences)
-     , boost::none
-     , we::type::property::type()
-     , we::priority_type()
-     , preferences
-     );
+      ( fhg::util::testing::random_string()
+      , create_dummy_multi_mod (preferences)
+      , boost::none
+      , we::type::property::type()
+      , we::priority_type()
+      , boost::none
+      , preferences
+      );
 
    const std::string port_name (fhg::util::testing::random_string());
    transition.add_port ( we::type::port_t ( port_name
@@ -1900,4 +1901,571 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
   wfe.wait_submitted();
 
   BOOST_REQUIRE_EQUAL (wfe.received_preferences(), preferences);
+}
+
+namespace
+{
+  enum activity_type { child, eureka, no_eureka };
+
+  we::type::eureka_id_type const eureka_id_1 ("group1");
+  we::type::eureka_id_type const eureka_id_2 ("group2");
+  we::type::eureka_id_type const eureka_id_3 ("group3");
+
+  struct child_activity_with_eureka
+  {
+    we::type::activity_t child;
+    we::type::activity_t result_eureka;
+    we::type::activity_t result_no_eureka;
+
+    child_activity_with_eureka
+      ( we::type::transition_t const& t
+      , we::transition_id_type const& t_id
+      , std::set<we::type::eureka_id_type> const& h_set
+      )
+      : child (t, t_id)
+      , result_eureka (child)
+      , result_no_eureka (child)
+    {
+      child.add_input
+        ( t.input_port_by_name ("in")
+        , value::CONTROL
+        );
+      result_eureka.add_output
+        ( t.output_port_by_name ("out")
+        , pnet::type::value::wrap (h_set)
+        );
+    }
+  };
+
+  struct activity_with_transitions
+  {
+    std::size_t token_count;
+    we::type::net_type net;
+
+    we::type::activity_t input;
+    we::type::activity_t output;
+
+    std::unordered_map < std::string
+                       , child_activity_with_eureka
+                       > activities;
+
+    activity_with_transitions() = default;
+
+    void add_transition_and_create_child_activity
+      ( std::string place_name
+      , we::type::eureka_id_type const eureka_id
+      , std::set<we::type::eureka_id_type> const eurekaed_set
+      )
+    {
+      we::type::transition_t transition
+        ( "module_call"
+        , we::type::module_call_t
+          ( "m"
+          , "f"
+          , std::unordered_map<std::string, std::string>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          )
+        , boost::none
+        , we::type::property::type()
+        , we::priority_type()
+        , eureka_id
+        );
+
+      we::port_id_type const port_id_in
+        ( transition.add_port ( we::type::port_t ( "in"
+                                                 , we::type::PORT_IN
+                                                 , signature::CONTROL
+                                                 , we::type::property::type()
+                                                 )
+                              )
+        );
+      we::port_id_type const port_id_out
+        ( transition.add_port ( we::type::port_t ( "out"
+                                                 , we::type::PORT_OUT
+                                                 , signature::SET
+                                                 , we::type::property::type()
+                                                 )
+                              )
+        );
+
+      we::place_id_type place_id_in
+        (net.add_place (place::type ( place_name
+                                    , signature::CONTROL
+                                    , true
+                                    )
+                       )
+        );
+
+      we::transition_id_type transition_id (net.add_transition (transition));
+      {
+        using we::edge::PT;
+        we::type::property::type empty;
+
+        net.add_eureka (transition_id, port_id_out);
+        net.add_connection ( PT
+                           , transition_id
+                           , place_id_in
+                           , port_id_in
+                           , empty
+                           );
+      }
+
+      activities.emplace ( place_name
+                         , child_activity_with_eureka ( transition
+                                                      , transition_id
+                                                      , eurekaed_set
+                                                      )
+                         );
+    }
+
+    void create_job (std::size_t token_count)
+    {
+      we::type::net_type copy_of_net_without_inputs (net);
+
+      output = we::type::activity_t
+        ( we::type::transition_t ( "net"
+                                 , copy_of_net_without_inputs
+                                 , boost::none
+                                 , we::type::property::type()
+                                 , we::priority_type()
+                                 )
+        , boost::none
+        );
+
+      for (auto const& act : activities)
+      {
+        for (std::size_t i (0); i < token_count; ++i)
+        {
+          net.put_token (act.first, value::CONTROL);
+        }
+      }
+
+      input = we::type::activity_t
+        ( we::type::transition_t ( "net"
+                                 , net
+                                 , boost::none
+                                 , we::type::property::type()
+                                 , we::priority_type()
+                                 )
+        , boost::none
+        );
+    }
+
+    we::type::activity_t const& get_activity ( std::string name
+                                             , activity_type type
+                                             )
+    {
+      auto const& acts = activities.find (name);
+      if (acts == activities.end())
+      {
+        throw std::logic_error ("missing child activitiy");
+      }
+
+      if (type == child)
+      {
+        return acts->second.child;
+      }
+      else if (type == eureka)
+      {
+        return acts->second.result_eureka;
+      }
+      else if (type == no_eureka)
+      {
+        return acts->second.result_no_eureka;
+      }
+      else
+      {
+        throw std::logic_error ("no child activitiy for given type");
+      }
+    }
+  };
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (first_child_task_calls_eureka, daemon)
+{
+  activity_with_transitions test_job;
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a
+      (this, &child_id_a, test_job.get_activity ("A", child));
+    expect_submit const _b
+      (this, &child_id_b, test_job.get_activity ("A", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child is still running
+  {
+    expect_cancel const _b_cancel (this, child_id_b);
+
+    do_finished ( child_id_a
+                , test_job.get_activity ("A", eureka)
+                );
+  }
+
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_canceled (child_id_b);
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (no_child_task_calls_eureka, daemon)
+{
+  activity_with_transitions test_job;
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a
+      (this, &child_id_a, test_job.get_activity ("A", child));
+    expect_submit const _b
+      (this, &child_id_b, test_job.get_activity ("A", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  do_finished (child_id_a, test_job.get_activity ("A", no_eureka));
+  //! \note no tasks eureka, so normal exit
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_finished ( child_id_b
+                , test_job.get_activity ("A", no_eureka)
+                );
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (last_of_the_child_tasks_call_eureka, daemon)
+{
+  activity_with_transitions test_job;
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a
+      (this, &child_id_a, test_job.get_activity ("A", child));
+    expect_submit const _b
+      (this, &child_id_b, test_job.get_activity ("A", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  do_finished (child_id_a, test_job.get_activity ("A", no_eureka));
+  //! \note no tasks eureka, so normal exit
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_finished ( child_id_b
+                , test_job.get_activity ("A", eureka)
+                );
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (one_of_two_groups_call_eureka, daemon)
+{
+  activity_with_transitions test_job;
+
+  //! \note first activity with group 1
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+
+  //! \note second activity with group 2
+  test_job.add_transition_and_create_child_activity
+    ( "B"
+    , eureka_id_2
+    , {eureka_id_2}
+    );
+
+  //! \note third activity with group 1
+  test_job.add_transition_and_create_child_activity
+    ( "C"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_A_1;
+  we::layer::id_type child_id_A_2;
+  we::layer::id_type child_id_B_1;
+  we::layer::id_type child_id_B_2;
+  we::layer::id_type child_id_C_1;
+  we::layer::id_type child_id_C_2;
+
+  {
+    expect_submit const _a1
+      (this, &child_id_A_1, test_job.get_activity ("A", child));
+    expect_submit const _b1
+      (this, &child_id_B_1, test_job.get_activity ("B", child));
+    expect_submit const _c1
+      (this, &child_id_C_1, test_job.get_activity ("C", child));
+    expect_submit const _a2
+      (this, &child_id_A_2, test_job.get_activity ("A", child));
+    expect_submit const _b2
+      (this, &child_id_B_2, test_job.get_activity ("B", child));
+    expect_submit const _c2
+      (this, &child_id_C_2, test_job.get_activity ("C", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child of group 1 (A or C) eureka-ed
+  {
+    expect_cancel const _c2_cancel (this, child_id_C_2);
+    expect_cancel const _a2_cancel (this, child_id_A_2);
+    expect_cancel const _c1_cancel (this, child_id_C_1);
+
+    do_finished (child_id_A_1, test_job.get_activity ("A", eureka));
+  }
+
+  //! \note no tasks eureka for B, so normal exit
+  do_finished (child_id_B_1, test_job.get_activity ("B", no_eureka));
+  {
+    expect_finished const _ (this, id, test_job.output);
+
+    do_canceled (child_id_C_2);
+    do_canceled (child_id_A_2);
+    do_canceled (child_id_C_1);
+    do_finished ( child_id_B_2
+                , test_job.get_activity ("B", no_eureka)
+                );
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (two_of_three_groups_call_eureka, daemon)
+{
+  activity_with_transitions test_job;
+
+  //! \note first activity with group 1, eurekas {1,3}
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1, eureka_id_3}
+    );
+
+  //! \note second activity with group 2, eurekas {2}
+  test_job.add_transition_and_create_child_activity
+    ( "B"
+    , eureka_id_2
+    , {eureka_id_2}
+    );
+
+  //! \note third activity with group 3, eurekas {3}
+  test_job.add_transition_and_create_child_activity
+    ( "C"
+    , eureka_id_3
+    , {eureka_id_3}
+    );
+
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+
+  we::layer::id_type child_id_A_1;
+  we::layer::id_type child_id_A_2;
+  we::layer::id_type child_id_B_1;
+  we::layer::id_type child_id_B_2;
+  we::layer::id_type child_id_C_1;
+  we::layer::id_type child_id_C_2;
+
+  {
+    expect_submit const _a1
+      (this, &child_id_A_1, test_job.get_activity ("A", child));
+    expect_submit const _b1
+      (this, &child_id_B_1, test_job.get_activity ("B", child));
+    expect_submit const _c1
+      (this, &child_id_C_1, test_job.get_activity ("C", child));
+    expect_submit const _a2
+      (this, &child_id_A_2, test_job.get_activity ("A", child));
+    expect_submit const _b2
+      (this, &child_id_B_2, test_job.get_activity ("B", child));
+    expect_submit const _c2
+      (this, &child_id_C_2, test_job.get_activity ("C", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child of group 1 (A or C) eureka-ed
+  {
+    expect_cancel const _c2_cancel (this, child_id_C_2);
+    expect_cancel const _a2_cancel (this, child_id_A_2);
+    expect_cancel const _c1_cancel (this, child_id_C_1);
+
+    do_finished (child_id_A_1, test_job.get_activity ("A", eureka));
+  }
+
+  //! \note eureka tasks canceled, rest finish and exit
+  do_finished (child_id_B_1, test_job.get_activity ("B", no_eureka));
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_canceled (child_id_C_2);
+    do_canceled (child_id_A_2);
+    do_canceled (child_id_C_1);
+    do_finished ( child_id_B_2
+                , test_job.get_activity ("B", no_eureka)
+                );
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (one_of_two_eureka_jobs_call_eureka, daemon)
+{
+  activity_with_child (0);
+  activity_with_transitions test_job_A;
+  test_job_A.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job_A.create_job (2);
+
+  activity_with_transitions test_job_B;
+  test_job_B.add_transition_and_create_child_activity
+    ( "B"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job_B.create_job (2);
+
+  we::layer::id_type const id_A (generate_id());
+  we::layer::id_type const id_B (generate_id());
+
+  we::layer::id_type child_id_A_1;
+  we::layer::id_type child_id_A_2;
+  we::layer::id_type child_id_B_1;
+  we::layer::id_type child_id_B_2;
+
+  //! \note starting job A with two tokens to fire
+  {
+    expect_submit const _a1
+      (this, &child_id_A_1, test_job_A.get_activity ("A", child));
+    expect_submit const _a2
+      (this, &child_id_A_2, test_job_A.get_activity ("A", child));
+    do_submit (id_A, test_job_A.input);
+  }
+
+  //! \note starting separate job B with same eureka ID as job A
+  {
+    expect_submit const _b1
+      (this, &child_id_B_1, test_job_B.get_activity ("B", child));
+    expect_submit const _b2
+      (this, &child_id_B_2, test_job_B.get_activity ("B", child));
+
+    do_submit (id_B, test_job_B.input);
+  }
+
+  //! \note assuming one child of job A eureka-ed
+  {
+    expect_cancel const _a2_cancel (this, child_id_A_2);
+
+    do_finished ( child_id_A_1
+                , test_job_A.get_activity ("A", eureka)
+                );
+  }
+
+  //! \note finish job A with a eureka
+  {
+    expect_finished const _a_finish (this, id_A, test_job_A.output);
+
+    do_canceled (child_id_A_2);
+  }
+
+  //! \note finish job B normally
+  do_finished ( child_id_B_1
+              , test_job_B.get_activity ("B", no_eureka)
+              );
+  {
+    expect_finished const _b_finish (this, id_B, test_job_B.output);
+
+    do_finished ( child_id_B_2
+                , test_job_B.get_activity ("B", no_eureka)
+                );
+  }
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_FIXTURE_TEST_CASE
+  (calling_eureka_on_failed_child_tasks, daemon)
+{
+  activity_with_transitions test_job;
+  test_job.add_transition_and_create_child_activity
+    ( "A"
+    , eureka_id_1
+    , {eureka_id_1}
+    );
+  test_job.create_job (2);
+
+  we::layer::id_type const id (generate_id());
+  we::layer::id_type child_id_a;
+  we::layer::id_type child_id_b;
+
+  {
+    expect_submit const _a
+      (this, &child_id_a, test_job.get_activity ("A", child));
+    expect_submit const _b
+      (this, &child_id_b, test_job.get_activity ("A", child));
+
+    do_submit (id, test_job.input);
+  }
+
+  //! \note assuming one child is still running, and fails
+  {
+    expect_cancel const _b_cancel (this, child_id_b);
+
+    do_finished ( child_id_a
+                , test_job.get_activity ("A", eureka)
+                );
+  }
+
+  std::string const fail_reason (fhg::util::testing::random_string());
+  {
+    expect_finished const _finish (this, id, test_job.output);
+
+    do_failed (child_id_b, fail_reason);
+  }
 }

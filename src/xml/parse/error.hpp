@@ -13,6 +13,7 @@
 #include <xml/parse/type/place_map.fwd.hpp>
 #include <xml/parse/type/port.fwd.hpp>
 #include <xml/parse/type/response.fwd.hpp>
+#include <xml/parse/type/eureka.fwd.hpp>
 #include <xml/parse/type/specialize.fwd.hpp>
 #include <xml/parse/type/struct.fwd.hpp>
 #include <xml/parse/type/template.fwd.hpp>
@@ -291,6 +292,7 @@ namespace xml
       DUPLICATE (place_map, type::place_map_type);
       DUPLICATE (port, type::port_type);
       DUPLICATE (response, type::response_type);
+      DUPLICATE (eureka, type::eureka_type);
       DUPLICATE (specialize, type::specialize_type);
       DUPLICATE (template, type::tmpl_type);
       DUPLICATE (transition, type::transition_type);
@@ -338,18 +340,28 @@ namespace xml
       {
       public:
         duplicate_module_for_target ( const std::string&
-                                     , const std::string&
-                                     , const util::position_type&
-                                     );
+                                    , const std::string&
+                                    , const util::position_type&
+                                    );
       };
 
       class mismatching_modules_and_preferences : public generic
       {
       public:
         mismatching_modules_and_preferences ( const std::list<std::string>&
-                                             , const std::list<std::string>&
-                                             , const util::position_type&
-                                             );
+                                            , const std::list<std::string>&
+                                            , const util::position_type&
+                                            );
+      };
+
+      // ******************************************************************* //
+
+      class mismatching_eureka_for_module : public generic
+      {
+      public:
+        mismatching_eureka_for_module ( const std::string&
+                                      , const util::position_type&
+                                      );
       };
 
       // ******************************************************************* //
@@ -536,6 +548,26 @@ namespace xml
         invalid_signature_in_connect_response
           ( type::response_type const&
           , type::port_type const&
+          );
+      };
+
+      // ******************************************************************* //
+
+      class connect_eureka_to_nonexistent_out_port : public generic
+      {
+      public:
+        connect_eureka_to_nonexistent_out_port
+          ( type::transition_type const&
+          , const type::eureka_type&
+          );
+      };
+
+      class eureka_port_type_mismatch : public generic
+      {
+      public:
+        eureka_port_type_mismatch
+          ( type::transition_type const&
+          , const type::eureka_type&
           );
       };
 

@@ -47,6 +47,7 @@ namespace {
       , boost::none
       , {}
       , we::priority_type()
+      , boost::none
       , std::list<we::type::preference_t> { "target1"
                                           , "target2"
                                           }

@@ -27,6 +27,7 @@ namespace we
       , _requirements()
       , _preferences()
       , _priority()
+      , eureka_id_ (boost::none)
     {}
 
     boost::optional<const expression_t&> transition_t::expression() const
@@ -45,6 +46,11 @@ namespace we
     boost::optional<expression_t> const& transition_t::condition() const
     {
       return condition_;
+    }
+
+    boost::optional<eureka_id_type> const& transition_t::eureka_id() const
+    {
+      return eureka_id_;
     }
 
     const std::string& transition_t::name() const

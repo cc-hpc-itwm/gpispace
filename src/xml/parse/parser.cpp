@@ -30,6 +30,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
@@ -268,16 +269,26 @@ namespace xml
         return target_list;
       }
 
-      void is_matching_preferences_and_modules
+      void is_matching_preferences_and_modules_with_eureka_id
         ( const xml_node_type* node
         , state::type const& state
         , type::preferences_type const& preferences
         , type::multi_module_type const& multi_mod
         )
       {
+        boost::optional<we::type::eureka_id_type> const& eureka_group
+          (multi_mod.eureka_id());
+
         std::list<type::preference_type> modules;
         for (auto const& mod : multi_mod.modules())
         {
+          if (mod.second.eureka_id() != eureka_group)
+          {
+            throw error::mismatching_eureka_for_module
+              ( mod.second.name()
+              , state.position (node)
+              );
+          }
           modules.push_back (mod.first);
         }
         modules.sort();
@@ -472,6 +483,19 @@ namespace xml
           , required ("response_type", node, "port", state)
           , required ("response_type", node, "to", state)
           , properties
+          );
+      }
+
+
+      // **************************************************************** //
+
+      type::eureka_type eureka_type ( const xml_node_type* node
+                                    , state::type& state
+                                    )
+      {
+        return type::eureka_type
+          ( state.position (node)
+          , required ("eureka_type", node, "port", state)
           );
       }
 
@@ -811,6 +835,7 @@ namespace xml
         boost::optional<type::use_type> use;
         type::transition_type::connections_type connections;
         type::transition_type::responses_type responses;
+        type::transition_type::eurekas_type eurekas;
         type::transition_type::place_maps_type place_map;
         std::list<type::structure_type> structs;
         type::conditions_type conditions;
@@ -881,6 +906,11 @@ namespace xml
               responses.push<error::duplicate_response>
                 (response_type (child, state));
             }
+            else if (child_name == "connect-eureka")
+            {
+              eurekas.push<error::duplicate_eureka>
+                (eureka_type (child, state));
+            }
             else if (child_name == "condition")
             {
               auto const cs (parse_cdata (child, state));
@@ -937,6 +967,7 @@ namespace xml
                           )                                                \
           , connections                                                    \
           , responses                                                      \
+          , eurekas                                                        \
           , place_map                                                      \
           , structs                                                        \
           , conditions                                                     \
@@ -1472,6 +1503,8 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
+        const boost::optional<we::type::eureka_id_type> eureka_id
+          (optional (node, "eureka-group"));
         const util::position_type pod (state.position (node));
         const boost::optional<std::string> target
           (optional (node, "target"));
@@ -1577,6 +1610,7 @@ namespace xml
           , ldflags
           , cxxflags
           , pass_context
+          , eureka_id
           );
       }
 
@@ -1962,11 +1996,11 @@ namespace xml
         }
         else if (!preferences.targets().empty())
         {
-          is_matching_preferences_and_modules ( node
-                                              , state
-                                              , preferences
-                                              , multi_module
-                                              );
+          is_matching_preferences_and_modules_with_eureka_id ( node
+                                                             , state
+                                                             , preferences
+                                                             , multi_module
+                                                             );
         }
 
 #define FUNCTION(_content) type::function_type  \

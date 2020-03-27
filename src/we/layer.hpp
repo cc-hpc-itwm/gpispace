@@ -11,6 +11,7 @@
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
+#include <we/eureka_response.hpp>
 
 #include <sdpa/discovery_info.hpp>
 #include <sdpa/types.hpp>
@@ -26,6 +27,10 @@
 #include <mutex>
 #include <random>
 #include <unordered_map>
+#include <unordered_set>
+#include <list>
+#include <string>
+#include <utility>
 
 namespace we
 {
@@ -115,6 +120,11 @@ namespace we
                              );
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
+      void eureka_response ( id_type
+                           , boost::optional<id_type>
+                           , type::eureka_ids_type const& ids
+                           );
+
       std::mutex _outstanding_responses_guard;
       std::unordered_map <id_type, std::unordered_set<std::string>>
         _outstanding_responses;
@@ -132,7 +142,10 @@ namespace we
         {}
 
         void child_finished
-          (type::activity_t, we::workflow_response_callback const&);
+          ( type::activity_t
+          , we::workflow_response_callback const&
+          , we::eureka_response_callback const&
+          );
 
         id_type _id;
         std::unique_ptr<type::activity_t> _activity;
@@ -209,13 +222,24 @@ namespace we
 
       struct locked_parent_child_relation_type
       {
-        void started (id_type parent, id_type child);
+        void started
+          ( id_type parent
+          , id_type child
+          , boost::optional<type::eureka_id_type> const& eureka_id
+          );
         bool terminated (id_type parent, id_type child);
 
         boost::optional<id_type> parent (id_type child);
         bool contains (id_type parent) const;
 
         void apply (id_type parent, std::function<void (id_type)>) const;
+
+        template <typename Func>
+          void apply_and_remove_eureka ( type::eureka_id_type const&
+                                       , id_type const&
+                                       , boost::optional<id_type> const&
+                                       , Func
+                                       );
 
       private:
         mutable std::mutex _relation_mutex;
@@ -225,7 +249,21 @@ namespace we
           , boost::bimaps::set_of_relation<>
           > relation_type;
         relation_type _relation;
+
+        using eureka_parent_id_type =
+          std::tuple < type::eureka_id_type
+                     , id_type
+                     >;
+        using eureka_in_progress_type =
+        boost::bimaps::bimap
+          < boost::bimaps::unordered_multiset_of<eureka_parent_id_type>
+          , boost::bimaps::unordered_set_of<id_type>
+          , boost::bimaps::set_of_relation<>
+          >;
+        eureka_in_progress_type _eureka_in_progress;
       } _running_jobs;
+
+      std::unordered_set<id_type> _ignore_canceled_by_eureka;
 
       boost::strict_scoped_thread<> _extract_from_nets_thread;
       fhg::util::finally_t<std::function<void()>> _stop_extracting;

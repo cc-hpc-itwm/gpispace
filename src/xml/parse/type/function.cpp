@@ -620,6 +620,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
+            , mod.eureka_id()
             );
 
           add_ports (trans, fun.ports());
@@ -676,6 +677,7 @@ namespace xml
             , condition()
             , _properties
             , _priority
+            , multi_mod.eureka_id()
             , fun.preferences().targets()
             );
 

@@ -12,7 +12,7 @@
 #include <boost/range/adaptor/map.hpp>
 
 #include <functional>
-#include <sstream>
+#include <algorithm>
 
 namespace we
 {
@@ -203,6 +203,13 @@ namespace we
                                   , value
                                   );
               }
+            , [this, parent, id] (type::eureka_ids_type const& eureka_ids)
+              {
+                eureka_response ( *parent
+                                , id
+                                , eureka_ids
+                                );
+              }
             );
           _running_jobs.terminated (*parent, id);
         }
@@ -241,7 +248,9 @@ namespace we
 
       //! \todo Don't forget that this child actually failed and
       //! store reason.
-      if (_finalize_job_cancellation.count (*parent))
+      if (  _finalize_job_cancellation.count (*parent)
+         || _ignore_canceled_by_eureka.count (id)
+         )
       {
         canceled (id);
         return;
@@ -277,6 +286,20 @@ namespace we
 
       if (!parent)
       {
+        return;
+      }
+
+      if (_ignore_canceled_by_eureka.erase (child))
+      {
+        _nets_to_extract_from.apply
+          ( *parent
+          , [this, child] (activity_data_type& activity_data)
+          {
+            id_type const parent_id (activity_data._id);
+            _running_jobs.terminated (parent_id, child);
+          }
+          );
+
         return;
       }
 
@@ -412,6 +435,36 @@ namespace we
     }
   }
 
+  void layer::eureka_response ( id_type parent
+                              , boost::optional<id_type> eureka_calling_child
+                              , type::eureka_ids_type const& eureka_ids
+                              )
+  {
+    _nets_to_extract_from.apply
+      ( parent
+      , [this, parent, eureka_calling_child, eureka_ids]
+          (activity_data_type const& activity_data)
+        {
+          if (_running_jobs.contains (activity_data._id))
+          {
+            for (type::eureka_id_type const& eureka_id : eureka_ids)
+            {
+              _running_jobs.apply_and_remove_eureka
+                ( eureka_id
+                , parent
+                , eureka_calling_child
+                , [&] (id_type t_id)
+                  {
+                    _ignore_canceled_by_eureka.emplace (t_id);
+                    _rts_cancel (t_id);
+                  }
+                );
+            }
+          }
+        }
+      );
+  }
+
     void layer::extract_from_nets()
     try
     {
@@ -445,6 +498,13 @@ namespace we
                                             , get_response_id (description)
                                             , value
                                             );
+                        }
+                      , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
+                        {
+                          eureka_response ( activity_data._id
+                                          , boost::none
+                                          , eureka_ids
+                                          );
                         }
                       , _plugins
                       , [this, id]
@@ -481,7 +541,10 @@ namespace we
         if (activity)
         {
           const id_type child_id (_rts_id_generator());
-          _running_jobs.started (activity_data._id, child_id);
+          _running_jobs.started ( activity_data._id
+                                , child_id
+                                , activity->transition().eureka_id()
+                                );
           _rts_submit (child_id, *activity);
           was_active = true;
         }
@@ -824,20 +887,30 @@ namespace we
     void layer::activity_data_type::child_finished
       ( type::activity_t child
       , we::workflow_response_callback const& workflow_response
+      , we::eureka_response_callback const& eureka_response
       )
     {
       //! \note We wrap all input activites in a net.
       boost::get<we::type::net_type> (_activity->transition().data())
-        .inject (child, workflow_response);
+        .inject (child, workflow_response, eureka_response);
     }
 
 
     // locked_parent_child_relation_type
 
     void layer::locked_parent_child_relation_type::started
-      (id_type parent, id_type child)
+      ( id_type parent
+      , id_type child
+      , boost::optional<type::eureka_id_type> const& eureka_id
+      )
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      if (eureka_id)
+      {
+        _eureka_in_progress.insert
+          ({eureka_parent_id_type (*eureka_id, parent), child});
+      }
 
       _relation.insert (relation_type::value_type (parent, child));
     }
@@ -846,6 +919,8 @@ namespace we
       (id_type parent, id_type child)
     {
       std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      _eureka_in_progress.right.erase (child);
 
       _relation.erase (relation_type::value_type (parent, child));
 
@@ -887,5 +962,32 @@ namespace we
       {
         fun (child);
       }
+    }
+
+
+    template <typename Func>
+    void layer::locked_parent_child_relation_type::apply_and_remove_eureka
+      ( type::eureka_id_type const& eureka_id
+      , id_type const& parent
+      , boost::optional<id_type> const& eureka_caller
+      , Func fun
+      )
+    {
+      std::lock_guard<std::mutex> const lock_for_eureka (_relation_mutex);
+
+      eureka_parent_id_type const eureka_by_parent (eureka_id, parent);
+
+      for ( id_type child
+          : _eureka_in_progress.left.equal_range (eureka_by_parent)
+          | boost::adaptors::map_values
+          )
+      {
+        if (eureka_caller != child)
+        {
+          fun (child);
+        }
+      }
+
+      _eureka_in_progress.left.erase (eureka_by_parent);
     }
 }

@@ -3,10 +3,13 @@
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/wrap.hpp>
+#include <we/type/value/unwrap.hpp>
 
 #include <we/require_type.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_container.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
@@ -219,6 +222,16 @@ namespace we
       }
     }
 
+    void net_type::add_eureka ( transition_id_type transition_id
+                              , port_id_type port_id
+                              )
+    {
+      if (!_port_to_eureka.emplace (transition_id, port_id).second)
+      {
+        throw std::logic_error ("duplicate eureka");
+      }
+    }
+
     const std::unordered_map<place_id_type, place::type>&
       net_type::places() const
     {
@@ -254,6 +267,10 @@ namespace we
     net_type::port_to_response_type const& net_type::port_to_response() const
     {
       return _port_to_response;
+    }
+    net_type::port_to_eureka_type const& net_type::port_to_eureka() const
+    {
+      return _port_to_eureka;
     }
     net_type::place_to_port_type const& net_type::place_to_port() const
     {
@@ -601,6 +618,7 @@ namespace we
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
+      , we::eureka_response_callback const& eureka_response
       , gspc::we::plugin::Plugins& plugins
       , gspc::we::plugin::PutToken put_token
       )
@@ -704,7 +722,7 @@ namespace we
             );
         }
         else if (  _port_many_to_place.count (tid)
-                && _port_many_to_place.at (tid).count (p.first)
+                && _port_many_to_place.at (tid). count (p.first)
                 )
         {
           auto const& many_tokens
@@ -718,6 +736,29 @@ namespace we
                 ( _port_many_to_place.at (tid).at (p.first).first
                 , token
                 )
+              );
+          }
+        }
+        else if (  _port_to_eureka.count (tid)
+                && _port_to_eureka.at (tid) == p.first
+                )
+        {
+          auto const& ids
+            ( boost::get<std::set<pnet::type::value::value_type>>
+              (context.value ({p.second.name()}))
+            );
+
+          type::eureka_ids_type const eureka_ids
+            = pnet::type::value::unwrap<type::eureka_id_type>(ids);
+
+          if (eureka_ids.size())
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  eureka_response (eureka_ids);
+                }
+                , "inject result: sending eureka response failed"
               );
           }
         }
@@ -751,11 +792,12 @@ namespace we
 
     void net_type::inject ( activity_t const& child
                           , workflow_response_callback workflow_response
+                          , eureka_response_callback eureka_response
                           )
     {
       for (auto const& token_on_port : child.output())
       {
-        if ( _port_to_place.count (*child.transition_id())
+        if (  _port_to_place.count (*child.transition_id())
            && _port_to_place.at (*child.transition_id())
             . count (token_on_port.second)
            )
@@ -780,6 +822,35 @@ namespace we
                       . at (token_on_port.second).first
                       , token
                       );
+          }
+        }
+        else if (  _port_to_eureka.count (*child.transition_id())
+                && ( _port_to_eureka.at (*child.transition_id())
+                     == token_on_port.second
+                   )
+                )
+        {
+          std::set<type::eureka_id_type> const eureka_ids
+            ([&token_on_port]
+             {
+              auto const& ids
+              ( boost::get<std::set<pnet::type::value::value_type>>
+                 (token_on_port.first)
+              );
+
+              return pnet::type::value::unwrap<type::eureka_id_type>(ids);
+             }()
+            );
+
+          if (eureka_ids.size())
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  eureka_response (eureka_ids);
+                }
+                , "inject result: sending eureka response failed"
+              );
           }
         }
         else
@@ -817,6 +888,14 @@ namespace we
       }
     }
 
+    void net_type::unexpected_eureka (eureka_ids_type const& ids)
+    {
+      throw std::logic_error
+        (str ( boost::format ("Unexpected call to eureka: %1%")
+             % fhg::util::print_container ("{", ", ", "}", ids)
+             )
+        );
+    }
 
     // cross_type
 

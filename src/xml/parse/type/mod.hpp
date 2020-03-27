@@ -4,6 +4,7 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type/eureka.hpp>
 
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -37,6 +38,8 @@ namespace xml
                     , const std::list<std::string>& ldflags
                     , const std::list<std::string>& cxxflags
                     , const boost::optional<bool> &pass_context
+                    , const boost::optional<we::type::eureka_id_type> &eureka_id
+                      = boost::none
                     );
 
         const std::string& name() const;
@@ -53,6 +56,7 @@ namespace xml
         const std::list<std::string>& ldflags() const;
         const std::list<std::string>& cxxflags() const;
         bool pass_context () const;
+        const boost::optional<we::type::eureka_id_type>& eureka_id() const;
 
         bool operator== (const module_type&) const;
 
@@ -72,6 +76,7 @@ namespace xml
         std::list<std::string> _ldflags;
         std::list<std::string> _cxxflags;
         boost::optional<bool> _pass_context;
+        boost::optional<we::type::eureka_id_type> _eureka_id;
       };
 
       std::size_t hash_value (const module_type&);

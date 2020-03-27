@@ -11,6 +11,7 @@
 #include <we/type/property.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/value.hpp>
+#include <we/type/eureka.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/serialization/list.hpp>
@@ -58,7 +59,10 @@ namespace we
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
-                   , const std::list<we::type::preference_t>& preferences
+                   , boost::optional<eureka_id_type> const&
+                     _eureka_id = boost::none
+                   , const std::list<we::type::preference_t>&
+                     preferences = {}
                    )
         try
           :  name_  (name)
@@ -76,6 +80,7 @@ namespace we
           ,  _requirements()
           ,  _preferences  (preferences)
           ,  _priority  (priority)
+          ,  eureka_id_ (_eureka_id)
       {
         if (preferences.size() && data_.type() != typeid (multi_module_call_t))
         {
@@ -89,16 +94,6 @@ namespace we
           (std::runtime_error ("Failed to create transition '" + name + "'"));
       }
 
-      template <typename Type>
-      transition_t ( const std::string& name
-                   , Type const& typ
-                   , boost::optional<expression_t> const& _condition
-                   , const we::type::property::type& prop
-                   , we::priority_type priority
-                   )
-        : transition_t (name, typ, _condition, prop, priority, {})
-      { }
-
       const std::string& name() const;
 
       const data_type& data() const;
@@ -109,6 +104,7 @@ namespace we
       boost::optional<const module_call_t&> module_call() const;
 
       boost::optional<expression_t> const& condition() const;
+      boost::optional<eureka_id_type> const& eureka_id() const;
 
       we::port_id_type add_port (port_t const&);
 
@@ -150,6 +146,8 @@ namespace we
       std::list<we::type::preference_t> _preferences;
       we::priority_type _priority;
 
+      boost::optional<eureka_id_type> eureka_id_;
+
       friend class boost::serialization::access;
       template <typename Archive>
       void serialize(Archive & ar, const unsigned int)
@@ -165,6 +163,7 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP(_requirements);
         ar & BOOST_SERIALIZATION_NVP(_preferences);
         ar & BOOST_SERIALIZATION_NVP(_priority);
+        ar & BOOST_SERIALIZATION_NVP(eureka_id_);
       }
     };
   }

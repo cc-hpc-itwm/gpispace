@@ -10,6 +10,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
@@ -261,6 +262,33 @@ namespace xml
                    % connection.port()
                    % transition.name()
                    % connection.position_of_definition()
+                   )
+        {}
+
+      eureka_port_type_mismatch::eureka_port_type_mismatch
+       ( type::transition_type const& transition
+       , const type::eureka_type& eureka
+       )
+         : generic ( boost::format ( "connect-eureka output port %1%"
+                                     " is not of type \"set\""
+                                     " in transition %2% at %3%"
+                                   )
+                   % eureka.port()
+                   % transition.name()
+                   % eureka.position_of_definition()
+                   )
+        {}
+
+      connect_eureka_to_nonexistent_out_port::connect_eureka_to_nonexistent_out_port
+       ( type::transition_type const& transition
+       , const type::eureka_type& eureka
+       )
+         : generic ( boost::format ( "connect-eureka to non-existent output port %1%"
+                                     " in transition %2% at %3%"
+                                   )
+                   % eureka.port()
+                   % transition.name()
+                   % eureka.position_of_definition()
                    )
         {}
 
@@ -552,6 +580,20 @@ namespace xml
             )
       {}
 
+      duplicate_eureka::duplicate_eureka
+        ( const type::eureka_type& early
+        , const type::eureka_type& late
+        )
+          : generic_duplicate<type::eureka_type>
+            ( early
+            , late
+            , boost::format ( "duplicate connect-eureka"
+                              " for port: %1%"
+                            )
+            % early.port()
+            )
+      {}
+
       duplicate_memory_buffer::duplicate_memory_buffer
         ( type::memory_buffer_type const& early
         , type::memory_buffer_type const& late
@@ -629,10 +671,20 @@ namespace xml
         , const util::position_type& position
         )
           : generic ( boost::format ( "duplicate module '%1%' for target '%2%'"
-                                      "at %3%"
+                                      " at %3%"
                                     )
                     % module
                     % target
+                    % position
+                    )
+      {}
+
+      mismatching_eureka_for_module::mismatching_eureka_for_module
+        (const std::string& module, const util::position_type& position)
+          : generic ( boost::format ( "mismatching eureka group for module '%1%'"
+                                      " in multi-module transition at %2%"
+                                    )
+                    % module
                     % position
                     )
       {}

@@ -34,6 +34,7 @@ namespace xml
         , const std::list<std::string>& ldflags
         , const std::list<std::string>& cxxflags
         , const boost::optional<bool> &pass_context
+        , const boost::optional<we::type::eureka_id_type>& eureka_id
         )
         : with_position_of_definition (pod)
         , _name (name)
@@ -49,6 +50,7 @@ namespace xml
         , _ldflags (ldflags)
         , _cxxflags (cxxflags)
         , _pass_context (pass_context)
+        , _eureka_id (eureka_id)
       {
         fhg_assert (!(_port_return && _memory_buffer_return));
 
@@ -113,6 +115,10 @@ namespace xml
       const boost::optional<std::string>& module_type::target() const
       {
         return _target;
+      }
+      const boost::optional<we::type::eureka_id_type>& module_type::eureka_id() const
+      {
+        return _eureka_id;
       }
 
       bool module_type::operator == (const module_type& other) const
