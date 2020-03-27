@@ -422,27 +422,27 @@ std::string GenericDaemon::gen_id()
 
 void GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
 {
-    try
-    {
-      const we::type::activity_t act (pJob->activity());
-      workflowEngine()->submit (job_id, act);
+  try
+  {
+    const we::type::activity_t act (pJob->activity());
+    workflowEngine()->submit (job_id, act);
 
-      // Should set the workflow_id here, or send it together with the activity
-      pJob->Dispatch();
+    // Should set the workflow_id here, or send it together with the activity
+    pJob->Dispatch();
 
-      emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
-    }
-    catch (...)
-    {
-      fhg::util::current_exception_printer const error (": ");
-      _log_emitter.emit ( "Exception occurred: " + error.string()
-                        + ". Failed to submit the job " + job_id
-                        + " to the workflow engine!"
-                        , fhg::logging::legacy::category_level_error
-                        );
+    emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
+  }
+  catch (...)
+  {
+    fhg::util::current_exception_printer const error (": ");
+    _log_emitter.emit ( "Exception occurred: " + error.string()
+                      + ". Failed to submit the job " + job_id
+                      + " to the workflow engine!"
+                      , fhg::logging::legacy::category_level_error
+                      );
 
-      failed (job_id, error.string());
-    }
+    failed (job_id, error.string());
+  }
 }
 
 void GenericDaemon::handleSubmitJobEvent
@@ -640,21 +640,21 @@ try
   }
   else
   {
-  auto const num_required_workers (activity.get_schedule_data().num_worker());
+    auto const num_required_workers (activity.get_schedule_data().num_worker());
 
-  if ( num_required_workers
-     && *num_required_workers > 1
-     && !activity.preferences().empty()
-     )
-  {
-    throw std::runtime_error
-      ("Not allowed to use coallocation for activities with multiple module implementations!");
-  }
+    if ( num_required_workers
+       && *num_required_workers > 1
+       && !activity.preferences().empty()
+       )
+    {
+      throw std::runtime_error
+        ("Not allowed to use coallocation for activities with multiple module implementations!");
+    }
 
-  addJob (job_id, activity, job_source_wfe(), job_handler_worker());
+    addJob (job_id, activity, job_source_wfe(), job_handler_worker());
 
-  _scheduler.enqueueJob (job_id);
-  request_scheduling();
+    _scheduler.enqueueJob (job_id);
+    request_scheduling();
   }
 }
 catch (...)
