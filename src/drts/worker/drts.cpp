@@ -87,12 +87,12 @@ namespace
       , _activity (activity)
     {}
 
-    void operator() (we::type::net_type&) const
+    void operator() (we::type::net_type const&) const
     {
       throw std::logic_error ("wfe_exec_context (net)");
     }
 
-    void operator() (we::type::module_call_t& mod) const
+    void operator() (we::type::module_call_t const& mod) const
     {
       try
       {
@@ -119,7 +119,7 @@ namespace
       }
     }
 
-    void operator() (we::type::multi_module_call_t& multi_mod) const
+    void operator() (we::type::multi_module_call_t const& multi_mod) const
     {
       if (!task.target_impl)
       {
@@ -147,7 +147,7 @@ namespace
       return (*this) (mod_it->second);
     }
 
-    void operator() (we::type::expression_t&) const
+    void operator() (we::type::expression_t const&) const
     {
       throw std::logic_error ("wfe_exec_context (expression)");
     }
