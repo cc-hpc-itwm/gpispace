@@ -78,46 +78,18 @@ namespace
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
       , wfe_task_t& target
-      , std::mt19937& engine
       , we::type::activity_t& activity
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
       , _shared_memory (shared_memory)
       , task (target)
-      , _engine (engine)
       , _activity (activity)
     {}
 
-    void operator() (we::type::net_type& net) const
+    void operator() (we::type::net_type&) const
     {
-        while ( boost::optional<we::type::activity_t> sub
-              = net
-              . fire_expressions_and_extract_activity_random
-                  ( _engine
-                  , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
-                    {
-                      throw std::logic_error ("got workflow_response: unsupported in worker");
-                    }
-                  )
-              )
-        {
-          boost::apply_visitor ( wfe_exec_context ( loader
-                                                  , _virtual_memory_api
-                                                  , _shared_memory
-                                                  , task
-                                                  , _engine
-                                                  , *sub
-                                                  )
-                               , sub->transition().data()
-                               );
-          net.inject (*sub);
-
-          if (task.state == wfe_task_t::CANCELED)
-          {
-            break;
-          }
-        }
+      throw std::logic_error ("wfe_exec_context (net)");
     }
 
     void operator() (we::type::module_call_t& mod) const
@@ -185,7 +157,6 @@ namespace
     gpi::pc::client::api_t /*const*/* _virtual_memory_api;
     gspc::scoped_allocation /*const*/* _shared_memory;
     wfe_task_t& task;
-    std::mt19937& _engine;
     we::type::activity_t& _activity;
   };
 }
@@ -558,9 +529,6 @@ void DRTSImpl::emit_gantt
 void DRTSImpl::job_execution_thread()
 try
 {
-  //! \todo let user supply a seed
-  std::mt19937 engine;
-
   bool worker_was_tainted (false);
 
   for (;;)
@@ -635,7 +603,6 @@ try
                                                 , _virtual_memory_api
                                                 , _shared_memory
                                                 , task
-                                                , engine
                                                 , task.activity
                                                 )
                              , task.activity.transition().data()
