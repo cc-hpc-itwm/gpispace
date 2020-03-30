@@ -7,7 +7,6 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/read_bool.hpp>
-#include <fhg/util/starts_with.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
@@ -44,132 +43,12 @@ namespace we
       , _stop_extracting ([this] { _nets_to_extract_from.interrupt(); })
     {}
 
-    namespace
-    {
-      std::string wrapped_activity_prefix()
-      {
-        return "_wrap_";
-      }
-
-      std::string wrapped_name (we::type::port_t const& port)
-      {
-        return (port.is_output() ? "_out_" : "_in_") + port.name();
-      }
-
-      type::activity_t wrap (type::activity_t const& activity)
-      {
-        we::type::net_type net;
-
-        we::transition_id_type const transition_id
-          (net.add_transition (activity.transition()));
-
-        fhg_assert (activity.transition().ports_tunnel().size() == 0);
-
-        std::unordered_map<std::string, we::place_id_type> place_ids;
-
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity.transition().ports_input()
-            )
-        {
-          we::place_id_type const place_id
-            (net.add_place (place::type ( wrapped_name (p.second)
-                                        , p.second.signature()
-                                        , boost::none
-                                        )
-                           )
-            );
-
-          net.add_connection ( we::edge::PT
-                             , transition_id
-                             , place_id
-                             , p.first
-                             , we::type::property::type()
-                             );
-
-          place_ids.emplace (wrapped_name (p.second), place_id);
-        }
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity.transition().ports_output()
-            )
-        {
-          we::place_id_type const place_id
-            (net.add_place (place::type ( wrapped_name (p.second)
-                                        , p.second.signature()
-                                        , boost::none
-                                        )
-                           )
-            );
-
-          net.add_connection ( we::edge::TP
-                             , transition_id
-                             , place_id
-                             , p.first
-                             , we::type::property::type()
-                             );
-
-          place_ids.emplace (wrapped_name (p.second), place_id);
-        }
-
-        for (const type::activity_t::input_t::value_type& top : activity.input())
-        {
-          we::type::port_t const& port
-            (activity.transition().ports_input().at (top.second));
-
-          net.put_value
-            (place_ids.find (wrapped_name (port))->second, top.first);
-        }
-
-        //! \todo copy output too
-
-        we::type::transition_t const
-          transition_net_wrapper ( wrapped_activity_prefix()
-                                 + activity.transition().name()
-                                 , net
-                                 , boost::none
-                                 , we::type::property::type()
-                                 , we::priority_type()
-                                 );
-
-        return type::activity_t
-          (transition_net_wrapper, activity.transition_id());
-      }
-
-      type::activity_t unwrap (type::activity_t const& activity)
-      {
-        we::type::net_type const& net (*activity.transition().net());
-
-        type::activity_t activity_inner
-          (net.transitions().begin()->second, activity.transition_id());
-
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity_inner.transition().ports_output()
-            )
-        {
-            we::place_id_type const place_id
-              ( net.port_to_place().at (net.transitions().begin()->first)
-              . at (p.first).first
-              );
-
-            for ( const pnet::type::value::value_type& token
-                : net.get_token (place_id) | boost::adaptors::map_values
-                )
-            {
-              activity_inner.add_output (p.first, token);
-            }
-        }
-
-        //! \todo copy input too
-
-        return activity_inner;
-      }
-    }
-
     void layer::submit (id_type id, type::activity_t act)
     {
       _nets_to_extract_from.put
         ( activity_data_type ( id
                              , fhg::util::cxx14::make_unique<type::activity_t>
-                                 (act.transition().net() ? act : wrap (act))
+                                 (act.wrap())
                              )
         , true
         );
@@ -569,14 +448,7 @@ namespace we
         else
         {
           rts_finished_and_forget
-            ( activity_data._id
-            , fhg::util::starts_with
-              ( wrapped_activity_prefix()
-              , activity_data._activity->transition().name()
-              )
-            ? unwrap (*activity_data._activity)
-            : *activity_data._activity
-            );
+            (activity_data._id, activity_data._activity->unwrap());
         }
       }
     }

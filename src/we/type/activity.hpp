@@ -74,6 +74,9 @@ namespace we
                   , gspc::we::plugin::PutToken
                   );
 
+        activity_t wrap() const;
+        activity_t unwrap() const;
+
         const input_t& input() const;
         void add_input
           ( we::port_id_type const&

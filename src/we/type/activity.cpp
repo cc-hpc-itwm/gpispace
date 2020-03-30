@@ -3,6 +3,9 @@
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 
+#include <fhg/assert.hpp>
+#include <fhg/util/starts_with.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/format.hpp>
@@ -13,6 +16,8 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <unordered_map>
 #include <utility>
 
 namespace we
@@ -313,6 +318,125 @@ namespace we
     std::list<we::type::preference_t> const activity_t::preferences() const
     {
       return _transition.preferences();
+    }
+
+    namespace
+    {
+      std::string wrapped_activity_prefix()
+      {
+        return "_wrap_";
+      }
+
+      std::string wrapped_name (port_t const& port)
+      {
+        return (port.is_output() ? "_out_" : "_in_") + port.name();
+      }
+    }
+
+    activity_t activity_t::wrap() const
+    {
+      if (_transition.net())
+      {
+        return *this;
+      }
+
+      we::type::net_type net;
+
+      auto const transition_id (net.add_transition (_transition));
+
+      fhg_assert (_transition.ports_tunnel().size() == 0);
+
+      std::unordered_map<std::string, we::place_id_type> place_ids;
+
+      for (auto const& p : _transition.ports_input())
+      {
+        auto const place_id
+          (net.add_place (place::type ( wrapped_name (p.second)
+                                      , p.second.signature()
+                                      , boost::none
+                                      )
+                         )
+          );
+
+        net.add_connection ( we::edge::PT
+                           , transition_id
+                           , place_id
+                           , p.first
+                           , we::type::property::type()
+                           );
+
+        place_ids.emplace (wrapped_name (p.second), place_id);
+      }
+
+      for (auto const& p : _transition.ports_output())
+      {
+        auto const place_id
+          (net.add_place (place::type ( wrapped_name (p.second)
+                                      , p.second.signature()
+                                      , boost::none
+                                      )
+                         )
+          );
+
+        net.add_connection ( we::edge::TP
+                           , transition_id
+                           , place_id
+                           , p.first
+                           , we::type::property::type()
+                           );
+
+        place_ids.emplace (wrapped_name (p.second), place_id);
+      }
+
+      for (auto const& top : _input)
+      {
+        auto const& port (_transition.ports_input().at (top.second));
+
+        net.put_value (place_ids.find (wrapped_name (port))->second, top.first);
+      }
+
+      //! \todo copy output too
+
+      we::type::transition_t const
+        transition_net_wrapper ( wrapped_activity_prefix() + _transition.name()
+                               , net
+                               , boost::none
+                               , we::type::property::type()
+                               , we::priority_type()
+                               );
+
+      return activity_t {transition_net_wrapper, _transition_id};
+    }
+
+    activity_t activity_t::unwrap() const
+    {
+      if (!fhg::util::starts_with (wrapped_activity_prefix(), _transition.name()))
+      {
+        return *this;
+      }
+
+      auto const& net (*_transition.net());
+      auto const& transition_inner (net.transitions().begin()->second);
+      auto const& transition_id_inner (net.transitions().begin()->first);
+
+      type::activity_t activity_inner (transition_inner, _transition_id);
+
+      for (auto const& p : transition_inner.ports_output())
+      {
+        auto const place_id
+          (net.port_to_place().at (transition_id_inner).at (p.first).first);
+
+        for ( auto const& token
+            : net.get_token (place_id) | boost::adaptors::map_values
+            )
+        {
+          activity_inner.add_output (p.first, token);
+        }
+      }
+
+      //! \todo copy input too
+
+      return activity_inner;
     }
   }
 }
