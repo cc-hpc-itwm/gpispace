@@ -44,16 +44,6 @@ fhg_add_runtime_executable (NAME pnetc
             Boost::system
 )
 
-fhg_add_runtime_executable (NAME pnetv
-  SOURCES "pnetv.cpp"
-  LIBRARIES fhg-revision
-            pnetv-jpna
-            pnetv-jpn
-            pnet
-            Util::Generic
-            Boost::program_options
-)
-
 fhg_add_runtime_executable (NAME pnetd
   SOURCES "pnetd.cpp"
   LIBRARIES fhg-revision
