@@ -6,7 +6,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetc"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetd"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"

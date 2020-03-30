@@ -73,11 +73,6 @@ namespace gspc
       return wait_and_extract (submit (workflow, values_on_ports));
     }
 
-    void step (class workflow& workflow, unsigned long number_of_steps);
-    void break_after ( class workflow& workflow
-                     , std::vector<std::string> transition_names
-                     );
-
     void put_token ( job_id_t
                    , std::string place_name
                    , pnet::type::value::value_type

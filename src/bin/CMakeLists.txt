@@ -44,14 +44,6 @@ fhg_add_runtime_executable (NAME pnetc
             Boost::system
 )
 
-fhg_add_runtime_executable (NAME pnetd
-  SOURCES "pnetd.cpp"
-  LIBRARIES fhg-revision
-            pnet
-            gspc
-            Boost::program_options
-)
-
 fhg_add_runtime_executable (NAME orchestrator
   SOURCES "orchestrator.cpp"
   LIBRARIES sdpa
