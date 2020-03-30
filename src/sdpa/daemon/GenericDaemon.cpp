@@ -21,6 +21,7 @@
 #include <fhg/util/macros.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/fallthrough.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
@@ -429,8 +430,6 @@ void GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
 
     // Should set the workflow_id here, or send it together with the activity
     pJob->Dispatch();
-
-    emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
   }
   catch (...)
   {
@@ -483,6 +482,8 @@ void GenericDaemon::handleSubmitJobEvent
   if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
     workflow_engine_submit (job_id, pJob);
+
+    emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
   }
   else {
     _scheduler.enqueueJob(job_id);
@@ -714,7 +715,17 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   job_finished (pJob, result);
 
+  //! \note #817: gantt does not support nesting
+  if ( fhg::util::visit<bool>
+         ( pJob->source()
+         , [] (job_source_wfe const&) { return false; }
+         , [] (job_source_master const&) { return true; }
+         , [] (job_source_client const&) { return true; }
+         )
+     )
+  {
   emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
+  }
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
