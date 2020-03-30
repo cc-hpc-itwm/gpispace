@@ -2,6 +2,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/optional/optional_io.hpp>
 
+#include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/net.hpp>
 #include <we/type/signature.hpp>
@@ -147,10 +148,12 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_no_eureka_responses)
   eureka_net.put_tokens (tokens);
 
   boost::optional<we::type::eureka_id_type> eureka_received;
+  std::mt19937 random_engine
+    (fhg::util::testing::detail::GLOBAL_random_engine()());
 
   BOOST_REQUIRE
     ( !eureka_net.net.fire_expressions_and_extract_activity_random
-        ( fhg::util::testing::detail::GLOBAL_random_engine()
+        ( random_engine
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
              )
@@ -198,10 +201,12 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
   eureka_net.put_tokens (tokens);
 
   boost::optional<we::type::eureka_id_type> eureka_received;
+  std::mt19937 random_engine
+    (fhg::util::testing::detail::GLOBAL_random_engine()());
 
   BOOST_REQUIRE
     ( !eureka_net.net.fire_expressions_and_extract_activity_random
-        ( fhg::util::testing::detail::GLOBAL_random_engine()
+        ( random_engine
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
              )
@@ -258,10 +263,12 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_eureka_responses)
   eureka_net.put_tokens (tokens);
 
   size_t num_eureka_received = 0;
+  std::mt19937 random_engine
+    (fhg::util::testing::detail::GLOBAL_random_engine()());
 
   BOOST_REQUIRE
     ( !eureka_net.net.fire_expressions_and_extract_activity_random
-        ( fhg::util::testing::detail::GLOBAL_random_engine()
+        ( random_engine
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
              )

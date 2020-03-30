@@ -1,5 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
+#include <we/type/activity.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>

@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 
   we::type::activity_t act (tnet, boost::none);
 
-  boost::mt19937 engine;
+  std::mt19937 engine;
 
   if (act.transition().net())
   {

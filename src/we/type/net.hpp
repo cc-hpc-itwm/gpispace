@@ -3,11 +3,11 @@
 #include <we/type/net.fwd.hpp>
 
 #include <we/plugin/Plugins.hpp>
-#include <we/type/activity.hpp>
+#include <we/type/activity.fwd.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-#include <we/type/transition.fwd.hpp>
+#include <we/type/transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
@@ -15,13 +15,13 @@
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/random.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
 
 #include <forward_list>
 #include <functional>
+#include <random>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
@@ -108,65 +108,21 @@ namespace we
 
       token_by_id_type const& get_token (place_id_type) const;
 
-      template<typename Engine>
       boost::optional<we::type::activity_t>
-      fire_expressions_and_extract_activity_random
-        ( Engine& engine
-        , we::workflow_response_callback const& workflow_response
-        , we::eureka_response_callback const& eureka_response
-        , gspc::we::plugin::Plugins& plugins
-        , gspc::we::plugin::PutToken put_token
-        )
-      {
-        while (!_enabled.empty())
-        {
-          std::unordered_set<we::transition_id_type> const& transition_ids
-            (_enabled.begin()->second);
-          boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
-          transition_id_type const transition_id
-            (*std::next (transition_ids.begin(), random (engine)));
-          we::type::transition_t const& transition (_tmap.at (transition_id));
-
-          if (transition.expression())
-          {
-            fire_expression ( transition_id
-                            , transition
-                            , workflow_response
-                            , eureka_response
-                            , plugins
-                            , put_token
-                            );
-          }
-          else
-          {
-            return extract_activity (transition_id, transition);
-          }
-        }
-
-        return boost::none;
-      }
-
-      template<typename Engine>
-        boost::optional<we::type::activity_t>
-          fire_expressions_and_extract_activity_random
-            ( Engine& engine
-            , we::workflow_response_callback const& workflow_response
-            , we::eureka_response_callback const& eureka_response
-              = &we::type::net_type::unexpected_eureka
-            )
-      {
-        gspc::we::plugin::Plugins plugins;
-        return fire_expressions_and_extract_activity_random
-          ( engine
-          , workflow_response
-          , eureka_response
-          , plugins
-          , [] (std::string, pnet::type::value::value_type)
-            {
-              throw std::logic_error ("Unexpected call to put_token.");
-            }
+        fire_expressions_and_extract_activity_random
+          ( std::mt19937&
+          , we::workflow_response_callback const&
+          , we::eureka_response_callback const&
+          , gspc::we::plugin::Plugins&
+          , gspc::we::plugin::PutToken
           );
-      }
+
+      boost::optional<we::type::activity_t>
+        fire_expressions_and_extract_activity_random
+          ( std::mt19937&
+          , we::workflow_response_callback const&
+          , we::eureka_response_callback const& = &net_type::unexpected_eureka
+          );
 
       void inject ( activity_t const&
                   , workflow_response_callback

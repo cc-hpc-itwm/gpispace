@@ -1,4 +1,5 @@
 #include <we/type/net.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
@@ -612,6 +613,64 @@ namespace we
         expr::eval::context& _context;
         we::type::transition_t const& _transition;
       };
+    }
+
+    boost::optional<we::type::activity_t>
+      net_type::fire_expressions_and_extract_activity_random
+        ( std::mt19937& engine
+        , we::workflow_response_callback const& workflow_response
+        , we::eureka_response_callback const& eureka_response
+        , gspc::we::plugin::Plugins& plugins
+        , gspc::we::plugin::PutToken put_token
+        )
+    {
+      while (!_enabled.empty())
+      {
+        std::unordered_set<we::transition_id_type> const& transition_ids
+          (_enabled.begin()->second);
+        std::uniform_int_distribution<std::size_t> random
+          (0, transition_ids.size() - 1);
+        transition_id_type const transition_id
+          (*std::next (transition_ids.begin(), random (engine)));
+        we::type::transition_t const& transition (_tmap.at (transition_id));
+
+        if (transition.expression())
+        {
+          fire_expression ( transition_id
+                          , transition
+                          , workflow_response
+                          , eureka_response
+                          , plugins
+                          , put_token
+                          );
+        }
+        else
+        {
+          return extract_activity (transition_id, transition);
+        }
+      }
+
+      return boost::none;
+    }
+
+    boost::optional<we::type::activity_t>
+      net_type::fire_expressions_and_extract_activity_random
+        ( std::mt19937& engine
+        , we::workflow_response_callback const& workflow_response
+        , we::eureka_response_callback const& eureka_response
+        )
+    {
+      gspc::we::plugin::Plugins plugins;
+      return fire_expressions_and_extract_activity_random
+        ( engine
+        , workflow_response
+        , eureka_response
+        , plugins
+        , [] (std::string, pnet::type::value::value_type)
+          {
+            throw std::logic_error ("Unexpected call to put_token.");
+          }
+        );
     }
 
     void net_type::fire_expression
