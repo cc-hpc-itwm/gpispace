@@ -19,6 +19,7 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+#include <utility>
 
 namespace we
 {
@@ -95,7 +96,7 @@ namespace we
           //! \todo is the conditional neccessary? isn't is ensured already?
           if (_transition.ports_input().at (port_id).associated_place())
           {
-            boost::get<we::type::net_type>(_transition.data()).put_value
+            _transition.mutable_net().put_value
               ( *_transition.ports_input().at (port_id).associated_place()
               , value
               );
@@ -112,9 +113,46 @@ namespace we
         return _transition;
       }
 
-      we::type::transition_t& activity_t::transition()
+      void activity_t::set_wait_for_output()
       {
-        return _transition;
+        return _transition.set_property ({"drts", "wait_for_output"}, true);;
+      }
+      void activity_t::put_token
+        (std::string place_name, pnet::type::value::value_type const& token)
+      {
+        return _transition.mutable_net()
+          . put_token (std::move (place_name), token)
+          ;
+      }
+      void activity_t::inject ( activity_t const& result
+                              , workflow_response_callback workflow_response
+                              , eureka_response_callback eureka_response
+                              )
+      {
+        return _transition.mutable_net()
+          . inject ( result
+                   , std::move (workflow_response)
+                   , std::move (eureka_response)
+                   );
+      }
+      boost::optional<activity_t>
+        activity_t::extract
+          ( std::mt19937& random_engine
+          , workflow_response_callback const& workflow_response
+          , eureka_response_callback const& eureka_response
+          , gspc::we::plugin::Plugins& plugins
+          , gspc::we::plugin::PutToken put_token
+          )
+      {
+        return _transition.mutable_net()
+          . fire_expressions_and_extract_activity_random
+            ( random_engine
+            , workflow_response
+            , eureka_response
+            , plugins
+            , std::move (put_token)
+            )
+          ;
       }
 
       const activity_t::input_t& activity_t::input() const
@@ -169,8 +207,13 @@ namespace we
         }
       }
 
-      bool activity_t::output_missing() const
+      bool activity_t::wait_for_output() const
       {
+        if (!_transition.prop().is_true ({"drts", "wait_for_output"}))
+        {
+          return false;
+        }
+
         output_t const out (output());
 
         if (out.size() < _transition.ports_output().size())

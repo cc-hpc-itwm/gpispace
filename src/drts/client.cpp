@@ -42,7 +42,7 @@ namespace gspc
 
   void workflow::set_wait_for_output()
   {
-    _->_activity.transition().set_property ({"drts", "wait_for_output"}, true);
+    _->_activity.set_wait_for_output();
   }
   std::string workflow::to_string() const
   {

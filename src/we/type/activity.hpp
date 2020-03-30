@@ -7,8 +7,10 @@
 #include <we/type/id.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
+#include <we/plugin/Plugins.hpp>
 
 #include <we/workflow_response.hpp>
+#include <we/eureka_response.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
@@ -25,6 +27,8 @@
 #include <vector>
 
 #include <iosfwd>
+#include <random>
+#include <string>
 
 namespace we
 {
@@ -54,7 +58,21 @@ namespace we
         std::string to_string() const;
 
         const we::type::transition_t& transition() const;
-        we::type::transition_t& transition();
+
+        void set_wait_for_output();
+        void put_token
+          (std::string place_name, pnet::type::value::value_type const&);
+        void inject ( activity_t const&
+                    , workflow_response_callback
+                    , eureka_response_callback
+                    );
+        boost::optional<activity_t>
+          extract ( std::mt19937&
+                  , workflow_response_callback const&
+                  , eureka_response_callback const&
+                  , gspc::we::plugin::Plugins&
+                  , gspc::we::plugin::PutToken
+                  );
 
         const input_t& input() const;
         void add_input
@@ -69,7 +87,7 @@ namespace we
           );
         void add_output (expr::eval::context const&);
 
-        bool output_missing() const;
+        bool wait_for_output() const;
 
         boost::optional<we::transition_id_type> const&
           transition_id() const;

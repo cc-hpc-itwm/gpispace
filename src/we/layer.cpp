@@ -380,9 +380,7 @@ namespace we
         , [this, put_token_id, place_name, value]
           (activity_data_type& activity_data)
         {
-          boost::get<we::type::net_type>
-            (activity_data._activity->transition().data())
-            .put_token (place_name, value);
+          activity_data._activity->put_token (place_name, value);
 
           _rts_token_put (put_token_id, boost::none);
         }
@@ -406,9 +404,8 @@ namespace we
       , [workflow_response_id, place_name, value]
           (activity_data_type& activity_data)
         {
-          boost::get<we::type::net_type>
-            (activity_data._activity->transition().data())
-            .put_token ( place_name
+           activity_data._activity->
+             put_token ( place_name
                        , make_response_description
                            (workflow_response_id, value)
                        );
@@ -486,9 +483,7 @@ namespace we
             ( [&]
               {
                 //! \note We wrap all input activites in a net.
-                activity = boost::get<we::type::net_type>
-                  (activity_data._activity->transition().data())
-                  . fire_expressions_and_extract_activity_random
+                activity = activity_data._activity->extract
                       ( _random_extraction_engine
                       , [this, &activity_data] ( pnet::type::value::value_type const& description
                                                , pnet::type::value::value_type const& value
@@ -517,10 +512,7 @@ namespace we
                             , [place_name, value]
                                 (activity_data_type& ad)
                               {
-                                boost::get<we::type::net_type>
-                                  (ad._activity->transition().data())
-                                  .put_token (place_name, value)
-                                  ;
+                                ad._activity->put_token (place_name, value);
                               }
                             );
                         }
@@ -550,10 +542,7 @@ namespace we
         }
 
         if (  _running_jobs.contains (activity_data._id)
-           || ( activity_data._activity->transition().prop()
-              . is_true ({"drts", "wait_for_output"})
-              && activity_data._activity->output_missing()
-              )
+           || activity_data._activity->wait_for_output()
            )
         {
           id_type const id (activity_data._id);
@@ -891,8 +880,7 @@ namespace we
       )
     {
       //! \note We wrap all input activites in a net.
-      boost::get<we::type::net_type> (_activity->transition().data())
-        .inject (child, workflow_response, eureka_response);
+      _activity->inject (child, workflow_response, eureka_response);
     }
 
 
