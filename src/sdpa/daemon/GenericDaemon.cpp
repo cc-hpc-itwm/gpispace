@@ -442,7 +442,9 @@ bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
                       , fhg::logging::legacy::category_level_error
                       );
 
-    failed (job_id, error.string());
+    //! \note: was failed (job_id, error.string()) but wanted to skip
+    //! the emission of the gantt
+    job_failed (pJob, error.string());
 
     return false;
   }
