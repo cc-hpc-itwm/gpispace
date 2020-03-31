@@ -421,7 +421,7 @@ std::string GenericDaemon::gen_id()
       return _log_emitter;
     }
 
-void GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
+bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
 {
   try
   {
@@ -430,6 +430,8 @@ void GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
 
     // Should set the workflow_id here, or send it together with the activity
     pJob->Dispatch();
+
+    return true;
   }
   catch (...)
   {
@@ -441,6 +443,8 @@ void GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
                       );
 
     failed (job_id, error.string());
+
+    return false;
   }
 }
 
@@ -481,9 +485,10 @@ void GenericDaemon::handleSubmitJobEvent
   // if it comes from outside and the agent has an WFE, submit it to it
   if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
-    workflow_engine_submit (job_id, pJob);
-
-    emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
+    if (workflow_engine_submit (job_id, pJob))
+    {
+      emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
+    }
   }
   else {
     _scheduler.enqueueJob(job_id);

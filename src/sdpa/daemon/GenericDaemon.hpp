@@ -172,7 +172,7 @@ namespace sdpa {
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
 
-      void workflow_engine_submit (job_id_t, Job*);
+      bool workflow_engine_submit (job_id_t, Job*);
 
       void handle_job_termination (Job*);
       virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, events::JobFailedEvent const*) override;
