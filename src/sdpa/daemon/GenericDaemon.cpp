@@ -21,6 +21,7 @@
 #include <fhg/util/macros.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/fallthrough.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
@@ -420,6 +421,35 @@ std::string GenericDaemon::gen_id()
       return _log_emitter;
     }
 
+bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
+{
+  try
+  {
+    const we::type::activity_t act (pJob->activity());
+    workflowEngine()->submit (job_id, act);
+
+    // Should set the workflow_id here, or send it together with the activity
+    pJob->Dispatch();
+
+    return true;
+  }
+  catch (...)
+  {
+    fhg::util::current_exception_printer const error (": ");
+    _log_emitter.emit ( "Exception occurred: " + error.string()
+                      + ". Failed to submit the job " + job_id
+                      + " to the workflow engine!"
+                      , fhg::logging::legacy::category_level_error
+                      );
+
+    //! \note: was failed (job_id, error.string()) but wanted to skip
+    //! the emission of the gantt
+    job_failed (pJob, error.string());
+
+    return false;
+  }
+}
+
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
 {
@@ -457,26 +487,9 @@ void GenericDaemon::handleSubmitJobEvent
   // if it comes from outside and the agent has an WFE, submit it to it
   if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
-    try
+    if (workflow_engine_submit (job_id, pJob))
     {
-      const we::type::activity_t act (pJob->activity());
-      workflowEngine()->submit (job_id, act);
-
-      // Should set the workflow_id here, or send it together with the activity
-      pJob->Dispatch();
-
-      emit_gantt (job_id, act, NotificationEvent::STATE_STARTED);
-    }
-    catch (...)
-    {
-      fhg::util::current_exception_printer const error (": ");
-      _log_emitter.emit ( "Exception occurred: " + error.string()
-                        + ". Failed to submit the job " + job_id
-                        + " to the workflow engine!"
-                        , fhg::logging::legacy::category_level_error
-                        );
-
-      failed (job_id, error.string());
+      emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
     }
   }
   else {
@@ -628,21 +641,29 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  auto const num_required_workers (activity.get_schedule_data().num_worker());
-
-  if ( num_required_workers
-     && *num_required_workers > 1
-     && !activity.preferences().empty()
-     )
+  if (activity.transition().net())
   {
-    throw std::runtime_error
-      ("Not allowed to use coallocation for activities with multiple module implementations!");
+    workflow_engine_submit
+      (job_id, addJob (job_id, activity, job_source_wfe(), job_handler_wfe()));
   }
+  else
+  {
+    auto const num_required_workers (activity.get_schedule_data().num_worker());
 
-  addJob (job_id, activity, job_source_wfe(), job_handler_worker());
+    if ( num_required_workers
+       && *num_required_workers > 1
+       && !activity.preferences().empty()
+       )
+    {
+      throw std::runtime_error
+        ("Not allowed to use coallocation for activities with multiple module implementations!");
+    }
 
-  _scheduler.enqueueJob (job_id);
-  request_scheduling();
+    addJob (job_id, activity, job_source_wfe(), job_handler_worker());
+
+    _scheduler.enqueueJob (job_id);
+    request_scheduling();
+  }
 }
 catch (...)
 {
@@ -701,7 +722,17 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   job_finished (pJob, result);
 
-  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
+  //! \note #817: gantt does not support nesting
+  if ( fhg::util::visit<bool>
+         ( pJob->source()
+         , [] (job_source_wfe const&) { return false; }
+         , [] (job_source_master const&) { return true; }
+         , [] (job_source_client const&) { return true; }
+         )
+     )
+  {
+    emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
+  }
 }
 
 void GenericDaemon::failed( const we::layer::id_type& id
