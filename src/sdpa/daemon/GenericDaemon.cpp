@@ -729,7 +729,7 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
          )
      )
   {
-  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
+    emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
   }
 }
 
