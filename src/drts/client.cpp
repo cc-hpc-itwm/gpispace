@@ -48,13 +48,6 @@ namespace gspc
   {
     return _->_activity.to_string();
   }
-  void workflow::add_input ( std::string const& port
-                           , pnet::type::value::value_type const& value
-                           )
-  {
-    _->_activity.add_input
-      (_->_activity.transition().input_port_by_name (port), value);
-  }
 
   static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
                 , "drts::job_id_t != sdpa::job_id_t"

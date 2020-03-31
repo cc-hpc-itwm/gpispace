@@ -24,10 +24,6 @@ namespace gspc
 
     void set_wait_for_output();
 
-    void add_input ( std::string const& port
-                   , pnet::type::value::value_type const& value
-                   );
-
     std::string to_string() const;
 
     workflow (workflow&&);
