@@ -112,6 +112,11 @@ namespace we
       return _transition;
     }
 
+    boost::optional<eureka_id_type> const& activity_t::eureka_id() const
+    {
+      return _transition.eureka_id();
+    }
+
     void activity_t::set_wait_for_output()
     {
       return _transition.set_property ({"drts", "wait_for_output"}, true);;

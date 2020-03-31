@@ -12,6 +12,7 @@
 #include <we/workflow_response.hpp>
 #include <we/eureka_response.hpp>
 
+#include <we/type/eureka.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 
@@ -58,6 +59,7 @@ namespace we
         std::string to_string() const;
 
         const we::type::transition_t& transition() const;
+        boost::optional<eureka_id_type> const& eureka_id() const;
 
         void set_wait_for_output();
         void put_token
