@@ -332,8 +332,8 @@ BOOST_DATA_TEST_CASE
 
   fhg::rpc::service_tcp_provider const registry (io_service, service_dispatcher);
 
-  gspc::job_id_t const job_id
-    ( client.submit
+  std::multimap<std::string, pnet::type::value::value_type> const result
+    ( client.put_and_run
         ( gspc::workflow (make.pnet())
         , { {"host", fhg::util::connectable_to_address_string
                        (registry.local_endpoint().address())}
@@ -344,8 +344,6 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
 
   BOOST_REQUIRE_EQUAL (announced_workers.size(), capabilities.size());
 

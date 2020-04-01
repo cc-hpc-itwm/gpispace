@@ -183,7 +183,7 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
   auto const library
     ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
-  auto const result (client.wait_and_extract (client.submit (make.pnet(), {})));
+  auto const result (client.put_and_run (make.pnet(), {}));
 
   decltype (result) const expected
     { {"previous_invocations", 0}

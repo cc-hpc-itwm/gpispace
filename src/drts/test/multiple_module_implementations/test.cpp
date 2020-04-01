@@ -96,15 +96,12 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
   gspc::client client (drts);
 
   long const num_tasks (1000);
-  gspc::job_id_t const job_id
-    (client.submit
+  std::multimap<std::string, pnet::type::value::value_type> const result
+    (client.put_and_run
        ( gspc::workflow (make.pnet())
        , {{"num_tasks", num_tasks}}
        )
     );
-
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
 
   BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
 

@@ -119,17 +119,14 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
 
   gspc::client client (drts);
 
-  gspc::job_id_t const job_id
-    ( client.submit
+  std::multimap<std::string, pnet::type::value::value_type> const result
+    ( client.put_and_run
         ( gspc::workflow (make.pnet())
         , { {"port", worker_port}
           , {"start", true}
           }
         )
     );
-
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
 
   BOOST_REQUIRE_EQUAL (result.size(), 1);
   BOOST_REQUIRE_EQUAL (result.count ("port_is_used"), 1);
