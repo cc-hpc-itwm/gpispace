@@ -20,7 +20,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
     );
   we::type::activity_t const activity (transition, boost::none);
 
-  BOOST_REQUIRE (!activity.get_schedule_data().num_worker());
+  BOOST_REQUIRE (activity.requirements_and_preferences (nullptr).numWorkers());
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
@@ -41,8 +41,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     );
   we::type::activity_t const activity (transition, boost::none);
 
-  BOOST_REQUIRE (!!activity.get_schedule_data().num_worker());
-  BOOST_REQUIRE_EQUAL (activity.get_schedule_data().num_worker().get(), value);
+  BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
@@ -75,8 +74,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
   we::type::activity_t activity (transition, boost::none);
   activity.add_input (port_name, value);
 
-  BOOST_REQUIRE (!!activity.get_schedule_data().num_worker());
-  BOOST_REQUIRE_EQUAL (activity.get_schedule_data().num_worker().get(), value);
+  BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
@@ -120,7 +118,6 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
   activity.add_input (port_name1, value1);
   activity.add_input (port_name2, value2);
 
-  BOOST_REQUIRE (!!activity.get_schedule_data().num_worker());
   BOOST_REQUIRE_EQUAL
-    (activity.get_schedule_data().num_worker().get(), value1 + value2);
+    (activity.requirements_and_preferences (nullptr).numWorkers(), value1 + value2);
 }

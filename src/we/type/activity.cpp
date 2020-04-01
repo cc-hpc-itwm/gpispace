@@ -316,17 +316,13 @@ namespace we
       }
     }
 
-    schedule_data activity_t::get_schedule_data() const
-    {
-      return { eval_schedule_data<unsigned long>
-        (_transition, evaluation_context(), "num_worker")
-      };
-    }
-
     Requirements_and_preferences activity_t::requirements_and_preferences
       (gpi::pc::client::api_t* virtual_memory_api) const
     {
-      auto const schedule_data (get_schedule_data());
+      schedule_data const schedule_data
+        ( eval_schedule_data<unsigned long>
+            (_transition, evaluation_context(), "num_worker")
+        );
 
       auto const num_required_workers (schedule_data.num_worker());
 

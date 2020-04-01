@@ -111,7 +111,6 @@ namespace we
         //! \note context contains references to input
         expr::eval::context evaluation_context() const;
 
-        schedule_data get_schedule_data() const;
         Requirements_and_preferences requirements_and_preferences
           (gpi::pc::client::api_t*) const;
 
