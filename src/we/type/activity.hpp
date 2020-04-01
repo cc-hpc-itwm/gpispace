@@ -19,8 +19,6 @@
 #include <we/expr/eval/context.hpp>
 
 #include <boost/serialization/access.hpp>
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/optional.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
@@ -102,14 +100,7 @@ namespace we
 
         schedule_data get_schedule_data() const;
 
-        unsigned long memory_buffer_size_total() const
-        {
-          return !_transition.module_call()
-            ? 0UL
-            : _transition.module_call()
-              ->memory_buffer_size_total (evaluation_context())
-            ;
-        }
+        unsigned long memory_buffer_size_total() const;
 
         std::list<we::type::requirement_t> const requirements() const;
         std::list<we::type::preference_t> const preferences() const;
@@ -117,13 +108,7 @@ namespace we
       private:
         friend class boost::serialization::access;
         template<class Archive>
-          void serialize (Archive& ar, const unsigned int)
-        {
-          ar & BOOST_SERIALIZATION_NVP(_transition);
-          ar & BOOST_SERIALIZATION_NVP(_transition_id);
-          ar & BOOST_SERIALIZATION_NVP(_input);
-          ar & BOOST_SERIALIZATION_NVP(_output);
-        }
+          void serialize (Archive&, const unsigned int);
 
       private:
         we::type::transition_t _transition;
@@ -144,3 +129,5 @@ namespace we
       };
     }
 }
+
+#include <we/type/activity.ipp>
