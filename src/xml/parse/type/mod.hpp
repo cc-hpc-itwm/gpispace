@@ -39,7 +39,6 @@ namespace xml
                     , const std::list<std::string>& cxxflags
                     , const boost::optional<bool> &pass_context
                     , const boost::optional<we::type::eureka_id_type> &eureka_id
-                      = boost::none
                     );
 
         const std::string& name() const;
