@@ -6,6 +6,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
 
+#include <gpi-space/pc/client/api.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/format.hpp>
@@ -15,7 +17,9 @@
 #include <cassert>
 #include <fstream>
 #include <iostream>
+#include <list>
 #include <sstream>
+#include <stdexcept>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -319,6 +323,49 @@ namespace we
       };
     }
 
+    Requirements_and_preferences activity_t::requirements_and_preferences
+      (gpi::pc::client::api_t* virtual_memory_api) const
+    {
+      const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
+
+      return
+        { requirements()
+        , get_schedule_data()
+        , [&]
+          {
+            //! \todo Move to gpi::pc::client::api_t
+            if (!_transition.module_call())
+            {
+              return null_transfer_cost;
+            }
+
+            expr::eval::context const context {evaluation_context()};
+
+            auto vm_transfers (_transition.module_call()->gets (context));
+
+            auto puts_before
+              (_transition.module_call()->puts_evaluated_before_call (context));
+
+            vm_transfers.splice (vm_transfers.end(), puts_before);
+
+            if (vm_transfers.empty())
+            {
+              return null_transfer_cost;
+            }
+
+            if (!virtual_memory_api)
+            {
+              throw std::logic_error
+                ("vmem transfers without vmem knowledge in agent");
+            }
+
+            return virtual_memory_api->transfer_costs (vm_transfers);
+          }()
+        , computational_cost
+        , memory_buffer_size_total()
+        , preferences()
+        };
+    }
     unsigned long activity_t::memory_buffer_size_total() const
     {
       return !_transition.module_call()

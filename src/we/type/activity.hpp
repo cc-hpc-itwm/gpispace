@@ -18,6 +18,8 @@
 
 #include <we/expr/eval/context.hpp>
 
+#include <sdpa/requirements_and_preferences.hpp>
+
 #include <boost/serialization/access.hpp>
 
 #include <boost/filesystem.hpp>
@@ -28,6 +30,17 @@
 #include <iosfwd>
 #include <random>
 #include <string>
+
+namespace gpi
+{
+  namespace pc
+  {
+    namespace client
+    {
+      class api_t;
+    }
+  }
+}
 
 namespace we
 {
@@ -99,6 +112,8 @@ namespace we
         expr::eval::context evaluation_context() const;
 
         schedule_data get_schedule_data() const;
+        Requirements_and_preferences requirements_and_preferences
+          (gpi::pc::client::api_t*) const;
 
         unsigned long memory_buffer_size_total() const;
 

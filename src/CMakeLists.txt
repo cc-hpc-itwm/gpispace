@@ -123,6 +123,8 @@ extended_add_library (NAME pnet
           "xml/parse/warning.cpp"
   LIBRARIES fhg-util
             drts-context
+            gpi-space-pc-client-static
+            gpi-space-pc-segment
             Util::Generic
             Boost::date_time
             Boost::program_options

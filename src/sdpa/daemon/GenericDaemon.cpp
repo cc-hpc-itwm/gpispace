@@ -210,51 +210,12 @@ std::string GenericDaemon::gen_id()
                                , job_handler handler
                                )
     {
-      const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
-
-      Requirements_and_preferences requirements_and_preferences
-        { activity.requirements()
-        , activity.get_schedule_data()
-        , [&]
-          {
-            //! \todo Move to gpi::pc::client::api_t
-            if (!activity.transition().module_call())
-            {
-              return null_transfer_cost;
-            }
-
-            expr::eval::context const context {activity.evaluation_context()};
-
-            std::list<std::pair<we::local::range, we::global::range>>
-              vm_transfers (activity.transition().module_call()->gets (context));
-
-            std::list<std::pair<we::local::range, we::global::range>>
-              puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
-
-            vm_transfers.splice (vm_transfers.end(), puts_before);
-
-            if (vm_transfers.empty())
-            {
-              return null_transfer_cost;
-            }
-
-            if (!_virtual_memory_api)
-            {
-              throw std::logic_error
-                ("vmem transfers without vmem knowledge in agent");
-            }
-            return _virtual_memory_api->transfer_costs (vm_transfers);
-          }()
-        , computational_cost
-        , activity.memory_buffer_size_total()
-        , activity.preferences()
-        };
-
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
                     , std::move (handler)
-                    , std::move (requirements_and_preferences)
+                    , activity.requirements_and_preferences
+                        (_virtual_memory_api.get())
                     );
     }
 
