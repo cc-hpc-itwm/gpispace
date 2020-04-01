@@ -398,6 +398,15 @@ namespace
   };
 }
 
+namespace
+{
+  template<typename T>
+    std::list<T> sorted (std::list<T> list)
+  {
+    list.sort();
+    return list;
+  }
+}
 
 BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences)
 {
@@ -425,7 +434,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences
                             ( "mismatch-in-preferences ('"
                             , "', '"
                             , "')"
-                            , targets.no_modules
+                            , sorted (targets.no_modules)
                             ).string()
                         )
                       % ( targets.no_preferences.empty()
@@ -434,7 +443,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_non_empty_mismatching_preferences
                             ( ", mismatch-in-modules ('"
                             , "', '"
                             , "')"
-                            , targets.no_preferences
+                            , sorted (targets.no_preferences)
                             ).string()
                         )
                       % "[<stdin>:2:9]"
