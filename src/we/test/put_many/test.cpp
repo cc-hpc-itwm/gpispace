@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE (we_put_many_decomposes_result_lists)
         {
           std::multimap<std::string, pnet::type::value::value_type> const result
             ( gspc::client (drts).put_and_run
-              (gspc::workflow (workflow), {{"N", N}})
+                (gspc::workflow (workflow), {{"N", N}})
             );
 
           BOOST_REQUIRE_EQUAL (result.size(), 1);

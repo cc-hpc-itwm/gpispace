@@ -90,11 +90,11 @@
     , installation                                                       \
     , "worker:1," + std::to_string (local_memory_size)                   \
     , rifds.entry_points()                                               \
-    );
+    )
 
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 {
-  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET\
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
     (net_with_arbitrary_buffer_sizes_and_default_alignments);
 
   std::multimap<std::string, pnet::type::value::value_type> result;
@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 BOOST_AUTO_TEST_CASE
   (arbitrary_buffer_sizes_and_alignments_insufficient_memory)
 {
-  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET\
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
     (net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory);
 
   BOOST_REQUIRE_EXCEPTION
@@ -135,7 +135,7 @@ BOOST_AUTO_TEST_CASE
 
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
 {
-  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET\
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
     (net_with_arbitrary_buffer_sizes_and_alignments);
 
   std::multimap<std::string, pnet::type::value::value_type> result;
