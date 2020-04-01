@@ -1875,24 +1875,9 @@ BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
 {
   wfe_remembering_submitted_preferences wfe;
 
-  unsigned int const MAX_PREFERENCES (10);
-  unsigned int const MIN_PREFERENCES (1);
-
-  unsigned int const num_preferences
-    ( MIN_PREFERENCES
-    + fhg::util::testing::random_integral<unsigned int>()
-    % (MAX_PREFERENCES - MIN_PREFERENCES + 1)
-    );
-
-  auto const unique_random_preferences
-    (fhg::util::testing::randoms < std::vector<std::string>
-                                 , fhg::util::testing::unique_random
-                                 > (num_preferences)
-    );
-
-  std::list<we::type::preference_t> preferences
-    ( unique_random_preferences.begin()
-    , unique_random_preferences.end()
+  auto const preferences
+    ( fhg::util::testing::unique_randoms<std::list<we::type::preference_t>>
+        (fhg::util::testing::random<std::size_t>{} (10, 1))
     );
 
   wfe._layer.submit

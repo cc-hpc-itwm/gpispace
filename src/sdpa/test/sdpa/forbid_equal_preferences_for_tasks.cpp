@@ -11,22 +11,19 @@
 
 BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
 {
-  using fhg::util::testing::random_integral;
-  using fhg::util::testing::randoms;
-  using fhg::util::testing::unique_random;
+  using fhg::util::testing::random;
+  using fhg::util::testing::unique_randoms;
 
   unsigned int const MAX_PREFERENCES (100);
   unsigned int const MIN_PREFERENCES (1);
 
-  unsigned int const npreferences
-    ( MIN_PREFERENCES
-    + random_integral<unsigned int>() % (MAX_PREFERENCES - MIN_PREFERENCES + 1)
+  auto preferences
+    ( unique_randoms<Preferences>
+        (random<std::size_t>{} (MAX_PREFERENCES, MIN_PREFERENCES))
     );
 
-  auto preferences (randoms<Preferences, unique_random> (npreferences));
-
   auto const insertion_point
-    (random_integral<std::size_t>() % preferences.size());
+    (random<std::size_t>{} (preferences.size() - 1));
   preferences.emplace
     (std::next (preferences.begin(), insertion_point), preferences.front());
 
