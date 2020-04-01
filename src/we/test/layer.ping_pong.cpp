@@ -115,7 +115,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     current = !current;
 
     activity.add_output
-      ( activity.transition().output_port_by_name ("seq")
+      ( "seq"
       , activity.input().front().first
       );
     layer.finished ( std::move (current_activity->first)

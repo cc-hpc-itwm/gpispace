@@ -540,7 +540,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   {
     we::type::activity_t activity_expected (transition, boost::none);
     activity_expected.add_output
-      ( transition.output_port_by_name ("out")
+      ( "out"
       , pnet::type::value::read ("2L")
       );
 
@@ -581,8 +581,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
                       );
 
   we::type::activity_t activity_output (transition, boost::none);
-  activity_output.add_output
-    (transition.output_port_by_name ("out"), value::CONTROL);
+  activity_output.add_output ("out", value::CONTROL);
 
   we::type::activity_t activity_input (transition, boost::none);
   activity_input.add_input ("in", value::CONTROL);
@@ -591,8 +590,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   activity_child.add_input ("in", value::CONTROL);
 
   we::type::activity_t activity_result (transition, we::transition_id_type (0));
-  activity_result.add_output
-    (transition.output_port_by_name ("out"), value::CONTROL);
+  activity_result.add_output ("out", value::CONTROL);
 
   we::layer::id_type const id (generate_id());
 
@@ -1430,8 +1428,7 @@ namespace
 
     we::type::activity_t activity_result
       (transition_child, transition_id_child);
-    activity_result.add_output
-      (transition_child.output_port_by_name ("out"), value::CONTROL);
+    activity_result.add_output ("out", value::CONTROL);
 
     return std::make_tuple
       (activity_input, activity_output, activity_child, activity_result);
@@ -1932,7 +1929,7 @@ namespace
         , value::CONTROL
         );
       result_eureka.add_output
-        ( t.output_port_by_name ("out")
+        ( "out"
         , pnet::type::value::wrap (h_set)
         );
     }

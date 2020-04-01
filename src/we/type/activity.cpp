@@ -202,6 +202,13 @@ namespace we
     }
 
     void activity_t::add_output
+      ( std::string const& port_name
+      , pnet::type::value::value_type const& value
+      )
+    {
+      add_output (_transition.output_port_by_name (port_name), value);
+    }
+    void activity_t::add_output
       ( we::port_id_type const& port_id
       , pnet::type::value::value_type const& value
       )
