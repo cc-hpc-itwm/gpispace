@@ -111,8 +111,6 @@ BOOST_DATA_TEST_CASE
   gspc::scoped_runtime_system const drts
     (vm, installation, topology.str(), rifds.entry_points());
 
-  gspc::client client (drts);
-
   long const num_tasks (6 * num_workers_of_a_type_per_host * hosts.size());
   auto worst_comp_time
     (fhg::util::testing::random<int>{} (10, 3));
@@ -129,11 +127,8 @@ BOOST_DATA_TEST_CASE
     values_on_ports.emplace ("slow_worker_host", hosts.front());
   }
 
-  gspc::job_id_t const job_id
-    (client.submit (gspc::workflow (make.pnet()), values_on_ports));
-
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
+  gspc::client (drts)
+    .put_and_run (gspc::workflow (make.pnet()), values_on_ports);
 
   auto end = std::chrono::steady_clock::now();
 
