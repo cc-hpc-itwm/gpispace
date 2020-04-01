@@ -19,6 +19,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes_no_buffers)
     , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
     , {}
     , {}
+    , true
     );
 
   BOOST_REQUIRE (module_call.memory_buffer_sizes ({}).empty());
@@ -97,6 +98,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_default_alignments)
     , std::move (memory_buffers)
     , {}
     , {}
+    , true
     );
 
   BOOST_REQUIRE (equal (module_call.memory_buffer_sizes (context), expected));
@@ -149,6 +151,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_and_alignments)
     , std::move (memory_buffers)
     , {}
     , {}
+    , true
     );
 
   for (auto const& name_and_buffer_info : module_call.memory_buffers())

@@ -15,10 +15,15 @@ namespace we
 {
   namespace loader
   {
+    struct RequireModuleUnloadsWithoutRest{};
+
     class Module : public IModule, boost::noncopyable
     {
     public:
       Module (boost::filesystem::path const& path);
+      Module ( RequireModuleUnloadsWithoutRest
+             , boost::filesystem::path const& path
+             );
 
       void call ( const std::string& f
                 , drts::worker::context *context

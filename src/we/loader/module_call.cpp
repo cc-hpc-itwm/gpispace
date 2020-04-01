@@ -267,7 +267,11 @@ namespace we
         drts::worker::redirect_output const cerr
           (context, fhg::logging::legacy::category_level_warn, std::cerr);
 
-        auto const& module (loader[module_call.module()]);
+        auto const& module
+          ( loader.module ( module_call.require_module_unloads_without_rest()
+                          , module_call.module()
+                          )
+          );
 
         auto const before (fhg::util::currently_loaded_libraries());
         module.call

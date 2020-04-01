@@ -69,6 +69,11 @@ namespace we
       }
     }
 
+    bool module_call_t::require_module_unloads_without_rest() const
+    {
+      return _require_module_unloads_without_rest;
+    }
+
     std::unordered_map<std::string, unsigned long>
       module_call_t::memory_buffer_sizes
         (expr::eval::context const& input) const

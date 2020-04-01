@@ -563,6 +563,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
       , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
       , std::list<we::type::memory_transfer>()
       , std::list<we::type::memory_transfer>()
+      , true
       )
     , boost::none
     , we::type::property::type()
@@ -1302,6 +1303,7 @@ namespace
         , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
         , std::list<we::type::memory_transfer>()
         , std::list<we::type::memory_transfer>()
+        , true
         )
       , boost::none
       , we::type::property::type()
@@ -1590,6 +1592,7 @@ namespace
                                                     >()
                                 , std::list<we::type::memory_transfer>()
                                 , std::list<we::type::memory_transfer>()
+                                , true
                                 )
       , boost::none
       , we::type::property::type()
@@ -1772,6 +1775,7 @@ namespace
           , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
+          , true
           )
         );
     }
@@ -1967,6 +1971,7 @@ namespace
           , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
+          , true
           )
         , boost::none
         , we::type::property::type()

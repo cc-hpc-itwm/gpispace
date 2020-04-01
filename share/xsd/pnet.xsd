@@ -109,6 +109,7 @@
     <xsd:attribute name="function" type="xsd:string" use="required"/>
     <xsd:attribute name="eureka-group" type="xsd:string" use="optional"/>
     <xsd:attribute name="pass_context" type="xsd:boolean" use="optional"/>
+    <xsd:attribute name="require_module_unloads_without_rest" type="xsd:boolean" use="optional"/>
     <xsd:attribute name="target" type="xsd:string" use="optional"/>
   </xsd:complexType>
 

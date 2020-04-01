@@ -1509,6 +1509,12 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
+        const boost::optional<bool> require_module_unloads_without_rest
+          ( fhg::util::boost::fmap<std::string, bool>
+              ( fhg::util::read_bool
+              , optional (node, "require_module_unloads_without_rest")
+              )
+          );
         const boost::optional<we::type::eureka_id_type> eureka_id
           (optional (node, "eureka-group"));
         const util::position_type pod (state.position (node));
@@ -1617,6 +1623,9 @@ namespace xml
           , cxxflags
           , pass_context
           , eureka_id
+          , require_module_unloads_without_rest
+          ? *require_module_unloads_without_rest
+          : true
           );
       }
 

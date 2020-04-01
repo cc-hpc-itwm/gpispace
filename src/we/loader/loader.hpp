@@ -18,7 +18,14 @@ namespace we
     public:
       loader (std::list<boost::filesystem::path> const&);
 
-      Module const& operator[] (const std::string &module);
+      Module const& operator[] (const std::string &m)
+      {
+        return module (false, m);
+      }
+      Module const& module
+        ( bool require_module_unloads_without_rest
+        , const std::string &module
+        );
 
    private:
       std::mutex _table_mutex;

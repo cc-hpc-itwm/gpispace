@@ -126,6 +126,25 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload)
     );
 }
 
+BOOST_AUTO_TEST_CASE (module_that_doesnt_unload_can_be_allowed)
+{
+  COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
+
+  test::make_net_lib_install const make
+    ( vm
+    , "module_with_nodelete_flag_and_allowed_to_have_rest"
+    , test::source_directory (vm) / "module_nounload_detection"
+    , lib_install_directory
+    );
+  auto const library
+    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
+
+  auto const result (client.put_and_run (make.pnet(), {}));
+
+  BOOST_REQUIRE_EQUAL (result.size(), 1);
+  BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+}
+
 BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
 {
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
