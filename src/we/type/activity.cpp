@@ -326,11 +326,24 @@ namespace we
     Requirements_and_preferences activity_t::requirements_and_preferences
       (gpi::pc::client::api_t* virtual_memory_api) const
     {
+      auto const schedule_data (get_schedule_data());
+
+      auto const num_required_workers (schedule_data.num_worker());
+
+      if ( num_required_workers
+         && *num_required_workers > 1
+         && !_transition.preferences().empty()
+         )
+      {
+        throw std::runtime_error
+          ("Not allowed to use coallocation for activities with multiple module implementations!");
+      }
+
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
       return
         { requirements()
-        , get_schedule_data()
+        , std::move (schedule_data)
         , [&]
           {
             //! \todo Move to gpi::pc::client::api_t
