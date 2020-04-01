@@ -105,9 +105,6 @@ namespace we
 
         bool wait_for_output() const;
 
-        boost::optional<we::transition_id_type> const&
-          transition_id() const;
-
         //! \note context contains references to input
         expr::eval::context evaluation_context() const;
 

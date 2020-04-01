@@ -853,25 +853,23 @@ namespace we
     }
 
     void net_type::inject ( activity_t const& child
+                          , transition_id_type tid
                           , workflow_response_callback workflow_response
                           , eureka_response_callback eureka_response
                           )
     {
       for (auto const& token_on_port : child.output())
       {
-        if (  _port_to_place.count (*child.transition_id())
-           && _port_to_place.at (*child.transition_id())
-            . count (token_on_port.second)
+        if (  _port_to_place.count (tid)
+           && _port_to_place.at (tid).count (token_on_port.second)
            )
         {
-          put_value ( _port_to_place.at (*child.transition_id())
-                    . at (token_on_port.second).first
+          put_value ( _port_to_place.at (tid).at (token_on_port.second).first
                     , token_on_port.first
                     );
         }
-        else if (  _port_many_to_place.count (*child.transition_id())
-                && _port_many_to_place.at (*child.transition_id())
-                 . count (token_on_port.second)
+        else if (  _port_many_to_place.count (tid)
+                && _port_many_to_place.at (tid).count (token_on_port.second)
                 )
         {
           auto const& many_tokens
@@ -879,17 +877,16 @@ namespace we
               (token_on_port.first)
             );
 
-          for (auto const& token : many_tokens) {
-            put_value ( _port_many_to_place.at (*child.transition_id())
-                      . at (token_on_port.second).first
-                      , token
-                      );
+          for (auto const& token : many_tokens)
+          {
+            put_value
+              ( _port_many_to_place.at (tid).at (token_on_port.second).first
+              , token
+              );
           }
         }
-        else if (  _port_to_eureka.count (*child.transition_id())
-                && ( _port_to_eureka.at (*child.transition_id())
-                     == token_on_port.second
-                   )
+        else if (  _port_to_eureka.count (tid)
+                && (_port_to_eureka.at (tid) == token_on_port.second)
                 )
         {
           std::set<type::eureka_id_type> const eureka_ids
@@ -920,16 +917,13 @@ namespace we
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                assert ( _port_to_response.at (*child.transition_id())
-                       . count (token_on_port.second)
-                       );
+                assert (_port_to_response.at (tid).count (token_on_port.second));
+
                pnet::type::value::value_type const description
-                  ([this, &child, &token_on_port]
+                   ([this, &child, tid, &token_on_port]
                    {
                      std::string const to
-                       ( _port_to_response.at (*child.transition_id())
-                       . at (token_on_port.second).first
-                       );
+                       (_port_to_response.at (tid).at (token_on_port.second).first);
                     we::port_id_type const input_port_id
                        (child.transition().input_port_by_name (to));
 

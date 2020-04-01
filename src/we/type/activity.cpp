@@ -146,6 +146,7 @@ namespace we
     {
       return _transition.mutable_net()
         . inject ( result
+                 , *result._transition_id
                  , std::move (workflow_response)
                  , std::move (eureka_response)
                  );
@@ -250,12 +251,6 @@ namespace we
       }
 
       return port_ids_with_output.size() != _transition.ports_output().size();
-    }
-
-    boost::optional<we::transition_id_type> const&
-      activity_t::transition_id() const
-    {
-      return _transition_id;
     }
 
     expr::eval::context activity_t::evaluation_context() const

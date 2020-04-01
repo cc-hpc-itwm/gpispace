@@ -124,8 +124,7 @@ namespace we
       {
         return lhs.input() == rhs.input()
           && lhs.output() == rhs.output()
-          && lhs.transition() == rhs.transition()
-          && lhs.transition_id() == rhs.transition_id();
+          && lhs.transition() == rhs.transition();
       }
     }
 }

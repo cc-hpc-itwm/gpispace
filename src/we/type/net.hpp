@@ -125,6 +125,7 @@ namespace we
           );
 
       void inject ( activity_t const&
+                  , transition_id_type
                   , workflow_response_callback
                   = [] ( pnet::type::value::value_type const&
                        , pnet::type::value::value_type const&
