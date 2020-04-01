@@ -1829,7 +1829,7 @@ namespace
 
     void submit (const we::type::activity_t& activity)
     {
-      _received_preferences = activity.transition().preferences();
+      _received_preferences = activity.preferences_TESTING_ONLY();
       std::lock_guard<std::mutex> const _ (_mtx_submitted);
       _cond_submitted.notify_one();
     }

@@ -82,7 +82,7 @@ namespace
       _master = source;
 
       BOOST_REQUIRE_EQUAL
-        (e->activity().preferences(), _expected_preferences);
+        (e->activity().preferences_TESTING_ONLY(), _expected_preferences);
 
       finish_job (*e->job_id(), e->activity());
     }
@@ -164,7 +164,8 @@ namespace
 
       BOOST_REQUIRE (event->implementation());
 
-      auto const activity_preferences (event->activity().preferences());
+      auto const activity_preferences
+        (event->activity().preferences_TESTING_ONLY());
 
       BOOST_REQUIRE (!activity_preferences.empty());
 

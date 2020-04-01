@@ -403,7 +403,8 @@ namespace we
       return requirements;
     }
 
-    std::list<we::type::preference_t> const activity_t::preferences() const
+    std::list<we::type::preference_t>
+      const activity_t::preferences_TESTING_ONLY() const
     {
       return _transition.preferences();
     }

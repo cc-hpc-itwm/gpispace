@@ -118,7 +118,8 @@ namespace we
         unsigned long memory_buffer_size_total() const;
 
         std::list<we::type::requirement_t> const requirements() const;
-        std::list<we::type::preference_t> const preferences() const;
+
+        std::list<we::type::preference_t> const preferences_TESTING_ONLY() const;
 
       private:
         friend class boost::serialization::access;
