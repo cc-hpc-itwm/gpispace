@@ -23,25 +23,7 @@ namespace
 {
   std::vector<std::string> generate_worker_names (const int n)
   {
-    std::vector<std::string> worker_ids (n);
-    std::generate ( worker_ids.begin()
-                  , worker_ids.end()
-                  , fhg::util::testing::random_string
-                  );
-    return worker_ids;
-  }
-
-  bool random_bool()
-  {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::bernoulli_distribution dist (0.5);
-    return dist (gen);
-  }
-
-  unsigned long random_ulong()
-  {
-    return fhg::util::testing::random_integral<unsigned long>();
+    return fhg::util::testing::unique_randoms<std::vector<std::string>> (n);
   }
 }
 
@@ -52,24 +34,24 @@ BOOST_AUTO_TEST_CASE (add_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {sdpa::capability_t ("B", worker_ids[1])}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[2]
                            , {sdpa::capability_t ("C", worker_ids[2])}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
@@ -86,16 +68,16 @@ BOOST_AUTO_TEST_CASE (delete_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {sdpa::capability_t ("B", worker_ids[1])}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
@@ -120,24 +102,24 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {*it++}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[1]
                            , {*it++}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
 
   worker_manager.addWorker ( worker_ids[2]
                            , {*it++}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
@@ -155,8 +137,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
   sdpa::daemon::WorkerManager worker_manager;
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
-                           , random_ulong()
-                           , random_bool()
+                           , fhg::util::testing::random<unsigned long>{}()
+                           , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
                            );
@@ -204,8 +186,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
   {
     worker_manager.addWorker ( worker_ids[k]
                              , {sdpa::capability_t ("A", worker_ids[k])}
-                             , random_ulong()
-                             , random_bool()
+                             , fhg::util::testing::random<unsigned long>{}()
+                             , fhg::util::testing::random<bool>{}()
                              , fhg::util::testing::random_string()
                              , fhg::util::testing::random_string()
                              );
@@ -281,8 +263,8 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
                         worker_manager.addWorker
                           ( worker_id
                           , {sdpa::capability_t (capability_name, worker_id)}
-                          , random_ulong()
-                          , random_bool()
+                          , fhg::util::testing::random<unsigned long>{}()
+                          , fhg::util::testing::random<bool>{}()
                           , fhg::util::testing::random_string()
                           , fhg::util::testing::random_string()
                           );

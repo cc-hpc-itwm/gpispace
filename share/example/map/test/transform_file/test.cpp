@@ -28,6 +28,7 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
@@ -36,7 +37,6 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
-#include <random>
 #include <vector>
 
 namespace
@@ -54,9 +54,6 @@ namespace
         ((boost::format ("Could not open '%1%'") % data_file).str());
     }
 
-    std::mt19937 generator;
-    std::uniform_int_distribution<> number (0, 255);
-
     std::vector<char> chunk (chunk_size);
     std::vector<char> verify;
 
@@ -68,7 +65,7 @@ namespace
 
       for (unsigned long i (0); i < bytes; ++i)
       {
-        chunk[i] = number (generator);
+        chunk[i] = fhg::util::testing::random<char>{}();
       }
 
       data << std::string (chunk.data(), chunk.data() + bytes);

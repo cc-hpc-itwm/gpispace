@@ -6,6 +6,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
@@ -77,7 +78,9 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_match_input_list_and_output_tokens
 
   BOOST_REQUIRE
     ( !test_net.net.fire_expressions_and_extract_activity_random
-        (random_engine(), unexpected_workflow_response)
+        ( fhg::util::testing::detail::GLOBAL_random_engine()
+        , unexpected_workflow_response
+        )
     );
 
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION
@@ -122,7 +125,9 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_mismatch_expection_for_all_types
     ( [&]
       {
         test_net.net.fire_expressions_and_extract_activity_random
-          (random_engine(), unexpected_workflow_response);
+          ( fhg::util::testing::detail::GLOBAL_random_engine()
+          , unexpected_workflow_response
+          );
       }
     , pnet::exception::type_mismatch
         ( name_to_signature (out_type_str)

@@ -9,7 +9,6 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/set.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random/integral.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/iterator/transform_iterator.hpp>
@@ -990,15 +989,6 @@ struct fixture_minimal_cost_assignment
 
 struct serve_job_and_check_for_minimal_cost_assignement
 {
-  unsigned int generate_number_of_workers ( const unsigned int n_min
-                                          , const unsigned int n_max
-                                          )
-  {
-    std::random_device rd;
-    std::mt19937 gen (rd());
-    return std::uniform_int_distribution<> (n_min, n_max) (gen);
-  }
-
   std::vector<std::string> generate_worker_names (const unsigned int n)
   {
     std::vector<std::string> worker_ids (n);
@@ -1012,14 +1002,13 @@ struct serve_job_and_check_for_minimal_cost_assignement
   std::map<sdpa::worker_id_t, double>
     generate_costs (std::vector<std::string> worker_ids)
   {
-    std::random_device rd;
-    std::mt19937 gen (rd());
-    std::normal_distribution<> dist(0,1);
+    std::normal_distribution<> dist (0., 1.);
 
     std::map<sdpa::worker_id_t, double> map_costs;
     for (sdpa::worker_id_t const& worker : worker_ids)
     {
-      map_costs.insert (std::make_pair (worker, dist (gen)));
+      map_costs.emplace
+        (worker, dist (fhg::util::testing::detail::GLOBAL_random_engine()));
     }
 
     return map_costs;
@@ -1059,9 +1048,8 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                         , serve_job_and_check_for_minimal_cost_assignement
                         )
 {
-  const unsigned int n_min_workers = 10;
-  const unsigned int n_max_workers = 20;
-  const unsigned int n_workers (generate_number_of_workers (n_min_workers, n_max_workers));
+  auto const n_workers
+    (fhg::util::testing::random<unsigned int>{} (20, 10));
   const unsigned int n_req_workers (10);
 
   const std::vector<std::string>
@@ -1201,8 +1189,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
   std::generate_n (host_ids.begin(), n_hosts, utils::random_peer_name);
 
   std::uniform_real_distribution<double> dist (1.0, n_hosts);
-  std::random_device rand_dev;
-  std::mt19937 rand_engine (rand_dev());
+  auto& rand_engine (fhg::util::testing::detail::GLOBAL_random_engine());
 
   const double _computational_cost (dist (rand_engine));
   std::vector<double> transfer_costs (n_hosts);
@@ -2379,8 +2366,8 @@ BOOST_FIXTURE_TEST_CASE
   {
     sdpa::job_id_t const job ("job_" + std::to_string (k));
 
-    unsigned int const n_req_workers
-      {fhg::util::testing::random_integral<unsigned int>() % n_max_workers_per_job + 1};
+    auto const n_req_workers
+      (fhg::util::testing::random<unsigned int>{} (n_max_workers_per_job, 1));
 
     add_job (job, require ("A", n_req_workers));
 
@@ -2412,11 +2399,8 @@ BOOST_FIXTURE_TEST_CASE
   {
     sdpa::job_id_t const job ("job_" + std::to_string (k));
 
-    unsigned int const n_req_workers
-      { fhg::util::testing::random_integral<unsigned int>()
-      % n_max_workers_per_job
-      + 1
-      };
+    auto const n_req_workers
+      (fhg::util::testing::random<unsigned int>{} (n_max_workers_per_job, 1));
 
     add_job (job, require ("A", n_req_workers));
     _scheduler.enqueueJob (job);
@@ -2464,15 +2448,11 @@ BOOST_FIXTURE_TEST_CASE
     running_jobs.insert (jobs_started.begin(), jobs_started.end());
     if (!running_jobs.empty())
     {
-
-      long unsigned int const n_finishing_jobs
-        { fhg::util::testing::random_integral<long unsigned int>()
-        % running_jobs.size()
-        + 1
-        };
+      auto const n_finishing_jobs
+        (fhg::util::testing::random<std::size_t>{} (running_jobs.size(), 1));
 
       // finish an arbitrary number of running jobs
-      for (unsigned int k = 0; k < n_finishing_jobs; k++)
+      for (std::size_t k (0); k < n_finishing_jobs; k++)
       {
         _scheduler.releaseReservation (*running_jobs.begin());
         running_jobs.erase (running_jobs.begin());
@@ -2573,8 +2553,8 @@ BOOST_FIXTURE_TEST_CASE
 
   std::string preference (capability_pool());
 
-  unsigned int const num_workers
-    (2 + fhg::util::testing::random_integral<unsigned int>() % 3);
+  auto const num_workers
+    (fhg::util::testing::random<unsigned int>{} (4, 2));
 
   std::vector<sdpa::worker_id_t> const workers
     (add_new_workers ( {common_capability, preference}
@@ -2623,14 +2603,8 @@ BOOST_FIXTURE_TEST_CASE
     (fhg::util::testing::random_identifier_without_leading_underscore());
 
   auto const preference_id
-    ( fhg::util::testing::random_integral<std::size_t>()
-    % preferences.size()
-    );
-  std::string const preference
-    ( (preference_id == 0)
-    ? *first_pref
-    : *std::next (first_pref, preference_id)
-    );
+    (fhg::util::testing::random<std::size_t>{} (preferences.size() - 1));
+  auto const preference (*std::next (first_pref, preference_id));
 
   _worker_manager.addWorker
     ( worker
@@ -2680,8 +2654,8 @@ BOOST_FIXTURE_TEST_CASE
 
   std::string const common_capability (capability_pool());
 
-  unsigned int const num_cpu_workers
-    (10 + fhg::util::testing::random_integral<unsigned int>() % 10);
+  auto const num_cpu_workers
+    (fhg::util::testing::random<unsigned int>{} (20, 10));
 
   std::vector<sdpa::worker_id_t> const cpu_workers
     (add_new_workers ( {common_capability, CPU}
@@ -2692,8 +2666,8 @@ BOOST_FIXTURE_TEST_CASE
   std::set<sdpa::worker_id_t> expected_cpu_workers
     (cpu_workers.begin(), cpu_workers.end());
 
-  unsigned int const num_cpu_gpu_workers
-    (10 + fhg::util::testing::random_integral<unsigned int>() % 10);
+  auto const num_cpu_gpu_workers
+    (fhg::util::testing::random<unsigned int>{} (20, 10));
 
   std::vector<sdpa::worker_id_t> const cpu_gpu_workers
     (add_new_workers ( {common_capability, CPU, GPU}
@@ -2745,8 +2719,8 @@ BOOST_FIXTURE_TEST_CASE
   Preferences preferences;
 
   unsigned int total_num_workers (0);
-  unsigned int const num_preferences
-    (3 + fhg::util::testing::random_integral<unsigned int>() % 10);
+  auto const num_preferences
+    (fhg::util::testing::random<unsigned int>{} (12, 3));
 
   std::map<std::string, std::set<sdpa::worker_id_t>> workers_by_preference;
 
@@ -2755,8 +2729,8 @@ BOOST_FIXTURE_TEST_CASE
     std::string const preference (capability_pool());
     preferences.emplace_back (preference);
 
-    unsigned int const num_workers
-      (100 + fhg::util::testing::random_integral<unsigned int>() % 100);
+    auto const num_workers
+      (fhg::util::testing::random<unsigned int>{} (200, 100));
     total_num_workers += num_workers;
 
     std::vector<sdpa::worker_id_t> const workers
@@ -2769,9 +2743,9 @@ BOOST_FIXTURE_TEST_CASE
       (preference, std::set<sdpa::worker_id_t> (workers.begin(), workers.end()));
   }
 
-  unsigned int const num_tasks
-    ( 2*total_num_workers
-    + fhg::util::testing::random_integral<unsigned int>() % total_num_workers
+  auto const num_tasks
+    ( fhg::util::testing::random<unsigned int>{}
+        (3 * total_num_workers - 1, 2 * total_num_workers)
     );
 
   for (unsigned int i {0}; i < num_tasks; i++)
@@ -3083,7 +3057,7 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.assignJobsToWorkers();
 
   auto const worker_finishing_tasks_earlier
-    (test_workers[fhg::util::testing::random_integral<unsigned long>() % num_workers]);
+    (test_workers[fhg::util::testing::random<std::size_t>{} (num_workers - 1)]);
 
   finish_tasks_assigned_to_worker_and_steal_work
     (worker_finishing_tasks_earlier, test_workers);
@@ -3143,9 +3117,8 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.assignJobsToWorkers();
 
   auto const worker_finishing_tasks_earlier
-    (test_workers[fhg::util::testing::random_integral<unsigned long>() % num_workers]);
+    (test_workers[fhg::util::testing::random<std::size_t>{} (num_workers - 1)]);
 
   finish_tasks_assigned_to_worker_and_steal_work
     (worker_finishing_tasks_earlier, test_workers);
 }
-
