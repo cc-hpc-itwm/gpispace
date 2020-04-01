@@ -376,7 +376,7 @@ namespace we
           }()
         , computational_cost
         , memory_buffer_size_total()
-        , preferences()
+        , _transition.preferences()
         };
     }
     unsigned long activity_t::memory_buffer_size_total() const
