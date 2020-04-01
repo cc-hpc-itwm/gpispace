@@ -214,14 +214,14 @@ namespace we
         char* const local_memory
           ((static_cast<char*> (virtual_memory_api->ptr (*shared_memory))));
         char* buffer_ptr (local_memory);
-        std::size_t space (shared_memory_size); 
+        std::size_t space (shared_memory_size);
 
         for (auto const& buffer_and_info : module_call.memory_buffers())
         {
           unsigned long const size (buffer_and_info.second.size (input));
           unsigned long const alignment
             (buffer_and_info.second.alignment (input));
-     
+
           if (!align (alignment, size, buffer_ptr, space))
           {
             throw std::runtime_error
@@ -233,13 +233,13 @@ namespace we
                 % (buffer_ptr - local_memory + size)
                 % shared_memory_size
                 ).str()
-	      );            
+	      );
        	  }
- 
-          memory_buffer.emplace 
+
+          memory_buffer.emplace
             ( std::piecewise_construct
             , std::forward_as_tuple (buffer_and_info.first)
-            , std::forward_as_tuple 
+            , std::forward_as_tuple
                 (buffer_ptr - local_memory, size)
             );
           pointers.emplace (buffer_and_info.first, buffer_ptr);
@@ -248,7 +248,7 @@ namespace we
           space -= size;
         }
       }
-      
+
       transfer ( get_global_data, virtual_memory_api, shared_memory
                , memory_buffer, module_call.gets (input)
                );
