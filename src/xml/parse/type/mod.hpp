@@ -59,8 +59,6 @@ namespace xml
 
         bool operator== (const module_type&) const;
 
-        friend std::size_t hash_value (const module_type&);
-
       private:
         std::string _name;
         std::string _function;

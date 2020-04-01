@@ -132,11 +132,6 @@ namespace xml
           ;
       }
 
-      std::size_t hash_value (const module_type& m)
-      {
-        return boost::hash<std::string>()(m.name());
-      }
-
       namespace dump
       {
         std::string dump_fun (const module_type& m)
