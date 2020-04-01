@@ -19,9 +19,9 @@
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
+#include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
-#include <util-generic/temporary_path.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

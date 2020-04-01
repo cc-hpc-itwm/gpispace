@@ -16,10 +16,9 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/executable.hpp>
-
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>

@@ -20,10 +20,10 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/read.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <util-generic/temporary_path.hpp>
 

@@ -13,10 +13,10 @@
 #include <we/expr/eval/context.hpp>
 #include <we/type/value.hpp>
 
+#include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/read_lines.hpp>
 
 #include <boost/program_options.hpp>
 

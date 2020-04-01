@@ -14,7 +14,6 @@
 
 #include <util-generic/finally.hpp>
 #include <util-generic/read_lines.hpp>
-
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
 

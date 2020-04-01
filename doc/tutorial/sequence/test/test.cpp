@@ -20,11 +20,8 @@
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include <algorithm>
-#include <list>
 #include <map>
-#include <numeric>
-#include <vector>
+#include <string>
 
 BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 {

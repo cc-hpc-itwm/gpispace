@@ -16,8 +16,8 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/program_options.hpp>
 
