@@ -15,6 +15,8 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -86,13 +88,8 @@ BOOST_AUTO_TEST_CASE (we_put_many_decomposes_result_lists)
                 (gspc::workflow (workflow), {{"N", N}})
             );
 
-          BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-          BOOST_REQUIRE_EQUAL (result.count ("S"), 1);
-          BOOST_CHECK_EQUAL
-            ( result.find ("S")->second
-            , pnet::type::value::value_type ((N * (N - 1UL)) / 2UL)
-            );
+          decltype (result) const expected {{"S", (N * (N - 1UL)) / 2UL}};
+          FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
         }
       }
     }

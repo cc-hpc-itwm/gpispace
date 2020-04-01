@@ -18,6 +18,8 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -75,15 +77,11 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:2", rifds.entry_points());
 
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts).put_and_run
-        (gspc::workflow (make.pnet()), {{"point", point}})
-    );
+  std::multimap<std::string, pnet::type::value::value_type> const input
+    {{"point", point}};
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
+  auto const output
+    (gspc::client (drts).put_and_run (gspc::workflow (make.pnet()), input));
 
-  std::string const port_point ("point");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_point), 1);
-  BOOST_CHECK_EQUAL (result.find (port_point)->second, point);
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (input, output);
 }

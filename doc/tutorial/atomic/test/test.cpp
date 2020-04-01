@@ -7,6 +7,8 @@
 #include <drts/scoped_rifd.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
@@ -71,13 +73,6 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_atomic)
                                        )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_final_value ("final_value");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_final_value), 1);
-
-  BOOST_CHECK_EQUAL ( result.find (port_final_value)->second
-                    , pnet::type::value::value_type (112L)
-                    );
+  decltype (result) const expected {{"final_value", 112L}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }

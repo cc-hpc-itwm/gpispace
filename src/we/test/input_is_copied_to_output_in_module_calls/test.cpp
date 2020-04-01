@@ -17,6 +17,8 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -65,8 +67,6 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
     , installation_dir
     );
 
-  pnet::type::value::value_type const p {we::type::literal::control()};
-
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
@@ -75,15 +75,11 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:1", rifds.entry_points());
 
-  std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts).put_and_run
-        (gspc::workflow (make.pnet()), {{"p", p}})
-    );
+  std::multimap<std::string, pnet::type::value::value_type> const input
+    {{"p", we::type::literal::control()}};
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
+  auto const output
+    (gspc::client (drts).put_and_run (gspc::workflow (make.pnet()), input));
 
-  std::string const port_p ("p");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_p), 1);
-  BOOST_CHECK_EQUAL (result.find (port_p)->second, p);
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (input, output);
 }

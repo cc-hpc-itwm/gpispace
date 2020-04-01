@@ -20,6 +20,8 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -62,28 +64,8 @@ namespace
                     )
       );
 
-    BOOST_REQUIRE_EQUAL (result.size(), 2);
-
-    std::string const port_s ("s");
-
-    BOOST_REQUIRE_EQUAL (result.count (port_s), 2);
-
-    std::vector<long> const expected_output {1L, 7L};
-    std::vector<long> output;
-
-    for ( pnet::type::value::value_type i
-        : result.equal_range (port_s) | boost::adaptors::map_values
-        )
-    {
-      output.push_back (boost::get<long> (i));
-    }
-
-    std::sort (output.begin(), output.end());
-
-    BOOST_REQUIRE_EQUAL_COLLECTIONS
-      ( expected_output.begin(), expected_output.end()
-      , output.begin(), output.end()
-      );
+    decltype (result) const expected {{"s", 1L}, {"s", 7L}};
+    FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
   }
 }
 

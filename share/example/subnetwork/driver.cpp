@@ -19,6 +19,8 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -135,29 +137,10 @@ BOOST_AUTO_TEST_CASE (share_example_subnetwork)
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), number_of_blocks);
-
-  auto const done_blocks
-    ( result.equal_range ("done")
-    | boost::adaptors::map_values
-    | boost::adaptors::transformed
-      ( [] (pnet::type::value::value_type const& block)
-        {
-          return boost::get<unsigned long> (block);
-        }
-      )
-    );
-
-  std::unordered_set<unsigned long> seen;
-
-  std::for_each
-    ( std::begin (done_blocks), std::end (done_blocks)
-    , [&] (unsigned long id)
-      {
-        BOOST_REQUIRE_LT (id, number_of_blocks);
-        BOOST_REQUIRE (seen.emplace (id).second);
-      }
-    );
-
-  BOOST_REQUIRE_EQUAL (seen.size(), number_of_blocks);
+  std::multimap<std::string, pnet::type::value::value_type> expected;
+  for (unsigned long block (0); block < number_of_blocks; ++block)
+  {
+    expected.emplace ("done", block);
+  }
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

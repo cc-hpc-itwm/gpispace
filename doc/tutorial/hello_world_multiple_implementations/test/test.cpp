@@ -18,6 +18,8 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -110,13 +112,6 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
         (gspc::workflow (make.pnet()), {{"in", control}})
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_s ("out");
-  BOOST_REQUIRE_EQUAL (result.count (port_s), 1);
-
-  BOOST_REQUIRE_EQUAL
-    ( boost::get<std::string> (result.find (port_s)->second)
-    , "gpu"
-    );
+  decltype (result) const expected {{"out", std::string ("gpu")}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

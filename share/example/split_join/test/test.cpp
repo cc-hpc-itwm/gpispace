@@ -17,6 +17,8 @@
 
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -104,27 +106,12 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   std::multimap<std::string, pnet::type::value::value_type> const result
     (gspc::client (drts).put_and_run (gspc::workflow (make.pnet()), input));
 
-  std::vector<long> expected_output
-    (vm.at (option_expected_output).as<std::vector<long>>());
+  std::multimap<std::string, pnet::type::value::value_type> expected;
 
-  BOOST_REQUIRE_EQUAL (result.size(), expected_output.size());
-
-  std::string const port_out ("O");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_out), expected_output.size());
-
-  std::vector<long> got;
-
-  for ( pnet::type::value::value_type i
-      : result.equal_range (port_out) | boost::adaptors::map_values
-      )
+  for (long i : vm.at (option_expected_output).as<std::vector<long>>())
   {
-    got.emplace_back (boost::get<long> (i));
+    expected.emplace ("O", i);
   }
 
-  std::sort (expected_output.begin(), expected_output.end());
-  std::sort (got.begin(), got.end());
-
-  BOOST_REQUIRE_EQUAL_COLLECTIONS
-    (expected_output.begin(), expected_output.end(), got.begin(), got.end());
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

@@ -25,7 +25,9 @@
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
@@ -175,16 +177,8 @@ BOOST_DATA_TEST_CASE
   std::multimap<std::string, pnet::type::value::value_type> const result
     (client.wait_and_extract (job_id));
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_done ("done");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  decltype (result) const expected {{"done", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }
 
 namespace
@@ -354,14 +348,6 @@ BOOST_DATA_TEST_CASE
     , expected_workers.end()
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_done ("all_done");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  decltype (result) const expected {{"all_done", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }

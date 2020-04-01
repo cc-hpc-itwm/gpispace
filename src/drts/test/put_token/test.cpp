@@ -27,7 +27,9 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -138,11 +140,6 @@ BOOST_DATA_TEST_CASE
   std::multimap<std::string, pnet::type::value::value_type> const result
     (client.wait_and_extract (job_id));
 
-  std::string const port_bad ("bad");
-  std::string const port_good ("good");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_bad), 1);
-  BOOST_REQUIRE_EQUAL (result.find (port_bad)->second, bad);
-  BOOST_REQUIRE_EQUAL (result.count (port_good), 1);
-  BOOST_REQUIRE_EQUAL (result.find (port_good)->second, good);
+  decltype (result) const expected {{"bad", bad}, {"good", good}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }

@@ -17,6 +17,8 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
@@ -86,28 +88,15 @@ BOOST_AUTO_TEST_CASE (share_example_use_sequence)
   std::multimap<std::string, pnet::type::value::value_type> const result
     (get_result ("use_sequence", n));
 
-  BOOST_REQUIRE_EQUAL (result.size(), (n * (n - 1)) / 2);
-
-  std::string const port_out ("out");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_out), result.size());
-
-  std::map<pnet::type::value::value_type, int> number_of_id;
-
-  for ( pnet::type::value::value_type id
-      : result.equal_range (port_out) | boost::adaptors::map_values
-      )
+  std::multimap<std::string, pnet::type::value::value_type> expected;
+  for (long i (0); i < n; ++i)
   {
-    ++number_of_id[id];
+    for (long j (0); j < n - i - 1; ++j)
+    {
+      expected.emplace ("out", i);
+    }
   }
-
-  for (long id (0); id < n - 1; ++id)
-  {
-    BOOST_REQUIRE_EQUAL
-      (number_of_id.count (pnet::type::value::value_type (id)), 1);
-    BOOST_REQUIRE_EQUAL
-      (number_of_id.at (pnet::type::value::value_type (id)) + id, n - 1);
-  }
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }
 
 BOOST_AUTO_TEST_CASE (share_example_use_sequence_bounded)
@@ -117,26 +106,10 @@ BOOST_AUTO_TEST_CASE (share_example_use_sequence_bounded)
   std::multimap<std::string, pnet::type::value::value_type> const result
     (get_result ("use_sequence_bounded", n));
 
-  BOOST_REQUIRE_EQUAL (result.size(), n);
-
-  std::string const port_out ("out");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_out), result.size());
-
-  std::map<pnet::type::value::value_type, int> number_of_id;
-
-  for ( pnet::type::value::value_type id
-      : result.equal_range (port_out) | boost::adaptors::map_values
-      )
+  std::multimap<std::string, pnet::type::value::value_type> expected;
+  for (long i (0); i < n; ++i)
   {
-    ++number_of_id[id];
+    expected.emplace ("out", i);
   }
-
-  for (long id (0); id < n - 1; ++id)
-  {
-    BOOST_REQUIRE_EQUAL
-      (number_of_id.count (pnet::type::value::value_type (id)), 1);
-    BOOST_REQUIRE_EQUAL
-      (number_of_id.at (pnet::type::value::value_type (id)), 1);
-  }
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

@@ -16,6 +16,8 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
 
@@ -128,11 +130,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
         )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-  BOOST_REQUIRE_EQUAL (result.count ("port_is_used"), 1);
-
-  BOOST_REQUIRE_EQUAL
-    ( result.find ("port_is_used")->second
-    , pnet::type::value::value_type (true)
-    );
+  decltype (result) const expected {{"port_is_used", true}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }

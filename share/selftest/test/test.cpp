@@ -16,7 +16,9 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/random/string.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -79,14 +81,7 @@ BOOST_AUTO_TEST_CASE (share_selftest)
           (gspc::workflow (make.pnet()), {{"challenge", challenge}})
       );
 
-    BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-    std::string const port_response ("response");
-
-    BOOST_REQUIRE_EQUAL (result.count (port_response), 1);
-
-    BOOST_CHECK_EQUAL
-      ( result.find (port_response)->second
-      , pnet::type::value::value_type ("sdpa.response." + challenge)
-      );
+    decltype (result) const expected
+      {{"response", "sdpa.response." + challenge}};
+    FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }
