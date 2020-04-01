@@ -314,9 +314,11 @@ namespace we
     Requirements_and_preferences activity_t::requirements_and_preferences
       (gpi::pc::client::api_t* virtual_memory_api) const
     {
+      auto const context (evaluation_context());
+
       schedule_data const schedule_data
         ( eval_schedule_data<unsigned long>
-            (_transition, evaluation_context(), "num_worker")
+            (_transition, context, "num_worker")
         );
 
       auto const num_required_workers (schedule_data.num_worker());
@@ -343,8 +345,6 @@ namespace we
               return null_transfer_cost;
             }
 
-            expr::eval::context const context {evaluation_context()};
-
             auto vm_transfers (_transition.module_call()->gets (context));
 
             auto puts_before
@@ -368,8 +368,7 @@ namespace we
         , computational_cost
         , !_transition.module_call()
           ? 0UL
-          : _transition.module_call()
-            ->memory_buffer_size_total (evaluation_context())
+          : _transition.module_call()->memory_buffer_size_total (context)
         , _transition.preferences()
         };
     }
