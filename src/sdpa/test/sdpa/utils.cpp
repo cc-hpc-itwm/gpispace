@@ -76,7 +76,7 @@ namespace utils
                                            )
                         );
     we::type::activity_t act (transition, boost::none);
-    act.add_input ( transition.input_port_by_name (port_name)
+    act.add_input ( port_name
                   //! \todo Investigate why we can't take a random
                   //! string with \\ or \": parse error on deserialization
                   , fhg::util::testing::random_string_without ("\\\"")

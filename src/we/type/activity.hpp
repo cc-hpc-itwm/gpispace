@@ -81,7 +81,7 @@ namespace we
 
         const input_t& input() const;
         void add_input
-          ( we::port_id_type const&
+          ( std::string const& port_name
           , pnet::type::value::value_type const&
           );
 
@@ -132,6 +132,11 @@ namespace we
         friend class net_type;
         input_t _input;
         output_t _output;
+
+        void add_input
+          ( we::port_id_type const&
+          , pnet::type::value::value_type const&
+          );
       };
     }
 }

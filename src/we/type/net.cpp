@@ -580,9 +580,12 @@ namespace we
 
       do_delete
         ( do_extract ( tid
-                     , std::bind ( &we::type::activity_t::add_input, &act
-                                 , std::placeholders::_1, std::placeholders::_2
-                                 )
+                     , [&] ( port_id_type port_id
+                           , pnet::type::value::value_type const& value
+                           )
+                       {
+                         act.add_input (port_id, value);
+                       }
                      )
         );
 

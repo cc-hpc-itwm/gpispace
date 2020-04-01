@@ -533,9 +533,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
     );
 
   we::type::activity_t activity (transition, boost::none);
-  activity.add_input ( transition.input_port_by_name ("in")
-                     , pnet::type::value::read ("1L")
-                     );
+  activity.add_input ("in", pnet::type::value::read ("1L"));
 
   we::layer::id_type const id (generate_id());
 
@@ -587,12 +585,10 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     (transition.output_port_by_name ("out"), value::CONTROL);
 
   we::type::activity_t activity_input (transition, boost::none);
-  activity_input.add_input
-    (transition.input_port_by_name ("in"), value::CONTROL);
+  activity_input.add_input ("in", value::CONTROL);
 
   we::type::activity_t activity_child (transition, we::transition_id_type (0));
-  activity_child.add_input
-    (transition.input_port_by_name ("in"), value::CONTROL);
+  activity_child.add_input ("in", value::CONTROL);
 
   we::type::activity_t activity_result (transition, we::transition_id_type (0));
   activity_result.add_output
@@ -1430,8 +1426,7 @@ namespace
 
     we::type::activity_t activity_child
       (transition_child, transition_id_child);
-    activity_child.add_input
-      (transition_child.input_port_by_name ("in"), value::CONTROL);
+    activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
       (transition_child, transition_id_child);
@@ -1805,7 +1800,7 @@ namespace
                        );
 
    we::type::activity_t activity (transition, boost::none);
-   activity.add_input ( transition.input_port_by_name (port_name)
+   activity.add_input ( port_name
                       , fhg::util::testing::random_string_without ("\\\"")
                       );
 
@@ -1933,7 +1928,7 @@ namespace
       , result_no_eureka (child)
     {
       child.add_input
-        ( t.input_port_by_name ("in")
+        ( "in"
         , value::CONTROL
         );
       result_eureka.add_output

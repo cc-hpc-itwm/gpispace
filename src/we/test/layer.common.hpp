@@ -119,8 +119,7 @@ namespace
 
     we::type::activity_t activity_child
       (transition_child, transition_id_child);
-    activity_child.add_input
-      (transition_child.input_port_by_name ("in"), value::CONTROL);
+    activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
       (transition_child, transition_id_child);

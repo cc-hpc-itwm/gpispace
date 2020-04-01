@@ -86,6 +86,13 @@ namespace we
     }
 
     void activity_t::add_input
+      ( std::string const& port_name
+      , pnet::type::value::value_type const& value
+      )
+    {
+      return add_input (_transition.input_port_by_name (port_name), value);
+    }
+    void activity_t::add_input
       ( we::port_id_type const& port_id
       , pnet::type::value::value_type const& value
       )
@@ -247,7 +254,7 @@ namespace we
       for (auto const& token_on_port : _input)
       {
         context.bind_ref
-          ( transition().ports_input().at (token_on_port.second).name()
+          ( _transition.ports_input().at (token_on_port.second).name()
           , token_on_port.first
           );
       }

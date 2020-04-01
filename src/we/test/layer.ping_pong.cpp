@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     xml::parse::post_processing_passes (parsed, &parser_state);
     we::type::activity_t activity
       (xml::parse::xml_to_we (parsed, parser_state));
-    activity.add_input (activity.transition().input_port_by_name ("n"), N);
+    activity.add_input ("n", N);
     layer.submit (we::layer::id_type(), activity);
   }
 

@@ -131,7 +131,7 @@ namespace
                         );
 
     we::type::activity_t activity (transition, boost::none);
-    activity.add_input ( transition.input_port_by_name (port_name)
+    activity.add_input ( port_name
                        , fhg::util::testing::random_string_without ("\\\"")
                        );
 
