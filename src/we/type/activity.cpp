@@ -366,17 +366,12 @@ namespace we
             return virtual_memory_api->transfer_costs (vm_transfers);
           }()
         , computational_cost
-        , memory_buffer_size_total()
+        , !_transition.module_call()
+          ? 0UL
+          : _transition.module_call()
+            ->memory_buffer_size_total (evaluation_context())
         , _transition.preferences()
         };
-    }
-    unsigned long activity_t::memory_buffer_size_total() const
-    {
-      return !_transition.module_call()
-        ? 0UL
-        : _transition.module_call()
-          ->memory_buffer_size_total (evaluation_context())
-        ;
     }
 
     std::list<we::type::requirement_t> const activity_t::requirements() const
