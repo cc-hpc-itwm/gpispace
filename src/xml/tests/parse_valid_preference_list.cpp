@@ -71,11 +71,10 @@ BOOST_AUTO_TEST_CASE (xml_parse_valid_preferences_and_propagate_to_we)
   xml::parse::type::function_type fun
     = xml::parse::just_parse (state, input_stream);
 
-  we::type::activity_t activity
-    (xml::parse::xml_to_we (fun, state));
+  auto const transition (xml::parse::xml_to_we (fun, state));
 
   const std::list<xml::parse::type::preference_type>& out_targets
-    = activity.preferences();
+    = transition.preferences();
 
   BOOST_REQUIRE_EQUAL (multi_mod.test_targets, out_targets);
 }

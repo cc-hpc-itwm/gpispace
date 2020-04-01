@@ -45,7 +45,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 
@@ -2208,7 +2208,7 @@ namespace xml
       type::dump::dump (s, function);
     }
 
-    we::type::activity_t xml_to_we
+    we::type::transition_t xml_to_we
       ( const xml::parse::type::function_type& function
       , const xml::parse::state::type& state
       )
@@ -2222,8 +2222,7 @@ namespace xml
       std::unordered_map<std::string, we::port_id_type> port_id_out;
       std::unordered_map<we::port_id_type, std::string> real_place_names;
 
-      we::type::transition_t trans
-        ( function.synthesize
+      return function.synthesize
           ( function.name().get_value_or ("anonymous")
           , state
           , port_id_in
@@ -2235,9 +2234,7 @@ namespace xml
           , {}
           , real_place_names
           )
-        );
-
-      return we::type::activity_t (trans, boost::none);
+        ;
     }
   } // namespace parse
 } // namespace xml
