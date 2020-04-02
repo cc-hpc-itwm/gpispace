@@ -124,8 +124,9 @@ namespace we
           , we::eureka_response_callback const& = &net_type::unexpected_eureka
           );
 
-      void inject ( activity_t const&
-                  , transition_id_type
+      void inject ( transition_id_type
+                  , TokensOnPorts const& output
+                  , TokensOnPorts const& input //! \todo remember input
                   , workflow_response_callback
                   = [] ( pnet::type::value::value_type const&
                        , pnet::type::value::value_type const&

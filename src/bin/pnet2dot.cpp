@@ -239,8 +239,8 @@ namespace
     , id_type&
     , const options&
     , fhg::util::indenter&
-    , boost::optional<we::type::activity_t::TokensOnPorts> input
-    , boost::optional<we::type::activity_t::TokensOnPorts> output
+    , boost::optional<we::type::TokensOnPorts> input
+    , boost::optional<we::type::TokensOnPorts> output
     );
 
   class visit_transition : public boost::static_visitor<std::string>
@@ -422,8 +422,8 @@ namespace
     , id_type& id
     , const options& opts
     , fhg::util::indenter& indent
-    , boost::optional<we::type::activity_t::TokensOnPorts> input
-    , boost::optional<we::type::activity_t::TokensOnPorts> output
+    , boost::optional<we::type::TokensOnPorts> input
+    , boost::optional<we::type::TokensOnPorts> output
     )
   {
     std::ostringstream s;

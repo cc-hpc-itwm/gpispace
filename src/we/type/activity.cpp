@@ -266,8 +266,9 @@ namespace we
                             )
     {
       return _transition.mutable_net()
-        . inject ( result
-                 , *result._transition_id
+        . inject ( *result._transition_id
+                 , result.output()
+                 , result._input
                  , std::move (workflow_response)
                  , std::move (eureka_response)
                  );
@@ -292,12 +293,12 @@ namespace we
         ;
     }
 
-    const activity_t::TokensOnPorts& activity_t::input() const
+    const TokensOnPorts& activity_t::input() const
     {
       return _input;
     }
 
-    activity_t::TokensOnPorts activity_t::output() const
+    TokensOnPorts activity_t::output() const
     {
       if (_transition.net())
       {

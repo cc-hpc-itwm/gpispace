@@ -7,10 +7,8 @@
 #include <we/loader/loader.hpp>
 #include <we/plugin/Plugins.hpp>
 #include <we/type/eureka.hpp>
-#include <we/type/id.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
-#include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
 
@@ -51,12 +49,6 @@ namespace we
 
     class activity_t
     {
-    public:
-      using TokenOnPort = std::pair< pnet::type::value::value_type
-                                   , we::port_id_type
-                                   >;
-      using TokensOnPorts = std::vector<TokenOnPort>;
-
     public:
       explicit activity_t () = default;
       explicit activity_t (we::type::transition_t);

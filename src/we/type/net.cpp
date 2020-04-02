@@ -852,13 +852,14 @@ namespace we
       }
     }
 
-    void net_type::inject ( activity_t const& child
-                          , transition_id_type tid
+    void net_type::inject ( transition_id_type tid
+                          , TokensOnPorts const& output
+                          , TokensOnPorts const& input
                           , workflow_response_callback workflow_response
                           , eureka_response_callback eureka_response
                           )
     {
-      for (auto const& token_on_port : child.output())
+      for (auto const& token_on_port : output)
       {
         if (  _port_to_place.count (tid)
            && _port_to_place.at (tid).count (token_on_port.second)
@@ -920,7 +921,7 @@ namespace we
                 assert (_port_to_response.at (tid).count (token_on_port.second));
 
                pnet::type::value::value_type const description
-                   ([this, &child, tid, &token_on_port]
+                   ([this, &input, tid, &token_on_port]
                    {
                      std::string const to
                        (_port_to_response.at (tid).at (token_on_port.second).first);
@@ -928,8 +929,8 @@ namespace we
                        (_tmap.at (tid).input_port_by_name (to));
 
                     return std::find_if
-                       ( child._input.begin(), child._input.end()
-                       , [&input_port_id] (activity_t::TokenOnPort const& input_token_on_port)
+                       ( input.begin(), input.end()
+                       , [&input_port_id] (TokenOnPort const& input_token_on_port)
                          {
                            return input_token_on_port.second == input_port_id;
                          }
