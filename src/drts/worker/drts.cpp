@@ -77,13 +77,15 @@ namespace
       ( we::loader::loader& module_loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
       , gspc::scoped_allocation /*const*/* shared_memory
-      , wfe_task_t& target
+      , boost::optional<std::string> target_implementation
+      , drts::worker::context* context
       , we::type::activity_t& activity
       )
       : loader (module_loader)
       , _virtual_memory_api (virtual_memory_api)
       , _shared_memory (shared_memory)
-      , task (target)
+      , _target_implementation (target_implementation)
+      , _context (context)
       , _activity (activity)
     {}
 
@@ -100,7 +102,7 @@ namespace
           ( we::loader::module_call ( loader
                                     , _virtual_memory_api
                                     , _shared_memory
-                                    , &task.context
+                                    , _context
                                     , _activity.evaluation_context()
                                     , mod
                                     )
@@ -121,7 +123,7 @@ namespace
 
     void operator() (we::type::multi_module_call_t const& multi_mod) const
     {
-      if (!task.target_impl)
+      if (!_target_implementation)
       {
         std::throw_with_nested
           ( std::runtime_error
@@ -132,12 +134,12 @@ namespace
           );
       }
 
-      auto const& mod_it = multi_mod.find (*task.target_impl);
+      auto const& mod_it = multi_mod.find (*_target_implementation);
       if (mod_it == multi_mod.end())
       {
         std::throw_with_nested
           ( std::runtime_error
-              ( "no module for target '" + *task.target_impl + "' found"
+              ( "no module for target '" + *_target_implementation + "' found"
                 " found in multi-module transition '"
                 + _activity.transition().name() + "'"
               )
@@ -156,7 +158,8 @@ namespace
     we::loader::loader& loader;
     gpi::pc::client::api_t /*const*/* _virtual_memory_api;
     gspc::scoped_allocation /*const*/* _shared_memory;
-    wfe_task_t& task;
+    boost::optional<std::string> _target_implementation;
+    drts::worker::context* _context;
     we::type::activity_t& _activity;
   };
 }
@@ -602,7 +605,8 @@ try
         boost::apply_visitor ( wfe_exec_context ( m_loader
                                                 , _virtual_memory_api
                                                 , _shared_memory
-                                                , task
+                                                , task.target_impl
+                                                , &task.context
                                                 , task.activity
                                                 )
                              , task.activity.transition().data()
