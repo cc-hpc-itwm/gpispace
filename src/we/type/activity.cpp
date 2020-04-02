@@ -334,8 +334,18 @@ namespace we
 
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
+      auto requirements (_transition.requirements());
+
+      auto dynamic_requirement
+        (eval_dynamic_requirement (_transition, context));
+
+      if (dynamic_requirement)
+      {
+        requirements.emplace_back (dynamic_requirement.get(), true);
+      }
+
       return
-        { requirements()
+        { requirements
         , std::move (schedule_data)
         , [&]
           {
@@ -371,21 +381,6 @@ namespace we
           : _transition.module_call()->memory_buffer_size_total (context)
         , _transition.preferences()
         };
-    }
-
-    std::list<we::type::requirement_t> const activity_t::requirements() const
-    {
-      std::list<we::type::requirement_t> requirements (_transition.requirements());
-
-      boost::optional<std::string> dynamic_requirement
-        (eval_dynamic_requirement (_transition, evaluation_context()));
-
-      if (dynamic_requirement)
-      {
-        requirements.emplace_back (dynamic_requirement.get(), true);
-      }
-
-      return requirements;
     }
 
     std::list<we::type::preference_t>

@@ -111,8 +111,6 @@ namespace we
         Requirements_and_preferences requirements_and_preferences
           (gpi::pc::client::api_t*) const;
 
-        std::list<we::type::requirement_t> const requirements() const;
-
         std::list<we::type::preference_t> const preferences_TESTING_ONLY() const;
 
       private:
