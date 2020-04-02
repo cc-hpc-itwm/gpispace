@@ -1,5 +1,6 @@
 #include <we/type/activity.hpp>
 
+#include <we/loader/module_call.hpp>
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 
@@ -8,6 +9,10 @@
 
 #include <gpi-space/pc/client/api.hpp>
 
+#include <drts/private/scoped_allocation.hpp>
+
+#include <drts/worker/context.hpp>
+
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/format.hpp>
@@ -15,6 +20,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <list>
@@ -23,6 +29,104 @@
 #include <string>
 #include <unordered_map>
 #include <utility>
+
+namespace
+{
+  struct wfe_exec_context : public boost::static_visitor<expr::eval::context>
+  {
+    wfe_exec_context
+      ( we::loader::loader& loader
+      , gpi::pc::client::api_t /*const*/* virtual_memory
+      , gspc::scoped_allocation /*const*/* shared_memory
+      , boost::optional<std::string> target_implementation
+      , drts::worker::context* worker_context
+      , expr::eval::context const& evaluation_context
+      , std::string const& name
+      )
+      : _loader (loader)
+      , _virtual_memory (virtual_memory)
+      , _shared_memory (shared_memory)
+      , _target_implementation (target_implementation)
+      , _worker_context (worker_context)
+      , _evaluation_context (evaluation_context)
+      , _name (name)
+    {}
+
+    expr::eval::context operator() (we::type::net_type const&) const
+    {
+      throw std::logic_error ("wfe_exec_context (net)");
+    }
+    expr::eval::context operator() (we::type::expression_t const&) const
+    {
+      throw std::logic_error ("wfe_exec_context (expression)");
+    }
+
+    expr::eval::context operator() (we::type::module_call_t const& mod) const
+    {
+      try
+      {
+        return we::loader::module_call
+          ( _loader
+          , _virtual_memory
+          , _shared_memory
+          , _worker_context
+          , _evaluation_context
+          , mod
+          );
+      }
+      catch (drts::worker::context::cancelled const&)
+      {
+        throw;
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ("call to '" + mod.module() + "::" + mod.function() + "' failed")
+          );
+      }
+    }
+
+    expr::eval::context operator()
+      (we::type::multi_module_call_t const& multi_mod) const
+    {
+      if (!_target_implementation)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "no target selected for multi-module transition '"
+                + _name
+                + "' failed"
+              )
+          );
+      }
+
+      auto const& mod_it = multi_mod.find (*_target_implementation);
+      if (mod_it == multi_mod.end())
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ( "no module for target '" + *_target_implementation + "' found"
+                " found in multi-module transition '"
+                + _name
+              )
+          );
+      }
+
+      return (*this) (mod_it->second);
+    }
+
+
+  private:
+    we::loader::loader& _loader;
+    gpi::pc::client::api_t /*const*/* _virtual_memory;
+    gspc::scoped_allocation /*const*/* _shared_memory;
+    boost::optional<std::string> _target_implementation;
+    drts::worker::context* _worker_context;
+    expr::eval::context const& _evaluation_context;
+    std::string const& _name;
+  };
+}
 
 namespace we
 {
@@ -267,6 +371,29 @@ namespace we
       }
 
       return port_ids_with_output.size() != _transition.ports_output().size();
+    }
+
+    void activity_t::execute
+      ( we::loader::loader& loader
+      , gpi::pc::client::api_t /*const*/ * virtual_memory
+      , gspc::scoped_allocation /* const */ * shared_memory
+      , boost::optional<std::string> target_implementation
+      , drts::worker::context* worker_context
+      )
+    {
+      add_output
+        ( boost::apply_visitor
+          ( wfe_exec_context ( loader
+                             , virtual_memory
+                             , shared_memory
+                             , std::move (target_implementation)
+                             , worker_context
+                             , evaluation_context()
+                             , _transition.name()
+                             )
+          , _transition.data()
+          )
+        );
     }
 
     expr::eval::context activity_t::evaluation_context() const

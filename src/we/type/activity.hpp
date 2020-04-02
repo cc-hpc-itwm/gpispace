@@ -17,6 +17,9 @@
 #include <we/type/value/serialize.hpp>
 
 #include <we/expr/eval/context.hpp>
+#include <we/loader/loader.hpp>
+
+#include <drts/worker/context_fwd.hpp>
 
 #include <sdpa/requirements_and_preferences.hpp>
 
@@ -40,6 +43,11 @@ namespace gpi
       class api_t;
     }
   }
+}
+
+namespace gspc
+{
+  class scoped_allocation;
 }
 
 namespace we
@@ -96,12 +104,16 @@ namespace we
           );
 
         output_t output() const;
-        void add_output (expr::eval::context const&);
 
         bool wait_for_output() const;
 
-        //! \note context contains references to input
-        expr::eval::context evaluation_context() const;
+        void execute
+          ( we::loader::loader&
+          , gpi::pc::client::api_t /*const*/ *
+          , gspc::scoped_allocation /* const */ *
+          , boost::optional<std::string> target_implementation
+          , drts::worker::context*
+          );
 
         Requirements_and_preferences requirements_and_preferences
           (gpi::pc::client::api_t*) const;
@@ -144,6 +156,10 @@ namespace we
           ( we::port_id_type const&
           , pnet::type::value::value_type const&
           );
+        void add_output (expr::eval::context const&);
+
+        //! \note context contains references to input
+        expr::eval::context evaluation_context() const;
       };
     }
 }
