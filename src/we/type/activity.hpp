@@ -131,6 +131,8 @@ namespace we
       input_t _input;
       output_t _output;
 
+      mutable bool _evaluation_context_requested {false};
+
       explicit activity_t
         ( we::type::transition_t
         , boost::optional<we::transition_id_type>

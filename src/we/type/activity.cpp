@@ -216,6 +216,12 @@ namespace we
       , pnet::type::value::value_type const& value
       )
     {
+      if (_evaluation_context_requested)
+      {
+        throw std::logic_error
+          ("add_input after evaluation context has been requested");
+      }
+
       if (_transition.net())
       {
         //! \todo is the conditional neccessary? isn't is ensured already?
@@ -402,6 +408,8 @@ namespace we
       {
         throw std::logic_error ("evaluation context for net is undefined");
       }
+
+      _evaluation_context_requested = true;
 
       expr::eval::context context;
 

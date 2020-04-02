@@ -12,6 +12,7 @@ namespace we
       ar & BOOST_SERIALIZATION_NVP (_transition_id);
       ar & BOOST_SERIALIZATION_NVP (_input);
       ar & BOOST_SERIALIZATION_NVP (_output);
+      ar & BOOST_SERIALIZATION_NVP (_evaluation_context_requested);
     }
   }
 }
