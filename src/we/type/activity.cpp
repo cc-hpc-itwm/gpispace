@@ -233,6 +233,11 @@ namespace we
     }
     void activity_t::add_output (expr::eval::context const& output)
     {
+      if (_transition.net())
+      {
+        throw std::logic_error ("add_output for subnetwork");
+      }
+
       for (auto const& port_by_id : _transition.ports_output())
       {
         add_output
