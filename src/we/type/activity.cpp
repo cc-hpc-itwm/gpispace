@@ -255,6 +255,11 @@ namespace we
 
     expr::eval::context activity_t::evaluation_context() const
     {
+      if (_transition.net())
+      {
+        throw std::logic_error ("evaluation context for net is undefined");
+      }
+
       expr::eval::context context;
 
       for (auto const& token_on_port : _input)
