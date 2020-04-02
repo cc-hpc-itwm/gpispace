@@ -929,7 +929,7 @@ namespace we
 
                     return std::find_if
                        ( child._input.begin(), child._input.end()
-                       , [&input_port_id] (activity_t::token_on_port_t const& input_token_on_port)
+                       , [&input_port_id] (activity_t::TokenOnPort const& input_token_on_port)
                          {
                            return input_token_on_port.second == input_port_id;
                          }

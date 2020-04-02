@@ -292,16 +292,16 @@ namespace we
         ;
     }
 
-    const activity_t::input_t& activity_t::input() const
+    const activity_t::TokensOnPorts& activity_t::input() const
     {
       return _input;
     }
 
-    activity_t::output_t activity_t::output() const
+    activity_t::TokensOnPorts activity_t::output() const
     {
       if (_transition.net())
       {
-        output_t output;
+        TokensOnPorts output;
 
         for ( we::type::transition_t::port_map_t::value_type const& p
             : _transition.ports_output()
@@ -362,7 +362,7 @@ namespace we
         return false;
       }
 
-      output_t const out (output());
+      TokensOnPorts const out (output());
 
       if (out.size() < _transition.ports_output().size())
       {

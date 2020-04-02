@@ -52,12 +52,10 @@ namespace we
     class activity_t
     {
     public:
-      typedef std::pair< pnet::type::value::value_type
-                       , we::port_id_type
-                       > token_on_port_t;
-      typedef std::vector<token_on_port_t> token_on_port_list_t;
-      typedef token_on_port_list_t input_t;
-      typedef token_on_port_list_t output_t;
+      using TokenOnPort = std::pair< pnet::type::value::value_type
+                                   , we::port_id_type
+                                   >;
+      using TokensOnPorts = std::vector<TokenOnPort>;
 
     public:
       explicit activity_t () = default;
@@ -90,13 +88,13 @@ namespace we
       activity_t wrap() const;
       activity_t unwrap() const;
 
-      const input_t& input() const;
+      const TokensOnPorts& input() const;
       void add_input
         ( std::string const& port_name
         , pnet::type::value::value_type const&
         );
 
-      output_t output() const;
+      TokensOnPorts output() const;
 
       bool wait_for_output() const;
 
@@ -128,8 +126,8 @@ namespace we
       boost::optional<we::transition_id_type> _transition_id;
 
       friend class net_type;
-      input_t _input;
-      output_t _output;
+      TokensOnPorts _input;
+      TokensOnPorts _output;
 
       mutable bool _evaluation_context_requested {false};
 
