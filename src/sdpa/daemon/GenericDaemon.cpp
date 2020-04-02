@@ -220,6 +220,22 @@ std::string GenericDaemon::gen_id()
     }
 
 
+    Job* GenericDaemon::addJobWithNoPreferences
+      ( const sdpa::job_id_t& job_id
+      , we::type::activity_t activity
+      , job_source source
+      , job_handler handler
+      )
+    {
+      return addJob
+        ( job_id
+        , std::move (activity)
+        , std::move (source)
+        , std::move (handler)
+        , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
+        );
+    }
+
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
@@ -426,7 +442,8 @@ void GenericDaemon::handleSubmitJobEvent
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   auto const maybe_master (master_by_address (source));
-  Job* const pJob (addJob ( job_id
+  Job* const pJob (addJobWithNoPreferences
+                          ( job_id
                           , e.activity()
                           , maybe_master
                           ? job_source (job_source_master {*maybe_master})
@@ -434,7 +451,6 @@ void GenericDaemon::handleSubmitJobEvent
                           , hasWorkflowEngine()
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
-                          , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
                           )
                   );
 
