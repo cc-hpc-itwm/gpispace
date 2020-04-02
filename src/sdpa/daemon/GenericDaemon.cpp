@@ -621,7 +621,10 @@ try
   if (activity.transition().net())
   {
     workflow_engine_submit
-      (job_id, addJob (job_id, activity, job_source_wfe(), job_handler_wfe()));
+      ( job_id
+      , addJobWithNoPreferences
+          (job_id, activity, job_source_wfe(), job_handler_wfe())
+      );
   }
   else
   {
