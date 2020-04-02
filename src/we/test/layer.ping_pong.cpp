@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     BOOST_REQUIRE_EQUAL (activity.transition().name(), names[current]);
     current = !current;
 
-    activity.add_output
+    activity.add_output_TESTING_ONLY
       ( "seq"
       , activity.input().front().first
       );

@@ -216,7 +216,7 @@ namespace we
       }
     }
 
-    void activity_t::add_output
+    void activity_t::add_output_TESTING_ONLY
       ( std::string const& port_name
       , pnet::type::value::value_type const& value
       )

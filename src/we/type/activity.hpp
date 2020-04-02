@@ -95,10 +95,6 @@ namespace we
           );
 
         output_t output() const;
-        void add_output
-          ( std::string const& port_name
-          , pnet::type::value::value_type const&
-          );
         void add_output (expr::eval::context const&);
 
         bool wait_for_output() const;
@@ -109,6 +105,10 @@ namespace we
         Requirements_and_preferences requirements_and_preferences
           (gpi::pc::client::api_t*) const;
 
+        void add_output_TESTING_ONLY
+          ( std::string const& port_name
+          , pnet::type::value::value_type const&
+          );
         std::list<we::type::preference_t> const preferences_TESTING_ONLY() const;
 
       private:

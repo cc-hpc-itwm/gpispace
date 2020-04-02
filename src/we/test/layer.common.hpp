@@ -122,7 +122,7 @@ namespace
 
     we::type::activity_t activity_result
       (transition_child, transition_id_child);
-    activity_result.add_output ("out", value::CONTROL);
+    activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
     return std::make_tuple
       (activity_input, activity_output, activity_child, activity_result);
