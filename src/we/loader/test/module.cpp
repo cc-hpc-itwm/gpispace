@@ -155,7 +155,11 @@ BOOST_AUTO_TEST_CASE (ensures_library_unloads_properly)
   auto const libempty_nodelete ("./libempty_nodelete.so");
 
   fhg::util::testing::require_exception
-    ( [&] { we::loader::Module {libempty_nodelete}; }
+    ( [&]
+      {
+        we::loader::Module
+          {we::loader::RequireModuleUnloadsWithoutRest{}, libempty_nodelete};
+      }
     , we::loader::module_load_failed
         ( libempty_nodelete
         , we::loader::module_does_not_unload

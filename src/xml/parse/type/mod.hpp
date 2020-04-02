@@ -39,7 +39,7 @@ namespace xml
                     , const std::list<std::string>& cxxflags
                     , const boost::optional<bool> &pass_context
                     , const boost::optional<we::type::eureka_id_type> &eureka_id
-                      = boost::none
+                    , bool require_module_unloads_without_rest
                     );
 
         const std::string& name() const;
@@ -57,10 +57,9 @@ namespace xml
         const std::list<std::string>& cxxflags() const;
         bool pass_context () const;
         const boost::optional<we::type::eureka_id_type>& eureka_id() const;
+        bool require_module_unloads_without_rest() const;
 
         bool operator== (const module_type&) const;
-
-        friend std::size_t hash_value (const module_type&);
 
       private:
         std::string _name;
@@ -77,6 +76,7 @@ namespace xml
         std::list<std::string> _cxxflags;
         boost::optional<bool> _pass_context;
         boost::optional<we::type::eureka_id_type> _eureka_id;
+        bool _require_module_unloads_without_rest;
       };
 
       std::size_t hash_value (const module_type&);

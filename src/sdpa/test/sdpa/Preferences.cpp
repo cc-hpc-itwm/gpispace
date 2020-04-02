@@ -40,6 +40,7 @@ namespace
           , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
+          , true
           )
         );
     }

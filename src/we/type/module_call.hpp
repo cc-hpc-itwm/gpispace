@@ -44,16 +44,21 @@ namespace we { namespace type {
       , std::unordered_map<std::string, memory_buffer_info_t>&& memory_buffers
       , std::list<memory_transfer>&& memory_gets
       , std::list<memory_transfer>&& memory_puts
+      , bool require_module_unloads_without_rest
       )
       : module_(module)
       , function_(function)
       , _memory_buffers (memory_buffers)
       , _memory_gets (memory_gets)
       , _memory_puts (memory_puts)
+      , _require_module_unloads_without_rest
+          (require_module_unloads_without_rest)
     {}
 
     const std::string & module () const { return module_; }
     const std::string & function () const { return function_; }
+
+    bool require_module_unloads_without_rest() const;
 
     std::unordered_map<std::string, memory_buffer_info_t> const& memory_buffers() const
     {
@@ -99,6 +104,7 @@ namespace we { namespace type {
     std::unordered_map<std::string, memory_buffer_info_t> _memory_buffers;
     std::list<memory_transfer> _memory_gets;
     std::list<memory_transfer> _memory_puts;
+    bool _require_module_unloads_without_rest;
 
     friend class boost::serialization::access;
     template<typename Archive>
@@ -109,6 +115,7 @@ namespace we { namespace type {
       ar & BOOST_SERIALIZATION_NVP (_memory_buffers);
       ar & BOOST_SERIALIZATION_NVP (_memory_gets);
       ar & BOOST_SERIALIZATION_NVP (_memory_puts);
+      ar & BOOST_SERIALIZATION_NVP (_require_module_unloads_without_rest);
     }
   };
 
