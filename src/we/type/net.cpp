@@ -925,7 +925,7 @@ namespace we
                      std::string const to
                        (_port_to_response.at (tid).at (token_on_port.second).first);
                     we::port_id_type const input_port_id
-                       (child.transition().input_port_by_name (to));
+                       (_tmap.at (tid).input_port_by_name (to));
 
                     return std::find_if
                        ( child._input.begin(), child._input.end()
