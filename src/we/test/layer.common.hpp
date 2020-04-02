@@ -121,7 +121,7 @@ namespace
     activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
-      (transition_child, transition_id_child);
+      (we::type::TESTING_ONLY{}, transition_child, transition_id_child);
     activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
     return std::make_tuple

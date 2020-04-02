@@ -31,7 +31,8 @@ namespace we
     activity_t::activity_t (we::type::transition_t transition)
       : activity_t (std::move (transition), boost::none)
     {}
-    activity_t::activity_t ( we::type::transition_t transition
+    activity_t::activity_t ( TESTING_ONLY
+                           , we::type::transition_t transition
                            , we::transition_id_type transition_id
                            )
       : activity_t ( std::move (transition)

@@ -589,7 +589,8 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   we::type::activity_t activity_child (transition);
   activity_child.add_input ("in", value::CONTROL);
 
-  we::type::activity_t activity_result (transition, we::transition_id_type (0));
+  we::type::activity_t activity_result
+    (we::type::TESTING_ONLY{}, transition, we::transition_id_type (0));
   activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
   we::layer::id_type const id (generate_id());
@@ -1426,7 +1427,7 @@ namespace
     activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
-      (transition_child, transition_id_child);
+      (we::type::TESTING_ONLY{}, transition_child, transition_id_child);
     activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
     return std::make_tuple
@@ -1918,7 +1919,7 @@ namespace
       , we::transition_id_type const& t_id
       , std::set<we::type::eureka_id_type> const& h_set
       )
-      : child (t, t_id)
+      : child (we::type::TESTING_ONLY{}, t, t_id)
       , result_eureka (child)
       , result_no_eureka (child)
     {

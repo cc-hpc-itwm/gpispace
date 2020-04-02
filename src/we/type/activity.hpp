@@ -46,6 +46,8 @@ namespace we
 {
     namespace type
     {
+      struct TESTING_ONLY{};
+
       class activity_t
       {
       public:
@@ -59,7 +61,6 @@ namespace we
       public:
         explicit activity_t () = default;
         explicit activity_t (we::type::transition_t);
-        explicit activity_t (we::type::transition_t, we::transition_id_type);
 
         explicit activity_t (const boost::filesystem::path&);
         explicit activity_t (std::istream&);
@@ -104,6 +105,12 @@ namespace we
 
         Requirements_and_preferences requirements_and_preferences
           (gpi::pc::client::api_t*) const;
+
+        explicit activity_t
+          ( TESTING_ONLY
+          , we::type::transition_t
+          , we::transition_id_type
+          );
 
         void add_output_TESTING_ONLY
           ( std::string const& port_name
