@@ -114,11 +114,10 @@ namespace
     std::tie (transition_out, std::ignore, std::ignore) =
       net_with_childs (false, token_count);
 
-    we::type::activity_t activity_input (transition_in, boost::none);
-    we::type::activity_t activity_output (transition_out, boost::none);
+    we::type::activity_t activity_input (transition_in);
+    we::type::activity_t activity_output (transition_out);
 
-    we::type::activity_t activity_child
-      (transition_child, transition_id_child);
+    we::type::activity_t activity_child (transition_child);
     activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result

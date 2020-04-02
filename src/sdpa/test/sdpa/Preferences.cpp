@@ -130,7 +130,7 @@ namespace
                                            )
                         );
 
-    we::type::activity_t activity (transition, boost::none);
+    we::type::activity_t activity (transition);
     activity.add_input ( port_name
                        , fhg::util::testing::random_string_without ("\\\"")
                        );
@@ -324,7 +324,6 @@ namespace
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 }

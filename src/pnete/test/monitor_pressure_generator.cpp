@@ -38,7 +38,6 @@ struct activity
                                     , we::type::property::type()
                                     , we::priority_type()
                                     )
-           , boost::none
            )
   {
     _workers.push_back (worker);

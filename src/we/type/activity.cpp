@@ -28,12 +28,22 @@ namespace we
 {
   namespace type
   {
+    activity_t::activity_t (we::type::transition_t transition)
+      : activity_t (std::move (transition), boost::none)
+    {}
+    activity_t::activity_t ( we::type::transition_t transition
+                           , we::transition_id_type transition_id
+                           )
+      : activity_t ( std::move (transition)
+                   , boost::optional<we::transition_id_type> (transition_id)
+                   )
+    {}
     activity_t::activity_t
-      ( const we::type::transition_t& transition
-      , boost::optional<we::transition_id_type> const& transition_id
+      ( we::type::transition_t transition
+      , boost::optional<we::transition_id_type> transition_id
       )
-        : _transition (transition)
-        , _transition_id (transition_id)
+        : _transition (std::move (transition))
+        , _transition_id (std::move (transition_id))
     {}
 
     namespace

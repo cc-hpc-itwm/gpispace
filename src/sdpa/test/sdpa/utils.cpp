@@ -75,7 +75,7 @@ namespace utils
                                            , we::type::property::type()
                                            )
                         );
-    we::type::activity_t act (transition, boost::none);
+    we::type::activity_t act (transition);
     act.add_input ( port_name
                   //! \todo Investigate why we can't take a random
                   //! string with \\ or \": parse error on deserialization
@@ -145,7 +145,6 @@ namespace utils
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 
@@ -240,7 +239,6 @@ namespace utils
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 

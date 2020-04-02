@@ -58,10 +58,8 @@ namespace we
 
       public:
         explicit activity_t () = default;
-        explicit activity_t
-          ( const we::type::transition_t&
-          , boost::optional<we::transition_id_type> const&
-          );
+        explicit activity_t (we::type::transition_t);
+        explicit activity_t (we::type::transition_t, we::transition_id_type);
 
         explicit activity_t (const boost::filesystem::path&);
         explicit activity_t (std::istream&);
@@ -114,6 +112,11 @@ namespace we
         std::list<we::type::preference_t> const preferences_TESTING_ONLY() const;
 
       private:
+        explicit activity_t
+          ( we::type::transition_t
+          , boost::optional<we::transition_id_type>
+          );
+
         friend class boost::serialization::access;
         template<class Archive>
           void serialize (Archive&, const unsigned int);

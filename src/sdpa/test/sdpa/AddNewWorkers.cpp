@@ -102,7 +102,6 @@ we::type::activity_t net_with_n_children (unsigned int n)
                              , we::type::property::type()
                              , we::priority_type()
                              )
-    , boost::none
     );
 }
 

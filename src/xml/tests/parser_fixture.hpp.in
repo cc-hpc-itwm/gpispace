@@ -59,7 +59,7 @@ namespace
     ::we::type::activity_t xml_to_we()
     {
       return ::we::type::activity_t
-        {::xml::parse::xml_to_we (*function, state), boost::none};
+        {::xml::parse::xml_to_we (*function, state)};
     }
 
     ::xml::parse::state::type state;

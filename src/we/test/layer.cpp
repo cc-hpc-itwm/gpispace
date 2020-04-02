@@ -532,13 +532,13 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
                       )
     );
 
-  we::type::activity_t activity (transition, boost::none);
+  we::type::activity_t activity (transition);
   activity.add_input ("in", pnet::type::value::read ("1L"));
 
   we::layer::id_type const id (generate_id());
 
   {
-    we::type::activity_t activity_expected (transition, boost::none);
+    we::type::activity_t activity_expected (transition);
     activity_expected.add_output
       ( "out"
       , pnet::type::value::read ("2L")
@@ -580,13 +580,13 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
                                          )
                       );
 
-  we::type::activity_t activity_output (transition, boost::none);
+  we::type::activity_t activity_output (transition);
   activity_output.add_output ("out", value::CONTROL);
 
-  we::type::activity_t activity_input (transition, boost::none);
+  we::type::activity_t activity_input (transition);
   activity_input.add_input ("in", value::CONTROL);
 
-  we::type::activity_t activity_child (transition, we::transition_id_type (0));
+  we::type::activity_t activity_child (transition);
   activity_child.add_input ("in", value::CONTROL);
 
   we::type::activity_t activity_result (transition, we::transition_id_type (0));
@@ -1419,11 +1419,10 @@ namespace
     std::tie (transition_out, std::ignore, std::ignore) =
       wfr_net_with_childs (false, token_count);
 
-    we::type::activity_t activity_input (transition_in, boost::none);
-    we::type::activity_t activity_output (transition_out, boost::none);
+    we::type::activity_t activity_input (transition_in);
+    we::type::activity_t activity_output (transition_out);
 
-    we::type::activity_t activity_child
-      (transition_child, transition_id_child);
+    we::type::activity_t activity_child (transition_child);
     activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
@@ -1654,7 +1653,6 @@ namespace
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 
@@ -1796,7 +1794,7 @@ namespace
                                           )
                        );
 
-   we::type::activity_t activity (transition, boost::none);
+   we::type::activity_t activity (transition);
    activity.add_input ( port_name
                       , fhg::util::testing::random_string_without ("\\\"")
                       );
@@ -2029,7 +2027,6 @@ namespace
                                  , we::type::property::type()
                                  , we::priority_type()
                                  )
-        , boost::none
         );
 
       for (auto const& act : activities)
@@ -2047,7 +2044,6 @@ namespace
                                  , we::type::property::type()
                                  , we::priority_type()
                                  )
-        , boost::none
         );
     }
 
