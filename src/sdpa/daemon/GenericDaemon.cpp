@@ -618,7 +618,7 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  if (activity.transition().net())
+  if (activity.handle_by_workflow_engine())
   {
     workflow_engine_submit
       ( job_id

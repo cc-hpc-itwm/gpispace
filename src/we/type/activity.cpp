@@ -244,6 +244,11 @@ namespace we
       return _transition;
     }
 
+    bool activity_t::handle_by_workflow_engine() const
+    {
+      return !!_transition.net();
+    }
+
     boost::optional<eureka_id_type> const& activity_t::eureka_id() const
     {
       return _transition.eureka_id();

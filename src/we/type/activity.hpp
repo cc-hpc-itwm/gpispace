@@ -61,6 +61,9 @@ namespace we
       std::string to_string() const;
 
       const we::type::transition_t& transition() const;
+
+      bool handle_by_workflow_engine() const;
+
       boost::optional<eureka_id_type> const& eureka_id() const;
 
       void set_wait_for_output();
