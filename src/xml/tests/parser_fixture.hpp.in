@@ -6,7 +6,7 @@
 #include <xml/parse/state.hpp>
 
 #include <we/type/activity.hpp>
-#include <we/test/operator_equal.hpp>
+#include <we/type/net.hpp>
 
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/read_file.hpp>
