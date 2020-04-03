@@ -21,6 +21,7 @@
 #include <boost/serialization/access.hpp>
 
 #include <iosfwd>
+#include <map>
 #include <random>
 #include <string>
 #include <vector>
@@ -85,6 +86,9 @@ namespace we
         ( std::string const& port_name
         , pnet::type::value::value_type const&
         );
+
+      std::multimap<std::string, pnet::type::value::value_type>
+        result() const;
 
       TokensOnPorts output() const;
 

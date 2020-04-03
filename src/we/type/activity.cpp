@@ -298,6 +298,22 @@ namespace we
       return _input;
     }
 
+    std::multimap<std::string, pnet::type::value::value_type>
+      activity_t::result() const
+    {
+      std::multimap<std::string, pnet::type::value::value_type> result;
+
+      for (auto const& value_on_port : output())
+      {
+        result.emplace
+          ( _transition.ports_output().at (value_on_port.second).name()
+          , value_on_port.first
+          );
+      }
+
+      return result;
+    }
+
     TokensOnPorts activity_t::output() const
     {
       if (_transition.net())
