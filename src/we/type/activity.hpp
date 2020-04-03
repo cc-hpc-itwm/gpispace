@@ -62,6 +62,7 @@ namespace we
 
       const we::type::transition_t& transition() const;
 
+      std::string const& name() const;
       bool handle_by_workflow_engine() const;
 
       boost::optional<eureka_id_type> const& eureka_id() const;

@@ -111,7 +111,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
     we::type::activity_t activity (std::move (current_activity->second));
 
-    BOOST_REQUIRE_EQUAL (activity.transition().name(), names[current]);
+    BOOST_REQUIRE_EQUAL (activity.name(), names[current]);
     current = !current;
 
     activity.add_output_TESTING_ONLY

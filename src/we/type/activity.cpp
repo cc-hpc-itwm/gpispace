@@ -244,6 +244,10 @@ namespace we
       return _transition;
     }
 
+    std::string const& activity_t::name() const
+    {
+      return _transition.name();
+    }
     bool activity_t::handle_by_workflow_engine() const
     {
       return !!_transition.net();
@@ -417,7 +421,7 @@ namespace we
                              , std::move (target_implementation)
                              , worker_context
                              , evaluation_context()
-                             , _transition.name()
+                             , name()
                              )
           , _transition.data()
           )
@@ -645,7 +649,7 @@ namespace we
       //! \todo copy output too
 
       we::type::transition_t const
-        transition_net_wrapper ( wrapped_activity_prefix() + _transition.name()
+        transition_net_wrapper ( wrapped_activity_prefix() + name()
                                , net
                                , boost::none
                                , we::type::property::type()
@@ -657,7 +661,7 @@ namespace we
 
     activity_t activity_t::unwrap() const
     {
-      if (!fhg::util::starts_with (wrapped_activity_prefix(), _transition.name()))
+      if (!fhg::util::starts_with (wrapped_activity_prefix(), name()))
       {
         return *this;
       }

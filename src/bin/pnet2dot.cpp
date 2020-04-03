@@ -591,14 +591,14 @@ namespace
     id_type id (0);
     fhg::util::indenter indent (1);
 
-    os << "digraph \"" << activity.transition().name() << "\" {"
+    os << "digraph \"" << activity.name() << "\" {"
        << "\n" << "compound=true"
        << "\n" << "rankdir=LR"
        << to_dot ( activity.transition(), id, options, indent
                  , activity.input()
                  , activity.output()
                  )
-       << "\n" << "} /* " << activity.transition().name() << " */" << "\n";
+       << "\n" << "} /* " << activity.name() << " */" << "\n";
   }
 }
 

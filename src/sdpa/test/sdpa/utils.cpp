@@ -542,7 +542,7 @@ namespace utils
                              , sdpa::events::SubmitJobEvent const* e
                              )
     {
-      auto const name (e->activity().transition().name());
+      auto const name (e->activity().name());
 
       add_job (name, *e->job_id(), source);
 
