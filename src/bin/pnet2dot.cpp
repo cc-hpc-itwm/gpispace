@@ -594,7 +594,10 @@ namespace
     os << "digraph \"" << activity.name() << "\" {"
        << "\n" << "compound=true"
        << "\n" << "rankdir=LR"
-       << to_dot ( activity.transition(), id, options, indent
+       << to_dot ( boost::get<we::type::transition_t> (activity.data())
+                 , id
+                 , options
+                 , indent
                  , activity.input()
                  , activity.output()
                  )

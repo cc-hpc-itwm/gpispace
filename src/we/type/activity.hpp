@@ -19,6 +19,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/access.hpp>
+#include <boost/variant.hpp>
 
 #include <iosfwd>
 #include <map>
@@ -60,7 +61,7 @@ namespace we
 
       std::string to_string() const;
 
-      const we::type::transition_t& transition() const;
+      boost::variant<we::type::transition_t> const& data() const;
 
       std::string const& name() const;
       bool handle_by_workflow_engine() const;
@@ -122,7 +123,10 @@ namespace we
       std::list<we::type::preference_t> const preferences_TESTING_ONLY() const;
 
     private:
-      we::type::transition_t _transition;
+      we::type::transition_t& mutable_transition();
+      const we::type::transition_t& transition() const;
+
+      boost::variant<we::type::transition_t> _data;
       boost::optional<we::transition_id_type> _transition_id;
 
       friend class net_type;

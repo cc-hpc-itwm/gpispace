@@ -147,7 +147,7 @@ namespace we
       ( we::type::transition_t transition
       , boost::optional<we::transition_id_type> transition_id
       )
-        : _transition (std::move (transition))
+        : _data (std::move (transition))
         , _transition_id (std::move (transition_id))
     {}
 
@@ -209,7 +209,7 @@ namespace we
       , pnet::type::value::value_type const& value
       )
     {
-      return add_input (_transition.input_port_by_name (port_name), value);
+      return add_input (transition().input_port_by_name (port_name), value);
     }
     void activity_t::add_input
       ( we::port_id_type const& port_id
@@ -222,13 +222,13 @@ namespace we
           ("add_input after evaluation context has been requested");
       }
 
-      if (_transition.net())
+      if (transition().net())
       {
         //! \todo is the conditional neccessary? isn't is ensured already?
-        if (_transition.ports_input().at (port_id).associated_place())
+        if (transition().ports_input().at (port_id).associated_place())
         {
-          _transition.mutable_net().put_value
-            ( *_transition.ports_input().at (port_id).associated_place()
+          mutable_transition().mutable_net().put_value
+            ( *transition().ports_input().at (port_id).associated_place()
             , value
             );
         }
@@ -239,33 +239,41 @@ namespace we
       }
     }
 
+    boost::variant<we::type::transition_t> const& activity_t::data() const
+    {
+      return _data;
+    }
     const we::type::transition_t& activity_t::transition() const
     {
-      return _transition;
+      return boost::get<we::type::transition_t> (_data);
+    }
+    we::type::transition_t& activity_t::mutable_transition()
+    {
+      return boost::get<we::type::transition_t> (_data);
     }
 
     std::string const& activity_t::name() const
     {
-      return _transition.name();
+      return transition().name();
     }
     bool activity_t::handle_by_workflow_engine() const
     {
-      return !!_transition.net();
+      return !!transition().net();
     }
 
     boost::optional<eureka_id_type> const& activity_t::eureka_id() const
     {
-      return _transition.eureka_id();
+      return transition().eureka_id();
     }
 
     void activity_t::set_wait_for_output()
     {
-      return _transition.set_property ({"drts", "wait_for_output"}, true);;
+      return mutable_transition().set_property ({"drts", "wait_for_output"}, true);;
     }
     void activity_t::put_token
       (std::string place_name, pnet::type::value::value_type const& token)
     {
-      return _transition.mutable_net()
+      return mutable_transition().mutable_net()
         . put_token (std::move (place_name), token)
         ;
     }
@@ -274,7 +282,7 @@ namespace we
                             , eureka_response_callback eureka_response
                             )
     {
-      return _transition.mutable_net()
+      return mutable_transition().mutable_net()
         . inject ( *result._transition_id
                  , result.output()
                  , result._input
@@ -291,7 +299,7 @@ namespace we
       , gspc::we::plugin::PutToken put_token
       )
     {
-      return _transition.mutable_net()
+      return mutable_transition().mutable_net()
         . fire_expressions_and_extract_activity_random
           ( random_engine
           , workflow_response
@@ -315,7 +323,7 @@ namespace we
       for (auto const& value_on_port : output())
       {
         result.emplace
-          ( _transition.ports_output().at (value_on_port.second).name()
+          ( transition().ports_output().at (value_on_port.second).name()
           , value_on_port.first
           );
       }
@@ -325,12 +333,12 @@ namespace we
 
     TokensOnPorts activity_t::output() const
     {
-      if (_transition.net())
+      if (transition().net())
       {
         TokensOnPorts output;
 
         for ( we::type::transition_t::port_map_t::value_type const& p
-            : _transition.ports_output()
+            : transition().ports_output()
             )
         {
           const we::port_id_type& port_id (p.first);
@@ -338,7 +346,7 @@ namespace we
             (*p.second.associated_place());
 
           for ( const pnet::type::value::value_type& token
-              : _transition.net()->get_token (pid) | boost::adaptors::map_values
+              : transition().net()->get_token (pid) | boost::adaptors::map_values
               )
           {
             output.emplace_back (token, port_id);
@@ -358,7 +366,7 @@ namespace we
       , pnet::type::value::value_type const& value
       )
     {
-      add_output (_transition.output_port_by_name (port_name), value);
+      add_output (transition().output_port_by_name (port_name), value);
     }
     void activity_t::add_output
       ( we::port_id_type const& port_id
@@ -369,12 +377,12 @@ namespace we
     }
     void activity_t::add_output (expr::eval::context const& output)
     {
-      if (_transition.net())
+      if (transition().net())
       {
         throw std::logic_error ("add_output for subnetwork");
       }
 
-      for (auto const& port_by_id : _transition.ports_output())
+      for (auto const& port_by_id : transition().ports_output())
       {
         add_output
           (port_by_id.first, output.value ({port_by_id.second.name()}));
@@ -383,14 +391,14 @@ namespace we
 
     bool activity_t::wait_for_output() const
     {
-      if (!_transition.prop().is_true ({"drts", "wait_for_output"}))
+      if (!transition().prop().is_true ({"drts", "wait_for_output"}))
       {
         return false;
       }
 
       TokensOnPorts const out (output());
 
-      if (out.size() < _transition.ports_output().size())
+      if (out.size() < transition().ports_output().size())
       {
         return true;
       }
@@ -402,7 +410,7 @@ namespace we
         port_ids_with_output.emplace (port_id);
       }
 
-      return port_ids_with_output.size() != _transition.ports_output().size();
+      return port_ids_with_output.size() != transition().ports_output().size();
     }
 
     void activity_t::execute
@@ -423,14 +431,14 @@ namespace we
                              , evaluation_context()
                              , name()
                              )
-          , _transition.data()
+          , transition().data()
           )
         );
     }
 
     expr::eval::context activity_t::evaluation_context() const
     {
-      if (_transition.net())
+      if (transition().net())
       {
         throw std::logic_error ("evaluation context for net is undefined");
       }
@@ -442,7 +450,7 @@ namespace we
       for (auto const& token_on_port : _input)
       {
         context.bind_ref
-          ( _transition.ports_input().at (token_on_port.second).name()
+          ( transition().ports_input().at (token_on_port.second).name()
           , token_on_port.first
           );
       }
@@ -500,14 +508,14 @@ namespace we
 
       schedule_data const schedule_data
         ( eval_schedule_data<unsigned long>
-            (_transition, context, "num_worker")
+            (transition(), context, "num_worker")
         );
 
       auto const num_required_workers (schedule_data.num_worker());
 
       if ( num_required_workers
          && *num_required_workers > 1
-         && !_transition.preferences().empty()
+         && !transition().preferences().empty()
          )
       {
         throw std::runtime_error
@@ -516,10 +524,10 @@ namespace we
 
       const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
 
-      auto requirements (_transition.requirements());
+      auto requirements (transition().requirements());
 
       auto dynamic_requirement
-        (eval_dynamic_requirement (_transition, context));
+        (eval_dynamic_requirement (transition(), context));
 
       if (dynamic_requirement)
       {
@@ -532,15 +540,15 @@ namespace we
         , [&]
           {
             //! \todo Move to gpi::pc::client::api_t
-            if (!_transition.module_call())
+            if (!transition().module_call())
             {
               return null_transfer_cost;
             }
 
-            auto vm_transfers (_transition.module_call()->gets (context));
+            auto vm_transfers (transition().module_call()->gets (context));
 
             auto puts_before
-              (_transition.module_call()->puts_evaluated_before_call (context));
+              (transition().module_call()->puts_evaluated_before_call (context));
 
             vm_transfers.splice (vm_transfers.end(), puts_before);
 
@@ -558,17 +566,17 @@ namespace we
             return virtual_memory_api->transfer_costs (vm_transfers);
           }()
         , computational_cost
-        , !_transition.module_call()
+        , !transition().module_call()
           ? 0UL
-          : _transition.module_call()->memory_buffer_size_total (context)
-        , _transition.preferences()
+          : transition().module_call()->memory_buffer_size_total (context)
+        , transition().preferences()
         };
     }
 
     std::list<we::type::preference_t>
       const activity_t::preferences_TESTING_ONLY() const
     {
-      return _transition.preferences();
+      return transition().preferences();
     }
 
     namespace
@@ -586,20 +594,20 @@ namespace we
 
     activity_t activity_t::wrap() const
     {
-      if (_transition.net())
+      if (transition().net())
       {
         return *this;
       }
 
       we::type::net_type net;
 
-      auto const transition_id (net.add_transition (_transition));
+      auto const transition_id (net.add_transition (transition()));
 
-      fhg_assert (_transition.ports_tunnel().size() == 0);
+      fhg_assert (transition().ports_tunnel().size() == 0);
 
       std::unordered_map<std::string, we::place_id_type> place_ids;
 
-      for (auto const& p : _transition.ports_input())
+      for (auto const& p : transition().ports_input())
       {
         auto const place_id
           (net.add_place (place::type ( wrapped_name (p.second)
@@ -619,7 +627,7 @@ namespace we
         place_ids.emplace (wrapped_name (p.second), place_id);
       }
 
-      for (auto const& p : _transition.ports_output())
+      for (auto const& p : transition().ports_output())
       {
         auto const place_id
           (net.add_place (place::type ( wrapped_name (p.second)
@@ -641,7 +649,7 @@ namespace we
 
       for (auto const& top : _input)
       {
-        auto const& port (_transition.ports_input().at (top.second));
+        auto const& port (transition().ports_input().at (top.second));
 
         net.put_value (place_ids.find (wrapped_name (port))->second, top.first);
       }
@@ -666,7 +674,7 @@ namespace we
         return *this;
       }
 
-      auto const& net (*_transition.net());
+      auto const& net (*transition().net());
       auto const& transition_inner (net.transitions().begin()->second);
       auto const& transition_id_inner (net.transitions().begin()->first);
 
