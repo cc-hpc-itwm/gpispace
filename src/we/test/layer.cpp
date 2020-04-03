@@ -1689,7 +1689,7 @@ namespace
     void submit (const we::type::activity_t& activity)
     {
       const std::list<we::type::requirement_t> list_req
-        (activity.transition().requirements());
+        (activity.requirements_and_preferences (nullptr).requirements());
 
       BOOST_REQUIRE_EQUAL (list_req.size(), 1);
 
