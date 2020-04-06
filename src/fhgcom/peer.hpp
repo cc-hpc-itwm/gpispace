@@ -126,6 +126,8 @@ namespace fhg
       std::string port_;
       boost::optional<p2p::address_t> my_addr_;
 
+      std::unique_ptr<boost::asio::ssl::context> ctx_;
+
       std::unique_ptr<boost::asio::io_service> io_service_;
       boost::asio::io_service::strand strand_;
       boost::asio::io_service::work io_service_work_;
@@ -142,8 +144,6 @@ namespace fhg
 
       std::exception_ptr handshake_exception_;
       boost::strict_scoped_thread<> _io_thread;
-
-      std::unique_ptr<boost::asio::ssl::context> ctx_;
     };
   }
 }
