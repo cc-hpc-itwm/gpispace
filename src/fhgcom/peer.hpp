@@ -112,9 +112,11 @@ namespace fhg
 
       void accept_new ();
       void handle_accept (const boost::system::error_code &);
-      void connection_established (const p2p::address_t);
+      //! \note Assumes mutex held.
+      void connection_established (connection_data_t&);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
-      void start_sender (const p2p::address_t);
+      //! \note Assumes mutex held.
+      void start_sender (connection_data_t&);
 
       typedef std::recursive_mutex mutex_type;
       typedef std::unique_lock<mutex_type> lock_type;

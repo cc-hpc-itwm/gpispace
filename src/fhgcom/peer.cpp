@@ -209,7 +209,7 @@ namespace fhg
 
       cd.connection->request_handshake();
 
-      connection_established (addr);
+      connection_established (cd);
 
       return addr;
     }
@@ -259,7 +259,9 @@ namespace fhg
       cd.o_queue.push_back (to_send);
 
       if (cd.o_queue.size () == 1)
-        start_sender (addr);
+      {
+        start_sender (cd);
+      }
     }
 
     void peer_t::TESTING_ONLY_recv (message_t *m)
@@ -325,29 +327,22 @@ namespace fhg
       completion_handler (errc::make_error_code (errc::success), m->header.src);
     }
 
-    void peer_t::connection_established (const p2p::address_t a)
+    void peer_t::connection_established (connection_data_t& cd)
     {
-      lock_type lock (mutex_);
-
-      connection_data_t & cd = connections_.find (a)->second;
-
-      {
-        boost::asio::socket_base::keep_alive o(true);
-        cd.connection->set_option (o);
-        cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
-      }
+      cd.connection->set_option (boost::asio::socket_base::keep_alive (true));
+      cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
 
       // send hello message
       to_send_t to_send;
       to_send.handler = [](boost::system::error_code const&) {};
       to_send.message.header.src = my_addr_.get();
-      to_send.message.header.dst = a;
+      to_send.message.header.dst = cd.connection->remote_address();
       to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
       to_send.message.resize (0);
 
       cd.connection->start ();
       cd.o_queue.push_front (to_send);
-      start_sender (a);
+      start_sender (cd);
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
@@ -408,33 +403,26 @@ namespace fhg
       }
     }
 
-    void peer_t::start_sender (const p2p::address_t a)
+    void peer_t::start_sender (connection_data_t& cd)
     {
-      lock_type lock (mutex_);
-
-      try
+      if (cd.send_in_progress || cd.o_queue.empty())
       {
-        connection_data_t & cd = connections_.at(a);
-        if (cd.send_in_progress || cd.o_queue.empty())
-          return;
-
-        fhg_assert (! cd.o_queue.empty());
-
-        cd.send_in_progress = true;
-        cd.connection->async_send ( &cd.o_queue.front().message
-                                  , strand_.wrap
-                                      ( std::bind ( &peer_t::handle_send
-                                                  , this
-                                                  , a
-                                                  , std::placeholders::_1
-                                                )
-                                      )
-                                  );
+        return;
       }
-      catch (std::out_of_range const &)
-      {
-        // ignore, connection has been closed before we could start it
-      }
+
+      fhg_assert (! cd.o_queue.empty());
+
+      cd.send_in_progress = true;
+      cd.connection->async_send
+        ( &cd.o_queue.front().message
+        , strand_.wrap
+            ( std::bind ( &peer_t::handle_send
+                        , this
+                        , cd.connection->remote_address()
+                        , std::placeholders::_1
+                        )
+            )
+        );
     }
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
