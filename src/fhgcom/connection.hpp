@@ -57,7 +57,7 @@ namespace fhg
       explicit
       connection_t
         ( boost::asio::io_service & io_service
-        , std::unique_ptr<boost::asio::ssl::context> const& ctx
+        , boost::asio::ssl::context* ctx
         , boost::asio::io_service::strand const& strand
         , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
         , std::function<void (ptr_t connection, const message_t*)> handle_user_data
