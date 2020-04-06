@@ -302,8 +302,7 @@ BOOST_AUTO_TEST_CASE
     );
 }
 
-BOOST_AUTO_TEST_CASE
-  (using_empty_Certificateshrows)
+BOOST_AUTO_TEST_CASE (using_empty_Certificates_throws)
 {
   using namespace fhg::com;
 
