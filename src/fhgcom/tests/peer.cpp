@@ -172,38 +172,14 @@ BOOST_DATA_TEST_CASE (peers_with_fixed_ports, certificates_data, certificates)
   using namespace fhg::com;
 
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
+                , host_t ("localhost")
+                , port_t ("0")
                 , certificates
                 );
 
   peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                 , port (peer_2.local_endpoint())
-                                 )
-             , "hello world!"
-             );
-}
-
-BOOST_DATA_TEST_CASE
-  (peers_with_fixed_ports_reuse, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
+                , host_t ("localhost")
+                , port_t ("0")
                 , certificates
                 );
 
@@ -281,21 +257,6 @@ BOOST_DATA_TEST_CASE
   stop_request = true;
 
   sender.join ();
-}
-
-BOOST_AUTO_TEST_CASE (invalid_certificates_directory)
-{
-  using namespace fhg::com;
-
-  BOOST_REQUIRE_THROW
-  (
-    peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                  , host_t("localhost")
-                  , port_t("0")
-                  , boost::filesystem::path (fhg::util::testing::random_string())
-                  );
-  , boost::filesystem::filesystem_error
-  );
 }
 
 BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
