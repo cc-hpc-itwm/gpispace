@@ -11,7 +11,6 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -263,12 +262,14 @@ BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
 {
   using namespace fhg::com;
 
+  fhg::util::temporary_path const empty_directory;
+
   BOOST_REQUIRE_EXCEPTION
     ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
                     , fhg::com::Certificates
-                        {fhg::util::testing::random_string_without("").substr (0,50)}
+                        {boost::filesystem::path (empty_directory) / "nonexist"}
                     )
     , boost::filesystem::filesystem_error
     , [&] (boost::filesystem::filesystem_error const& exc)
@@ -284,14 +285,13 @@ BOOST_AUTO_TEST_CASE
 {
   using namespace fhg::com;
 
-  fhg::util::temporary_path const certificates_directory
-    ("/var/tmp/" + fhg::util::testing::random_identifier().substr (0,50));
+  fhg::util::temporary_path const empty_directory;
 
   BOOST_REQUIRE_EXCEPTION
     ( peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                     , host_t ("localhost")
                     , port_t ("0")
-                    , fhg::com::Certificates {certificates_directory}
+                    , fhg::com::Certificates {empty_directory}
                     )
     , boost::filesystem::filesystem_error
     , [&] (boost::filesystem::filesystem_error const& exc)
@@ -307,8 +307,7 @@ BOOST_AUTO_TEST_CASE
 {
   using namespace fhg::com;
 
-  fhg::util::temporary_path const certificates_directory
-    ("/var/tmp/" + fhg::util::testing::random_identifier().substr (0,50));
+  fhg::util::temporary_path const certificates_directory;
 
   fhg::util::temporary_path const crt
     (boost::filesystem::path (certificates_directory) / "server.crt");
