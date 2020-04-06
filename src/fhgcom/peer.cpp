@@ -1,9 +1,9 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/thread/event.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
-#include <fhg/util/thread/event.hpp>
 
 #include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
@@ -105,7 +105,7 @@ namespace fhg
         my_addr_ = p2p::address_t
           (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
 
-        accept_new ();
+        strand_.post ([this] { accept_new(); });
       }
       catch (...)
       {
@@ -173,14 +173,16 @@ namespace fhg
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
     {
-      std::unique_lock<std::recursive_mutex> const _ (mutex_);
-
       std::string const fake_name (std::string (host) + ":" + std::string (port));
       p2p::address_t const addr (fake_name);
 
-      if (connections_.find (addr) != connections_.end())
       {
-        throw std::logic_error ("already connected to " + fake_name);
+        std::unique_lock<std::recursive_mutex> const _ (mutex_);
+
+        if (connections_.find (addr) != connections_.end())
+        {
+          throw std::logic_error ("already connected to " + fake_name);
+        }
       }
 
       // \note Only detects `hostname` (as we use that to create
@@ -192,33 +194,53 @@ namespace fhg
         throw std::logic_error ("unable to connect to self");
       }
 
-      connection_data_t& cd (connections_[addr]);
-      cd.connection = boost::make_shared<connection_t>
-        ( *io_service_
-        , ctx_.get()
-        , strand_
-        , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
-        , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
-        , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-        );
-      cd.connection->local_address (my_addr_.get());
-      cd.connection->remote_address (addr);
+      auto connect_done
+        (std::make_shared<util::thread::event<std::exception_ptr>>());
 
-      boost::system::error_code ec;
-      boost::asio::connect
-        ( cd.connection->socket()
-        , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
-        , ec
+      strand_.dispatch
+        ( [this, addr, host, port, connect_done]
+          {
+            try
+            {
+              std::unique_lock<std::recursive_mutex> const _ (mutex_);
+
+              connection_data_t& cd (connections_[addr]);
+
+              cd.connection = boost::make_shared<connection_t>
+                ( *io_service_
+                , ctx_.get()
+                , strand_
+                , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+                , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+                , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+                );
+              cd.connection->local_address (my_addr_.get());
+              cd.connection->remote_address (addr);
+
+              boost::asio::connect
+                ( cd.connection->socket()
+                , boost::asio::ip::tcp::resolver (*io_service_)
+                    .resolve ({host, port})
+                );
+
+              cd.connection->request_handshake();
+
+              connection_established (cd);
+
+              connect_done->notify (nullptr);
+            }
+            catch (...)
+            {
+              connect_done->notify (std::current_exception());
+            }
+          }
         );
 
-      if (ec)
+      auto const exception_during_connect (connect_done->wait());
+      if (exception_during_connect)
       {
-        throw boost::system::system_error (ec);
+        std::rethrow_exception (exception_during_connect);
       }
-
-      cd.connection->request_handshake();
-
-      connection_established (cd);
 
       return addr;
     }
