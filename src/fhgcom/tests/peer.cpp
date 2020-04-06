@@ -8,6 +8,7 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/hostname.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
@@ -107,25 +108,26 @@ BOOST_DATA_TEST_CASE (resolve_peer_names, certificates_data, certificates)
                 );
 }
 
-BOOST_DATA_TEST_CASE (peer_loopback, certificates_data, certificates)
+BOOST_DATA_TEST_CASE (peer_loopback_forbidden, certificates_data, certificates)
 {
   using namespace fhg::com;
 
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
+  fhg::com::peer_t peer_1
+    ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+    , fhg::com::host_t ("localhost")
+    , fhg::com::port_t ("0")
+    , certificates
+    );
 
-  p2p::address_t const addr ( peer_1.connect_to ( host (peer_1.local_endpoint())
-                                                , port (peer_1.local_endpoint())
-                                                )
-                            );
-
-  for (std::size_t i (0); i < 10000; ++i)
-  {
-    peer_1.send(addr, "hello world!");
-  }
+  fhg::util::testing::require_exception
+    ( [&]
+      {
+        peer_1.connect_to ( fhg::com::host_t (fhg::util::hostname())
+                          , port (peer_1.local_endpoint())
+                          );
+      }
+    , std::logic_error ("unable to connect to self")
+    );
 }
 
 BOOST_DATA_TEST_CASE
@@ -155,13 +157,20 @@ BOOST_DATA_TEST_CASE (send_large_data, certificates_data, certificates)
                 , certificates
                 );
 
-  peer_1.send( peer_1.connect_to ( host (peer_1.local_endpoint())
-                                 , port (peer_1.local_endpoint())
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , host_t("localhost")
+                , port_t("0")
+                , certificates
+                );
+
+  peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
+                                 , port (peer_2.local_endpoint())
                                  )
              , std::string (2<<25, 'X')
              );
+
   message_t r;
-  peer_1.TESTING_ONLY_recv(&r);
+  peer_2.TESTING_ONLY_recv(&r);
 
   BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }

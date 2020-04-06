@@ -183,6 +183,15 @@ namespace fhg
         throw std::logic_error ("already connected to " + fake_name);
       }
 
+      // \note Only detects `hostname` (as we use that to create
+      // my_addr_), not `localhost` or `::1` or equivalent
+      // ones. Those will just hang as we can't connect and accept
+      // at the same time with SSL (handshake).
+      if (addr == my_addr_.get())
+      {
+        throw std::logic_error ("unable to connect to self");
+      }
+
       connection_data_t& cd (connections_[addr]);
       cd.connection = boost::make_shared<connection_t>
         ( *io_service_
