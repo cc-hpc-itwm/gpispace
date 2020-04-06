@@ -55,10 +55,11 @@ namespace
     drts_component_observing_preferences
         ( utils::orchestrator const& master
         , fhg::com::Certificates const& certificates
-        , std::list<std::string> const preferences
+        , std::list<std::string> const& preferences
         )
       : basic_drts_component (utils::random_peer_name(), false, certificates)
       , _expected_preferences (preferences)
+      , _received_preferences {}
     {
       _master = _network.connect_to (master.host(), master.port());
 
@@ -72,6 +73,11 @@ namespace
         );
     }
 
+    virtual ~drts_component_observing_preferences()
+    {
+      BOOST_REQUIRE_EQUAL (_received_preferences, _expected_preferences);
+    }
+
   private:
     virtual void handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& source
@@ -81,8 +87,7 @@ namespace
       _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
       _master = source;
 
-      BOOST_REQUIRE_EQUAL
-        (e->activity().preferences_TESTING_ONLY(), _expected_preferences);
+      _received_preferences = e->activity().preferences_TESTING_ONLY();
 
       finish_job (*e->job_id(), e->activity());
     }
@@ -103,6 +108,7 @@ namespace
     }
 
     std::list<std::string> _expected_preferences;
+    std::list<std::string> _received_preferences;
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
@@ -154,6 +160,11 @@ namespace
       , _expected_preference (expected_preference)
     {}
 
+    virtual ~fake_drts_worker_verifying_implementation()
+    {
+      BOOST_REQUIRE_EQUAL (_received_implementation, _expected_preference);
+    }
+
     virtual void handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& source
       , const sdpa::events::SubmitJobEvent* event
@@ -162,24 +173,7 @@ namespace
       _network.perform<sdpa::events::SubmitJobAckEvent>
         (source, *event->job_id());
 
-      BOOST_REQUIRE (event->implementation());
-
-      auto const activity_preferences
-        (event->activity().preferences_TESTING_ONLY());
-
-      BOOST_REQUIRE (!activity_preferences.empty());
-
-      auto const corresponding_preference
-        (std::find ( activity_preferences.begin()
-                   , activity_preferences.end()
-                   , *event->implementation()
-                   )
-        );
-
-      BOOST_REQUIRE
-        (corresponding_preference != activity_preferences.end());
-
-      BOOST_REQUIRE_EQUAL (*corresponding_preference, _expected_preference);
+      _received_implementation = event->implementation();
 
       finish_job (source, *event->job_id());
     }
@@ -200,7 +194,8 @@ namespace
         (source, job, we::type::activity_t());
     }
 
-    std::string _expected_preference;
+    boost::optional<std::string> _expected_preference;
+    boost::optional<std::string> _received_implementation;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
@@ -340,7 +335,7 @@ BOOST_DATA_TEST_CASE
     {generate_preference(), generate_preference(), generate_preference()};
 
   utils::orchestrator const orchestrator (certificates);
-  drts_component_observing_preferences const observer
+  drts_component_observing_preferences observer
     (orchestrator, certificates, preferences);
 
   utils::client client (orchestrator, certificates);
