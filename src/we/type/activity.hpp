@@ -74,7 +74,7 @@ namespace we
       explicit activity_t (const std::string&);
 
       activity_t (activity_t const&) = default;
-      activity_t& operator= (activity_t const&) = default;
+      activity_t& operator= (activity_t const&) = delete;
 
       activity_t (activity_t&&) = default;
       activity_t& operator= (activity_t&&) = default;

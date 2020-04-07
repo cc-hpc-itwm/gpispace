@@ -101,15 +101,15 @@ namespace sdpa
       }
 
       void Reservation::store_result
-        (worker_id_t const& worker, terminal_state const& result)
+        (worker_id_t const& worker, terminal_state result)
       {
         if (!_results.individual_results.emplace (worker, result).second)
         {
           throw std::logic_error ("store_result: second result");
         }
-        if (auto const* state = boost::get<JobFSM_::s_finished> (&result))
+        if (auto* state = boost::get<JobFSM_::s_finished> (&result))
         {
-          _results.last_success = *state;
+          _results.last_success = std::move (*state);
         }
       }
       void Reservation::mark_as_canceled_if_no_result_stored_yet
