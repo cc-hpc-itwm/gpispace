@@ -122,7 +122,7 @@ namespace we
         );
 
       Requirements_and_preferences requirements_and_preferences
-        (gpi::pc::client::api_t*) const;
+        (gpi::pc::client::api_t*);
 
       explicit activity_t
         ( TESTING_ONLY
@@ -147,7 +147,7 @@ namespace we
       TokensOnPorts _input;
       TokensOnPorts _output;
 
-      mutable bool _evaluation_context_requested {false};
+      bool _evaluation_context_requested {false};
 
       explicit activity_t
         ( we::type::transition_t
@@ -169,7 +169,7 @@ namespace we
       void add_output (expr::eval::context const&);
 
       //! \note context contains references to input
-      expr::eval::context evaluation_context() const;
+      expr::eval::context evaluation_context();
     };
   }
 }

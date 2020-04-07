@@ -18,7 +18,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
     , we::type::property::type()
     , we::priority_type()
     );
-  we::type::activity_t const activity (transition);
+  we::type::activity_t activity (transition);
 
   BOOST_REQUIRE (activity.requirements_and_preferences (nullptr).numWorkers());
 }
@@ -39,7 +39,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     , properties
     , we::priority_type()
     );
-  we::type::activity_t const activity (transition);
+  we::type::activity_t activity (transition);
 
   BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }

@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE (transition_has_no_dynamic_requirements)
     transition.add_requirement (requirement);
   }
 
-  we::type::activity_t const activity (transition);
+  we::type::activity_t activity (transition);
 
   auto const requirements
     (activity.requirements_and_preferences (nullptr).requirements());

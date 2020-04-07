@@ -436,7 +436,7 @@ namespace we
         );
     }
 
-    expr::eval::context activity_t::evaluation_context() const
+    expr::eval::context activity_t::evaluation_context()
     {
       if (transition().net())
       {
@@ -502,7 +502,7 @@ namespace we
     }
 
     Requirements_and_preferences activity_t::requirements_and_preferences
-      (gpi::pc::client::api_t* virtual_memory_api) const
+      (gpi::pc::client::api_t* virtual_memory_api)
     {
       auto const context (evaluation_context());
 
