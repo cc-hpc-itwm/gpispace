@@ -59,7 +59,7 @@ namespace sdpa
         //! served to being somewhere else (as it already has to be
         //! somewhere)
 
-        void store_result (worker_id_t const&, terminal_state const&);
+        void store_result (worker_id_t const&, terminal_state);
         void mark_as_canceled_if_no_result_stored_yet (worker_id_t const&);
 
         boost::optional<job_result_type>

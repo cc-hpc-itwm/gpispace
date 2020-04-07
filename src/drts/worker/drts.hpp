@@ -68,7 +68,7 @@ public:
     {}
 
     std::string const id;
-    we::type::activity_t const activity;
+    we::type::activity_t activity;
     boost::optional<std::string> const target_impl;
     owner_type const owner;
     std::set<std::string> const workers;
