@@ -454,7 +454,6 @@ BOOST_DATA_TEST_CASE
 {
   unsigned int const max_num_workers (10);
   unsigned int const min_num_workers (2);
-  unsigned int const min_num_tasks (100);
   unsigned int const num_preferences (3);
 
   fhg::util::testing::unique_random<std::string> generate_preference;
@@ -509,14 +508,9 @@ BOOST_DATA_TEST_CASE
 
   utils::client client (orchestrator, certificates);
 
-  unsigned int const num_tasks
-    ( fhg::util::testing::random_integral<unsigned int>() % 100
-    + min_num_tasks
-    );
-
   sdpa::job_id_t const job
     (client.submit_job
-       (net_with_n_children_and_preferences (num_tasks, preferences))
+       (net_with_n_children_and_preferences (n_total_workers, preferences))
     );
 
   BOOST_REQUIRE_EQUAL
