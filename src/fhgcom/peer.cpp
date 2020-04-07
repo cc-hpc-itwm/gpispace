@@ -213,6 +213,7 @@ namespace fhg
                 , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
                 , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
                 , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+                , this
                 );
               cd.connection->local_address (my_addr_.get());
               cd.connection->remote_address (addr);
@@ -223,11 +224,8 @@ namespace fhg
                     .resolve ({host, port})
                 );
 
-              cd.connection->request_handshake();
-
-              connection_established (cd);
-
-              connect_done->notify (nullptr);
+              cd.connection->request_handshake (std::move (connect_done));
+              // control flow continues in `request_handshake_response`.
             }
             catch (...)
             {
@@ -243,6 +241,31 @@ namespace fhg
       }
 
       return addr;
+    }
+
+    void peer_t::request_handshake_response
+      ( p2p::address_t addr
+      , std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done
+      , boost::system::error_code const& ec
+      )
+    {
+      try
+      {
+        std::unique_lock<std::recursive_mutex> const _ (mutex_);
+
+        if (ec)
+        {
+          throw handshake_exception (ec);
+        }
+
+        connection_established (connections_[addr]);
+
+        connect_done->notify (nullptr);
+      }
+      catch (...)
+      {
+        connect_done->notify (std::current_exception());
+      }
     }
 
     void peer_t::send ( p2p::address_t const& addr
@@ -463,15 +486,25 @@ namespace fhg
         fhg_assert (listen_);
 
         listen_->acknowledge_handshake();
-
-        // TODO: work here schedule timeout
-        backlog_.insert (listen_);
-
-        // the connection will  call us back when it got the
-        // hello packet or will timeout
-        listen_->start();
-        accept_new();
+        // control flow continues in `acknowledge_handshake_response`.
       }
+    }
+
+    void peer_t::acknowledge_handshake_response
+      (connection_t::ptr_t, boost::system::error_code const& ec)
+    {
+      if (ec)
+      {
+        throw handshake_exception (ec);
+      }
+
+      // TODO: work here schedule timeout
+      backlog_.insert (listen_);
+
+      // the connection will call us back when it got the hello packet
+      // or will timeout
+      listen_->start();
+      accept_new();
     }
 
     void peer_t::accept_new ()
@@ -484,6 +517,7 @@ namespace fhg
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+          , this
           )
         );
       listen_->local_address(my_addr_.get());

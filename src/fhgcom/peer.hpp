@@ -14,6 +14,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <deque>
+#include <exception>
 #include <list>
 #include <mutex>
 #include <set>
@@ -117,6 +118,18 @@ namespace fhg
       void handle_send (const p2p::address_t, const boost::system::error_code &);
       //! \note Assumes mutex held.
       void start_sender (connection_data_t&);
+
+      friend class connection_t;
+
+      //! Assumes to be called from within strand.
+      void request_handshake_response
+        ( p2p::address_t addr
+        , std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done
+        , boost::system::error_code const& ec
+        );
+      //! Assumes to be called from within strand.
+      void acknowledge_handshake_response
+        (connection_t::ptr_t connection, boost::system::error_code const& ec);
 
       typedef std::recursive_mutex mutex_type;
       typedef std::unique_lock<mutex_type> lock_type;

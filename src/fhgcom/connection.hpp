@@ -4,6 +4,7 @@
 #include <fhgcom/message.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/thread/event.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/asio/ssl.hpp>
@@ -13,6 +14,7 @@
 #include <boost/variant/variant.hpp>
 
 #include <cstddef>
+#include <exception>
 #include <functional>
 #include <list>
 #include <memory>
@@ -34,6 +36,8 @@ namespace fhg
 {
   namespace com
   {
+    class peer_t;
+
     using tcp_socket_t = boost::asio::ip::tcp::socket;
     using ssl_stream_t = boost::asio::ssl::stream<tcp_socket_t>;
     using socket_t = boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
@@ -62,6 +66,7 @@ namespace fhg
         , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
         , std::function<void (ptr_t connection, const message_t*)> handle_user_data
         , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+        , peer_t* peer
         );
 
       ~connection_t ();
@@ -88,7 +93,14 @@ namespace fhg
         m_remote_addr = a;
       }
 
-      void request_handshake();
+      //! Assumes to be called from within strand. Will call back
+      //! peer_t::request_handshake_response via strand, never from
+      //! within this call stack.
+      void request_handshake
+        (std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done);
+      //! Assumes to be called from within strand. Will call back
+      //! peer_t::acknowledge_handshake_response via strand, never
+      //! from within this call stack.
       void acknowledge_handshake();
 
     private:
@@ -140,6 +152,8 @@ namespace fhg
                             );
 
       void handle_write ( const boost::system::error_code & ec );
+
+      peer_t* _peer;
 
       boost::asio::io_service::strand strand_;
       socket_t socket_;
