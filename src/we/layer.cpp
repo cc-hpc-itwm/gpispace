@@ -361,7 +361,6 @@ namespace we
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                //! \note We wrap all input activites in a net.
                 activity = activity_data._activity->extract
                       ( _random_extraction_engine
                       , [this, &activity_data] ( pnet::type::value::value_type const& description
@@ -751,7 +750,6 @@ namespace we
       , we::eureka_response_callback const& eureka_response
       )
     {
-      //! \note We wrap all input activites in a net.
       _activity->inject (child, workflow_response, eureka_response);
     }
 
