@@ -6,6 +6,7 @@
 #include <we/type/activity.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/latch.hpp>
 #include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
@@ -481,15 +482,14 @@ BOOST_DATA_TEST_CASE
     n_total_workers += num_workers[k];
   }
 
-  std::vector<fhg::util::thread::event<>> registration_events (n_total_workers);
+  fhg::util::latch to_register (n_total_workers);
 
-  unsigned int rank (0);
   for (unsigned int i {0}; i < num_preferences; ++i)
   {
     auto const preference (generate_preference());
     preferences.emplace_back (preference);
 
-    for (unsigned int k {0}; k < num_workers[i]; ++k, ++rank)
+    for (unsigned int k {0}; k < num_workers[i]; ++k)
     {
       auto const name (generate_worker_id());
       workers.emplace_back
@@ -499,16 +499,13 @@ BOOST_DATA_TEST_CASE
            , sdpa::capabilities_set_t {sdpa::Capability (preference, name)}
            , certificates
            , preference
-           , [rank, &registration_events] { registration_events.at (rank).notify(); }
+           , [&to_register] { to_register.count_down(); }
            )
         );
     }
   }
 
-  for (auto& event : registration_events)
-  {
-    event.wait();
-  }
+  to_register.wait();
 
   utils::client client (orchestrator, certificates);
 
