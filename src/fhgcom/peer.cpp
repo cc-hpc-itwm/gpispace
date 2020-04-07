@@ -31,18 +31,7 @@ namespace fhg
       , acceptor_(*io_service_)
       , connections_()
       , TESTING_ONLY_handshake_exception_ (nullptr)
-      , _io_thread ( [this]
-                     { try
-                       {
-                         io_service_->run();
-                       }
-                       catch (fhg::com::handshake_exception const& exc)
-                       {
-                         TESTING_ONLY_handshake_exception_=std::current_exception();
-                       }
-                     }
-                   )
-
+      , _io_thread ([this] { io_service_->run(); })
     {
       try
       {
@@ -497,19 +486,21 @@ namespace fhg
       // handshaking this one: denial of service attack possible.
       fhg_assert (connection == listen_);
 
-      // \todo Why throw? This just ends up killing the entire
-      // io_service and thus peer?!
       if (ec)
       {
-        throw handshake_exception (ec);
+        TESTING_ONLY_handshake_exception_
+          = std::make_exception_ptr (handshake_exception (ec));
+      }
+      else
+      {
+        // TODO: work here schedule timeout
+        backlog_.insert (connection);
+
+        // the connection will call us back when it got the hello packet
+        // or will timeout
+        connection->start();
       }
 
-      // TODO: work here schedule timeout
-      backlog_.insert (connection);
-
-      // the connection will call us back when it got the hello packet
-      // or will timeout
-      connection->start();
       accept_new();
     }
 
