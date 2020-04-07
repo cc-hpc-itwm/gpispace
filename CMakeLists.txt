@@ -1,5 +1,5 @@
 cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
-project (gspc VERSION 16.04 LANGUAGES CXX)
+project (gspc VERSION 20.04 LANGUAGES CXX)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -82,7 +82,7 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
   timer
   unit_test_framework
 )
-find_package (GASPI 1.3.0 REQUIRED QUIET)
+find_package (GASPI 1.3.1 REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
 find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED QUIET)
