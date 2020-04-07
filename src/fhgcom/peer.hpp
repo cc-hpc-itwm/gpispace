@@ -66,7 +66,7 @@ namespace fhg
                        >
         );
       void TESTING_ONLY_recv (message_t *m);
-      std::exception_ptr handshake_exception() const;
+      std::exception_ptr TESTING_ONLY_handshake_exception() const;
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
@@ -144,7 +144,7 @@ namespace fhg
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
 
-      std::exception_ptr handshake_exception_;
+      std::exception_ptr TESTING_ONLY_handshake_exception_;
       boost::strict_scoped_thread<> _io_thread;
     };
   }
