@@ -491,19 +491,23 @@ namespace fhg
     }
 
     void peer_t::acknowledge_handshake_response
-      (connection_t::ptr_t, boost::system::error_code const& ec)
+      (connection_t::ptr_t connection, boost::system::error_code const& ec)
     {
+      // \todo Allow accepting a new connection while still
+      // handshaking this one: denial of service attack possible.
+      fhg_assert (connection == listen_);
+
       if (ec)
       {
         throw handshake_exception (ec);
       }
 
       // TODO: work here schedule timeout
-      backlog_.insert (listen_);
+      backlog_.insert (connection);
 
       // the connection will call us back when it got the hello packet
       // or will timeout
-      listen_->start();
+      connection->start();
       accept_new();
     }
 
