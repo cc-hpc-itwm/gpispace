@@ -3,6 +3,7 @@
 #include <fhg/assert.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/functor_visitor.hpp>
 
 #include <boost/asio/ssl/context.hpp>
 #include <boost/system/error_code.hpp>
@@ -141,43 +142,40 @@ namespace fhg
 
     void connection_t::request_handshake()
     {
-      struct : boost::static_visitor<void>
-      {
-        void operator() (std::unique_ptr<ssl_stream_t>& stream) const
-        {
-          boost::system::error_code ec;
-          stream->handshake (boost::asio::ssl::stream_base::client, ec);
-          if (ec)
+      fhg::util::visit<void>
+        ( socket_
+        , [=] (std::unique_ptr<ssl_stream_t> const& stream)
           {
-            throw handshake_exception (ec);
+            boost::system::error_code ec;
+            stream->handshake (boost::asio::ssl::stream_base::client, ec);
+            if (ec)
+            {
+              throw handshake_exception (ec);
+            }
           }
-        }
-        void operator() (std::unique_ptr<tcp_socket_t>&) const
-        {
-        }
-      } visitor;
-      boost::apply_visitor (visitor, socket_);
+        , [=] (std::unique_ptr<tcp_socket_t> const&)
+          {
+          }
+        );
     }
 
     void connection_t::acknowledge_handshake()
     {
-      struct visitor_t : boost::static_visitor<void>
-      {
-        void operator() (std::unique_ptr<ssl_stream_t>& stream) const
-        {
-          boost::system::error_code ec;
-          stream->handshake
-            (boost::asio::ssl::stream_base::server, ec);
-          if (ec)
+      fhg::util::visit<void>
+        ( socket_
+        , [=] (std::unique_ptr<ssl_stream_t> const& stream)
           {
-            throw handshake_exception (ec);
+            boost::system::error_code ec;
+            stream->handshake (boost::asio::ssl::stream_base::server, ec);
+            if (ec)
+            {
+              throw handshake_exception (ec);
+            }
           }
-        }
-        void operator() (std::unique_ptr<tcp_socket_t>&) const
-        {
-        }
-      } visitor;
-      boost::apply_visitor (visitor, socket_);
+        , [=] (std::unique_ptr<tcp_socket_t> const&)
+          {
+          }
+        );
     }
 
     void connection_t::start_read ()
