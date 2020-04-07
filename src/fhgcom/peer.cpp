@@ -497,6 +497,8 @@ namespace fhg
       // handshaking this one: denial of service attack possible.
       fhg_assert (connection == listen_);
 
+      // \todo Why throw? This just ends up killing the entire
+      // io_service and thus peer?!
       if (ec)
       {
         throw handshake_exception (ec);
