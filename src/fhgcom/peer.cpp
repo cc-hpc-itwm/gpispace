@@ -186,6 +186,8 @@ namespace fhg
       auto connect_done
         (std::make_shared<util::thread::event<std::exception_ptr>>());
 
+      connections_.emplace (addr, connection_data_t());
+
       strand_.dispatch
         ( [this, addr, host, port, connect_done]
           {
@@ -193,7 +195,7 @@ namespace fhg
             {
               std::unique_lock<std::recursive_mutex> const _ (mutex_);
 
-              connection_data_t& cd (connections_[addr]);
+              connection_data_t& cd (connections_.at (addr));
 
               cd.connection = boost::make_shared<connection_t>
                 ( *io_service_
@@ -247,7 +249,7 @@ namespace fhg
           throw handshake_exception (ec);
         }
 
-        connection_established (connections_[addr]);
+        connection_established (connections_.at (addr));
 
         connect_done->notify (nullptr);
       }
@@ -594,7 +596,7 @@ namespace fhg
 
       if (connections_.find (c->remote_address()) != connections_.end())
       {
-        connection_data_t & cd = connections_[c->remote_address()];
+        connection_data_t & cd = connections_.at (c->remote_address());
 
         boost::system::error_code ignore;
         c->socket().cancel (ignore);
