@@ -22,11 +22,14 @@
 #include <we/type/value/boost/test/printer.hpp>
 #include <we/type/value/read.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/executable.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/random.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -34,7 +37,6 @@
 #include <algorithm>
 #include <fstream>
 #include <map>
-#include <random>
 #include <vector>
 
 namespace
@@ -52,9 +54,6 @@ namespace
         ((boost::format ("Could not open '%1%'") % data_file).str());
     }
 
-    std::mt19937 generator;
-    std::uniform_int_distribution<> number (0, 255);
-
     std::vector<char> chunk (chunk_size);
     std::vector<char> verify;
 
@@ -66,7 +65,7 @@ namespace
 
       for (unsigned long i (0); i < bytes; ++i)
       {
-        chunk[i] = number (generator);
+        chunk[i] = fhg::util::testing::random<char>{}();
       }
 
       data << std::string (chunk.data(), chunk.data() + bytes);
@@ -232,19 +231,6 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_done ("done");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
-
-  std::string const output (fhg::util::read_file (file_output));
-
-  BOOST_REQUIRE_EQUAL_COLLECTIONS
-    (verify.begin(), verify.end(), output.begin(), output.end());
+  decltype (result) const expected {{"done", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

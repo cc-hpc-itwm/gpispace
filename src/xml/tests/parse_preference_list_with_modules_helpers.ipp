@@ -6,27 +6,18 @@ namespace
 {
   std::list<std::string> gen_valid_targets (size_t const max)
   {
-    size_t _max = ( fhg::util::testing::unique_random<size_t>{}()
-                   % max
-                  ) + 1;
+    struct generator
+    {
+      std::string operator()() const
+      {
+        return fhg::util::testing::random_identifier (MAX_TARGET_LEN);
+      }
+    };
 
-    std::list<std::string> _targets;
-    std::function<std::string()> generate
-      ( []
-        {
-          return fhg::util::testing::random_identifier (MAX_TARGET_LEN);
-        }
+    return fhg::util::testing::randoms<std::list<std::string>>
+      ( fhg::util::testing::random<std::size_t>{} (max, 1)
+      , fhg::util::testing::unique_random<std::string, generator>{}
       );
-    std::generate_n
-      ( std::back_inserter (_targets)
-        , _max
-        , generate
-      );
-
-    _targets.sort();
-    _targets.unique();
-
-    return _targets;
   }
 
   std::string gen_pnet_with_multi_modules

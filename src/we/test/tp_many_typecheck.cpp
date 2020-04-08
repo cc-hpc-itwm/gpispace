@@ -6,6 +6,8 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/random.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/test/data/monomorphic.hpp>
@@ -55,7 +57,7 @@ namespace
 
     net_with_empty_transition_with_tp_many (std::string out_type_str);
 
-    std::list<value::value_type> get_sorted_list_of_output_tokens() const;
+    std::list<value::value_type> get_list_of_output_tokens() const;
     std::string const& get_tp_many_place_name () const;
   };
 }
@@ -76,13 +78,13 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_match_input_list_and_output_tokens
 
   BOOST_REQUIRE
     ( !test_net.net.fire_expressions_and_extract_activity_random
-        (random_engine(), unexpected_workflow_response)
+        ( fhg::util::testing::detail::GLOBAL_random_engine()
+        , unexpected_workflow_response
+        )
     );
 
-  in_list.sort();
-
-  auto const out_tokens (test_net.get_sorted_list_of_output_tokens());
-  BOOST_REQUIRE_EQUAL (in_list, out_tokens);
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION
+    (in_list, test_net.get_list_of_output_tokens());
 }
 
 namespace pnet
@@ -123,7 +125,9 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_mismatch_expection_for_all_types
     ( [&]
       {
         test_net.net.fire_expressions_and_extract_activity_random
-          (random_engine(), unexpected_workflow_response);
+          ( fhg::util::testing::detail::GLOBAL_random_engine()
+          , unexpected_workflow_response
+          );
       }
     , pnet::exception::type_mismatch
         ( name_to_signature (out_type_str)

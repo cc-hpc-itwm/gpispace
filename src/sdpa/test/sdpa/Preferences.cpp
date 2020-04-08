@@ -357,24 +357,9 @@ BOOST_DATA_TEST_CASE
 BOOST_AUTO_TEST_CASE
   (preferences_are_properly_stored_in_requirements_and_preferences)
 {
-  unsigned int const MAX_PREFERENCES (10);
-  unsigned int const MIN_PREFERENCES (1);
-
-  unsigned int const num_preferences
-    ( MIN_PREFERENCES
-    + fhg::util::testing::random_integral<unsigned int>()
-    % (MAX_PREFERENCES - MIN_PREFERENCES + 1)
-    );
-
-  auto const unique_random_preferences
-    (fhg::util::testing::randoms < std::vector<std::string>
-                                 , fhg::util::testing::unique_random
-                                 > (num_preferences)
-    );
-
-  std::list<we::type::preference_t> preferences
-    ( unique_random_preferences.begin()
-    , unique_random_preferences.end()
+  auto const preferences
+    ( fhg::util::testing::unique_randoms<std::list<we::type::preference_t>>
+        (fhg::util::testing::random<std::size_t>{} (10, 1))
     );
 
   Requirements_and_preferences requirements_and_preferences

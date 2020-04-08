@@ -13,6 +13,8 @@
 #include <test/shared_directory.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
@@ -20,11 +22,8 @@
 #include <boost/program_options.hpp>
 #include <boost/range/adaptor/map.hpp>
 
-#include <algorithm>
-#include <list>
 #include <map>
-#include <numeric>
-#include <vector>
+#include <string>
 
 BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 {
@@ -75,27 +74,10 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
         (gspc::workflow (make.pnet()), {{"n", n}})
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), n);
-
-  std::string const port_i ("i");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_i), n);
-
-  std::vector<pnet::type::value::value_type> expected (5);
-
-  std::iota (expected.begin(), expected.end(), 0L);
-
-  std::vector<pnet::type::value::value_type> got;
-
-  for ( pnet::type::value::value_type i
-      : result.equal_range (port_i) | boost::adaptors::map_values
-      )
+  std::multimap<std::string, pnet::type::value::value_type> expected;
+  for (long i (0); i < n; ++i)
   {
-    got.emplace_back (i);
+    expected.emplace ("i", i);
   }
-
-  std::sort (got.begin(), got.end());
-
-  BOOST_REQUIRE_EQUAL_COLLECTIONS
-    (expected.begin(), expected.end(), got.begin(), got.end());
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

@@ -15,8 +15,10 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -89,30 +91,14 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), num_id * multiplicity);
-
-  std::string const port_id ("id");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_id), num_id * multiplicity);
-
-  std::map<pnet::type::value::value_type, int> number_of_id_in_output;
-
-  for ( pnet::type::value::value_type id
-      : result.equal_range (port_id) | boost::adaptors::map_values
-      )
-  {
-    ++number_of_id_in_output[id];
-  }
-
-  BOOST_REQUIRE_EQUAL (number_of_id_in_output.size(), num_id);
-
+  std::multimap<std::string, pnet::type::value::value_type> expected;
   for (long id (0); id < num_id; ++id)
   {
-    BOOST_REQUIRE_EQUAL
-      (number_of_id_in_output.count (pnet::type::value::value_type (id)), 1);
-    BOOST_REQUIRE_EQUAL
-      ( number_of_id_in_output.at (pnet::type::value::value_type (id))
-      , multiplicity
-      );
+    for (long mul (0); mul < multiplicity; ++mul)
+    {
+      expected.emplace ("id", id);
+    }
   }
+
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

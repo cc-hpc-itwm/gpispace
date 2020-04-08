@@ -16,10 +16,12 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -113,16 +115,6 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
         (gspc::workflow (make.pnet()), {{"in", control}, {"in", control}})
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 2);
-
-  std::string const port_out ("out");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_out), 2);
-
-  for ( pnet::type::value::value_type i
-      : result.equal_range (port_out) | boost::adaptors::map_values
-      )
-  {
-    BOOST_REQUIRE_EQUAL (i, control);
-  }
+  decltype (result) const expected {{"out", control}, {"out", control}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

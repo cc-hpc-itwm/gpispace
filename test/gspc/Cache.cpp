@@ -17,8 +17,7 @@
 namespace gspc
 {
   using fhg::util::testing::random;
-  using fhg::util::testing::randoms;
-  using fhg::util::testing::unique_random;
+  using fhg::util::testing::unique_randoms;
 
   using Slot = std::uint32_t;
   using Data = std::int32_t;
@@ -49,7 +48,7 @@ namespace gspc
     TestCache cache (N);
     std::unordered_set<Slot> slots;
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -67,7 +66,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -92,7 +91,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -107,7 +106,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -122,7 +121,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -138,7 +137,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -153,7 +152,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -169,7 +168,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -185,7 +184,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -245,7 +244,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -274,7 +273,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -303,7 +302,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -333,7 +332,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -364,7 +363,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N + 1);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
+    auto const datas (unique_randoms<std::vector<Data>> (N + 2));
 
     std::unordered_map<Data, Slot> slot;
 
@@ -419,7 +418,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N + 1));
+    auto const datas (unique_randoms<std::vector<Data>> (N + 1));
 
     for (std::size_t i {0}; i < N; ++i)
     {
@@ -434,7 +433,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -462,7 +461,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -491,7 +490,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N));
+    auto const datas (unique_randoms<std::vector<Data>> (N));
 
     for (auto const data : datas)
     {
@@ -510,7 +509,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N + 1);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
+    auto const datas (unique_randoms<std::vector<Data>> (N + 2));
 
     for (std::size_t i {0}; i < N + 1; ++i)
     {
@@ -532,7 +531,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N + 1);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
+    auto const datas (unique_randoms<std::vector<Data>> (N + 2));
 
     std::unordered_map<Data, Slot> slot;
 
@@ -573,7 +572,7 @@ namespace gspc
     auto const N (some_slots());
     TestCache cache (N + 1);
 
-    auto const datas (randoms<std::vector<Data>, unique_random> (N + 2));
+    auto const datas (unique_randoms<std::vector<Data>> (N + 2));
 
     for (std::size_t i {0}; i < N + 1; ++i)
     {

@@ -203,15 +203,13 @@ namespace
   }
 
   std::list<value::value_type> net_with_empty_transition_with_tp_many
-    ::get_sorted_list_of_output_tokens() const
+    ::get_list_of_output_tokens() const
   {
     std::list<value::value_type> out_list;
     for (auto token : net.get_token (pid_out))
     {
       out_list.push_back (token.second);
     }
-
-    out_list.sort();
     return out_list;
   }
 

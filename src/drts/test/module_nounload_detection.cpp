@@ -13,8 +13,8 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/map.hpp>
-#include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/filesystem/operations.hpp>
@@ -172,23 +172,6 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
     );
 }
 
-namespace
-{
-  // \note multimap<Key, Value> maintains insertion order, and takes
-  // that into account when comparing...
-  template<typename Key, typename Value>
-    std::map<Key, std::set<Value>> with_known_order
-      (std::multimap<Key, Value> input)
-  {
-    std::map<Key, std::set<Value>> output;
-    for (auto&& elem : input)
-    {
-      output[std::move (elem.first)].emplace (std::move (elem.second));
-    }
-    return output;
-  }
-}
-
 BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
 {
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
@@ -202,7 +185,7 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
   auto const library
     ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
-  auto const result (client.wait_and_extract (client.submit (make.pnet(), {})));
+  auto const result (client.put_and_run (make.pnet(), {}));
 
   decltype (result) const expected
     { {"previous_invocations", 0}
@@ -210,5 +193,5 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
     , {"previous_invocations", 2}
     };
 
-  BOOST_REQUIRE_EQUAL (with_known_order (result), with_known_order (expected));
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }

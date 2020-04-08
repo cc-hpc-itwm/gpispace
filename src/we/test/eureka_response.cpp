@@ -128,10 +128,8 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_no_eureka_responses)
                            % MAX_TOKENS
                            + 2
                            );
-       tokens = fhg::util::testing::randoms
-                < std::vector<long>
-                , fhg::util::testing::unique_random
-                > (n_tokens);
+       tokens = fhg::util::testing::unique_randoms
+                <std::vector<long>> (n_tokens);
 
         long _value = tokens.back();
         tokens.pop_back ();
@@ -181,10 +179,8 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
                            % MAX_TOKENS
                            + 1
                            );
-       tokens = fhg::util::testing::randoms
-                < std::vector<long>
-                , fhg::util::testing::unique_random
-                > (n_tokens);
+       tokens = fhg::util::testing::unique_randoms
+                <std::vector<long>> (n_tokens);
        return tokens.at ( fhg::util::testing::random<long>{}()
                         % n_tokens
                         );
@@ -233,10 +229,8 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_eureka_responses)
                            % MAX_TOKENS
                            + 1
                            );
-       tokens = fhg::util::testing::randoms
-                < std::vector<long>
-                , fhg::util::testing::unique_random
-                > (n_tokens);
+       tokens = fhg::util::testing::unique_randoms
+                <std::vector<long>> (n_tokens);
        auto const eureka
         (tokens.at (fhg::util::testing::random<long>{}() % n_tokens));
        std::for_each ( tokens.begin()

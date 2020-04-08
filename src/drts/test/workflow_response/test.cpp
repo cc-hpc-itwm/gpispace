@@ -29,6 +29,7 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -363,9 +364,6 @@ BOOST_DATA_TEST_CASE
   std::atomic<unsigned long> status_updates (0);
   unsigned long const threads (2);
 
-  std::mt19937_64 eng (std::random_device{}());
-  std::uniform_int_distribution<unsigned long> dist (20, 50);
-
   fhg::util::latch workflow_actually_running (1);
 
   fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
@@ -383,7 +381,9 @@ BOOST_DATA_TEST_CASE
     ( client.submit
         ( workflow
         , { {"state", initial_state}
-          , {"random_module_calls", dist (eng)}
+          , { "random_module_calls"
+            , fhg::util::testing::random<unsigned long>{} (50, 20)
+            }
           , {"register_host", fhg::util::connectable_to_address_string
                                 (registry.local_endpoint().address())}
           , {"register_port", static_cast<unsigned int>

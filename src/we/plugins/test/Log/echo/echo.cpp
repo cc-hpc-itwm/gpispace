@@ -13,10 +13,12 @@
 #include <we/expr/eval/context.hpp>
 #include <we/type/value.hpp>
 
+#include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/vector.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/read_lines.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -120,11 +122,7 @@ BOOST_AUTO_TEST_CASE (plugin_echo)
             , std::sregex_token_iterator()
             , std::back_inserter (expected)
             );
-  std::sort (expected.begin(), expected.end());
 
-  auto logged (fhg::util::read_lines (log_path));
-  std::sort (logged.begin(), logged.end());
-
-  BOOST_REQUIRE_EQUAL_COLLECTIONS
-    (expected.begin(), expected.end(), logged.begin(), logged.end());
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION
+    (expected, fhg::util::read_lines (log_path));
 }
