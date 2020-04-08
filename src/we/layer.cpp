@@ -70,7 +70,7 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        ,  fhg::util::cxx14::make_unique<async_remove_queue::RemovalFunction::ToFinish>
+        ,  async_remove_queue::RemovalFunction::ToFinish
              (this, *parent, std::move (result), id)
         );
     }
@@ -484,32 +484,32 @@ namespace we
         {
           return fun (activity_data);
         }
-      , [&] (std::unique_ptr<ToFinish>& to_finish)
+      , [&] (ToFinish& to_finish)
         {
           activity_data.child_finished
-            ( std::move (to_finish->_result)
+            ( std::move (to_finish._result)
             , [&] ( pnet::type::value::value_type const& description
                   , pnet::type::value::value_type const& value
                   )
               {
-                to_finish->_that->workflow_response
-                  ( to_finish->_parent
+                to_finish._that->workflow_response
+                  ( to_finish._parent
                   , get_response_id (description)
                   , value
                   );
               }
             , [&] (type::eureka_ids_type const& eureka_ids)
               {
-                to_finish->_that->eureka_response
-                  ( to_finish->_parent
-                  , to_finish->_id
+                to_finish._that->eureka_response
+                  ( to_finish._parent
+                  , to_finish._id
                   , eureka_ids
                   );
               }
             );
-          to_finish->_that->_running_jobs.terminated
-            ( to_finish->_parent
-            , to_finish->_id
+          to_finish._that->_running_jobs.terminated
+            ( to_finish._parent
+            , to_finish._id
             );
         }
       );
@@ -520,7 +520,7 @@ namespace we
       : _function (std::forward<Fun> (fun))
   {}
   layer::async_remove_queue::RemovalFunction::RemovalFunction
-    (std::unique_ptr<ToFinish> to_finish)
+    (ToFinish to_finish)
       : _function (std::move (to_finish))
   {}
   layer::async_remove_queue::RemovalFunction::ToFinish::ToFinish
