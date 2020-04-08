@@ -853,25 +853,4 @@ namespace utils
 
     return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
   }
-
-  client::submitted_job::submitted_job
-      ( we::type::activity_t workflow
-      , orchestrator const& orch
-      , fhg::com::Certificates const& certificates
-      )
-    : _client (fhg::util::cxx14::make_unique<client> (orch, certificates))
-    , _job_id (_client->submit_job (workflow))
-  {}
-
-  client::submitted_job::~submitted_job()
-  {
-    _client->wait_for_terminal_state (_job_id);
-    _client->retrieve_job_results (_job_id);
-    _client->delete_job (_job_id);
-  }
-
-  sdpa::discovery_info_t client::submitted_job::discover()
-  {
-    return _client->discover (_job_id);
-  }
 }

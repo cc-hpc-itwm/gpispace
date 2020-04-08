@@ -97,27 +97,6 @@ namespace
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  struct wait_until_submitted_and_finish_on_scope_exit
-  {
-    wait_until_submitted_and_finish_on_scope_exit
-        ( utils::no_thread::fake_drts_worker_notifying_module_call_submission& worker
-        , std::string expected_job_name
-        , fhg::util::thread::event<std::string>& job_submitted
-        )
-      : _worker (worker)
-      , _actual_job_name (job_submitted.wait())
-    {
-      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
-    }
-    ~wait_until_submitted_and_finish_on_scope_exit()
-    {
-      _worker.finish (_actual_job_name);
-    }
-
-    utils::no_thread::fake_drts_worker_notifying_module_call_submission& _worker;
-    std::string _actual_job_name;
-  };
-
   std::vector<sdpa::status::code> possible_status_codes()
   {
     using namespace sdpa::status;
@@ -136,7 +115,7 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
 
   fhg::util::thread::event<std::string> job_submitted;
 
-  fake_drts_worker_discovering worker
+  fake_drts_worker_discovering const worker
     ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
     , agent
     , certificates
@@ -145,14 +124,11 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
 
   auto const activity_name (fhg::util::testing::random_string());
 
-  utils::client::submitted_job submitted_job
-    (utils::module_call (activity_name), orchestrator, certificates);
+  utils::client client (orchestrator, certificates);
+  auto const job_id (client.submit_job (utils::module_call (activity_name)));
+  BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  const wait_until_submitted_and_finish_on_scope_exit _
-    (worker, activity_name, job_submitted);
-
-  sdpa::discovery_info_t const discovery_result
-    (submitted_job.discover());
+  auto const discovery_result (client.discover (job_id));
 
   BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
 
@@ -249,7 +225,7 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted;
 
-  fake_drts_worker_discovering worker
+  fake_drts_worker_discovering const worker
     ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
     , *agents.front()
     , certificates
@@ -258,13 +234,11 @@ BOOST_DATA_TEST_CASE
 
   const std::string activity_name (fhg::util::testing::random_string());
 
-  utils::client::submitted_job submitted_job
-    (utils::module_call (activity_name), orchestrator, certificates);
+  utils::client client (orchestrator, certificates);
+  auto const job_id (client.submit_job (utils::module_call (activity_name)));
+  BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  const wait_until_submitted_and_finish_on_scope_exit _
-    (worker, activity_name, job_submitted);
-
-  sdpa::discovery_info_t const info (submitted_job.discover());
+  auto const info (client.discover (job_id));
 
   BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
   BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);

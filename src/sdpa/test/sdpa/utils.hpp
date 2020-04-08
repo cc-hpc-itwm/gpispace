@@ -435,26 +435,5 @@ namespace utils
       , orchestrator const&
       , fhg::com::Certificates const&
       );
-
-    struct submitted_job
-    {
-      submitted_job
-        ( we::type::activity_t
-        , orchestrator const&
-        , fhg::com::Certificates const&
-        );
-      ~submitted_job();
-
-      submitted_job (submitted_job const&) = delete;
-      submitted_job (submitted_job&) = delete;
-      submitted_job& operator= (submitted_job const&) = delete;
-      submitted_job& operator= (submitted_job&) = delete;
-
-      sdpa::discovery_info_t discover();
-
-    private:
-      std::unique_ptr<client> _client;
-      sdpa::job_id_t _job_id;
-    };
   };
 }
