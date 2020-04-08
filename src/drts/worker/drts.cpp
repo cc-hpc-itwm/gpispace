@@ -69,98 +69,6 @@ struct wfe_task_t
   {}
 };
 
-namespace
-{
-  struct wfe_exec_context : public boost::static_visitor<>
-  {
-    wfe_exec_context
-      ( we::loader::loader& module_loader
-      , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
-      , wfe_task_t& target
-      , we::type::activity_t& activity
-      )
-      : loader (module_loader)
-      , _virtual_memory_api (virtual_memory_api)
-      , _shared_memory (shared_memory)
-      , task (target)
-      , _activity (activity)
-    {}
-
-    void operator() (we::type::net_type const&) const
-    {
-      throw std::logic_error ("wfe_exec_context (net)");
-    }
-
-    void operator() (we::type::module_call_t const& mod) const
-    {
-      try
-      {
-        _activity.add_output
-          ( we::loader::module_call ( loader
-                                    , _virtual_memory_api
-                                    , _shared_memory
-                                    , &task.context
-                                    , _activity.evaluation_context()
-                                    , mod
-                                    )
-          );
-      }
-      catch (drts::worker::context::cancelled const&)
-      {
-        throw;
-      }
-      catch (...)
-      {
-        std::throw_with_nested
-          ( std::runtime_error
-              ("call to '" + mod.module() + "::" + mod.function() + "' failed")
-          );
-      }
-    }
-
-    void operator() (we::type::multi_module_call_t const& multi_mod) const
-    {
-      if (!task.target_impl)
-      {
-        std::throw_with_nested
-          ( std::runtime_error
-              ( "no target selected for multi-module transition '"
-                + _activity.transition().name()
-                + "' failed"
-              )
-          );
-      }
-
-      auto const& mod_it = multi_mod.find (*task.target_impl);
-      if (mod_it == multi_mod.end())
-      {
-        std::throw_with_nested
-          ( std::runtime_error
-              ( "no module for target '" + *task.target_impl + "' found"
-                " found in multi-module transition '"
-                + _activity.transition().name() + "'"
-              )
-          );
-      }
-
-      return (*this) (mod_it->second);
-    }
-
-    void operator() (we::type::expression_t const&) const
-    {
-      throw std::logic_error ("wfe_exec_context (expression)");
-    }
-
-  private:
-    we::loader::loader& loader;
-    gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-    gspc::scoped_allocation /*const*/* _shared_memory;
-    wfe_task_t& task;
-    we::type::activity_t& _activity;
-  };
-}
-
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
   std::lock_guard<std::mutex> const currently_executed_tasks_lock
@@ -599,14 +507,13 @@ try
           _currently_executed_tasks.emplace (job->id, &task);
         }
 
-        boost::apply_visitor ( wfe_exec_context ( m_loader
-                                                , _virtual_memory_api
-                                                , _shared_memory
-                                                , task
-                                                , task.activity
-                                                )
-                             , task.activity.transition().data()
-                             );
+        task.activity.execute
+          ( m_loader
+          , _virtual_memory_api
+          , _shared_memory
+          , task.target_impl
+          , &task.context
+          );
       }
       catch (drts::worker::context::cancelled const&)
       {

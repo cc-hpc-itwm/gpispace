@@ -1,4 +1,5 @@
 #include <we/type/net.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/peek.hpp>
@@ -579,9 +580,12 @@ namespace we
 
       do_delete
         ( do_extract ( tid
-                     , std::bind ( &we::type::activity_t::add_input, &act
-                                 , std::placeholders::_1, std::placeholders::_2
-                                 )
+                     , [&] ( port_id_type port_id
+                           , pnet::type::value::value_type const& value
+                           )
+                       {
+                         act.add_input (port_id, value);
+                       }
                      )
         );
 
@@ -612,6 +616,64 @@ namespace we
         expr::eval::context& _context;
         we::type::transition_t const& _transition;
       };
+    }
+
+    boost::optional<we::type::activity_t>
+      net_type::fire_expressions_and_extract_activity_random
+        ( std::mt19937& engine
+        , we::workflow_response_callback const& workflow_response
+        , we::eureka_response_callback const& eureka_response
+        , gspc::we::plugin::Plugins& plugins
+        , gspc::we::plugin::PutToken put_token
+        )
+    {
+      while (!_enabled.empty())
+      {
+        std::unordered_set<we::transition_id_type> const& transition_ids
+          (_enabled.begin()->second);
+        std::uniform_int_distribution<std::size_t> random
+          (0, transition_ids.size() - 1);
+        transition_id_type const transition_id
+          (*std::next (transition_ids.begin(), random (engine)));
+        we::type::transition_t const& transition (_tmap.at (transition_id));
+
+        if (transition.expression())
+        {
+          fire_expression ( transition_id
+                          , transition
+                          , workflow_response
+                          , eureka_response
+                          , plugins
+                          , put_token
+                          );
+        }
+        else
+        {
+          return extract_activity (transition_id, transition);
+        }
+      }
+
+      return boost::none;
+    }
+
+    boost::optional<we::type::activity_t>
+      net_type::fire_expressions_and_extract_activity_random
+        ( std::mt19937& engine
+        , we::workflow_response_callback const& workflow_response
+        , we::eureka_response_callback const& eureka_response
+        )
+    {
+      gspc::we::plugin::Plugins plugins;
+      return fire_expressions_and_extract_activity_random
+        ( engine
+        , workflow_response
+        , eureka_response
+        , plugins
+        , [] (std::string, pnet::type::value::value_type)
+          {
+            throw std::logic_error ("Unexpected call to put_token.");
+          }
+        );
     }
 
     void net_type::fire_expression
@@ -790,26 +852,25 @@ namespace we
       }
     }
 
-    void net_type::inject ( activity_t const& child
+    void net_type::inject ( transition_id_type tid
+                          , TokensOnPorts const& output
+                          , TokensOnPorts const& input
                           , workflow_response_callback workflow_response
                           , eureka_response_callback eureka_response
                           )
     {
-      for (auto const& token_on_port : child.output())
+      for (auto const& token_on_port : output)
       {
-        if (  _port_to_place.count (*child.transition_id())
-           && _port_to_place.at (*child.transition_id())
-            . count (token_on_port.second)
+        if (  _port_to_place.count (tid)
+           && _port_to_place.at (tid).count (token_on_port.second)
            )
         {
-          put_value ( _port_to_place.at (*child.transition_id())
-                    . at (token_on_port.second).first
+          put_value ( _port_to_place.at (tid).at (token_on_port.second).first
                     , token_on_port.first
                     );
         }
-        else if (  _port_many_to_place.count (*child.transition_id())
-                && _port_many_to_place.at (*child.transition_id())
-                 . count (token_on_port.second)
+        else if (  _port_many_to_place.count (tid)
+                && _port_many_to_place.at (tid).count (token_on_port.second)
                 )
         {
           auto const& many_tokens
@@ -817,17 +878,16 @@ namespace we
               (token_on_port.first)
             );
 
-          for (auto const& token : many_tokens) {
-            put_value ( _port_many_to_place.at (*child.transition_id())
-                      . at (token_on_port.second).first
-                      , token
-                      );
+          for (auto const& token : many_tokens)
+          {
+            put_value
+              ( _port_many_to_place.at (tid).at (token_on_port.second).first
+              , token
+              );
           }
         }
-        else if (  _port_to_eureka.count (*child.transition_id())
-                && ( _port_to_eureka.at (*child.transition_id())
-                     == token_on_port.second
-                   )
+        else if (  _port_to_eureka.count (tid)
+                && (_port_to_eureka.at (tid) == token_on_port.second)
                 )
         {
           std::set<type::eureka_id_type> const eureka_ids
@@ -858,22 +918,19 @@ namespace we
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                assert ( _port_to_response.at (*child.transition_id())
-                       . count (token_on_port.second)
-                       );
+                assert (_port_to_response.at (tid).count (token_on_port.second));
+
                pnet::type::value::value_type const description
-                  ([this, &child, &token_on_port]
+                   ([this, &input, tid, &token_on_port]
                    {
                      std::string const to
-                       ( _port_to_response.at (*child.transition_id())
-                       . at (token_on_port.second).first
-                       );
+                       (_port_to_response.at (tid).at (token_on_port.second).first);
                     we::port_id_type const input_port_id
-                       (child.transition().input_port_by_name (to));
+                       (_tmap.at (tid).input_port_by_name (to));
 
                     return std::find_if
-                       ( child._input.begin(), child._input.end()
-                       , [&input_port_id] (activity_t::token_on_port_t const& input_token_on_port)
+                       ( input.begin(), input.end()
+                       , [&input_port_id] (TokenOnPort const& input_token_on_port)
                          {
                            return input_token_on_port.second == input_port_id;
                          }

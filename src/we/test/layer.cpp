@@ -532,17 +532,15 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
                       )
     );
 
-  we::type::activity_t activity (transition, boost::none);
-  activity.add_input ( transition.input_port_by_name ("in")
-                     , pnet::type::value::read ("1L")
-                     );
+  we::type::activity_t activity (transition);
+  activity.add_input ("in", pnet::type::value::read ("1L"));
 
   we::layer::id_type const id (generate_id());
 
   {
-    we::type::activity_t activity_expected (transition, boost::none);
-    activity_expected.add_output
-      ( transition.output_port_by_name ("out")
+    we::type::activity_t activity_expected (transition);
+    activity_expected.add_output_TESTING_ONLY
+      ( "out"
       , pnet::type::value::read ("2L")
       );
 
@@ -582,21 +580,18 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
                                          )
                       );
 
-  we::type::activity_t activity_output (transition, boost::none);
-  activity_output.add_output
-    (transition.output_port_by_name ("out"), value::CONTROL);
+  we::type::activity_t activity_output (transition);
+  activity_output.add_output_TESTING_ONLY ("out", value::CONTROL);
 
-  we::type::activity_t activity_input (transition, boost::none);
-  activity_input.add_input
-    (transition.input_port_by_name ("in"), value::CONTROL);
+  we::type::activity_t activity_input (transition);
+  activity_input.add_input ("in", value::CONTROL);
 
-  we::type::activity_t activity_child (transition, we::transition_id_type (0));
-  activity_child.add_input
-    (transition.input_port_by_name ("in"), value::CONTROL);
+  we::type::activity_t activity_child (transition);
+  activity_child.add_input ("in", value::CONTROL);
 
-  we::type::activity_t activity_result (transition, we::transition_id_type (0));
-  activity_result.add_output
-    (transition.output_port_by_name ("out"), value::CONTROL);
+  we::type::activity_t activity_result
+    (we::type::TESTING_ONLY{}, transition, we::transition_id_type (0));
+  activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
   we::layer::id_type const id (generate_id());
 
@@ -1425,18 +1420,15 @@ namespace
     std::tie (transition_out, std::ignore, std::ignore) =
       wfr_net_with_childs (false, token_count);
 
-    we::type::activity_t activity_input (transition_in, boost::none);
-    we::type::activity_t activity_output (transition_out, boost::none);
+    we::type::activity_t activity_input (transition_in);
+    we::type::activity_t activity_output (transition_out);
 
-    we::type::activity_t activity_child
-      (transition_child, transition_id_child);
-    activity_child.add_input
-      (transition_child.input_port_by_name ("in"), value::CONTROL);
+    we::type::activity_t activity_child (transition_child);
+    activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
-      (transition_child, transition_id_child);
-    activity_result.add_output
-      (transition_child.output_port_by_name ("out"), value::CONTROL);
+      (we::type::TESTING_ONLY{}, transition_child, transition_id_child);
+    activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
     return std::make_tuple
       (activity_input, activity_output, activity_child, activity_result);
@@ -1662,7 +1654,6 @@ namespace
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 
@@ -1695,10 +1686,10 @@ namespace
                )
     {}
 
-    void submit (const we::type::activity_t& activity)
+    void submit (we::type::activity_t activity)
     {
       const std::list<we::type::requirement_t> list_req
-        (activity.transition().requirements());
+        (activity.requirements_and_preferences (nullptr).requirements());
 
       BOOST_REQUIRE_EQUAL (list_req.size(), 1);
 
@@ -1804,8 +1795,8 @@ namespace
                                           )
                        );
 
-   we::type::activity_t activity (transition, boost::none);
-   activity.add_input ( transition.input_port_by_name (port_name)
+   we::type::activity_t activity (transition);
+   activity.add_input ( port_name
                       , fhg::util::testing::random_string_without ("\\\"")
                       );
 
@@ -1837,7 +1828,7 @@ namespace
 
     void submit (const we::type::activity_t& activity)
     {
-      _received_preferences = activity.transition().preferences();
+      _received_preferences = activity.preferences_TESTING_ONLY();
       std::lock_guard<std::mutex> const _ (_mtx_submitted);
       _cond_submitted.notify_one();
     }
@@ -1913,16 +1904,16 @@ namespace
       , we::transition_id_type const& t_id
       , std::set<we::type::eureka_id_type> const& h_set
       )
-      : child (t, t_id)
+      : child (we::type::TESTING_ONLY{}, t, t_id)
       , result_eureka (child)
       , result_no_eureka (child)
     {
       child.add_input
-        ( t.input_port_by_name ("in")
+        ( "in"
         , value::CONTROL
         );
-      result_eureka.add_output
-        ( t.output_port_by_name ("out")
+      result_eureka.add_output_TESTING_ONLY
+        ( "out"
         , pnet::type::value::wrap (h_set)
         );
     }
@@ -2022,7 +2013,6 @@ namespace
                                  , we::type::property::type()
                                  , we::priority_type()
                                  )
-        , boost::none
         );
 
       for (auto const& act : activities)
@@ -2040,7 +2030,6 @@ namespace
                                  , we::type::property::type()
                                  , we::priority_type()
                                  )
-        , boost::none
         );
     }
 

@@ -32,7 +32,7 @@ namespace sdpa
                         )
         : _components (components)
         , _activity_id (activity_id)
-        , _activity_name (activity.transition().name())
+        , _activity_name (activity.name())
         , _activity_state (activity_state)
       {}
 

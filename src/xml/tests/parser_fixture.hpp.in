@@ -6,7 +6,7 @@
 #include <xml/parse/state.hpp>
 
 #include <we/type/activity.hpp>
-#include <we/test/operator_equal.hpp>
+#include <we/type/net.hpp>
 
 #include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/read_file.hpp>
@@ -58,7 +58,8 @@ namespace
 
     ::we::type::activity_t xml_to_we()
     {
-      return ::xml::parse::xml_to_we (*function, state);
+      return ::we::type::activity_t
+        {::xml::parse::xml_to_we (*function, state)};
     }
 
     ::xml::parse::state::type state;

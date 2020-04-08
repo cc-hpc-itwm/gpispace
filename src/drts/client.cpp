@@ -42,18 +42,11 @@ namespace gspc
 
   void workflow::set_wait_for_output()
   {
-    _->_activity.transition().set_property ({"drts", "wait_for_output"}, true);
+    _->_activity.set_wait_for_output();
   }
   std::string workflow::to_string() const
   {
     return _->_activity.to_string();
-  }
-  void workflow::add_input ( std::string const& port
-                           , pnet::type::value::value_type const& value
-                           )
-  {
-    _->_activity.add_input
-      (_->_activity.transition().input_port_by_name (port), value);
   }
 
   static_assert ( std::is_same<job_id_t, sdpa::job_id_t>::value
@@ -87,24 +80,6 @@ namespace gspc
   {}
   PIMPL_DTOR (client)
 
-  namespace
-  {
-    void put ( ::we::type::activity_t& activity
-             , std::multimap< std::string
-                            , pnet::type::value::value_type
-                            > const& values_on_ports
-             )
-    {
-      for (auto const& value_on_port : values_on_ports)
-      {
-        activity.add_input
-          ( activity.transition().input_port_by_name (value_on_port.first)
-          , value_on_port.second
-          );
-      }
-    }
-  }
-
   job_id_t client::submit
     ( class workflow const& workflow
     , std::multimap< std::string
@@ -112,7 +87,10 @@ namespace gspc
                    > const& values_on_ports
     )
   {
-    put (workflow._->_activity, values_on_ports);
+    for (auto const& value_on_port : values_on_ports)
+    {
+      workflow._->_activity.add_input (value_on_port.first, value_on_port.second);
+    }
 
     return _->_client.submitJob (workflow._->_activity);
   }
@@ -172,21 +150,7 @@ namespace gspc
   std::multimap<std::string, pnet::type::value::value_type>
     client::extract_result_and_forget_job (job_id_t job_id)
   {
-    ::we::type::activity_t const result_activity
-      (wait_and_delete_job (job_id, _->_client));
-
-    std::multimap<std::string, pnet::type::value::value_type> result;
-
-    for (auto const& value_on_port: result_activity.output())
-    {
-      result.emplace
-        ( result_activity.transition().ports_output()
-        . at (value_on_port.second).name()
-        , value_on_port.first
-        );
-    }
-
-    return result;
+    return wait_and_delete_job (job_id, _->_client).result();
   }
 
   pnet::type::value::value_type client::synchronous_workflow_response

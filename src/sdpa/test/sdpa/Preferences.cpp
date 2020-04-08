@@ -82,7 +82,7 @@ namespace
       _master = source;
 
       BOOST_REQUIRE_EQUAL
-        (e->activity().preferences(), _expected_preferences);
+        (e->activity().preferences_TESTING_ONLY(), _expected_preferences);
 
       finish_job (*e->job_id(), e->activity());
     }
@@ -130,8 +130,8 @@ namespace
                                            )
                         );
 
-    we::type::activity_t activity (transition, boost::none);
-    activity.add_input ( transition.input_port_by_name (port_name)
+    we::type::activity_t activity (transition);
+    activity.add_input ( port_name
                        , fhg::util::testing::random_string_without ("\\\"")
                        );
 
@@ -164,7 +164,8 @@ namespace
 
       BOOST_REQUIRE (event->implementation());
 
-      auto const activity_preferences (event->activity().preferences());
+      auto const activity_preferences
+        (event->activity().preferences_TESTING_ONLY());
 
       BOOST_REQUIRE (!activity_preferences.empty());
 
@@ -323,7 +324,6 @@ namespace
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 }

@@ -210,54 +210,31 @@ std::string GenericDaemon::gen_id()
                                , job_handler handler
                                )
     {
-      const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
-
-      Requirements_and_preferences requirements_and_preferences
-        { activity.requirements()
-        , activity.get_schedule_data()
-        , [&]
-          {
-            //! \todo Move to gpi::pc::client::api_t
-            if (!activity.transition().module_call())
-            {
-              return null_transfer_cost;
-            }
-
-            expr::eval::context const context {activity.evaluation_context()};
-
-            std::list<std::pair<we::local::range, we::global::range>>
-              vm_transfers (activity.transition().module_call()->gets (context));
-
-            std::list<std::pair<we::local::range, we::global::range>>
-              puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
-
-            vm_transfers.splice (vm_transfers.end(), puts_before);
-
-            if (vm_transfers.empty())
-            {
-              return null_transfer_cost;
-            }
-
-            if (!_virtual_memory_api)
-            {
-              throw std::logic_error
-                ("vmem transfers without vmem knowledge in agent");
-            }
-            return _virtual_memory_api->transfer_costs (vm_transfers);
-          }()
-        , computational_cost
-        , activity.memory_buffer_size_total()
-        , activity.preferences()
-        };
-
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
                     , std::move (handler)
-                    , std::move (requirements_and_preferences)
+                    , activity.requirements_and_preferences
+                        (_virtual_memory_api.get())
                     );
     }
 
+
+    Job* GenericDaemon::addJobWithNoPreferences
+      ( const sdpa::job_id_t& job_id
+      , we::type::activity_t activity
+      , job_source source
+      , job_handler handler
+      )
+    {
+      return addJob
+        ( job_id
+        , std::move (activity)
+        , std::move (source)
+        , std::move (handler)
+        , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
+        );
+    }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
@@ -465,7 +442,8 @@ void GenericDaemon::handleSubmitJobEvent
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   auto const maybe_master (master_by_address (source));
-  Job* const pJob (addJob ( job_id
+  Job* const pJob (addJobWithNoPreferences
+                          ( job_id
                           , e.activity()
                           , maybe_master
                           ? job_source (job_source_master {*maybe_master})
@@ -473,7 +451,6 @@ void GenericDaemon::handleSubmitJobEvent
                           , hasWorkflowEngine()
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
-                          , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
                           )
                   );
 
@@ -641,24 +618,16 @@ void GenericDaemon::submit ( const we::layer::id_type& job_id
                            )
 try
 {
-  if (activity.transition().net())
+  if (activity.handle_by_workflow_engine())
   {
     workflow_engine_submit
-      (job_id, addJob (job_id, activity, job_source_wfe(), job_handler_wfe()));
+      ( job_id
+      , addJobWithNoPreferences
+          (job_id, activity, job_source_wfe(), job_handler_wfe())
+      );
   }
   else
   {
-    auto const num_required_workers (activity.get_schedule_data().num_worker());
-
-    if ( num_required_workers
-       && *num_required_workers > 1
-       && !activity.preferences().empty()
-       )
-    {
-      throw std::runtime_error
-        ("Not allowed to use coallocation for activities with multiple module implementations!");
-    }
-
     addJob (job_id, activity, job_source_wfe(), job_handler_worker());
 
     _scheduler.enqueueJob (job_id);

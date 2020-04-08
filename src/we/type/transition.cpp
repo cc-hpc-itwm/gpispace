@@ -62,9 +62,9 @@ namespace we
     {
       return data_;
     }
-    transition_t::data_type& transition_t::data()
+    we::type::net_type& transition_t::mutable_net()
     {
-      return data_;
+      return boost::get<we::type::net_type> (data_);
     }
 
     std::list<we::type::requirement_t> const& transition_t::requirements() const

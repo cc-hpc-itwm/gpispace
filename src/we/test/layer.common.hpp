@@ -114,18 +114,15 @@ namespace
     std::tie (transition_out, std::ignore, std::ignore) =
       net_with_childs (false, token_count);
 
-    we::type::activity_t activity_input (transition_in, boost::none);
-    we::type::activity_t activity_output (transition_out, boost::none);
+    we::type::activity_t activity_input (transition_in);
+    we::type::activity_t activity_output (transition_out);
 
-    we::type::activity_t activity_child
-      (transition_child, transition_id_child);
-    activity_child.add_input
-      (transition_child.input_port_by_name ("in"), value::CONTROL);
+    we::type::activity_t activity_child (transition_child);
+    activity_child.add_input ("in", value::CONTROL);
 
     we::type::activity_t activity_result
-      (transition_child, transition_id_child);
-    activity_result.add_output
-      (transition_child.output_port_by_name ("out"), value::CONTROL);
+      (we::type::TESTING_ONLY{}, transition_child, transition_id_child);
+    activity_result.add_output_TESTING_ONLY ("out", value::CONTROL);
 
     return std::make_tuple
       (activity_input, activity_output, activity_child, activity_result);

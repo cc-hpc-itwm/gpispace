@@ -309,7 +309,7 @@ try
     if (!output.empty())
     {
       std::ofstream out (output.c_str());
-      out << xml::parse::xml_to_we (function, state).to_string();
+      out << we::type::activity_t (xml::parse::xml_to_we (function, state)).to_string();
     }
 
   return EXIT_SUCCESS;

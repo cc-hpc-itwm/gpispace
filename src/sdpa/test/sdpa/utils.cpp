@@ -75,8 +75,8 @@ namespace utils
                                            , we::type::property::type()
                                            )
                         );
-    we::type::activity_t act (transition, boost::none);
-    act.add_input ( transition.input_port_by_name (port_name)
+    we::type::activity_t act (transition);
+    act.add_input ( port_name
                   //! \todo Investigate why we can't take a random
                   //! string with \\ or \": parse error on deserialization
                   , fhg::util::testing::random_string_without ("\\\"")
@@ -145,7 +145,6 @@ namespace utils
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 
@@ -240,7 +239,6 @@ namespace utils
                                , we::type::property::type()
                                , we::priority_type()
                                )
-      , boost::none
       );
   }
 
@@ -544,7 +542,7 @@ namespace utils
                              , sdpa::events::SubmitJobEvent const* e
                              )
     {
-      auto const name (e->activity().transition().name());
+      auto const name (e->activity().name());
 
       add_job (name, *e->job_id(), source);
 

@@ -5,7 +5,7 @@
 #include <xml/parse/state.fwd.hpp>
 #include <xml/parse/type/function.hpp>
 
-#include <we/type/activity.fwd.hpp>
+#include <we/type/transition.fwd.hpp>
 
 #include <boost/filesystem.hpp>
 
@@ -25,7 +25,7 @@ namespace xml
     void dump_xml (const type::function_type&, const state::type&);
 
     //! \todo Not in parser, but somewhere else?
-    we::type::activity_t xml_to_we
+    we::type::transition_t xml_to_we
       ( const xml::parse::type::function_type& function
       , const xml::parse::state::type& state
       );

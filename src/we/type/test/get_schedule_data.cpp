@@ -18,9 +18,9 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
     , we::type::property::type()
     , we::priority_type()
     );
-  we::type::activity_t const activity (transition, boost::none);
+  we::type::activity_t activity (transition);
 
-  BOOST_REQUIRE (!activity.get_schedule_data().num_worker());
+  BOOST_REQUIRE (activity.requirements_and_preferences (nullptr).numWorkers());
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
@@ -39,10 +39,9 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     , properties
     , we::priority_type()
     );
-  we::type::activity_t const activity (transition, boost::none);
+  we::type::activity_t activity (transition);
 
-  BOOST_REQUIRE (!!activity.get_schedule_data().num_worker());
-  BOOST_REQUIRE_EQUAL (activity.get_schedule_data().num_worker().get(), value);
+  BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
@@ -63,22 +62,19 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
     , we::priority_type()
     );
 
-  we::port_id_type const port_id
-    ( transition.add_port
-      ( we::type::port_t
-        ( port_name
-        , we::type::PORT_IN
-        , pnet::type::signature::signature_type (std::string ("unsigned long"))
-        , we::type::property::type()
-        )
+  transition.add_port
+    ( we::type::port_t
+      ( port_name
+      , we::type::PORT_IN
+      , pnet::type::signature::signature_type (std::string ("unsigned long"))
+      , we::type::property::type()
       )
     );
 
-  we::type::activity_t activity (transition, boost::none);
-  activity.add_input (port_id, value);
+  we::type::activity_t activity (transition);
+  activity.add_input (port_name, value);
 
-  BOOST_REQUIRE (!!activity.get_schedule_data().num_worker());
-  BOOST_REQUIRE_EQUAL (activity.get_schedule_data().num_worker().get(), value);
+  BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }
 
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
@@ -101,32 +97,27 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
     , we::priority_type()
     );
 
-  we::port_id_type const port_id1
-    ( transition.add_port
-      ( we::type::port_t
-        ( port_name1
-        , we::type::PORT_IN
-        , pnet::type::signature::signature_type (std::string ("unsigned long"))
-        , we::type::property::type()
-        )
+  transition.add_port
+    ( we::type::port_t
+      ( port_name1
+      , we::type::PORT_IN
+      , pnet::type::signature::signature_type (std::string ("unsigned long"))
+      , we::type::property::type()
       )
     );
-  we::port_id_type const port_id2
-    ( transition.add_port
-      ( we::type::port_t
-        ( port_name2
-        , we::type::PORT_IN
-        , pnet::type::signature::signature_type (std::string ("unsigned long"))
+  transition.add_port
+    ( we::type::port_t
+      ( port_name2
+      , we::type::PORT_IN
+      , pnet::type::signature::signature_type (std::string ("unsigned long"))
         , we::type::property::type()
-        )
       )
     );
 
-  we::type::activity_t activity (transition, boost::none);
-  activity.add_input (port_id1, value1);
-  activity.add_input (port_id2, value2);
+  we::type::activity_t activity (transition);
+  activity.add_input (port_name1, value1);
+  activity.add_input (port_name2, value2);
 
-  BOOST_REQUIRE (!!activity.get_schedule_data().num_worker());
   BOOST_REQUIRE_EQUAL
-    (activity.get_schedule_data().num_worker().get(), value1 + value2);
+    (activity.requirements_and_preferences (nullptr).numWorkers(), value1 + value2);
 }

@@ -97,7 +97,7 @@ namespace we
       const std::string& name() const;
 
       const data_type& data() const;
-      data_type& data();
+      we::type::net_type& mutable_net();
 
       boost::optional<const expression_t&> expression() const;
       boost::optional<const we::type::net_type&> net() const;

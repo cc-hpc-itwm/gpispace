@@ -1,3 +1,4 @@
+#include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>

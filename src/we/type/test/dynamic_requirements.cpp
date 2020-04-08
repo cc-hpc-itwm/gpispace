@@ -30,9 +30,10 @@ BOOST_AUTO_TEST_CASE (transition_has_no_dynamic_requirements)
     transition.add_requirement (requirement);
   }
 
-  we::type::activity_t const activity (transition, boost::none);
+  we::type::activity_t activity (transition);
 
-  auto const requirements (activity.requirements());
+  auto const requirements
+    (activity.requirements_and_preferences (nullptr).requirements());
 
   BOOST_REQUIRE_EQUAL (requirements.size(), static_requirements.size());
 
@@ -75,28 +76,27 @@ BOOST_AUTO_TEST_CASE (transition_has_dynamic_requirements)
     transition.add_requirement (requirement);
   }
 
-  we::port_id_type const port_id
-    ( transition.add_port
-      ( we::type::port_t
-        ( port
-        , we::type::PORT_IN
-        , pnet::type::signature::signature_type (std::string ("string"))
-        , we::type::property::type()
-        )
+  transition.add_port
+    ( we::type::port_t
+      ( port
+      , we::type::PORT_IN
+      , pnet::type::signature::signature_type (std::string ("string"))
+      , we::type::property::type()
       )
     );
 
-  we::type::activity_t activity (transition, boost::none);
-  activity.add_input (port_id, value);
+  we::type::activity_t activity (transition);
+  activity.add_input (port, value);
 
   std::list<we::type::requirement_t> expected_requirements (static_requirements);
   expected_requirements.emplace_back (value, true);
 
-  std::list<we::type::requirement_t> requirements (activity.requirements());
+  auto const requirements
+    (activity.requirements_and_preferences (nullptr).requirements());
 
   BOOST_REQUIRE_EQUAL (requirements.size(), expected_requirements.size());
 
-  for ( auto lhs = requirements.begin(), rhs = expected_requirements.begin()
+  for ( auto lhs = requirements.cbegin(), rhs = expected_requirements.cbegin()
       ; lhs != requirements.end()
       ; ++lhs, ++rhs
       )

@@ -202,6 +202,11 @@ namespace sdpa {
                   , job_handler
                   , Requirements_and_preferences
                   );
+      Job* addJobWithNoPreferences ( const sdpa::job_id_t&
+                                   , we::type::activity_t
+                                   , job_source
+                                   , job_handler
+                                   );
 
       Job* findJob(const sdpa::job_id_t& job_id ) const;
       Job* require_job (job_id_t const&, std::string const& error) const;
