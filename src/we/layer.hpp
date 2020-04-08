@@ -170,7 +170,7 @@ namespace we
             id_type _id;
           };
 
-          RemovalFunction (std::unique_ptr<ToFinish>);
+          RemovalFunction (ToFinish);
 
           RemovalFunction (RemovalFunction const&) = delete;
           RemovalFunction (RemovalFunction&&) = default;
@@ -179,7 +179,7 @@ namespace we
 
           boost::variant
             < std::function<void (activity_data_type&)>
-            , std::unique_ptr<ToFinish>
+            , ToFinish
             > _function;
         };
 
