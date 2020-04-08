@@ -443,7 +443,7 @@ void GenericDaemon::handleSubmitJobEvent
   auto const maybe_master (master_by_address (source));
   Job* const pJob (addJobWithNoPreferences
                           ( job_id
-                          , std::move (e).activity()
+                          , e.activity()
                           , maybe_master
                           ? job_source (job_source_master {*maybe_master})
                           : job_source (job_source_client{})
