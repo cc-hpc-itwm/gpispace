@@ -40,6 +40,12 @@ namespace gspc
 
     virtual Task const& at (task::ID) const override;
 
+    //! \note BEGIN required by activity_t
+    template<typename Archive>
+      void serialize (Archive& ar, unsigned int /* version */);
+    MapWorkflowEngine() = default; //! \note serialization only
+    //! \note END required by activity_t
+
   private:
     struct WorkflowState
     {

@@ -125,6 +125,7 @@ extended_add_library (NAME pnet
             drts-context
             gpi-space-pc-client-static
             gpi-space-pc-segment
+            GSPC::proto-example
             Util::Generic
             Boost::date_time
             Boost::program_options

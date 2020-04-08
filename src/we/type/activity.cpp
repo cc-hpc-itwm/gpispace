@@ -239,7 +239,7 @@ namespace we
       }
     }
 
-    boost::variant<we::type::transition_t> const& activity_t::data() const
+    activity_t::Data const& activity_t::data() const
     {
       return _data;
     }
