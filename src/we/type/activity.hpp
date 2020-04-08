@@ -103,8 +103,8 @@ namespace we
                 , gspc::we::plugin::PutToken
                 );
 
-      activity_t wrap() const;
-      activity_t unwrap() const;
+      activity_t wrap() &&;
+      activity_t unwrap() &&;
 
       const TokensOnPorts& input() const;
       void add_input

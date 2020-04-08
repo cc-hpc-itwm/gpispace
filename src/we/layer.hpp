@@ -153,17 +153,47 @@ namespace we
 
       struct async_remove_queue
       {
+        struct RemovalFunction
+        {
+          void operator() (activity_data_type&) &&;
+
+          template<typename Fun>
+            RemovalFunction (Fun&&);
+
+          struct ToFinish
+          {
+            ToFinish (layer*, id_type, type::activity_t, id_type);
+
+            layer* _that;
+            id_type _parent;
+            type::activity_t _result;
+            id_type _id;
+          };
+
+          RemovalFunction (std::unique_ptr<ToFinish>&&);
+
+          RemovalFunction (RemovalFunction const&) = delete;
+          RemovalFunction (RemovalFunction&&) = default;
+          RemovalFunction& operator= (RemovalFunction const&) = delete;
+          RemovalFunction& operator= (RemovalFunction&&) = delete;
+
+          boost::variant
+            < std::function<void (activity_data_type&)>
+            , std::unique_ptr<ToFinish>
+            > _function;
+        };
+
         activity_data_type get();
         void put (activity_data_type, bool was_active);
 
         void remove_and_apply
           ( id_type
-          , std::function<void (activity_data_type const&)>
+          , RemovalFunction&&
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
         void apply
           ( id_type
-          , std::function<void (activity_data_type&)>
+          , RemovalFunction&&
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
 
@@ -200,7 +230,7 @@ namespace we
 
         typedef std::unordered_map
           < id_type
-          , std::list<std::tuple< std::function<void (activity_data_type&)>
+          , std::list<std::tuple< RemovalFunction
                                 , std::function<void (std::exception_ptr)>
                                 , bool
                                 >

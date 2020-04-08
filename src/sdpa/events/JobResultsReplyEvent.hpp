@@ -16,10 +16,10 @@ namespace sdpa
       typedef boost::shared_ptr<JobResultsReplyEvent> Ptr;
 
       JobResultsReplyEvent ( const sdpa::job_id_t& a_job_id
-                           , const we::type::activity_t& a_result
+                           , we::type::activity_t a_result
                            )
         : sdpa::events::JobEvent (a_job_id)
-        , result_ (a_result)
+        , result_ (std::move (a_result))
       {}
 
       virtual void handleBy
@@ -48,7 +48,7 @@ namespace sdpa
       LOAD_JOBEVENT_CONSTRUCT_DATA (job_id);
       LOAD_FROM_ARCHIVE (we::type::activity_t, result);
 
-      ::new (e) JobResultsReplyEvent (job_id, result);
+      ::new (e) JobResultsReplyEvent (job_id, std::move (result));
     }
   }
 }
