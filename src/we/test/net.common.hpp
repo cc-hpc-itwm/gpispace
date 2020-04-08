@@ -10,7 +10,8 @@ namespace
 
   std::mt19937& random_engine()
   {
-    static std::mt19937 _ {std::random_device{}()};
+    static std::mt19937 random_engine
+      (fhg::util::testing::detail::GLOBAL_random_engine()());
 
     return _;
   }
