@@ -43,7 +43,7 @@ namespace gspc
   class scoped_allocation;
 }
 
-//! is: activity.ipp
+//! is: activity.fwd.hpp
 namespace we
 {
   namespace type
