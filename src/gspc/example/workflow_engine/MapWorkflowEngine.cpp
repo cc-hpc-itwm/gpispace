@@ -29,15 +29,6 @@ namespace gspc
     return _processing_state.at (task_id);
   }
 
-  template<typename Archive>
-    void MapWorkflowEngine::WorkflowState::serialize
-      (Archive& ar, unsigned int /* version */)
-  {
-    ar & implementation;
-    ar & N;
-    ar & i;
-  }
-
   workflow_engine::State MapWorkflowEngine::state() const
   {
     return {bytes_save (_workflow_state), _processing_state};

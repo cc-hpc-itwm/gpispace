@@ -56,12 +56,6 @@ namespace gspc
 
     workflow_engine::ProcessingState _processing_state;
   };
-
-  template<typename Archive>
-    void MapInput::serialize (Archive& ar, unsigned int)
-  {
-    ar & N;
-    ar & i;
-    ar & o;
-  }
 }
+
+#include <gspc/example/workflow_engine/MapWorkflowEngine.ipp>
