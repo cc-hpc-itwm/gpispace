@@ -570,7 +570,7 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        _scheduler.reschedule_worker_jobs
+        _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
           ( as_worker.get()->second
           , [this] (job_id_t const& job)
             {
