@@ -30,13 +30,14 @@ namespace utils
 {
   std::string random_peer_name()
   {
-    static std::size_t i (0);
-    return boost::lexical_cast<std::string> (i++)
 #define TEST_NO_HUMAN_READABLE_PEER_NAMES
 #ifdef TEST_NO_HUMAN_READABLE_PEER_NAMES
-    + fhg::util::testing::random_string()
+    static fhg::util::testing::unique_random<std::string> peer_names;
+    return peer_names();
+#else
+    static std::size_t i (0);
+    return std::to_string (i++);
 #endif
-      ;
   }
 
   //! \todo unify with test/layer
@@ -807,13 +808,8 @@ namespace utils
 
   sdpa::discovery_info_t client::discover (sdpa::job_id_t const& id)
   {
-    static std::size_t i (0);
-    auto const discover_id ( ( boost::format ("%1%%2%")
-                             % fhg::util::testing::random_string()
-                             % i++
-                             ).str()
-                           );
-    return _.discoverJobStates (discover_id, id);
+    static fhg::util::testing::unique_random<std::string> discover_ids;
+    return _.discoverJobStates (discover_ids(), id);
   }
 
   we::type::activity_t client::retrieve_job_results (sdpa::job_id_t const& id)
