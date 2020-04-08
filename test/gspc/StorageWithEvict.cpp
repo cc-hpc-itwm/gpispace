@@ -11,7 +11,7 @@ namespace gspc
   using Storage = StorageWithEvict<int, std::string>;
   using fhg::util::testing::random;
   using fhg::util::testing::randoms;
-  using fhg::util::testing::unique_random;
+  using fhg::util::testing::unique_randoms;
 
   namespace
   {
@@ -89,7 +89,7 @@ namespace gspc
     StorageWithEvict<int, std::string> storage;
 
     auto const id (random<int>{}());
-    auto const values (randoms<std::vector<std::string>, unique_random> (2));
+    auto const values (unique_randoms<std::vector<std::string>> (2));
 
     storage.at_or_construct (id, ignore_evict, values.at (0));
 
@@ -103,7 +103,7 @@ namespace gspc
     StorageWithEvict<int, std::string> storage;
 
     auto const id (random<int>{}());
-    auto const values (randoms<std::vector<std::string>, unique_random> (2));
+    auto const values (unique_randoms<std::vector<std::string>> (2));
 
     storage.at_or_construct (id, ignore_evict, values.at (0));
 
@@ -117,7 +117,7 @@ namespace gspc
   {
     StorageWithEvict<int, std::string> storage;
 
-    auto const ids (randoms<std::vector<int>, unique_random> (2));
+    auto const ids (unique_randoms<std::vector<int>> (2));
     auto const values (randoms<std::vector<std::string>> (3));
 
     storage.at_or_construct (ids.at (0), ignore_evict, values.at (0));
@@ -140,7 +140,7 @@ namespace gspc
   {
     StorageWithEvict<int, std::string> storage;
 
-    auto const ids (randoms<std::vector<int>, unique_random> (2));
+    auto const ids (unique_randoms<std::vector<int>> (2));
     auto const values (randoms<std::vector<std::string>> (3));
 
     storage.at_or_create (ids.at (0), ignore_evict, C (values.at (0)));
