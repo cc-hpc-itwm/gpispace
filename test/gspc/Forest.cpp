@@ -26,7 +26,7 @@ namespace gspc
 {
   using fhg::util::testing::random;
   using fhg::util::testing::randoms;
-  using fhg::util::testing::unique_random;
+  using fhg::util::testing::unique_randoms;
 
   namespace
   {
@@ -93,7 +93,7 @@ namespace gspc
   BOOST_DATA_TEST_CASE
     (loop_and_duplicate_connection_throws, from_to (0, 25), N)
   {
-    auto const xs {randoms<std::vector<int>, unique_random> (N)};
+    auto const xs {unique_randoms<std::vector<int>> (N)};
 
     Forest<int> forest (chain (xs));
 
@@ -143,7 +143,7 @@ namespace gspc
                          )
     {
       // ys[ys.size()-1] -> ... -> ys[0] -> C <- xs[0] <- ... <- xs[xs.size()-1]
-      auto const ns {randoms<std::vector<int>, unique_random> (N + M + 1 + 1)};
+      auto const ns {unique_randoms<std::vector<int>> (N + M + 1 + 1)};
 
       std::vector<int> const xs {  ns.cbegin() + 0    , ns.cbegin() + N};
       int              const C  {*(ns.cbegin() + N)};
@@ -209,7 +209,7 @@ namespace gspc
     BOOST_DATA_TEST_CASE
       (up_and_down_traverse_tree_in_opposite_order, from_to (2, 100), N)
     {
-      auto const xs {randoms<std::vector<int>, unique_random> (N)};
+      auto const xs {unique_randoms<std::vector<int>> (N)};
 
       Forest<int> forest (chain (xs));
 
@@ -260,7 +260,7 @@ namespace gspc
 
   BOOST_DATA_TEST_CASE (remove_leaf_for_non_leaf_throws, from_to (2, 25), N)
   {
-    auto const xs {randoms<std::vector<int>, unique_random> (N)};
+    auto const xs {unique_randoms<std::vector<int>> (N)};
 
     Forest<int> forest (chain (xs));
 
@@ -285,7 +285,7 @@ namespace gspc
 
   BOOST_DATA_TEST_CASE (remove_root_for_non_root_throws, from_to (2, 25), N)
   {
-    auto const xs {randoms<std::vector<int>, unique_random> (N)};
+    auto const xs {unique_randoms<std::vector<int>> (N)};
 
     Forest<int> forest (chain (xs));
 
@@ -310,7 +310,7 @@ namespace gspc
 
   BOOST_DATA_TEST_CASE (remove_for_unknown_throws, from_to (0, 100), N)
   {
-    auto const xs {randoms<std::vector<int>, unique_random> (N + 1)};
+    auto const xs {unique_randoms<std::vector<int>> (N + 1)};
 
     Forest<int> forest (chain ({xs.cbegin(), std::prev (xs.end())}));
 
@@ -347,7 +347,7 @@ namespace gspc
 
   BOOST_DATA_TEST_CASE (remove_leaf_removes_leaf, from_to (0, 25), N)
   {
-    auto const ns {randoms<std::vector<int>, unique_random> (N + 1)};
+    auto const ns {unique_randoms<std::vector<int>> (N + 1)};
     auto const leaf {ns.front()};
     std::vector<int> const roots {ns.cbegin() + 1, ns.cend()};
 
@@ -386,7 +386,7 @@ namespace gspc
 
   BOOST_DATA_TEST_CASE (remove_root_removes_root, from_to (0, 25), N)
   {
-    auto const ns {randoms<std::vector<int>, unique_random> (N + 1)};
+    auto const ns {unique_randoms<std::vector<int>> (N + 1)};
     auto const root {ns.front()};
     typename Forest<int>::Children const leafs {ns.cbegin() + 1, ns.cend()};
 
@@ -426,7 +426,7 @@ namespace gspc
 
   BOOST_AUTO_TEST_CASE (up_and_down)
   {
-    // auto const xs {randoms<std::vector<int>, unique_random> (8)};
+    // auto const xs {unique_randoms<std::vector<int>> (8)};
     // auto const n {xs.at (0)};
     // auto const m0 {xs.at (1)};
     // auto const m1 {xs.at (2)};
