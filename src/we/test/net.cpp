@@ -6,7 +6,7 @@
 #include <we/type/transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -29,9 +29,7 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        ( fhg::util::testing::detail::GLOBAL_random_engine()
-        , unexpected_workflow_response
-        )
+        (random_engine(), unexpected_workflow_response)
     );
 }
 
@@ -61,9 +59,7 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
 
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        ( fhg::util::testing::detail::GLOBAL_random_engine()
-        , unexpected_workflow_response
-        )
+        (random_engine(), unexpected_workflow_response)
     );
 }
 
@@ -139,9 +135,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
 
   BOOST_REQUIRE
     ( !net.fire_expressions_and_extract_activity_random
-        ( fhg::util::testing::detail::GLOBAL_random_engine()
-        , unexpected_workflow_response
-        )
+        (random_engine(), unexpected_workflow_response)
     );
 
   BOOST_REQUIRE (net.get_token (place_in).empty());
@@ -167,9 +161,7 @@ namespace we
       BOOST_REQUIRE (net.place_to_port().empty());
       BOOST_REQUIRE
         ( !net.fire_expressions_and_extract_activity_random
-            ( fhg::util::testing::detail::GLOBAL_random_engine()
-            , unexpected_workflow_response
-            )
+            (random_engine(), unexpected_workflow_response)
         );
     }
   }

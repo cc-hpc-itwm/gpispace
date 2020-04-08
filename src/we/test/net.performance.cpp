@@ -8,10 +8,10 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/chrono.hpp>
-#include <util-generic/testing/random.hpp>
 
 #include <algorithm>
 #include <chrono>
+#include <random>
 #include <vector>
 
 #include <we/test/net.common.hpp>
@@ -91,9 +91,7 @@ namespace we
 
         BOOST_REQUIRE
           ( !net.fire_expressions_and_extract_activity_random
-              ( fhg::util::testing::detail::GLOBAL_random_engine()
-              , unexpected_workflow_response
-              )
+              (random_engine(), unexpected_workflow_response)
           );
 
         auto const duration
