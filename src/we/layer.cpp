@@ -520,7 +520,7 @@ namespace we
       : _function (std::forward<Fun> (fun))
   {}
   layer::async_remove_queue::RemovalFunction::RemovalFunction
-    (std::unique_ptr<ToFinish>&& to_finish)
+    (std::unique_ptr<ToFinish> to_finish)
       : _function (std::move (to_finish))
   {}
   layer::async_remove_queue::RemovalFunction::ToFinish::ToFinish
@@ -650,7 +650,7 @@ namespace we
 
     void layer::async_remove_queue::remove_and_apply
       ( id_type id
-      , RemovalFunction&& fun
+      , RemovalFunction fun
       , std::function<void (std::exception_ptr)> on_error
       )
     {
@@ -692,7 +692,7 @@ namespace we
 
     void layer::async_remove_queue::apply
       ( id_type id
-      , RemovalFunction&& fun
+      , RemovalFunction fun
       , std::function<void (std::exception_ptr)> on_error
       )
     {

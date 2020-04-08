@@ -170,7 +170,7 @@ namespace we
             id_type _id;
           };
 
-          RemovalFunction (std::unique_ptr<ToFinish>&&);
+          RemovalFunction (std::unique_ptr<ToFinish>);
 
           RemovalFunction (RemovalFunction const&) = delete;
           RemovalFunction (RemovalFunction&&) = default;
@@ -188,12 +188,12 @@ namespace we
 
         void remove_and_apply
           ( id_type
-          , RemovalFunction&&
+          , RemovalFunction
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
         void apply
           ( id_type
-          , RemovalFunction&&
+          , RemovalFunction
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
 
