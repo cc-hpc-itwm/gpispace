@@ -8,6 +8,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
@@ -49,36 +50,19 @@ namespace
 
   unsigned int max_depth (const sdpa::discovery_info_t& discovery_result)
   {
-    unsigned int maxd = 1;
+    unsigned int maxd (1);
 
-    for (const sdpa::discovery_info_t& child_info : discovery_result.children())
+    for (auto const& child_info : discovery_result.children())
     {
-      unsigned int const depth (max_depth (child_info) + 1);
-
-      if (maxd < depth)
-      {
-        maxd = depth;
-      }
+      maxd = std::max (maxd, max_depth (child_info) + 1);
     }
 
     return maxd;
   }
 
-  void check_has_one_leaf_job_with_expected_status
-    ( const sdpa::discovery_info_t& discovery_result
-    , const sdpa::status::code expected_status
-    )
-  {
-     std::list<sdpa::status::code> const list_leaf_job_status
-       (get_leaf_job_info (discovery_result));
-
-     BOOST_REQUIRE_EQUAL (list_leaf_job_status.size(), 1);
-
-     for (const sdpa::status::code& leaf_job_status : list_leaf_job_status)
-     {
-       BOOST_REQUIRE_EQUAL (leaf_job_status, expected_status);
-     }
-  }
+#define REQUIRE_ONE_LEAF_WITH_STATUS(result_, expected_)                      \
+  BOOST_REQUIRE_EQUAL                                                         \
+    (get_leaf_job_info (result_), std::list<sdpa::status::code> {expected_})
 
   class fake_drts_worker_discovering final :
     public utils::no_thread::fake_drts_worker_notifying_module_call_submission
@@ -172,7 +156,7 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
 
   BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
 
-  check_has_one_leaf_job_with_expected_status (discovery_result, reply);
+  REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, reply);
 }
 
 BOOST_DATA_TEST_CASE (discover_inexistent_job, certificates_data, certificates)
@@ -193,7 +177,7 @@ BOOST_DATA_TEST_CASE
 
   utils::client client (orchestrator, certificates);
 
-  check_has_one_leaf_job_with_expected_status
+  REQUIRE_ONE_LEAF_WITH_STATUS
     ( client.discover (client.submit_job (utils::module_call()))
     , sdpa::status::PENDING
     );
@@ -212,7 +196,7 @@ BOOST_DATA_TEST_CASE
   while (max_depth (discovery_result = client.discover (job_id)) != 2)
   {} // do nothing, discover again
 
-  check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
+  REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
 }
 
 namespace
