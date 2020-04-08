@@ -486,31 +486,31 @@ namespace we
         }
       , [&] (std::unique_ptr<ToFinish>& to_finish)
         {
-          auto&& that (to_finish->_that);
-          auto&& parent (to_finish->_parent);
-          auto&& result (to_finish->_result);
-          auto&& id (to_finish->_id);
-
           activity_data.child_finished
-            ( std::move (result)
+            ( std::move (to_finish->_result)
             , [&] ( pnet::type::value::value_type const& description
                   , pnet::type::value::value_type const& value
                   )
               {
-                that->workflow_response ( parent
-                                        , get_response_id (description)
-                                        , value
-                                        );
+                to_finish->_that->workflow_response
+                  ( to_finish->_parent
+                  , get_response_id (description)
+                  , value
+                  );
               }
             , [&] (type::eureka_ids_type const& eureka_ids)
               {
-                that->eureka_response ( parent
-                                      , id
-                                      , eureka_ids
-                                      );
+                to_finish->_that->eureka_response
+                  ( to_finish->_parent
+                  , to_finish->_id
+                  , eureka_ids
+                  );
               }
             );
-          that->_running_jobs.terminated (parent, id);
+          to_finish->_that->_running_jobs.terminated
+            ( to_finish->_parent
+            , to_finish->_id
+            );
         }
       );
   }
