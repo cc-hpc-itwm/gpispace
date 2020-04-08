@@ -64,7 +64,7 @@
     BOOST_REQUIRE_EQUAL (_workers.size(), 1);                                       \
     BOOST_REQUIRE_EQUAL (this->workers (_job), _workers);                           \
     BOOST_REQUIRE_EQUAL (this->implementation (_job), _implementation);             \
-  } while (false);
+  } while (false)
 
 namespace
 {
