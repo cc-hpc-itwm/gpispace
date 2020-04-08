@@ -42,8 +42,6 @@ namespace boost
 
 namespace utils
 {
-  std::string require_and_read_file (std::string filename);
-
   std::string random_peer_name();
 
   //! \todo unify with test/layer

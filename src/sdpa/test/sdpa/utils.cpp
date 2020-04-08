@@ -28,18 +28,6 @@ void boost::test_tools::tt_detail::print_log_value<fhg::com::p2p::address_t>
 
 namespace utils
 {
-  std::string require_and_read_file (std::string filename)
-  {
-    std::ifstream f (filename.c_str());
-    BOOST_REQUIRE (f.is_open());
-
-    std::noskipws (f);
-
-    return std::string ( std::istream_iterator<char> (f)
-                       , std::istream_iterator<char>()
-                       );
-  }
-
   std::string random_peer_name()
   {
     static std::size_t i (0);
