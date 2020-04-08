@@ -517,7 +517,7 @@ namespace we
   template<typename Fun>
   layer::async_remove_queue::RemovalFunction::RemovalFunction
     (Fun&& fun)
-      : _function (std::move (fun))
+      : _function (std::forward<Fun> (fun))
   {}
   layer::async_remove_queue::RemovalFunction::RemovalFunction
     (std::unique_ptr<ToFinish>&& to_finish)
