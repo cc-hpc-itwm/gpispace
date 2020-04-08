@@ -8,7 +8,7 @@
 		* XML support for Petri net transitions with preference order
 		* Co-allocation scheduling with target device preferences
 	- Stencil Cache
-		* using virutal memory as I/O cache for stencil computations
+		* using virtual memory as I/O cache for stencil computations
 	- Expression plugins
 		* hook for user-provided callbacks within expression evaluation
 	- ``connect-out-many`` feature
