@@ -1,6 +1,6 @@
-math (EXPR block_size "8 << 20")
-math (EXPR number_of_blocks "8 << 10")
-math (EXPR memory_total "1 << 30")
+math (EXPR block_size "1 << 18")
+math (EXPR number_of_blocks "1 << 8")
+math (EXPR memory_total "1 << 20")
 
 fhg_add_test (NAME share_example_subnetwork
   SOURCES driver.cpp
