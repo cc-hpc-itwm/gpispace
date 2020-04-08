@@ -96,7 +96,6 @@ GenericDaemon::GenericDaemon( const std::string name
     (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
   , mtx_subscriber_()
   , mtx_cpb_()
-  , m_capabilities()
   , _log_emitter()
   , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
@@ -1076,17 +1075,11 @@ void GenericDaemon::requestRegistration (master_network_info& master)
   }
 
   std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  capabilities_set_t cpbSet (m_capabilities);
+  capabilities_set_t cpbSet;
 
   _worker_manager.getCapabilities (cpbSet);
 
   parent_proxy (this, master).worker_registration (cpbSet);
-}
-
-void GenericDaemon::addCapability(const capability_t& cpb)
-{
-  std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  m_capabilities.insert(cpb);
 }
 
 void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)

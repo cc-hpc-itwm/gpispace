@@ -265,8 +265,6 @@ namespace sdpa {
       std::mutex mtx_subscriber_;
       std::mutex mtx_cpb_;
 
-      sdpa::capabilities_set_t m_capabilities;
-
       fhg::logging::stream_emitter _log_emitter;
       void emit_gantt ( job_id_t const&
                       , we::type::activity_t const&
