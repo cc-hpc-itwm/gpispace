@@ -141,7 +141,7 @@ namespace sdpa
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* const e = dynamic_cast<Expected*> (reply.get()))
       {
-        return *e;
+        return std::move (*e);
       }
 
       handle_error_and_unexpected_event (reply);
@@ -202,10 +202,10 @@ namespace sdpa
       return state;
     }
 
-    sdpa::job_id_t Client::submitJob (we::type::activity_t const& activity)
+    sdpa::job_id_t Client::submitJob (we::type::activity_t activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (boost::none, activity, boost::none)).job_id();
+        (sdpa::events::SubmitJobEvent (boost::none, std::move (activity), boost::none)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)

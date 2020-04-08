@@ -402,8 +402,7 @@ bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
 {
   try
   {
-    const we::type::activity_t act (pJob->activity());
-    workflowEngine()->submit (job_id, act);
+    workflowEngine()->submit (job_id, pJob->activity());
 
     // Should set the workflow_id here, or send it together with the activity
     pJob->Dispatch();
@@ -444,7 +443,7 @@ void GenericDaemon::handleSubmitJobEvent
   auto const maybe_master (master_by_address (source));
   Job* const pJob (addJobWithNoPreferences
                           ( job_id
-                          , e.activity()
+                          , std::move (e).activity()
                           , maybe_master
                           ? job_source (job_source_master {*maybe_master})
                           : job_source (job_source_client{})
@@ -614,7 +613,7 @@ void GenericDaemon::handleErrorEvent
 }
 
 void GenericDaemon::submit ( const we::layer::id_type& job_id
-                           , const we::type::activity_t& activity
+                           , we::type::activity_t activity
                            )
 try
 {
@@ -623,12 +622,12 @@ try
     workflow_engine_submit
       ( job_id
       , addJobWithNoPreferences
-          (job_id, activity, job_source_wfe(), job_handler_wfe())
+          (job_id, std::move (activity), job_source_wfe(), job_handler_wfe())
       );
   }
   else
   {
-    addJob (job_id, activity, job_source_wfe(), job_handler_worker());
+    addJob (job_id, std::move (activity), job_source_wfe(), job_handler_worker());
 
     _scheduler.enqueueJob (job_id);
     request_scheduling();
@@ -1628,7 +1627,7 @@ namespace sdpa
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, activity, implementation, workers);
+        (_address, id, std::move (activity), implementation, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const

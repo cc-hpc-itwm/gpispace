@@ -18,13 +18,13 @@ namespace sdpa
 
       SubmitJobEvent
         ( const boost::optional<sdpa::job_id_t>& a_job_id
-        , we::type::activity_t const& activity
+        , we::type::activity_t activity
         , boost::optional<std::string> const& implementation
         , std::set<worker_id_t> const& workers = {}
         )
           : SDPAEvent()
           , _job_id (a_job_id)
-          , _activity (activity)
+          , _activity (std::move (activity))
           , _implementation (implementation)
           , _workers (workers)
       {}
@@ -76,7 +76,7 @@ namespace sdpa
       LOAD_FROM_ARCHIVE (boost::optional<std::string>, implementation);
       LOAD_FROM_ARCHIVE (std::set<sdpa::worker_id_t>, workers);
 
-      ::new (e) SubmitJobEvent (job_id, activity, implementation, workers);
+      ::new (e) SubmitJobEvent (job_id, std::move (activity), implementation, workers);
     }
   }
 }
