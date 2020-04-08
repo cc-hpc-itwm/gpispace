@@ -1,3 +1,7 @@
+#pragma once
+
+#include <util-generic/testing/random.hpp>
+
 #include <random>
 
 namespace
