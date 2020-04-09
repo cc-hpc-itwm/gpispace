@@ -433,13 +433,10 @@ namespace utils
   }
 
   void basic_drts_component::handle_worker_registration_response
-    ( fhg::com::p2p::address_t const& source
+    ( fhg::com::p2p::address_t const&
     , sdpa::events::worker_registration_response const* response
     )
   {
-    BOOST_REQUIRE (_master);
-    BOOST_REQUIRE_EQUAL (source, _master.get());
-
     response->get();
   }
 
@@ -448,11 +445,16 @@ namespace utils
     , sdpa::events::WorkerRegistrationEvent const*
     )
   {
-    BOOST_REQUIRE (_accept_workers);
-    BOOST_REQUIRE (_accepted_workers.insert (source).second);
-
-    _network.perform<sdpa::events::worker_registration_response>
-      (source, boost::none);
+    if (!_accepted_workers.emplace (source).second)
+    {
+      _network.perform<sdpa::events::worker_registration_response>
+        (source, std::make_exception_ptr (std::logic_error ("duplicate child")));
+    }
+    else
+    {
+      _network.perform<sdpa::events::worker_registration_response>
+        (source, boost::none);
+    }
   }
 
   void basic_drts_component::handleErrorEvent
@@ -461,7 +463,7 @@ namespace utils
     if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
     {
       std::lock_guard<std::mutex> const _ (_mutex_workers_shutdown);
-      BOOST_REQUIRE (_accepted_workers.erase (source));
+      _accepted_workers.erase (source);
       if (_accepted_workers.empty())
       {
         _cond_workers_shutdown.notify_all();
