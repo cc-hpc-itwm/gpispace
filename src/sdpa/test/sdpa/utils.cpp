@@ -447,9 +447,7 @@ namespace utils
   void basic_drts_component::handleErrorEvent
     (fhg::com::p2p::address_t const& source, sdpa::events::ErrorEvent const* e)
   {
-    if ( e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-      || e->error_code() == sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-       )
+    if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
     {
       BOOST_REQUIRE (_accept_workers);
       std::lock_guard<std::mutex> const _ (_mutex_workers_shutdown);

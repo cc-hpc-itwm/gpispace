@@ -69,9 +69,7 @@ namespace sdpa
         {
           events::ErrorEvent::Ptr const error
             ( boost::make_shared<events::ErrorEvent>
-                ( ec == boost::asio::error::eof // Connection closed cleanly by peer
-                ? events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                : events::ErrorEvent::SDPA_ENETWORKFAILURE
+                ( events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                 , ec.message()
                 )
             );
@@ -99,7 +97,7 @@ namespace sdpa
                 _event_handler
                   ( address
                   , boost::make_shared<events::ErrorEvent>
-                      (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
+                      (events::ErrorEvent::SDPA_ENODE_SHUTDOWN, ec.message())
                   );
               }
             }
@@ -110,7 +108,7 @@ namespace sdpa
         _event_handler
           ( address
           , boost::make_shared<events::ErrorEvent>
-              ( events::ErrorEvent::SDPA_ENETWORKFAILURE
+              ( events::ErrorEvent::SDPA_ENODE_SHUTDOWN
               , fhg::util::current_exception_printer (": ").string()
               )
           );

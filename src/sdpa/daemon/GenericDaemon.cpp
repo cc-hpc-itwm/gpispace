@@ -554,7 +554,6 @@ void GenericDaemon::handleErrorEvent
     }
     FHG_UTIL_FALLTHROUGH;
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
       unsubscribe(source);
 
