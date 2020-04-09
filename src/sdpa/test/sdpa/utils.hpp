@@ -84,6 +84,7 @@ namespace utils
 
   struct agent
   {
+    agent (sdpa::master_network_info, fhg::com::Certificates const&);
     agent (basic_drts_component const& master, fhg::com::Certificates const&);
     agent (orchestrator const& master, fhg::com::Certificates const&);
     agent (agent const& master, fhg::com::Certificates const&);

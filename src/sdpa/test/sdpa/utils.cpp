@@ -275,38 +275,32 @@ namespace utils
     }
   }
 
-  agent::agent ( basic_drts_component const& master
+  agent::agent ( sdpa::master_network_info master_network_info
                , fhg::com::Certificates const& certificates
                )
     : _ ( random_peer_name(), "127.0.0.1"
         , fhg::util::cxx14::make_unique<boost::asio::io_service>()
         , boost::none
-        , {make_master_network_info (master)}
+        , {master_network_info}
         , true
         , certificates
         )
+  {}
+
+  agent::agent ( basic_drts_component const& master
+               , fhg::com::Certificates const& certificates
+               )
+    : agent (make_master_network_info (master), certificates)
   {}
 
   agent::agent ( orchestrator const& master
                , fhg::com::Certificates const& certificates
                )
-    : _ ( random_peer_name(), "127.0.0.1"
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-        , boost::none
-        , {make_master_network_info (master)}
-        , true
-        , certificates
-        )
+    : agent (make_master_network_info (master), certificates)
   {}
 
   agent::agent (agent const& master, fhg::com::Certificates const& certificates)
-    : _ ( random_peer_name(), "127.0.0.1"
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-        , boost::none
-        , {make_master_network_info (master)}
-        , true
-        , certificates
-        )
+    : agent (make_master_network_info (master), certificates)
   {}
 
   agent::agent ( agent const& master_0
