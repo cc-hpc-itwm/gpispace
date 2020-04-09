@@ -25,7 +25,7 @@ namespace
         ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
       buffer_name += fhg::util::testing::random_string_of
         ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
-    } while ( std::find (buffers.begin(), buffers.end(), buffer_name) 
+    } while ( std::find (buffers.begin(), buffers.end(), buffer_name)
             != buffers.end()
             );
 
@@ -55,7 +55,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
 
     total_buffer_size += buffer_size + buffer_alignment - 1;
 
-    buffer_descriptions += create_buffer_description 
+    buffer_descriptions += create_buffer_description
                              (buffer_name, buffer_size, buffer_alignment);
 
     buffer_names.emplace_back (buffer_name);
@@ -63,7 +63,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments
     alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
   }
 
-  return create_net_description 
+  return create_net_description
     (buffer_descriptions, buffer_names, alignment_tests);
 }
 
@@ -87,15 +87,15 @@ std::string net_with_arbitrary_buffer_sizes_and_default_alignments
 
     total_buffer_size += buffer_size;
 
-    buffer_descriptions += create_buffer_description 
+    buffer_descriptions += create_buffer_description
                              (buffer_name, buffer_size);
-  
+
     buffer_names.emplace_back (buffer_name);
 
     alignment_tests += create_alignment_test (default_alignment, buffer_name);
   }
 
-  return create_net_description 
+  return create_net_description
     (buffer_descriptions, buffer_names, alignment_tests);
 }
 
@@ -129,6 +129,6 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
     alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
   }
 
-  return create_net_description 
+  return create_net_description
     (buffer_descriptions, buffer_names, alignment_tests);
 }

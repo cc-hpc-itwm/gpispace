@@ -21,7 +21,7 @@ std::string create_buffer_description
          ).str();
 }
 
-std::string create_buffer_description 
+std::string create_buffer_description
   ( std::string const& name
   , std::size_t size
   , std::size_t alignment
@@ -42,7 +42,7 @@ std::string create_buffer_description
          ).str();
 }
 
-std::string create_alignment_test 
+std::string create_alignment_test
   ( std::size_t alignment
   , std::string const& name
   )
@@ -100,4 +100,3 @@ std::string create_net_description
       % alignment_tests
       ).str();
 }
-

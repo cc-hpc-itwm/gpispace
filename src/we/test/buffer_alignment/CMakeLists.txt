@@ -18,10 +18,10 @@ fhg_add_test (NAME we_buffer_alignment
   START_SCOPED_RIF
 )
 
-extended_add_library (NAME net_using_buffers 
-  TYPE STATIC 
+extended_add_library (NAME net_using_buffers
+  TYPE STATIC
   SOURCES "nets_using_buffers.cpp"
           "net_description.cpp"
-  INCLUDE_DIRECTORIES PRIVATE ${CMAKE_CURRENT_SOURCE_DIR} 
-  LIBRARIES Util::Generic 
+  INCLUDE_DIRECTORIES PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+  LIBRARIES Util::Generic
 )
