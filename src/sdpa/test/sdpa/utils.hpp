@@ -108,7 +108,39 @@ namespace utils
     fhg::com::port_t port() const;
   };
 
-  class basic_drts_component : sdpa::events::EventHandler
+  class basic_drts_component_no_logic : sdpa::events::EventHandler
+  {
+  public:
+    basic_drts_component_no_logic
+      (std::string name, fhg::com::Certificates const&);
+
+    std::string name() const;
+    fhg::com::host_t host() const;
+    fhg::com::port_t port() const;
+
+  private:
+    fhg::util::interruptible_threadsafe_queue
+      <std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
+        _event_queue;
+
+  protected:
+    std::string _name;
+    sdpa::com::NetworkStrategy _network;
+
+    void event_thread_fun();
+
+    struct event_thread
+    {
+      event_thread (basic_drts_component_no_logic&);
+
+      basic_drts_component_no_logic& _component;
+      boost::strict_scoped_thread<> _event_thread;
+      decltype (basic_drts_component_no_logic::_event_queue)::interrupt_on_scope_exit
+        _interrupt_thread;
+    };
+  };
+
+  class basic_drts_component : public basic_drts_component_no_logic
   {
   public:
     basic_drts_component ( std::string name
@@ -140,35 +172,18 @@ namespace utils
 
     void wait_for_workers_to_shutdown();
 
-    std::string name() const;
-    fhg::com::host_t host() const;
-    fhg::com::port_t port() const;
-
   protected:
-    std::string _name;
     boost::optional<fhg::com::p2p::address_t> _master;
     bool _accept_workers;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
-  private:
-    fhg::util::interruptible_threadsafe_queue
-      <std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
-        _event_queue;
-
-  protected:
-    sdpa::com::NetworkStrategy _network;
-
-    void event_thread();
-
     struct event_thread_and_worker_join
+      : basic_drts_component_no_logic::event_thread
     {
       event_thread_and_worker_join (basic_drts_component&);
       ~event_thread_and_worker_join();
 
       basic_drts_component& _component;
-      boost::strict_scoped_thread<> _event_thread;
-      decltype (basic_drts_component::_event_queue)::interrupt_on_scope_exit
-        _interrupt_thread;
     };
 
   private:

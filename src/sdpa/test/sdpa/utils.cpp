@@ -339,24 +339,66 @@ namespace utils
     return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
   }
 
+  basic_drts_component_no_logic::basic_drts_component_no_logic
+      (std::string name, fhg::com::Certificates const& certificates)
+    : _event_queue()
+    , _name (std::move (name))
+    , _network ( [this] ( fhg::com::p2p::address_t const& source
+                        , sdpa::events::SDPAEvent::Ptr e
+                        )
+                 {
+                   _event_queue.put (source, std::move (e));
+                 }
+               , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+               , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0")
+               , certificates
+               )
+  {}
+
+  std::string basic_drts_component_no_logic::name() const
+  {
+    return _name;
+  }
+  fhg::com::host_t basic_drts_component_no_logic::host() const
+  {
+    return fhg::com::host_t ( fhg::util::connectable_to_address_string
+                                (_network.local_endpoint().address())
+                            );
+  }
+  fhg::com::port_t basic_drts_component_no_logic::port() const
+  {
+    return fhg::com::port_t (std::to_string (_network.local_endpoint().port()));
+  }
+
+  void basic_drts_component_no_logic::event_thread_fun()
+  try
+  {
+    for (;;)
+    {
+      auto const event (_event_queue.get());
+      event.second->handleBy (event.first, this);
+    }
+  }
+  catch (decltype (_event_queue)::interrupted const&)
+  {
+  }
+
+  basic_drts_component_no_logic::event_thread::event_thread
+      (basic_drts_component_no_logic& component)
+    : _component (component)
+    , _event_thread
+        (&basic_drts_component_no_logic::event_thread_fun, &component)
+    , _interrupt_thread (component._event_queue)
+  {}
+
   basic_drts_component::basic_drts_component
       ( std::string name
       , bool accept_workers
       , fhg::com::Certificates const& certificates
       )
-    : _name (name)
+    : basic_drts_component_no_logic (std::move (name), certificates)
     , _master (boost::none)
     , _accept_workers (accept_workers)
-    , _event_queue()
-    , _network ( [this] ( fhg::com::p2p::address_t const& source
-                        , sdpa::events::SDPAEvent::Ptr e
-                        )
-                 {
-                   _event_queue.put (source, e);
-                 }
-               , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-               , fhg::com::host_t ("127.0.0.1"), fhg::com::port_t ("0"), certificates
-               )
   {}
 
   basic_drts_component::basic_drts_component
@@ -436,38 +478,9 @@ namespace utils
       (lock, [&] { return _accepted_workers.empty(); });
   }
 
-  std::string basic_drts_component::name() const
-  {
-    return _name;
-  }
-  fhg::com::host_t basic_drts_component::host() const
-  {
-    return fhg::com::host_t ( fhg::util::connectable_to_address_string
-                                (_network.local_endpoint().address())
-                            );
-  }
-  fhg::com::port_t basic_drts_component::port() const
-  {
-    return fhg::com::port_t (std::to_string (_network.local_endpoint().port()));
-  }
-
-  void basic_drts_component::event_thread()
-  try
-  {
-    for (;;)
-    {
-      auto const event (_event_queue.get());
-      event.second->handleBy (event.first, this);
-    }
-  }
-  catch (decltype (_event_queue)::interrupted const&)
-  {
-  }
-
   basic_drts_component::event_thread_and_worker_join::event_thread_and_worker_join (basic_drts_component& component)
-    : _component (component)
-    , _event_thread (&basic_drts_component::event_thread, &component)
-    , _interrupt_thread (component._event_queue)
+    : event_thread (component)
+    , _component (component)
   {}
   basic_drts_component::event_thread_and_worker_join::~event_thread_and_worker_join()
   {
