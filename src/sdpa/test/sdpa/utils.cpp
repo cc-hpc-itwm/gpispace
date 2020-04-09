@@ -341,6 +341,10 @@ namespace utils
   }
 
   basic_drts_component_no_logic::basic_drts_component_no_logic
+      (fhg::com::Certificates const& certificates)
+    : basic_drts_component_no_logic (random_peer_name(), certificates)
+  {}
+  basic_drts_component_no_logic::basic_drts_component_no_logic
       (std::string name, fhg::com::Certificates const& certificates)
     : _event_queue()
     , _name (std::move (name))

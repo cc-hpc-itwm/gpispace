@@ -160,3 +160,11 @@ fhg_add_test (NAME sdpa_Preferences
             sdpa
             test-utilities
 )
+
+fhg_add_test (NAME sdpa_network_basics
+  SOURCES network_basics.cpp
+  USE_BOOST
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)

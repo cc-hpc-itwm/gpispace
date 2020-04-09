@@ -116,6 +116,7 @@ namespace utils
   class basic_drts_component_no_logic : sdpa::events::EventHandler
   {
   public:
+    basic_drts_component_no_logic (fhg::com::Certificates const&);
     basic_drts_component_no_logic
       (std::string name, fhg::com::Certificates const&);
 
