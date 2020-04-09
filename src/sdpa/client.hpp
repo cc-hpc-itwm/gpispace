@@ -38,7 +38,7 @@ namespace sdpa
              );
       ~Client();
 
-      job_id_t submitJob(const we::type::activity_t &);
+      job_id_t submitJob(we::type::activity_t);
       void cancelJob(const job_id_t &);
       status::code queryJob(const job_id_t &);
       status::code queryJob(const job_id_t &, job_info_t &);

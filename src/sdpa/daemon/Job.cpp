@@ -76,7 +76,7 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_finished());
-      result_ = result;
+      result_ = std::move (result);
     }
     void Job::Reschedule()
     {

@@ -6,6 +6,7 @@
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <boost/range/adaptor/map.hpp>
@@ -48,7 +49,7 @@ namespace we
       _nets_to_extract_from.put
         ( activity_data_type ( id
                              , fhg::util::cxx14::make_unique<type::activity_t>
-                                 (act.wrap())
+                                 (std::move (act).wrap())
                              )
         , true
         );
@@ -69,29 +70,8 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        , [this, parent, result, id] (activity_data_type& activity_data)
-        {
-          activity_data.child_finished
-            ( result
-            , [this, parent] ( pnet::type::value::value_type const& description
-                             , pnet::type::value::value_type const& value
-                             )
-              {
-                workflow_response ( *parent
-                                  , get_response_id (description)
-                                  , value
-                                  );
-              }
-            , [this, parent, id] (type::eureka_ids_type const& eureka_ids)
-              {
-                eureka_response ( *parent
-                                , id
-                                , eureka_ids
-                                );
-              }
-            );
-          _running_jobs.terminated (*parent, id);
-        }
+        ,  async_remove_queue::RemovalFunction::ToFinish
+             (this, *parent, std::move (result), id)
         );
     }
 
@@ -415,7 +395,7 @@ namespace we
                                 , child_id
                                 , activity->eureka_id()
                                 );
-          _rts_submit (child_id, *activity);
+          _rts_submit (child_id, std::move (*activity));
           was_active = true;
         }
 
@@ -447,7 +427,7 @@ namespace we
         else
         {
           rts_finished_and_forget
-            (activity_data._id, activity_data._activity->unwrap());
+            (activity_data._id, std::move (*activity_data._activity).unwrap());
         }
       }
     }
@@ -459,7 +439,7 @@ namespace we
     {
       _nets_to_extract_from.forget (id);
       cancel_outstanding_responses (id, "workflow finished");
-      _rts_finished (id, activity);
+      _rts_finished (id, std::move (activity));
     }
     void layer::rts_failed_and_forget (id_type id, std::string message)
     {
@@ -494,6 +474,62 @@ namespace we
   }
 
     // list_with_id_lookup
+
+  void layer::async_remove_queue::RemovalFunction::operator()
+    (activity_data_type& activity_data) &&
+  {
+    fhg::util::visit<void>
+      ( _function
+      , [&] (std::function<void (activity_data_type&)>& fun)
+        {
+          return fun (activity_data);
+        }
+      , [&] (ToFinish& to_finish)
+        {
+          activity_data.child_finished
+            ( std::move (to_finish._result)
+            , [&] ( pnet::type::value::value_type const& description
+                  , pnet::type::value::value_type const& value
+                  )
+              {
+                to_finish._that->workflow_response
+                  ( to_finish._parent
+                  , get_response_id (description)
+                  , value
+                  );
+              }
+            , [&] (type::eureka_ids_type const& eureka_ids)
+              {
+                to_finish._that->eureka_response
+                  ( to_finish._parent
+                  , to_finish._id
+                  , eureka_ids
+                  );
+              }
+            );
+          to_finish._that->_running_jobs.terminated
+            ( to_finish._parent
+            , to_finish._id
+            );
+        }
+      );
+  }
+  template<typename Fun>
+  layer::async_remove_queue::RemovalFunction::RemovalFunction
+    (Fun&& fun)
+      : _function (std::forward<Fun> (fun))
+  {}
+  layer::async_remove_queue::RemovalFunction::RemovalFunction
+    (ToFinish to_finish)
+      : _function (std::move (to_finish))
+  {}
+  layer::async_remove_queue::RemovalFunction::ToFinish::ToFinish
+    (layer* that, id_type parent, type::activity_t result, id_type id)
+      : _that (that)
+      , _parent (std::move (parent))
+      , _result (std::move (result))
+      , _id (std::move (id))
+  {}
 
     layer::activity_data_type
       layer::async_remove_queue::list_with_id_lookup::get_front()
@@ -570,15 +606,12 @@ namespace we
 
         while (fun_and_do_put_it != pos->second.end())
         {
-          std::tuple< std::function<void (activity_data_type&)>
-                    , std::function<void (std::exception_ptr)>
-                    , bool
-                    > fun_and_do_put (*fun_and_do_put_it);
+          auto fun_and_do_put (std::move (*fun_and_do_put_it));
           fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
 
           try
           {
-            std::get<0> (fun_and_do_put) (activity_data);
+            std::move (std::get<0> (fun_and_do_put)) (activity_data);
           }
           catch (...)
           {
@@ -617,7 +650,7 @@ namespace we
 
     void layer::async_remove_queue::remove_and_apply
       ( id_type id
-      , std::function<void (activity_data_type const&)> fun
+      , RemovalFunction fun
       , std::function<void (std::exception_ptr)> on_error
       )
     {
@@ -631,7 +664,7 @@ namespace we
       {
         try
         {
-          fun (std::move (*pos_container->second));
+          std::move (fun) (*pos_container->second);
         }
         catch (...)
         {
@@ -643,7 +676,7 @@ namespace we
       {
         try
         {
-          fun (std::move (*pos_container_inactive->second));
+          std::move (fun) (*pos_container_inactive->second);
         }
         catch (...)
         {
@@ -653,13 +686,13 @@ namespace we
       }
       else
       {
-        _to_be_removed[id].emplace_back (fun, on_error, false);
+        _to_be_removed[id].emplace_back (std::move (fun), on_error, false);
       }
     }
 
     void layer::async_remove_queue::apply
       ( id_type id
-      , std::function<void (activity_data_type&)> fun
+      , RemovalFunction fun
       , std::function<void (std::exception_ptr)> on_error
       )
     {
@@ -673,7 +706,7 @@ namespace we
       {
         try
         {
-          fun (*pos_container->second);
+          std::move (fun) (*pos_container->second);
         }
         catch (...)
         {
@@ -687,7 +720,7 @@ namespace we
         _container_inactive.erase (pos_container_inactive);
         try
         {
-          fun (activity_data);
+          std::move (fun) (activity_data);
         }
         catch (...)
         {
@@ -699,7 +732,7 @@ namespace we
       }
       else
       {
-        _to_be_removed[id].emplace_back (fun, on_error, true);
+        _to_be_removed[id].emplace_back (std::move (fun), on_error, true);
       }
     }
 

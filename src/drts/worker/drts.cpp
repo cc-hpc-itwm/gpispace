@@ -543,7 +543,7 @@ try
       if (task.state == wfe_task_t::PENDING)
       {
         task.state = wfe_task_t::FINISHED;
-        job->result = task.activity;
+        job->result = std::move (task.activity);
       }
 
       if (wfe_task_t::FINISHED == task.state)
@@ -588,7 +588,7 @@ try
       _log_emitter.emit (error, fhg::logging::legacy::category_level_error);
       job->state = DRTSImpl::Job::FAILED;
 
-      job->result = job->activity;
+      job->result = std::move (job->activity);
       job->message = error;
     }
 

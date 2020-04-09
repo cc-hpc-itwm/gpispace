@@ -592,11 +592,11 @@ namespace we
       }
     }
 
-    activity_t activity_t::wrap() const
+    activity_t activity_t::wrap() &&
     {
       if (transition().net())
       {
-        return *this;
+        return std::move (*this);
       }
 
       we::type::net_type net;
@@ -667,11 +667,11 @@ namespace we
       return activity_t {transition_net_wrapper, _transition_id};
     }
 
-    activity_t activity_t::unwrap() const
+    activity_t activity_t::unwrap() &&
     {
       if (!fhg::util::starts_with (wrapped_activity_prefix(), name()))
       {
-        return *this;
+        return std::move (*this);
       }
 
       auto const& net (*transition().net());

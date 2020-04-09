@@ -73,6 +73,12 @@ namespace we
       explicit activity_t (std::istream&);
       explicit activity_t (const std::string&);
 
+      activity_t (activity_t const&) = default;
+      activity_t& operator= (activity_t const&) = delete;
+
+      activity_t (activity_t&&) = default;
+      activity_t& operator= (activity_t&&) = default;
+
       std::string to_string() const;
 
       boost::variant<we::type::transition_t> const& data() const;
@@ -97,8 +103,8 @@ namespace we
                 , gspc::we::plugin::PutToken
                 );
 
-      activity_t wrap() const;
-      activity_t unwrap() const;
+      activity_t wrap() &&;
+      activity_t unwrap() &&;
 
       const TokensOnPorts& input() const;
       void add_input
