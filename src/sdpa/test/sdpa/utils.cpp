@@ -26,6 +26,13 @@ void boost::test_tools::tt_detail::print_log_value<fhg::com::p2p::address_t>
   os << fhg::com::p2p::to_string (address);
 }
 
+void boost::test_tools::tt_detail::print_log_value<sdpa::Capability>
+  ::operator() (std::ostream& os, sdpa::Capability const& capability) const
+{
+  os << "capability {name = " << capability.name()
+     << ", owner = " << capability.owner() << "}";
+}
+
 namespace utils
 {
   std::string random_peer_name()

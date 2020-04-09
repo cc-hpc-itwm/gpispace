@@ -21,12 +21,6 @@
 #include <string>
 #include <utility>
 
-FHG_BOOST_TEST_LOG_VALUE_PRINTER (sdpa::Capability, os, capability)
-{
-  os << "capability {name = " << capability.name()
-     << ", owner = " << capability.owner() << "}";
-}
-
 namespace
 {
   class drts_component_observing_capabilities final

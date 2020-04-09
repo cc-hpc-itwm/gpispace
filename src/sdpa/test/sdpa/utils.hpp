@@ -36,6 +36,10 @@ namespace boost
       {
         void operator() (std::ostream&, fhg::com::p2p::address_t const&) const;
       };
+      template<> struct print_log_value<sdpa::Capability>
+      {
+        void operator() (std::ostream&, sdpa::Capability const&) const;
+      };
     }
   }
 }
