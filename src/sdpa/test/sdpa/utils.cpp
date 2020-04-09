@@ -456,7 +456,6 @@ namespace utils
   {
     if (e->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
     {
-      BOOST_REQUIRE (_accept_workers);
       std::lock_guard<std::mutex> const _ (_mutex_workers_shutdown);
       BOOST_REQUIRE (_accepted_workers.erase (source));
       if (_accepted_workers.empty())
