@@ -274,14 +274,6 @@ namespace fhg
       }
     }
 
-    void connection_t::start_send (connection_t::to_send_t const & s)
-    {
-      bool const send_in_progress = !to_send_.empty();
-      to_send_.push_back (s);
-      if (! send_in_progress)
-        start_send();
-    }
-
     void connection_t::start_send ()
     {
       fhg_assert (to_send_.size() > 0);
@@ -289,13 +281,11 @@ namespace fhg
       if (to_send_.empty ())
         return;
 
-      const to_send_t & d (to_send_.front());
-
       try
       {
         async_write_wrapper
           ( socket_
-          , d.to_buffers()
+          , to_send_.front().buffers
           , strand_.wrap
               ( std::bind ( &connection_t::handle_write
             		  	  , shared_from_this()
@@ -317,12 +307,12 @@ namespace fhg
     {
       if (! ec)
       {
-        to_send_t const d (to_send_.front());
+        auto const handler (std::move (to_send_.front().handler));
         to_send_.pop_front();
 
-        if (d.handler)
+        if (handler)
         {
-          d.handler (ec);
+          handler (ec);
         }
 
         if (! to_send_.empty())
@@ -340,17 +330,22 @@ namespace fhg
     {
       boost::shared_ptr<connection_t> that (shared_from_this());
       strand_.post
-        ([that, msg, hdl] { that->start_send (to_send_t (msg, hdl)); });
+        ( [that, msg, hdl]
+          {
+            bool const send_in_progress (!that->to_send_.empty());
+            that->to_send_.emplace_back (msg, hdl);
+            if (!send_in_progress)
+            {
+              that->start_send();
+            }
+          }
+        );
     }
 
     connection_t::to_send_t::to_send_t
-        (message_t const* msg, connection_t::completion_handler_t hdl)
-      : message (msg)
-      , handler (hdl)
-    {}
-
-    std::vector<boost::asio::const_buffer> const&
-      connection_t::to_send_t::to_buffers() const
+        (message_t const* message, connection_t::completion_handler_t hdl)
+      : handler (std::move (hdl))
+      , buffers()
     {
       fhg_assert (message != nullptr);
 
@@ -361,14 +356,10 @@ namespace fhg
 
       fhg_assert (message->data.size() == message->header.length);
 
-      if (m_buf.empty())
-      {
-        m_buf.push_back
-          (boost::asio::buffer (&message->header, sizeof (p2p::header_t)));
-        m_buf.push_back (boost::asio::buffer (message->data));
-      }
-
-      return m_buf;
+      buffers.reserve (2);
+      buffers.push_back
+        (boost::asio::buffer (&message->header, sizeof (p2p::header_t)));
+      buffers.push_back (boost::asio::buffer (message->data));
     }
   }
 }

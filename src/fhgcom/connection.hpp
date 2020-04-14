@@ -107,18 +107,13 @@ namespace fhg
       struct to_send_t
       {
         to_send_t (const message_t * msg, completion_handler_t hdl);
-        const message_t * message;
+
         completion_handler_t handler;
-
-        std::vector<boost::asio::const_buffer> const & to_buffers() const;
-
-      private:
-        mutable std::vector<boost::asio::const_buffer> m_buf;
+        std::vector<boost::asio::const_buffer> buffers;
       };
 
       void start_read ();
       void start_send ();
-      void start_send (to_send_t const &);
 
       void handle_read_header ( const boost::system::error_code & ec
                               , std::size_t bytes_transferred
