@@ -61,19 +61,37 @@ namespace fhg
       {
         auto const lines
           (util::split<std::string, std::string> (sentinel, '\n'));
-        std::vector<std::string> result;
-        while (count --> 0)
+        if (sentinel.empty())
         {
-          std::copy (lines.begin(), lines.end(), std::back_inserter (result));
+          return std::vector<std::string> (count);
         }
-        return result;
+        else
+        {
+          std::vector<std::string> result;
+          while (count --> 0)
+          {
+            std::copy (lines.begin(), lines.end(), std::back_inserter (result));
+          }
+          return result;
+        }
+      }
+
+      std::string any_without_zero_or_newline()
+      {
+        auto skip (fhg::util::testing::random<char>::any_without_zero());
+        skip.erase (skip.find('\n'), 1);
+
+        return skip;
       }
     }
 
     BOOST_AUTO_TEST_CASE (formatter_is_invoked_per_message)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
-      auto const sentinel (util::testing::random<std::string>{}());
+      auto const sentinel
+        ( util::testing::random<std::string>{}
+          (any_without_zero_or_newline())
+        );
 
       util::temporary_path const temporary_sink_dir;
       boost::filesystem::path const sink_path
@@ -227,7 +245,10 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (file_sink_actually_registers_and_receives)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
-      auto const sentinel (util::testing::random<std::string>{}());
+      auto const sentinel
+        ( util::testing::random<std::string>{}
+          (any_without_zero_or_newline())
+        );
 
       stream_emitter emitter;
 
