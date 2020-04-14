@@ -106,35 +106,11 @@ namespace fhg
     private:
       struct to_send_t
       {
-        to_send_t (const message_t * msg, completion_handler_t hdl)
-          : message(msg)
-          , handler(hdl)
-        {}
+        to_send_t (const message_t * msg, completion_handler_t hdl);
         const message_t * message;
         completion_handler_t handler;
 
-        std::vector<boost::asio::const_buffer> const & to_buffers() const
-        {
-          fhg_assert (message != nullptr);
-
-          if (message->data.size () != message->header.length)
-          {
-            throw std::length_error ("header/data length mismatch");
-          }
-
-          fhg_assert (message->data.size() == message->header.length);
-
-          if (m_buf.empty ())
-          {
-            m_buf.push_back (boost::asio::buffer ( &message->header
-                                                 , sizeof(p2p::header_t)
-                                                 )
-                            );
-            m_buf.push_back (boost::asio::buffer (message->data));
-          }
-
-          return m_buf;
-        }
+        std::vector<boost::asio::const_buffer> const & to_buffers() const;
 
       private:
         mutable std::vector<boost::asio::const_buffer> m_buf;

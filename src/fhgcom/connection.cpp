@@ -342,5 +342,33 @@ namespace fhg
       strand_.post
         ([that, msg, hdl] { that->start_send (to_send_t (msg, hdl)); });
     }
+
+    connection_t::to_send_t::to_send_t
+        (message_t const* msg, connection_t::completion_handler_t hdl)
+      : message (msg)
+      , handler (hdl)
+    {}
+
+    std::vector<boost::asio::const_buffer> const&
+      connection_t::to_send_t::to_buffers() const
+    {
+      fhg_assert (message != nullptr);
+
+      if (message->data.size () != message->header.length)
+      {
+        throw std::length_error ("header/data length mismatch");
+      }
+
+      fhg_assert (message->data.size() == message->header.length);
+
+      if (m_buf.empty())
+      {
+        m_buf.push_back
+          (boost::asio::buffer (&message->header, sizeof (p2p::header_t)));
+        m_buf.push_back (boost::asio::buffer (message->data));
+      }
+
+      return m_buf;
+    }
   }
 }
