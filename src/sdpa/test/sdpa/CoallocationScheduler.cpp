@@ -2472,7 +2472,6 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
 
@@ -2484,7 +2483,7 @@ BOOST_FIXTURE_TEST_CASE
     , capability_pool()
     };
 
-  sdpa::worker_id_t const worker_0 (worker_name_pool());
+  sdpa::worker_id_t const worker_0 (utils::random_peer_name());
   auto const first_pref (preferences.begin());
 
   _worker_manager.addWorker
@@ -2498,7 +2497,7 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::worker_id_t const worker_1 (worker_name_pool());
+  sdpa::worker_id_t const worker_1 (utils::random_peer_name());
   _worker_manager.addWorker
     ( worker_1
     , { sdpa::Capability (common_capability, worker_1)
@@ -2510,7 +2509,7 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::worker_id_t const worker_2 (worker_name_pool());
+  sdpa::worker_id_t const worker_2 (utils::random_peer_name());
   _worker_manager.addWorker
     ( worker_2
     , { sdpa::Capability (common_capability, worker_2)
@@ -2780,11 +2779,10 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
 
   std::string const preference (capability_pool());
 
-  sdpa::worker_id_t const worker_0 (worker_name_pool());
+  sdpa::worker_id_t const worker_0 (utils::random_peer_name());
   _worker_manager.addWorker
     ( worker_0
     , {sdpa::Capability (preference, worker_0)}
@@ -2794,7 +2792,7 @@ BOOST_FIXTURE_TEST_CASE
     , fhg::util::testing::random_identifier_without_leading_underscore()
     );
 
-  sdpa::worker_id_t const worker_1 (worker_name_pool());
+  sdpa::worker_id_t const worker_1 (utils::random_peer_name());
   _worker_manager.addWorker
     ( worker_1
     , {}
@@ -2880,9 +2878,8 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
 
-  sdpa::worker_id_t const worker (worker_name_pool());
+  sdpa::worker_id_t const worker (utils::random_peer_name());
   _worker_manager.addWorker
     ( worker
     , {sdpa::Capability (capability_pool(), worker)}
@@ -2918,7 +2915,6 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2932,7 +2928,7 @@ BOOST_FIXTURE_TEST_CASE
 
   for (unsigned int k (0); k < num_workers; ++k)
   {
-    sdpa::worker_id_t const worker (worker_name_pool());
+    sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
     _worker_manager.addWorker
       ( worker
@@ -2964,7 +2960,6 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -2985,7 +2980,7 @@ BOOST_FIXTURE_TEST_CASE
 
   for (unsigned int k (0); k < num_workers; ++k)
   {
-    sdpa::worker_id_t const worker (worker_name_pool());
+    sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
     _worker_manager.addWorker
       ( worker
@@ -3022,7 +3017,6 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -3035,7 +3029,7 @@ BOOST_FIXTURE_TEST_CASE
   std::vector<sdpa::worker_id_t> test_workers;
   for (unsigned int k (0); k < num_workers; ++k)
   {
-    sdpa::worker_id_t const worker (worker_name_pool());
+    sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
     _worker_manager.addWorker
       ( worker
@@ -3070,7 +3064,6 @@ BOOST_FIXTURE_TEST_CASE
 {
   fhg::util::testing::unique_random<sdpa::job_id_t> job_name_pool;
   fhg::util::testing::unique_random<std::string> capability_pool;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_name_pool;
 
   std::string const common_capability (capability_pool());
 
@@ -3090,7 +3083,7 @@ BOOST_FIXTURE_TEST_CASE
   std::vector<sdpa::worker_id_t> test_workers;
   for (unsigned int k (0); k < num_workers; ++k)
   {
-    sdpa::worker_id_t const worker (worker_name_pool());
+    sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
     _worker_manager.addWorker
       ( worker

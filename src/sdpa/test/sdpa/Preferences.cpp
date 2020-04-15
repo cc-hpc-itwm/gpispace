@@ -352,7 +352,6 @@ BOOST_DATA_TEST_CASE
   )
 {
   fhg::util::testing::unique_random<std::string> generate_preference;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> generate_worker_id;
 
   utils::orchestrator const orchestrator (certificates);
   utils::agent const agent (orchestrator, certificates);
@@ -367,7 +366,7 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  auto const name (generate_worker_id());
+  auto const name (utils::random_peer_name());
 
   drts_component_observing_preferences observer
     ( name
@@ -394,7 +393,6 @@ BOOST_DATA_TEST_CASE
   unsigned int const num_preferences (3);
 
   fhg::util::testing::unique_random<std::string> generate_preference;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> generate_worker_id;
 
   Preferences preferences;
 
@@ -427,7 +425,7 @@ BOOST_DATA_TEST_CASE
 
     for (unsigned int k {0}; k < num_workers[i]; ++k)
     {
-      auto const name (generate_worker_id());
+      auto const name (utils::random_peer_name());
       workers.emplace_back
         (fhg::util::cxx14::make_unique<fake_drts_worker_verifying_implementation_and_notifying_registration>
            ( name

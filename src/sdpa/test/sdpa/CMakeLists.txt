@@ -126,7 +126,8 @@ fhg_add_test (NAME sdpa_Topologies
 fhg_add_test (NAME sdpa_WorkerManager
   SOURCES WorkerManager.cpp
   USE_BOOST
-  LIBRARIES sdpa
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
             test-utilities
 )
 
