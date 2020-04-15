@@ -68,7 +68,7 @@
 
 namespace
 {
-  std::string (&random_job_id)(void) = utils::random_peer_name;
+  fhg::util::testing::unique_random<std::string> random_job_id;
   auto serve_job = [] ( sdpa::daemon::WorkerSet const&
                       , sdpa::daemon::Implementation const&
                       , const sdpa::job_id_t&
