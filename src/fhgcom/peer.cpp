@@ -1,9 +1,9 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
+#include <fhg/util/thread/event.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
-#include <fhg/util/thread/event.hpp>
 
 #include <boost/make_shared.hpp>
 #include <boost/system/error_code.hpp>
@@ -30,19 +30,8 @@ namespace fhg
       , io_service_work_(*io_service_)
       , acceptor_(*io_service_)
       , connections_()
-      , handshake_exception_ (nullptr)
-      , _io_thread ( [this]
-                     { try
-                       {
-                         io_service_->run();
-                       }
-                       catch (fhg::com::handshake_exception const& exc)
-                       {
-                         handshake_exception_=std::current_exception();
-                       }
-                     }
-                   )
-
+      , TESTING_ONLY_handshake_exception_ (nullptr)
+      , _io_thread ([this] { io_service_->run(); })
     {
       try
       {
@@ -105,7 +94,7 @@ namespace fhg
         my_addr_ = p2p::address_t
           (fhg::util::hostname() + ":" + std::to_string (local_endpoint().port()));
 
-        accept_new ();
+        strand_.post ([this] { accept_new(); });
       }
       catch (...)
       {
@@ -173,45 +162,101 @@ namespace fhg
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
     {
-      std::unique_lock<std::recursive_mutex> const _ (mutex_);
-
       std::string const fake_name (std::string (host) + ":" + std::string (port));
       p2p::address_t const addr (fake_name);
 
-      if (connections_.find (addr) != connections_.end())
       {
-        throw std::logic_error ("already connected to " + fake_name);
+        std::unique_lock<std::recursive_mutex> const _ (mutex_);
+
+        if (connections_.find (addr) != connections_.end())
+        {
+          throw std::logic_error ("already connected to " + fake_name);
+        }
       }
 
-      connection_data_t& cd (connections_[addr]);
-      cd.connection = boost::make_shared<connection_t>
-        ( *io_service_
-        , ctx_
-        , strand_
-        , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
-        , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
-        , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
-        );
-      cd.connection->local_address (my_addr_.get());
-      cd.connection->remote_address (addr);
-
-      boost::system::error_code ec;
-      boost::asio::connect
-        ( cd.connection->socket()
-        , boost::asio::ip::tcp::resolver (*io_service_).resolve ({host, port})
-        , ec
-        );
-
-      if (ec)
+      // \note Only detects `hostname` (as we use that to create
+      // my_addr_), not `localhost` or `::1` or equivalent
+      // ones. Those will just hang as we can't connect and accept
+      // at the same time with SSL (handshake).
+      if (addr == my_addr_.get())
       {
-        throw boost::system::system_error (ec);
+        throw std::logic_error ("unable to connect to self");
       }
 
-      cd.connection->request_handshake();
+      auto connect_done
+        (std::make_shared<util::thread::event<std::exception_ptr>>());
 
-      connection_established (addr);
+      connections_.emplace (addr, connection_data_t());
+
+      strand_.dispatch
+        ( [this, addr, host, port, connect_done]
+          {
+            try
+            {
+              std::unique_lock<std::recursive_mutex> const _ (mutex_);
+
+              connection_data_t& cd (connections_.at (addr));
+
+              cd.connection = boost::make_shared<connection_t>
+                ( *io_service_
+                , ctx_.get()
+                , strand_
+                , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
+                , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
+                , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+                , this
+                );
+              cd.connection->local_address (my_addr_.get());
+              cd.connection->remote_address (addr);
+
+              boost::asio::connect
+                ( cd.connection->socket()
+                , boost::asio::ip::tcp::resolver (*io_service_)
+                    .resolve ({host, port})
+                );
+
+              cd.connection->request_handshake (std::move (connect_done));
+              // control flow continues in `request_handshake_response`.
+            }
+            catch (...)
+            {
+              connect_done->notify (std::current_exception());
+            }
+          }
+        );
+
+      auto const exception_during_connect (connect_done->wait());
+      if (exception_during_connect)
+      {
+        std::rethrow_exception (exception_during_connect);
+      }
 
       return addr;
+    }
+
+    void peer_t::request_handshake_response
+      ( p2p::address_t addr
+      , std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done
+      , boost::system::error_code const& ec
+      )
+    {
+      try
+      {
+        std::unique_lock<std::recursive_mutex> const _ (mutex_);
+
+        if (ec)
+        {
+          throw handshake_exception (ec);
+        }
+
+        connection_established (connections_.at (addr));
+
+        connect_done->notify (nullptr);
+      }
+      catch (...)
+      {
+        connect_done->notify (std::current_exception());
+      }
     }
 
     void peer_t::send ( p2p::address_t const& addr
@@ -259,7 +304,9 @@ namespace fhg
       cd.o_queue.push_back (to_send);
 
       if (cd.o_queue.size () == 1)
-        start_sender (addr);
+      {
+        start_sender (cd);
+      }
     }
 
     void peer_t::TESTING_ONLY_recv (message_t *m)
@@ -325,29 +372,22 @@ namespace fhg
       completion_handler (errc::make_error_code (errc::success), m->header.src);
     }
 
-    void peer_t::connection_established (const p2p::address_t a)
+    void peer_t::connection_established (connection_data_t& cd)
     {
-      lock_type lock (mutex_);
-
-      connection_data_t & cd = connections_.find (a)->second;
-
-      {
-        boost::asio::socket_base::keep_alive o(true);
-        cd.connection->set_option (o);
-        cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
-      }
+      cd.connection->set_option (boost::asio::socket_base::keep_alive (true));
+      cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
 
       // send hello message
       to_send_t to_send;
       to_send.handler = [](boost::system::error_code const&) {};
       to_send.message.header.src = my_addr_.get();
-      to_send.message.header.dst = a;
+      to_send.message.header.dst = cd.connection->remote_address();
       to_send.message.header.type_of_msg = p2p::HELLO_PACKET;
       to_send.message.resize (0);
 
       cd.connection->start ();
       cd.o_queue.push_front (to_send);
-      start_sender (a);
+      start_sender (cd);
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
@@ -408,33 +448,26 @@ namespace fhg
       }
     }
 
-    void peer_t::start_sender (const p2p::address_t a)
+    void peer_t::start_sender (connection_data_t& cd)
     {
-      lock_type lock (mutex_);
-
-      try
+      if (cd.send_in_progress || cd.o_queue.empty())
       {
-        connection_data_t & cd = connections_.at(a);
-        if (cd.send_in_progress || cd.o_queue.empty())
-          return;
-
-        fhg_assert (! cd.o_queue.empty());
-
-        cd.send_in_progress = true;
-        cd.connection->async_send ( &cd.o_queue.front().message
-                                  , strand_.wrap
-                                      ( std::bind ( &peer_t::handle_send
-                                                  , this
-                                                  , a
-                                                  , std::placeholders::_1
-                                                )
-                                      )
-                                  );
+        return;
       }
-      catch (std::out_of_range const &)
-      {
-        // ignore, connection has been closed before we could start it
-      }
+
+      fhg_assert (! cd.o_queue.empty());
+
+      cd.send_in_progress = true;
+      cd.connection->async_send
+        ( &cd.o_queue.front().message
+        , strand_.wrap
+            ( std::bind ( &peer_t::handle_send
+                        , this
+                        , cd.connection->remote_address()
+                        , std::placeholders::_1
+                        )
+            )
+        );
     }
 
     void peer_t::handle_accept (const boost::system::error_code & ec)
@@ -444,15 +477,33 @@ namespace fhg
         fhg_assert (listen_);
 
         listen_->acknowledge_handshake();
-
-        // TODO: work here schedule timeout
-        backlog_.insert (listen_);
-
-        // the connection will  call us back when it got the
-        // hello packet or will timeout
-        listen_->start();
-        accept_new();
+        // control flow continues in `acknowledge_handshake_response`.
       }
+    }
+
+    void peer_t::acknowledge_handshake_response
+      (connection_t::ptr_t connection, boost::system::error_code const& ec)
+    {
+      // \todo Allow accepting a new connection while still
+      // handshaking this one: denial of service attack possible.
+      fhg_assert (connection == listen_);
+
+      if (ec)
+      {
+        TESTING_ONLY_handshake_exception_
+          = std::make_exception_ptr (handshake_exception (ec));
+      }
+      else
+      {
+        // TODO: work here schedule timeout
+        backlog_.insert (connection);
+
+        // the connection will call us back when it got the hello packet
+        // or will timeout
+        connection->start();
+      }
+
+      accept_new();
     }
 
     void peer_t::accept_new ()
@@ -460,11 +511,12 @@ namespace fhg
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( *io_service_
-          , ctx_
+          , ctx_.get()
           , strand_
           , std::bind (&peer_t::handle_hello_message, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_user_data, this, std::placeholders::_1, std::placeholders::_2)
           , std::bind (&peer_t::handle_error, this, std::placeholders::_1, std::placeholders::_2)
+          , this
           )
         );
       listen_->local_address(my_addr_.get());
@@ -544,7 +596,7 @@ namespace fhg
 
       if (connections_.find (c->remote_address()) != connections_.end())
       {
-        connection_data_t & cd = connections_[c->remote_address()];
+        connection_data_t & cd = connections_.at (c->remote_address());
 
         boost::system::error_code ignore;
         c->socket().cancel (ignore);
@@ -596,9 +648,9 @@ namespace fhg
       }
     }
 
-    std::exception_ptr peer_t::handshake_exception() const
+    std::exception_ptr peer_t::TESTING_ONLY_handshake_exception() const
     {
-      return handshake_exception_;
+      return TESTING_ONLY_handshake_exception_;
     }
   }
 }

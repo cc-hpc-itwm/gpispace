@@ -1,8 +1,11 @@
 #include <fhgcom/connection.hpp>
 
+#include <fhgcom/peer.hpp>
+
 #include <fhg/assert.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/functor_visitor.hpp>
 
 #include <boost/asio/ssl/context.hpp>
 #include <boost/system/error_code.hpp>
@@ -62,7 +65,7 @@ namespace fhg
 
     socket_t make_socket
       ( boost::asio::io_service& io_service
-      , std::unique_ptr<boost::asio::ssl::context> const& ctx
+      , boost::asio::ssl::context* ctx
       )
     {
       if (ctx)
@@ -93,13 +96,15 @@ namespace fhg
 
     connection_t::connection_t
       ( boost::asio::io_service & io_service
-      , std::unique_ptr<boost::asio::ssl::context> const& ctx
+      , boost::asio::ssl::context* ctx
       , boost::asio::io_service::strand const& strand
       , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
       , std::function<void (ptr_t connection, const message_t*)> handle_user_data
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+      , peer_t* peer
       )
-      : strand_(strand)
+      : _peer (peer)
+      , strand_(strand)
       , socket_ (make_socket (io_service, ctx))
       , _raw_socket (raw_socket (socket_))
       , _handle_hello_message (handle_hello_message)
@@ -139,45 +144,58 @@ namespace fhg
       socket().close(ec);
     }
 
-    void connection_t::request_handshake()
+    void connection_t::request_handshake
+      (std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done)
     {
-      struct : boost::static_visitor<void>
-      {
-        void operator() (std::unique_ptr<ssl_stream_t>& stream) const
-        {
-          boost::system::error_code ec;
-          stream->handshake (boost::asio::ssl::stream_base::client, ec);
-          if (ec)
+      auto connection (shared_from_this());
+
+      auto const call_response
+        ( [=] (boost::system::error_code const& ec)
           {
-            throw handshake_exception (ec);
+            connection->_peer->request_handshake_response
+              (connection->remote_address(), connect_done, ec);
           }
-        }
-        void operator() (std::unique_ptr<tcp_socket_t>&) const
-        {
-        }
-      } visitor;
-      boost::apply_visitor (visitor, socket_);
+        );
+
+      fhg::util::visit<void>
+        ( socket_
+        , [=] (std::unique_ptr<ssl_stream_t> const& stream)
+          {
+            stream->async_handshake ( boost::asio::ssl::stream_base::client
+                                    , strand_.wrap (call_response)
+                                    );
+          }
+        , [=] (std::unique_ptr<tcp_socket_t> const&)
+          {
+            strand_.post ([=] { call_response ({}); });
+          }
+        );
     }
 
     void connection_t::acknowledge_handshake()
     {
-      struct visitor_t : boost::static_visitor<void>
-      {
-        void operator() (std::unique_ptr<ssl_stream_t>& stream) const
-        {
-          boost::system::error_code ec;
-          stream->handshake
-            (boost::asio::ssl::stream_base::server, ec);
-          if (ec)
+      auto connection (shared_from_this());
+
+      auto const call_response
+        ( [=] (boost::system::error_code const& ec)
           {
-            throw handshake_exception (ec);
+            connection->_peer->acknowledge_handshake_response (connection, ec);
           }
-        }
-        void operator() (std::unique_ptr<tcp_socket_t>&) const
-        {
-        }
-      } visitor;
-      boost::apply_visitor (visitor, socket_);
+        );
+
+      fhg::util::visit<void>
+        ( socket_
+        , [=] (std::unique_ptr<ssl_stream_t> const& stream)
+          {
+            stream->async_handshake ( boost::asio::ssl::stream_base::server
+                                    , strand_.wrap (call_response)
+                                    );
+          }
+        , [=] (std::unique_ptr<tcp_socket_t> const&)
+          {
+            strand_.post ([=] { call_response ({}); });
+          }
+        );
     }
 
     void connection_t::start_read ()

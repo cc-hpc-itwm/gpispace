@@ -14,6 +14,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <deque>
+#include <exception>
 #include <list>
 #include <mutex>
 #include <set>
@@ -66,7 +67,7 @@ namespace fhg
                        >
         );
       void TESTING_ONLY_recv (message_t *m);
-      std::exception_ptr handshake_exception() const;
+      std::exception_ptr TESTING_ONLY_handshake_exception() const;
 
     protected:
       void handle_hello_message (connection_t::ptr_t, const message_t *m);
@@ -112,9 +113,23 @@ namespace fhg
 
       void accept_new ();
       void handle_accept (const boost::system::error_code &);
-      void connection_established (const p2p::address_t);
+      //! \note Assumes mutex held.
+      void connection_established (connection_data_t&);
       void handle_send (const p2p::address_t, const boost::system::error_code &);
-      void start_sender (const p2p::address_t);
+      //! \note Assumes mutex held.
+      void start_sender (connection_data_t&);
+
+      friend class connection_t;
+
+      //! Assumes to be called from within strand.
+      void request_handshake_response
+        ( p2p::address_t addr
+        , std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done
+        , boost::system::error_code const& ec
+        );
+      //! Assumes to be called from within strand.
+      void acknowledge_handshake_response
+        (connection_t::ptr_t connection, boost::system::error_code const& ec);
 
       typedef std::recursive_mutex mutex_type;
       typedef std::unique_lock<mutex_type> lock_type;
@@ -125,6 +140,8 @@ namespace fhg
       std::string host_;
       std::string port_;
       boost::optional<p2p::address_t> my_addr_;
+
+      std::unique_ptr<boost::asio::ssl::context> ctx_;
 
       std::unique_ptr<boost::asio::io_service> io_service_;
       boost::asio::io_service::strand strand_;
@@ -140,10 +157,8 @@ namespace fhg
       std::list<to_recv_t> m_to_recv;
       std::list<const message_t *> m_pending;
 
-      std::exception_ptr handshake_exception_;
+      std::exception_ptr TESTING_ONLY_handshake_exception_;
       boost::strict_scoped_thread<> _io_thread;
-
-      std::unique_ptr<boost::asio::ssl::context> ctx_;
     };
   }
 }
