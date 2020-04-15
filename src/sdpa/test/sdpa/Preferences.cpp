@@ -33,29 +33,6 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
 
 namespace
 {
-  we::type::multi_module_call_t create_dummy_multi_mod
-    (Preferences const& preferences)
-  {
-    we::type::multi_module_call_t multi_mod;
-
-    for (auto const& target : preferences)
-    {
-      multi_mod.emplace
-        ( target
-        , we::type::module_call_t
-          ( fhg::util::testing::random_string()
-          , fhg::util::testing::random_string()
-          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
-          , std::list<we::type::memory_transfer>()
-          , std::list<we::type::memory_transfer>()
-          , true
-          )
-        );
-    }
-
-    return multi_mod;
-  }
-
   class drts_component_observing_preferences final
     : public utils::basic_drts_component
   {
@@ -97,38 +74,6 @@ namespace
 
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
-
-  we::type::activity_t activity_with_preferences
-    (std::list<std::string> const& preferences, unsigned int n = 1)
-  {
-    we::type::property::type props;
-    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (n) + "UL");
-
-    we::type::transition_t transition
-      ( fhg::util::testing::random_string()
-      , create_dummy_multi_mod (preferences)
-      , boost::none
-      , props
-      , we::priority_type()
-      , boost::none
-      , preferences
-      );
-
-    const std::string port_name (fhg::util::testing::random_string());
-    transition.add_port ( we::type::port_t ( port_name
-                                           , we::type::PORT_IN
-                                           , std::string ("string")
-                                           , we::type::property::type()
-                                           )
-                        );
-
-    we::type::activity_t activity (transition);
-    activity.add_input ( port_name
-                       , fhg::util::testing::random_string_without ("\\\"")
-                       );
-
-    return activity;
-  }
 
   class fake_drts_worker_verifying_implementation
     : public utils::no_thread::basic_drts_worker
@@ -233,79 +178,87 @@ namespace
     bool _received_tasks;
   };
 
+  we::type::transition_t transition_with_multiple_implementations
+    (Preferences const& preferences)
+  {
+    fhg::util::testing::random<std::string> random_string;
+
+    we::type::multi_module_call_t multi_mod;
+
+    for (auto const& target : preferences)
+    {
+      using buffers
+        = std::unordered_map<std::string, we::type::memory_buffer_info_t>;
+
+      multi_mod.emplace
+        ( target
+        , we::type::module_call_t
+            (random_string(), random_string(), buffers{}, {}, {}, true)
+        );
+    }
+
+    return {random_string(), multi_mod, {}, {}, {}, {}, preferences};
+  }
+
+  we::type::activity_t activity_with_preferences
+    ( std::list<std::string> const& preferences
+    , boost::optional<unsigned long> worker_count = boost::none
+    )
+  {
+    fhg::util::testing::random<std::string> random_string;
+
+    auto transition (transition_with_multiple_implementations (preferences));
+
+    if (worker_count)
+    {
+      transition.set_property ( {"fhg", "drts", "schedule", "num_worker"}
+                              , std::to_string (*worker_count) + "UL"
+                              );
+    }
+
+    const std::string port_name (random_string());
+    transition.add_port
+      ({port_name, we::type::PORT_IN, std::string ("string")});
+
+    we::type::activity_t activity (transition);
+    activity.add_input
+      (port_name, fhg::util::testing::random_string_without ("\\\""));
+
+    return activity;
+  }
+
   we::type::activity_t net_with_n_children_and_preferences
     (unsigned int n, Preferences const& preferences)
   {
-    we::type::property::type props;
-    props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (1) + "UL");
+    fhg::util::testing::unique_random<std::string> place_names;
+    fhg::util::testing::random<std::string> random_string;
 
-    std::vector<we::type::transition_t> transitions;
-    for (unsigned int k{0}; k < n; k++)
-    {
-      transitions.emplace_back
-        ( fhg::util::testing::random_string()
-        , create_dummy_multi_mod (preferences)
-        , boost::none
-        , props
-        , we::priority_type()
-        , boost::none
-        , preferences
-        );
-    }
-
-    const std::string port_name (fhg::util::testing::random_string());
-    std::vector<we::port_id_type> port_ids_in;
-    for (unsigned int k{0}; k < n; k++)
-    {
-      port_ids_in.emplace_back ( transitions.at (k).add_port
-                                   ( we::type::port_t ( port_name
-                                                      , we::type::PORT_IN
-                                                      , std::string ("string")
-                                                      , we::type::property::type()
-                                                      )
-                                   )
-                                );
-    }
+    std::string const type ("string");
 
     we::type::net_type net;
 
-    std::vector<we::place_id_type> place_ids_in;
-    for (unsigned int k{0}; k < n; k++)
+    while (n --> 0)
     {
-      place_ids_in.emplace_back
-        (net.add_place (place::type ( port_name + std::to_string (k)
-                                    , std::string ("string")
-                                    , boost::none
-                                    )
-                       )
+      auto transition (transition_with_multiple_implementations (preferences));
+
+      auto const place_id (net.add_place ({place_names(), type, {}}));
+      net.put_value
+        ( place_id
+        , random_string
+            (fhg::util::testing::random<std::string>::except ("\\\""))
+        );
+
+      net.add_connection
+        ( we::edge::PT
+        , net.add_transition (transition)
+        , place_id
+        , transition.add_port ({random_string(), we::type::PORT_IN, type})
+        , {}
         );
     }
 
-    for (unsigned int k{0}; k < n; k++)
-    {
-      net.put_value (place_ids_in.at (k), fhg::util::testing::random_string_without ("\\\""));
-    }
-
-    std::vector<we::transition_id_type> transition_ids;
-    for (unsigned int k{0}; k < n; k++)
-    {
-      transition_ids.emplace_back (net.add_transition (transitions.at (k)));
-      net.add_connection ( we::edge::PT
-                          , transition_ids.at (k)
-                          , place_ids_in.at (k)
-                          , port_ids_in.at (k)
-                          , we::type::property::type()
-                          );
-    }
-
     return we::type::activity_t
-      ( we::type::transition_t ( fhg::util::testing::random_string()
-                               , net
-                               , boost::none
-                               , we::type::property::type()
-                               , we::priority_type()
-                               )
-      );
+      (we::type::transition_t (random_string(), net, {}, {}, {}));
   }
 }
 
@@ -368,19 +321,26 @@ BOOST_DATA_TEST_CASE
 
   utils::client client (orchestrator, certificates);
 
-  sdpa::job_id_t const job
-     (client.submit_job (activity_with_preferences (preferences, 2)));
+  auto const job ( client.submit_job
+                     ( activity_with_preferences
+                         ( preferences
+                         , fhg::util::testing::random<unsigned long>{}
+                             (std::numeric_limits<unsigned long>::max(), 2)
+                         )
+                     )
+                 );
 
   sdpa::client::job_info_t info;
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job, info), sdpa::status::FAILED);
 
-  std::string const expected_error
-    ("Not allowed to use coallocation for activities with multiple module implementations!");
-
-  BOOST_REQUIRE
-    (info.error_message.find (expected_error) != std::string::npos);
+  BOOST_REQUIRE_EQUAL
+    ( info.error_message
+    , agent.name()
+    + ": Not allowed to use coallocation for activities with "
+      "multiple module implementations!"
+    );
 
   client.delete_job (job);
 }
