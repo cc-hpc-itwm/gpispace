@@ -113,12 +113,26 @@ namespace utils
     fhg::com::port_t port() const;
   };
 
+  using CapabilityNames = std::unordered_set<std::string>;
+
+  // \todo Only used by Restart* tests. Is persistent worker names
+  // actually relevant there? If not, remove!
+  struct reused_component_name
+  {
+    //! Only construct with a result from component.name() or
+    //! random_peer_name()!
+    explicit reused_component_name (std::string name)
+      : _name (name)
+    {}
+    std::string _name;
+  };
+
   class basic_drts_component_no_logic : sdpa::events::EventHandler
   {
   public:
     basic_drts_component_no_logic (fhg::com::Certificates const&);
     basic_drts_component_no_logic
-      (std::string name, fhg::com::Certificates const&);
+      (reused_component_name, fhg::com::Certificates const&);
 
     std::string name() const;
     fhg::com::host_t host() const;
@@ -149,17 +163,25 @@ namespace utils
   class basic_drts_component : public basic_drts_component_no_logic
   {
   public:
-    basic_drts_component ( std::string name
-                         , bool accept_workers
+    basic_drts_component ( bool accept_workers
                          , fhg::com::Certificates const&
                          );
-    basic_drts_component ( std::string name
-                         , agent const& master
+    basic_drts_component ( agent const& master
                          , sdpa::capabilities_set_t
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
+    basic_drts_component ( agent const& master
+                         , CapabilityNames
+                         , bool accept_workers
+                         , fhg::com::Certificates const&
+                         );
     basic_drts_component ( orchestrator const& master
+                         , bool accept_workers
+                         , fhg::com::Certificates const&
+                         );
+    basic_drts_component ( reused_component_name
+                         , agent const& master
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
@@ -211,14 +233,13 @@ namespace utils
         , fhg::com::Certificates const&
         );
       basic_drts_worker
-        ( std::string name
-        , agent const& master
+        ( agent const& master
+        , sdpa::capabilities_set_t
         , fhg::com::Certificates const&
         );
       basic_drts_worker
-        ( std::string name
+        ( reused_component_name
         , agent const& master
-        , sdpa::capabilities_set_t
         , fhg::com::Certificates const&
         );
     };
@@ -229,12 +250,6 @@ namespace utils
     public:
       fake_drts_worker_notifying_module_call_submission
         ( std::function<void (std::string)> announce_job
-        , agent const& master
-        , fhg::com::Certificates const&
-        );
-      fake_drts_worker_notifying_module_call_submission
-        ( std::string name
-        , std::function<void (std::string)> announce_job
         , agent const& master
         , fhg::com::Certificates const&
         );
@@ -299,12 +314,7 @@ namespace utils
     basic_drts_worker ( agent const& master
                       , fhg::com::Certificates const&
                       );
-    basic_drts_worker ( std::string name
-                      , agent const& master
-                      , fhg::com::Certificates const&
-                      );
-    basic_drts_worker ( std::string name
-                      , agent const& master
+    basic_drts_worker ( agent const& master
                       , sdpa::capabilities_set_t
                       , fhg::com::Certificates const&
                       );
@@ -320,12 +330,6 @@ namespace utils
       , agent const& master
       , fhg::com::Certificates const&
       );
-    fake_drts_worker_notifying_module_call_submission
-      ( std::string name
-      , std::function<void (std::string)> announce_job
-      , agent const& master
-      , fhg::com::Certificates const&
-      );
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
@@ -338,7 +342,7 @@ namespace utils
       , fhg::com::Certificates const&
       );
     fake_drts_worker_directly_finishing_jobs
-      ( std::string name
+      ( reused_component_name
       , agent const& master
       , fhg::com::Certificates const&
       );

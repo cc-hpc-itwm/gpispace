@@ -74,8 +74,7 @@ namespace
 
   drts_component_observing_capabilities::drts_component_observing_capabilities
       (fhg::com::Certificates const& certificates)
-    : utils::basic_drts_component
-        (utils::random_peer_name(), true, certificates)
+    : utils::basic_drts_component (true, certificates)
   {}
 
   void drts_component_observing_capabilities::handleCapabilitiesGainedEvent
@@ -106,8 +105,7 @@ namespace
       , sdpa::capabilities_set_t capabilities
       , fhg::com::Certificates const& certificates
       )
-    : utils::no_thread::basic_drts_worker
-        (utils::random_peer_name(), master, capabilities, certificates)
+    : utils::no_thread::basic_drts_worker (master, capabilities, certificates)
   {}
 
   template<typename Event, typename... Args>
@@ -162,8 +160,7 @@ BOOST_DATA_TEST_CASE
   auto const capabilities (random_capabilities());
 
   // Sends given capabilities in registration up to agent in ctor.
-  utils::basic_drts_worker child
-    (utils::random_peer_name(), agent, capabilities, certificates);
+  utils::basic_drts_worker child (agent, capabilities, certificates);
 
   BOOST_REQUIRE_EQUAL
     ( observer.capabilities_gained.get().second.capabilities()
@@ -206,8 +203,7 @@ BOOST_DATA_TEST_CASE
   auto const capabilities (random_capabilities());
 
   {
-    utils::basic_drts_worker child
-      (utils::random_peer_name(), agent, capabilities, certificates);
+    utils::basic_drts_worker child (agent, capabilities, certificates);
     observer.capabilities_gained.get();
 
     // \note Explicitly no capabilities lost: network error instead.
@@ -231,8 +227,7 @@ BOOST_DATA_TEST_CASE
   auto const capabilities_a (random_capabilities());
   auto const capabilities_b (random_capabilities());
 
-  utils::basic_drts_worker child_a
-    (utils::random_peer_name(), agent, capabilities_a, certificates);
+  utils::basic_drts_worker child_a (agent, capabilities_a, certificates);
 
   BOOST_REQUIRE_EQUAL
     ( observer.capabilities_gained.get().second.capabilities()
@@ -240,8 +235,7 @@ BOOST_DATA_TEST_CASE
     );
 
   {
-    utils::basic_drts_worker child_b
-      (utils::random_peer_name(), agent, capabilities_b, certificates);
+    utils::basic_drts_worker child_b (agent, capabilities_b, certificates);
 
     BOOST_REQUIRE_EQUAL
       ( observer.capabilities_gained.get().second.capabilities()

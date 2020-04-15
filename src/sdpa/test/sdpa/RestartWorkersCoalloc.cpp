@@ -78,7 +78,7 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
-  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+  sdpa::worker_id_t worker_id;
 
   fhg::util::thread::event<std::string> job_submitted_0;
   fake_drts_worker_waiting_for_cancel worker_0
@@ -88,11 +88,12 @@ BOOST_DATA_TEST_CASE
     fhg::util::thread::event<> job_submitted_1;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker_1
-      ( worker_id
-      , [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
+      ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
       , agent
       , certificates
       );
+
+    worker_id = worker_1.name();
 
     job_submitted_0.wait();
     job_submitted_1.wait();
@@ -101,7 +102,7 @@ BOOST_DATA_TEST_CASE
   worker_0.wait_for_cancel();
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
-    (worker_id, agent, certificates);
+    (utils::reused_component_name (worker_id), agent, certificates);
   worker_0.finish (job_submitted_0.wait());
 
   BOOST_REQUIRE_EQUAL
@@ -121,7 +122,7 @@ BOOST_DATA_TEST_CASE
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
-  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+  sdpa::worker_id_t worker_id;
 
   fhg::util::thread::event<std::string> job_submitted_0;
   utils::fake_drts_worker_waiting_for_finished_ack worker_0
@@ -131,11 +132,12 @@ BOOST_DATA_TEST_CASE
     fhg::util::thread::event<> job_submitted_1;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker_1
-      ( worker_id
-      , [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
+      ( [&job_submitted_1] (std::string) { job_submitted_1.notify(); }
       , agent
       , certificates
       );
+
+    worker_id = worker_1.name();
 
     worker_0.finish_and_wait_for_ack (job_submitted_0.wait());
 
@@ -143,7 +145,7 @@ BOOST_DATA_TEST_CASE
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
-    (worker_id, agent, certificates);
+    (utils::reused_component_name (worker_id), agent, certificates);
   worker_0.finish (job_submitted_0.wait());
 
   BOOST_REQUIRE_EQUAL

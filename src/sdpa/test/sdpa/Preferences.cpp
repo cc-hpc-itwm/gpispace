@@ -45,13 +45,11 @@ namespace
 
     // "Worker"
     drts_component_observing_preferences
-        ( sdpa::worker_id_t const& name
-        , utils::agent const& master
-        , sdpa::capabilities_set_t capabilities
+        ( utils::agent const& master
+        , std::string capability
         , fhg::com::Certificates const& certificates
         )
-      : basic_drts_component
-          (name, master, capabilities, false, certificates)
+      : basic_drts_component (master, {capability}, false, certificates)
     {}
 
     template<typename Event>
@@ -82,14 +80,12 @@ namespace
           <std::pair<std::string, sdpa::events::SubmitJobEvent>>;
 
     drts_component_observing_preferences_shared_queue
-        ( sdpa::worker_id_t const& name
-        , utils::agent const& master
+        ( utils::agent const& master
         , fhg::com::Certificates const& certificates
         , std::string capability
         , Queue* jobs_submitted
         )
-      : basic_drts_component
-          (name, master, {sdpa::Capability (capability, name)}, false, certificates)
+      : basic_drts_component (master, {capability}, false, certificates)
       , _jobs_submitted (jobs_submitted)
       , _capability (capability)
     {}
@@ -296,14 +292,8 @@ BOOST_DATA_TEST_CASE
         )
     );
 
-  auto const name (utils::random_peer_name());
-
   drts_component_observing_preferences observer
-    ( name
-    , agent
-    , {sdpa::Capability (chosen_preference, name)}
-    , certificates
-    );
+    (agent, chosen_preference, certificates);
 
   auto const activity (activity_with_preferences (preferences));
   utils::client (orchestrator, certificates).submit_job (activity);
@@ -344,11 +334,8 @@ BOOST_DATA_TEST_CASE
 
     for (unsigned int k {0}; k < num_workers_per_preference.back(); ++k)
     {
-      auto const name (utils::random_peer_name());
-
       workers.emplace_back
-        ( name
-        , agent
+        ( agent
         , certificates
         , preferences.back()
         , &jobs_submitted
