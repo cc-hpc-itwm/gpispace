@@ -3,10 +3,12 @@
 
 #include <test/certificates_data.hpp>
 
+#include <we/test/operator_equal.hpp>
 #include <we/type/activity.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/latch.hpp>
+#include <util-generic/testing/printer/generic.hpp>
 #include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
@@ -23,6 +25,11 @@
 #include <random>
 #include <string>
 #include <utility>
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
+{
+  os << activity.to_string();
+}
 
 namespace
 {
@@ -53,52 +60,41 @@ namespace
     : public utils::basic_drts_component
   {
   public:
+    // "Agent"
     drts_component_observing_preferences
         ( utils::orchestrator const& master
         , fhg::com::Certificates const& certificates
-        , std::list<std::string> const& preferences
         )
       : basic_drts_component (master, false, certificates)
-      , _expected_preferences (preferences)
-      , _received_preferences {}
     {}
 
-    virtual ~drts_component_observing_preferences()
-    {
-      BOOST_REQUIRE_EQUAL (_received_preferences, _expected_preferences);
-    }
+    // "Worker"
+    drts_component_observing_preferences
+        ( sdpa::worker_id_t const& name
+        , utils::agent const& master
+        , sdpa::capabilities_set_t capabilities
+        , fhg::com::Certificates const& certificates
+        )
+      : basic_drts_component
+          (name, master, capabilities, false, certificates)
+    {}
+
+    template<typename Event>
+      using Events
+        = fhg::util::threadsafe_queue
+            <std::pair<fhg::com::p2p::address_t, Event>>;
+
+    Events<sdpa::events::SubmitJobEvent> jobs_submitted;
 
   private:
     virtual void handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& source
-      , const sdpa::events::SubmitJobEvent* e
+      , sdpa::events::SubmitJobEvent const* event
       ) override
     {
-      _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
-      _master = source;
-
-      _received_preferences = e->activity().preferences_TESTING_ONLY();
-
-      finish_job (*e->job_id(), e->activity());
+      jobs_submitted.put (source, *event);
     }
 
-    virtual void handleJobFinishedAckEvent
-      ( fhg::com::p2p::address_t const&
-      , const sdpa::events::JobFinishedAckEvent*
-      ) override
-    {}
-
-    void finish_job
-      ( sdpa::job_id_t const& job
-      , we::type::activity_t const& activity
-      )
-    {
-      _network.perform<sdpa::events::JobFinishedEvent>
-        (*_master, job, activity);
-    }
-
-    std::list<std::string> _expected_preferences;
-    std::list<std::string> _received_preferences;
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
@@ -326,17 +322,13 @@ BOOST_DATA_TEST_CASE
 
   utils::orchestrator const orchestrator (certificates);
   drts_component_observing_preferences observer
-    (orchestrator, certificates, preferences);
+    (orchestrator, certificates);
 
-  utils::client client (orchestrator, certificates);
+  auto const activity (activity_with_preferences (preferences));
+  utils::client (orchestrator, certificates).submit_job (activity);
 
-  sdpa::job_id_t const job
-    (client.submit_job (activity_with_preferences (preferences)));
-
-  BOOST_REQUIRE_EQUAL
-    ( client.wait_for_terminal_state_and_cleanup (job)
-    , sdpa::status::FINISHED
-    );
+  auto const submitted (observer.jobs_submitted.get());
+  BOOST_REQUIRE_EQUAL (submitted.second.activity(), activity);
 }
 
 BOOST_AUTO_TEST_CASE
@@ -402,37 +394,33 @@ BOOST_DATA_TEST_CASE
   fhg::util::testing::unique_random<std::string> generate_preference;
   fhg::util::testing::unique_random<sdpa::worker_id_t> generate_worker_id;
 
-  Preferences const preferences
-    {generate_preference(), generate_preference(), generate_preference()};
-
   utils::orchestrator const orchestrator (certificates);
   utils::agent const agent (orchestrator, certificates);
 
-  auto const preference_index
-    ( fhg::util::testing::random_integral<std::size_t>()
-    % preferences.size()
-    );
+  Preferences const preferences
+    {generate_preference(), generate_preference(), generate_preference()};
 
-  auto const random_preference
-    (std::next (preferences.begin(), preference_index));
+  auto const chosen_preference
+    ( *std::next
+        ( preferences.begin()
+        , fhg::util::testing::random<std::size_t>{} (preferences.size() - 1)
+        )
+    );
 
   auto const name (generate_worker_id());
 
-  fake_drts_worker_verifying_implementation const worker
+  drts_component_observing_preferences observer
     ( name
     , agent
-    , {sdpa::Capability (*random_preference, name)}
+    , {sdpa::Capability (chosen_preference, name)}
     , certificates
-    , *random_preference
     );
 
-  utils::client client (orchestrator, certificates);
+  auto const activity (activity_with_preferences (preferences));
+  utils::client (orchestrator, certificates).submit_job (activity);
 
-  sdpa::job_id_t const job
-    (client.submit_job (activity_with_preferences (preferences)));
-
-  BOOST_REQUIRE_EQUAL
-    (client.wait_for_terminal_state_and_cleanup (job), sdpa::status::FINISHED);
+  auto const submitted (observer.jobs_submitted.get());
+  BOOST_REQUIRE_EQUAL (submitted.second.implementation(), chosen_preference);
 }
 
 BOOST_DATA_TEST_CASE
