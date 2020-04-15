@@ -13,18 +13,16 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <boost/test/data/monomorphic.hpp>
+#include <boost/range/combine.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <algorithm>
-#include <exception>
-#include <functional>
+#include <cstddef>
 #include <list>
-#include <memory>
-#include <random>
+#include <numeric>
 #include <string>
 #include <utility>
+#include <vector>
 
 FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
 {
@@ -75,107 +73,39 @@ namespace
     utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  class fake_drts_worker_verifying_implementation
-    : public utils::no_thread::basic_drts_worker
+  class drts_component_observing_preferences_shared_queue final
+    : public utils::basic_drts_component
   {
   public:
-    fake_drts_worker_verifying_implementation
+    using Queue
+      = fhg::util::threadsafe_queue
+          <std::pair<std::string, sdpa::events::SubmitJobEvent>>;
+
+    drts_component_observing_preferences_shared_queue
         ( sdpa::worker_id_t const& name
         , utils::agent const& master
-        , sdpa::capabilities_set_t capabilities
         , fhg::com::Certificates const& certificates
-        , std::string const& expected_preference
+        , std::string capability
+        , Queue* jobs_submitted
         )
-      : utils::no_thread::basic_drts_worker
-          (name, master, capabilities, certificates)
-      , _expected_preference (expected_preference)
+      : basic_drts_component
+          (name, master, {sdpa::Capability (capability, name)}, false, certificates)
+      , _jobs_submitted (jobs_submitted)
+      , _capability (capability)
     {}
 
-    virtual ~fake_drts_worker_verifying_implementation()
-    {
-      BOOST_REQUIRE_EQUAL (_received_implementation, _expected_preference);
-    }
-
+  private:
     virtual void handleSubmitJobEvent
-      ( fhg::com::p2p::address_t const& source
-      , const sdpa::events::SubmitJobEvent* event
-      ) override
-    {
-      _network.perform<sdpa::events::SubmitJobAckEvent>
-        (source, *event->job_id());
-
-      _received_implementation = event->implementation();
-
-      finish_job (source, *event->job_id());
-    }
-
-    virtual void handleJobFinishedAckEvent
       ( fhg::com::p2p::address_t const&
-      , const sdpa::events::JobFinishedAckEvent*
-      ) override
-    {}
-
-  private:
-    void finish_job
-      ( fhg::com::p2p::address_t const& source
-      , sdpa::job_id_t const& job
-      )
-    {
-      _network.perform<sdpa::events::JobFinishedEvent>
-        (source, job, we::type::activity_t());
-    }
-
-    boost::optional<std::string> _expected_preference;
-    boost::optional<std::string> _received_implementation;
-    basic_drts_component::event_thread_and_worker_join _ = {*this};
-  };
-
-  class fake_drts_worker_verifying_implementation_and_notifying_registration final
-    : public fake_drts_worker_verifying_implementation
-  {
-  public:
-    fake_drts_worker_verifying_implementation_and_notifying_registration
-        ( sdpa::worker_id_t const& name
-        , utils::agent const& master
-        , sdpa::capabilities_set_t capabilities
-        , fhg::com::Certificates const& certificates
-        , std::string const& expected_preference
-        , std::function<void ()> announce_registration_succeeded
-        )
-      : fake_drts_worker_verifying_implementation
-          (name, master, capabilities, certificates, expected_preference)
-      , _announce_registration_succeeded (announce_registration_succeeded)
-      , _received_tasks (false)
-    {}
-
-    virtual ~fake_drts_worker_verifying_implementation_and_notifying_registration()
-    {
-      BOOST_CHECK (_received_tasks);
-    }
-
-    virtual void handle_worker_registration_response
-      ( fhg::com::p2p::address_t const& source
-      , sdpa::events::worker_registration_response const* response
+      , sdpa::events::SubmitJobEvent const* event
       ) override
     {
-      fake_drts_worker_verifying_implementation::handle_worker_registration_response
-        (source, response);
-
-      _announce_registration_succeeded();
+      _jobs_submitted->put (_capability, *event);
     }
 
-    virtual void handleSubmitJobEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
-    {
-      fake_drts_worker_verifying_implementation::handleSubmitJobEvent
-        (source, e);
-
-      _received_tasks = true;
-    }
-
-  private:
-    std::function<void ()> _announce_registration_succeeded;
-    bool _received_tasks;
+    Queue* _jobs_submitted;
+    std::string _capability;
+    utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
   we::type::transition_t transition_with_multiple_implementations
@@ -388,66 +318,67 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  unsigned int const max_num_workers (10);
-  unsigned int const min_num_workers (2);
+  unsigned int const max_num_workers_per_preference (10);
+  unsigned int const min_num_workers_per_preference (2);
   unsigned int const num_preferences (3);
 
   fhg::util::testing::unique_random<std::string> generate_preference;
 
-  Preferences preferences;
-
   utils::orchestrator const orchestrator (certificates);
   utils::agent const agent (orchestrator, certificates);
 
-  std::list<std::unique_ptr<fake_drts_worker_verifying_implementation_and_notifying_registration>>
-     workers;
+  drts_component_observing_preferences_shared_queue::Queue jobs_submitted;
+  std::list<drts_component_observing_preferences_shared_queue> workers;
 
-  std::size_t n_total_workers (0);
-  std::vector<std::size_t> num_workers (num_preferences);
-  for (unsigned int k {0}; k < num_preferences; ++k)
-  {
-    num_workers[k] =
-      ( (fhg::util::testing::random_integral<std::size_t>()
-        % (max_num_workers - min_num_workers)
-        )
-      + min_num_workers
-      );
-
-    n_total_workers += num_workers[k];
-  }
-
-  fhg::util::latch to_register (n_total_workers);
+  Preferences preferences;
+  std::vector<std::size_t> num_workers_per_preference;
 
   for (unsigned int i {0}; i < num_preferences; ++i)
   {
-    auto const preference (generate_preference());
-    preferences.emplace_back (preference);
+    preferences.emplace_back (generate_preference());
 
-    for (unsigned int k {0}; k < num_workers[i]; ++k)
+    num_workers_per_preference.emplace_back
+      ( fhg::util::testing::random<std::size_t>{}
+          (max_num_workers_per_preference, min_num_workers_per_preference)
+      );
+
+    for (unsigned int k {0}; k < num_workers_per_preference.back(); ++k)
     {
       auto const name (utils::random_peer_name());
+
       workers.emplace_back
-        (fhg::util::cxx14::make_unique<fake_drts_worker_verifying_implementation_and_notifying_registration>
-           ( name
-           , agent
-           , sdpa::capabilities_set_t {sdpa::Capability (preference, name)}
-           , certificates
-           , preference
-           , [&to_register] { to_register.count_down(); }
-           )
+        ( name
+        , agent
+        , certificates
+        , preferences.back()
+        , &jobs_submitted
         );
     }
   }
 
-  to_register.wait();
-
   utils::client client (orchestrator, certificates);
 
-  sdpa::job_id_t const job
-    (client.submit_job
-       (net_with_n_children_and_preferences (n_total_workers, preferences))
-    );
+  // For every preference, in order of most preferred to least, we
+  // submit enough jobs to fill up all workers with the most preferred
+  // capability left.
+  for ( auto const& num_workers_and_preference
+      : boost::combine (num_workers_per_preference, preferences)
+      )
+  {
+    auto num_workers (boost::get<0> (num_workers_and_preference));
+    auto const preference (boost::get<1> (num_workers_and_preference));
 
-  BOOST_REQUIRE_EQUAL
-    (client.wait_for_terminal_state_and_cleanup (job), sdpa::status::FINISHED);
+    client.submit_job
+      (net_with_n_children_and_preferences (num_workers, preferences));
+
+    while (num_workers --> 0)
+    {
+      auto const submission (jobs_submitted.get());
+      // Worker actually supports that preference.
+      BOOST_CHECK_EQUAL (submission.first, preference);
+      // Worker was assigned the "best" preference.
+      BOOST_CHECK_EQUAL
+        (submission.second.implementation(), preference);
+    }
+  }
 }
