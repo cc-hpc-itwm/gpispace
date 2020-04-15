@@ -58,21 +58,10 @@ namespace
         , fhg::com::Certificates const& certificates
         , std::list<std::string> const& preferences
         )
-      : basic_drts_component (utils::random_peer_name(), false, certificates)
+      : basic_drts_component (master, false, certificates)
       , _expected_preferences (preferences)
       , _received_preferences {}
-    {
-      _master = _network.connect_to (master.host(), master.port());
-
-      _network.perform<sdpa::events::WorkerRegistrationEvent>
-        ( _master.get()
-        , _name
-        , sdpa::capabilities_set_t()
-        , fhg::util::testing::random<unsigned long>{}()
-        , false
-        , fhg::util::testing::random_string()
-        );
-    }
+    {}
 
     virtual ~drts_component_observing_preferences()
     {

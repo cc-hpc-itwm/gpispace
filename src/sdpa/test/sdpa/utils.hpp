@@ -159,6 +159,10 @@ namespace utils
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
+    basic_drts_component ( orchestrator const& master
+                         , bool accept_workers
+                         , fhg::com::Certificates const&
+                         );
     ~basic_drts_component();
 
     virtual void handle_worker_registration_response
