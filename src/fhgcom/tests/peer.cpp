@@ -39,12 +39,29 @@ BOOST_DATA_TEST_CASE
     );
 }
 
-BOOST_DATA_TEST_CASE (peer_run_single, certificates_data, certificates)
+BOOST_DATA_TEST_CASE (constructing_one_works, certificates_data, certificates)
 {
   using namespace fhg::com;
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("12351")
+                , certificates
+                );
+}
+
+BOOST_DATA_TEST_CASE (constructing_two_works, certificates_data, certificates)
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , host_t("localhost")
+                , port_t("0")
+                , certificates
+                );
+
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , host_t("localhost")
+                , port_t("0")
                 , certificates
                 );
 }
@@ -89,23 +106,6 @@ BOOST_DATA_TEST_CASE (peer_run_two, certificates_data, certificates)
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
     (std::string (m.data.begin(), m.data.end()), "hello world!");
-}
-
-BOOST_DATA_TEST_CASE (resolve_peer_names, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
 }
 
 BOOST_DATA_TEST_CASE (peer_loopback_forbidden, certificates_data, certificates)
