@@ -1358,8 +1358,8 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  std::string const name_worker_0 {"0" + fhg::util::testing::random_string()};
-  std::string const name_worker_1 {"1" + fhg::util::testing::random_string()};
+  std::string const name_worker_0 {utils::random_peer_name()};
+  std::string const name_worker_1 {utils::random_peer_name()};
   std::string const name_capability {fhg::util::testing::random_string()};
   _worker_manager.addWorker
     ( name_worker_0
@@ -1440,10 +1440,10 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                         , fixture_scheduler_and_requirements_and_preferences
                         )
 {
-  std::string const name_worker_0 {"worker_0_" + fhg::util::testing::random_string()};
-  std::string const name_worker_1 {"worker_1_" + fhg::util::testing::random_string()};
-  std::string const name_node_0 {"node_0_" + fhg::util::testing::random_string()};
-  std::string const name_node_1 {"node_1_" + fhg::util::testing::random_string()};
+  std::string const name_worker_0 {utils::random_peer_name()};
+  std::string const name_worker_1 {utils::random_peer_name()};
+  std::string const name_node_0 {utils::random_peer_name()};
+  std::string const name_node_1 {utils::random_peer_name()};
 
   std::set<sdpa::worker_id_t> const expected_assignment {name_worker_1};
 
@@ -1902,10 +1902,11 @@ BOOST_FIXTURE_TEST_CASE
   const unsigned int k (10);
   const unsigned int n_capabilities (3);
 
+  fhg::util::testing::unique_random<std::string> gen_capabilities;
   std::unordered_set<std::string> capabilities;
   for (unsigned int i (0); i<n_capabilities; i++)
   {
-    capabilities.emplace (fhg::util::testing::random_string());
+    capabilities.emplace (gen_capabilities());
   }
 
   const std::vector<sdpa::worker_id_t> initial_workers
@@ -2038,10 +2039,11 @@ BOOST_FIXTURE_TEST_CASE
   constexpr unsigned int n_jobs (n_workers + 1);
   const unsigned int n_capabilities (3);
 
+  fhg::util::testing::unique_random<std::string> gen_capabilities;
   std::unordered_set<std::string> capabilities;
   for (unsigned int i (0); i<n_capabilities; i++)
   {
-    capabilities.emplace (fhg::util::testing::random_string());
+    capabilities.emplace (gen_capabilities());
   }
 
   const std::vector<sdpa::worker_id_t> workers
