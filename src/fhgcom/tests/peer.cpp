@@ -8,10 +8,14 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/finally.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/printer/vector.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -242,6 +246,136 @@ BOOST_DATA_TEST_CASE
   stop_request = true;
 
   sender.join ();
+}
+
+namespace
+{
+  // Not defined in early versions of Boost.Asio, but bumping just for
+  // that enum would be kind of absurd. This is wrapped version of
+  // OpenSSL's SSL_R_SHORT_READ.
+  boost::system::error_code const boost_asio_ssl_error_stream_truncated
+    (0x140000db, boost::asio::error::get_ssl_category());
+}
+
+// A race in destruction of peer_t, while a message was just sent,
+// resulted in
+//
+// - corrupted messages being received (assertion fails)
+// - segfaults in various places (e.g. SSL context destruction)
+//   (signal raised)
+// - 'header/data length mismatch' when the destructing peer was still
+//   trying to send (terminate due to being thrown in some thread)
+//
+// All of the above are not easily triggered by anything in
+// particular, so this test tries to reproduce them by doing the
+// construct-connect-send-destruct sequence multiple times. The
+// repetition counter was adjusted to take less than 30 seconds on LTS
+// while still reproducing every few runs.
+BOOST_DATA_TEST_CASE
+  ( destruction_right_after_sending_should_not_hangsegfaultcrashcorruptdata
+  , certificates_data
+  , certificates
+  )
+{
+  auto const payload (fhg::util::testing::random<std::string>{}());
+
+  using Received
+    = boost::variant<boost::system::error_code, fhg::com::message_t>;
+
+  // No lock: async_recv loop is single threaded.
+  std::vector<Received> receive_results;
+  std::mutex send_results_guard;
+  std::vector<boost::system::error_code> send_results;
+
+  {
+    fhg::com::message_t parent_message;
+    std::atomic<bool> parent_destructing (false);
+
+    fhg::com::peer_t parent
+      ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , fhg::com::host_t ("localhost")
+      , fhg::com::port_t ("0")
+      , certificates
+      );
+    FHG_UTIL_FINALLY ([&] { parent_destructing = true; });
+
+    std::function< void ( boost::system::error_code ec
+                        , boost::optional<fhg::com::p2p::address_t>
+                        )
+                 > const record_receive
+      ( [&] ( boost::system::error_code ec
+            , boost::optional<fhg::com::p2p::address_t>
+            )
+        {
+          receive_results.push_back
+            (ec ? Received (ec) : Received (parent_message));
+
+          if (!parent_destructing)
+          {
+            parent.async_recv (&parent_message, record_receive);
+          }
+        }
+      );
+    parent.async_recv (&parent_message, record_receive);
+
+    int repetitions (10000);
+    while (repetitions --> 0)
+    {
+      fhg::com::peer_t child
+        ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        , fhg::com::host_t ("localhost")
+        , fhg::com::port_t ("0")
+        , certificates
+        );
+
+      child.async_send
+        ( child.connect_to
+            (host (parent.local_endpoint()), port (parent.local_endpoint()))
+        , payload
+        , [&] (boost::system::error_code ec)
+          {
+            std::lock_guard<std::mutex> const lock (send_results_guard);
+            send_results.emplace_back (ec);
+          }
+        );
+
+      // Bug happens here: child is going to be destructed, while send
+      // is still in flight.
+    }
+  }
+
+  for (auto const& ec : send_results)
+  {
+    BOOST_CHECK_MESSAGE
+      ( ec == boost::system::error_code{}
+     || ec == boost::system::errc::operation_canceled
+      , ec << " shall be one of [success (system.0) generic.operation_canceled]"
+      );
+  }
+  for (auto const& result : receive_results)
+  {
+    fhg::util::visit<void>
+      ( result
+      , [] (boost::system::error_code const& ec)
+        {
+          BOOST_CHECK_MESSAGE
+            ( ec == boost::asio::error::misc_errors::eof
+           || ec == boost::system::errc::operation_canceled
+           || ec == boost_asio_ssl_error_stream_truncated
+            , ec
+            << " shall be one of [asio.misc.eof, generic.operation_canceled, "
+               "asio.ssl.stream_truncated]"
+            );
+        }
+      , [&] (fhg::com::message_t const& message)
+        {
+          BOOST_CHECK_EQUAL (message.header.type_of_msg, 0);
+          BOOST_CHECK_EQUAL (message.header.length, payload.size());
+          BOOST_CHECK_EQUAL
+            (message.data, std::vector<char> (payload.begin(), payload.end()));
+        }
+      );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)
