@@ -153,8 +153,6 @@ namespace fhg
       backlog_.clear ();
 
       io_service_->stop();
-
-      stopping_ = false;
     }
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
