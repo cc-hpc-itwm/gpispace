@@ -175,29 +175,6 @@ BOOST_DATA_TEST_CASE (send_large_data, certificates_data, certificates)
   BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }
 
-BOOST_DATA_TEST_CASE (peers_with_fixed_ports, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t ("localhost")
-                , port_t ("0")
-                , certificates
-                );
-
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t ("localhost")
-                , port_t ("0")
-                , certificates
-                );
-
-  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                  , port (peer_2.local_endpoint())
-                                  )
-              , "hello world!"
-              );
-}
-
 BOOST_DATA_TEST_CASE
   (two_peers_one_restarts_repeatedly, certificates_data, certificates)
 {
