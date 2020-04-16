@@ -82,6 +82,11 @@ namespace fhg
           , handler()
         {}
 
+        // \note Only valid until an async request was started,
+        // i.e. before passing to connection::async_send().
+        // Afterwards, only handler remains valid.
+        // \todo Also move handler into connection::async_send to not
+        // require split state.
         message_t  message;
         handler_t  handler;
       };

@@ -324,7 +324,7 @@ namespace fhg
       }
     }
 
-    void connection_t::async_send ( const message_t * msg
+    void connection_t::async_send ( message_t msg
                                   , completion_handler_t hdl
                                   )
     {
@@ -333,7 +333,7 @@ namespace fhg
         ( [that, msg, hdl]
           {
             bool const send_in_progress (!that->to_send_.empty());
-            that->to_send_.emplace_back (msg, hdl);
+            that->to_send_.emplace_back (std::move (msg), std::move (hdl));
             if (!send_in_progress)
             {
               that->start_send();
@@ -343,23 +343,20 @@ namespace fhg
     }
 
     connection_t::to_send_t::to_send_t
-        (message_t const* message, connection_t::completion_handler_t hdl)
+        (message_t message, connection_t::completion_handler_t hdl)
       : handler (std::move (hdl))
+      , _message (std::move (message))
       , buffers()
     {
-      fhg_assert (message != nullptr);
-
-      if (message->data.size () != message->header.length)
+      if (_message.data.size () != _message.header.length)
       {
         throw std::length_error ("header/data length mismatch");
       }
 
-      fhg_assert (message->data.size() == message->header.length);
-
       buffers.reserve (2);
       buffers.push_back
-        (boost::asio::buffer (&message->header, sizeof (p2p::header_t)));
-      buffers.push_back (boost::asio::buffer (message->data));
+        (boost::asio::buffer (&_message.header, sizeof (p2p::header_t)));
+      buffers.push_back (boost::asio::buffer (_message.data));
     }
   }
 }

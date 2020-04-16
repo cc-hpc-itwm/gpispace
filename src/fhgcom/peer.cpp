@@ -298,7 +298,7 @@ namespace fhg
       to_send.message.header.dst = addr;
       to_send.message.assign (data);
       to_send.handler = completion_handler;
-      cd.o_queue.push_back (to_send);
+      cd.o_queue.push_back (std::move (to_send));
 
       if (cd.o_queue.size () == 1)
       {
@@ -387,7 +387,7 @@ namespace fhg
       to_send.message.resize (0);
 
       cd.connection->start ();
-      cd.o_queue.push_front (to_send);
+      cd.o_queue.push_front (std::move (to_send));
       start_sender (cd);
     }
 
@@ -427,7 +427,7 @@ namespace fhg
       {
         if (! cd.o_queue.empty())
         {
-          cd.connection->async_send ( &cd.o_queue.front().message
+          cd.connection->async_send ( std::move (cd.o_queue.front().message)
                                     , strand_.wrap
                                         ( std::bind ( &peer_t::handle_send
                                                     , this
@@ -460,7 +460,7 @@ namespace fhg
 
       cd.send_in_progress = true;
       cd.connection->async_send
-        ( &cd.o_queue.front().message
+        ( std::move (cd.o_queue.front().message)
         , strand_.wrap
             ( std::bind ( &peer_t::handle_send
                         , this
@@ -608,7 +608,7 @@ namespace fhg
 
         while (! cd.o_queue.empty())
         {
-          to_send_t to_send = cd.o_queue.front();
+          to_send_t to_send (std::move (cd.o_queue.front()));
           cd.o_queue.pop_front();
 
           lock.unlock ();

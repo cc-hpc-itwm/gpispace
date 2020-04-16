@@ -73,7 +73,7 @@ namespace fhg
 
       boost::asio::ip::tcp::socket & socket();
 
-      void async_send (const message_t * msg, completion_handler_t hdl);
+      void async_send (message_t msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
@@ -106,9 +106,10 @@ namespace fhg
     private:
       struct to_send_t
       {
-        to_send_t (const message_t * msg, completion_handler_t hdl);
+        to_send_t (message_t msg, completion_handler_t hdl);
 
         completion_handler_t handler;
+        message_t _message;
         std::vector<boost::asio::const_buffer> buffers;
       };
 
