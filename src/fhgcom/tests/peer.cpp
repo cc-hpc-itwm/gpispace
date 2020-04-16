@@ -104,8 +104,8 @@ BOOST_DATA_TEST_CASE (peer_run_two, certificates_data, certificates)
                                   )
               , "hello world!"
               );
-  message_t m;
-  peer_2.TESTING_ONLY_recv (&m);
+
+  message_t const m (peer_2.TESTING_ONLY_recv());
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL
@@ -173,8 +173,7 @@ BOOST_DATA_TEST_CASE (send_large_data, certificates_data, certificates)
              , std::string (2<<25, 'X')
              );
 
-  message_t r;
-  peer_2.TESTING_ONLY_recv(&r);
+  message_t const r (peer_2.TESTING_ONLY_recv());
 
   BOOST_CHECK_EQUAL(2<<25, r.data.size());
 }
@@ -288,7 +287,6 @@ BOOST_DATA_TEST_CASE
   std::vector<boost::system::error_code> send_results;
 
   {
-    fhg::com::message_t parent_message;
     std::atomic<bool> parent_destructing (false);
 
     fhg::com::peer_t parent
@@ -301,22 +299,23 @@ BOOST_DATA_TEST_CASE
 
     std::function< void ( boost::system::error_code ec
                         , boost::optional<fhg::com::p2p::address_t>
+                        , fhg::com::message_t
                         )
                  > const record_receive
       ( [&] ( boost::system::error_code ec
             , boost::optional<fhg::com::p2p::address_t>
+            , fhg::com::message_t message
             )
         {
-          receive_results.push_back
-            (ec ? Received (ec) : Received (parent_message));
+          receive_results.push_back (ec ? Received (ec) : Received (message));
 
           if (!parent_destructing)
           {
-            parent.async_recv (&parent_message, record_receive);
+            parent.async_recv (record_receive);
           }
         }
       );
-    parent.async_recv (&parent_message, record_receive);
+    parent.async_recv (record_receive);
 
     int repetitions (10000);
     while (repetitions --> 0)

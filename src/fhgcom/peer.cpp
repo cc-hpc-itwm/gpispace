@@ -139,18 +139,15 @@ namespace fhg
       }
 
       // remove pending
-      while (! m_pending.empty())
-      {
-        delete m_pending.front();
-        m_pending.pop_front();
-      }
+      m_pending.clear();
 
       while (! m_to_recv.empty())
       {
-        to_recv_t to_recv = m_to_recv.front();
+        auto const to_recv (std::move (m_to_recv.front()));
         m_to_recv.pop_front();
         using namespace boost::system;
-        to_recv.handler (errc::make_error_code(errc::operation_canceled), boost::none);
+        to_recv
+          (errc::make_error_code (errc::operation_canceled), boost::none, {});
       }
 
       backlog_.clear ();
@@ -309,67 +306,71 @@ namespace fhg
       }
     }
 
-    void peer_t::TESTING_ONLY_recv (message_t *m)
+    message_t peer_t::TESTING_ONLY_recv()
     {
-      fhg_assert (m);
+      fhg::util::thread::event<> recv_finished;
+      boost::system::error_code error;
+      message_t result;
 
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
-      async_op_t recv_finished;
       async_recv
-        ( m
-        , std::bind (&async_op_t::notify, &recv_finished, std::placeholders::_1)
+        ( [&] ( boost::system::error_code ec
+              , boost::optional<fhg::com::p2p::address_t>
+              , message_t message
+              )
+          {
+            error = ec;
+            result = std::move (message);
+            recv_finished.notify();
+          }
         );
 
-      const boost::system::error_code ec (recv_finished.wait());
-      if (ec)
+      recv_finished.wait();
+      if (error)
       {
-        throw boost::system::system_error (ec);
+        throw boost::system::system_error (error);
       }
+
+      return result;
     }
 
     void peer_t::async_recv
-      ( message_t *m
-      , std::function<void ( boost::system::error_code
+      ( std::function<void ( boost::system::error_code
                            , boost::optional<fhg::com::p2p::address_t>
+                           , fhg::com::message_t message
                            )
                      > completion_handler
       )
     {
-      fhg_assert (m);
       fhg_assert (completion_handler);
 
+      lock_type lock(mutex_);
+
+      if (stopping_)
       {
-        lock_type lock(mutex_);
-
-        if (stopping_)
-        {
-          using namespace boost::system;
-          completion_handler ( errc::make_error_code (errc::network_down)
-                             , boost::none
-                             );
-          return;
-        }
-
-        // TODO: implement async receive on connection!
-        if (m_pending.empty())
-        {
-          to_recv_t to_recv;
-          to_recv.message = m;
-          to_recv.handler = completion_handler;
-          m_to_recv.push_back (to_recv);
-          return;
-        }
-        else
-        {
-          const message_t * p = m_pending.front();
-          m_pending.pop_front();
-          *m = *p;
-          delete p;
-        }
+        using namespace boost::system;
+        completion_handler
+          (errc::make_error_code (errc::network_down), boost::none, {});
       }
+      else if (m_pending.empty())
+      {
+        // TODO: implement async receive on connection!
+        // \todo Figure out what that todo means.
+        m_to_recv.emplace_back (std::move (completion_handler));
+      }
+      else
+      {
+        message_t m (std::move (m_pending.front()));
+        m_pending.pop_front();
 
-      using namespace boost::system;
-      completion_handler (errc::make_error_code (errc::success), m->header.src);
+        // \note Allow for recursive calling of async_recv.
+        // \todo Instead, always post onto strand and never call
+        // handler directly?
+        lock.unlock();
+
+        using namespace boost::system;
+        completion_handler
+          (errc::make_error_code (errc::success), m.header.src, std::move (m));
+      }
     }
 
     void peer_t::connection_established (connection_data_t& cd)
@@ -567,24 +568,24 @@ namespace fhg
           // TODO: maybe add a flag to the message indicating whether it should be delivered
           // at all costs or not
           // if (m->header.flags & IMPORTANT)
-          m_pending.emplace_back (m);
-          return;
+          m_pending.emplace_back (std::move (*m));
         }
         else
         {
-          to_recv_t to_recv = m_to_recv.front();
+          auto const to_recv (std::move (m_to_recv.front()));
           m_to_recv.pop_front();
-          *to_recv.message = *m;
-          delete m;
 
           using namespace boost::system;
 
           lock.unlock ();
-          to_recv.handler ( errc::make_error_code (errc::success)
-                          , connection->remote_address()
-                          );
+          to_recv ( errc::make_error_code (errc::success)
+                  , connection->remote_address()
+                  , std::move (*m)
+                  );
           lock.lock ();
         }
+
+        delete m;
       }
     }
 
@@ -616,19 +617,20 @@ namespace fhg
         }
 
         // the handler might async recv again...
-        std::list<to_recv_t> tmp (m_to_recv);
-        m_to_recv.clear();
+        std::list<to_recv_t> tmp;
+        std::swap (tmp, m_to_recv);
 
         while (! tmp.empty())
         {
-          to_recv_t to_recv = tmp.front();
+          auto const to_recv (std::move (tmp.front()));
           tmp.pop_front();
 
-          to_recv.message->header.src = c->remote_address();
-          to_recv.message->header.dst = c->local_address();
+          message_t m;
+          m.header.src = c->remote_address();
+          m.header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (ec, c->remote_address());
+          to_recv (ec, c->remote_address(), std::move (m));
           lock.lock ();
         }
 

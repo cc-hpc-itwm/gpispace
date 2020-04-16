@@ -60,13 +60,13 @@ namespace fhg
                 );
 
       void async_recv
-        ( message_t *m
-        , std::function<void ( boost::system::error_code
+        ( std::function<void ( boost::system::error_code
                              , boost::optional<fhg::com::p2p::address_t> source
+                             , message_t
                              )
                        >
         );
-      void TESTING_ONLY_recv (message_t *m);
+      message_t TESTING_ONLY_recv();
       std::exception_ptr TESTING_ONLY_handshake_exception() const;
 
     protected:
@@ -86,19 +86,12 @@ namespace fhg
         handler_t  handler;
       };
 
-      struct to_recv_t
-      {
-        to_recv_t ()
-          : message (nullptr)
-          , handler()
-        {}
-
-        message_t  *message;
-        std::function<void ( boost::system::error_code
-                           , boost::optional<fhg::com::p2p::address_t>
-                           )
-                     > handler;
-      };
+      using to_recv_t
+        = std::function<void ( boost::system::error_code
+                             , boost::optional<p2p::address_t>
+                             , message_t
+                             )
+                       >;
 
       struct connection_data_t
       {
@@ -155,7 +148,7 @@ namespace fhg
       connection_t::ptr_t listen_;
 
       std::list<to_recv_t> m_to_recv;
-      std::list<const message_t *> m_pending;
+      std::list<message_t> m_pending;
 
       std::exception_ptr TESTING_ONLY_handshake_exception_;
       boost::strict_scoped_thread<> _io_thread;
