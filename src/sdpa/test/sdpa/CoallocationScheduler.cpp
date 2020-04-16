@@ -422,6 +422,21 @@ namespace
            , preferences
            };
   }
+
+  void add_worker ( sdpa::daemon::WorkerManager& worker_manager
+                  , sdpa::worker_id_t worker_id
+                  , sdpa::capabilities_set_t capabilities = {}
+                  , bool children_allowed = false
+                  )
+  {
+    worker_manager.addWorker ( worker_id
+                             , capabilities
+                             , fhg::util::testing::random<unsigned long>{}()
+                             , children_allowed
+                             , fhg::util::testing::random<std::string>{}()
+                             , fhg::util::testing::random<std::string>{}()
+                             );
+  }
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -429,21 +444,8 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  _worker_manager.addWorker ( "worker_0"
-                                        , {}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
-
-  _worker_manager.addWorker ( "worker_1"
-                                        , {}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker (_worker_manager, "worker_0");
+  add_worker (_worker_manager, "worker_1");
 
   const unsigned int n_jobs (100);
   for (unsigned int i (0); i < n_jobs; ++i)
@@ -469,13 +471,7 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  _worker_manager.addWorker ( "worker_0"
-                                        , {}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker (_worker_manager, "worker_0");
 
   add_and_enqueue_job (no_requirements_and_preferences());
   add_and_enqueue_job (no_requirements_and_preferences());
@@ -488,13 +484,7 @@ BOOST_FIXTURE_TEST_CASE
     BOOST_REQUIRE_EQUAL (count_assigned_jobs (assignment, "worker_0"), 2);
   }
 
-  _worker_manager.addWorker ( "worker_1"
-                            , {}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker (_worker_manager, "worker_1");
 
   {
     _scheduler.assignJobsToWorkers();
@@ -512,21 +502,12 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  _worker_manager.addWorker ( "worker_0"
-                            , {sdpa::capability_t ("C", "worker_0")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker ( _worker_manager
+             , "worker_0"
+             , {sdpa::capability_t ("C", "worker_0")}
+             );
 
-  _worker_manager.addWorker ( "worker_1"
-                            , {}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker (_worker_manager, "worker_1");
 
   add_and_enqueue_job (require ("C"));
   add_and_enqueue_job (require ("C"));
@@ -556,36 +537,10 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  _worker_manager.addWorker ( "A0"
-                                        , {sdpa::capability_t ("A", "A0")}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
-
-  _worker_manager.addWorker ( "B0"
-                                        , {sdpa::capability_t ("B", "B0")}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
-
-  _worker_manager.addWorker ( "A1"
-                                        , {sdpa::capability_t ("A", "A1")}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
-
-  _worker_manager.addWorker ( "B1"
-                                        , {sdpa::capability_t ("B", "B1")}
-                                        , random_ulong()
-                                        , false, fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker (_worker_manager, "A0", {sdpa::capability_t ("A", "A0")});
+  add_worker (_worker_manager, "B0", {sdpa::capability_t ("B", "B0")});
+  add_worker (_worker_manager, "A1", {sdpa::capability_t ("A", "A1")});
+  add_worker (_worker_manager, "B1", {sdpa::capability_t ("B", "B1")});
 
   auto const job_2a (add_and_enqueue_job (require ("A", 2)));
   auto const job_2b (add_and_enqueue_job (require ("B", 2)));
@@ -615,20 +570,8 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  _worker_manager.addWorker ( "worker_0"
-                            , {}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
-
-  _worker_manager.addWorker ( "worker_1"
-                            , {}
-                            , random_ulong()
-                            , false, fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker (_worker_manager, "worker_0");
+  add_worker (_worker_manager, "worker_1");
 
   auto const job_0
     (add_and_enqueue_job (no_requirements_and_preferences()));
@@ -655,13 +598,7 @@ BOOST_FIXTURE_TEST_CASE
   _worker_manager.deleteWorker ("worker_0");
   _scheduler.enqueueJob (job_assigned_to_worker_0);
 
-  _worker_manager.addWorker ( "worker_0"
-                            , {}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker (_worker_manager, "worker_0");
 
   _scheduler.assignJobsToWorkers();
   auto const new_assignment (get_current_assignment());
@@ -676,13 +613,7 @@ BOOST_FIXTURE_TEST_CASE
   , fixture_scheduler_and_requirements_and_preferences
   )
 {
-  _worker_manager.addWorker ( "worker"
-                            , {}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker (_worker_manager, "worker");
 
   add_and_enqueue_job (require (2));
 
@@ -716,13 +647,7 @@ BOOST_FIXTURE_TEST_CASE
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
 
-  _worker_manager.addWorker ( worker_id
-                            , {}
-                            , random_ulong()
-                            , true
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker (_worker_manager, worker_id, {}, true);
 
   auto const job_id_0
     (add_and_enqueue_job (no_requirements_and_preferences()));
@@ -762,14 +687,7 @@ BOOST_FIXTURE_TEST_CASE ( multiple_job_submissions_with_no_children_allowed
                         )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
-
-  _worker_manager.addWorker ( worker_id
-                                        , {}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker (_worker_manager, worker_id);
 
   auto const job_id_0
     (add_and_enqueue_job (no_requirements_and_preferences()));
@@ -814,16 +732,13 @@ BOOST_FIXTURE_TEST_CASE
   )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
-
-  _worker_manager.addWorker ( worker_id
-                            , { sdpa::capability_t("A", worker_id)
-                              , sdpa::capability_t("B", worker_id)
-                              }
-                            , random_ulong()
-                            , true
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker ( _worker_manager
+             , worker_id
+             , { sdpa::capability_t ("A", worker_id)
+               , sdpa::capability_t ("B", worker_id)
+               }
+             , true
+             );
 
   auto const job_id_0 (add_and_enqueue_job (require ("A")));
 
@@ -862,16 +777,13 @@ BOOST_FIXTURE_TEST_CASE
   )
 {
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
-
-  _worker_manager.addWorker ( worker_id
-                            , { sdpa::capability_t ("A", worker_id)
-                              , sdpa::capability_t ("B", worker_id)
-                              }
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker ( _worker_manager
+             , worker_id
+             , { sdpa::capability_t ("A", worker_id)
+               , sdpa::capability_t ("B", worker_id)
+               }
+             , false
+             );
 
   auto const job_id_0 (add_and_enqueue_job (require ("A")));
 
@@ -1078,23 +990,18 @@ BOOST_FIXTURE_TEST_CASE
   )
 {
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
-
-  _worker_manager.addWorker ( agent_id
-                                        , {sdpa::capability_t ("A", utils::random_peer_name())}
-                                        , random_ulong()
-                                        , true
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker ( _worker_manager
+             , agent_id
+             , {sdpa::capability_t ("A", utils::random_peer_name())}
+             , true
+             );
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
-  _worker_manager.addWorker ( worker_id
-                                        , {sdpa::capability_t ("A", worker_id)}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker ( _worker_manager
+             , worker_id
+             , {sdpa::capability_t ("A", worker_id)}
+             , false
+             );
 
   auto const job_id_0 (add_and_enqueue_job (require ("A", 2)));
 
@@ -1111,22 +1018,10 @@ BOOST_FIXTURE_TEST_CASE
   )
 {
   sdpa::worker_id_t const agent_id (utils::random_peer_name());
-  _worker_manager.addWorker ( agent_id
-                                        , {}
-                                        , random_ulong()
-                                        , true
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker (_worker_manager, agent_id, {}, true);
 
   sdpa::worker_id_t const worker_id (utils::random_peer_name());
-  _worker_manager.addWorker ( worker_id
-                                        , {}
-                                        , random_ulong()
-                                        , false
-                                        , fhg::util::testing::random_string()
-                                        , fhg::util::testing::random_string()
-                                        );
+  add_worker (_worker_manager, worker_id);
 
   auto const job_id_0 (add_and_enqueue_job (require (2)));
 
@@ -1361,22 +1256,11 @@ BOOST_FIXTURE_TEST_CASE
   std::string const name_worker_0 {utils::random_peer_name()};
   std::string const name_worker_1 {utils::random_peer_name()};
   std::string const name_capability {fhg::util::testing::random_string()};
-  _worker_manager.addWorker
-    ( name_worker_0
-    , {}
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_string()
-    , fhg::util::testing::random_string()
-    );
-  _worker_manager.addWorker
-    ( name_worker_1
-    , {sdpa::Capability (name_capability, name_worker_1)}
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_string()
-    , fhg::util::testing::random_string()
-    );
+  add_worker (_worker_manager, name_worker_0);
+  add_worker ( _worker_manager
+             , name_worker_1
+             , {sdpa::Capability (name_capability, name_worker_1)}
+             );
 
   auto const job_id (add_and_enqueue_job (no_requirements_and_preferences()));
 
@@ -1396,34 +1280,25 @@ BOOST_FIXTURE_TEST_CASE ( assign_job_to_the_matching_worker_with_less_capabiliti
 {
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
 
-  _worker_manager.addWorker ( "worker_0"
-                            , {sdpa::Capability("A", "worker_0")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker ( _worker_manager
+             , "worker_0"
+             , {sdpa::Capability ("A", "worker_0")}
+             );
 
-  _worker_manager.addWorker ( "worker_1"
-                            , { sdpa::Capability("A", "worker_1")
-                              , sdpa::Capability("B", "worker_1")
-                              }
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker ( _worker_manager
+             , "worker_1"
+             , { sdpa::Capability ("A", "worker_1")
+               , sdpa::Capability ("B", "worker_1")
+               }
+             );
 
-  _worker_manager.addWorker ( "worker_2"
-                            , { sdpa::Capability("A", "worker_2")
-                              , sdpa::Capability("B", "worker_2")
-                              , sdpa::Capability("C", "worker_2")
-                              }
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker ( _worker_manager
+             , "worker_2"
+             , { sdpa::Capability ("A", "worker_2")
+               , sdpa::Capability ("B", "worker_2")
+               , sdpa::Capability ("C", "worker_2")
+               }
+             );
 
   auto const job_id (add_and_enqueue_job (require ("A")));
 
@@ -1515,21 +1390,10 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
 {
   std::set<sdpa::worker_id_t> set_0 {"worker_0"};
 
-  _worker_manager.addWorker ( "worker_0"
-                            , {sdpa::Capability("A", "worker_0")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
-
-  _worker_manager.addWorker ( "worker_1"
-                            , { sdpa::Capability("A", "worker_1")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker
+    (_worker_manager, "worker_0", {sdpa::Capability ("A", "worker_0")});
+  add_worker
+    (_worker_manager, "worker_1", {sdpa::Capability ("A", "worker_1")});
 
   auto const job_0 (add_and_enqueue_job (require ("A")));
   auto const job_1 (add_and_enqueue_job (require ("A")));
@@ -1545,13 +1409,8 @@ BOOST_FIXTURE_TEST_CASE ( work_stealing
     BOOST_REQUIRE (assignment.count (job_2));
   }
 
-  _worker_manager.addWorker ( "worker_2"
-                            , { sdpa::Capability("A", "worker_2")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker
+    (_worker_manager, "worker_2", {sdpa::Capability ("A", "worker_2")});
 
   _scheduler.assignJobsToWorkers();
 
@@ -1590,13 +1449,8 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                         , fixture_scheduler_and_requirements_and_preferences
                         )
 {
-  _worker_manager.addWorker ( "worker_0"
-                            , {sdpa::Capability("A", "worker_0")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker
+    (_worker_manager, "worker_0", {sdpa::Capability ("A", "worker_0")});
 
   auto const job_0 (add_and_enqueue_job (require ("A")));
   auto const job_1 (add_and_enqueue_job (require ("A")));
@@ -1620,13 +1474,8 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
                   );
   }
 
-  _worker_manager.addWorker ( "worker_1"
-                            , { sdpa::Capability("A", "worker_1")}
-                            , random_ulong()
-                            , false
-                            , fhg::util::testing::random_string()
-                            , fhg::util::testing::random_string()
-                            );
+  add_worker
+    (_worker_manager, "worker_1", {sdpa::Capability ("A", "worker_1")});
 
   {
     _scheduler.assignJobsToWorkers();
@@ -1740,13 +1589,7 @@ struct fixture_add_new_workers
         cpbset.emplace (capability_name, worker);
       }
 
-      _worker_manager.addWorker ( worker
-                                , cpbset
-                                , random_ulong()
-                                , false
-                                , fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                );
+      add_worker (_worker_manager, worker, cpbset);
       request_scheduling();
     }
 
@@ -2390,40 +2233,28 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::worker_id_t const worker_0 (utils::random_peer_name());
   auto const first_pref (preferences.begin());
 
-  _worker_manager.addWorker
-    ( worker_0
-    , { sdpa::Capability (common_capability, worker_0)
-      , sdpa::Capability (*first_pref, worker_0)
-      }
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker ( _worker_manager
+             , worker_0
+             , { sdpa::Capability (common_capability, worker_0)
+               , sdpa::Capability (*first_pref, worker_0)
+               }
+             );
 
   sdpa::worker_id_t const worker_1 (utils::random_peer_name());
-  _worker_manager.addWorker
-    ( worker_1
-    , { sdpa::Capability (common_capability, worker_1)
-      , sdpa::Capability (*std::next (first_pref, 1), worker_1)
-      }
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker ( _worker_manager
+             , worker_1
+             , { sdpa::Capability (common_capability, worker_1)
+               , sdpa::Capability (*std::next (first_pref, 1), worker_1)
+               }
+             );
 
   sdpa::worker_id_t const worker_2 (utils::random_peer_name());
-  _worker_manager.addWorker
-    ( worker_2
-    , { sdpa::Capability (common_capability, worker_2)
-      , sdpa::Capability (*std::next (first_pref, 2), worker_2)
-      }
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker ( _worker_manager
+             , worker_2
+             , { sdpa::Capability (common_capability, worker_2)
+               , sdpa::Capability (*std::next (first_pref, 2), worker_2)
+               }
+             );
 
   auto const job0
     (add_and_enqueue_job (require (common_capability, preferences)));
@@ -2500,16 +2331,12 @@ BOOST_FIXTURE_TEST_CASE
     (fhg::util::testing::random<std::size_t>{} (preferences.size() - 1));
   auto const preference (*std::next (first_pref, preference_id));
 
-  _worker_manager.addWorker
-    ( worker
-    , { sdpa::Capability (capability, worker)
-      , sdpa::Capability (preference, worker)
-      }
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker ( _worker_manager
+             , worker
+             , { sdpa::Capability (capability, worker)
+               , sdpa::Capability (preference, worker)
+               }
+             );
 
   auto const job (add_and_enqueue_job (require (capability, preferences)));
 
@@ -2670,24 +2497,16 @@ BOOST_FIXTURE_TEST_CASE
   std::string const preference (capability_pool());
 
   sdpa::worker_id_t const worker_0 (utils::random_peer_name());
-  _worker_manager.addWorker
-    ( worker_0
-    , {sdpa::Capability (preference, worker_0)}
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker (_worker_manager
+             , worker_0
+             , {sdpa::Capability (preference, worker_0)}
+             );
 
   sdpa::worker_id_t const worker_1 (utils::random_peer_name());
-  _worker_manager.addWorker
-    ( worker_1
-    , {}
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker (_worker_manager
+             , worker_1
+             , {}
+             );
 
   auto const job_0
     ( add_and_enqueue_job
@@ -2766,14 +2585,8 @@ BOOST_FIXTURE_TEST_CASE
   fhg::util::testing::unique_random<std::string> capability_pool;
 
   sdpa::worker_id_t const worker (utils::random_peer_name());
-  _worker_manager.addWorker
-    ( worker
-    , {sdpa::Capability (capability_pool(), worker)}
-    , random_ulong()
-    , false
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    , fhg::util::testing::random_identifier_without_leading_underscore()
-    );
+  add_worker
+    (_worker_manager, worker, {sdpa::Capability (capability_pool(), worker)});
 
   auto const job
     ( add_and_enqueue_job
@@ -2815,14 +2628,10 @@ BOOST_FIXTURE_TEST_CASE
   {
     sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
-    _worker_manager.addWorker
-      ( worker
-      , {sdpa::Capability (common_capability, worker)}
-      , random_ulong()
-      , false
-      , fhg::util::testing::random_string()
-      , fhg::util::testing::random_string()
-      );
+    add_worker ( _worker_manager
+               , worker
+               , {sdpa::Capability (common_capability, worker)}
+               );
   }
 
   for (unsigned int i {0}; i < num_tasks; ++i)
@@ -2864,19 +2673,15 @@ BOOST_FIXTURE_TEST_CASE
   {
     sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
-    _worker_manager.addWorker
-      ( worker
-      , { sdpa::Capability (common_capability, worker)
-        , sdpa::Capability
-            ( *std::next (preferences.begin(), k % preferences.size())
-            , worker
-            )
-        }
-      , random_ulong()
-      , false
-      , fhg::util::testing::random_string()
-      , fhg::util::testing::random_string()
-      );
+    add_worker ( _worker_manager
+               , worker
+               , { sdpa::Capability (common_capability, worker)
+                 , sdpa::Capability
+                     ( *std::next (preferences.begin(), k % preferences.size())
+                     , worker
+                     )
+                 }
+               );
   }
 
   for (unsigned int i {0}; i < num_tasks; ++i)
@@ -2910,14 +2715,8 @@ BOOST_FIXTURE_TEST_CASE
   {
     sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
-    _worker_manager.addWorker
-      ( worker
-      , {sdpa::Capability (common_capability, worker)}
-      , random_ulong()
-      , false
-      , fhg::util::testing::random_string()
-      , fhg::util::testing::random_string()
-      );
+    add_worker
+      (_worker_manager, worker, {sdpa::Capability (common_capability, worker)});
   }
 
   for (unsigned int i {0}; i < num_tasks; ++i)
@@ -2961,19 +2760,15 @@ BOOST_FIXTURE_TEST_CASE
   {
     sdpa::worker_id_t const worker (utils::random_peer_name());
     test_workers.emplace_back (worker);
-    _worker_manager.addWorker
-      ( worker
-      , { sdpa::Capability (common_capability, worker)
-        , sdpa::Capability
-            ( *std::next (preferences.begin(), k % preferences.size())
-            , worker
-            )
-        }
-      , random_ulong()
-      , false
-      , fhg::util::testing::random_string()
-      , fhg::util::testing::random_string()
-      );
+    add_worker ( _worker_manager
+               , worker
+               , { sdpa::Capability (common_capability, worker)
+                 , sdpa::Capability
+                     ( *std::next (preferences.begin(), k % preferences.size())
+                     , worker
+                     )
+                 }
+               );
   }
 
   for (unsigned int i {0}; i < num_tasks; ++i)
