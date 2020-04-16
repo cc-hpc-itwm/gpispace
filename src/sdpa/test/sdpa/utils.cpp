@@ -146,12 +146,14 @@ namespace utils
 
   we::type::activity_t net_with_two_children_requiring_n_workers (unsigned long n)
   {
+    fhg::util::testing::unique_random<std::string> transition_names;
+
     we::type::property::type props;
     props.set ( {"fhg", "drts", "schedule", "num_worker"}
               , std::to_string (n) + "UL"
               );
     we::type::transition_t transition_0
-      ( fhg::util::testing::random_string()
+      ( transition_names()
       , we::type::module_call_t
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()
@@ -165,7 +167,7 @@ namespace utils
       , we::priority_type()
       );
     we::type::transition_t transition_1
-      ( fhg::util::testing::random_string()
+      ( transition_names()
       , we::type::module_call_t
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()

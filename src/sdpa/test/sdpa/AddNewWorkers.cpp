@@ -31,11 +31,13 @@ we::type::activity_t net_with_n_children (unsigned int n)
   we::type::property::type props;
   props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (1) + "UL");
 
+  fhg::util::testing::unique_random<std::string> transition_names;
+
   std::vector<we::type::transition_t> transitions;
   for (unsigned int k{0}; k < n; k++)
   {
     transitions.emplace_back
-      ( fhg::util::testing::random_string()
+      ( transition_names()
       , we::type::module_call_t
           ( fhg::util::testing::random_string()
           , fhg::util::testing::random_string()

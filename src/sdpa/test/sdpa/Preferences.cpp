@@ -105,7 +105,9 @@ namespace
   };
 
   we::type::transition_t transition_with_multiple_implementations
-    (Preferences const& preferences)
+    ( Preferences const& preferences
+    , fhg::util::testing::unique_random<std::string>& unique_names
+    )
   {
     fhg::util::testing::random<std::string> random_string;
 
@@ -123,7 +125,7 @@ namespace
         );
     }
 
-    return {random_string(), multi_mod, {}, {}, {}, {}, preferences};
+    return {unique_names(), multi_mod, {}, {}, {}, {}, preferences};
   }
 
   we::type::activity_t activity_with_preferences
@@ -133,7 +135,9 @@ namespace
   {
     fhg::util::testing::random<std::string> random_string;
 
-    auto transition (transition_with_multiple_implementations (preferences));
+    fhg::util::testing::unique_random<std::string> unique_names;
+    auto transition
+      (transition_with_multiple_implementations (preferences, unique_names));
 
     if (worker_count)
     {
@@ -158,6 +162,7 @@ namespace
   {
     fhg::util::testing::unique_random<std::string> place_names;
     fhg::util::testing::random<std::string> random_string;
+    fhg::util::testing::unique_random<std::string> unique_names;
 
     std::string const type ("string");
 
@@ -165,7 +170,8 @@ namespace
 
     while (n --> 0)
     {
-      auto transition (transition_with_multiple_implementations (preferences));
+      auto transition
+        (transition_with_multiple_implementations (preferences, unique_names));
 
       auto const place_id (net.add_place ({place_names(), type, {}}));
       net.put_value
