@@ -82,7 +82,7 @@ namespace fhg
         std::string path;
         do
         {
-          path = util::testing::random_string_without_zero();
+          path = util::testing::random_string_without (":><,");
         }
         while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
