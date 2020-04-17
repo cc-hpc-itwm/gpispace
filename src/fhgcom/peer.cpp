@@ -617,6 +617,15 @@ namespace fhg
           lock.lock ();
         }
 
+        // \todo Instead, deliver them? The sender may assume they
+        // were delivered as there was no error in sending.
+        m_pending.remove_if
+          ( [&] (message_t const& message)
+            {
+              return message.header.dst == c->remote_address();
+            }
+          );
+
         // the handler might async recv again...
         std::list<to_recv_t> tmp;
         std::swap (tmp, m_to_recv);
@@ -636,10 +645,6 @@ namespace fhg
         }
 
         connections_.erase(c->remote_address());
-
-        // ~peer_t also clears m_pending. a message received by the
-        // failing connection may still be received on the next
-        // async_recv call!
       }
       else if (backlog_.find (c) != backlog_.end ())
       {
