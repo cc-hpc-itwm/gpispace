@@ -602,9 +602,7 @@ namespace fhg
       {
         connection_data_t & cd = connections_.at (c->remote_address());
 
-        boost::system::error_code ignore;
-        c->socket().cancel (ignore);
-        c->socket().close (ignore);
+        c->stop();
 
         // deactivate asynchronous sender
         cd.send_in_progress = false;
