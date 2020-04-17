@@ -643,7 +643,6 @@ namespace fhg
         else
         {
           c->stop ();
-          c.reset ();
         }
       }
     }
