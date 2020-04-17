@@ -4,6 +4,7 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #include <xml/tests/parse_preference_list_with_modules_helpers.hpp>
@@ -62,6 +63,15 @@ namespace
     }
   }
 
+  struct random_identifier
+  {
+    std::string operator()() const
+    {
+      return fhg::util::testing::random_identifier();
+    }
+  };
+  using unique_random_identifier
+    = fhg::util::testing::unique_random<std::string, random_identifier>;
 }
 
 BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
@@ -163,10 +173,10 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
                      , type
                      )
 {
-  std::string const first_target_name
-    ("first_" + fhg::util::testing::random_identifier());
-  std::string const second_target_name
-    ("second_" + fhg::util::testing::random_identifier());
+  unique_random_identifier target_names;
+
+  auto const first_target_name (target_names());
+  auto const second_target_name (target_names());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -237,12 +247,11 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
 
 BOOST_AUTO_TEST_CASE (parse_multi_modules_with_duplicate_module_targets)
 {
-  std::string const mod_name
-    (fhg::util::testing::random_identifier());
-  std::string const target_name_first
-    (fhg::util::testing::random_identifier());
-  std::string const target_name_second
-    (fhg::util::testing::random_identifier());
+  unique_random_identifier target_names;
+
+  auto const mod_name (fhg::util::testing::random_identifier());
+  auto const target_name_first (target_names());
+  auto const target_name_second (target_names());
   std::list<xml::parse::type::preference_type> test_targets
     ({target_name_first, target_name_first});
 
@@ -332,16 +341,6 @@ namespace
 {
   constexpr auto const MIN_TARGETS = 2;
 
-  size_t roll_random_number ( size_t min_inclusive
-                            , size_t max_inclusive
-                            )
-  {
-    return ( fhg::util::testing::random<size_t>{}()
-             % (max_inclusive - min_inclusive + 1)
-           )
-           + min_inclusive;
-  }
-
   struct mismatching_targets
   {
     std::list<xml::parse::type::preference_type> preferences;
@@ -357,15 +356,10 @@ namespace
         targets = gen_valid_targets (MAX_TARGETS);
       } while (targets.size() < MIN_TARGETS);
 
-      auto const split_a =
-        roll_random_number ( 1
-                           , targets.size() - 1
-                           );
-
-      auto const split_b =
-        roll_random_number ( 0
-                           , split_a
-                           );
+      auto const split_a
+        (fhg::util::testing::random<std::size_t>{} (targets.size() - 1, 1));
+      auto const split_b
+        (fhg::util::testing::random<std::size_t>{} (split_a));
 
       auto it_a = std::next ( targets.begin()
                             , split_a
