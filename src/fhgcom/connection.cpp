@@ -129,12 +129,21 @@ namespace fhg
 
     void connection_t::stop ()
     {
-      boost::system::error_code ec;
-      if (socket().is_open())
-      {
-        socket().shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
-      }
-      socket().close(ec);
+      boost::system::error_code ignore;
+
+      _raw_socket.cancel (ignore);
+      _raw_socket.shutdown
+        (boost::asio::ip::tcp::socket::shutdown_both, ignore);
+      _raw_socket.close (ignore);
+
+      fhg::util::visit<void>
+        ( socket_
+        , [&] (std::unique_ptr<ssl_stream_t> const& stream)
+          {
+            stream->shutdown (ignore);
+          }
+        , [] (std::unique_ptr<tcp_socket_t> const&) {}
+        );
     }
 
     void connection_t::request_handshake
