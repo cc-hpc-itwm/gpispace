@@ -111,55 +111,23 @@ namespace fhg
 
       acceptor_.close ();
 
+      using namespace boost::system;
+      auto const error_code (errc::make_error_code (errc::operation_canceled));
+
       if (listen_)
       {
-        // handle_error calls stop(), not socket().close()
-        listen_->socket().close();
+        handle_error (listen_, error_code);
       }
 
-      while (! connections_.empty ())
+      while (!connections_.empty())
       {
-        connection_data_t & cd = connections_.begin()->second;
-
-        if (cd.connection)
-        {
-          boost::system::error_code ignore;
-          cd.connection->socket().cancel (ignore);
-          // handle_error also calls close().
-        }
-
-        // handle_error also sets send_in_progress to false
-
-        while (! cd.o_queue.empty())
-        {
-          to_send_t & to_send = cd.o_queue.front();
-          using namespace boost::system;
-          // handle_error unlocks mutex while calling handler
-          to_send.handler (errc::make_error_code(errc::operation_canceled));
-          cd.o_queue.pop_front();
-        }
-
-        connections_.erase (connections_.begin());
+        handle_error (connections_.begin()->second.connection, error_code);
       }
 
-      // remove pending
-      // TODO: call pending handlers and delete pending messages
-      m_pending.clear();
-
-      // handle_error does this on every connection having an error,
-      // not just once. do clients not need to get told every
-      // connection that died together with this peer?
-      while (! m_to_recv.empty())
+      while (!backlog_.empty())
       {
-        auto const to_recv (std::move (m_to_recv.front()));
-        m_to_recv.pop_front();
-        using namespace boost::system;
-        // handle_error also gives a message "sent to" this addr.
-        to_recv
-          (errc::make_error_code (errc::operation_canceled), boost::none, {});
+        handle_error (*backlog_.begin(), error_code);
       }
-
-      backlog_.clear ();
 
       io_service_->stop();
     }
