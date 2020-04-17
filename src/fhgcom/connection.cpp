@@ -98,8 +98,8 @@ namespace fhg
       ( boost::asio::io_service & io_service
       , boost::asio::ssl::context* ctx
       , boost::asio::io_service::strand const& strand
-      , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
-      , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+      , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
+      , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
       , peer_t* peer
       )
@@ -110,18 +110,11 @@ namespace fhg
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
-      , in_message_(new message_t)
     {}
 
     connection_t::~connection_t ()
     {
         stop();
-
-      if (in_message_)
-      {
-        delete in_message_;
-        in_message_ = nullptr;
-      }
     }
 
     boost::asio::ip::tcp::socket & connection_t::socket()
@@ -200,7 +193,7 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      fhg_assert (in_message_ != nullptr);
+      in_message_ = fhg::util::cxx14::make_unique<message_t>();
 
       async_read_wrapper
       	( socket_
@@ -240,7 +233,7 @@ namespace fhg
       }
       else
       {
-        in_message_->resize(0);
+        in_message_.reset();
         _handle_error (shared_from_this(), ec);
       }
     }
@@ -251,25 +244,22 @@ namespace fhg
     {
       if (! ec)
       {
-        message_t * m = in_message_;
-        in_message_ = nullptr;
+        auto m (std::move (in_message_));
 
         if (m->header.type_of_msg == p2p::HELLO_PACKET)
         {
-          _handle_hello_message (shared_from_this(), m);
+          _handle_hello_message (shared_from_this(), std::move (m));
         }
         else
         {
-          _handle_user_data (shared_from_this(), m);
+          _handle_user_data (shared_from_this(), std::move (m));
         }
-
-        in_message_ = new message_t;
 
         start_read ();
       }
       else
       {
-        in_message_->resize(0);
+        in_message_.reset();
         _handle_error (shared_from_this(), ec);
       }
     }

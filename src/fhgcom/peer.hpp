@@ -70,8 +70,8 @@ namespace fhg
       std::exception_ptr TESTING_ONLY_handshake_exception() const;
 
     protected:
-      void handle_hello_message (connection_t::ptr_t, const message_t *m);
-      void handle_user_data   (connection_t::ptr_t, const message_t *m);
+      void handle_hello_message (connection_t::ptr_t, std::unique_ptr<message_t> m);
+      void handle_user_data   (connection_t::ptr_t, std::unique_ptr<message_t> m);
       void handle_error       (connection_t::ptr_t, const boost::system::error_code & error);
 
     private:

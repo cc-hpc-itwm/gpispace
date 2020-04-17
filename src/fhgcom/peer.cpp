@@ -538,7 +538,7 @@ namespace fhg
                              );
     }
 
-    void peer_t::handle_hello_message (connection_t::ptr_t c, const message_t *m)
+    void peer_t::handle_hello_message (connection_t::ptr_t c, std::unique_ptr<message_t> m)
     {
       lock_type lock (mutex_);
 
@@ -559,12 +559,10 @@ namespace fhg
           cd.connection = c;
         }
       }
-
-      delete m;
     }
 
     void peer_t::handle_user_data
-      (connection_t::ptr_t connection, const message_t *m)
+      (connection_t::ptr_t connection, std::unique_ptr<message_t> m)
     {
       fhg_assert (m);
 
@@ -591,8 +589,6 @@ namespace fhg
                   );
           lock.lock ();
         }
-
-        delete m;
       }
     }
 

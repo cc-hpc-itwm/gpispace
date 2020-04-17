@@ -63,8 +63,8 @@ namespace fhg
         ( boost::asio::io_service & io_service
         , boost::asio::ssl::context* ctx
         , boost::asio::io_service::strand const& strand
-        , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
-        , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+        , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
+        , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
         , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
         , peer_t* peer
         );
@@ -130,10 +130,10 @@ namespace fhg
       boost::asio::io_service::strand strand_;
       socket_t socket_;
       tcp_socket_t& _raw_socket;
-      std::function<void (ptr_t connection, const message_t*)> _handle_hello_message;
-      std::function<void (ptr_t connection, const message_t*)> _handle_user_data;
+      std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_hello_message;
+      std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_user_data;
       std::function<void (ptr_t connection, const boost::system::error_code&)> _handle_error;
-      message_t *in_message_;
+      std::unique_ptr<message_t> in_message_;
 
       std::list <to_send_t> to_send_;
 
