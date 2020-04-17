@@ -115,6 +115,16 @@ namespace fhg
     connection_t::~connection_t ()
     {
         stop();
+
+      // Do not close before all async operations are done. This
+      // includes things posted onto the strand without mentioning the
+      // socket, which are *not* canceled when _socket.cancel() is
+      // called and would likely segfault. By only closing in the
+      // dtor, those operations will see a shutdown, but not closed
+      // socket, and after failing to do whatever they want to do
+      // release their reference to connection_t one after the other.
+      boost::system::error_code ignore;
+      _raw_socket.close (ignore);
     }
 
     boost::asio::ip::tcp::socket & connection_t::socket()
@@ -134,7 +144,6 @@ namespace fhg
       _raw_socket.cancel (ignore);
       _raw_socket.shutdown
         (boost::asio::ip::tcp::socket::shutdown_both, ignore);
-      _raw_socket.close (ignore);
 
       fhg::util::visit<void>
         ( socket_
