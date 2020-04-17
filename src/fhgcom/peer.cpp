@@ -634,16 +634,13 @@ namespace fhg
 
         connections_.erase(c->remote_address());
       }
-      else
+      else if (backlog_.find (c) != backlog_.end ())
       {
-        if (backlog_.find (c) != backlog_.end ())
-        {
-          backlog_.erase (c);
-        }
-        else
-        {
-          c->stop ();
-        }
+        backlog_.erase (c);
+      }
+      else // should be listen_
+      {
+        c->stop ();
       }
     }
 
