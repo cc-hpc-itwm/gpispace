@@ -77,12 +77,20 @@ namespace fhg
       {
         return {random_host(), util::testing::random<unsigned short>{}()};
       }
+      std::string any_without_zero_or_ep_delims()
+      {
+        auto skip (fhg::util::testing::random<std::string>::except (":><,"));
+        skip.erase (skip.find('\0'), 1);
+
+        return skip;
+      }
       socket_endpoint random_socket_endpoint()
       {
         std::string path;
+        auto const skip_delimiters (any_without_zero_or_ep_delims());
         do
         {
-          path = util::testing::random_string_without (":><,");
+          path = util::testing::random<std::string>{} (skip_delimiters);
         }
         while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
