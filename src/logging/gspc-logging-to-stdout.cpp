@@ -10,23 +10,29 @@
 #include <iostream>
 #include <vector>
 
+namespace option
+{
+  namespace
+  {
+    namespace po = fhg::util::boost::program_options;
+    po::option<std::vector<fhg::logging::endpoint>> const emitters
+      {"emitters", "list of emitters"};
+  }
+}
+
 int main (int argc, char** argv)
 try
 {
   fhg::util::syscall::signal_set const signals {SIGINT, SIGTERM};
   fhg::util::syscall::process_signal_block const signal_block (signals);
 
-  namespace po = fhg::util::boost::program_options;
-  po::option<std::vector<fhg::logging::endpoint>> const emitters
-    {"emitters", "list of emitters"};
-
   boost::program_options::variables_map const vm
-    ( po::options ("GPI-Space Logging to stdout")
-    . require (emitters)
+    ( fhg::util::boost::program_options::options ("GPI-Space Logging to stdout")
+    . require (option::emitters)
     . store_and_notify (argc, argv)
     );
 
-  fhg::logging::stdout_sink impl (emitters.get_from (vm));
+  fhg::logging::stdout_sink impl (option::emitters.get_from (vm));
 
   fhg::util::syscall::sigwaitinfo (&signals._, nullptr);
 
