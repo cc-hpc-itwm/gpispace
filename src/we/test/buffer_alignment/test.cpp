@@ -1,6 +1,6 @@
 #include <boost/test/unit_test.hpp>
 
-#include <nets_using_buffers.hpp>
+#include <we/test/buffer_alignment/nets_using_buffers.hpp>
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
@@ -78,7 +78,7 @@
                                                                          \
   boost::filesystem::ofstream                                            \
     (workflow_dir / (std::string (#NET) + ".xpnet"))                     \
-    << NET (local_memory_size);                                          \
+    << we::test::buffer_alignment::NET (local_memory_size);              \
                                                                          \
   test::make_net_lib_install const make                                  \
     ( installation                                                       \

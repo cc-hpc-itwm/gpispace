@@ -1,5 +1,6 @@
-#include <net_description.hpp>
-#include <nets_using_buffers.hpp>
+#include <we/test/buffer_alignment/nets_using_buffers.hpp>
+
+#include <we/test/buffer_alignment/net_description.hpp>
 
 #include <util-generic/print_container.hpp>
 #include <util-generic/testing/random.hpp>
@@ -13,6 +14,12 @@
 #include <list>
 #include <string>
 
+namespace we
+{
+  namespace test
+  {
+    namespace buffer_alignment
+    {
 namespace
 {
   struct random_identifier_without_leading_underscore
@@ -86,4 +93,7 @@ std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
 {
   unsigned long ignore;
   return make_network (total_buffer_size, ignore, random_power_of_two);
+}
+    }
+  }
 }

@@ -1,5 +1,5 @@
 fhg_add_test (NAME we_buffer_alignment
-  SOURCES test.cpp
+  SOURCES "test.cpp"
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -11,8 +11,6 @@ fhg_add_test (NAME we_buffer_alignment
             Boost::program_options
             Boost::filesystem
             net_using_buffers
-  DEPENDS net_using_buffers
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
@@ -20,8 +18,7 @@ fhg_add_test (NAME we_buffer_alignment
 
 extended_add_library (NAME net_using_buffers
   TYPE STATIC
-  SOURCES "nets_using_buffers.cpp"
-          "net_description.cpp"
-  INCLUDE_DIRECTORIES PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+  SOURCES "net_description.cpp"
+          "nets_using_buffers.cpp"
   LIBRARIES Util::Generic
 )

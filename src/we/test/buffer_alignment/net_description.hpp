@@ -5,6 +5,12 @@
 #include <vector>
 #include <string>
 
+namespace we
+{
+  namespace test
+  {
+    namespace buffer_alignment
+    {
 struct BufferInfo
 {
   std::string name;
@@ -13,3 +19,6 @@ struct BufferInfo
 };
 
 std::string create_net_description (std::vector<BufferInfo> const&);
+    }
+  }
+}

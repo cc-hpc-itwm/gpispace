@@ -1,10 +1,16 @@
-#include <net_description.hpp>
+#include <we/test/buffer_alignment/net_description.hpp>
 
 #include <we/type/value/show.hpp>
 #include <util-generic/print_container.hpp>
 
 #include <boost/format.hpp>
 
+namespace we
+{
+  namespace test
+  {
+    namespace buffer_alignment
+    {
 namespace
 {
 std::string create_buffer_description (BufferInfo const& buffer)
@@ -101,4 +107,7 @@ std::string create_net_description (std::vector<BufferInfo> const& buffers)
       % fhg::util::print_container ("", ",", "", buffer_names)
       % alignment_tests
       ).str();
+}
+    }
+  }
 }
