@@ -32,14 +32,26 @@ namespace we
           }
         };
 
+        void align_up_worst
+          (std::size_t& pos, boost::optional<std::size_t> align)
+        {
+          // Don't assume base alignment, so every case should be
+          // worst case.
+          // \todo It isn't required to be worst case to always
+          // succeed, regardless of base alignment, is it? Probably is
+          // mostly limited by biggest requirement and can thus be
+          // made a more exact maximum worst-needed size.
+          pos += align.get_value_or (1) - 1;
+        }
+
         template<typename Alignment>
           std::string make_network ( unsigned long& size_without_align
                                    , unsigned long& size_with_align
                                    , Alignment&& alignment
                                    )
         {
-          size_with_align = 0;
           size_without_align = 0;
+          size_with_align = 0;
 
           fhg::util::testing::unique_random
             <std::string, random_identifier_without_leading_underscore>
@@ -55,14 +67,10 @@ namespace we
               = fhg::util::testing::random<unsigned long>{} (200, 100);
             buffer.alignment = alignment();
 
+            align_up_worst (size_with_align, buffer.alignment);
+
             size_without_align += buffer.size;
-            // Intentionally not align_up(): Don't assume base
-            // alignment, so every case should be worst case.
-            // \todo It isn't required to be worst case, is it?
-            // Probably is mostly limited by biggest requirement and
-            // can thus be made a more exact maximum needed size.
-            size_with_align
-              += buffer.size + buffer.alignment.get_value_or (1) - 1;
+            size_with_align += buffer.size;
           }
 
           return create_net_description (buffers);
