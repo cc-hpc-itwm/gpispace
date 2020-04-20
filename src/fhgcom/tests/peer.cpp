@@ -82,18 +82,41 @@ namespace
     return fhg::com::port_t (std::to_string (ep.port()));
   }
 
+  enum class Order
+  {
+    AsyncRecv_Connect_Send,
+    Connect_Send_AsyncRecv,
+    Connect_AsyncRecv_Send,
+  };
+  std::ostream& operator<< (std::ostream& os, Order const& o)
+  {
+    return os << ( o == Order::AsyncRecv_Connect_Send ? "AsyncRecv_Connect_Send"
+                 : o == Order::Connect_Send_AsyncRecv ? "Connect_Send_AsyncRecv"
+                 : o == Order::Connect_AsyncRecv_Send ? "Connect_AsyncRecv_Send"
+                 : throw std::invalid_argument ("bad order")
+                 );
+  }
+
   std::vector<std::string> test_messages()
   {
     return { "hello world!"
            , std::string (2 << 25, 'X')
            };
   }
+  std::vector<Order> operation_orders()
+  {
+    return { Order::AsyncRecv_Connect_Send
+           , Order::Connect_Send_AsyncRecv
+           , Order::Connect_AsyncRecv_Send
+           };
+  }
 }
 
 BOOST_DATA_TEST_CASE ( peer_run_two
-                     , certificates_data * test_messages()
+                     , certificates_data * test_messages() * operation_orders()
                      , certificates
                      , message
+                     , order
                      )
 {
   using namespace fhg::com;
@@ -113,26 +136,59 @@ BOOST_DATA_TEST_CASE ( peer_run_two
   fhg::util::thread::event<> recv_finished;
   boost::system::error_code error;
   message_t m;
+  boost::optional<p2p::address_t> connection;
 
-  peer_2.async_recv
-    ( [&] ( boost::system::error_code ec
-          , boost::optional<fhg::com::p2p::address_t>
-          , message_t message
-          )
+  auto const async_recv
+    ( [&]
       {
-        error = ec;
-        m = std::move (message);
-        recv_finished.notify();
+        peer_2.async_recv ( [&] ( boost::system::error_code ec
+                                , boost::optional<fhg::com::p2p::address_t>
+                                , message_t message
+                                )
+                            {
+                              error = ec;
+                              m = std::move (message);
+                              recv_finished.notify();
+                            }
+                          );
+      }
+    );
+  auto const connect
+    ( [&]
+      {
+        connection = peer_1.connect_to ( host (peer_2.local_endpoint())
+                                       , port (peer_2.local_endpoint())
+                                       );
+      }
+    );
+  auto const send
+    ( [&]
+      {
+        peer_1.send (connection.get(), message);
       }
     );
 
-  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                  , port (peer_2.local_endpoint())
-                                  )
-              , message
-              );
-
-  recv_finished.wait();
+  switch (order)
+  {
+  case Order::AsyncRecv_Connect_Send:
+    async_recv();
+    connect();
+    send();
+    recv_finished.wait();
+    break;
+  case Order::Connect_Send_AsyncRecv:
+    connect();
+    send();
+    async_recv();
+    recv_finished.wait();
+    break;
+  case Order::Connect_AsyncRecv_Send:
+    connect();
+    async_recv();
+    send();
+    recv_finished.wait();
+    break;
+  }
 
   BOOST_REQUIRE_EQUAL (error, boost::system::errc::success);
 
