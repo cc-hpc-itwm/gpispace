@@ -17,6 +17,20 @@ namespace fhg
 {
   namespace com
   {
+#define REQUIRE_ON_STRAND()                                             \
+    do                                                                  \
+    {                                                                   \
+      if (!strand_.running_in_this_thread())                            \
+      {                                                                 \
+        throw std::logic_error                                          \
+          ( std::string ("Function '")                                  \
+          + __PRETTY_FUNCTION__                                         \
+          + "' requires being called from within strand, but isn't."    \
+          );                                                            \
+      }                                                                 \
+    }                                                                   \
+    while (false)
+
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
@@ -225,16 +239,18 @@ namespace fhg
       , boost::system::error_code const& ec
       )
     {
+      REQUIRE_ON_STRAND();
+
       try
       {
-        std::unique_lock<std::recursive_mutex> const _ (mutex_);
+        lock_type const lock (mutex_);
 
         if (ec)
         {
           throw handshake_exception (ec);
         }
 
-        connection_established (connections_.at (addr));
+        connection_established (lock, connections_.at (addr));
 
         connect_done->notify (nullptr);
       }
@@ -269,7 +285,7 @@ namespace fhg
     {
       fhg_assert (completion_handler);
 
-      lock_type lock(mutex_);
+      lock_type const lock (mutex_);
 
       if (stopping_)
       {
@@ -290,7 +306,7 @@ namespace fhg
 
       if (cd.o_queue.size () == 1)
       {
-        start_sender (cd);
+        start_sender (lock, cd);
       }
     }
 
@@ -361,7 +377,8 @@ namespace fhg
       }
     }
 
-    void peer_t::connection_established (connection_data_t& cd)
+    void peer_t::connection_established
+      (lock_type const& lock, connection_data_t& cd)
     {
       cd.connection->set_option (boost::asio::socket_base::keep_alive (true));
       cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
@@ -376,7 +393,7 @@ namespace fhg
 
       cd.connection->start ();
       cd.o_queue.push_front (std::move (to_send));
-      start_sender (cd);
+      start_sender (lock, cd);
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
@@ -437,7 +454,7 @@ namespace fhg
       }
     }
 
-    void peer_t::start_sender (connection_data_t& cd)
+    void peer_t::start_sender (lock_type const&, connection_data_t& cd)
     {
       if (cd.send_in_progress || cd.o_queue.empty())
       {
@@ -473,6 +490,8 @@ namespace fhg
     void peer_t::acknowledge_handshake_response
       (connection_t::ptr_t connection, boost::system::error_code const& ec)
     {
+      REQUIRE_ON_STRAND();
+
       // \todo Allow accepting a new connection while still
       // handshaking this one: denial of service attack possible.
       fhg_assert (connection == listen_);
@@ -497,6 +516,8 @@ namespace fhg
 
     void peer_t::accept_new ()
     {
+      REQUIRE_ON_STRAND();
+
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( *io_service_
@@ -521,6 +542,8 @@ namespace fhg
 
     void peer_t::handle_hello_message (connection_t::ptr_t c, std::unique_ptr<message_t> m)
     {
+      REQUIRE_ON_STRAND();
+
       lock_type lock (mutex_);
 
       if (backlog_.find (c) == backlog_.end())
@@ -545,6 +568,8 @@ namespace fhg
     void peer_t::handle_user_data
       (connection_t::ptr_t connection, std::unique_ptr<message_t> m)
     {
+      REQUIRE_ON_STRAND();
+
       fhg_assert (m);
 
       lock_type lock (mutex_);
@@ -575,6 +600,8 @@ namespace fhg
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
     {
+      REQUIRE_ON_STRAND();
+
       fhg_assert ( c != nullptr );
 
       lock_type lock (mutex_);
