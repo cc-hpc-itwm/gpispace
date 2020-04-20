@@ -43,15 +43,24 @@ namespace we
           // made a more exact maximum worst-needed size.
           pos += align.get_value_or (1) - 1;
         }
+        void align_up_best
+          (std::size_t& pos, boost::optional<std::size_t> align)
+        {
+          // Assume base alignment = 0, so every case is the best case
+          // with the minimal padding.
+          pos = align ? ((pos + *align - 1) & ~(*align - 1)) : pos;
+        }
 
         template<typename Alignment>
           std::string make_network ( unsigned long& size_without_align
-                                   , unsigned long& size_with_align
+                                   , unsigned long& size_with_align_worst
+                                   , unsigned long& size_with_align_best
                                    , Alignment&& alignment
                                    )
         {
           size_without_align = 0;
-          size_with_align = 0;
+          size_with_align_worst = 0;
+          size_with_align_best = 0;
 
           fhg::util::testing::unique_random
             <std::string, random_identifier_without_leading_underscore>
@@ -67,10 +76,12 @@ namespace we
               = fhg::util::testing::random<unsigned long>{} (200, 100);
             buffer.alignment = alignment();
 
-            align_up_worst (size_with_align, buffer.alignment);
+            align_up_worst (size_with_align_worst, buffer.alignment);
+            align_up_best (size_with_align_best, buffer.alignment);
 
             size_without_align += buffer.size;
-            size_with_align += buffer.size;
+            size_with_align_worst += buffer.size;
+            size_with_align_best += buffer.size;
           }
 
           return create_net_description (buffers);
@@ -92,38 +103,56 @@ namespace we
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_alignments
-        (unsigned long& total_buffer_size)
+        (unsigned long& size_with_align_worst)
       {
-        unsigned long ignore;
-        return make_network (ignore, total_buffer_size, random_power_of_two);
+        unsigned long size_without_align;
+        unsigned long size_with_align_best;
+        return make_network ( size_without_align
+                            , size_with_align_worst
+                            , size_with_align_best
+                            , random_power_of_two
+                            );
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_default_alignments
-        (unsigned long& total_buffer_size)
+        (unsigned long& size_with_align_worst)
       {
-        unsigned long ignore;
-        return make_network (ignore, total_buffer_size, always_none);
+        unsigned long size_without_align;
+        unsigned long size_with_align_best;
+        return make_network ( size_without_align
+                            , size_with_align_worst
+                            , size_with_align_best
+                            , always_none
+                            );
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_mixed_alignments
-        (unsigned long& total_buffer_size)
+        (unsigned long& size_with_align_worst)
       {
-        unsigned long ignore;
-        return make_network
-          (ignore, total_buffer_size, random_power_of_two_or_none);
+        unsigned long size_without_align;
+        unsigned long size_with_align_best;
+        return make_network ( size_without_align
+                            , size_with_align_worst
+                            , size_with_align_best
+                            , random_power_of_two_or_none
+                            );
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
         (unsigned long& size_without_align)
       {
         std::string result;
-        unsigned long size_with_align;
+        unsigned long size_with_align_worst;
+        unsigned long size_with_align_best;
         do
         {
-          result = make_network
-            (size_without_align, size_with_align, random_power_of_two);
+          result = make_network ( size_without_align
+                                , size_with_align_worst
+                                , size_with_align_best
+                                , random_power_of_two
+                                );
         }
-        while (size_without_align == size_with_align);
+        while (size_without_align == size_with_align_best);
         return result;
       }
     }
