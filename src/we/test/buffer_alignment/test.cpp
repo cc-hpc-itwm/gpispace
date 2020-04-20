@@ -11,7 +11,6 @@
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/shared_directory.hpp>
-#include <test/source_directory.hpp>
 #include <test/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <we/type/value.hpp>
@@ -30,7 +29,6 @@
 
 #define START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET(NET)          \
   boost::program_options::options_description options_description;       \
-  options_description.add (test::options::source_directory());           \
   options_description.add (test::options::shared_directory());           \
   options_description.add (gspc::options::installation());               \
   options_description.add (gspc::options::drts());                       \
