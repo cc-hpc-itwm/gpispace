@@ -36,27 +36,22 @@ namespace
     fhg::util::testing::unique_random
       <std::string, random_identifier_without_leading_underscore> buffer_names;
 
-    std::vector<BufferInfo> buffers;
+    std::vector<BufferInfo> buffers
+      (fhg::util::testing::random<std::size_t>{} (15, 5));
 
-    unsigned long const num_buffers
-      (fhg::util::testing::random<unsigned long>{} (15, 5));
-
-    for (unsigned int i (0); i < num_buffers; ++i)
+    for (auto& buffer : buffers)
     {
-      auto const buffer_name (buffer_names());
-      auto const buffer_size
-        (fhg::util::testing::random<unsigned long>{} (200, 100));
-      boost::optional<unsigned long> const buffer_alignment (alignment());
+      buffer.name = buffer_names();
+      buffer.size = fhg::util::testing::random<unsigned long>{} (200, 100);
+      buffer.alignment = alignment();
 
-      buffers.emplace_back (buffer_name, buffer_size, buffer_alignment);
-
-      size_without_align += buffer_size;
+      size_without_align += buffer.size;
       // Intentionally not align_up(): Don't assume base alignment, so
       // every case should be worst case.
       // \todo It isn't required to be worst case, is it? Probably is
       // mostly limited by biggest requirement and can thus be made a
       // more exact maximum needed size.
-      size_with_align += buffer_size + buffer_alignment.get_value_or (1) - 1;
+      size_with_align += buffer.size + buffer.alignment.get_value_or (1) - 1;
     }
 
     return create_net_description (buffers);

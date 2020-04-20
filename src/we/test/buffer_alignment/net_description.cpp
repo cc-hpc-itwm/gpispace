@@ -5,15 +5,6 @@
 
 #include <boost/format.hpp>
 
-BufferInfo::BufferInfo ( std::string n
-                       , unsigned long s
-                       , boost::optional<unsigned long> a
-                       )
-  : name (n)
-  , size (s)
-  , alignment (a)
-{}
-
 namespace
 {
 std::string create_buffer_description (BufferInfo const& buffer)
