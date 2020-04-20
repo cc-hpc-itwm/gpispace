@@ -168,6 +168,7 @@ extended_add_library (NAME logging
           "logging/stream_emitter.cpp"
           "logging/stream_receiver.cpp"
           "logging/tcp_endpoint.cpp"
+          "logging/tcp_server_providing_add_emitters.cpp"
   LIBRARIES Util::Generic
             RPC
             Boost::base
