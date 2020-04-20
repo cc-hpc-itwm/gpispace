@@ -93,10 +93,17 @@ namespace we
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
-        (unsigned long& total_buffer_size)
+        (unsigned long& size_without_align)
       {
-        unsigned long ignore;
-        return make_network (total_buffer_size, ignore, random_power_of_two);
+        std::string result;
+        unsigned long size_with_align;
+        do
+        {
+          result = make_network
+            (size_without_align, size_with_align, random_power_of_two);
+        }
+        while (size_without_align == size_with_align);
+        return result;
       }
     }
   }
