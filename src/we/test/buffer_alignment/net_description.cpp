@@ -5,28 +5,33 @@
 
 #include <boost/format.hpp>
 
-std::string create_buffer_description
-  ( std::string const& name
-  , std::size_t size
-  )
+BufferInfo::BufferInfo ( std::string n
+                       , unsigned long s
+                       , boost::optional<unsigned long> a
+                       )
+  : name (n)
+  , size (s)
+  , alignment (a)
+{}
+
+namespace
 {
+std::string create_buffer_description (BufferInfo const& buffer)
+{
+  if (!buffer.alignment)
+  {
   return ( boost::format (R"EOS(
        <memory-buffer name="%1%" readonly="true">
          <size>
            %2%
          </size>
        </memory-buffer>)EOS")
-         % name
-         % pnet::type::value::show (size)
+         % buffer.name
+         % pnet::type::value::show (buffer.size)
          ).str();
-}
-
-std::string create_buffer_description
-  ( std::string const& name
-  , std::size_t size
-  , std::size_t alignment
-  )
-{
+  }
+  else
+  {
   return ( boost::format (R"EOS(
        <memory-buffer name="%1%" readonly="true">
          <size>
@@ -36,33 +41,39 @@ std::string create_buffer_description
            %3%
          </alignment>
        </memory-buffer>)EOS")
-         % name
-         % pnet::type::value::show (size)
-         % pnet::type::value::show (alignment)
+         % buffer.name
+         % pnet::type::value::show (buffer.size)
+         % pnet::type::value::show (*buffer.alignment)
          ).str();
+  }
 }
 
-std::string create_alignment_test
-  ( std::size_t alignment
-  , std::string const& name
-  )
+std::string create_alignment_test (BufferInfo const& buffer)
 {
   return ( boost::format (R"EOS(
            if (!boost::alignment::is_aligned (%1%, %2%))
            {
              throw std::runtime_error ("Buffer not %1%-bytes aligned!");
            })EOS")
-         % alignment
-         % name
+         % buffer.alignment.get_value_or (1)
+         % buffer.name
          ).str();
 }
+}
 
-std::string create_net_description
-  ( std::string const& buffer_descriptions
-  , std::list<std::string> const& buffer_names
-  , std::string const& alignment_tests
-  )
+std::string create_net_description (std::vector<BufferInfo> const& buffers)
 {
+  std::string buffer_descriptions;
+  std::string alignment_tests;
+  std::vector<std::string> buffer_names;
+
+  for (auto const& buffer : buffers)
+  {
+    buffer_descriptions += create_buffer_description (buffer);
+    alignment_tests += create_alignment_test (buffer);
+    buffer_names.emplace_back (buffer.name);
+  }
+
   return
     ( boost::format (R"EOS(
 <defun name="arbitrary_buffer_sizes_and_alignments">

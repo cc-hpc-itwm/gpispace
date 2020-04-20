@@ -38,9 +38,11 @@ namespace
                              , Alignment&& alignment
                              )
   {
-    std::string buffer_descriptions;
+    size_with_align = 0;
+    size_without_align = 0;
+
+    std::vector<BufferInfo> buffers;
     std::list<std::string> buffer_names;
-    std::string alignment_tests;
 
     unsigned long const num_buffers
       (fhg::util::testing::random<unsigned long>{} (15, 5));
@@ -52,27 +54,20 @@ namespace
         (fhg::util::testing::random<unsigned long>{} (200, 100));
       boost::optional<unsigned long> const buffer_alignment (alignment());
 
+      buffers.emplace_back (buffer_name, buffer_size, buffer_alignment);
+
       size_without_align += buffer_size;
+      // Intentionally not align_up(): Don't assume base alignment, so
+      // every case should be worst case.
+      // \todo It isn't required to be worst case, is it? Probably is
+      // mostly limited by biggest requirement and can thus be made a
+      // more exact maximum needed size.
       size_with_align += buffer_size + buffer_alignment.get_value_or (1) - 1;
 
-      if (!buffer_alignment)
-      {
-        buffer_descriptions += create_buffer_description
-          (buffer_name, buffer_size);
-      }
-      else
-      {
-        buffer_descriptions += create_buffer_description
-          (buffer_name, buffer_size, buffer_alignment);
-      }
-
       buffer_names.emplace_back (buffer_name);
-
-      alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
     }
 
-    return create_net_description
-      (buffer_descriptions, buffer_names, alignment_tests);
+    return create_net_description (buffers);
   }
 
   boost::none_t always_none()
