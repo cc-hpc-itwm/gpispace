@@ -105,29 +105,42 @@ namespace fhg
 
     peer_t::~peer_t()
     {
-      lock_type const _ (mutex_);
-
       stopping_ = true;
 
-      acceptor_.close ();
+      auto cancels_done (std::make_shared<util::thread::event<void>>());
 
-      using namespace boost::system;
-      auto const error_code (errc::make_error_code (errc::operation_canceled));
+      strand_.dispatch
+        ( [this, cancels_done]
+          {
+            lock_type const lock (mutex_);
 
-      if (listen_)
-      {
-        handle_error (listen_, error_code);
-      }
+            acceptor_.close ();
 
-      while (!connections_.empty())
-      {
-        handle_error (connections_.begin()->second.connection, error_code);
-      }
+            using namespace boost::system;
+            auto const error_code
+              (errc::make_error_code (errc::operation_canceled));
 
-      while (!backlog_.empty())
-      {
-        handle_error (*backlog_.begin(), error_code);
-      }
+            if (listen_)
+            {
+              handle_error (listen_, error_code);
+            }
+
+            while (!connections_.empty())
+            {
+              handle_error
+                (connections_.begin()->second.connection, error_code);
+            }
+
+            while (!backlog_.empty())
+            {
+              handle_error (*backlog_.begin(), error_code);
+            }
+
+            cancels_done->notify();
+          }
+        );
+
+      cancels_done->wait();
 
       io_service_->stop();
     }
