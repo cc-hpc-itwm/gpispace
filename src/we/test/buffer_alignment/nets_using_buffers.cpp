@@ -76,6 +76,11 @@ namespace we
         {
           return 1ul << fhg::util::testing::random<unsigned long>{} (10, 0);
         }
+        boost::optional<unsigned long> random_power_of_two_or_none()
+        {
+          auto const roll (random_power_of_two());
+          return boost::make_optional (roll != 1, roll);
+        }
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_alignments
@@ -90,6 +95,14 @@ namespace we
       {
         unsigned long ignore;
         return make_network (ignore, total_buffer_size, always_none);
+      }
+
+      std::string net_with_arbitrary_buffer_sizes_and_mixed_alignments
+        (unsigned long& total_buffer_size)
+      {
+        unsigned long ignore;
+        return make_network
+          (ignore, total_buffer_size, random_power_of_two_or_none);
       }
 
       std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
