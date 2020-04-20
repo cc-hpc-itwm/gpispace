@@ -59,21 +59,7 @@ namespace fhg
       std::vector<std::string> assemble_comparison_file
         (std::string sentinel, std::size_t count)
       {
-        auto const lines
-          (util::split<std::string, std::string> (sentinel, '\n'));
-        if (sentinel.empty())
-        {
-          return std::vector<std::string> (count);
-        }
-        else
-        {
-          std::vector<std::string> result;
-          while (count --> 0)
-          {
-            std::copy (lines.begin(), lines.end(), std::back_inserter (result));
-          }
-          return result;
-        }
+        return std::vector<std::string> (count, sentinel);
       }
 
       std::string any_without_zero_or_newline()
