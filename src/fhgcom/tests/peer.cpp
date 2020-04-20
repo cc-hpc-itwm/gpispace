@@ -110,13 +110,31 @@ BOOST_DATA_TEST_CASE ( peer_run_two
                 , certificates
                 );
 
+  fhg::util::thread::event<> recv_finished;
+  boost::system::error_code error;
+  message_t m;
+
+  peer_2.async_recv
+    ( [&] ( boost::system::error_code ec
+          , boost::optional<fhg::com::p2p::address_t>
+          , message_t message
+          )
+      {
+        error = ec;
+        m = std::move (message);
+        recv_finished.notify();
+      }
+    );
+
   peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
                                   , port (peer_2.local_endpoint())
                                   )
               , message
               );
 
-  message_t const m (peer_2.TESTING_ONLY_recv());
+  recv_finished.wait();
+
+  BOOST_REQUIRE_EQUAL (error, boost::system::errc::success);
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL (std::string (m.data.begin(), m.data.end()), message);

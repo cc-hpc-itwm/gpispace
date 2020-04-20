@@ -66,7 +66,7 @@ namespace fhg
                              )
                        >
         );
-      message_t TESTING_ONLY_recv();
+
       std::exception_ptr TESTING_ONLY_handshake_exception() const;
 
     protected:

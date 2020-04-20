@@ -310,33 +310,6 @@ namespace fhg
       }
     }
 
-    message_t peer_t::TESTING_ONLY_recv()
-    {
-      fhg::util::thread::event<> recv_finished;
-      boost::system::error_code error;
-      message_t result;
-
-      async_recv
-        ( [&] ( boost::system::error_code ec
-              , boost::optional<fhg::com::p2p::address_t>
-              , message_t message
-              )
-          {
-            error = ec;
-            result = std::move (message);
-            recv_finished.notify();
-          }
-        );
-
-      recv_finished.wait();
-      if (error)
-      {
-        throw boost::system::system_error (error);
-      }
-
-      return result;
-    }
-
     void peer_t::async_recv
       ( std::function<void ( boost::system::error_code
                            , boost::optional<fhg::com::p2p::address_t>
