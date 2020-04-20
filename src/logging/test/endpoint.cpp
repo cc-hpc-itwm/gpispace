@@ -80,9 +80,13 @@ namespace fhg
       socket_endpoint random_socket_endpoint()
       {
         std::string path;
+        auto const skip_delimiters
+          ( fhg::util::testing::random<std::string>::except
+            (":<>," + std::string (1, '\0'))
+          );
         do
         {
-          path = util::testing::random_string_without_zero();
+          path = util::testing::random<std::string>{} (skip_delimiters);
         }
         while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
