@@ -92,6 +92,22 @@
     , rifds.entry_points()                                               \
     )
 
+BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
+{
+  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
+    (net_with_arbitrary_buffer_sizes_and_alignments);
+
+  std::multimap<std::string, pnet::type::value::value_type> result;
+
+  BOOST_REQUIRE_NO_THROW
+    ( result = gspc::client (drts).put_and_run
+        (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
+    );
+
+  decltype (result) const expected {{"done", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
+}
+
 BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
 {
   START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
@@ -126,20 +142,4 @@ BOOST_AUTO_TEST_CASE
           ) != std::string::npos;
       }
     );
-}
-
-BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
-{
-  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
-    (net_with_arbitrary_buffer_sizes_and_alignments);
-
-  std::multimap<std::string, pnet::type::value::value_type> result;
-
-  BOOST_REQUIRE_NO_THROW
-    ( result = gspc::client (drts).put_and_run
-        (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
-    );
-
-  decltype (result) const expected {{"done", we::type::literal::control()}};
-  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }
