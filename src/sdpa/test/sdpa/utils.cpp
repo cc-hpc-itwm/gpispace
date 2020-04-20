@@ -669,11 +669,12 @@ namespace utils
     {}
 
     void fake_drts_worker_waiting_for_finished_ack::handleJobFinishedAckEvent
-      ( fhg::com::p2p::address_t const&
+      ( fhg::com::p2p::address_t const& source
       , sdpa::events::JobFinishedAckEvent const* e
       )
     {
       _finished_ack.notify (e->job_id());
+      _finished_acks_from_master.emplace (e->job_id(), source);
     }
 
     void fake_drts_worker_waiting_for_finished_ack::finish_and_wait_for_ack
@@ -756,14 +757,29 @@ namespace utils
       , std::function<void (std::string)> announce_cancel
       , agent const& master_agent
       , fhg::com::Certificates const& certificates
+      , bool& cancels_after_finished_acks
       )
     : no_thread::fake_drts_worker_waiting_for_finished_ack
         (announce_job, master_agent, certificates)
     , _announce_cancel (announce_cancel)
+    , _cancels_after_finished_acks (cancels_after_finished_acks)
   {}
   fake_drts_worker_notifying_cancel::~fake_drts_worker_notifying_cancel()
   {
-    BOOST_REQUIRE (_cancels.empty());
+    std::lock_guard<std::mutex> const _ (_cancels_mutex);
+    for (auto const& cancel : _cancels)
+    {
+      if ( std::find ( _finished_acks_from_master.begin()
+                     , _finished_acks_from_master.end()
+                     , cancel
+                     )
+         != _finished_acks_from_master.end()
+         )
+      {
+        _cancels_after_finished_acks = true;
+        break;
+      }
+    }
   }
 
   void fake_drts_worker_notifying_cancel::handleCancelJobEvent

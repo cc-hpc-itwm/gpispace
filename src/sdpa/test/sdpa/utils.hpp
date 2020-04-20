@@ -306,6 +306,8 @@ namespace utils
 
     private:
       fhg::util::thread::event<std::string> _finished_ack;
+    protected:
+      std::map<std::string, fhg::com::p2p::address_t> _finished_acks_from_master;
     };
   }
 
@@ -379,6 +381,7 @@ namespace utils
       , std::function<void (std::string)> announce_cancel
       , agent const& master
       , fhg::com::Certificates const&
+      , bool&
       );
     ~fake_drts_worker_notifying_cancel();
 
@@ -393,6 +396,7 @@ namespace utils
     std::function<void (std::string)> _announce_cancel;
     mutable std::mutex _cancels_mutex;
     std::map<std::string, fhg::com::p2p::address_t> _cancels;
+    bool& _cancels_after_finished_acks;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
