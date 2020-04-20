@@ -68,7 +68,7 @@
                                  , gspc::rifd::hostnames {vm}            \
                                  , gspc::rifd::port {vm}                 \
                                  , installation                          \
-                                 );	                                 \
+                                 );                                      \
                                                                          \
   unsigned long local_memory_size (0);                                   \
                                                                          \
@@ -102,9 +102,9 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_default_alignments)
   std::multimap<std::string, pnet::type::value::value_type> result;
 
   BOOST_REQUIRE_NO_THROW
-  ( result = gspc::client (drts).put_and_run
-      (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
-  );
+    ( result = gspc::client (drts).put_and_run
+        (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
+    );
 
   decltype (result) const expected {{"done", we::type::literal::control()}};
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
@@ -138,9 +138,9 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_alignments)
   std::multimap<std::string, pnet::type::value::value_type> result;
 
   BOOST_REQUIRE_NO_THROW
-  ( result = gspc::client (drts).put_and_run
-      (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
-  );
+    ( result = gspc::client (drts).put_and_run
+        (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
+    );
 
   decltype (result) const expected {{"done", we::type::literal::control()}};
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);

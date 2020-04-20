@@ -11,14 +11,14 @@ namespace we
   {
     namespace buffer_alignment
     {
-struct BufferInfo
-{
-  std::string name;
-  unsigned long size;
-  boost::optional<unsigned long> alignment;
-};
+      struct BufferInfo
+      {
+        std::string name;
+        unsigned long size;
+        boost::optional<unsigned long> alignment;
+      };
 
-std::string create_net_description (std::vector<BufferInfo> const&);
+      std::string create_net_description (std::vector<BufferInfo> const&);
     }
   }
 }
