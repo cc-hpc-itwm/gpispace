@@ -802,8 +802,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       , events::JobFinishedEvent const* event
       )
     {
-      child_proxy (this, source).job_finished_ack (event->job_id());
-
       Job* const job
         (require_job (event->job_id(), "job_finished for unknown job"));
 
@@ -814,6 +812,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         );
 
       handle_job_termination (job);
+
+      child_proxy (this, source).job_finished_ack (event->job_id());
     }
 
     void GenericDaemon::handleJobFailedEvent
@@ -821,8 +821,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       , events::JobFailedEvent const* event
       )
     {
-      child_proxy (this, source).job_failed_ack (event->job_id());
-
       Job* const job
         (require_job (event->job_id(), "job_failed for unknown job"));
 
@@ -833,6 +831,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         );
 
       handle_job_termination (job);
+
+      child_proxy (this, source).job_failed_ack (event->job_id());
     }
 
     void GenericDaemon::handleCancelJobAckEvent
