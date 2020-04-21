@@ -22,12 +22,8 @@ namespace
 {
   std::string random_identifier_with_valid_prefix()
   {
-    return
-      fhg::util::testing::random_char_of
-      ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-      +
-      fhg::util::testing::random_string_of
-      ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
+    using impl = fhg::util::testing::random<std::string>;
+    return impl{} (impl::identifier_without_leading_underscore{});
   }
 }
 
