@@ -7,6 +7,7 @@
 
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <test/shared_directory.hpp>
 
@@ -55,7 +56,8 @@ namespace
 {
   gpi::pc::type::size_t random_handle_identifier()
   {
-    return rand() % (1 << gpi::pc::type::handle_t::ident_bits);
+    return fhg::util::testing::random<gpi::pc::type::size_t>{}
+      ((1 << gpi::pc::type::handle_t::ident_bits) - 1);
   }
 }
 
