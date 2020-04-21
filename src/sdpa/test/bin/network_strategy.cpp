@@ -35,10 +35,13 @@ namespace
       std::lock_guard<std::mutex> _ (_counter_mutex);
       ++_counter;
 
-      BOOST_REQUIRE_LE (_counter, _expected);
       if (_counter == _expected)
       {
         _expected_count_reached.notify_all();
+      }
+      else if (_counter > _expected)
+      {
+        throw std::logic_error ("got more events than expected");
       }
     }
     void wait() const
