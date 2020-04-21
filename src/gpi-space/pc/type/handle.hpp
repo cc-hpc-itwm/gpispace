@@ -10,11 +10,6 @@
 
 #include <functional>
 
-// TODO: move this define to a better place
-#if !defined(HANDLE_IDENT_BITS)
-#  define HANDLE_IDENT_BITS 12
-#endif
-
 namespace gpi
 {
   namespace pc
@@ -33,7 +28,7 @@ namespace gpi
       struct handle_t
       {
         static const int total_bits = (sizeof(handle_id_t)*8);
-        static const int ident_bits = HANDLE_IDENT_BITS;
+        static const int ident_bits = 12;
         static const int typec_bits = 4;
         static const int global_count_bits = (total_bits - ident_bits - typec_bits);
         static const int local_count_bits = (total_bits - typec_bits);

@@ -1,14 +1,15 @@
-#include <stdio.h> // snprintf
+#include <gpi-space/pc/memory/shm_area.hpp>
+
+#include <gpi-space/pc/memory/handle_generator.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/type/flags.hpp>
+
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/memory/shm_area.hpp>
+#include <iostream>
 
 BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
