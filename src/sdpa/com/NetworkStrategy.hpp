@@ -46,6 +46,7 @@ namespace sdpa
       sdpa::events::Codec _codec;
       void handle_recv ( boost::system::error_code const& ec
                        , boost::optional<fhg::com::p2p::address_t> source_name
+                       , fhg::com::message_t message
                        );
 
       void perform ( fhg::com::p2p::address_t const& address
@@ -54,7 +55,6 @@ namespace sdpa
 
       EventHandler _event_handler;
 
-      fhg::com::message_t m_message;
       bool m_shutting_down;
 
       fhg::com::peer_t _peer;

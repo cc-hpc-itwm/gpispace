@@ -1,22 +1,35 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
 
+#include <boost/asio/connect.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 
-#include <cstdlib>
-#include <functional>
-#include <memory>
+#include <stdexcept>
+#include <utility>
 
 namespace fhg
 {
   namespace com
   {
+#define REQUIRE_ON_STRAND()                                             \
+    do                                                                  \
+    {                                                                   \
+      if (!strand_.running_in_this_thread())                            \
+      {                                                                 \
+        throw std::logic_error                                          \
+          ( std::string ("Function '")                                  \
+          + __PRETTY_FUNCTION__                                         \
+          + "' requires being called from within strand, but isn't."    \
+          );                                                            \
+      }                                                                 \
+    }                                                                   \
+    while (false)
+
     peer_t::peer_t ( std::unique_ptr<boost::asio::io_service> io_service
                    , host_t const & host
                    , port_t const & port
@@ -105,59 +118,44 @@ namespace fhg
 
     peer_t::~peer_t()
     {
-      lock_type const _ (mutex_);
-
       stopping_ = true;
 
-      acceptor_.close ();
+      auto cancels_done (std::make_shared<util::thread::event<void>>());
 
-      if (listen_)
-      {
-        listen_->socket().close();
-      }
+      strand_.dispatch
+        ( [this, cancels_done]
+          {
+            lock_type const lock (mutex_);
 
-      // TODO: call pending handlers and delete pending messages
-      while (! connections_.empty ())
-      {
-        connection_data_t & cd = connections_.begin()->second;
+            acceptor_.close ();
 
-        if (cd.connection)
-        {
-          boost::system::error_code ignore;
-          cd.connection->socket().cancel (ignore);
-        }
+            using namespace boost::system;
+            auto const error_code
+              (errc::make_error_code (errc::operation_canceled));
 
-        while (! cd.o_queue.empty())
-        {
-          to_send_t & to_send = cd.o_queue.front();
-          using namespace boost::system;
-          to_send.handler (errc::make_error_code(errc::operation_canceled));
-          cd.o_queue.pop_front();
-        }
+            if (listen_)
+            {
+              handle_error (listen_, error_code);
+            }
 
-        connections_.erase (connections_.begin());
-      }
+            while (!connections_.empty())
+            {
+              handle_error
+                (connections_.begin()->second.connection, error_code);
+            }
 
-      // remove pending
-      while (! m_pending.empty())
-      {
-        delete m_pending.front();
-        m_pending.pop_front();
-      }
+            while (!backlog_.empty())
+            {
+              handle_error (*backlog_.begin(), error_code);
+            }
 
-      while (! m_to_recv.empty())
-      {
-        to_recv_t to_recv = m_to_recv.front();
-        m_to_recv.pop_front();
-        using namespace boost::system;
-        to_recv.handler (errc::make_error_code(errc::operation_canceled), boost::none);
-      }
+            cancels_done->notify();
+          }
+        );
 
-      backlog_.clear ();
+      cancels_done->wait();
 
       io_service_->stop();
-
-      stopping_ = false;
     }
 
     p2p::address_t peer_t::connect_to (host_t const& host, port_t const& port)
@@ -240,16 +238,18 @@ namespace fhg
       , boost::system::error_code const& ec
       )
     {
+      REQUIRE_ON_STRAND();
+
       try
       {
-        std::unique_lock<std::recursive_mutex> const _ (mutex_);
+        lock_type const lock (mutex_);
 
         if (ec)
         {
           throw handshake_exception (ec);
         }
 
-        connection_established (connections_.at (addr));
+        connection_established (lock, connections_.at (addr));
 
         connect_done->notify (nullptr);
       }
@@ -284,7 +284,7 @@ namespace fhg
     {
       fhg_assert (completion_handler);
 
-      lock_type lock(mutex_);
+      lock_type const lock (mutex_);
 
       if (stopping_)
       {
@@ -301,78 +301,56 @@ namespace fhg
       to_send.message.header.dst = addr;
       to_send.message.assign (data);
       to_send.handler = completion_handler;
-      cd.o_queue.push_back (to_send);
+      cd.o_queue.push_back (std::move (to_send));
 
       if (cd.o_queue.size () == 1)
       {
-        start_sender (cd);
-      }
-    }
-
-    void peer_t::TESTING_ONLY_recv (message_t *m)
-    {
-      fhg_assert (m);
-
-      typedef fhg::util::thread::event<boost::system::error_code> async_op_t;
-      async_op_t recv_finished;
-      async_recv
-        ( m
-        , std::bind (&async_op_t::notify, &recv_finished, std::placeholders::_1)
-        );
-
-      const boost::system::error_code ec (recv_finished.wait());
-      if (ec)
-      {
-        throw boost::system::system_error (ec);
+        start_sender (lock, cd);
       }
     }
 
     void peer_t::async_recv
-      ( message_t *m
-      , std::function<void ( boost::system::error_code
+      ( std::function<void ( boost::system::error_code
                            , boost::optional<fhg::com::p2p::address_t>
+                           , fhg::com::message_t message
                            )
                      > completion_handler
       )
     {
-      fhg_assert (m);
       fhg_assert (completion_handler);
 
+      lock_type lock(mutex_);
+
+      if (stopping_)
       {
-        lock_type lock(mutex_);
-
-        if (stopping_)
-        {
-          using namespace boost::system;
-          completion_handler ( errc::make_error_code (errc::network_down)
-                             , boost::none
-                             );
-          return;
-        }
-
-        // TODO: implement async receive on connection!
-        if (m_pending.empty())
-        {
-          to_recv_t to_recv;
-          to_recv.message = m;
-          to_recv.handler = completion_handler;
-          m_to_recv.push_back (to_recv);
-          return;
-        }
-        else
-        {
-          const message_t * p = m_pending.front();
-          m_pending.pop_front();
-          *m = *p;
-          delete p;
-        }
+        using namespace boost::system;
+        completion_handler
+          (errc::make_error_code (errc::network_down), boost::none, {});
       }
+      else if (m_pending.empty())
+      {
+        // TODO: implement async receive on connection!
+        // \todo Figure out what that todo means.
+        m_to_recv.emplace_back (std::move (completion_handler));
+      }
+      else
+      {
+        message_t m (std::move (m_pending.front()));
+        m_pending.pop_front();
 
-      using namespace boost::system;
-      completion_handler (errc::make_error_code (errc::success), m->header.src);
+        // \note Allow for recursive calling of async_recv.
+        // \todo Instead, always post onto strand and never call
+        // handler directly?
+        lock.unlock();
+
+        using namespace boost::system;
+        completion_handler
+          (errc::make_error_code (errc::success), m.header.src, std::move (m));
+      }
     }
 
-    void peer_t::connection_established (connection_data_t& cd)
+    void peer_t::connection_established
+      (lock_type const& lock, connection_data_t& cd)
     {
       cd.connection->set_option (boost::asio::socket_base::keep_alive (true));
       cd.connection->set_option (boost::asio::ip::tcp::no_delay (true));
@@ -386,8 +364,8 @@ namespace fhg
       to_send.message.resize (0);
 
       cd.connection->start ();
-      cd.o_queue.push_front (to_send);
-      start_sender (cd);
+      cd.o_queue.push_front (std::move (to_send));
+      start_sender (lock, cd);
     }
 
     void peer_t::handle_send (const p2p::address_t a, boost::system::error_code const & ec)
@@ -426,7 +404,7 @@ namespace fhg
       {
         if (! cd.o_queue.empty())
         {
-          cd.connection->async_send ( &cd.o_queue.front().message
+          cd.connection->async_send ( std::move (cd.o_queue.front().message)
                                     , strand_.wrap
                                         ( std::bind ( &peer_t::handle_send
                                                     , this
@@ -448,7 +426,7 @@ namespace fhg
       }
     }
 
-    void peer_t::start_sender (connection_data_t& cd)
+    void peer_t::start_sender (lock_type const&, connection_data_t& cd)
     {
       if (cd.send_in_progress || cd.o_queue.empty())
       {
@@ -459,7 +437,7 @@ namespace fhg
 
       cd.send_in_progress = true;
       cd.connection->async_send
-        ( &cd.o_queue.front().message
+        ( std::move (cd.o_queue.front().message)
         , strand_.wrap
             ( std::bind ( &peer_t::handle_send
                         , this
@@ -484,6 +462,8 @@ namespace fhg
     void peer_t::acknowledge_handshake_response
       (connection_t::ptr_t connection, boost::system::error_code const& ec)
     {
+      REQUIRE_ON_STRAND();
+
       // \todo Allow accepting a new connection while still
       // handshaking this one: denial of service attack possible.
       fhg_assert (connection == listen_);
@@ -508,6 +488,8 @@ namespace fhg
 
     void peer_t::accept_new ()
     {
+      REQUIRE_ON_STRAND();
+
       listen_ = connection_t::ptr_t
         ( new connection_t
           ( *io_service_
@@ -530,8 +512,10 @@ namespace fhg
                              );
     }
 
-    void peer_t::handle_hello_message (connection_t::ptr_t c, const message_t *m)
+    void peer_t::handle_hello_message (connection_t::ptr_t c, std::unique_ptr<message_t> m)
     {
+      REQUIRE_ON_STRAND();
+
       lock_type lock (mutex_);
 
       if (backlog_.find (c) == backlog_.end())
@@ -551,13 +535,13 @@ namespace fhg
           cd.connection = c;
         }
       }
-
-      delete m;
     }
 
     void peer_t::handle_user_data
-      (connection_t::ptr_t connection, const message_t *m)
+      (connection_t::ptr_t connection, std::unique_ptr<message_t> m)
     {
+      REQUIRE_ON_STRAND();
+
       fhg_assert (m);
 
       lock_type lock (mutex_);
@@ -567,22 +551,20 @@ namespace fhg
           // TODO: maybe add a flag to the message indicating whether it should be delivered
           // at all costs or not
           // if (m->header.flags & IMPORTANT)
-          m_pending.emplace_back (m);
-          return;
+          m_pending.emplace_back (std::move (*m));
         }
         else
         {
-          to_recv_t to_recv = m_to_recv.front();
+          auto const to_recv (std::move (m_to_recv.front()));
           m_to_recv.pop_front();
-          *to_recv.message = *m;
-          delete m;
 
           using namespace boost::system;
 
           lock.unlock ();
-          to_recv.handler ( errc::make_error_code (errc::success)
-                          , connection->remote_address()
-                          );
+          to_recv ( errc::make_error_code (errc::success)
+                  , connection->remote_address()
+                  , std::move (*m)
+                  );
           lock.lock ();
         }
       }
@@ -590,6 +572,8 @@ namespace fhg
 
     void peer_t::handle_error (connection_t::ptr_t c, const boost::system::error_code & ec)
     {
+      REQUIRE_ON_STRAND();
+
       fhg_assert ( c != nullptr );
 
       lock_type lock (mutex_);
@@ -598,16 +582,14 @@ namespace fhg
       {
         connection_data_t & cd = connections_.at (c->remote_address());
 
-        boost::system::error_code ignore;
-        c->socket().cancel (ignore);
-        c->socket().close (ignore);
+        c->stop();
 
         // deactivate asynchronous sender
         cd.send_in_progress = false;
 
         while (! cd.o_queue.empty())
         {
-          to_send_t to_send = cd.o_queue.front();
+          to_send_t to_send (std::move (cd.o_queue.front()));
           cd.o_queue.pop_front();
 
           lock.unlock ();
@@ -615,36 +597,42 @@ namespace fhg
           lock.lock ();
         }
 
+        // \todo Instead, deliver them? The sender may assume they
+        // were delivered as there was no error in sending.
+        m_pending.remove_if
+          ( [&] (message_t const& message)
+            {
+              return message.header.dst == c->remote_address();
+            }
+          );
+
         // the handler might async recv again...
-        std::list<to_recv_t> tmp (m_to_recv);
-        m_to_recv.clear();
+        std::list<to_recv_t> tmp;
+        std::swap (tmp, m_to_recv);
 
         while (! tmp.empty())
         {
-          to_recv_t to_recv = tmp.front();
+          auto const to_recv (std::move (tmp.front()));
           tmp.pop_front();
 
-          to_recv.message->header.src = c->remote_address();
-          to_recv.message->header.dst = c->local_address();
+          message_t m;
+          m.header.src = c->remote_address();
+          m.header.dst = c->local_address();
 
           lock.unlock ();
-          to_recv.handler (ec, c->remote_address());
+          to_recv (ec, c->remote_address(), std::move (m));
           lock.lock ();
         }
 
         connections_.erase(c->remote_address());
       }
-      else
+      else if (backlog_.find (c) != backlog_.end ())
       {
-        if (backlog_.find (c) != backlog_.end ())
-        {
-          backlog_.erase (c);
-        }
-        else
-        {
-          c->stop ();
-          c.reset ();
-        }
+        backlog_.erase (c);
+      }
+      else // should be listen_
+      {
+        c->stop ();
       }
     }
 

@@ -1,5 +1,3 @@
-#include <boost/test/unit_test.hpp>
-
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tests/address_printer.hpp>
@@ -8,18 +6,30 @@
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/finally.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/printer/vector.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
 
-#include <memory>
+#include <atomic>
+#include <cstddef>
+#include <exception>
+#include <functional>
+#include <mutex>
+#include <ostream>
+#include <stdexcept>
+#include <string>
 #include <thread>
-
+#include <utility>
+#include <vector>
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_DATA_TEST_CASE
@@ -39,12 +49,29 @@ BOOST_DATA_TEST_CASE
     );
 }
 
-BOOST_DATA_TEST_CASE (peer_run_single, certificates_data, certificates)
+BOOST_DATA_TEST_CASE (constructing_one_works, certificates_data, certificates)
 {
   using namespace fhg::com;
   peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , host_t("localhost")
                 , port_t("12351")
+                , certificates
+                );
+}
+
+BOOST_DATA_TEST_CASE (constructing_two_works, certificates_data, certificates)
+{
+  using namespace fhg::com;
+
+  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , host_t("localhost")
+                , port_t("0")
+                , certificates
+                );
+
+  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , host_t("localhost")
+                , port_t("0")
                 , certificates
                 );
 }
@@ -60,9 +87,43 @@ namespace
   {
     return fhg::com::port_t (std::to_string (ep.port()));
   }
+
+  enum class Order
+  {
+    AsyncRecv_Connect_Send,
+    Connect_Send_AsyncRecv,
+    Connect_AsyncRecv_Send,
+  };
+  std::ostream& operator<< (std::ostream& os, Order const& o)
+  {
+    return os << ( o == Order::AsyncRecv_Connect_Send ? "AsyncRecv_Connect_Send"
+                 : o == Order::Connect_Send_AsyncRecv ? "Connect_Send_AsyncRecv"
+                 : o == Order::Connect_AsyncRecv_Send ? "Connect_AsyncRecv_Send"
+                 : throw std::invalid_argument ("bad order")
+                 );
+  }
+
+  std::vector<std::string> test_messages()
+  {
+    return { "hello world!"
+           , std::string (2 << 25, 'X')
+           };
+  }
+  std::vector<Order> operation_orders()
+  {
+    return { Order::AsyncRecv_Connect_Send
+           , Order::Connect_Send_AsyncRecv
+           , Order::Connect_AsyncRecv_Send
+           };
+  }
 }
 
-BOOST_DATA_TEST_CASE (peer_run_two, certificates_data, certificates)
+BOOST_DATA_TEST_CASE ( peer_run_two
+                     , certificates_data * test_messages() * operation_orders()
+                     , certificates
+                     , message
+                     , order
+                     )
 {
   using namespace fhg::com;
 
@@ -78,34 +139,67 @@ BOOST_DATA_TEST_CASE (peer_run_two, certificates_data, certificates)
                 , certificates
                 );
 
-  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                  , port (peer_2.local_endpoint())
-                                  )
-              , "hello world!"
-              );
+  fhg::util::thread::event<> recv_finished;
+  boost::system::error_code error;
   message_t m;
-  peer_2.TESTING_ONLY_recv (&m);
+  boost::optional<p2p::address_t> connection;
+
+  auto const async_recv
+    ( [&]
+      {
+        peer_2.async_recv ( [&] ( boost::system::error_code ec
+                                , boost::optional<fhg::com::p2p::address_t>
+                                , message_t message
+                                )
+                            {
+                              error = ec;
+                              m = std::move (message);
+                              recv_finished.notify();
+                            }
+                          );
+      }
+    );
+  auto const connect
+    ( [&]
+      {
+        connection = peer_1.connect_to ( host (peer_2.local_endpoint())
+                                       , port (peer_2.local_endpoint())
+                                       );
+      }
+    );
+  auto const send
+    ( [&]
+      {
+        peer_1.send (connection.get(), message);
+      }
+    );
+
+  switch (order)
+  {
+  case Order::AsyncRecv_Connect_Send:
+    async_recv();
+    connect();
+    send();
+    recv_finished.wait();
+    break;
+  case Order::Connect_Send_AsyncRecv:
+    connect();
+    send();
+    async_recv();
+    recv_finished.wait();
+    break;
+  case Order::Connect_AsyncRecv_Send:
+    connect();
+    async_recv();
+    send();
+    recv_finished.wait();
+    break;
+  }
+
+  BOOST_REQUIRE_EQUAL (error, boost::system::errc::success);
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
-  BOOST_CHECK_EQUAL
-    (std::string (m.data.begin(), m.data.end()), "hello world!");
-}
-
-BOOST_DATA_TEST_CASE (resolve_peer_names, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
+  BOOST_CHECK_EQUAL (std::string (m.data.begin(), m.data.end()), message);
 }
 
 BOOST_DATA_TEST_CASE (peer_loopback_forbidden, certificates_data, certificates)
@@ -145,57 +239,6 @@ BOOST_DATA_TEST_CASE
                         (host_t ("unknown host"), port_t ("unknown service"))
                     , std::exception
                     );
-}
-
-BOOST_DATA_TEST_CASE (send_large_data, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  peer_1.send( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                 , port (peer_2.local_endpoint())
-                                 )
-             , std::string (2<<25, 'X')
-             );
-
-  message_t r;
-  peer_2.TESTING_ONLY_recv(&r);
-
-  BOOST_CHECK_EQUAL(2<<25, r.data.size());
-}
-
-BOOST_DATA_TEST_CASE (peers_with_fixed_ports, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t ("localhost")
-                , port_t ("0")
-                , certificates
-                );
-
-  peer_t peer_2 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t ("localhost")
-                , port_t ("0")
-                , certificates
-                );
-
-  peer_1.send ( peer_1.connect_to ( host (peer_2.local_endpoint())
-                                  , port (peer_2.local_endpoint())
-                                  )
-              , "hello world!"
-              );
 }
 
 BOOST_DATA_TEST_CASE
@@ -265,6 +308,137 @@ BOOST_DATA_TEST_CASE
   stop_request = true;
 
   sender.join ();
+}
+
+namespace
+{
+  // Not defined in early versions of Boost.Asio, but bumping just for
+  // that enum would be kind of absurd. This is wrapped version of
+  // OpenSSL's SSL_R_SHORT_READ.
+  boost::system::error_code const boost_asio_ssl_error_stream_truncated
+    (0x140000db, boost::asio::error::get_ssl_category());
+}
+
+// A race in destruction of peer_t, while a message was just sent,
+// resulted in
+//
+// - corrupted messages being received (assertion fails)
+// - segfaults in various places (e.g. SSL context destruction)
+//   (signal raised)
+// - 'header/data length mismatch' when the destructing peer was still
+//   trying to send (terminate due to being thrown in some thread)
+//
+// All of the above are not easily triggered by anything in
+// particular, so this test tries to reproduce them by doing the
+// construct-connect-send-destruct sequence multiple times. The
+// repetition counter was adjusted to take less than 30 seconds on LTS
+// while still reproducing every few runs.
+BOOST_DATA_TEST_CASE
+  ( destruction_right_after_sending_should_not_hangsegfaultcrashcorruptdata
+  , certificates_data
+  , certificates
+  )
+{
+  auto const payload (fhg::util::testing::random<std::string>{}());
+
+  using Received
+    = boost::variant<boost::system::error_code, fhg::com::message_t>;
+
+  // No lock: async_recv loop is single threaded.
+  std::vector<Received> receive_results;
+  std::mutex send_results_guard;
+  std::vector<boost::system::error_code> send_results;
+
+  {
+    std::atomic<bool> parent_destructing (false);
+
+    std::function< void ( boost::system::error_code
+                        , boost::optional<fhg::com::p2p::address_t>
+                        , fhg::com::message_t
+                        )
+                 > record_receive;
+
+    fhg::com::peer_t parent
+      ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , fhg::com::host_t ("localhost")
+      , fhg::com::port_t ("0")
+      , certificates
+      );
+    FHG_UTIL_FINALLY ([&] { parent_destructing = true; });
+
+    record_receive
+      = [&] ( boost::system::error_code ec
+            , boost::optional<fhg::com::p2p::address_t>
+            , fhg::com::message_t message
+            )
+        {
+          receive_results.push_back (ec ? Received (ec) : Received (message));
+
+          if (!parent_destructing)
+          {
+            parent.async_recv (record_receive);
+          }
+        };
+    parent.async_recv (record_receive);
+
+    int repetitions (10000);
+    while (repetitions --> 0)
+    {
+      fhg::com::peer_t child
+        ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        , fhg::com::host_t ("localhost")
+        , fhg::com::port_t ("0")
+        , certificates
+        );
+
+      child.async_send
+        ( child.connect_to
+            (host (parent.local_endpoint()), port (parent.local_endpoint()))
+        , payload
+        , [&] (boost::system::error_code ec)
+          {
+            std::lock_guard<std::mutex> const lock (send_results_guard);
+            send_results.emplace_back (ec);
+          }
+        );
+
+      // Bug happens here: child is going to be destructed, while send
+      // is still in flight.
+    }
+  }
+
+  for (auto const& ec : send_results)
+  {
+    BOOST_CHECK_MESSAGE
+      ( ec == boost::system::error_code{}
+     || ec == boost::system::errc::operation_canceled
+      , ec << " shall be one of [success (system.0) generic.operation_canceled]"
+      );
+  }
+  for (auto const& result : receive_results)
+  {
+    fhg::util::visit<void>
+      ( result
+      , [] (boost::system::error_code const& ec)
+        {
+          BOOST_CHECK_MESSAGE
+            ( ec == boost::asio::error::misc_errors::eof
+           || ec == boost::system::errc::operation_canceled
+           || ec == boost_asio_ssl_error_stream_truncated
+            , ec
+            << " shall be one of [asio.misc.eof, generic.operation_canceled, "
+               "asio.ssl.stream_truncated]"
+            );
+        }
+      , [&] (fhg::com::message_t const& message)
+        {
+          BOOST_CHECK_EQUAL (message.header.type_of_msg, 0);
+          BOOST_CHECK_EQUAL (message.header.length, payload.size());
+          BOOST_CHECK_EQUAL
+            (message.data, std::vector<char> (payload.begin(), payload.end()));
+        }
+      );
+  }
 }
 
 BOOST_AUTO_TEST_CASE (require_certificates_location_to_exist)

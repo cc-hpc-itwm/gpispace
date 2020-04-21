@@ -1,8 +1,10 @@
-#include <boost/test/unit_test.hpp>
-
 #include <fhgcom/message.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+
+#include <boost/test/unit_test.hpp>
+
+#include <string>
 
 BOOST_AUTO_TEST_CASE ( test_message_constr_default )
 {

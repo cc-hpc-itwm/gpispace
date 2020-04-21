@@ -139,7 +139,6 @@ private:
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;
 
-  fhg::com::message_t m_message;
   //! \todo Two sets for connected and unconnected masters?
   masters_t m_masters;
 

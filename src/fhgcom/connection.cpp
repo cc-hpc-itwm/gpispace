@@ -3,14 +3,13 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
 
-#include <boost/asio/ssl/context.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/asio/read.hpp>
 
-#include <functional>
+#include <stdexcept>
+#include <utility>
 
 namespace fhg
 {
@@ -98,8 +97,8 @@ namespace fhg
       ( boost::asio::io_service & io_service
       , boost::asio::ssl::context* ctx
       , boost::asio::io_service::strand const& strand
-      , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
-      , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+      , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
+      , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
       , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
       , peer_t* peer
       )
@@ -110,18 +109,21 @@ namespace fhg
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)
       , _handle_error (handle_error)
-      , in_message_(new message_t)
     {}
 
     connection_t::~connection_t ()
     {
         stop();
 
-      if (in_message_)
-      {
-        delete in_message_;
-        in_message_ = nullptr;
-      }
+      // Do not close before all async operations are done. This
+      // includes things posted onto the strand without mentioning the
+      // socket, which are *not* canceled when _socket.cancel() is
+      // called and would likely segfault. By only closing in the
+      // dtor, those operations will see a shutdown, but not closed
+      // socket, and after failing to do whatever they want to do
+      // release their reference to connection_t one after the other.
+      boost::system::error_code ignore;
+      _raw_socket.close (ignore);
     }
 
     boost::asio::ip::tcp::socket & connection_t::socket()
@@ -136,12 +138,20 @@ namespace fhg
 
     void connection_t::stop ()
     {
-      boost::system::error_code ec;
-      if (socket().is_open())
-      {
-        socket().shutdown (boost::asio::ip::tcp::socket::shutdown_both, ec);
-      }
-      socket().close(ec);
+      boost::system::error_code ignore;
+
+      _raw_socket.cancel (ignore);
+      _raw_socket.shutdown
+        (boost::asio::ip::tcp::socket::shutdown_both, ignore);
+
+      fhg::util::visit<void>
+        ( socket_
+        , [&] (std::unique_ptr<ssl_stream_t> const& stream)
+          {
+            stream->shutdown (ignore);
+          }
+        , [] (std::unique_ptr<tcp_socket_t> const&) {}
+        );
     }
 
     void connection_t::request_handshake
@@ -200,7 +210,7 @@ namespace fhg
 
     void connection_t::start_read ()
     {
-      fhg_assert (in_message_ != nullptr);
+      in_message_ = fhg::util::cxx14::make_unique<message_t>();
 
       async_read_wrapper
       	( socket_
@@ -240,7 +250,7 @@ namespace fhg
       }
       else
       {
-        in_message_->resize(0);
+        in_message_.reset();
         _handle_error (shared_from_this(), ec);
       }
     }
@@ -251,35 +261,24 @@ namespace fhg
     {
       if (! ec)
       {
-        message_t * m = in_message_;
-        in_message_ = nullptr;
+        auto m (std::move (in_message_));
 
         if (m->header.type_of_msg == p2p::HELLO_PACKET)
         {
-          _handle_hello_message (shared_from_this(), m);
+          _handle_hello_message (shared_from_this(), std::move (m));
         }
         else
         {
-          _handle_user_data (shared_from_this(), m);
+          _handle_user_data (shared_from_this(), std::move (m));
         }
-
-        in_message_ = new message_t;
 
         start_read ();
       }
       else
       {
-        in_message_->resize(0);
+        in_message_.reset();
         _handle_error (shared_from_this(), ec);
       }
-    }
-
-    void connection_t::start_send (connection_t::to_send_t const & s)
-    {
-      bool const send_in_progress = !to_send_.empty();
-      to_send_.push_back (s);
-      if (! send_in_progress)
-        start_send();
     }
 
     void connection_t::start_send ()
@@ -289,13 +288,11 @@ namespace fhg
       if (to_send_.empty ())
         return;
 
-      const to_send_t & d (to_send_.front());
-
       try
       {
         async_write_wrapper
           ( socket_
-          , d.to_buffers()
+          , to_send_.front().buffers
           , strand_.wrap
               ( std::bind ( &connection_t::handle_write
             		  	  , shared_from_this()
@@ -317,12 +314,12 @@ namespace fhg
     {
       if (! ec)
       {
-        to_send_t const d (to_send_.front());
+        auto const handler (std::move (to_send_.front().handler));
         to_send_.pop_front();
 
-        if (d.handler)
+        if (handler)
         {
-          d.handler (ec);
+          handler (ec);
         }
 
         if (! to_send_.empty())
@@ -334,13 +331,39 @@ namespace fhg
       }
     }
 
-    void connection_t::async_send ( const message_t * msg
+    void connection_t::async_send ( message_t msg
                                   , completion_handler_t hdl
                                   )
     {
       boost::shared_ptr<connection_t> that (shared_from_this());
       strand_.post
-        ([that, msg, hdl] { that->start_send (to_send_t (msg, hdl)); });
+        ( [that, msg, hdl]
+          {
+            bool const send_in_progress (!that->to_send_.empty());
+            that->to_send_.emplace_back (std::move (msg), std::move (hdl));
+            if (!send_in_progress)
+            {
+              that->start_send();
+            }
+          }
+        );
+    }
+
+    connection_t::to_send_t::to_send_t
+        (message_t message, connection_t::completion_handler_t hdl)
+      : handler (std::move (hdl))
+      , _message (std::move (message))
+      , buffers()
+    {
+      if (_message.data.size () != _message.header.length)
+      {
+        throw std::length_error ("header/data length mismatch");
+      }
+
+      buffers.reserve (2);
+      buffers.push_back
+        (boost::asio::buffer (&_message.header, sizeof (p2p::header_t)));
+      buffers.push_back (boost::asio::buffer (_message.data));
     }
   }
 }

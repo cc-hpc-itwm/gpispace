@@ -49,11 +49,11 @@ namespace sdpa
       , _drts_entrypoint_address
           (m_peer.connect_to (orchestrator_host, orchestrator_port))
     {
-      m_peer.async_recv ( &m_message
-                        , std::bind ( &Client::handle_recv
+      m_peer.async_recv ( std::bind ( &Client::handle_recv
                                     , this
                                     , std::placeholders::_1
                                     , std::placeholders::_2
+                                    , std::placeholders::_3
                                     )
                         );
     }
@@ -65,6 +65,7 @@ namespace sdpa
 
     void Client::handle_recv ( boost::system::error_code const & ec
                              , boost::optional<fhg::com::p2p::address_t>
+                             , fhg::com::message_t message
                              )
     {
       static sdpa::events::Codec const codec {};
@@ -72,7 +73,7 @@ namespace sdpa
       if (! ec)
       {
         sdpa::events::SDPAEvent::Ptr const evt
-          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+          (codec.decode (std::string (message.data.begin(), message.data.end())));
         m_incoming_events.put (evt);
       }
       else if ( ec == boost::system::errc::operation_canceled
@@ -83,7 +84,7 @@ namespace sdpa
       }
       else
       {
-        if (m_message.header.src != m_peer.address())
+        if (message.header.src != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr const
             error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
@@ -96,11 +97,11 @@ namespace sdpa
 
       if (!_stopping)
       {
-        m_peer.async_recv ( &m_message
-                          , std::bind ( &Client::handle_recv
+        m_peer.async_recv ( std::bind ( &Client::handle_recv
                                       , this
                                       , std::placeholders::_1
                                       , std::placeholders::_2
+                                      , std::placeholders::_3
                                       )
                           );
       }
