@@ -3,22 +3,25 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
 
-#include <fhg/assert.hpp>
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 #include <boost/variant/variant.hpp>
 
+#include <algorithm>
 #include <cstddef>
 #include <exception>
 #include <functional>
 #include <list>
 #include <memory>
-#include <stdexcept>
 #include <vector>
 
 namespace boost

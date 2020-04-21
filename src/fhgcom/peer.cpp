@@ -1,17 +1,16 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-#include <fhg/util/thread/event.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/hostname.hpp>
 
+#include <boost/asio/connect.hpp>
+#include <boost/filesystem/operations.hpp>
 #include <boost/make_shared.hpp>
-#include <boost/system/error_code.hpp>
 #include <boost/system/system_error.hpp>
 
-#include <cstdlib>
-#include <functional>
-#include <memory>
+#include <stdexcept>
+#include <utility>
 
 namespace fhg
 {

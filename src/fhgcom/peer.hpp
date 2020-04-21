@@ -4,18 +4,24 @@
 
 #include <fhgcom/connection.hpp>
 #include <fhgcom/header.hpp>
+#include <fhgcom/message.hpp>
 #include <fhgcom/peer_info.hpp>
 
 #include <fhg/util/thread/event.hpp>
 
-#include <boost/filesystem.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/optional.hpp>
 #include <boost/system/error_code.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <algorithm>
 #include <deque>
 #include <exception>
+#include <functional>
 #include <list>
+#include <memory>
 #include <mutex>
 #include <set>
 #include <string>

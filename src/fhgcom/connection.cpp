@@ -3,14 +3,13 @@
 #include <fhgcom/peer.hpp>
 
 #include <fhg/assert.hpp>
-
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
 
-#include <boost/asio/ssl/context.hpp>
-#include <boost/system/error_code.hpp>
+#include <boost/asio/read.hpp>
 
-#include <functional>
+#include <stdexcept>
+#include <utility>
 
 namespace fhg
 {

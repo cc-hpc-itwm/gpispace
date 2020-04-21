@@ -2,6 +2,8 @@
 
 #include <fhgcom/header.hpp>
 
+#include <cstddef>
+#include <string>
 #include <vector>
 
 namespace fhg

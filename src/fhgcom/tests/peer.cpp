@@ -1,5 +1,3 @@
-#include <boost/test/unit_test.hpp>
-
 #include <fhgcom/peer.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tests/address_printer.hpp>
@@ -18,12 +16,20 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <boost/asio/io_service.hpp>
 #include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
 
-#include <memory>
+#include <atomic>
+#include <cstddef>
+#include <exception>
+#include <functional>
+#include <mutex>
+#include <ostream>
+#include <stdexcept>
+#include <string>
 #include <thread>
-
+#include <utility>
+#include <vector>
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
 BOOST_DATA_TEST_CASE
