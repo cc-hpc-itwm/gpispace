@@ -53,7 +53,7 @@ struct setup_and_cleanup_shared_file
 
 BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << gpi::pc::type::handle_t::ident_bits));
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -98,7 +98,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << gpi::pc::type::handle_t::ident_bits));
 
   using namespace gpi::pc::memory;
 
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
 
 BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << gpi::pc::type::handle_t::ident_bits));
 
   using namespace gpi::pc::memory;
 
@@ -165,7 +165,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
 
 BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << gpi::pc::type::handle_t::ident_bits));
 
   using namespace gpi::pc::memory;
 
@@ -196,7 +196,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
 
 BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << gpi::pc::type::handle_t::ident_bits));
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -248,7 +248,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << gpi::pc::type::handle_t::ident_bits));
 
   using namespace gpi::pc::memory;
 
