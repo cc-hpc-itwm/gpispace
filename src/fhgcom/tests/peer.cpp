@@ -352,6 +352,12 @@ BOOST_DATA_TEST_CASE
   {
     std::atomic<bool> parent_destructing (false);
 
+    std::function< void ( boost::system::error_code
+                        , boost::optional<fhg::com::p2p::address_t>
+                        , fhg::com::message_t
+                        )
+                 > record_receive;
+
     fhg::com::peer_t parent
       ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , fhg::com::host_t ("localhost")
@@ -360,12 +366,8 @@ BOOST_DATA_TEST_CASE
       );
     FHG_UTIL_FINALLY ([&] { parent_destructing = true; });
 
-    std::function< void ( boost::system::error_code ec
-                        , boost::optional<fhg::com::p2p::address_t>
-                        , fhg::com::message_t
-                        )
-                 > const record_receive
-      ( [&] ( boost::system::error_code ec
+    record_receive
+      = [&] ( boost::system::error_code ec
             , boost::optional<fhg::com::p2p::address_t>
             , fhg::com::message_t message
             )
@@ -376,8 +378,7 @@ BOOST_DATA_TEST_CASE
           {
             parent.async_recv (record_receive);
           }
-        }
-      );
+        };
     parent.async_recv (record_receive);
 
     int repetitions (10000);
