@@ -3,6 +3,7 @@
 #include <mmgr/tmmgr.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
 
 #include <chrono>
@@ -16,11 +17,9 @@ namespace
   {
     std::set<gspc::vmem::Handle_t> handles;
 
-    srand (314159);
-
     while (handles.size() < num_handles)
     {
-      handles.insert (rand());
+      handles.emplace (fhg::util::testing::random<gspc::vmem::Handle_t>{}());
     }
 
     return handles;
