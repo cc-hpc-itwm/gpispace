@@ -1,6 +1,6 @@
-#include <util-generic/print_exception.hpp>
-
 #include <vmem/segment/beegfs.hpp>
+
+#include <util-generic/print_exception.hpp>
 
 #include <boost/program_options.hpp>
 

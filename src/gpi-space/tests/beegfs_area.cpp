@@ -1,27 +1,27 @@
-#include <boost/test/unit_test.hpp>
+#include <gpi-space/pc/memory/beegfs_area.hpp>
 
-#include <sys/types.h> // pid_t
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>    // getpid, unlink
-#include <cstring>
-#include <fstream>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <gpi-space/pc/memory/handle_generator.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/type/flags.hpp>
+#include <gpi-space/tests/dummy_topology.hpp>
 
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <test/shared_directory.hpp>
 
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/memory/beegfs_area.hpp>
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/tests/dummy_topology.hpp>
-
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h> // pid_t
+#include <unistd.h>    // getpid, unlink
+
+#include <cstddef>
+#include <exception>
 
 struct setup_and_cleanup_shared_file
 {
