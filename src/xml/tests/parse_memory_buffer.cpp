@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE
   (the_default_value_1_is_used_when_no_alignment_is_specified_by_the_user)
 {
   std::string const name (random_identifier_with_valid_prefix());
-  std::string const size (random_identifier_with_valid_prefix());
+  std::string const size (fhg::util::testing::random_content_string());
   std::string const default_alignment ("1UL");
 
   std::string const input
