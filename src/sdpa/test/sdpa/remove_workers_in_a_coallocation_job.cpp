@@ -37,25 +37,21 @@ BOOST_DATA_TEST_CASE
     submitted_1.wait();
   }
 
-  {
-    fhg::util::thread::event<std::string> submitted_1;
+  fhg::util::thread::event<std::string> submitted_1;
 
-    utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
-    utils::fake_drts_worker_waiting_for_finished_ack worker_1
-      ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
+  utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
+  utils::fake_drts_worker_waiting_for_finished_ack worker_1
+    ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
 
-    worker_1.finish_and_wait_for_ack (submitted_1.wait());
-  }
+  auto const notification_0 (submitted_1.wait());
+  auto const job_0 (worker_1.job_id (notification_0));
+  worker_1.finish_and_wait_for_ack (notification_0);
 
-  {
-    fhg::util::thread::event<std::string> submitted_1;
+  auto const notification_1 (submitted_1.wait());
+  auto const job_1 (worker_1.job_id (notification_1));
+  worker_1.finish_and_wait_for_ack (notification_1);
 
-    utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
-    utils::fake_drts_worker_waiting_for_finished_ack worker_1
-      ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
-
-    worker_1.finish_and_wait_for_ack (submitted_1.wait());
-  }
+  BOOST_REQUIRE (job_0 != job_1);
 
   BOOST_REQUIRE_EQUAL ( client.wait_for_terminal_state_and_cleanup (job_id)
                       , sdpa::status::FINISHED
