@@ -43,12 +43,6 @@ fhg_add_test (NAME util_assert
   LIBRARIES fhg-util
   )
 
-fhg_add_test (NAME util_counter
-  SOURCES counter.cpp
-  USE_BOOST
-  LIBRARIES fhg-util
-)
-
 fhg_add_test (NAME util_bounded_queue
   SOURCES bounded_queue.cpp
   USE_BOOST
