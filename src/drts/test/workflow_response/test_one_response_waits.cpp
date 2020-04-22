@@ -29,7 +29,6 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -151,9 +150,6 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
     ( client.submit
         ( workflow
         , { {"state", initial_state}
-          , { "random_module_calls"
-            , fhg::util::testing::random<unsigned long>{} (50, 20)
-            }
           , {"register_host", fhg::util::connectable_to_address_string
                                 (registry.local_endpoint().address())}
           , {"register_port", static_cast<unsigned int>
