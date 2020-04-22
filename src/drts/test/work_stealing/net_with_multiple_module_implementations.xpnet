@@ -47,8 +47,8 @@
           <cinclude href="chrono"/>
           <cinclude href="thread"/>
           <cxx flag="--std=c++11"/>
-          <code><![CDATA[           
-            std::this_thread::sleep_for 
+          <code><![CDATA[
+            std::this_thread::sleep_for
               (std::chrono::seconds (worst_comp_time));
             task_finished = true;
           ]]></code>
@@ -62,7 +62,7 @@
         </module>
         <module name="test_module_with_target"
                 function="task (task_finished)"
-                target="C"> 
+                target="C">
           <code><![CDATA[
             task_finished = true;
           ]]></code>
