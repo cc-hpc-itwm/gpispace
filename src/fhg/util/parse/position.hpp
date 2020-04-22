@@ -116,51 +116,6 @@ namespace fhg
         const std::vector<char>::const_iterator _begin;
         const std::vector<char>::const_iterator _end;
       };
-
-      class position_istream : public position
-      {
-      public:
-        position_istream (std::istream&);
-
-        virtual char operator*() const override
-        {
-          return *_pos;
-        }
-        virtual void operator++() override
-        {
-          ++_k;
-          ++_pos;
-        }
-        virtual void advance (std::size_t d) override
-        {
-          _k += d;
-          std::advance (_pos, d);
-        }
-        virtual bool end() const override
-        {
-          return _pos == std::istream_iterator<char>();
-        }
-        virtual std::size_t eaten() const override
-        {
-          return _k;
-        }
-        virtual std::string eat (std::size_t n) override
-        {
-          std::string ret;
-          while (n --> 0)
-          {
-            ret += operator*();
-            operator++();
-          }
-          return ret;
-        }
-
-        virtual std::string error_message (const std::string&) const override;
-
-      private:
-        std::size_t _k;
-        std::istream_iterator<char> _pos;
-      };
     }
   }
 }
