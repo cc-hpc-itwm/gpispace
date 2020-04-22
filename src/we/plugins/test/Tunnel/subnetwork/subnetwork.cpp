@@ -23,7 +23,7 @@
 
 #include <string>
 
-BOOST_AUTO_TEST_CASE (plugin_echo)
+BOOST_AUTO_TEST_CASE (plugin_Tunnel_subnetwork)
 {
   boost::program_options::options_description options_description;
 
