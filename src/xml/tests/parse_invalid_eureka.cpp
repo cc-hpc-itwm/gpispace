@@ -5,8 +5,9 @@
 #include <xml/parse/error.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random/string.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
+
 #include <cstdio>
 #include <sstream>
 #include <string>
@@ -112,20 +113,33 @@ BOOST_AUTO_TEST_CASE (output_port_for_eureka_type_mismatch)
     );
 }
 
+namespace
+{
+  struct random_identifier_without_leading_underscore
+  {
+    std::string operator()() const
+    {
+      return fhg::util::testing::random_identifier_without_leading_underscore();
+    }
+  };
+  using unique_random_identifier_without_leading_underscore
+    = fhg::util::testing::unique_random
+        <std::string, random_identifier_without_leading_underscore>;
+}
+
 BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
                         , parser_fixture
                         )
 {
+  unique_random_identifier_without_leading_underscore target_names;
+  unique_random_identifier_without_leading_underscore eureka_groups;
+
   std::string const mod_name
     (fhg::util::testing::random_identifier_without_leading_underscore());
-  std::string const target_a
-    (fhg::util::testing::random_identifier_without_leading_underscore());
-  std::string const target_b
-    (fhg::util::testing::random_identifier_without_leading_underscore());
-  std::string const eureka_a
-    (fhg::util::testing::random_identifier_without_leading_underscore());
-  std::string const eureka_b
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  auto const target_a (target_names());
+  auto const target_b (target_names());
+  auto const eureka_a (eureka_groups());
+  auto const eureka_b (eureka_groups());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -172,12 +186,12 @@ BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
                      , eureka_missing_on_first
                      )
 {
+  unique_random_identifier_without_leading_underscore target_names;
+
   std::string const mod_name
     (fhg::util::testing::random_identifier_without_leading_underscore());
-  std::string const target_a
-    (fhg::util::testing::random_identifier_without_leading_underscore());
-  std::string const target_b
-    (fhg::util::testing::random_identifier_without_leading_underscore());
+  auto const target_a (target_names());
+  auto const target_b (target_names());
   std::string const eureka
     ( " eureka-group=\""
     + fhg::util::testing::random_identifier_without_leading_underscore()
