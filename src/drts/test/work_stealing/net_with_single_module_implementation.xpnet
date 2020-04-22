@@ -33,7 +33,7 @@
     </transition>
 
     <place name="task_finished" type="bool"/>
-    <transition name="transition_with_multiple_module_implementations">
+    <transition name="transition_with_single_implementation">
       <defun>
         <in name="task_id" type="long"/>
         <in name="slow_worker_host" type="string"/>
