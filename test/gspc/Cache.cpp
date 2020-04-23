@@ -550,7 +550,7 @@ namespace gspc
     fhg::util::latch running (1);
 
     auto allocation_future
-      { std::async ( std::launch::async
+      ( std::async ( std::launch::async
                    , [&]
                      {
                        running.count_down();
@@ -558,7 +558,7 @@ namespace gspc
                        return cache.alloc (datas.back());
                      }
                    )
-      };
+      );
 
     running.wait();
 
@@ -588,7 +588,7 @@ namespace gspc
     fhg::util::latch running (1);
 
     auto allocation_future
-      { std::async ( std::launch::async
+      ( std::async ( std::launch::async
                    , [&]
                      {
                        running.count_down();
@@ -596,7 +596,7 @@ namespace gspc
                        cache.alloc (datas.back());
                      }
                    )
-      };
+      );
 
     running.wait();
 
