@@ -3,6 +3,7 @@
 #include <fhgcom/tests/address_printer.hpp>
 
 #include <test/certificates_data.hpp>
+#include <test/hopefully_free_port.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
@@ -254,20 +255,18 @@ BOOST_DATA_TEST_CASE
 
   bool stop_request (false);
 
-  //! \note Race: Possibly taken. Needs to be known before peer
-  //! starts, though, to allow reconnecting.
-  boost::asio::ip::tcp::endpoint peer_2_endpoint
-    (boost::asio::ip::address::from_string ("127.0.0.1"), 15123);
+  test::hopefully_free_port peer_2_port;
+  fhg::com::port_t peer_2_port_string (std::to_string (peer_2_port));
 
-  std::thread sender ( [&peer_1, &stop_request, &peer_2_endpoint]
+  std::thread sender ( [&peer_1, &stop_request, &peer_2_port_string]
                        {
                          while (not stop_request)
                          {
                            try
                            {
                              peer_1.send ( peer_1.connect_to
-                                             ( host (peer_2_endpoint)
-                                             , port (peer_2_endpoint)
+                                             ( host_t ("localhost")
+                                             , peer_2_port_string
                                              )
                                          , "hello world\n"
                                          );
@@ -281,11 +280,12 @@ BOOST_DATA_TEST_CASE
                        }
                      );
 
+  peer_2_port.release();
   for (std::size_t i (0); i < 100; ++i)
   {
     peer_t peer_2
       ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-      , host (peer_2_endpoint), port (peer_2_endpoint), certificates
+      , host_t ("localhost"), peer_2_port_string, certificates
       );
 
     try
