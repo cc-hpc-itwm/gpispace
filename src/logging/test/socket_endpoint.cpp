@@ -20,6 +20,7 @@ namespace fhg
         std::string result;
         do
         {
+          // ':': separator to path
           result = util::testing::random_string_without (":");
         }
         while (result.empty());
@@ -31,6 +32,7 @@ namespace fhg
         std::string result;
         do
         {
+          // '\0': ends up being a C string parser somewhere deep below
           result = util::testing::random_string_without_zero();
         }
         while ( result.size() >= sizeof (sockaddr_un::sun_path) - chop_off

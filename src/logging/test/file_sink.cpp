@@ -62,22 +62,18 @@ namespace fhg
         return std::vector<std::string> (count, sentinel);
       }
 
-      std::string any_without_zero_or_newline()
+      std::string random_single_line_string()
       {
-        auto skip (fhg::util::testing::random<char>::any_without_zero());
-        skip.erase (skip.find('\n'), 1);
-
-        return skip;
+        return util::testing::random<std::string>{}
+          (util::testing::random<std::string>::except ("\n"));
       }
     }
 
     BOOST_AUTO_TEST_CASE (formatter_is_invoked_per_message)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
-      auto const sentinel
-        ( util::testing::random<std::string>{}
-          (any_without_zero_or_newline())
-        );
+      // '\n' is used as separator in file
+      auto const sentinel (random_single_line_string());
 
       util::temporary_path const temporary_sink_dir;
       boost::filesystem::path const sink_path
@@ -231,10 +227,8 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (file_sink_actually_registers_and_receives)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
-      auto const sentinel
-        ( util::testing::random<std::string>{}
-          (any_without_zero_or_newline())
-        );
+      // '\n' is used as separator in file
+      auto const sentinel (random_single_line_string());
 
       stream_emitter emitter;
 
