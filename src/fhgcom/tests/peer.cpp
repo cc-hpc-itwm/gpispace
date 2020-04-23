@@ -32,7 +32,7 @@
 #include <utility>
 #include <vector>
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_DATA_TEST_CASE
   (peer_does_not_hang_when_resolve_throws, certificates_data, certificates)
 {
@@ -512,7 +512,7 @@ BOOST_AUTO_TEST_CASE (using_empty_Certificates_throws)
     );
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_AUTO_TEST_CASE
   (client_peer_tries_to_connect_to_secure_peer_using_tcp)
 {
