@@ -97,8 +97,8 @@ namespace we
         }
         boost::optional<unsigned long> random_power_of_two_or_none()
         {
-          auto const roll (random_power_of_two());
-          return boost::make_optional (roll != 1, roll);
+          return boost::make_optional
+            (fhg::util::testing::random<bool>{}(), random_power_of_two());
         }
       }
 
