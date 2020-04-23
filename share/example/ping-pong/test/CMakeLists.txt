@@ -14,4 +14,6 @@ fhg_add_test (NAME share_example_ping-pong
             Boost::filesystem
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
+  RUN_SERIAL # actually a performance test but a fundamental one we
+             # don't want to ignore
 )

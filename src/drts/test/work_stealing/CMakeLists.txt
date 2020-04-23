@@ -30,4 +30,6 @@ fhg_add_test (NAME drts_work_stealing_multiple_module
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  RUN_SERIAL # actually a performance test but a fundamental one we
+             # don't want to ignore
 )
