@@ -6,11 +6,12 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/hopefully_free_port.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
+#include <test/source_directory.hpp>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/read_lines.hpp>
@@ -28,21 +29,12 @@
 
 #include <vector>
 
-namespace
-{
-  unsigned int get_free_port()
-  {
-    boost::asio::io_service service;
-    boost::asio::ip::tcp::acceptor acceptor
-      (service, boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), 0));
-    acceptor.set_option (boost::asio::ip::tcp::acceptor::reuse_address (true));
-
-    return acceptor.local_endpoint().port();
-  }
-}
-
 BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
 {
+  test::hopefully_free_port orchestrator_port;
+  test::hopefully_free_port agent_port;
+  test::hopefully_free_port worker_port;
+
   boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
@@ -74,10 +66,7 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
 
   gspc::set_application_search_path (vm, installation_dir);
 
-  auto const orchestrator_port (get_free_port());
   gspc::set_orchestrator_port (vm, orchestrator_port);
-
-  auto const agent_port (get_free_port());
   gspc::set_agent_port (vm, agent_port);
 
   vm.notify();
@@ -107,12 +96,12 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
     , installation
     );
 
-  auto const worker_port (get_free_port());
-
+  agent_port.release();
+  orchestrator_port.release();
   gspc::scoped_runtime_system drts
     ( vm
     , installation
-    , "worker:1/" + std::to_string (worker_port)
+    , "worker:1/" + std::to_string (worker_port.release())
     , rifds.entry_points()
     );
 
@@ -124,7 +113,7 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( client.put_and_run
         ( gspc::workflow (make.pnet())
-        , { {"port", worker_port}
+        , { {"port", static_cast<unsigned int> (worker_port)}
           , {"start", true}
           }
         )
