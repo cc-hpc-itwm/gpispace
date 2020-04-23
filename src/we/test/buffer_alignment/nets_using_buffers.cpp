@@ -138,6 +138,15 @@ namespace we
                             );
       }
 
+      namespace
+      {
+        bool could_fit_with_perfect_alignment
+          (std::size_t provided_memory, std::size_t size_with_align_best)
+        {
+          return provided_memory >= size_with_align_best;
+        }
+      }
+
       std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
         (unsigned long& size_without_align)
       {
@@ -152,7 +161,9 @@ namespace we
                                 , random_power_of_two
                                 );
         }
-        while (size_without_align == size_with_align_best);
+        while ( could_fit_with_perfect_alignment
+                  (size_without_align, size_with_align_best)
+              );
         return result;
       }
     }
