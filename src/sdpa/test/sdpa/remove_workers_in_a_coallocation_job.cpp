@@ -25,7 +25,7 @@ BOOST_DATA_TEST_CASE
   utils::client client (orchestrator, certificates);
 
   sdpa::job_id_t const job_id
-    (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
+    (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
   {
     fhg::util::thread::event<std::string> submitted_1;
@@ -43,15 +43,7 @@ BOOST_DATA_TEST_CASE
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
     ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
 
-  auto const notification_0 (submitted_1.wait());
-  auto const job_0 (worker_1.job_id (notification_0));
-  worker_1.finish_and_wait_for_ack (notification_0);
-
-  auto const notification_1 (submitted_1.wait());
-  auto const job_1 (worker_1.job_id (notification_1));
-  worker_1.finish_and_wait_for_ack (notification_1);
-
-  BOOST_REQUIRE (job_0 != job_1);
+  worker_1.finish_and_wait_for_ack (submitted_1.wait());
 
   BOOST_REQUIRE_EQUAL ( client.wait_for_terminal_state_and_cleanup (job_id)
                       , sdpa::status::FINISHED
