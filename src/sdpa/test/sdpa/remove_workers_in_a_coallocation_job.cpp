@@ -38,12 +38,15 @@ BOOST_DATA_TEST_CASE
   }
 
   {
-    fhg::util::thread::event<std::string> submitted_1;
+    fhg::util::thread::event<std::string> submitted_0;
+    utils::fake_drts_worker_waiting_for_finished_ack worker_0
+         ([&] (std::string s) { submitted_0.notify (s); }, agent, certificates);
 
-    utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
+    fhg::util::thread::event<std::string> submitted_1;
     utils::fake_drts_worker_waiting_for_finished_ack worker_1
       ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
 
+    worker_0.finish_and_wait_for_ack (submitted_0.wait());
     worker_1.finish_and_wait_for_ack (submitted_1.wait());
   }
 
