@@ -37,13 +37,15 @@ BOOST_DATA_TEST_CASE
     submitted_1.wait();
   }
 
-  fhg::util::thread::event<std::string> submitted_1;
+  {
+    fhg::util::thread::event<std::string> submitted_1;
 
-  utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
-  utils::fake_drts_worker_waiting_for_finished_ack worker_1
-    ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
+    utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
+    utils::fake_drts_worker_waiting_for_finished_ack worker_1
+      ([&] (std::string s) { submitted_1.notify (s); }, agent, certificates);
 
-  worker_1.finish_and_wait_for_ack (submitted_1.wait());
+    worker_1.finish_and_wait_for_ack (submitted_1.wait());
+  }
 
   BOOST_REQUIRE_EQUAL ( client.wait_for_terminal_state_and_cleanup (job_id)
                       , sdpa::status::FINISHED
