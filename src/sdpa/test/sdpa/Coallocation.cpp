@@ -267,46 +267,10 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
     }
 
-    worker_1_shall_not_get_a_job = true;
     const std::string canceled_job_1 (cancel_requested_1.wait());
     worker_2.canceled (cancel_requested_2.wait());
-
-    std::atomic<bool> worker_4_or_5_got_a_job (false);
-
-    {
-      utils::fake_drts_worker_notifying_module_call_submission worker_4
-        ( [&] (std::string)
-          {
-            worker_4_or_5_got_a_job = true;
-          }
-        , agent
-        , certificates
-        );
-      utils::fake_drts_worker_notifying_module_call_submission worker_5
-        ( [&] (std::string)
-          {
-            worker_4_or_5_got_a_job = true;
-          }
-        , agent
-        , certificates
-        );
-
-      //! \note Race and sleep! This is ugly, but needed to provoke a
-      //! bad scheduling to worker_1, worker_4 and worker_5. We sadly
-      //! have no way to wait for the next scheduling loop without
-      //! modifying the agent itself. The timeout is large enough that a
-      //! loop should happen though: Scheduling should be triggered when
-      //! worker_4 and worker_5 are registered.
-      //! may be equivalent to agent._.request_scheduling();
-      std::this_thread::sleep_for (std::chrono::seconds (5));
-    }
-
     worker_1.canceled (canceled_job_1);
-    //! \note Potential race?: agent thread may happen before this
-    //! thread continuing and setting flag
-    worker_1_shall_not_get_a_job = false;
 
-    //! \note cleanup of both jobs
     {
       fhg::util::thread::event<std::string> job_submitted_3;
 
@@ -342,11 +306,6 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE_MESSAGE
       ( !worker_1_got_a_job_while_forbidden
       , "worker_1 shall not get a job: has not yet cancel-acked"
-      );
-
-    BOOST_REQUIRE_MESSAGE
-      ( !worker_4_or_5_got_a_job
-      , "worker_4 shall never get a job: worker 1 is still canceling"
       );
   }
 
