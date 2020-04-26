@@ -77,10 +77,21 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
   BOOST_REQUIRE_EQUAL (activity.requirements_and_preferences (nullptr).numWorkers(), value);
 }
 
+struct random_identifier
+{
+  std::string operator()() const
+  {
+    return fhg::util::testing::random_identifier();
+  }
+};
+using unique_random_identifier
+  = fhg::util::testing::unique_random<std::string, random_identifier>;
+
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
 {
-  std::string const port_name1 (fhg::util::testing::random_identifier());
-  std::string const port_name2 (fhg::util::testing::random_identifier());
+  unique_random_identifier port_names;
+  std::string const port_name1 (port_names());
+  std::string const port_name2 (port_names());
   unsigned long const value1 {fhg::util::testing::random<unsigned long>()()};
   unsigned long const value2 {fhg::util::testing::random<unsigned long>()()};
 

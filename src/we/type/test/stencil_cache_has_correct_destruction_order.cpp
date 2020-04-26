@@ -72,6 +72,16 @@ namespace we
 
     // to destroy the cache in this moment shall not block
 
+    struct random_identifier
+    {
+      std::string operator()() const
+      {
+        return fhg::util::testing::random_identifier();
+      }
+    };
+    using unique_random_identifier
+      = fhg::util::testing::unique_random<std::string, random_identifier>;
+
     BOOST_AUTO_TEST_CASE (stencil_cache_has_correct_destruction_order)
     {
       using fhg::util::print_container;
@@ -117,24 +127,12 @@ namespace we
 
       auto const random_ulong (random<unsigned long>{});
 
-      std::unordered_set<std::string> used_identifiers;
+      unique_random_identifier place_and_handle_names;
 
-      std::function<std::string()> random_uniq_identifier
-        ( [&]
-          {
-            auto const identifier (random_identifier());
-
-            return used_identifiers.emplace (identifier).second
-              ? identifier
-              : random_uniq_identifier()
-              ;
-          }
-        );
-
-      auto const place_prepare (random_uniq_identifier());
-      auto const place_ready (random_uniq_identifier());
-      auto const place_neighbors (random_uniq_identifier());
-      auto const place_neighbors_count (random_uniq_identifier());
+      auto const place_prepare (place_and_handle_names());
+      auto const place_ready (place_and_handle_names());
+      auto const place_neighbors (place_and_handle_names());
+      auto const place_neighbors_count (place_and_handle_names());
       auto const memory_handle (random_identifier());
       auto const input_size (random_ulong());
       auto const block_size (1UL);
