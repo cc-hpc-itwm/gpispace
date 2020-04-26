@@ -21,7 +21,7 @@ namespace expr
       {
         static auto random_number (fhg::util::testing::random<std::size_t>{});
 
-        return 1 + random_number() % 100;
+        return random_number(100, 1);
       }
 
       using Path = std::list<std::string>;
