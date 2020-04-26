@@ -787,10 +787,24 @@ namespace utils
     , sdpa::events::CancelJobEvent const* pEvt
     )
   {
+    auto const job_id (pEvt->job_id());
+    if ( std::find_if ( _jobs.begin()
+                      , _jobs.end()
+                      , [&job_id] (decltype (_jobs)::value_type const& p)
+                        {
+                          return job_id == p.second._id;
+                        }
+                      )
+         == _jobs.end()
+       )
+    {
+      throw std::runtime_error ("received cancel request for unknown job!");
+    }
+
     std::lock_guard<std::mutex> const _ (_cancels_mutex);
 
-    _cancels.emplace (pEvt->job_id(), source);
-    _announce_cancel (pEvt->job_id());
+    _cancels.emplace (job_id, source);
+    _announce_cancel (job_id);
   }
 
   void fake_drts_worker_notifying_cancel::canceled (std::string job_id)
