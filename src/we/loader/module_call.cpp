@@ -230,7 +230,7 @@ namespace we
                      "Please take into account also the buffer alignments "
                      "when allocating local shared memory!"
                     )
-                % (buffer_ptr - local_memory + size)
+                % (buffer_ptr - local_memory + size + alignment)
                 % shared_memory_size
                 ).str()
 	      );
