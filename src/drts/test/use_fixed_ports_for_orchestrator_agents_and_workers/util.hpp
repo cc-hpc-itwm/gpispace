@@ -22,12 +22,18 @@ namespace
           )
       );
 
-    FHG_UTIL_FINALLY ([&] { fhg::util::syscall::pclose (pf); });
-    fhg::util::syscall::fgets (data, size, pf);
+    FHG_UTIL_FINALLY ([&] { fhg::util::syscall::pclose (pf); return false; });
+    while (fhg::util::syscall::fgets (data, size, pf))
+    {
+      std::string process (data);
+      process.erase (process.find_last_not_of ("\n") + 1);
 
-    std::string str (data);
-    str.erase (str.find_last_not_of ("\n") + 1);
+      if (component == process)
+      {
+        return true;
+      }
+    }
 
-    return (str == component);
+    return false;
   }
 }
