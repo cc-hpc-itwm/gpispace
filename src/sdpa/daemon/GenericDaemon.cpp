@@ -654,13 +654,20 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
     return;
   }
 
-  pJob->CancelJob();
-
   const std::unordered_set<worker_id_t>
     workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
 
   if (!workers_to_cancel.empty())
   {
+    if ( pJob->getStatus() == sdpa::status::CANCELING
+       || pJob->getStatus() == sdpa::status::CANCELED
+       )
+    {
+      return;
+    }
+
+    pJob->CancelJob();
+
     for (worker_id_t const& w : workers_to_cancel)
     {
       child_proxy ( this
@@ -670,6 +677,7 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
   }
   else
   {
+    pJob->CancelJob();
     job_canceled (pJob);
 
     _scheduler.delete_job (job_id);
