@@ -33,14 +33,6 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
 
   boost::program_options::options_description options_description;
 
-  constexpr char const* const option_command ("command");
-
-  options_description.add_options()
-    ( option_command
-    , boost::program_options::value<validators::executable>()->required()
-    , "command to execute"
-    );
-
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
   options_description.add (gspc::options::installation());
@@ -94,10 +86,6 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
       ( gspc::workflow (make.pnet())
       , { {"m", 25L}
         , {"parallel", 2L}
-        , {"cmd"
-          , boost::filesystem::path
-              (vm.at (option_command).as<validators::executable>()).string()
-          }
         }
       )
     );
