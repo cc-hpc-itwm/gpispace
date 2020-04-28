@@ -21,26 +21,26 @@ BOOST_AUTO_TEST_CASE (performance_parse_once_eval_often)
 {
   FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (1))
   {
-  const long round (750);
-  const pnet::type::value::value_type max (2000L);
-  const std::string input ("${a} < ${b}");
+    const long round (750);
+    const pnet::type::value::value_type max (2000L);
+    const std::string input ("${a} < ${b}");
 
-  expr::eval::context context;
+    expr::eval::context context;
 
-  context.bind_ref ("b", max);
+    context.bind_ref ("b", max);
 
-  expr::parse::parser parser (input);
+    expr::parse::parser parser (input);
 
-  for (int r (0); r < round; ++r)
-  {
-    long i (0);
-
-    do
+    for (int r (0); r < round; ++r)
     {
-      context.bind_and_discard_ref ({"a"}, i++);
+      long i (0);
+
+      do
+      {
+        context.bind_and_discard_ref ({"a"}, i++);
+      }
+      while (boost::get<bool> (parser.eval_all (context)));
     }
-    while (boost::get<bool> (parser.eval_all (context)));
-  }
   };
 }
 
@@ -48,23 +48,23 @@ BOOST_AUTO_TEST_CASE (performance_often_parse_and_eval)
 {
   FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (1))
   {
-  const long round (75);
-  const pnet::type::value::value_type max (2000L);
-  const std::string input ("${a} < ${b}");
+    const long round (75);
+    const pnet::type::value::value_type max (2000L);
+    const std::string input ("${a} < ${b}");
 
-  expr::eval::context context;
+    expr::eval::context context;
 
-  context.bind_ref ("b", max);
+    context.bind_ref ("b", max);
 
-  for (int r (0); r < round; ++r)
-  {
-    long i (0);
-
-    do
+    for (int r (0); r < round; ++r)
     {
-      context.bind_and_discard_ref ({"a"}, i++);
+      long i (0);
+
+      do
+      {
+        context.bind_and_discard_ref ({"a"}, i++);
+      }
+      while (boost::get<bool> (expr::parse::parser (input).eval_all (context)));
     }
-    while (boost::get<bool> (expr::parse::parser (input).eval_all (context)));
-  }
   };
 }

@@ -134,19 +134,19 @@ BOOST_FIXTURE_TEST_CASE
 
   FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (60))
   {
-  for (unsigned int i {0}; i < num_tasks; i++)
-  {
-    sdpa::job_id_t const task (job_name_pool());
-    add_job
-      ( task
-      , require (*std::next ( capabilities.begin()
-                            , random_integral<unsigned int>() % 2
-                            )
-                )
-      );
+    for (unsigned int i {0}; i < num_tasks; i++)
+    {
+      sdpa::job_id_t const task (job_name_pool());
+      add_job
+        ( task
+        , require (*std::next ( capabilities.begin()
+                              , random_integral<unsigned int>() % 2
+                              )
+                  )
+        );
 
-    _scheduler.enqueueJob (task);
-    request_scheduling();
-  }
+      _scheduler.enqueueJob (task);
+      request_scheduling();
+    }
   };
 }
