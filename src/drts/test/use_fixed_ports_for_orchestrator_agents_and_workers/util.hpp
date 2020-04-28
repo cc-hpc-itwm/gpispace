@@ -22,7 +22,7 @@ namespace
           )
       );
 
-    FHG_UTIL_FINALLY ([&] { fhg::util::syscall::pclose (pf); return false; });
+    FHG_UTIL_FINALLY ([&] { fhg::util::syscall::pclose (pf); });
     while (fhg::util::syscall::fgets (data, size, pf))
     {
       std::string process (data);
