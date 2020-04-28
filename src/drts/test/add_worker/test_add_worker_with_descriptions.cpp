@@ -94,8 +94,15 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "add_workers_with_different_descriptions");
+    ( test::shared_directory (vm)
+    / ( "add_worker_with_different_descriptions"
+      + ssl_cert
+      + "_cert"
+      )
+    );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -159,7 +166,6 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
     , installation
     );
 
-  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
                                                : gspc::testing::no_certs()
                           );
