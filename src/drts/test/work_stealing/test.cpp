@@ -33,11 +33,7 @@ std::vector<std::string>  test_nets
   , "net_with_multiple_module_implementations"
   };
 
-BOOST_DATA_TEST_CASE
-  ( steal_work
-  , boost::unit_test::data::make (test_nets)
-  , net
-  )
+BOOST_AUTO_TEST_CASE (steal_work)
 {
   boost::program_options::options_description options_description;
 
@@ -47,6 +43,11 @@ BOOST_DATA_TEST_CASE
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add_options()
+    ( "test-net"
+    , boost::program_options::value<std::string>()->required()
+    , "name of the test pnet"
+    );
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -71,6 +72,8 @@ BOOST_DATA_TEST_CASE
   vm.notify();
 
   gspc::installation const installation (vm);
+
+  auto const net (vm.at ("test-net").as<std::string>());
 
   test::make_net_lib_install const make
     ( installation
