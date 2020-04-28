@@ -69,9 +69,14 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
   boost::filesystem::path test_directory
     ( test::shared_directory (vm)
-    / "workflow_response_one_response_waits_while_others_are_made"
+    / ( "workflow_response_one_response_waits_while_others_are_made"
+      + ssl_cert
+      + "_cert"
+      )
     );
 
   boost::filesystem::remove_all (test_directory);
@@ -112,7 +117,6 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                                  , installation
                                  };
 
-  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
                                                : gspc::testing::no_certs()
                           );

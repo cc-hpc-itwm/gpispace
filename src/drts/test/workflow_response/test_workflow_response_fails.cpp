@@ -69,9 +69,14 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
   boost::filesystem::path test_directory
     ( test::shared_directory (vm)
-    / "workflow_response_fails_if_workflow_fails_after_requesting"
+    / ( "workflow_response_fails_if_workflow_fails_after_requesting"
+      + ssl_cert
+      + "_cert"
+      )
     );
 
   boost::filesystem::remove_all (test_directory);
@@ -112,7 +117,6 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
                                  , installation
                                  };
 
-  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
                                                : gspc::testing::no_certs()
                           );
