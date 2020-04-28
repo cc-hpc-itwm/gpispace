@@ -68,6 +68,8 @@ namespace fhg
         std::string result;
         do
         {
+          // ':': separator to endpoint's port/path
+          // '>': end of block in surrounding endpoint's parser
           result = util::testing::random_string_without (":>");
         }
         while (result.empty());
@@ -80,13 +82,10 @@ namespace fhg
       socket_endpoint random_socket_endpoint()
       {
         std::string path;
-        auto const skip_delimiters
-          ( fhg::util::testing::random<std::string>::except
-            (":<>," + std::string (1, '\0'))
-          );
         do
         {
-          path = util::testing::random<std::string>{} (skip_delimiters);
+          // '>': end of block in surrounding endpoint's parser
+          path = util::testing::random_string_without (">");
         }
         while (path.size() >= sizeof (sockaddr_un::sun_path) || path.empty());
 
