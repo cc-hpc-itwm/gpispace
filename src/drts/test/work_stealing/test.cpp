@@ -144,7 +144,7 @@ BOOST_AUTO_TEST_CASE (steal_work)
     , worst_comp_time
     );
 
-  BOOST_REQUIRE_LT
+  BOOST_REQUIRE_LE
     ( std::chrono::duration_cast<std::chrono::seconds> (end - start).count()
     , worst_comp_time + 1
     );
