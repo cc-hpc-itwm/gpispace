@@ -57,8 +57,14 @@ BOOST_AUTO_TEST_CASE (steal_work)
         )
     );
 
+  auto const net (vm.at ("test-net").as<std::string>());
+
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "work_stealing");
+    ( test::shared_directory (vm)
+    / ( "work_stealing"
+      + net
+      )
+    );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -72,8 +78,6 @@ BOOST_AUTO_TEST_CASE (steal_work)
   vm.notify();
 
   gspc::installation const installation (vm);
-
-  auto const net (vm.at ("test-net").as<std::string>());
 
   test::make_net_lib_install const make
     ( installation
