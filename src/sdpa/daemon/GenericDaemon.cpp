@@ -654,19 +654,22 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
     return;
   }
 
+  bool const cancel_already_requested
+    ( pJob->getStatus() == sdpa::status::CANCELING
+    || pJob->getStatus() == sdpa::status::CANCELED
+    );
+
+  pJob->CancelJob();
+
   const std::unordered_set<worker_id_t>
     workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
 
   if (!workers_to_cancel.empty())
   {
-    if ( pJob->getStatus() == sdpa::status::CANCELING
-       || pJob->getStatus() == sdpa::status::CANCELED
-       )
+    if (cancel_already_requested)
     {
       return;
     }
-
-    pJob->CancelJob();
 
     for (worker_id_t const& w : workers_to_cancel)
     {
@@ -677,7 +680,6 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
   }
   else
   {
-    pJob->CancelJob();
     job_canceled (pJob);
 
     _scheduler.delete_job (job_id);
