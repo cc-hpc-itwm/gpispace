@@ -146,9 +146,8 @@ BOOST_FIXTURE_TEST_CASE
                   , num_workers - 2*n
                   );
 
-  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (80);
-
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (80))
+  {
   for (unsigned int i {0}; i < num_tasks; i++)
   {
     sdpa::job_id_t const task (job_name_pool());
@@ -157,4 +156,5 @@ BOOST_FIXTURE_TEST_CASE
     _scheduler.enqueueJob (task);
     request_scheduling();
   }
+  };
 }

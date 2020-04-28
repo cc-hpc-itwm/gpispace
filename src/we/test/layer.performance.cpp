@@ -84,9 +84,8 @@ BOOST_AUTO_TEST_CASE
     , _random_engine
     );
 
-  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (1);
-
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (1))
+  {
   for (std::size_t i (0); i < num_activities; ++i)
   {
     layer.submit (generate_id(), activity_input);
@@ -108,4 +107,5 @@ BOOST_AUTO_TEST_CASE
   {
     std::this_thread::yield();
   }
+  };
 }
