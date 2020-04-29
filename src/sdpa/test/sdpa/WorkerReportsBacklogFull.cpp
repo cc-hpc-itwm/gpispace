@@ -102,45 +102,36 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted_2;
   fhg::util::thread::event<std::string> cancel_requested_2;
-  bool cancels_after_finished_acks_2 (false);
-  bool cancels_after_finished_acks_3 (false);
-  {
-    utils::fake_drts_worker_notifying_cancel worker_2
-      ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
-      , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
-      , agent
-      , certificates
-      , cancels_after_finished_acks_2
-      );
+  utils::fake_drts_worker_notifying_cancel worker_2
+    ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
+    , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
+    , agent
+    , certificates
+    );
 
-    fhg::util::thread::event<std::string> job_submitted_3;
-    fhg::util::thread::event<std::string> cancel_requested_3;
-    utils::fake_drts_worker_notifying_cancel worker_3
-      ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j);}
-      , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
-      , agent
-      , certificates
-      , cancels_after_finished_acks_3
-      );
+  fhg::util::thread::event<std::string> job_submitted_3;
+  fhg::util::thread::event<std::string> cancel_requested_3;
+  utils::fake_drts_worker_notifying_cancel worker_3
+    ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j);}
+    , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
+    , agent
+    , certificates
+    );
 
-    const std::string job_name (job_submitted_1.wait());
-    worker_1.report_backlog_full (job_name);
+  const std::string job_name (job_submitted_1.wait());
+  worker_1.report_backlog_full (job_name);
 
-    std::string const job_name_2 (job_submitted_2.wait());
-    std::string const job_name_3 (job_submitted_3.wait());
+  std::string const job_name_2 (job_submitted_2.wait());
+  std::string const job_name_3 (job_submitted_3.wait());
 
-    sdpa::job_id_t const job_id_2 (worker_2.job_id (job_name_2));
-    sdpa::job_id_t const job_id_3 (worker_3.job_id (job_name_3));
+  sdpa::job_id_t const job_id_2 (worker_2.job_id (job_name_2));
+  sdpa::job_id_t const job_id_3 (worker_3.job_id (job_name_3));
 
-    BOOST_REQUIRE_EQUAL (cancel_requested_2.wait(), job_id_2);
-    BOOST_REQUIRE_EQUAL (cancel_requested_3.wait(), job_id_3);
+  BOOST_REQUIRE_EQUAL (cancel_requested_2.wait(), job_id_2);
+  BOOST_REQUIRE_EQUAL (cancel_requested_3.wait(), job_id_3);
 
-    worker_2.canceled (job_id_2);
-    worker_3.canceled (job_id_3);
-  }
-
-  BOOST_REQUIRE (!cancels_after_finished_acks_2);
-  BOOST_REQUIRE (!cancels_after_finished_acks_3);
+  worker_2.canceled (job_id_2);
+  worker_3.canceled (job_id_3);
 }
 
 BOOST_DATA_TEST_CASE
@@ -166,15 +157,12 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted_2;
   fhg::util::thread::event<std::string> cancel_requested_2;
-  bool cancels_after_finished_acks_2 (false);
-  bool cancels_after_finished_acks_3 (false);
   {
     utils::fake_drts_worker_notifying_cancel worker_2
       ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
       , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
       , agent
       , certificates
-      , cancels_after_finished_acks_2
       );
 
     fhg::util::thread::event<std::string> job_submitted_3;
@@ -184,7 +172,6 @@ BOOST_DATA_TEST_CASE
       , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
       , agent
       , certificates
-      , cancels_after_finished_acks_3
       );
 
     const std::string job_name_1 (job_submitted_1.wait());
@@ -208,9 +195,6 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-
-  BOOST_REQUIRE (!cancels_after_finished_acks_2);
-  BOOST_REQUIRE (!cancels_after_finished_acks_3);
 }
 
 BOOST_DATA_TEST_CASE
@@ -239,14 +223,12 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted_3;
   fhg::util::thread::event<std::string> cancel_requested_3;
-  bool cancels_after_finished_acks (false);
   {
     utils::fake_drts_worker_notifying_cancel worker_3
       ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j);}
       , [&cancel_requested_3] (std::string j) { cancel_requested_3.notify (j); }
       , agent
       , certificates
-      , cancels_after_finished_acks
       );
 
     const std::string job_name (job_submitted_1.wait());
@@ -275,8 +257,6 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-
-  BOOST_REQUIRE (!cancels_after_finished_acks);
 }
 
 BOOST_DATA_TEST_CASE
@@ -302,14 +282,12 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted_2;
   fhg::util::thread::event<std::string> cancel_requested_2;
-  bool cancels_after_finished_acks (false);
   {
     utils::fake_drts_worker_notifying_cancel worker_2
       ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j);}
       , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
       , agent
       , certificates
-      , cancels_after_finished_acks
       );
 
     const std::string job_name_1 (job_submitted_1.wait());
@@ -336,6 +314,4 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
      (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
-
-  BOOST_REQUIRE (!cancels_after_finished_acks);
 }

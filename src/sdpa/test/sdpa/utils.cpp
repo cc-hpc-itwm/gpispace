@@ -685,6 +685,8 @@ namespace utils
       finish (name);
 
       BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
+
+      _jobs.erase (name);
     }
   }
 
@@ -757,30 +759,13 @@ namespace utils
       , std::function<void (std::string)> announce_cancel
       , agent const& master_agent
       , fhg::com::Certificates const& certificates
-      , bool& cancels_after_finished_acks
       )
     : no_thread::fake_drts_worker_waiting_for_finished_ack
         (announce_job, master_agent, certificates)
     , _announce_cancel (announce_cancel)
-    , _cancels_after_finished_acks (cancels_after_finished_acks)
   {}
   fake_drts_worker_notifying_cancel::~fake_drts_worker_notifying_cancel()
-  {
-    std::lock_guard<std::mutex> const _ (_cancels_mutex);
-    for (auto const& cancel : _cancels)
-    {
-      if ( std::find ( _finished_acks_from_master.begin()
-                     , _finished_acks_from_master.end()
-                     , cancel
-                     )
-         != _finished_acks_from_master.end()
-         )
-      {
-        _cancels_after_finished_acks = true;
-        break;
-      }
-    }
-  }
+  {}
 
   void fake_drts_worker_notifying_cancel::handleCancelJobEvent
     ( fhg::com::p2p::address_t const& source

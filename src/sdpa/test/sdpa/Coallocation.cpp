@@ -224,9 +224,6 @@ BOOST_DATA_TEST_CASE
   std::atomic<bool> worker_1_shall_not_get_a_job (false);
   std::atomic<bool> worker_1_got_a_job_while_forbidden (false);
 
-  bool cancels_after_finished_acks_1 (false);
-  bool cancels_after_finished_acks_2 (false);
-
   {
     utils::fake_drts_worker_notifying_cancel worker_1
       ( [&] (std::string j)
@@ -240,7 +237,6 @@ BOOST_DATA_TEST_CASE
       , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
       , agent
       , certificates
-      , cancels_after_finished_acks_1
       );
 
     fhg::util::thread::event<std::string> job_submitted_2;
@@ -250,7 +246,6 @@ BOOST_DATA_TEST_CASE
       , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
       , agent
       , certificates
-      , cancels_after_finished_acks_2
       );
 
     {
@@ -308,9 +303,6 @@ BOOST_DATA_TEST_CASE
       , "worker_1 shall not get a job: has not yet cancel-acked"
       );
   }
-
-  BOOST_REQUIRE (!cancels_after_finished_acks_1);
-  BOOST_REQUIRE (!cancels_after_finished_acks_2);
 }
 
 BOOST_DATA_TEST_CASE
