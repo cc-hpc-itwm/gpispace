@@ -19,6 +19,7 @@
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_container_is_permutation.hpp>
