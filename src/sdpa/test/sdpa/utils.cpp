@@ -669,12 +669,11 @@ namespace utils
     {}
 
     void fake_drts_worker_waiting_for_finished_ack::handleJobFinishedAckEvent
-      ( fhg::com::p2p::address_t const& source
+      ( fhg::com::p2p::address_t const&
       , sdpa::events::JobFinishedAckEvent const* e
       )
     {
       _finished_ack.notify (e->job_id());
-      _finished_acks_from_master.emplace (e->job_id(), source);
     }
 
     void fake_drts_worker_waiting_for_finished_ack::finish_and_wait_for_ack

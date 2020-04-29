@@ -306,8 +306,6 @@ namespace utils
 
     private:
       fhg::util::thread::event<std::string> _finished_ack;
-    protected:
-      std::map<std::string, fhg::com::p2p::address_t> _finished_acks_from_master;
     };
   }
 
