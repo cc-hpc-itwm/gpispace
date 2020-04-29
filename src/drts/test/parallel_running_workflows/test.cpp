@@ -27,8 +27,7 @@
 #include <future>
 #include <map>
 
-BOOST_DATA_TEST_CASE
-  (drts_parallel_running_workflows, certificates_data, certificates)
+BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 {
   boost::program_options::options_description options_description;
 
@@ -37,6 +36,11 @@ BOOST_DATA_TEST_CASE
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add_options()
+    ( "ssl-cert"
+    , boost::program_options::value<std::string>()->required()
+    , "enable or disable SSL certificate"
+    );
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -46,8 +50,16 @@ BOOST_DATA_TEST_CASE
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
+
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "drts_parallel_running_workflows");
+    ( test::shared_directory (vm)
+    / ( "drts_parallel_running_workflows"
+      + ssl_cert
+      + "_cert"
+      )
+    );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -88,6 +100,11 @@ BOOST_DATA_TEST_CASE
                                  , gspc::rifd::port {vm}
                                  , installation
                                  );
+
+  auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
+                                               : gspc::testing::no_certs()
+                          );
+
   gspc::scoped_runtime_system const drts
     (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
 
