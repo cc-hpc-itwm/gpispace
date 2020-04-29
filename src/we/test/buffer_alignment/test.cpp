@@ -140,23 +140,3 @@ BOOST_AUTO_TEST_CASE (arbitrary_buffer_sizes_and_mixed_alignments)
   decltype (result) const expected {{"done", we::type::literal::control()}};
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }
-
-BOOST_AUTO_TEST_CASE
-  (arbitrary_buffer_sizes_and_alignments_insufficient_memory)
-{
-  START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET
-    (net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory);
-
-  BOOST_REQUIRE_EXCEPTION
-    ( gspc::client (drts).put_and_run
-        (gspc::workflow (make.pnet()), {{"start", we::type::literal::control()}})
-    , std::runtime_error
-    , [](std::runtime_error const& exc)
-      {
-        return std::string (exc.what()).find
-          ("Please take into account also the buffer alignments "
-           "when allocating local shared memory!"
-          ) != std::string::npos;
-      }
-    );
-}
