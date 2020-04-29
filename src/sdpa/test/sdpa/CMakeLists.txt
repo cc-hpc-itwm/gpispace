@@ -126,7 +126,8 @@ fhg_add_test (NAME sdpa_Topologies
 fhg_add_test (NAME sdpa_WorkerManager
   SOURCES WorkerManager.cpp
   USE_BOOST
-  LIBRARIES sdpa
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
             test-utilities
 )
 
@@ -155,6 +156,14 @@ fhg_add_test (NAME forbid_equal_preferences_for_tasks
 
 fhg_add_test (NAME sdpa_Preferences
   SOURCES Preferences.cpp
+  USE_BOOST
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
+fhg_add_test (NAME sdpa_network_basics
+  SOURCES network_basics.cpp
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa

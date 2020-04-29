@@ -22,23 +22,24 @@ BOOST_DATA_TEST_CASE
   utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
-  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+  sdpa::worker_id_t worker_id;
 
   {
     fhg::util::thread::event<> job_submitted;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker
-      ( worker_id
-      , [&job_submitted] (std::string) { job_submitted.notify(); }
+      ( [&job_submitted] (std::string) { job_submitted.notify(); }
       , agent
       , certificates
       );
+
+    worker_id = worker.name();
 
     job_submitted.wait();
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
-    (worker_id, agent, certificates);
+    (utils::reused_component_name (worker_id), agent, certificates);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);

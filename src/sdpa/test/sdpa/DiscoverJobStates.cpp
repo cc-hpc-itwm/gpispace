@@ -8,6 +8,7 @@
 #include <fhg/util/thread/event.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
@@ -49,38 +50,20 @@ namespace
 
   unsigned int max_depth (const sdpa::discovery_info_t& discovery_result)
   {
-    unsigned int maxd = 1;
+    unsigned int maxd (1);
 
-    for (const sdpa::discovery_info_t& child_info : discovery_result.children())
+    for (auto const& child_info : discovery_result.children())
     {
-      unsigned int const depth (max_depth (child_info) + 1);
-
-      if (maxd < depth)
-      {
-        maxd = depth;
-      }
+      maxd = std::max (maxd, max_depth (child_info) + 1);
     }
 
     return maxd;
   }
 
-  void check_has_one_leaf_job_with_expected_status
-    ( const sdpa::discovery_info_t& discovery_result
-    , const sdpa::status::code expected_status
-    )
-  {
-     std::list<sdpa::status::code> const list_leaf_job_status
-       (get_leaf_job_info (discovery_result));
+#define REQUIRE_ONE_LEAF_WITH_STATUS(result_, expected_)                      \
+  BOOST_REQUIRE_EQUAL                                                         \
+    (get_leaf_job_info (result_), std::list<sdpa::status::code> {expected_})
 
-     BOOST_REQUIRE_EQUAL (list_leaf_job_status.size(), 1);
-
-     for (const sdpa::status::code& leaf_job_status : list_leaf_job_status)
-     {
-       BOOST_REQUIRE_EQUAL (leaf_job_status, expected_status);
-     }
-  }
-
-  template<sdpa::status::code reply>
   class fake_drts_worker_discovering final :
     public utils::no_thread::fake_drts_worker_notifying_module_call_submission
   {
@@ -89,9 +72,11 @@ namespace
         ( std::function<void (std::string)> announce_job
         , utils::agent const& master
         , fhg::com::Certificates const& certificates
+        , sdpa::status::code reply
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master, certificates)
+      , _reply (reply)
     {}
 
     virtual void handleDiscoverJobStatesEvent
@@ -103,76 +88,51 @@ namespace
         ( source
         , e->discover_id()
         , sdpa::discovery_info_t
-            (e->job_id(), reply, sdpa::discovery_info_set_t())
+            (e->job_id(), _reply, sdpa::discovery_info_set_t())
         );
     }
 
   private:
+    sdpa::status::code _reply;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  struct wait_until_submitted_and_finish_on_scope_exit
+  std::vector<sdpa::status::code> possible_status_codes()
   {
-    wait_until_submitted_and_finish_on_scope_exit
-        ( utils::no_thread::fake_drts_worker_notifying_module_call_submission& worker
-        , std::string expected_job_name
-        , fhg::util::thread::event<std::string>& job_submitted
-        )
-      : _worker (worker)
-      , _actual_job_name (job_submitted.wait())
-    {
-      BOOST_REQUIRE_EQUAL (_actual_job_name, expected_job_name);
-    }
-    ~wait_until_submitted_and_finish_on_scope_exit()
-    {
-      _worker.finish (_actual_job_name);
-    }
-
-    utils::no_thread::fake_drts_worker_notifying_module_call_submission& _worker;
-    std::string _actual_job_name;
-  };
-
-  template<sdpa::status::code reply>
-    void check_discover_worker_job_status
-      (fhg::com::Certificates const& certificates)
-  {
-    const utils::orchestrator orchestrator (certificates);
-    const utils::agent agent (orchestrator, certificates);
-
-    fhg::util::thread::event<std::string> job_submitted;
-
-    fake_drts_worker_discovering<reply> worker
-      ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
-      , agent
-      , certificates
-      );
-
-    const std::string activity_name (fhg::util::testing::random_string());
-
-    utils::client::submitted_job submitted_job
-      (utils::module_call (activity_name), orchestrator, certificates);
-
-    const wait_until_submitted_and_finish_on_scope_exit _
-      (worker, activity_name, job_submitted);
-
-    sdpa::discovery_info_t const discovery_result
-      (submitted_job.discover());
-
-    BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
-
-    check_has_one_leaf_job_with_expected_status (discovery_result, reply);
+    using namespace sdpa::status;
+    return {FINISHED, FAILED, CANCELED, PENDING, RUNNING, CANCELING};
   }
 }
 
-BOOST_DATA_TEST_CASE
-  (discover_worker_job_status, certificates_data, certificates)
+BOOST_DATA_TEST_CASE ( discover_worker_job_status
+                     , certificates_data * possible_status_codes()
+                     , certificates
+                     , reply
+                     )
 {
-  check_discover_worker_job_status<sdpa::status::FINISHED> (certificates);
-  check_discover_worker_job_status<sdpa::status::FAILED> (certificates);
-  check_discover_worker_job_status<sdpa::status::CANCELED> (certificates);
-  check_discover_worker_job_status<sdpa::status::PENDING> (certificates);
-  check_discover_worker_job_status<sdpa::status::RUNNING> (certificates);
-  check_discover_worker_job_status<sdpa::status::CANCELING> (certificates);
+  utils::orchestrator const orchestrator (certificates);
+  utils::agent const agent (orchestrator, certificates);
+
+  fhg::util::thread::event<std::string> job_submitted;
+
+  fake_drts_worker_discovering const worker
+    ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
+    , agent
+    , certificates
+    , reply
+    );
+
+  auto const activity_name (fhg::util::testing::random_string());
+
+  utils::client client (orchestrator, certificates);
+  auto const job_id (client.submit_job (utils::module_call (activity_name)));
+  BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
+
+  auto const discovery_result (client.discover (job_id));
+
+  BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
+
+  REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, reply);
 }
 
 BOOST_DATA_TEST_CASE (discover_inexistent_job, certificates_data, certificates)
@@ -193,7 +153,7 @@ BOOST_DATA_TEST_CASE
 
   utils::client client (orchestrator, certificates);
 
-  check_has_one_leaf_job_with_expected_status
+  REQUIRE_ONE_LEAF_WITH_STATUS
     ( client.discover (client.submit_job (utils::module_call()))
     , sdpa::status::PENDING
     );
@@ -212,7 +172,7 @@ BOOST_DATA_TEST_CASE
   while (max_depth (discovery_result = client.discover (job_id)) != 2)
   {} // do nothing, discover again
 
-  check_has_one_leaf_job_with_expected_status(discovery_result, sdpa::status::PENDING );
+  REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
 }
 
 namespace
@@ -265,21 +225,20 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted;
 
-  fake_drts_worker_discovering<sdpa::status::RUNNING> worker
+  fake_drts_worker_discovering const worker
     ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
     , *agents.front()
     , certificates
+    , sdpa::status::RUNNING
     );
 
   const std::string activity_name (fhg::util::testing::random_string());
 
-  utils::client::submitted_job submitted_job
-    (utils::module_call (activity_name), orchestrator, certificates);
+  utils::client client (orchestrator, certificates);
+  auto const job_id (client.submit_job (utils::module_call (activity_name)));
+  BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  const wait_until_submitted_and_finish_on_scope_exit _
-    (worker, activity_name, job_submitted);
-
-  sdpa::discovery_info_t const info (submitted_job.discover());
+  auto const info (client.discover (job_id));
 
   BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
   BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);
