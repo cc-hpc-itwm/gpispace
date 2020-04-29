@@ -654,6 +654,11 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
     return;
   }
 
+  bool const cancel_already_requested
+    ( pJob->getStatus() == sdpa::status::CANCELING
+    || pJob->getStatus() == sdpa::status::CANCELED
+    );
+
   pJob->CancelJob();
 
   const std::unordered_set<worker_id_t>
@@ -661,6 +666,11 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 
   if (!workers_to_cancel.empty())
   {
+    if (cancel_already_requested)
+    {
+      return;
+    }
+
     for (worker_id_t const& w : workers_to_cancel)
     {
       child_proxy ( this
