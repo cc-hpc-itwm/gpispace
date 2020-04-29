@@ -104,6 +104,23 @@ if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
 endif()
 
+include (CheckCXXSourceRuns)
+
+check_cxx_source_runs ([[
+  #include <memory>
+  int main (int, char**)
+  {
+    char c;
+    void* ptr (&c);
+    std::size_t space (sizeof (c));
+
+    return std::align (1, 0, ptr, space) ? 0 : 1;
+    //     ^^^^^^^^^^
+  }
+  ]]
+  HAS_STD_ALIGN
+)
+
 bundle_boost (DESTINATION "external/boost")
 list (APPEND INSTALL_RPATH_DIRS "lib")
 

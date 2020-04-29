@@ -134,6 +134,7 @@ extended_add_library (NAME pnet
             rapidxml
             ssl
             crypto
+  COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
 )
 
 add_subdirectory (xml/tests)

@@ -1,5 +1,6 @@
-#include <net_description.hpp>
-#include <nets_using_buffers.hpp>
+#include <we/test/buffer_alignment/nets_using_buffers.hpp>
+
+#include <we/test/buffer_alignment/net_description.hpp>
 
 #include <util-generic/print_container.hpp>
 #include <util-generic/testing/random.hpp>
@@ -13,122 +14,112 @@
 #include <list>
 #include <string>
 
-namespace
+namespace we
 {
-  std::string get_new_buffer_name (std::list<std::string> const& buffers)
+  namespace test
   {
-    std::string buffer_name;
-
-    do
+    namespace buffer_alignment
     {
-      buffer_name = fhg::util::testing::random_char_of
-        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ");
-      buffer_name += fhg::util::testing::random_string_of
-        ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
-    } while ( std::find (buffers.begin(), buffers.end(), buffer_name) 
-            != buffers.end()
-            );
+      namespace
+      {
+        struct random_identifier_without_leading_underscore
+        {
+          std::string operator()() const
+          {
+            using underlying = fhg::util::testing::random<std::string>;
+            return underlying{}
+              (underlying::identifier_without_leading_underscore{});
+          }
+        };
 
-    return buffer_name;
+        void align_up_worst
+          (std::size_t& pos, boost::optional<std::size_t> align)
+        {
+          // Don't assume base alignment, so every case should be
+          // worst case.
+          // \todo It isn't required to be worst case to always
+          // succeed, regardless of base alignment, is it? Probably is
+          // mostly limited by biggest requirement and can thus be
+          // made a more exact maximum worst-needed size.
+          pos += align.get_value_or (1) - 1;
+        }
+
+        template<typename Alignment>
+          std::string make_network ( unsigned long& size_without_align
+                                   , unsigned long& size_with_align_worst
+                                   , Alignment&& alignment
+                                   )
+        {
+          size_without_align = 0;
+          size_with_align_worst = 0;
+
+          fhg::util::testing::unique_random
+            <std::string, random_identifier_without_leading_underscore>
+              buffer_names;
+
+          std::vector<BufferInfo> buffers
+            (fhg::util::testing::random<std::size_t>{} (15, 5));
+
+          for (auto& buffer : buffers)
+          {
+            buffer.name = buffer_names();
+            buffer.size
+              = fhg::util::testing::random<unsigned long>{} (200, 100);
+            buffer.alignment = alignment();
+
+            align_up_worst (size_with_align_worst, buffer.alignment);
+
+            size_without_align += buffer.size;
+            size_with_align_worst += buffer.size;
+          }
+
+          return create_net_description (buffers);
+        }
+
+        boost::none_t always_none()
+        {
+          return boost::none;
+        }
+        unsigned long random_power_of_two()
+        {
+          return 1ul << fhg::util::testing::random<unsigned long>{} (10, 0);
+        }
+        boost::optional<unsigned long> random_power_of_two_or_none()
+        {
+          return boost::make_optional
+            (fhg::util::testing::random<bool>{}(), random_power_of_two());
+        }
+      }
+
+      std::string net_with_arbitrary_buffer_sizes_and_alignments
+        (unsigned long& size_with_align_worst)
+      {
+        unsigned long size_without_align;
+        return make_network ( size_without_align
+                            , size_with_align_worst
+                            , random_power_of_two
+                            );
+      }
+
+      std::string net_with_arbitrary_buffer_sizes_and_default_alignments
+        (unsigned long& size_with_align_worst)
+      {
+        unsigned long size_without_align;
+        return make_network ( size_without_align
+                            , size_with_align_worst
+                            , always_none
+                            );
+      }
+
+      std::string net_with_arbitrary_buffer_sizes_and_mixed_alignments
+        (unsigned long& size_with_align_worst)
+      {
+        unsigned long size_without_align;
+        return make_network ( size_without_align
+                            , size_with_align_worst
+                            , random_power_of_two_or_none
+                            );
+      }
+    }
   }
-}
-
-std::string net_with_arbitrary_buffer_sizes_and_alignments
-  (unsigned long& total_buffer_size)
-{
-  std::string buffer_descriptions;
-  std::list<std::string> buffer_names;
-  std::string alignment_tests;
-
-  unsigned long num_buffers
-    (fhg::util::testing::random<unsigned long>{} (15, 5));
-
-  for (unsigned int i (0); i < num_buffers; ++i)
-  {
-    auto const buffer_name (get_new_buffer_name (buffer_names));
-    auto const buffer_size
-      (fhg::util::testing::random<unsigned long>{} (200, 100));
-
-    auto const exp
-      (fhg::util::testing::random<unsigned long>{}(10, 0));
-    unsigned long const buffer_alignment (1ul << exp);
-
-    total_buffer_size += buffer_size + buffer_alignment - 1;
-
-    buffer_descriptions += create_buffer_description 
-                             (buffer_name, buffer_size, buffer_alignment);
-
-    buffer_names.emplace_back (buffer_name);
-
-    alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
-  }
-
-  return create_net_description 
-    (buffer_descriptions, buffer_names, alignment_tests);
-}
-
-std::string net_with_arbitrary_buffer_sizes_and_default_alignments
-  (unsigned long& total_buffer_size)
-{
-  std::string buffer_descriptions;
-  std::list<std::string> buffer_names;
-  std::string alignment_tests;
-
-  unsigned long const num_buffers
-    (fhg::util::testing::random<unsigned long>{} (15, 5));
-
-  unsigned int const default_alignment (1);
-
-  for (unsigned int i (0); i < num_buffers; ++i)
-  {
-    auto const buffer_name (get_new_buffer_name (buffer_names));
-    auto const buffer_size
-      (fhg::util::testing::random<unsigned long>{} (200, 100));
-
-    total_buffer_size += buffer_size;
-
-    buffer_descriptions += create_buffer_description 
-                             (buffer_name, buffer_size);
-  
-    buffer_names.emplace_back (buffer_name);
-
-    alignment_tests += create_alignment_test (default_alignment, buffer_name);
-  }
-
-  return create_net_description 
-    (buffer_descriptions, buffer_names, alignment_tests);
-}
-
-std::string net_with_arbitrary_buffer_sizes_and_alignments_insufficient_memory
-  (unsigned long& total_buffer_size)
-{
-  std::string buffer_descriptions;
-  std::list<std::string> buffer_names;
-  std::string alignment_tests;
-
-  unsigned long num_buffers
-    (fhg::util::testing::random<unsigned long>{} (15, 5));
-
-  for (unsigned int i (0); i < num_buffers; ++i)
-  {
-    auto const buffer_name (get_new_buffer_name (buffer_names));
-    auto const buffer_size
-      (fhg::util::testing::random<unsigned long>{} (200, 100));
-
-    auto const exp
-      (fhg::util::testing::random<unsigned long>{} (10, 0));
-    unsigned long const buffer_alignment (1ul << exp);
-
-    total_buffer_size += buffer_size;
-
-    buffer_descriptions += create_buffer_description
-                             (buffer_name, buffer_size, buffer_alignment);
-
-    buffer_names.emplace_back (buffer_name);
-
-    alignment_tests += create_alignment_test (buffer_alignment, buffer_name);
-  }
-
-  return create_net_description 
-    (buffer_descriptions, buffer_names, alignment_tests);
 }

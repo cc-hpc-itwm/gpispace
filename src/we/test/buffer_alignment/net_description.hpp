@@ -1,26 +1,24 @@
 #pragma once
 
-#include <list>
+#include <boost/optional.hpp>
+
+#include <vector>
 #include <string>
 
-std::string create_buffer_description
-  ( std::string const& name
-  , std::size_t size
-  );
+namespace we
+{
+  namespace test
+  {
+    namespace buffer_alignment
+    {
+      struct BufferInfo
+      {
+        std::string name;
+        unsigned long size;
+        boost::optional<unsigned long> alignment;
+      };
 
-std::string create_buffer_description
-  ( std::string const& name
-  , std::size_t size
-  , std::size_t alignment
-  );
-
-std::string create_alignment_test
-  ( std::size_t alignment
-  , std::string const& name
-  );
-
-std::string create_net_description
-  ( std::string const& buffer_descriptions
-  , std::list<std::string> const& buffer_names
-  , std::string const& alignment_tests
-  );
+      std::string create_net_description (std::vector<BufferInfo> const&);
+    }
+  }
+}
