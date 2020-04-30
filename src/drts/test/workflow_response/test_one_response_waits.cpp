@@ -16,28 +16,32 @@
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
+#include <test/source_directory.hpp>
 
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <fhg/util/starts_with.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/latch.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/printer/multimap.hpp>
 #include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/require_container_is_permutation.hpp>
+#include <util-generic/testing/random.hpp>
+#include <util-generic/testing/require_exception.hpp>
+#include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 #include <boost/test/data/test_case.hpp>
 
+#include <future>
 #include <map>
+#include <regex>
 
-BOOST_AUTO_TEST_CASE (wait_for_token_put)
+BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 {
   boost::program_options::options_description options_description;
 
@@ -67,13 +71,17 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
 
   std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
 
-  fhg::util::temporary_path const shared_directory
+  boost::filesystem::path test_directory
     ( test::shared_directory (vm)
-    / ( "wait_for_token_put"
+    / ( "workflow_response_one_response_waits_while_others_are_made"
       + ssl_cert
       + "_cert"
       )
     );
+
+  boost::filesystem::remove_all (test_directory);
+
+  fhg::util::temporary_path const shared_directory (test_directory);
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -90,7 +98,7 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
 
   test::make_net_lib_install const make
     ( installation
-    , "wait_for_token_put"
+    , "workflow_response_one_response_waits_while_others_are_made"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -103,25 +111,28 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     . add<test::option::gen::ld_flag> ("-lboost_context")
     );
 
-  gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
-                                 , gspc::rifd::hostnames {vm}
-                                 , gspc::rifd::port {vm}
+  gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
+                                 , gspc::rifd::hostnames (vm)
+                                 , gspc::rifd::port (vm)
                                  , installation
-                                 );
+                                 };
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
                                                : gspc::testing::no_certs()
                           );
+
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
+    (vm, installation, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
+
   gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
   workflow.set_wait_for_output();
 
-  pnet::type::value::value_type const bad (std::string ("bad"));
-  pnet::type::value::value_type const good (std::string ("good"));
+  unsigned long const initial_state (0);
+  std::atomic<unsigned long> status_updates (0);
+  unsigned long const threads (2);
 
   fhg::util::latch workflow_actually_running (1);
 
@@ -139,7 +150,10 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
   gspc::job_id_t const job_id
     ( client.submit
         ( workflow
-        , { {"in", good}
+        , { {"state", initial_state}
+          , { "random_module_calls"
+            , fhg::util::testing::random<unsigned long>{} (50, 20)
+            }
           , {"register_host", fhg::util::connectable_to_address_string
                                 (registry.local_endpoint().address())}
           , {"register_port", static_cast<unsigned int>
@@ -150,11 +164,80 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
 
   workflow_actually_running.wait();
 
-  client.put_token (job_id, "in", bad);
+  std::mutex no_longer_do_status_update_guard;
+  bool no_longer_do_status_update (false);
+
+  std::future<void> done_check
+    ( std::async ( std::launch::async
+                 , [ &client, &job_id, &no_longer_do_status_update
+                   , &no_longer_do_status_update_guard
+                   ]
+                   {
+                     client.synchronous_workflow_response
+                       (job_id, "check_done_trigger", 0UL);
+
+                     no_longer_do_status_update = true;
+                     {
+                       std::lock_guard<std::mutex> const _
+                         (no_longer_do_status_update_guard);
+
+                       client.put_token
+                         (job_id, "done_done", we::type::literal::control());
+                     }
+
+                     client.wait (job_id);
+                   }
+                 )
+    );
+
+  auto&& thread_function
+    ( [ &status_updates, &job_id, &drts, &no_longer_do_status_update
+      , &no_longer_do_status_update_guard, &certificates
+      ]
+      {
+        unsigned long updates (0);
+        while (true)
+        {
+          std::lock_guard<std::mutex> const _ (no_longer_do_status_update_guard);
+          if (no_longer_do_status_update)
+          {
+            break;
+          }
+
+          gspc::client (drts, certificates).synchronous_workflow_response
+            (job_id, "get_and_update_state_trigger", 1UL);
+          ++updates;
+        }
+        status_updates += updates;
+      }
+    );
+
+  {
+    std::vector<std::future<void>> results;
+    for (unsigned long i (0); i < threads; ++i)
+    {
+      results.emplace_back (std::async (std::launch::async, thread_function));
+    }
+
+    fhg::util::wait_and_collect_exceptions (results);
+  }
+
+  done_check.get();
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    (client.wait_and_extract (job_id));
+    (client.extract_result_and_forget_job (job_id));
 
-  decltype (result) const expected {{"bad", bad}, {"good", good}};
-  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
+  std::string const port_done ("done");
+  std::string const port_state ("state");
+
+  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
+  BOOST_REQUIRE_EQUAL
+    ( result.find (port_done)->second
+    , pnet::type::value::value_type (we::type::literal::control())
+    );
+  BOOST_REQUIRE_EQUAL (result.count (port_state), 1);
+  BOOST_REQUIRE_EQUAL ( result.find (port_state)->second
+                      , pnet::type::value::value_type
+                          (initial_state + status_updates)
+                      );
 }
