@@ -131,21 +131,21 @@ BOOST_FIXTURE_TEST_CASE
 
   add_new_workers (capabilities, num_workers);
 
-  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (60);
-
-  for (unsigned int i {0}; i < num_tasks; i++)
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (60))
   {
-    sdpa::job_id_t const task (job_name_pool());
-    add_job
-      ( task
-      , require (*std::next ( capabilities.begin()
-                            , random_integral<unsigned int>() % 2
-                            )
-                )
-      );
+    for (unsigned int i {0}; i < num_tasks; i++)
+    {
+      sdpa::job_id_t const task (job_name_pool());
+      add_job
+        ( task
+        , require (*std::next ( capabilities.begin()
+                              , random_integral<unsigned int>() % 2
+                              )
+                  )
+        );
 
-    _scheduler.enqueueJob (task);
-    request_scheduling();
-  }
+      _scheduler.enqueueJob (task);
+      request_scheduling();
+    }
+  };
 }

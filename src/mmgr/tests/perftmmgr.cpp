@@ -49,29 +49,24 @@ BOOST_DATA_TEST_CASE (fill_clear, handless(), handles)
 {
   gspc::vmem::tmmgr tmmgr (num_handles, 1);
 
-  std::chrono::steady_clock::time_point const start
-    (std::chrono::steady_clock::now());
+  auto const start (std::chrono::steady_clock::now());
 
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (1))
   {
-    fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-      const max_time_for_alloc (1);
-
     for (gspc::vmem::Handle_t const& handle : handles)
     {
       tmmgr.alloc (handle, 1);
     }
-  }
+  };
 
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME
+    ( std::chrono::duration_cast<std::chrono::milliseconds>
+        (std::chrono::steady_clock::now() - start)
+    )
   {
-    fhg::util::testing::require_maximum_running_time
-      <std::chrono::milliseconds> const max_time_for_free
-        (std::chrono::duration_cast<std::chrono::milliseconds>
-          (std::chrono::steady_clock::now() - start)
-        );
-
     for (gspc::vmem::Handle_t const& handle : handles)
     {
       tmmgr.free (handle);
     }
-  }
+  };
 }

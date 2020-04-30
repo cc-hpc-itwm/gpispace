@@ -84,28 +84,28 @@ BOOST_AUTO_TEST_CASE
     , _random_engine
     );
 
-  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (1);
-
-  for (std::size_t i (0); i < num_activities; ++i)
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (1))
   {
-    layer.submit (generate_id(), activity_input);
-  }
+    for (std::size_t i (0); i < num_activities; ++i)
+    {
+      layer.submit (generate_id(), activity_input);
+    }
 
-  //! \todo Don't busy wait
-  while (child_ids.size() != child_ids.capacity())
-  {
-    std::this_thread::yield();
-  }
+    //! \todo Don't busy wait
+    while (child_ids.size() != child_ids.capacity())
+    {
+      std::this_thread::yield();
+    }
 
-  for (we::layer::id_type child_id : child_ids)
-  {
-    layer.finished (child_id, activity_result);
-  }
+    for (we::layer::id_type child_id : child_ids)
+    {
+      layer.finished (child_id, activity_result);
+    }
 
-  //! \todo Don't busy wait
-  while (!finished)
-  {
-    std::this_thread::yield();
-  }
+    //! \todo Don't busy wait
+    while (!finished)
+    {
+      std::this_thread::yield();
+    }
+  };
 }
