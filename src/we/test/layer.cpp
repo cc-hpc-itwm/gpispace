@@ -131,16 +131,6 @@ struct daemon
             ;
         }
       );
-
-    BOOST_REQUIRE (_to_submit.empty());
-    BOOST_REQUIRE (_to_cancel.empty());
-    BOOST_REQUIRE (_to_finished.empty());
-    BOOST_REQUIRE (_to_failed.empty());
-    BOOST_REQUIRE (_to_canceled.empty());
-    BOOST_REQUIRE (_to_discover.empty());
-    BOOST_REQUIRE (_to_discovered.empty());
-    BOOST_REQUIRE (_to_token_put.empty());
-    BOOST_REQUIRE (_to_workflow_response.empty());
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
