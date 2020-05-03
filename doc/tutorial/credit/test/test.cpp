@@ -43,7 +43,7 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "tutorial_credit");
+    (test::shared_directory (vm) / "tutorial_work_and_wait");
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait_credit)
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "tutorial_credit");
+    (test::shared_directory (vm) / "tutorial_work_and_wait_credit");
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
