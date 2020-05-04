@@ -272,6 +272,8 @@ namespace utils
                    , fhg::com::p2p::address_t const& owner
                    );
 
+      void delete_job (sdpa::job_id_t const& job_id);
+
       void announce_job (std::string const& name);
 
     protected:

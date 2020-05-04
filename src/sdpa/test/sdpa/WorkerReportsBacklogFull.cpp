@@ -70,8 +70,6 @@ namespace
 
       _network.perform<sdpa::events::JobFinishedEvent>
         (job._owner, job._id, we::type::activity_t());
-
-      _jobs.erase (name);
     }
 
   private:

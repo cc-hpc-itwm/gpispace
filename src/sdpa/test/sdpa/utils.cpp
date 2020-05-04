@@ -613,19 +613,32 @@ namespace utils
 
       announce_job (name);
     }
+
+    void fake_drts_worker_notifying_module_call_submission::delete_job
+      (sdpa::job_id_t const& job_id)
+    {
+      auto const job
+        ( std::find_if ( _jobs.begin()
+                       , _jobs.end()
+                       , [&job_id] (decltype (_jobs)::value_type const name_and_job)
+                         { return name_and_job.second._id == job_id; }
+                       )
+        );
+      _jobs.erase (job);
+    }
+
     void fake_drts_worker_notifying_module_call_submission
       ::handleJobFinishedAckEvent ( fhg::com::p2p::address_t const&
-                                  , sdpa::events::JobFinishedAckEvent const*
+                                  , sdpa::events::JobFinishedAckEvent const* e
                                   )
     {
-      // can be ignored as we clean up in finish() already
+      delete_job (e->job_id());
     }
 
     void fake_drts_worker_notifying_module_call_submission::finish
       (std::string name)
     {
       auto const job (_jobs.at (name));
-      _jobs.erase (name);
 
       _network.perform<sdpa::events::JobFinishedEvent>
         (job._owner, job._id, we::type::activity_t());
@@ -674,6 +687,7 @@ namespace utils
       )
     {
       _finished_ack.notify (e->job_id());
+      delete_job (e->job_id());
     }
 
     void fake_drts_worker_waiting_for_finished_ack::finish_and_wait_for_ack
@@ -684,8 +698,6 @@ namespace utils
       finish (name);
 
       BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
-
-      _jobs.erase (name);
     }
   }
 
@@ -799,6 +811,7 @@ namespace utils
     _cancels.erase (job_id);
 
     _network.perform<sdpa::events::CancelJobAckEvent> (master, job_id);
+    delete_job (job_id);
   }
 
   fake_drts_worker_notifying_cancel_but_never_replying
