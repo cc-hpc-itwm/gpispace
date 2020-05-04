@@ -205,12 +205,12 @@ BOOST_DATA_TEST_CASE
 }
 
 BOOST_DATA_TEST_CASE
-  ( worker_shall_not_get_job_after_finishing_and_another_worker_disappearing_while_not_all_workers_terminated
+  ( coallocated_tasks_are_canceled_when_one_worker_having_a_sibling_task__dies
   , certificates_data
   , certificates
   )
 {
-  //! \note related to issue #374
+  //! \note related to issue #822
 
   const utils::orchestrator orchestrator (certificates);
   const utils::agent agent (orchestrator, certificates);
