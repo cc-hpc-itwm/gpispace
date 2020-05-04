@@ -24,7 +24,7 @@
 namespace
 {
   class fake_drts_worker_reporting_backlog_full final
-    : public utils::no_thread::fake_drts_worker_notifying_module_call_submission
+    : public utils::no_thread::fake_drts_worker_waiting_for_finished_ack
   {
   public:
     fake_drts_worker_reporting_backlog_full
@@ -32,17 +32,9 @@ namespace
       , utils::agent const& master
       , fhg::com::Certificates const& certificates
       )
-      : utils::no_thread::fake_drts_worker_notifying_module_call_submission (announce_job, master, certificates)
+      : utils::no_thread::fake_drts_worker_waiting_for_finished_ack
+          (announce_job, master, certificates)
     {}
-
-    virtual void handleSubmitJobEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* e) override
-    {
-      const std::string name (e->activity().name());
-
-      add_job (name, *e->job_id(), source);
-      announce_job (name);
-    }
 
     void report_backlog_full (std::string name)
     {
@@ -60,16 +52,6 @@ namespace
     void report_can_take_jobs()
     {
       _network.perform<sdpa::events::BacklogNoLongerFullEvent> (_master.get());
-    }
-
-    void acknowledge_and_finish (std::string name)
-    {
-      const job_t job (_jobs.at (name));
-
-      _network.perform<sdpa::events::SubmitJobAckEvent> (job._owner, job._id);
-
-      _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t());
     }
 
   private:
@@ -212,6 +194,6 @@ BOOST_DATA_TEST_CASE
   const std::string job_name_2 (job_submitted_1.wait());
   BOOST_REQUIRE_EQUAL (job_name_2, job_submitted_2.wait());
 
-  worker_1.acknowledge_and_finish (job_name_2);
+  worker_1.finish_and_wait_for_ack (job_name_2);
   worker_2.finish_and_wait_for_ack (job_name_2);
 }
