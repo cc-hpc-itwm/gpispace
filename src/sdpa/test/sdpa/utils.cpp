@@ -600,6 +600,17 @@ namespace utils
       , _announce_job (announce_job)
     {}
 
+    fake_drts_worker_notifying_module_call_submission
+      ::fake_drts_worker_notifying_module_call_submission
+        ( reused_component_name name
+        , std::function<void (std::string)> announce_job
+        , agent const& master
+        , fhg::com::Certificates const& certificates
+        )
+      : basic_drts_worker (std::move (name), master, certificates)
+      , _announce_job (announce_job)
+    {}
+
     void fake_drts_worker_notifying_module_call_submission
       ::handleSubmitJobEvent ( fhg::com::p2p::address_t const& source
                              , sdpa::events::SubmitJobEvent const* e
@@ -727,6 +738,17 @@ namespace utils
       )
     : no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master, certificates)
+  {}
+
+  fake_drts_worker_notifying_module_call_submission
+    ::fake_drts_worker_notifying_module_call_submission
+      ( reused_component_name name
+      , std::function<void (std::string)> announce_job
+      , agent const& master
+      , fhg::com::Certificates const& certificates
+      )
+    : no_thread::fake_drts_worker_notifying_module_call_submission
+        (std::move (name), announce_job, master, certificates)
   {}
 
   fake_drts_worker_directly_finishing_jobs
