@@ -624,6 +624,12 @@ namespace utils
                          { return name_and_job.second._id == job_id; }
                        )
         );
+
+      if (job == _jobs.end())
+      {
+        throw std::runtime_error ("attempted to delete unknown job!");
+      }
+
       _jobs.erase (job);
     }
 
