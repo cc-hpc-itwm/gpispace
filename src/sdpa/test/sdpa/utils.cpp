@@ -789,6 +789,8 @@ namespace utils
     , sdpa::events::CancelJobEvent const* pEvt
     )
   {
+    std::lock_guard<std::mutex> const _ (_cancels_mutex);
+
     auto const job_id (pEvt->job_id());
     if ( std::find_if ( _jobs.begin()
                       , _jobs.end()
@@ -802,8 +804,6 @@ namespace utils
     {
       throw std::runtime_error ("received cancel request for unknown job!");
     }
-
-    std::lock_guard<std::mutex> const _ (_cancels_mutex);
 
     _cancels.emplace (job_id, source);
     _announce_cancel (job_id);
