@@ -10,7 +10,7 @@
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 
-#include <libssh2_wrapper/session.hpp>
+#include <rif/strategy/ssh/session.hpp>
 
 #include <boost/format.hpp>
 
