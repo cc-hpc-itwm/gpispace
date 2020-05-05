@@ -154,8 +154,6 @@ add_subdirectory (fhg)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
 
-add_subdirectory (libssh2_wrapper)
-
 add_subdirectory (gspc)
 
 extended_add_library (NAME logging
