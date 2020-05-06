@@ -382,7 +382,6 @@ namespace utils
       , agent const& master
       , fhg::com::Certificates const&
       );
-    ~fake_drts_worker_notifying_cancel();
 
     void handleCancelJobEvent
       ( fhg::com::p2p::address_t const&

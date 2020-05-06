@@ -781,8 +781,6 @@ namespace utils
         (announce_job, master_agent, certificates)
     , _announce_cancel (announce_cancel)
   {}
-  fake_drts_worker_notifying_cancel::~fake_drts_worker_notifying_cancel()
-  {}
 
   void fake_drts_worker_notifying_cancel::handleCancelJobEvent
     ( fhg::com::p2p::address_t const& source
