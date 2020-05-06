@@ -282,6 +282,7 @@ namespace utils
         job_t (sdpa::job_id_t id, fhg::com::p2p::address_t owner);
       };
       std::map<std::string, job_t> _jobs;
+      void delete_job (sdpa::job_id_t const& job_id);
 
     private:
       std::function<void (std::string)> _announce_job;
@@ -380,7 +381,6 @@ namespace utils
       , agent const& master
       , fhg::com::Certificates const&
       );
-    ~fake_drts_worker_notifying_cancel();
 
     void handleCancelJobEvent
       ( fhg::com::p2p::address_t const&
