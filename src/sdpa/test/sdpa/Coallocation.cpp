@@ -344,7 +344,7 @@ BOOST_DATA_TEST_CASE
 }
 
 BOOST_DATA_TEST_CASE
-  ( coallocated_tasks_are_canceled_when_one_worker_having_a_sibling_task__dies
+  ( coallocated_tasks_are_canceled_when_one_worker_having_a_sibling_task_dies
   , certificates_data
   , certificates
   )
