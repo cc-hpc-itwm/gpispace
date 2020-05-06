@@ -22,14 +22,29 @@ BOOST_DATA_TEST_CASE (coallocation_workflow, certificates_data, certificates)
   const utils::orchestrator orchestrator (certificates);
   const utils::agent agent (orchestrator, certificates);
 
-  const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
-  const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent, certificates);
+  utils::client client (orchestrator, certificates);
+  sdpa::job_id_t const job_id
+    (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
+
+  fhg::util::thread::event<std::string> job_submitted_0;
+  utils::fake_drts_worker_waiting_for_finished_ack worker_0
+    ( [&job_submitted_0] (std::string s) { job_submitted_0.notify (s); }
+    , agent
+    , certificates
+    );
+
+  fhg::util::thread::event<std::string> job_submitted_1;
+  utils::fake_drts_worker_waiting_for_finished_ack worker_1
+    ( [&job_submitted_1] (std::string s) { job_submitted_1.notify (s); }
+    , agent
+    , certificates
+    );
+
+  worker_0.finish_and_wait_for_ack (job_submitted_0.wait());
+  worker_1.finish_and_wait_for_ack (job_submitted_1.wait());
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (2), orchestrator, certificates)
-    , sdpa::status::FINISHED
-    );
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
 BOOST_DATA_TEST_CASE
