@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
           ( gspc::workflow (make.pnet())
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}
-            , {"timeout_in_seconds", 5U}
+            , {"timeout_in_seconds", 30U}
             }
           )
         );

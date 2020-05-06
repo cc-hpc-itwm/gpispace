@@ -33,7 +33,7 @@
     </transition>
 
     <place name="task_finished" type="bool"/>
-    <transition name="transition_with_multiple_module_implementations">
+    <transition name="transition_with_single_implementation">
       <defun>
         <in name="task_id" type="long"/>
         <in name="slow_worker_host" type="string"/>
@@ -44,25 +44,25 @@
                 pass_context="true">
           <cinclude href="chrono"/>
           <cinclude href="regex"/>
-          <cinclude href="string"/>     
+          <cinclude href="string"/>
           <cinclude href="thread"/>
           <cxx flag="--std=c++11"/>
           <code><![CDATA[
-            std::string pattern 
-              ("A-" + slow_worker_host + " [0-9]* [0-9]*-1");  
+            std::string pattern
+              ("A-" + slow_worker_host + " [0-9]* [0-9]*-1");
 
             auto is_the_slowest_worker
               = [&_pnetc_context, &pattern]
-                { return std::regex_match 
+                { return std::regex_match
                     (_pnetc_context->worker_name(), std::regex (pattern));
                 };
-            
+
             if (is_the_slowest_worker())
             {
-              std::this_thread::sleep_for 
+              std::this_thread::sleep_for
                 (std::chrono::seconds (worst_comp_time));
             }
-            
+
             task_finished = true;
           ]]></code>
         </module>

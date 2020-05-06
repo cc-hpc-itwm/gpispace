@@ -20,6 +20,8 @@ fhg_add_test (NAME share_example_stream_two_module_calls
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
+  RUN_SERIAL # actually a performance test but a fundamental one we
+             # don't want to ignore
 )
 
 fhg_add_test (NAME share_example_stream_one_module_call
@@ -39,4 +41,6 @@ fhg_add_test (NAME share_example_stream_one_module_call
   REQUIRES_INSTALLATION
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
+  RUN_SERIAL # actually a performance test but a fundamental one we
+             # don't want to ignore
 )
