@@ -751,38 +751,6 @@ namespace utils
         (std::move (name), announce_job, master, certificates)
   {}
 
-  fake_drts_worker_directly_finishing_jobs
-    ::fake_drts_worker_directly_finishing_jobs
-      ( agent const& master
-      , fhg::com::Certificates const& certificates
-      )
-    : no_thread::basic_drts_worker (master, certificates)
-  {}
-  fake_drts_worker_directly_finishing_jobs
-    ::fake_drts_worker_directly_finishing_jobs
-      ( reused_component_name name
-      , agent const& master
-      , fhg::com::Certificates const& certificates
-      )
-    : no_thread::basic_drts_worker (std::move (name), master, certificates)
-  {}
-
-  void fake_drts_worker_directly_finishing_jobs::handleSubmitJobEvent
-    ( fhg::com::p2p::address_t const& source
-    , sdpa::events::SubmitJobEvent const* e
-    )
-  {
-    _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
-
-    _network.perform<sdpa::events::JobFinishedEvent>
-      (source, *e->job_id(), we::type::activity_t());
-  }
-  void fake_drts_worker_directly_finishing_jobs::handleJobFinishedAckEvent
-    (fhg::com::p2p::address_t const&, sdpa::events::JobFinishedAckEvent const*)
-  {
-    // can be ignored as we don't have any state
-  }
-
   fake_drts_worker_waiting_for_finished_ack
     ::fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job

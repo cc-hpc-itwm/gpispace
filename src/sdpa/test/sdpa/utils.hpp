@@ -349,30 +349,6 @@ namespace utils
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  struct fake_drts_worker_directly_finishing_jobs final
-    : public no_thread::basic_drts_worker
-  {
-    fake_drts_worker_directly_finishing_jobs
-      ( agent const& master
-      , fhg::com::Certificates const&
-      );
-    fake_drts_worker_directly_finishing_jobs
-      ( reused_component_name
-      , agent const& master
-      , fhg::com::Certificates const&
-      );
-
-    virtual void handleSubmitJobEvent ( fhg::com::p2p::address_t const&
-                                      , sdpa::events::SubmitJobEvent const*
-                                      ) override;
-    virtual void handleJobFinishedAckEvent
-      ( fhg::com::p2p::address_t const&
-      , sdpa::events::JobFinishedAckEvent const*
-      ) override;
-
-    basic_drts_component::event_thread_and_worker_join _ = {*this};
-  };
-
   struct fake_drts_worker_waiting_for_finished_ack final
     : public no_thread::fake_drts_worker_waiting_for_finished_ack
   {
