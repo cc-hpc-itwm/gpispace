@@ -79,10 +79,8 @@ namespace
     }                                                                   \
     void happened()                                                     \
     {                                                                   \
-      {                                                                 \
-        std::lock_guard<std::mutex> const lock (_happened_mutex);       \
-        _happened = true;                                               \
-      }                                                                 \
+      std::lock_guard<std::mutex> const lock (_happened_mutex);         \
+      _happened = true;                                                 \
       _happened_condition.notify_one();                                 \
     }                                                                   \
     bool eq (CTOR_ARGUMENTS) const                                      \
