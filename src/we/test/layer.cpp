@@ -79,6 +79,7 @@ namespace
     }                                                                   \
     void happened()                                                     \
     {                                                                   \
+      std::lock_guard<std::mutex> const lock (_happened_mutex);         \
       _happened = true;                                                 \
       _happened_condition.notify_one();                                 \
     }                                                                   \
@@ -1101,7 +1102,7 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type child_id;
   {
-    expect_submit _ (this, &child_id, activity_child);
+    expect_submit const _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -1109,7 +1110,7 @@ BOOST_FIXTURE_TEST_CASE
   const we::layer::id_type discover_id
     (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
   {
-    expect_discover _ (this, discover_id, child_id);
+    expect_discover const _ (this, discover_id, child_id);
 
     do_discover (discover_id, id);
   }
@@ -1123,7 +1124,7 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
 
   {
-    expect_discovered _ (this, discover_id, discover_result);
+    expect_discovered const _ (this, discover_id, discover_result);
 
     do_discovered (discover_id, discover_result_child);
   }
@@ -1151,8 +1152,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_a;
   we::layer::id_type child_id_b;
   {
-    expect_submit _a (this, &child_id_a, activity_child);
-    expect_submit _b (this, &child_id_b, activity_child);
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -1160,8 +1161,8 @@ BOOST_FIXTURE_TEST_CASE
   const we::layer::id_type discover_id
     (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
   {
-    expect_discover _a (this, discover_id, child_id_a);
-    expect_discover _b (this, discover_id, child_id_b);
+    expect_discover const _a (this, discover_id, child_id_a);
+    expect_discover const _b (this, discover_id, child_id_b);
 
     do_discover (discover_id, id);
   }
@@ -1184,7 +1185,7 @@ BOOST_FIXTURE_TEST_CASE
   do_discovered (discover_id, discover_result_child_a);
 
   {
-    expect_discovered _ (this, discover_id, discover_result);
+    expect_discovered const _ (this, discover_id, discover_result);
 
     //! \note There is a race here where layer may call rts_discovered
     //! before do_discovered, but this is checked by comparing the
@@ -2357,6 +2358,7 @@ BOOST_FIXTURE_TEST_CASE
       (this, &child_id_A_1, test_job_A.get_activity ("A", child));
     expect_submit const _a2
       (this, &child_id_A_2, test_job_A.get_activity ("A", child));
+
     do_submit (id_A, test_job_A.input);
   }
 
