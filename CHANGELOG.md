@@ -27,8 +27,8 @@
 ### Changed
 	- Performance improvement to scheduling
 		* reduced overhead of dynamic re-calculation for tasks assignment
-		* worker-class aware scheduling
-		* up to 10x improvement in scheduler performance
+		* dynamic worker-class and worker-state aware scheduling
+		* up to 11.15x improvement in the scheduler performance
 	- Updated logging infrastructure
 		* decentralized and better usability
 		* multiple log sink support via RPC
