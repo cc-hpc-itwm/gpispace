@@ -27,6 +27,7 @@ namespace fhg
       endpoint local_endpoint() const;
 
       void emit_message (message const&);
+      void emit_message (message const&, boost::asio::yield_context);
       void emit (decltype (message::_content), decltype (message::_category));
 
     private:

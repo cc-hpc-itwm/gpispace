@@ -1,5 +1,6 @@
 #include <logging/stream_emitter.hpp>
 
+#include <rpc/future.hpp>
 #include <rpc/remote_function.hpp>
 #include <rpc/remote_socket_endpoint.hpp>
 #include <rpc/remote_tcp_endpoint.hpp>
@@ -38,26 +39,51 @@ namespace fhg
       return _local_endpoint;
     }
 
-    void stream_emitter::emit_message (message const& forwarded_message)
+    namespace
     {
-      std::vector<std::future<void>> receiver_results;
+      template < template<typename> class Future
+               , typename Receivers
+               , typename... Yield
+               >
+        void emit_message_impl ( Receivers& receivers
+                               , message const& forwarded_message
+                               , Yield... yield
+                               )
+      {
+        std::vector<Future<void>> receiver_results;
 
-      for (auto const& receiver : _receivers)
-      {
-        using fun = rpc::remote_function<protocol::receive>;
-        receiver_results.emplace_back (fun {*receiver} (forwarded_message));
-      }
+        for (auto const& receiver : receivers)
+        {
+          using fun = rpc::remote_function<protocol::receive, Future>;
+          receiver_results.emplace_back (fun {*receiver} (forwarded_message));
+        }
 
-      try
-      {
-        util::wait_and_collect_exceptions (receiver_results);
-      }
-      catch (...)
-      {
-        //! \todo Ignore for now. Report somewhere? Remove receiver
-        //! from list to avoid endless errors?
+        try
+        {
+          util::apply_for_each_and_collect_exceptions
+            ( std::move (receiver_results)
+            , [&] (Future<void>& future) { return future.get (yield...); }
+            );
+        }
+        catch (...)
+        {
+          //! \todo Ignore for now. Report somewhere? Remove receiver
+          //! from list to avoid endless errors?
+        }
       }
     }
+
+    void stream_emitter::emit_message (message const& forwarded_message)
+    {
+      return emit_message_impl<std::future> (_receivers, forwarded_message);
+    }
+    void stream_emitter::emit_message
+      (message const& forwarded_message, boost::asio::yield_context yield)
+    {
+      return emit_message_impl<rpc::future>
+        (_receivers, forwarded_message, yield);
+    }
+
     void stream_emitter::emit ( decltype (message::_content) content
                               , decltype (message::_category) category
                               )

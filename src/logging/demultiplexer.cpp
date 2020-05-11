@@ -9,7 +9,11 @@ namespace fhg
   {
     demultiplexer::demultiplexer
         (rif::started_process_promise& promise, int, char**)
-      : receiver (util::bind_this (&emitter, &stream_emitter::emit_message))
+      : receiver ( [&] (boost::asio::yield_context yield, message const& m)
+                   {
+                     return emitter.emit_message (m, std::move (yield));
+                   }
+                 )
       , add_emitters
           ( service_dispatcher
           , util::bind_this (&receiver, &stream_receiver::add_emitters)

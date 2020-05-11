@@ -23,8 +23,13 @@ namespace fhg
     class stream_receiver
     {
     public:
+      //! \note The callback shall not be blocking and shall not use
+      //! an `io_service` sharing anything with `this->_io_service`.
       using callback_t = std::function<void (message const&)>;
+      using yielding_callback_t
+        = std::function<void (boost::asio::yield_context, message const&)>;
       stream_receiver (callback_t);
+      stream_receiver (yielding_callback_t);
       stream_receiver (endpoint, callback_t);
       stream_receiver (std::vector<endpoint>, callback_t);
 
@@ -32,8 +37,6 @@ namespace fhg
       void add_emitters_blocking (std::vector<endpoint>);
 
     private:
-      callback_t _callback;
-
       rpc::service_dispatcher _service_dispatcher;
       util::scoped_boost_asio_io_service_with_threads _io_service;
       rpc::service_handler<protocol::receive> const _receive;

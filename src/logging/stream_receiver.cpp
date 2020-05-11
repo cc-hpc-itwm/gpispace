@@ -20,6 +20,17 @@ namespace fhg
       : stream_receiver (std::vector<endpoint>(), std::move (callback))
     {}
 
+    stream_receiver::stream_receiver (yielding_callback_t callback)
+      : _io_service (1)
+      , _receive (_service_dispatcher, std::move (callback), rpc::yielding)
+      , _service_tcp_provider (_io_service, _service_dispatcher)
+      , _service_socket_provider (_io_service, _service_dispatcher)
+      , _local_endpoint ( util::connectable_to_address_string
+                            (_service_tcp_provider.local_endpoint())
+                        , _service_socket_provider.local_endpoint()
+                        )
+    {}
+
     stream_receiver::stream_receiver (endpoint emitter, callback_t callback)
       : stream_receiver ( std::vector<endpoint> {std::move (emitter)}
                         , std::move (callback)
@@ -29,12 +40,8 @@ namespace fhg
     stream_receiver::stream_receiver ( std::vector<endpoint> emitters
                                      , callback_t callback
                                      )
-      : _callback (std::move (callback))
-      , _io_service (1)
-      , _receive
-          ( _service_dispatcher
-          , [this] (message const& message) { return _callback (message); }
-          )
+      : _io_service (1)
+      , _receive (_service_dispatcher, std::move (callback), rpc::not_yielding)
       , _service_tcp_provider (_io_service, _service_dispatcher)
       , _service_socket_provider (_io_service, _service_dispatcher)
       , _local_endpoint ( util::connectable_to_address_string
