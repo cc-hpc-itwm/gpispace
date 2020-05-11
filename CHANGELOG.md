@@ -3,6 +3,9 @@
 	- Eureka feature
 		* Petri net extensions to identify and skip ongoing tasks
 		* Conditional execution of workflow transitions
+	- Buffer alignment
+		* Enables user-specified buffer alignments
+		* Applies to local buffers allocated in the worker
 	- Support for Petri net workflows for heterogeneous clusters
 		* XML support for defining multiple module implementations
 		* XML support for Petri net transitions with preference order
