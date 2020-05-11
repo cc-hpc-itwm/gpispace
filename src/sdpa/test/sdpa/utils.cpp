@@ -698,6 +698,17 @@ namespace utils
           (announce_job, master_agent, certificates)
     {}
 
+    fake_drts_worker_waiting_for_finished_ack
+      ::fake_drts_worker_waiting_for_finished_ack
+        ( reused_component_name name
+        , std::function<void (std::string)> announce_job
+        , agent const& master_agent
+        , fhg::com::Certificates const& certificates
+        )
+      : fake_drts_worker_notifying_module_call_submission
+          (std::move (name), announce_job, master_agent, certificates)
+    {}
+
     void fake_drts_worker_waiting_for_finished_ack::handleJobFinishedAckEvent
       ( fhg::com::p2p::address_t const&
       , sdpa::events::JobFinishedAckEvent const* e
@@ -759,6 +770,17 @@ namespace utils
       )
   : no_thread::fake_drts_worker_waiting_for_finished_ack
       (std::move (announce_job), master_agent, certificates)
+  {}
+
+  fake_drts_worker_waiting_for_finished_ack
+    ::fake_drts_worker_waiting_for_finished_ack
+      ( reused_component_name name
+      , std::function<void (std::string)> announce_job
+      , agent const& master_agent
+      , fhg::com::Certificates const& certificates
+      )
+    : no_thread::fake_drts_worker_waiting_for_finished_ack
+        (std::move (name), announce_job, master_agent, certificates)
   {}
 
   fake_drts_worker_notifying_cancel::fake_drts_worker_notifying_cancel

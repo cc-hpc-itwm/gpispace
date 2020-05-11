@@ -305,6 +305,13 @@ namespace utils
         , fhg::com::Certificates const&
         );
 
+      fake_drts_worker_waiting_for_finished_ack
+        ( reused_component_name name
+        , std::function<void (std::string)> announce_job
+        , agent const& master
+        , fhg::com::Certificates const&
+        );
+
       virtual void handleJobFinishedAckEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::JobFinishedAckEvent const*
@@ -354,6 +361,13 @@ namespace utils
   {
     fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job
+      , agent const& master
+      , fhg::com::Certificates const&
+      );
+
+    fake_drts_worker_waiting_for_finished_ack
+      ( reused_component_name name
+      , std::function<void (std::string)> announce_job
       , agent const& master
       , fhg::com::Certificates const&
       );
