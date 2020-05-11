@@ -23,6 +23,7 @@
 		* Enable adding required worker type to transition modules
  	- Safeclouds SSL
 		* support for SSL security protocol for cloud users
+ 	- Supports GCC 10 release
 ### Changed
 	- Performance improvement to scheduling
 		* reduced overhead of dynamic re-calculation for tasks assignment
@@ -31,9 +32,11 @@
 	- Updated logging infrastructure
 		* decentralized and better usability
 		* multiple log sink support via RPC
+		* enables logging to the console (in addition to the gspc-monitor)
 ### Removed
 	- Remove pnetd and pnetv daemons for simplified architecture
 ### Fixes
+	- Fix for SSL context access in the network layer
 	- Fix for FRTM memory leak in the 'Agent'
 		* correctly handle worker job deletion
 ### Meta
