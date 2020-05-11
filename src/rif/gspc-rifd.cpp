@@ -163,7 +163,10 @@ try
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
-      (service_dispatcher, &fhg::rif::execute_and_get_startup_messages);
+      ( service_dispatcher
+      , &fhg::rif::execute_and_get_startup_messages
+      , fhg::rpc::not_yielding
+      );
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages_and_wait>
     execute_and_get_startup_messages_and_wait_service
@@ -184,6 +187,7 @@ try
 
           return pid_and_startup_messages.second;
         }
+      , fhg::rpc::not_yielding
       );
 
   fhg::rpc::service_handler<fhg::rif::protocol::kill> kill_service
@@ -209,6 +213,7 @@ try
         }
         return failures;
       }
+    , fhg::rpc::not_yielding
     );
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_orchestrator>
@@ -252,6 +257,7 @@ try
           result.logger_registration_endpoint = messages[2];
           return result;
         }
+      , fhg::rpc::not_yielding
       );
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
@@ -333,6 +339,7 @@ try
 
           return startup_messages.first;
         }
+      , fhg::rpc::not_yielding
       );
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_agent>
@@ -385,6 +392,7 @@ try
           result.logger_registration_endpoint = messages[2];
           return result;
         }
+      , fhg::rpc::not_yielding
       );
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_worker>
@@ -420,6 +428,7 @@ try
           result.logger_registration_endpoint = messages[0];
           return result;
         }
+      , fhg::rpc::not_yielding
       );
 
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup

@@ -98,6 +98,7 @@ namespace fhg
           {
             received.set_value (m);
           }
+        , fhg::rpc::not_yielding
         );
 
       typename Combination::receiver_type const service_provider

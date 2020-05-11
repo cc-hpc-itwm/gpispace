@@ -197,6 +197,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
       {
         announced_workers.emplace (w);
       }
+    , fhg::rpc::not_yielding
     );
 
   fhg::rpc::service_tcp_provider const registry (io_service, service_dispatcher);
