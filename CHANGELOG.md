@@ -24,6 +24,10 @@
  	- Safeclouds SSL
 		* support for SSL security protocol for cloud users
 ### Changed
+	- Performance improvement to scheduling
+		* reduced overhead of dynamic re-calculation for tasks assignment
+		* worker-class aware scheduling
+		* up to 10x improvement in scheduler performance
 	- Updated logging infrastructure
 		* decentralized and better usability
 		* multiple log sink support via RPC
