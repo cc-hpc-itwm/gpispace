@@ -94,9 +94,9 @@ namespace
 
 BOOST_DATA_TEST_CASE (cancel_no_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -108,8 +108,7 @@ BOOST_DATA_TEST_CASE (cancel_no_agent, certificates_data, certificates)
 
 BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
@@ -120,7 +119,7 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
     , certificates
     );
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -136,11 +135,15 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
   BOOST_REQUIRE (worker.cancellation_was_triggered_by_owners());
 }
 
-BOOST_DATA_TEST_CASE (call_cancel_twice_orch, certificates_data, certificates)
+BOOST_DATA_TEST_CASE
+  ( call_cancel_twice_agent_without_workflow_engine
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (certificates, false);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -154,8 +157,7 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_orch, certificates_data, certificates)
 
 BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
   fhg::util::thread::event<> job_submitted;
   fhg::util::thread::event<std::string> cancel_requested;
@@ -166,7 +168,7 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
     , certificates
     );
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   const sdpa::job_id_t job_id (client.submit_job (utils::module_call()));
 
@@ -186,8 +188,7 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
 
 BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
   fhg::util::thread::event<> job_submitted;
   utils::fake_drts_worker_notifying_module_call_submission worker
@@ -196,7 +197,7 @@ BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
     , certificates
     );
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   const sdpa::job_id_t job_id_0 (client.submit_job (utils::module_call()));
   job_submitted.wait();
@@ -212,8 +213,7 @@ BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
 BOOST_DATA_TEST_CASE
   (cancel_workflow_with_two_activities, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
   fhg::util::thread::event<> job_submitted_0;
   fhg::util::thread::event<std::string> cancel_requested_0;
@@ -233,7 +233,7 @@ BOOST_DATA_TEST_CASE
      , certificates
      );
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
