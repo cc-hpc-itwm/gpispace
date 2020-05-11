@@ -440,7 +440,8 @@ try
   fhg::rpc::service_handler<fhg::rif::protocol::start_logging_demultiplexer>
     start_logging_demultiplexer_service
       ( service_dispatcher
-      , [&add_emitters_endpoints, &io_service] (boost::filesystem::path exe)
+      , [&add_emitters_endpoints, &io_service]
+          (boost::asio::yield_context yield, boost::filesystem::path exe)
         {
           auto const pid_and_startup_messages
             ( fhg::rif::execute_and_get_startup_messages
@@ -463,11 +464,15 @@ try
             ( std::piecewise_construct
             , std::forward_as_tuple (result.pid)
             , std::forward_as_tuple
-                (io_service, fhg::logging::socket_endpoint (messages[1]).socket)
+                ( io_service
+                , yield
+                , fhg::logging::socket_endpoint (messages[1]).socket
+                )
             );
 
           return result;
         }
+      , fhg::rpc::yielding
       );
 
   fhg::rpc::service_handler<fhg::rif::protocol::add_emitter_to_logging_demultiplexer>
