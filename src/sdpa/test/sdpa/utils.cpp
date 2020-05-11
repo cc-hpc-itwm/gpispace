@@ -852,6 +852,16 @@ namespace utils
         )
   {}
 
+  client::client ( agent const& master_agent
+                 , fhg::com::Certificates const& certificates
+                 )
+    : _ ( master_agent.host()
+        , master_agent.port()
+        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+        , certificates
+        )
+  {}
+
   sdpa::job_id_t client::submit_job (we::type::activity_t workflow)
   {
     return _.submitJob (workflow);

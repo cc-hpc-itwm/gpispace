@@ -421,7 +421,9 @@ namespace utils
 
   struct client : boost::noncopyable
   {
+    //Note: to remove
     client (orchestrator const&, fhg::com::Certificates const&);
+    client (agent const&, fhg::com::Certificates const&);
 
     client() = delete;
     client (client const&) = delete;
