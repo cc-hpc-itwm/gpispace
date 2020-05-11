@@ -270,8 +270,6 @@ namespace utils
         , sdpa::events::JobFinishedAckEvent const*
         ) override;
 
-      void finish (std::string name);
-
       sdpa::job_id_t job_id (std::string name);
 
       void add_job ( std::string const& name
@@ -392,6 +390,7 @@ namespace utils
       ) override;
 
     void canceled (std::string job_id);
+    void finish (std::string name);
 
   private:
     std::function<void (std::string)> _announce_cancel;

@@ -652,15 +652,6 @@ namespace utils
       delete_job (e->job_id());
     }
 
-    void fake_drts_worker_notifying_module_call_submission::finish
-      (std::string name)
-    {
-      auto const job (_jobs.at (name));
-
-      _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t());
-    }
-
     sdpa::job_id_t fake_drts_worker_notifying_module_call_submission::job_id
       (std::string name)
     {
@@ -721,11 +712,12 @@ namespace utils
     void fake_drts_worker_waiting_for_finished_ack::finish_and_wait_for_ack
       (std::string name)
     {
-      auto const expected_id (_jobs.at (name)._id);
+      auto const job (_jobs.at (name));
 
-      finish (name);
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (job._owner, job._id, we::type::activity_t());
 
-      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
+      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), job._id);
     }
   }
 
@@ -828,6 +820,14 @@ namespace utils
 
     _network.perform<sdpa::events::CancelJobAckEvent> (master, job_id);
     delete_job (job_id);
+  }
+
+  void fake_drts_worker_notifying_cancel::finish (std::string name)
+  {
+    auto const job (_jobs.at (name));
+
+    _network.perform<sdpa::events::JobFinishedEvent>
+      (job._owner, job._id, we::type::activity_t());
   }
 
   fake_drts_worker_notifying_cancel_but_never_replying

@@ -27,7 +27,7 @@ BOOST_DATA_TEST_CASE
   {
     fhg::util::thread::event<> job_submitted;
 
-    const utils::fake_drts_worker_notifying_module_call_submission worker
+    const utils::fake_drts_worker_waiting_for_finished_ack worker
       ( [&job_submitted] (std::string) { job_submitted.notify(); }
       , agent
       , certificates
@@ -39,7 +39,7 @@ BOOST_DATA_TEST_CASE
   }
 
   fhg::util::thread::event<std::string> job_submitted_to_restarted_worker;
-  utils::fake_drts_worker_notifying_module_call_submission restarted_worker
+  utils::fake_drts_worker_waiting_for_finished_ack restarted_worker
     ( utils::reused_component_name (worker_id)
     , [&job_submitted_to_restarted_worker] (std::string s)
       { job_submitted_to_restarted_worker.notify (s); }
@@ -47,7 +47,7 @@ BOOST_DATA_TEST_CASE
     , certificates
     );
 
-  restarted_worker.finish
+  restarted_worker.finish_and_wait_for_ack
     (job_submitted_to_restarted_worker.wait());
 
   BOOST_REQUIRE_EQUAL

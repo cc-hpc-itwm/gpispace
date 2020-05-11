@@ -479,11 +479,11 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE_EQUAL (submitted, job_submitted_2.wait());
     worker_1.reset();
     cancel_id = cancel_requested_2.wait();
-    worker_2.finish (submitted);
+    worker_2.finish_and_wait_for_ack (submitted);
   }
 
   fhg::util::thread::event<std::string> job_submitted_3;
-  utils::fake_drts_worker_notifying_module_call_submission worker_3
+  utils::fake_drts_worker_waiting_for_finished_ack worker_3
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
     , agent
     , certificates
@@ -493,8 +493,8 @@ BOOST_DATA_TEST_CASE
     sdpa::job_id_t const submitted (job_submitted_2.wait());
     BOOST_REQUIRE_EQUAL (submitted, job_submitted_3.wait());
 
-    worker_2.finish (submitted);
-    worker_3.finish (submitted);
+    worker_2.finish_and_wait_for_ack (submitted);
+    worker_3.finish_and_wait_for_ack (submitted);
   }
 
   BOOST_REQUIRE_EQUAL
