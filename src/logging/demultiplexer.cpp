@@ -13,6 +13,7 @@ namespace fhg
       , add_emitters
           ( service_dispatcher
           , util::bind_this (&receiver, &stream_receiver::add_emitters)
+          , fhg::rpc::yielding
           )
       , add_service_provider (io_service, service_dispatcher)
     {

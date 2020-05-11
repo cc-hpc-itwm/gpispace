@@ -28,7 +28,8 @@ namespace fhg
       stream_receiver (endpoint, callback_t);
       stream_receiver (std::vector<endpoint>, callback_t);
 
-      void add_emitters (std::vector<endpoint>);
+      void add_emitters (boost::asio::yield_context, std::vector<endpoint>);
+      void add_emitters_blocking (std::vector<endpoint>);
 
     private:
       callback_t _callback;
