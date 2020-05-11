@@ -1,4 +1,4 @@
-## [20.04] - 2020-04-06
+## [20.05] - 2020-05-12
 ### Added
 	- Eureka feature
 		* Petri net extensions to identify and skip ongoing tasks
