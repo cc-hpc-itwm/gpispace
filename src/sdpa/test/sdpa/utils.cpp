@@ -822,7 +822,8 @@ namespace utils
     delete_job (job_id);
   }
 
-  void fake_drts_worker_notifying_cancel::finish (std::string name)
+  void fake_drts_worker_notifying_cancel::finish_and_do_not_wait
+    (std::string name)
   {
     auto const job (_jobs.at (name));
 

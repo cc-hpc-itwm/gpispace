@@ -390,7 +390,7 @@ namespace utils
       ) override;
 
     void canceled (std::string job_id);
-    void finish (std::string name);
+    void finish_and_do_not_wait (std::string name);
 
   private:
     std::function<void (std::string)> _announce_cancel;
