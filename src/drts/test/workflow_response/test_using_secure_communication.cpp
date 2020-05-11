@@ -146,6 +146,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
       {
         workflow_actually_running.count_down();
       }
+    , fhg::rpc::not_yielding
     );
   fhg::rpc::service_tcp_provider const registry (io_service, service_dispatcher);
 

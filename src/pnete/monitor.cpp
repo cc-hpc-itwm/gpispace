@@ -102,7 +102,7 @@ try
               .split('\n', QString::SkipEmptyParts)
             , [&] (QString line)
               {
-                log_receiver.add_emitters
+                log_receiver.add_emitters_blocking
                   ({fhg::logging::endpoint (line.toStdString())});
               }
             );

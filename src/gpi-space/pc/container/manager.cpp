@@ -470,7 +470,6 @@ namespace gpi
       manager_t::manager_t ( fhg::logging::stream_emitter& logger
                            , std::string const & p
                            , fhg::vmem::gaspi_context& gaspi_context
-                           , boost::asio::io_service& topology_io_service
                            , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
@@ -481,7 +480,6 @@ namespace gpi
         , _memory_manager (_logger, gaspi_context)
         , _topology ( _memory_manager
                     , gaspi_context
-                    , topology_io_service
                     , std::move (topology_rpc_server)
                     )
       {

@@ -247,7 +247,7 @@ namespace utils
   }
   log_to_stdout::log_to_stdout (sdpa::daemon::GenericDaemon& component)
   {
-    sink().add_emitters ({component.logger_registration_endpoint()});
+    sink().add_emitters_blocking ({component.logger_registration_endpoint()});
   }
 
   orchestrator::orchestrator (fhg::com::Certificates const& certificates)

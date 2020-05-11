@@ -27,6 +27,7 @@ namespace fhg
       endpoint local_endpoint() const;
 
       void emit_message (message const&);
+      void emit_message (message const&, boost::asio::yield_context);
       void emit (decltype (message::_content), decltype (message::_category));
 
     private:
@@ -35,7 +36,7 @@ namespace fhg
 
       std::list<std::unique_ptr<rpc::remote_endpoint>> _receivers;
 
-      void register_receiver (endpoint const&);
+      void register_receiver (boost::asio::yield_context, endpoint const&);
       rpc::service_handler<protocol::register_receiver> const
         _register_receiver;
 

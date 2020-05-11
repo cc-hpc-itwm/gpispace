@@ -143,6 +143,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
       {
         workflow_actually_running.count_down();
       }
+    , fhg::rpc::not_yielding
     );
   fhg::rpc::service_tcp_provider const registry (io_service, service_dispatcher);
 
