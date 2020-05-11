@@ -35,7 +35,7 @@ namespace fhg
 
       std::list<std::unique_ptr<rpc::remote_endpoint>> _receivers;
 
-      void register_receiver (endpoint const&);
+      void register_receiver (boost::asio::yield_context, endpoint const&);
       rpc::service_handler<protocol::register_receiver> const
         _register_receiver;
 

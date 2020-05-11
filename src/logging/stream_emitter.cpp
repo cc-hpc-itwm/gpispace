@@ -23,6 +23,7 @@ namespace fhg
       , _register_receiver
           ( _service_dispatcher
           , util::bind_this (this, &stream_emitter::register_receiver)
+          , fhg::rpc::yielding
           )
       , _service_socket_provider (_io_service, _service_dispatcher)
       , _service_tcp_provider (_io_service, _service_dispatcher)
@@ -64,7 +65,8 @@ namespace fhg
       return emit_message ({std::move (content), std::move (category)});
     }
 
-    void stream_emitter::register_receiver (endpoint const& endpoint)
+    void stream_emitter::register_receiver
+      (boost::asio::yield_context yield, endpoint const& endpoint)
     {
       util::visit<void>
         ( endpoint.best (_local_endpoint.as_socket->host)
@@ -72,14 +74,14 @@ namespace fhg
           {
             _receivers.emplace_back
               ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
-                  (_io_service, as_socket.socket)
+                  (_io_service, yield, as_socket.socket)
               );
           }
         , [&] (tcp_endpoint const& as_tcp)
           {
             _receivers.emplace_back
               ( util::cxx14::make_unique<rpc::remote_tcp_endpoint>
-                  (_io_service, as_tcp)
+                  (_io_service, yield, as_tcp)
               );
           }
         );
