@@ -329,8 +329,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish_and_do_not_wait (job_name);
-      worker_2.finish_and_do_not_wait (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
     {
@@ -338,8 +338,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish_and_do_not_wait (job_name);
-      worker_2.finish_and_do_not_wait (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
   }
@@ -423,8 +423,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish_and_do_not_wait (job_name);
-      worker_2.finish_and_do_not_wait (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
     {
@@ -432,8 +432,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish_and_do_not_wait (job_name);
-      worker_2.finish_and_do_not_wait (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
   }

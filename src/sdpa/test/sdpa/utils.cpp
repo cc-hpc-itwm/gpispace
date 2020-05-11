@@ -822,15 +822,6 @@ namespace utils
     delete_job (job_id);
   }
 
-  void fake_drts_worker_notifying_cancel::finish_and_do_not_wait
-    (std::string name)
-  {
-    auto const job (_jobs.at (name));
-
-    _network.perform<sdpa::events::JobFinishedEvent>
-      (job._owner, job._id, we::type::activity_t());
-  }
-
   fake_drts_worker_notifying_cancel_but_never_replying
     ::fake_drts_worker_notifying_cancel_but_never_replying
       ( std::function<void (std::string)> announce_job
