@@ -12,8 +12,6 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
-#include <fhglog/Configuration.hpp>
-#include <fhglog/Logger.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
@@ -27,7 +25,7 @@ BOOST_AUTO_TEST_CASE (ctor_load_failed)
     ( [] { we::loader::Module ("<path>"); }
     , we::loader::module_load_failed
         ( "<path>"
-        , "<path>: cannot open shared object file: No such file or directory"
+        , "dlopen: <path>: cannot open shared object file: No such file or directory"
         )
     );
 }
@@ -36,7 +34,10 @@ BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
 {
   fhg::util::testing::require_exception
     ( [] { we::loader::Module ("./libinitialize_throws.so"); }
-    , std::runtime_error ("initialize_throws")
+    , we::loader::module_load_failed
+        ( "./libinitialize_throws.so"
+        , "initialize_throws"
+        )
     );
 }
 
@@ -46,11 +47,10 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #define STR(x) #x
   fhg::util::testing::require_exception
     ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
-    , std::runtime_error
-        ( ( boost::format
-              ( "could not load module './libempty_not_linked_with_pnet.so':"
-                " ./libempty_not_linked_with_pnet.so: undefined symbol: %1%"
-              )
+    , we::loader::module_load_failed
+        ( "./libempty_not_linked_with_pnet.so"
+        , ( boost::format
+              ("dlopen: ./libempty_not_linked_with_pnet.so: undefined symbol: %1%")
           % XSTR (WE_GUARD_SYMBOL)
           ).str()
         )
@@ -59,20 +59,11 @@ BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
 #undef XSTR
 }
 
-BOOST_AUTO_TEST_CASE (ctor_okay_path)
-{
-  we::loader::Module const m ("./libempty.so");
-
-  BOOST_REQUIRE_EQUAL (m.path(), "./libempty.so");
-}
-
 BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
 
-  boost::asio::io_service io_service;
-  fhg::log::Logger logger;
-  fhg::log::configure (io_service, logger);
+  fhg::logging::stream_emitter logger;
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -110,9 +101,7 @@ BOOST_AUTO_TEST_CASE (call_local)
   we::loader::Module m ("./libempty.so");
   m.add_function ("f", &inc);
 
-  boost::asio::io_service io_service;
-  fhg::log::Logger logger;
-  fhg::log::configure (io_service, logger);
+  fhg::logging::stream_emitter logger;
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -131,9 +120,7 @@ BOOST_AUTO_TEST_CASE (call_lib)
 {
   we::loader::Module m ("./libanswer.so");
 
-  boost::asio::io_service io_service;
-  fhg::log::Logger logger;
-  fhg::log::configure (io_service, logger);
+  fhg::logging::stream_emitter logger;
   drts::worker::context context
     (drts::worker::context_constructor
       ("noname", (std::set<std::string>()), logger)
@@ -156,5 +143,27 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
   fhg::util::testing::require_exception
     ( [&m] { m.add_function ("f", &inc); }
     , we::loader::duplicate_function ("./libempty.so", "f")
+    );
+}
+
+BOOST_AUTO_TEST_CASE (ensures_library_unloads_properly)
+{
+  // \note Relies on the library not linking anyone in additional to
+  // what is already loaded, so that the not-unloaded set is only
+  // exactly the library we know about.
+
+  auto const libempty_nodelete ("./libempty_nodelete.so");
+
+  fhg::util::testing::require_exception
+    ( [&]
+      {
+        we::loader::Module
+          {we::loader::RequireModuleUnloadsWithoutRest{}, libempty_nodelete};
+      }
+    , we::loader::module_load_failed
+        ( libempty_nodelete
+        , we::loader::module_does_not_unload
+            (libempty_nodelete, {libempty_nodelete}).what()
+        )
     );
 }

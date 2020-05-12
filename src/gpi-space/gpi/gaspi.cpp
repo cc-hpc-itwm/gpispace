@@ -1,6 +1,5 @@
 #include <gpi-space/gpi/gaspi.hpp>
 
-#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <gpi-space/exception.hpp>
@@ -11,9 +10,11 @@
 #include <util-generic/hostname.hpp>
 
 #include <GASPI.h>
+#include <GASPI_Ext.h>
 
 #include <algorithm>
 #include <limits>
+#include <numeric>
 #include <unordered_set>
 
 namespace gpi
@@ -51,7 +52,7 @@ namespace gpi
     }
 
     gaspi_t::gaspi_t ( fhg::vmem::gaspi_context& gaspi_context
-                     , fhg::log::Logger& logger
+                     , fhg::logging::stream_emitter& logger
                      , const unsigned long long per_node_size
                      , fhg::vmem::gaspi_timeout& time_left
                      )
@@ -61,6 +62,9 @@ namespace gpi
       , m_dma (nullptr)
       , _segment_id (gaspi_context)
       , _current_queue (0)
+      , _notification_check_interrupted (false)
+      , _interrupt_notification_check
+          ([this] { _notification_check_interrupted = true; })
     {
       if (sys::get_total_memory_size() < _per_node_size)
       {
@@ -73,11 +77,12 @@ namespace gpi
       }
       else if (sys::get_avail_memory_size() < _per_node_size)
       {
-        LLOG( WARN
-            , _logger
-           , "requested memory size (" << _per_node_size << ")"
-           <<" exceeds available memory size (" << sys::get_avail_memory_size() << ")"
-           );
+        _logger.emit ( "requested memory size ("
+                     + std::to_string (_per_node_size) + ") exceeds available"
+                     + " memory size ("
+                     + std::to_string (sys::get_avail_memory_size()) + ")"
+                     , fhg::logging::legacy::category_level_warn
+                     );
       }
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create
@@ -160,6 +165,7 @@ namespace gpi
 
     gaspi_t::~gaspi_t()
     {
+      _notification_check_interrupted = true;
       _notification_check.reset();
 
       FAIL_ON_NON_ZERO (gaspi_segment_delete, _segment_id);
@@ -381,10 +387,8 @@ namespace gpi
 
     void gaspi_t::notification_check()
     {
-      for (;;)
+      while (!_notification_check_interrupted)
       {
-        boost::this_thread::interruption_point();
-
         gaspi_notification_id_t notification_id;
         gaspi_return_t const waitsome_result
           ( gaspi_notify_waitsome

@@ -1,3 +1,48 @@
+## [20.05] - 2020-05-12
+### Added
+	- Eureka feature
+		* Petri net extensions to identify and skip ongoing tasks
+		* Conditional execution of workflow transitions
+	- Buffer alignment
+		* Enables user-specified buffer alignments
+		* Applies to local buffers allocated in the worker
+	- Support for Petri net workflows for heterogeneous clusters
+		* XML support for defining multiple module implementations
+		* XML support for Petri net transitions with preference order
+		* Co-allocation scheduling with target device preferences
+	- Stencil Cache
+		* using virtual memory as I/O cache for stencil computations
+	- Expression plugins
+		* hook for user-provided callbacks within expression evaluation
+	- ``connect-out-many`` feature
+		* new Petri net edge for implicit decomposition of output list
+ 	- Dynamic requirements in the workflow
+		* support for target compute device to be specified at runtime
+	- User-specified worker description
+		* Start DRTS workers with user-specified descriptions
+		* Enable adding required worker type to transition modules
+ 	- Safeclouds SSL
+		* support for SSL security protocol for cloud users
+ 	- Supports GCC 10 release
+### Changed
+	- Performance improvement to scheduling
+		* reduced overhead of dynamic re-calculation for tasks assignment
+		* dynamic worker-class and worker-state aware scheduling
+		* up to 11.15x improvement in the scheduler performance
+	- Updated logging infrastructure
+		* decentralized and better usability
+		* multiple log sink support via RPC
+		* enables logging to the console (in addition to the gspc-monitor)
+### Removed
+	- Remove pnetd and pnetv daemons for simplified architecture
+### Fixes
+	- Fix for SSL context access in the network layer
+	- Fix for FRTM memory leak in the 'Agent'
+		* correctly handle worker job deletion
+### Meta
+	- Minimum tested GCC version is 4.9.4
+		* support for lower versions discontinued
+
 ## [16.04] - 2016-04-15
 ### Added
 	- execute_and_kill_on_cancel

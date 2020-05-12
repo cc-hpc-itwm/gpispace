@@ -69,24 +69,23 @@ namespace we
       }
     }
 
+    bool module_call_t::require_module_unloads_without_rest() const
+    {
+      return _require_module_unloads_without_rest;
+    }
+
     std::unordered_map<std::string, unsigned long>
       module_call_t::memory_buffer_sizes
         (expr::eval::context const& input) const
     {
       std::unordered_map<std::string, unsigned long> sizes;
 
-      for ( std::pair<std::string, std::string> const& name_and_expression
-          : memory_buffers()
-          )
+      for (auto const& name_and_buffer_info : memory_buffers())
       {
-        expr::eval::context context (input);
-
-        sizes.emplace ( name_and_expression.first
-                      , boost::get<unsigned long>
-                          (expr::parse::parser (name_and_expression.second)
-                            .eval_all (context)
-                          )
-                      );
+        sizes.emplace
+          ( name_and_buffer_info.first
+          , name_and_buffer_info.second.size (input)
+          );
       }
 
       return sizes;

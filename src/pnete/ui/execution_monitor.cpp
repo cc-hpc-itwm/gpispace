@@ -3,7 +3,8 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 #include <pnete/ui/execution_monitor_detail.hpp>
 
-#include <util-qt/connect.hpp>
+#include <fhg/util/macros.hpp>
+
 #include <util/qt/dual_list_selector.hpp>
 #include <util-qt/widget/mini_button.hpp>
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
@@ -27,8 +28,8 @@
 #include <QVBoxLayout>
 
 #include <functional>
-
-#include <fhg/util/macros.hpp>
+#include <sstream>
+#include <utility>
 
 Q_DECLARE_METATYPE (sdpa::daemon::NotificationEvent::state_t)
 
@@ -42,44 +43,55 @@ namespace fhg
       {
         using util::qt::mvc::transform_functions_model;
 
-        struct nth_substring_of_name
+        struct hostname_of_worker
           : public transform_functions_model::transform_function
         {
-          nth_substring_of_name()
-            : _n (0)
-            , _sep ('\0')
-          { }
-          nth_substring_of_name (int n, char sep)
-            : _n (n)
-            , _sep (sep)
-          { }
-
           virtual QString operator() (QModelIndex index) const override
           {
-            return util::qt::value<QString>
-              (index.data (worker_model::name_role)).split (_sep)[_n];
+            auto const worker_name
+              (util::qt::value<QString> (index.data (worker_model::name_role)));
+
+            auto const start (worker_name.indexOf ('-') + 1);
+            return worker_name.mid
+              (start, worker_name.lastIndexOf ('-') - start);
           }
 
           template<class Archive>
-            void serialize (Archive& ar, const unsigned int)
+            void serialize (Archive&, const unsigned int)
           {
-            ar & _n & _sep;
             boost::serialization::void_cast_register
-              ( static_cast<nth_substring_of_name*> (nullptr)
+              ( static_cast<hostname_of_worker*> (nullptr)
               , static_cast<transform_functions_model::transform_function*> (nullptr)
               );
           }
+        };
+        struct worker_type_of_worker
+          : public transform_functions_model::transform_function
+        {
+          virtual QString operator() (QModelIndex index) const override
+          {
+            auto const worker_name
+              (util::qt::value<QString> (index.data (worker_model::name_role)));
 
-        private:
-          int _n;
-          char _sep;
+            return worker_name.left (worker_name.indexOf ('-'));
+          }
+
+          template<class Archive>
+            void serialize (Archive&, const unsigned int)
+          {
+            boost::serialization::void_cast_register
+              ( static_cast<worker_type_of_worker*> (nullptr)
+              , static_cast<transform_functions_model::transform_function*> (nullptr)
+              );
+          }
         };
       }
     }
   }
 }
 
-BOOST_CLASS_EXPORT (fhg::pnete::ui::nth_substring_of_name)
+BOOST_CLASS_EXPORT (fhg::pnete::ui::hostname_of_worker)
+BOOST_CLASS_EXPORT (fhg::pnete::ui::worker_type_of_worker)
 
 template<typename T>
   QDataStream& operator<< (QDataStream& stream, const boost::shared_ptr<T>& ptr)
@@ -128,11 +140,11 @@ namespace fhg
           model->insertRows (0, 2);
           model->setItemData
             ( model->index (0, 0)
-            , item ("by worker type", new nth_substring_of_name (0, '-'))
+            , item ("by worker type", new worker_type_of_worker())
             );
           model->setItemData
             ( model->index (1, 0)
-            , item ("by node", new nth_substring_of_name (1, '-'))
+            , item ("by node", new hostname_of_worker())
             );
         }
 
@@ -276,8 +288,8 @@ namespace fhg
         }
       }
 
-      execution_monitor::execution_monitor (unsigned short port, QWidget* parent)
-        : QSplitter (Qt::Horizontal, parent)
+      execution_monitor::execution_monitor()
+        : QSplitter (Qt::Horizontal)
       {
         util::qt::mvc::transform_functions_model* available_transform_functions
           (new util::qt::mvc::transform_functions_model);
@@ -290,7 +302,7 @@ namespace fhg
 
         QAbstractItemModel* next (nullptr);
 
-        worker_model* base (new worker_model (port, this));
+        base = new worker_model (this);
         next = base;
 
         util::qt::mvc::flat_to_tree_proxy* transformed_to_tree
@@ -335,7 +347,7 @@ namespace fhg
         tree->expandAll();
 
         header_view->setStretchLastSection (true);
-        header_view->setClickable (true);
+        header_view->setSectionsClickable (true);
         header_view->setSortIndicatorShown (true);
         header_view->delegate (delegate);
 
@@ -345,25 +357,25 @@ namespace fhg
         QAction* add_column (new QAction (tr ("add_column_action"), next));
         QAction* remove_column (new QAction (tr ("remove_column_action"), next));
 
-        util::qt::connect<void()>
-          (add_column, SIGNAL (triggered()), std::bind (&add_columns, 1, next));
-        util::qt::connect<void()>
-          (remove_column, SIGNAL (triggered()), std::bind (&add_columns, -1, next));
+        connect
+          (add_column, &QAction::triggered, std::bind (&add_columns, 1, next));
+        connect
+          (remove_column, &QAction::triggered, std::bind (&add_columns, -1, next));
 
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsInserted
           , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsRemoved
           , std::bind (&disable_if_column_adding_not_possible, add_column, 1, next)
           );
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsInserted (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsInserted
           , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
-        util::qt::connect<void()>
-          ( next, SIGNAL (columnsRemoved (QModelIndex, int, int))
+        connect
+          ( next, &QAbstractItemModel::columnsRemoved
           , std::bind (&disable_if_column_adding_not_possible, remove_column, -1, next)
           );
 
@@ -386,10 +398,10 @@ namespace fhg
         QAction* clear_model (new QAction (tr ("clear_action"), base));
         clear_model->setIcon (QIcon::fromTheme ("edit-clear"));
 
-        util::qt::connect<void()>
-          ( clear_model, SIGNAL (triggered())
+        connect
+          ( clear_model, &QAction::triggered
           , this
-          , [base, header_view, next]
+          , [this, header_view]
             {
               //! \note HACK: for some reason the signal blocking in
               //! execution_monitor_editor::update() does not work,
@@ -441,16 +453,16 @@ namespace fhg
             style_button (label, delegate->color_for_state (state));
             legend_box_layout->addWidget (label);
 
-            util::qt::connect<void()>
+            connect
               ( label
-              , SIGNAL (clicked())
+              , &QPushButton::clicked
               , this
               , std::bind (&change_gantt_color, delegate, label, state, this)
               );
 
-            util::qt::connect<void (sdpa::daemon::NotificationEvent::state_t, QColor)>
+            connect
               ( delegate
-              , SIGNAL (color_for_state_changed (sdpa::daemon::NotificationEvent::state_t, QColor))
+              , &execution_monitor_delegate::color_for_state_changed
               , this
               , std::bind (&maybe_style_button, label, state, std::placeholders::_1, std::placeholders::_2)
               );
@@ -488,6 +500,11 @@ namespace fhg
           , QVariant::fromValue (execution_monitor_proxy::gantt_column)
           , execution_monitor_proxy::column_type_role
           );
+      }
+
+      void execution_monitor::append_event (logging::message const& message)
+      {
+        base->append_event (message);
       }
     }
   }

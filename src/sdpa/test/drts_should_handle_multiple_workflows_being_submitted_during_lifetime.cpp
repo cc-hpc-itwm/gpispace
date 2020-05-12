@@ -1,11 +1,10 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <boost/test/unit_test.hpp>
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -16,14 +15,23 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random/string.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <map>
 
-BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_submitted_during_lifetime)
+BOOST_DATA_TEST_CASE
+  ( drts_should_handle_multiple_workflows_being_submitted_during_lifetime
+  , certificates_data
+  , certificates
+  )
 {
   boost::program_options::options_description options_description;
 
@@ -72,26 +80,19 @@ BOOST_AUTO_TEST_CASE (sdpa_test_drts_should_handle_multiple_workflows_being_subm
                                  , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, installation, "work:1", rifds.entry_points(), std::cerr, certificates);
 
     std::string const challenge (fhg::util::testing::random_string_without ("\"\\"));
 
     for (int i (0); i < 2; ++i)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        ( gspc::client (drts).put_and_run
+        ( gspc::client (drts, certificates).put_and_run
             (gspc::workflow (make.pnet()), {{"challenge", challenge}})
         );
 
-      BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-      std::string const port_response ("response");
-
-      BOOST_REQUIRE_EQUAL (result.count (port_response), 1);
-
-      BOOST_CHECK_EQUAL
-        ( result.find (port_response)->second
-        , pnet::type::value::value_type ("sdpa.response." + challenge)
-        );
+      decltype (result) const expected
+        {{"response", "sdpa.response." + challenge}};
+      FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
     }
 }

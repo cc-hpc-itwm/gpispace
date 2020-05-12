@@ -1,36 +1,33 @@
 #include <sdpa/com/NetworkStrategy.hpp>
 
-#include <csignal>
-
 #include <sdpa/events/ErrorEvent.hpp>
+
+#include <util-generic/print_exception.hpp>
+#include <util-generic/this_bound_mem_fn.hpp>
 
 #include <boost/lexical_cast.hpp>
 
-#include <functional>
+#include <algorithm>
+#include <utility>
 
 namespace sdpa
 {
   namespace com
   {
-    NetworkStrategy::NetworkStrategy ( std::function<void (fhg::com::p2p::address_t const&, sdpa::events::SDPAEvent::Ptr)> event_handler
-                                     , std::unique_ptr<boost::asio::io_service> peer_io_service
-                                     , fhg::com::host_t const & host
-                                     , fhg::com::port_t const & port
-                                     )
+    NetworkStrategy::NetworkStrategy
+        ( EventHandler event_handler
+        , std::unique_ptr<boost::asio::io_service> peer_io_service
+        , fhg::com::host_t const& host
+        , fhg::com::port_t const& port
+        , fhg::com::Certificates const& certificates
+        )
       : _codec()
       , _event_handler (event_handler)
-      , m_message()
       , m_shutting_down (false)
-      , _peer (std::move (peer_io_service), host, port)
+      , _peer (std::move (peer_io_service), host, port, certificates)
     {
       _peer.async_recv
-        ( &m_message
-        , std::bind ( &NetworkStrategy::handle_recv
-                    , this
-                    , std::placeholders::_1
-                    , std::placeholders::_2
-                    )
-        );
+        (fhg::util::bind_this (this, &NetworkStrategy::handle_recv));
     }
 
     NetworkStrategy::~NetworkStrategy()
@@ -44,49 +41,77 @@ namespace sdpa
       return _peer.connect_to (host, port);
     }
 
-    void NetworkStrategy::handle_recv ( boost::system::error_code const & ec
-                                      , boost::optional<fhg::com::p2p::address_t> source
-                                      )
+    boost::asio::ip::tcp::endpoint NetworkStrategy::local_endpoint() const
     {
-      if (! ec)
+      return _peer.local_endpoint();
+    }
+
+    void NetworkStrategy::handle_recv
+      ( boost::system::error_code const& ec
+      , boost::optional<fhg::com::p2p::address_t> source
+      , fhg::com::message_t message
+      )
+    {
+      if (!ec)
       {
-        // convert m_message to event
-        sdpa::events::SDPAEvent::Ptr const evt
-          (_codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+        events::SDPAEvent::Ptr const evt
+          ( _codec.decode
+              (std::string (message.data.begin(), message.data.end()))
+          );
         _event_handler (source.get(), evt);
 
         _peer.async_recv
-          ( &m_message
-          , std::bind ( &NetworkStrategy::handle_recv
-                      , this
-                      , std::placeholders::_1
-                      , std::placeholders::_2
-                      )
-          );
+          (fhg::util::bind_this (this, &NetworkStrategy::handle_recv));
       }
-      else if (! m_shutting_down)
+      else if (!m_shutting_down)
       {
-        if (m_message.header.src != _peer.address())
+        if (message.header.src != _peer.address())
         {
-          sdpa::events::ErrorEvent::Ptr const
-            error(new sdpa::events::ErrorEvent ( (ec == boost::asio::error::eof) // Connection closed cleanly by peer
-                                                ? sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                                                : sdpa::events::ErrorEvent::SDPA_ENETWORKFAILURE
-                                                , ec.message()
-                                                )
-                );
+          events::ErrorEvent::Ptr const error
+            ( boost::make_shared<events::ErrorEvent>
+                ( events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+                , ec.message()
+                )
+            );
           _event_handler
             (source.get_value_or (fhg::com::p2p::address_t ("unknown")), error);
 
           _peer.async_recv
-           ( &m_message
-           , std::bind ( &NetworkStrategy::handle_recv
-                       , this
-                       , std::placeholders::_1
-                       , std::placeholders::_2
-                       )
-           );
+            (fhg::util::bind_this (this, &NetworkStrategy::handle_recv));
         }
+      }
+    }
+
+    void NetworkStrategy::perform
+      (fhg::com::p2p::address_t const& address, std::string const& event)
+    {
+      try
+      {
+        _peer.async_send
+          ( address
+          , event
+          , [address, this] (boost::system::error_code const& ec)
+            {
+              if (ec)
+              {
+                _event_handler
+                  ( address
+                  , boost::make_shared<events::ErrorEvent>
+                      (events::ErrorEvent::SDPA_ENODE_SHUTDOWN, ec.message())
+                  );
+              }
+            }
+          );
+      }
+      catch (...)
+      {
+        _event_handler
+          ( address
+          , boost::make_shared<events::ErrorEvent>
+              ( events::ErrorEvent::SDPA_ENODE_SHUTDOWN
+              , fhg::util::current_exception_printer (": ").string()
+              )
+          );
       }
     }
   }

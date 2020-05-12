@@ -2,7 +2,7 @@
 
 #include <fhg/util/parse/position.hpp>
 
-#include <boost/function.hpp>
+#include <functional>
 
 namespace fhg
 {
@@ -55,7 +55,7 @@ namespace fhg
         //!       the list seperator.
         void list ( position&
                   , const char open, const char sep, const char close
-                  , const boost::function<void (position&)>&
+                  , const std::function<void (position&)>&
                   , const bool skip_space_before_element = true
                   , const bool skip_space_after_element = true
                   );

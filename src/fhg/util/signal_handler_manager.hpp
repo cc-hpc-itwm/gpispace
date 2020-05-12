@@ -2,11 +2,11 @@
 
 #pragma once
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
-#include <boost/function.hpp>
-#include <boost/thread.hpp>
+#include <functional>
 
+#include <mutex>
 #include <list>
 #include <map>
 
@@ -26,8 +26,8 @@ namespace fhg
     private:
       friend struct scoped_signal_handler;
 
-      mutable boost::mutex _handler_mutex;
-      using functions = std::list<boost::function<void (int, siginfo_t*, void*)>>;
+      mutable std::mutex _handler_mutex;
+      using functions = std::list<std::function<void (int, siginfo_t*, void*)>>;
       std::map<int, std::pair<struct sigaction, functions>> _handlers;
     };
 
@@ -35,7 +35,7 @@ namespace fhg
     {
       scoped_signal_handler ( signal_handler_manager&
                             , int sig_num
-                            , boost::function<void (int, siginfo_t*, void*)>
+                            , std::function<void (int, siginfo_t*, void*)>
                             );
       ~scoped_signal_handler();
 
@@ -48,10 +48,10 @@ namespace fhg
     struct scoped_log_backtrace_and_exit_for_critical_errors
     {
       scoped_log_backtrace_and_exit_for_critical_errors
-        (signal_handler_manager&, fhg::log::Logger&);
+        (signal_handler_manager&, fhg::logging::stream_emitter&);
 
     private:
-      boost::function<void (int, siginfo_t*, void*)> const _handler;
+      std::function<void (int, siginfo_t*, void*)> const _handler;
       scoped_signal_handler const _segv;
       scoped_signal_handler const _bus;
       scoped_signal_handler const _abrt;

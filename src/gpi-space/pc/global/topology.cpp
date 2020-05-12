@@ -1,7 +1,5 @@
 #include <gpi-space/pc/global/topology.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <gpi-space/pc/memory/manager.hpp>
 
 #include <rpc/remote_function.hpp>
@@ -18,7 +16,6 @@ namespace gpi
     {
       topology_t::topology_t ( memory::manager_t& memory_manager
                              , fhg::vmem::gaspi_context& gaspi_context
-                             , boost::asio::io_service& io_service
                              , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> server
                              )
         : _gaspi_context (gaspi_context)
@@ -35,12 +32,14 @@ namespace gpi
                      memory_manager.remote_alloc
                        (seg, hdl, offset, size, local_size, name);
                    }
+                 , fhg::rpc::not_yielding
                  )
         , _free ( _service_dispatcher
                 , [&memory_manager] (type::handle_t hdl)
                   {
                     memory_manager.remote_free (hdl);
                   }
+                , fhg::rpc::not_yielding
                 )
         , _add_memory ( _service_dispatcher
                       , [&memory_manager, this] ( type::segment_id_t seg_id
@@ -50,14 +49,17 @@ namespace gpi
                           memory_manager.remote_add_memory
                             (seg_id, url_s, *this);
                         }
+                      , fhg::rpc::not_yielding
                       )
         , _del_memory ( _service_dispatcher
                       , [&memory_manager, this] (type::segment_id_t seg_id)
                         {
                           memory_manager.remote_del_memory (seg_id, *this);
                         }
+                      , fhg::rpc::not_yielding
                       )
-        , _io_service (io_service)
+        //! \todo count as parameter
+        , _client_io_service (8)
         , _server (std::move (server))
       {
         _server->set_dispatcher (&_service_dispatcher);
@@ -111,7 +113,7 @@ namespace gpi
             }
 
             _others.emplace_back
-              ( _io_service
+              ( _client_io_service
               , _gaspi_context.hostname_of_rank (rank)
               , _gaspi_context.communication_port_of_rank (rank)
               );

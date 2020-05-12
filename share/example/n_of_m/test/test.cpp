@@ -16,10 +16,11 @@
 #include <we/type/value.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/boost/program_options/validators/executable.hpp>
-
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -31,14 +32,6 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
   namespace validators = fhg::util::boost::program_options;
 
   boost::program_options::options_description options_description;
-
-  constexpr char const* const option_command ("command");
-
-  options_description.add_options()
-    ( option_command
-    , boost::program_options::value<validators::executable>()->required()
-    , "command to execute"
-    );
 
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
@@ -93,22 +86,10 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
       ( gspc::workflow (make.pnet())
       , { {"m", 25L}
         , {"parallel", 2L}
-        , {"cmd"
-          , boost::filesystem::path
-              (vm.at (option_command).as<validators::executable>()).string()
-          }
         }
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_done ("done");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  decltype (result) const expected {{"done", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

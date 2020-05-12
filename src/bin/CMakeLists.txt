@@ -11,7 +11,6 @@ fhg_add_runtime_executable (NAME gpi-space
             fhg-util
             mmgr
             fhgcom
-            fhglog
             rif-started_process_promise
             Util::Generic
             ${CMAKE_THREAD_LIBS_INIT}
@@ -45,37 +44,9 @@ fhg_add_runtime_executable (NAME pnetc
             Boost::system
 )
 
-fhg_add_runtime_executable (NAME pnetv
-  SOURCES "pnetv.cpp"
-  LIBRARIES fhg-revision
-            pnetv-jpna
-            pnetv-jpn
-            pnet
-            Util::Generic
-            Boost::program_options
-)
-
-fhg_add_runtime_executable (NAME pnetd
-  SOURCES "pnetd.cpp"
-  LIBRARIES fhg-revision
-            pnet
-            gspc
-            ${Boost_PROGRAM_OPTIONS_LIBRARY}
-            ${Boost_SERIALIZATION_LIBRARY}
-            ${Boost_SYSTEM_LIBRARY}
-)
-
-fhg_add_runtime_executable (NAME fhglog-dump
-  SOURCES "fhglog-dump.cpp"
-  LIBRARIES fhglog
-            Boost::program_options
-            Util::Generic
-)
-
 fhg_add_runtime_executable (NAME orchestrator
   SOURCES "orchestrator.cpp"
   LIBRARIES sdpa
-            fhglog
             pnet
             Util::Generic
             rif-started_process_promise
@@ -88,7 +59,6 @@ fhg_add_runtime_executable (NAME orchestrator
 fhg_add_runtime_executable (NAME agent
   SOURCES "agent.cpp"
   LIBRARIES sdpa
-            fhglog
             pnet
             Util::Generic
             rif-started_process_promise

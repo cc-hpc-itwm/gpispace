@@ -1,4 +1,4 @@
-install (FILES ${files}
+install (FILES
   nth.xpnet
   size.xpnet
   type.xpnet

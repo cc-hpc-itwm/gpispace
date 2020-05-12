@@ -2,19 +2,26 @@
 
 #include <drts/private/drts_impl.hpp>
 
+#include <rif/client.hpp>
+
+#include <fhg/util/starts_with.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/functor_visitor.hpp>
+#include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
+#include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-#include <fhg/util/starts_with.hpp>
 
-#include <util-generic/serialization/boost/filesystem/path.hpp>
-
-#include <rif/client.hpp>
+#include <rpc/remote_function.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
 
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/filesystem.hpp>
@@ -23,6 +30,7 @@
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/serialization/unordered_map.hpp>
+#include <boost/utility/in_place_factory.hpp>
 
 #include <algorithm>
 #include <atomic>
@@ -31,6 +39,7 @@
 #include <functional>
 #include <future>
 #include <iostream>
+#include <numeric>
 #include <regex>
 #include <stdexcept>
 #include <string>
@@ -95,18 +104,6 @@ namespace
            ).str();
   }
 
-
-  std::string replace_whitespace (std::string s)
-  {
-    std::transform ( s.begin(), s.end(), s.begin()
-                   , [] (char c)
-                     {
-                       return std::isspace (c) ? '_' : c;
-                     }
-                   );
-    return s;
-  }
-
   template<typename Res, typename Enum, typename Match>
     boost::optional<Res> get_match (Match& match, Enum part)
   {
@@ -119,90 +116,48 @@ namespace
     return boost::none;
   }
 
-  std::unordered_map<std::string, std::string> logging_environment
-    ( boost::optional<std::string> const& log_host
-    , boost::optional<unsigned short> const& log_port
-    , boost::optional<boost::filesystem::path> const& log_dir
-    , bool verbose
-    , std::string name
-    )
-  {
-    std::unordered_map<std::string, std::string> environment;
-    environment.emplace ("FHGLOG_level", verbose ? "TRACE" : "INFO");
-    if (log_host && log_port)
-    {
-      environment.emplace
-        ("FHGLOG_to_server", *log_host + ":" + std::to_string (*log_port));
-    }
-    if (log_dir)
-    {
-      environment.emplace
-        ( "FHGLOG_to_file"
-        , (*log_dir / (replace_whitespace (name) + ".log")).string()
-        );
-    }
-    return environment;
-  }
-
   fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
     , std::string const& name
     , std::string const& parent_name
     , fhg::drts::hostinfo_type const& parent_hostinfo
-    , boost::optional<std::string> const& gui_host
-    , boost::optional<unsigned short> const& gui_port
-    , boost::optional<std::string> const& log_host
-    , boost::optional<unsigned short> const& log_port
+    , boost::optional<unsigned short> const& agent_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
-    , bool verbose
     , gspc::installation_path const& installation_path
-    , boost::optional<boost::filesystem::path> const& log_dir
     , fhg::drts::processes_storage& processes
     , std::ostream& info_output
+    , boost::optional<std::pair<fhg::rif::client&, pid_t>> top_level_log
+    , gspc::Certificates const& certificates
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
                 << rif_entry_point
                 << " with parent " << parent_name << "\n";
 
-    std::vector<std::string> agent_startup_arguments
-      { "-u", "0"
-      , "-n", name
-      , "-m", build_parent_with_hostinfo (parent_name, parent_hostinfo)
-      };
-    if (gui_host && gui_port)
-    {
-      agent_startup_arguments.emplace_back ("-a");
-      agent_startup_arguments.emplace_back
-        (*gui_host + ":" + std::to_string (*gui_port));
-    }
-    if (gpi_socket)
-    {
-      agent_startup_arguments.emplace_back ("--vmem-socket");
-      agent_startup_arguments.emplace_back (gpi_socket->string());
-    }
-
-    std::pair<pid_t, std::vector<std::string>> const agent_startup_messages
-      ( rif_client.execute_and_get_startup_messages
-          ( installation_path.agent()
-          , agent_startup_arguments
-          , logging_environment (log_host, log_port, log_dir, verbose, name)
+    auto const result
+      ( rif_client.start_agent
+          ( name
+          , parent_hostinfo
+          , agent_port
+          , gpi_socket
+          , certificates
+          , installation_path.agent()
           ).get()
       );
 
-    if (agent_startup_messages.second.size() != 2)
+    processes.store (rif_entry_point, name, result.pid);
+
+    if (top_level_log)
     {
-      throw std::logic_error ( "could not start agent " + name
-                             + ": expected 2 lines of startup messages"
-                             );
+      top_level_log->first.add_emitter_to_logging_demultiplexer
+        ( top_level_log->second
+        , std::vector<fhg::logging::endpoint>
+            {result.logger_registration_endpoint}
+        ).get();
     }
 
-    processes.store (rif_entry_point, name, agent_startup_messages.first);
-
-    return { agent_startup_messages.second[0]
-           , boost::lexical_cast<unsigned short> (agent_startup_messages.second[1])
-           };
+    return result.hostinfo;
   }
 }
 
@@ -216,18 +171,14 @@ namespace fhg
     ( std::vector<fhg::rif::entry_point> const& entry_points
     , std::string master_name
     , fhg::drts::hostinfo_type master_hostinfo
-    , fhg::drts::worker_description const& description
-    , bool verbose
-    , boost::optional<std::string> const& gui_host
-    , boost::optional<unsigned short> const& gui_port
-    , boost::optional<std::string> const& log_host
-    , boost::optional<unsigned short> const& log_port
+    , gspc::worker_description const& description
     , fhg::drts::processes_storage& processes
-    , boost::optional<boost::filesystem::path> const& log_dir
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
+    , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
+    , gspc::Certificates const& certificates
     )
   {
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
@@ -255,61 +206,45 @@ namespace fhg
                       )
                  << "\n";
 
-     auto&& kernel_arguments
-       ([&] (std::string const& name)
-        {
-          std::vector<std::string> arguments;
+     std::vector<std::string> arguments;
 
-          arguments.emplace_back ("--master");
-          arguments.emplace_back
-            (build_parent_with_hostinfo (master_name, master_hostinfo));
+     arguments.emplace_back ("--master");
+     arguments.emplace_back
+       (build_parent_with_hostinfo (master_name, master_hostinfo));
 
-          arguments.emplace_back ("--backlog-length");
-          arguments.emplace_back ("1");
+     for (boost::filesystem::path const& path : app_path)
+     {
+       arguments.emplace_back ("--library-search-path");
+       arguments.emplace_back (path.string());
+     }
 
-          //! \todo gui is optional in worker
-          if (gui_host && gui_port)
-          {
-            arguments.emplace_back ("--gui-host");
-            arguments.emplace_back (*gui_host);
-            arguments.emplace_back ("--gui-port");
-            arguments.emplace_back (std::to_string (*gui_port));
-          }
+     if (description.shm_size)
+     {
+       arguments.emplace_back ("--capability");
+       arguments.emplace_back ("GPI");
+       arguments.emplace_back ("--virtual-memory-socket");
+       arguments.emplace_back (gpi_socket.get().string());
+       arguments.emplace_back ("--shared-memory-size");
+       arguments.emplace_back (std::to_string (description.shm_size));
+     }
 
-          for (boost::filesystem::path const& path : app_path)
-          {
-            arguments.emplace_back ("--library-search-path");
-            arguments.emplace_back (path.string());
-          }
+     for (std::string const& capability : description.capabilities)
+     {
+       arguments.emplace_back ("--capability");
+       arguments.emplace_back (capability);
+     }
 
-          if (description.shm_size)
-          {
-            arguments.emplace_back ("--capability");
-            arguments.emplace_back ("GPI");
-            arguments.emplace_back ("--virtual-memory-socket");
-            arguments.emplace_back (gpi_socket.get().string());
-            arguments.emplace_back ("--shared-memory-size");
-            arguments.emplace_back (std::to_string (description.shm_size));
-          }
+     if (description.socket)
+     {
+       arguments.emplace_back ("--socket");
+       arguments.emplace_back (std::to_string (description.socket.get()));
+     }
 
-          for (std::string const& capability : description.capabilities)
-          {
-            arguments.emplace_back ("--capability");
-            arguments.emplace_back (capability);
-          }
-
-          if (description.socket)
-          {
-            arguments.emplace_back ("--socket");
-            arguments.emplace_back (std::to_string (description.socket.get()));
-          }
-
-          arguments.emplace_back ("-n");
-          arguments.emplace_back (name);
-
-          return arguments;
-        }
-       );
+     if (certificates)
+     {
+       arguments.emplace_back ("--certificates");
+       arguments.emplace_back (certificates->string());
+     }
 
      std::atomic<std::size_t> num_nodes (0);
 
@@ -337,7 +272,7 @@ namespace fhg
         );
 
       std::vector<std::tuple< fhg::rif::entry_point
-                            , std::future<std::pair<pid_t, std::vector<std::string>>>
+                            , std::future<fhg::rif::protocol::start_worker_result>
                             , std::string
                             >
                  > futures;
@@ -359,6 +294,13 @@ namespace fhg
         {
           try
           {
+            if (description.base_port)
+            {
+              arguments.emplace_back ("--port");
+              arguments.emplace_back
+                (std::to_string (*description.base_port + identity));
+            }
+
             std::string const name
               ( name_prefix + "-" + connection.second.string()
               + "-" + std::to_string (identity + 1)
@@ -383,10 +325,7 @@ namespace fhg
               }
             }
 
-            std::unordered_map<std::string, std::string> environment
-              ( logging_environment
-                  (log_host, log_port, log_dir, verbose, name)
-              );
+            std::unordered_map<std::string, std::string> environment;
             environment.emplace
               ( "LD_LIBRARY_PATH"
               , (installation_path.lib()).string() + ":"
@@ -395,9 +334,10 @@ namespace fhg
 
             futures.emplace_back
               ( connection.second
-              , connection.first.execute_and_get_startup_messages
-                  ( installation_path.drts_kernel()
-                  , kernel_arguments (name)
+              , connection.first.start_worker
+                  ( name
+                  , installation_path.drts_kernel()
+                  , arguments
                   , environment
                   )
               , name
@@ -411,23 +351,21 @@ namespace fhg
         }
       }
 
+      std::vector<fhg::logging::endpoint> log_emitters;
+
       for (auto& future : futures)
       {
         try
         {
-          auto const pid_and_startup_messages (std::get<1> (future).get());
-
-          if (!pid_and_startup_messages.second.empty())
-          {
-            throw std::runtime_error ( "could not start " + std::get<2> (future)
-                                     + ": expected no startup messages"
-                                     );
-          }
+          auto const result (std::get<1> (future).get());
 
           processes.store ( std::get<0> (future)
                           , "drts-kernel-" + std::get<2> (future)
-                          , pid_and_startup_messages.first
+                          , result.pid
                           );
+
+          log_emitters.emplace_back
+            (std::move (result.logger_registration_endpoint));
         }
         catch (...)
         {
@@ -461,14 +399,21 @@ namespace fhg
         }
       }
 
+      if (top_level_log)
+      {
+        fhg::rif::client (io_service, top_level_log->first)
+          .add_emitter_to_logging_demultiplexer
+            (top_level_log->second, log_emitters).get();
+      }
+
       return results;
     }
 
-    worker_description parse_capability
+    gspc::worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
       static std::regex const cap_spec_regex
-        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?)?$");
+        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?(/([0-9]+))?)?$");
       enum class cap_spec_regex_part
       {
         capabilities = 1,
@@ -476,6 +421,7 @@ namespace fhg
         num_per_node = 5,
         max_nodes = 7,
         shm = 9,
+        base_port = 11
       };
 
       std::smatch cap_spec_match;
@@ -511,40 +457,52 @@ namespace fhg
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::shm)
           .get_value_or (0)
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::socket)
+        , get_match<unsigned short> (cap_spec_match, cap_spec_regex_part::base_port)
         };
     }
 
-    hostinfo_type startup
-      ( boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
+    namespace
+    {
+      std::unique_ptr<rpc::remote_endpoint> connect
+        (boost::asio::io_service& io_service, logging::endpoint ep)
+      {
+        return util::visit<std::unique_ptr<rpc::remote_endpoint>>
+          ( ep.best (util::hostname())
+          , [&] (logging::socket_endpoint const& as_socket)
+            {
+              return util::cxx14::make_unique<rpc::remote_socket_endpoint>
+                (io_service, as_socket.socket);
+            }
+          , [&] (logging::tcp_endpoint const& as_tcp)
+            {
+              return util::cxx14::make_unique<rpc::remote_tcp_endpoint>
+                (io_service, as_tcp);
+            }
+          );
+      }
+    }
+
+    startup_result startup
+      ( boost::optional<unsigned short> const& orchestrator_port
+      , boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
-      , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
-      , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
+      , boost::optional<vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
-      , boost::optional<boost::filesystem::path> const& log_dir
       , fhg::drts::processes_storage& processes
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+      , std::vector<logging::endpoint> default_log_receivers
+      , gspc::Certificates const& certificates
       )
     {
-      if (log_dir)
-      {
-        if (delete_logfiles)
-        {
-          boost::filesystem::remove_all (*log_dir);
-        }
-        boost::filesystem::create_directories (*log_dir);
-      }
-
       fhg::util::scoped_signal_handler interrupt_signal_handler
         ( signal_handler_manager
         ,  SIGINT
@@ -555,16 +513,6 @@ namespace fhg
         );
 
       info_output << "I: starting base sdpa components on " << master << "...\n";
-      if (log_host && log_port)
-      {
-        info_output << "I: sending log events to: "
-                    << *log_host << ":" << *log_port << "\n";
-      }
-      if (gui_host && gui_port)
-      {
-        info_output << "I: sending execution events to: "
-                    << *gui_host << ":" << *gui_port << "\n";
-      }
 
       //! \todo let thread count be a parameter
       fhg::util::scoped_boost_asio_io_service_with_threads io_service
@@ -572,35 +520,75 @@ namespace fhg
 
       rif::client master_rif_client (io_service, master);
 
-      std::pair<pid_t, std::vector<std::string>> const orchestrator_startup_messages
+      boost::optional<rif::client> logging_rif_client;
+      boost::optional<rif::protocol::start_logging_demultiplexer_result>
+        logging_rif_info;
+      if (log_rif_entry_point)
+      {
+        logging_rif_client = boost::in_place
+          (std::ref (io_service), *log_rif_entry_point);
+
+        info_output << "I: starting top level gspc logging demultiplexer on "
+                    << log_rif_entry_point->hostname << "\n";
+
+        logging_rif_info
+          = util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  return logging_rif_client->start_logging_demultiplexer
+                    (installation_path.logging_demultiplexer()).get();
+                }
+              , "Starting top level logging demultiplexer failed"
+              );
+
+        info_output << "   => accepting registration on '"
+                    << logging_rif_info->sink_endpoint.to_string()
+                    << "'\n";
+
+        processes.store
+          (*log_rif_entry_point, "logging-demultiplexer", logging_rif_info->pid);
+
+        std::vector<logging::endpoint> const top_level_endpoint
+          {logging_rif_info->sink_endpoint};
+        for (auto const& receiver : default_log_receivers)
+        {
+          util::nest_exceptions<std::runtime_error>
+            ( [&]
+              {
+                auto const endpoint (connect (io_service, receiver));
+                using fun = logging::protocol::receiver::add_emitters;
+                rpc::sync_remote_function<fun> {*endpoint} (top_level_endpoint);
+              }
+            , "Requesting " + receiver.to_string()
+            + " to connect to top level logging demultiplexer failed"
+            );
+        }
+      }
+
+      auto const orchestrator_startup_result
         ( fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                return master_rif_client.execute_and_get_startup_messages
+                return master_rif_client.start_orchestrator
                   ( installation_path.orchestrator()
-                  , std::vector<std::string> {"-u", "0", "-n", "orchestrator"}
-                  , logging_environment
-                      (log_host, log_port, log_dir, verbose, "orchestrator")
+                  , certificates
+                  , orchestrator_port
                   ).get();
               }
               , "could not start orchestrator"
               )
         );
 
-      if (orchestrator_startup_messages.second.size() != 2)
+      processes.store (master, "orchestrator", orchestrator_startup_result.pid);
+
+      if (logging_rif_client)
       {
-        throw std::logic_error
-          ("could not start orchestrator: expected 2 lines of startup messages");
+        logging_rif_client->add_emitter_to_logging_demultiplexer
+          ( logging_rif_info->pid
+          , std::vector<fhg::logging::endpoint>
+              {orchestrator_startup_result.logger_registration_endpoint}
+          ).get();
       }
-
-      processes.store
-        (master, "orchestrator", orchestrator_startup_messages.first);
-
-      hostinfo_type const orchestrator_hostinfo
-        ( orchestrator_startup_messages.second[0]
-        , boost::lexical_cast<unsigned short>
-            (orchestrator_startup_messages.second[1])
-        );
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
       std::vector<std::string> hostnames;
@@ -650,6 +638,8 @@ namespace fhg
               std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
                 fails;
 
+              //! \note requires ranks to be matching index in hostnames!
+              std::size_t rank (0);
               for (auto& connection : rif_connections)
               {
                 try
@@ -658,19 +648,13 @@ namespace fhg
                     ( connection.second
                     , connection.first.start_vmem
                         ( installation_path.vmem()
-                        , verbose ? fhg::log::TRACE : fhg::log::INFO
                         , gpi_socket.get()
                         , vmem_port.get()
                         , vmem_startup_timeout.get()
-                        , log_host && log_port
-                        ? std::make_pair (log_host.get(), log_port.get())
-                        : boost::optional<std::pair<std::string, unsigned short>>()
-                        , log_dir
-                        ? *log_dir / ("vmem-" + replace_whitespace (connection.second.string()) + ".log")
-                        : boost::optional<boost::filesystem::path>()
                         , hostnames
                         , master.string()
-                        , connection.second == master
+                        , rank++
+                        , vmem_netdev_id.get()
                         )
                     );
                 }
@@ -716,20 +700,23 @@ namespace fhg
                                           , master_rif_client
                                           , master_agent_name
                                           , "orchestrator"
-                                          , orchestrator_hostinfo
-                                          , gui_host
-                                          , gui_port
-                                          , log_host
-                                          , log_port
+                                          , orchestrator_startup_result.hostinfo
+                                          , agent_port
                                           , gpi_socket
-                                          , verbose
                                           , installation_path
-                                          , log_dir
                                           , processes
                                           , info_output
+                                          , FHG_UTIL_MAKE_OPTIONAL
+                                              ( !!logging_rif_client
+                                              , std::make_pair
+                                                  ( std::ref (*logging_rif_client)
+                                                  , logging_rif_info->pid
+                                                  )
+                                              )
+                                          , certificates
                                           );
 
-      return orchestrator_hostinfo;
+      return {orchestrator_startup_result.hostinfo, logging_rif_info};
     }
 
     namespace
@@ -751,6 +738,7 @@ namespace fhg
           : component == component_type::agent ? "agent"
           : component == component_type::orchestrator ? "orchestrator"
           : component == component_type::vmem ? "vmem"
+          : component == component_type::logging_demultiplexer ? "logging-demultiplexer"
           : throw std::logic_error ("invalid enum value")
           );
 
@@ -936,6 +924,7 @@ namespace fhg
           , component_type::agent
           , component_type::vmem
           , component_type::orchestrator
+          , component_type::logging_demultiplexer
           }
         , [this] (component_type component)
           {

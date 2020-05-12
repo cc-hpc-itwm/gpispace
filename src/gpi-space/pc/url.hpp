@@ -45,7 +45,7 @@ namespace gpi
         m_args [k] = v;
       }
 
-      boost::optional<std::string const&> get (std::string const&) const;
+      boost::optional<std::string> get (std::string const&) const;
     private:
       std::string m_type;
       std::string m_path;

@@ -25,7 +25,9 @@ namespace we
       , port_id_counter_ (0)
       , prop_()
       , _requirements()
+      , _preferences()
       , _priority()
+      , eureka_id_ (boost::none)
     {}
 
     boost::optional<const expression_t&> transition_t::expression() const
@@ -46,6 +48,11 @@ namespace we
       return condition_;
     }
 
+    boost::optional<eureka_id_type> const& transition_t::eureka_id() const
+    {
+      return eureka_id_;
+    }
+
     const std::string& transition_t::name() const
     {
       return name_;
@@ -55,14 +62,19 @@ namespace we
     {
       return data_;
     }
-    transition_t::data_type& transition_t::data()
+    we::type::net_type& transition_t::mutable_net()
     {
-      return data_;
+      return boost::get<we::type::net_type> (data_);
     }
 
     std::list<we::type::requirement_t> const& transition_t::requirements() const
     {
       return _requirements;
+    }
+
+    std::list<we::type::preference_t> const& transition_t::preferences() const
+    {
+      return _preferences;
     }
 
     we::port_id_type transition_t::add_port (port_t const& port)

@@ -1,0 +1,61 @@
+<defun name="call_before_and_destroy_in_one_transition">
+  <in name="plugin_path" type="string" place="plugin_path"/>
+  <in name="log_path" type="string" place="log_path"/>
+  <out name="done" type="unsigned long" place="done"/>
+  <net>
+    <place name="plugin_path" type="string"/>
+    <place name="log_path" type="string"/>
+    <place name="done" type="unsigned long"/>
+
+    <transition name="create_and_call_after">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="create"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_path" type="string"/>
+        <in name="log_path" type="string"/>
+        <out name="plugin_id" type="unsigned long"/>
+        <expression>
+          ${plugin.Log.file} := ${log_path}
+        </expression>
+      </defun>
+      <connect-in port="plugin_path" place="plugin_path"/>
+      <connect-in port="log_path" place="log_path"/>
+      <connect-out port="plugin_id" place="please_destroy"/>
+    </transition>
+
+    <place name="please_destroy" type="unsigned long"/>
+
+    <transition name="destroy">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="destroy"/>
+            </properties>
+          </properties>
+        </properties>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="call_before_eval">
+                "stack_push (List(), ${plugin_id})"
+              </property>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_id" type="unsigned long"/>
+        <out name="done" type="unsigned long"/>
+        <expression>
+          ${done} := ${plugin_id}
+        </expression>
+      </defun>
+      <connect-in port="plugin_id" place="please_destroy"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

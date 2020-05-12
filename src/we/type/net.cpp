@@ -1,17 +1,38 @@
 #include <we/type/net.hpp>
+#include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
+#include <we/type/value/wrap.hpp>
+#include <we/type/value/unwrap.hpp>
 
 #include <we/require_type.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
+#include <util-generic/print_container.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 #include <boost/range/join.hpp>
 
+#include <boost/variant/get.hpp>
+
 #include <boost/format.hpp>
 
+#include <list>
 #include <stdexcept>
+#include <unordered_set>
+
+namespace gspc
+{
+  namespace we
+  {
+    namespace plugin
+    {
+      FHG_UTIL_HARD_INTEGRAL_TYPEDEF_ALLOW_CONVERSION (ID, unsigned long);
+    }
+  }
+}
 
 namespace we
 {
@@ -22,7 +43,8 @@ namespace we
       class cross_type
       {
       public:
-        bool enables (net_type* const, transition_id_type);
+        cross_type (net_type&, transition_id_type);
+        bool enables();
         void write_to ( std::unordered_map< place_id_type
                                           , std::pair<token_id_type, bool>
                                           >&
@@ -49,11 +71,25 @@ namespace we
           bool const _is_read_connection;
         };
 
+        net_type& _net;
+        transition_id_type _tid;
+        we::type::transition_t const& _transition;
+        boost::optional<expression_t> const& _condition;
+        expr::parse::node::KeyRoots _key_roots;
+
         typedef std::unordered_map<place_id_type, iterators_type> map_type;
 
         map_type _m;
 
-        bool do_step (map_type::iterator, map_type::iterator const&);
+        using ReferencedPlaces = std::unordered_set<place_id_type>;
+
+        ReferencedPlaces _referenced_places;
+
+        bool is_referenced (place_id_type) const;
+        std::string const& input_port_name (place_id_type) const;
+        bool do_step ( ReferencedPlaces::const_iterator
+                     , ReferencedPlaces::const_iterator const&
+                     );
       };
     }
 
@@ -86,6 +122,25 @@ namespace we
       return tid;
     }
 
+    namespace
+    {
+      void require_no_output_connection
+        ( net_type::port_to_place_type const& port_to_place
+        , transition_id_type const transition_id
+        , port_id_type const port_id
+        )
+      {
+        auto const output_connector (port_to_place.find (transition_id));
+
+        if (  output_connector != port_to_place.end ()
+           && output_connector->second.count (port_id) > 0
+           )
+        {
+          throw std::logic_error ("duplicate connection: out and out-many");
+        }
+      }
+    }
+
     void net_type::add_connection ( edge::type type
                                   , transition_id_type transition_id
                                   , place_id_type place_id
@@ -96,27 +151,56 @@ namespace we
       switch (type)
       {
       case edge::TP:
+        require_no_output_connection (_port_many_to_place, transition_id, port_id);
         _adj_tp.emplace (place_id, transition_id);
-        _port_to_place[transition_id].insert
-          ( port_to_place_with_info_type::value_type
-              (port_id, place_id, property)
-          );
+        if (!_port_to_place[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (port_id)
+             , std::forward_as_tuple (place_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
+        break;
+      case edge::TP_MANY:
+        require_no_output_connection (_port_to_place, transition_id, port_id);
+        _adj_tp.emplace (place_id, transition_id);
+        if (!_port_many_to_place[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (port_id)
+             , std::forward_as_tuple (place_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
         break;
       case edge::PT:
         _adj_pt_consume.insert
           (adj_pt_type::value_type (place_id, transition_id));
-        _place_to_port[transition_id].insert
-          ( place_to_port_with_info_type::value_type
-              (place_id, port_id, property)
-          );
+        if (!_place_to_port[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (place_id)
+             , std::forward_as_tuple (port_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate connection");
+        }
         update_enabled (transition_id);
         break;
       case edge::PT_READ:
         _adj_pt_read.insert (adj_pt_type::value_type (place_id, transition_id));
-        _place_to_port[transition_id].insert
-          ( place_to_port_with_info_type::value_type
-              (place_id, port_id, property)
-          );
+        if (!_place_to_port[transition_id].emplace
+             ( std::piecewise_construct
+             , std::forward_as_tuple (place_id)
+             , std::forward_as_tuple (port_id, property)
+             ).second
+           )
+        {
+          throw std::logic_error ("duplicate read connection");
+        }
         update_enabled (transition_id);
         break;
       }
@@ -128,8 +212,25 @@ namespace we
                                 , we::type::property::type const& property
                                 )
     {
-      _port_to_response[transition_id].insert
-        (port_to_response_with_info_type::value_type (port_id, to, property));
+      if (!_port_to_response[transition_id].emplace
+           ( std::piecewise_construct
+           , std::forward_as_tuple (port_id)
+           , std::forward_as_tuple (to, property)
+           ).second
+         )
+      {
+        throw std::logic_error ("duplicate response");
+      }
+    }
+
+    void net_type::add_eureka ( transition_id_type transition_id
+                              , port_id_type port_id
+                              )
+    {
+      if (!_port_to_eureka.emplace (transition_id, port_id).second)
+      {
+        throw std::logic_error ("duplicate eureka");
+      }
     }
 
     const std::unordered_map<place_id_type, place::type>&
@@ -160,9 +261,17 @@ namespace we
     {
       return _port_to_place;
     }
+    net_type::port_to_place_type const& net_type::port_many_to_place() const
+    {
+      return _port_many_to_place;
+    }
     net_type::port_to_response_type const& net_type::port_to_response() const
     {
       return _port_to_response;
+    }
+    net_type::port_to_eureka_type const& net_type::port_to_eureka() const
+    {
+      return _port_to_eureka;
     }
     net_type::place_to_port_type const& net_type::place_to_port() const
     {
@@ -258,10 +367,10 @@ namespace we
 
     void net_type::update_enabled (transition_id_type tid)
     {
-      cross_type cross;
+      cross_type cross (*this, tid);
 
       auto&& push
-        ([&] (adj_pt_type& adj, bool is_read_connection)
+        ([&] (adj_pt_type const& adj, bool is_read_connection)
          {
            for ( place_id_type place_id
                : adj.right.equal_range (tid) | boost::adaptors::map_values
@@ -285,7 +394,7 @@ namespace we
 
       if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (cross.enables (this, tid))
+        if (cross.enables())
         {
           _enabled[_tmap.at (tid).priority()].insert (tid);
           cross.write_to (_enabled_choice[tid]);
@@ -314,10 +423,10 @@ namespace we
         }
       }
 
-      cross_type cross;
+      cross_type cross (*this, tid);
 
       auto&& push
-        ( [&] (adj_pt_type& adj, bool is_read_connection)
+        ( [&] (adj_pt_type const& adj, bool is_read_connection)
           {
             for ( place_id_type place_id
                 : adj.right.equal_range (tid) | boost::adaptors::map_values
@@ -352,7 +461,7 @@ namespace we
 
       if (push (_adj_pt_consume, false) && push (_adj_pt_read, true))
       {
-        if (cross.enables (this, tid))
+        if (cross.enables())
         {
           _enabled[_tmap.at (tid).priority()].insert (tid);
           cross.write_to (_enabled_choice[tid]);
@@ -402,7 +511,7 @@ namespace we
         token_id_type const token_id (pt.second.first);
         bool const is_read_connection (pt.second.second);
 
-        fun ( _place_to_port.at (tid).left.find (pid)->get_right()
+        fun ( _place_to_port.at (tid).at (pid).first
             , _token_by_place_id.at (pid).at (token_id)
             );
 
@@ -418,12 +527,16 @@ namespace we
     void net_type::do_delete
       (std::forward_list<token_to_be_deleted_type> const& tokens_to_be_deleted)
     {
+      std::unordered_set<token_id_type> deleted_tokens;
+
       for ( token_to_be_deleted_type const& token_to_be_deleted
           : tokens_to_be_deleted
           )
       {
         _token_by_place_id
           .at (token_to_be_deleted.first).erase (token_to_be_deleted.second);
+
+        deleted_tokens.emplace (token_to_be_deleted.second);
       }
 
       for ( token_to_be_deleted_type const& token_to_be_deleted
@@ -438,7 +551,24 @@ namespace we
             | boost::adaptors::map_values
             )
         {
-          update_enabled (t);
+          auto const& priority (_tmap.at (t).priority());
+
+          if (_enabled.count (priority) && _enabled.at (priority).count (t))
+          {
+            auto const& choices (_enabled_choice.at (t));
+
+            if ( std::any_of
+                 ( choices.cbegin(), choices.cend()
+                 , [&] (decltype (*choices.cbegin()) choice)
+                   {
+                     return deleted_tokens.count (choice.second.first);
+                   }
+                 )
+               )
+            {
+              update_enabled (t);
+            }
+          }
         }
       }
     }
@@ -450,9 +580,12 @@ namespace we
 
       do_delete
         ( do_extract ( tid
-                     , std::bind ( &we::type::activity_t::add_input, &act
-                                 , std::placeholders::_1, std::placeholders::_2
-                                 )
+                     , [&] ( port_id_type port_id
+                           , pnet::type::value::value_type const& value
+                           )
+                       {
+                         act.add_input (port_id, value);
+                       }
                      )
         );
 
@@ -485,18 +618,153 @@ namespace we
       };
     }
 
+    boost::optional<we::type::activity_t>
+      net_type::fire_expressions_and_extract_activity_random
+        ( std::mt19937& engine
+        , we::workflow_response_callback const& workflow_response
+        , we::eureka_response_callback const& eureka_response
+        , gspc::we::plugin::Plugins& plugins
+        , gspc::we::plugin::PutToken put_token
+        )
+    {
+      while (!_enabled.empty())
+      {
+        std::unordered_set<we::transition_id_type> const& transition_ids
+          (_enabled.begin()->second);
+        std::uniform_int_distribution<std::size_t> random
+          (0, transition_ids.size() - 1);
+        transition_id_type const transition_id
+          (*std::next (transition_ids.begin(), random (engine)));
+        we::type::transition_t const& transition (_tmap.at (transition_id));
+
+        if (transition.expression())
+        {
+          fire_expression ( transition_id
+                          , transition
+                          , workflow_response
+                          , eureka_response
+                          , plugins
+                          , put_token
+                          );
+        }
+        else
+        {
+          return extract_activity (transition_id, transition);
+        }
+      }
+
+      return boost::none;
+    }
+
+    boost::optional<we::type::activity_t>
+      net_type::fire_expressions_and_extract_activity_random
+        ( std::mt19937& engine
+        , we::workflow_response_callback const& workflow_response
+        , we::eureka_response_callback const& eureka_response
+        )
+    {
+      gspc::we::plugin::Plugins plugins;
+      return fire_expressions_and_extract_activity_random
+        ( engine
+        , workflow_response
+        , eureka_response
+        , plugins
+        , [] (std::string, pnet::type::value::value_type)
+          {
+            throw std::logic_error ("Unexpected call to put_token.");
+          }
+        );
+    }
+
     void net_type::fire_expression
       ( transition_id_type tid
       , we::type::transition_t const& transition
       , we::workflow_response_callback const& workflow_response
+      , we::eureka_response_callback const& eureka_response
+      , gspc::we::plugin::Plugins& plugins
+      , gspc::we::plugin::PutToken put_token
       )
     {
+      using pnet::type::value::peek;
+      using values = std::list<pnet::type::value::value_type>;
+
       expr::eval::context context;
 
       std::forward_list<token_to_be_deleted_type> const tokens_to_be_deleted
         (do_extract (tid, context_bind (context, transition)));
 
+      auto const plugin_commands
+        (transition.prop().get ({"gspc", "we", "plugin"}));
+
+      if (plugin_commands)
+      {
+        {
+          auto const call_before_eval
+            (peek ("call_before_eval", plugin_commands.get()));
+
+          if (call_before_eval)
+          {
+            expression_t const expression
+              (boost::get<std::string> (call_before_eval.get()));
+            auto const pids (expression.ast().eval_all (context));
+
+            for (auto const& pid : boost::get<values> (pids))
+            {
+              plugins.before_eval
+                ( gspc::we::plugin::ID {boost::get<unsigned long> (pid)}
+                , context
+                );
+            }
+          }
+        }
+
+        if (peek ("destroy", plugin_commands.get()))
+        {
+          plugins.destroy
+            ( gspc::we::plugin::ID
+                {boost::get<unsigned long> (context.value ({"plugin_id"}))}
+            );
+        }
+      }
+
       transition.expression()->ast().eval_all (context);
+
+      if (plugin_commands)
+      {
+        if (peek ("create", plugin_commands.get()))
+        {
+          context.bind_and_discard_ref
+            ( {"plugin_id"}
+            , static_cast<unsigned long>
+              ( plugins.create
+                ( boost::get<std::string> (context.value ({"plugin_path"}))
+                , context
+                , std::move (put_token)
+                )
+              )
+            );
+        }
+
+        {
+          auto const call_after_eval
+            (peek ("call_after_eval", plugin_commands.get()));
+
+          if (call_after_eval)
+          {
+            expression_t const expression
+              (boost::get<std::string> (call_after_eval.get()));
+            auto const pids (expression.ast().eval_all (context));
+
+            for (auto const& pid : boost::get<values> (pids))
+            {
+              plugins.after_eval
+                ( gspc::we::plugin::ID {boost::get<unsigned long> (pid)}
+                , context
+                );
+            }
+          }
+        }
+      }
 
       std::list<to_be_updated_type> pending_updates;
 
@@ -505,25 +773,66 @@ namespace we
           )
       {
         if (  _port_to_place.count (tid)
-           && _port_to_place.at (tid).left.count (p.first)
+           && _port_to_place.at (tid).count (p.first)
            )
         {
           pending_updates.emplace_back
             ( do_put_value
-              ( _port_to_place.at (tid).left.find (p.first)->get_right()
+              ( _port_to_place.at (tid).at (p.first).first
               , context.value ({p.second.name()})
               )
             );
+        }
+        else if (  _port_many_to_place.count (tid)
+                && _port_many_to_place.at (tid). count (p.first)
+                )
+        {
+          auto const& many_tokens
+            (boost::get<std::list<pnet::type::value::value_type>>
+              (context.value ({p.second.name()}))
+            );
+
+          for (auto const& token : many_tokens) {
+            pending_updates.emplace_back
+              ( do_put_value
+                ( _port_many_to_place.at (tid).at (p.first).first
+                , token
+                )
+              );
+          }
+        }
+        else if (  _port_to_eureka.count (tid)
+                && _port_to_eureka.at (tid) == p.first
+                )
+        {
+          auto const& ids
+            ( boost::get<std::set<pnet::type::value::value_type>>
+              (context.value ({p.second.name()}))
+            );
+
+          type::eureka_ids_type const eureka_ids
+            = pnet::type::value::unwrap<type::eureka_id_type>(ids);
+
+          if (eureka_ids.size())
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  eureka_response (eureka_ids);
+                }
+                , "inject result: sending eureka response failed"
+              );
+          }
         }
         else
         {
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                assert (_port_to_response.at (tid).left.count (p.first));
+                assert (_port_to_response.at (tid).count (p.first));
 
                 std::string const to ( _port_to_response.at (tid)
-                                     . left.find (p.first)->get_right()
+                                     . at (p.first).first
                                      );
 
                 workflow_response ( context.value ({to})
@@ -543,43 +852,85 @@ namespace we
       }
     }
 
-    void net_type::inject ( activity_t const& child
+    void net_type::inject ( transition_id_type tid
+                          , TokensOnPorts const& output
+                          , TokensOnPorts const& input
                           , workflow_response_callback workflow_response
+                          , eureka_response_callback eureka_response
                           )
     {
-      for (auto const& token_on_port : child.output())
+      for (auto const& token_on_port : output)
       {
-        if ( _port_to_place.count (*child.transition_id())
-           && _port_to_place.at (*child.transition_id())
-            . left.count (token_on_port.second)
+        if (  _port_to_place.count (tid)
+           && _port_to_place.at (tid).count (token_on_port.second)
            )
         {
-          put_value ( _port_to_place.at (*child.transition_id())
-                    . left.find (token_on_port.second)->get_right()
+          put_value ( _port_to_place.at (tid).at (token_on_port.second).first
                     , token_on_port.first
                     );
+        }
+        else if (  _port_many_to_place.count (tid)
+                && _port_many_to_place.at (tid).count (token_on_port.second)
+                )
+        {
+          auto const& many_tokens
+            (boost::get<std::list<pnet::type::value::value_type>>
+              (token_on_port.first)
+            );
+
+          for (auto const& token : many_tokens)
+          {
+            put_value
+              ( _port_many_to_place.at (tid).at (token_on_port.second).first
+              , token
+              );
+          }
+        }
+        else if (  _port_to_eureka.count (tid)
+                && (_port_to_eureka.at (tid) == token_on_port.second)
+                )
+        {
+          std::set<type::eureka_id_type> const eureka_ids
+            ([&token_on_port]
+             {
+              auto const& ids
+              ( boost::get<std::set<pnet::type::value::value_type>>
+                 (token_on_port.first)
+              );
+
+              return pnet::type::value::unwrap<type::eureka_id_type>(ids);
+             }()
+            );
+
+          if (eureka_ids.size())
+          {
+            fhg::util::nest_exceptions<std::runtime_error>
+              ( [&]
+                {
+                  eureka_response (eureka_ids);
+                }
+                , "inject result: sending eureka response failed"
+              );
+          }
         }
         else
         {
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                assert ( _port_to_response.at (*child.transition_id())
-                       . left.count (token_on_port.second)
-                       );
+                assert (_port_to_response.at (tid).count (token_on_port.second));
+
                pnet::type::value::value_type const description
-                  ([this, &child, &token_on_port]
+                   ([this, &input, tid, &token_on_port]
                    {
                      std::string const to
-                       ( _port_to_response.at (*child.transition_id())
-                       . left.find (token_on_port.second)->get_right()
-                       );
+                       (_port_to_response.at (tid).at (token_on_port.second).first);
                     we::port_id_type const input_port_id
-                       (child.transition().input_port_by_name (to));
+                       (_tmap.at (tid).input_port_by_name (to));
 
                     return std::find_if
-                       ( child._input.begin(), child._input.end()
-                       , [&input_port_id] (activity_t::token_on_port_t const& input_token_on_port)
+                       ( input.begin(), input.end()
+                       , [&input_port_id] (TokenOnPort const& input_token_on_port)
                          {
                            return input_token_on_port.second == input_port_id;
                          }
@@ -594,9 +945,27 @@ namespace we
       }
     }
 
+    void net_type::unexpected_eureka (eureka_ids_type const& ids)
+    {
+      throw std::logic_error
+        (str ( boost::format ("Unexpected call to eureka: %1%")
+             % fhg::util::print_container ("{", ", ", "}", ids)
+             )
+        );
+    }
 
     // cross_type
 
+    cross_type::cross_type (net_type& net, transition_id_type tid)
+      : _net (net)
+      , _tid (tid)
+      , _transition (_net.transitions().at (_tid))
+      , _condition (_transition.condition())
+      , _key_roots ( _condition
+                   ? _condition->ast().key_roots()
+                   : decltype (_condition->ast().key_roots()) {}
+                   )
+    {}
     cross_type::iterators_type::iterators_type
       (net_type::token_by_id_type const& tokens, bool is_read_connection)
         : _begin (tokens.begin())
@@ -635,11 +1004,14 @@ namespace we
       _pos = _begin;
     }
 
-    bool cross_type::do_step
-      (map_type::iterator slot, map_type::iterator const& end)
+    bool cross_type::do_step ( ReferencedPlaces::const_iterator place
+                             , ReferencedPlaces::const_iterator const& end
+                             )
     {
-      while (slot != end)
+      while (place != end)
       {
+        auto slot (_m.find (*place));
+
         //! \note all sequences are non-empty
         ++slot->second;
 
@@ -649,23 +1021,33 @@ namespace we
         }
 
         slot->second.rewind();
-        ++slot;
+        ++place;
       }
 
       return false;
     }
 
-    bool cross_type::enables (net_type* const n, transition_id_type transition_id)
+    bool cross_type::is_referenced (place_id_type pid) const
     {
-      we::type::transition_t const& transition
-        (n->transitions().at (transition_id));
+      return _key_roots.count (input_port_name (pid)) > 0;
+    }
+    std::string const& cross_type::input_port_name (place_id_type pid) const
+    {
+      return _transition.ports_input()
+        .at ( _net.place_to_port().at (_tid)
+            . at (pid).first
+            ).name()
+        ;
+    }
 
-      if (_m.size() < transition.ports_input().size())
+    bool cross_type::enables()
+    {
+      if (_m.size() < _transition.ports_input().size())
       {
         return false;
       }
 
-      if (!transition.condition())
+      if (!_condition)
       {
         return true;
       }
@@ -674,24 +1056,20 @@ namespace we
       {
         expr::eval::context context;
 
-        for (std::pair<place_id_type const, iterators_type> const& pits : _m)
+        for (auto const& place : _referenced_places)
         {
           context.bind_ref
-            ( transition.ports_input()
-            . at (n->place_to_port().at (transition_id).left
-            . find (pits.first)->get_right()).name()
-            , pits.second.pos()->second
+            ( input_port_name (place)
+            , _m.at (place).pos()->second
             );
         }
 
-        if (boost::get<bool>
-            (transition.condition()->ast().eval_all (context))
-           )
+        if (boost::get<bool> (_condition->ast().eval_all (context)))
         {
           return true;
         }
       }
-      while (do_step (_m.begin(), _m.end()));
+      while (do_step (_referenced_places.cbegin(), _referenced_places.cend()));
 
       return false;
     }
@@ -714,6 +1092,11 @@ namespace we
                           )
     {
       _m.emplace (place_id, iterators_type (tokens, is_read_connection));
+
+      if (is_referenced (place_id))
+      {
+        _referenced_places.emplace (place_id);
+      }
     }
     void cross_type::push ( place_id_type place_id
                           , net_type::token_by_id_type::const_iterator token
@@ -722,6 +1105,11 @@ namespace we
     {
       _m.emplace
         (place_id, iterators_type (std::move (token), is_read_connection));
+
+      if (is_referenced (place_id))
+      {
+        _referenced_places.emplace (place_id);
+      }
     }
   }
 }

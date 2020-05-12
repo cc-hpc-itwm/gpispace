@@ -2,26 +2,35 @@
 
 #pragma once
 
+#include <util-generic/finally.hpp>
+
+#include <we/plugin/Plugins.hpp>
 #include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 #include <we/type/value.hpp>
 #include <we/workflow_response.hpp>
+#include <we/eureka_response.hpp>
 
+#include <sdpa/discovery_info.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/optional.hpp>
-#include <boost/thread.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
+#include <condition_variable>
 #include <functional>
 #include <mutex>
 #include <random>
 #include <unordered_map>
+#include <unordered_set>
+#include <list>
+#include <string>
+#include <utility>
 
 namespace we
 {
@@ -111,10 +120,16 @@ namespace we
                              );
       void cancel_outstanding_responses (id_type, std::string const& reason);
 
+      void eureka_response ( id_type
+                           , boost::optional<id_type>
+                           , type::eureka_ids_type const& ids
+                           );
+
       std::mutex _outstanding_responses_guard;
       std::unordered_map <id_type, std::unordered_set<std::string>>
         _outstanding_responses;
 
+      gspc::we::plugin::Plugins _plugins;
 
 
       struct activity_data_type
@@ -127,7 +142,10 @@ namespace we
         {}
 
         void child_finished
-          (type::activity_t, we::workflow_response_callback const&);
+          ( type::activity_t
+          , we::workflow_response_callback const&
+          , we::eureka_response_callback const&
+          );
 
         id_type _id;
         std::unique_ptr<type::activity_t> _activity;
@@ -135,21 +153,54 @@ namespace we
 
       struct async_remove_queue
       {
+        struct RemovalFunction
+        {
+          void operator() (activity_data_type&) &&;
+
+          template<typename Fun>
+            RemovalFunction (Fun&&);
+
+          struct ToFinish
+          {
+            ToFinish (layer*, id_type, type::activity_t, id_type);
+
+            layer* _that;
+            id_type _parent;
+            type::activity_t _result;
+            id_type _id;
+          };
+
+          RemovalFunction (ToFinish);
+
+          RemovalFunction (RemovalFunction const&) = delete;
+          RemovalFunction (RemovalFunction&&) = default;
+          RemovalFunction& operator= (RemovalFunction const&) = delete;
+          RemovalFunction& operator= (RemovalFunction&&) = delete;
+
+          boost::variant
+            < std::function<void (activity_data_type&)>
+            , ToFinish
+            > _function;
+        };
+
         activity_data_type get();
         void put (activity_data_type, bool was_active);
 
         void remove_and_apply
           ( id_type
-          , std::function<void (activity_data_type const&)>
+          , RemovalFunction
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
         void apply
           ( id_type
-          , std::function<void (activity_data_type&)>
+          , RemovalFunction
           , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
 
         void forget (id_type);
+
+        struct interrupted{};
+        void interrupt();
 
       private:
         struct list_with_id_lookup
@@ -170,15 +221,16 @@ namespace we
           position_in_container_type _position_in_container;
         };
 
-        mutable boost::recursive_mutex _container_mutex;
+        mutable std::recursive_mutex _container_mutex;
         list_with_id_lookup _container;
         list_with_id_lookup _container_inactive;
 
-        boost::condition_variable_any _condition_non_empty;
+        bool _interrupted = false;
+        std::condition_variable_any _condition_not_empty_or_interrupted;
 
         typedef std::unordered_map
           < id_type
-          , std::list<std::tuple< std::function<void (activity_data_type&)>
+          , std::list<std::tuple< RemovalFunction
                                 , std::function<void (std::exception_ptr)>
                                 , bool
                                 >
@@ -193,14 +245,18 @@ namespace we
       std::unordered_map<id_type, std::function<void()>>
         _finalize_job_cancellation;
 
-      mutable boost::mutex _discover_state_mutex;
+      mutable std::mutex _discover_state_mutex;
       std::unordered_map
         < id_type, std::pair<std::size_t, sdpa::discovery_info_t >
         > _discover_state;
 
       struct locked_parent_child_relation_type
       {
-        void started (id_type parent, id_type child);
+        void started
+          ( id_type parent
+          , id_type child
+          , boost::optional<type::eureka_id_type> const& eureka_id
+          );
         bool terminated (id_type parent, id_type child);
 
         boost::optional<id_type> parent (id_type child);
@@ -208,17 +264,38 @@ namespace we
 
         void apply (id_type parent, std::function<void (id_type)>) const;
 
+        template <typename Func>
+          void apply_and_remove_eureka ( type::eureka_id_type const&
+                                       , id_type const&
+                                       , boost::optional<id_type> const&
+                                       , Func
+                                       );
+
       private:
-        mutable boost::mutex _relation_mutex;
+        mutable std::mutex _relation_mutex;
         typedef boost::bimaps::bimap
           < boost::bimaps::unordered_multiset_of<id_type>
           , boost::bimaps::unordered_set_of<id_type>
           , boost::bimaps::set_of_relation<>
           > relation_type;
         relation_type _relation;
+
+        using eureka_parent_id_type =
+          std::tuple < type::eureka_id_type
+                     , id_type
+                     >;
+        using eureka_in_progress_type =
+        boost::bimaps::bimap
+          < boost::bimaps::unordered_multiset_of<eureka_parent_id_type>
+          , boost::bimaps::unordered_set_of<id_type>
+          , boost::bimaps::set_of_relation<>
+          >;
+        eureka_in_progress_type _eureka_in_progress;
       } _running_jobs;
 
-      boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>
-        _extract_from_nets_thread;
+      std::unordered_set<id_type> _ignore_canceled_by_eureka;
+
+      boost::strict_scoped_thread<> _extract_from_nets_thread;
+      fhg::util::finally_t<std::function<void()>> _stop_extracting;
     };
 }

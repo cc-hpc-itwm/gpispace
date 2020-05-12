@@ -39,11 +39,6 @@
     </transition>
 
     <transition name="not_break">
-      <properties name="fhg">
-        <properties name="pnetv">
-          <property key="firings_limit">1</property>
-        </properties>
-      </properties>
       <defun>
         <inout name="interval" type="interval"/>
         <out name="credit_check_break" type="control"/>

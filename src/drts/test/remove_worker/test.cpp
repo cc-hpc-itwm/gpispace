@@ -4,6 +4,7 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -14,6 +15,8 @@
 #include <util-generic/finally.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+
 #include <fhg/util/thread/event.hpp>
 
 #include <boost/asio/io_service.hpp>
@@ -21,6 +24,7 @@
 #include <boost/asio/read.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 BOOST_AUTO_TEST_CASE (remove_worker)
@@ -33,6 +37,11 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add_options()
+    ( "ssl-cert"
+    , boost::program_options::value<std::string>()->required()
+    , "enable or disable SSL certificate"
+    );
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -42,8 +51,15 @@ BOOST_AUTO_TEST_CASE (remove_worker)
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "remove_worker");
+    ( test::shared_directory (vm)
+    / ( "remove_worker"
+      + ssl_cert
+      + "_cert"
+      )
+    );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -71,13 +87,17 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                                  , installation
                                  };
 
+  auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
+                                               : gspc::testing::no_certs()
+                          );
+
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);
 
-  boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable> const
+  boost::strict_scoped_thread<> const
     io_service_thread ([&io_service] { io_service.run(); });
 
   FHG_UTIL_FINALLY ([&] { io_service.stop(); });
@@ -94,7 +114,7 @@ BOOST_AUTO_TEST_CASE (remove_worker)
                         );
 
   gspc::job_id_t const job_id
-    ( gspc::client (drts).submit
+    ( gspc::client (drts, certificates).submit
         ( gspc::workflow (make.pnet())
         , { {"address", fhg::util::connectable_to_address_string
                           (acceptor.local_endpoint().address())

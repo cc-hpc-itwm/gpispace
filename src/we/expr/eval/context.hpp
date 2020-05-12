@@ -2,10 +2,10 @@
 
 #include <we/type/value.hpp>
 
-#include <boost/unordered_map.hpp>
-
+#include <iosfwd>
 #include <list>
 #include <string>
+#include <unordered_map>
 
 namespace expr
 {
@@ -14,17 +14,19 @@ namespace expr
     struct context
     {
     private:
-      typedef boost::unordered_map< std::string
+      typedef std::unordered_map< std::string
                                   , pnet::type::value::value_type
                                   > container_type;
 
       container_type _container;
 
-      typedef boost::unordered_map< std::string
+      typedef std::unordered_map< std::string
                                   , const pnet::type::value::value_type*
                                   > ref_container_type;
 
       ref_container_type _ref_container;
+
+      friend std::ostream& operator<< (std::ostream&, context const&);
 
     public:
       void bind_ref (const std::string&, const pnet::type::value::value_type&);

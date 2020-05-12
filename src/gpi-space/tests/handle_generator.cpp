@@ -1,9 +1,10 @@
-#include <boost/test/unit_test.hpp>
+#include <gpi-space/pc/memory/handle_generator.hpp>
+
+#include <gpi-space/pc/type/segment_descriptor.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE ( test_generate )
 {

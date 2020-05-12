@@ -2,14 +2,12 @@
 
 #include <util-generic/print_exception.hpp>
 
-#include <string>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <type_traits>
 
 #include <boost/serialization/access.hpp>
-#include <boost/type_traits/aligned_storage.hpp>
-#include <boost/type_traits/alignment_of.hpp>
-#include <boost/utility/enable_if.hpp>
 
 // -----------------------------------------------------------------------
 
@@ -62,7 +60,7 @@ namespace serialization
 
   template<typename T, typename Archive>
     void serialize ( Archive& ar, const T& x
-                   , typename boost::enable_if_c<is_properly_serializable<T>::value>::type* = nullptr
+                   , typename std::enable_if<is_properly_serializable<T>::value>::type* = nullptr
                    )
   {
     const T* temp (&x);
@@ -78,11 +76,11 @@ namespace serialization
 
   template<typename T, typename Archive>
     T deserialize ( Archive& ar
-                  , typename boost::enable_if_c<is_properly_serializable<T>::value>::type* = nullptr
+                  , typename std::enable_if<is_properly_serializable<T>::value>::type* = nullptr
                   )
   {
-    typename boost::aligned_storage< sizeof (T)
-                                   , boost::alignment_of<T>::value
+    typename std::aligned_storage< sizeof (T)
+                                   , std::alignment_of<T>::value
                                    >::type buffer;
     T* temp (static_cast<T*> (static_cast<void*> (&buffer)));
     ar >> temp;

@@ -10,13 +10,14 @@ fhg_add_runtime_executable (NAME gspc-monitor
       "ui/log_monitor.hpp"
   LIBRARIES Boost::thread
             Boost::program_options
-            Qt4::QtCore
-            Qt4::QtGui
+            Qt5::Core
+            Qt5::Gui
+            Qt5::Widgets
             Util::Qt
             fhg-revision
             fhg-util
             fhg_util_qt
-            fhglog
+            gspc::logging
   CREATE_BUNDLE_INFO
 )
 
@@ -28,9 +29,10 @@ fhg_add_runtime_executable (NAME gspcmonc
   MOC "ui/gspc_monitor.hpp"
       "ui/gspc_monitor_client.hpp"
       "ui/gspc_monitor_detail.hpp"
-  LIBRARIES Qt4::QtCore
-            Qt4::QtGui
-            Qt4::QtNetwork
+  LIBRARIES Qt5::Core
+            Qt5::Gui
+            Qt5::Widgets
+            Qt5::Network
             Util::Qt
             fhg-util
             fhg_util_qt

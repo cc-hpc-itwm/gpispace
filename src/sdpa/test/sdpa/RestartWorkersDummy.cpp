@@ -1,33 +1,45 @@
-#include <utils.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
 
+#include <test/certificates_data.hpp>
+
+#include <fhg/util/thread/event.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_CASE (restart_worker_with_dummy_workflow, setup_logging)
-{
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
+#include <string>
 
-  utils::client client (orchestrator);
+BOOST_DATA_TEST_CASE
+  (restart_worker_with_dummy_workflow, certificates_data, certificates)
+{
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
+
+  utils::client client (orchestrator, certificates);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
-  sdpa::worker_id_t const worker_id (utils::random_peer_name());
+  sdpa::worker_id_t worker_id;
 
   {
     fhg::util::thread::event<> job_submitted;
 
     const utils::fake_drts_worker_notifying_module_call_submission worker
-      ( worker_id
-      , [&job_submitted] (std::string) { job_submitted.notify(); }
+      ( [&job_submitted] (std::string) { job_submitted.notify(); }
       , agent
+      , certificates
       );
+
+    worker_id = worker.name();
 
     job_submitted.wait();
   }
 
   const utils::fake_drts_worker_directly_finishing_jobs restarted_worker
-    (worker_id, agent);
+    (utils::reused_component_name (worker_id), agent, certificates);
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);

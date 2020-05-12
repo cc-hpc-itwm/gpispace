@@ -1,19 +1,23 @@
 #include <boost/test/unit_test.hpp>
 
-#include <iostream>
-
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 
-#include <util-generic/connectable_to_address_string.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
+#include <test/certificates_data.hpp>
 
-#include <boost/thread.hpp>
+#include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/asio/io_service.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 
+#include <condition_variable>
 #include <functional>
+#include <iostream>
+#include <mutex>
 
 namespace
 {
@@ -28,32 +32,35 @@ namespace
                  , const boost::shared_ptr<sdpa::events::SDPAEvent>&
                  )
     {
-      boost::mutex::scoped_lock _ (_counter_mutex);
+      std::lock_guard<std::mutex> _ (_counter_mutex);
       ++_counter;
 
-      BOOST_REQUIRE_LE (_counter, _expected);
       if (_counter == _expected)
       {
         _expected_count_reached.notify_all();
       }
+      else if (_counter > _expected)
+      {
+        throw std::logic_error ("got more events than expected");
+      }
     }
     void wait() const
     {
-      boost::mutex::scoped_lock _ (_counter_mutex);
+      std::unique_lock<std::mutex> _ (_counter_mutex);
 
       _expected_count_reached.wait (_, [&] { return _counter >= _expected; });
 
       BOOST_REQUIRE_EQUAL (_counter, _expected);
     }
 
-    mutable boost::mutex _counter_mutex;
-    mutable boost::condition_variable _expected_count_reached;
+    mutable std::mutex _counter_mutex;
+    mutable std::condition_variable _expected_count_reached;
     unsigned int _counter;
     unsigned int _expected;
   };
 }
 
-BOOST_AUTO_TEST_CASE (perform_test)
+BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
 {
   wait_for_n_events_strategy counter (1);
 
@@ -66,6 +73,7 @@ BOOST_AUTO_TEST_CASE (perform_test)
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , fhg::com::host_t ("localhost")
     , fhg::com::port_t ("0")
+    , certificates
     );
 
   net.perform<sdpa::events::ErrorEvent>

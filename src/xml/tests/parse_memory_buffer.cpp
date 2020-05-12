@@ -9,10 +9,10 @@
 //! \todo remove, at the moment needed to make net_type a complete type
 #include <we/type/net.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
-#include <util-generic/testing/require_exception.hpp>
 #include <fhg/util/boost/variant.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
+#include <util-generic/testing/require_exception.hpp>
 
 #include <boost/format.hpp>
 
@@ -22,13 +22,19 @@ namespace
 {
   std::string random_identifier_with_valid_prefix()
   {
-    return
-      fhg::util::testing::random_char_of
-      ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-      +
-      fhg::util::testing::random_string_of
-      ("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789");
+    using impl = fhg::util::testing::random<std::string>;
+    return impl{} (impl::identifier_without_leading_underscore{});
   }
+  struct random_identifier_with_valid_prefix_t
+  {
+    std::string operator()() const
+    {
+      return random_identifier_with_valid_prefix();
+    }
+  };
+  using unique_random_identifier_with_valid_prefix
+    = fhg::util::testing::unique_random
+        <std::string, random_identifier_with_valid_prefix_t>;
 }
 
 BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
@@ -57,6 +63,42 @@ BOOST_AUTO_TEST_CASE (memory_buffer_without_size_throws)
       % name
       % "[<stdin>:3:3]"
       );
+}
+
+BOOST_AUTO_TEST_CASE
+  (the_default_value_1_is_used_when_no_alignment_is_specified_by_the_user)
+{
+  std::string const name (random_identifier_with_valid_prefix());
+  std::string const size (fhg::util::testing::random_content_string());
+  std::string const default_alignment ("1UL");
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun>
+  <memory-buffer name="%1%"><size>%2%</size></memory-buffer>
+  <module name="%3%" function="%4%"/>
+</defun>)EOS")
+      % name
+      % size
+      % fhg::util::testing::random_identifier()
+      % fhg::util::testing::random_identifier()
+      ).str()
+    );
+
+  std::istringstream input_stream (input);
+
+  xml::parse::state::type state;
+  xml::parse::type::function_type const function
+    (xml::parse::just_parse (state, input_stream));
+
+  BOOST_REQUIRE_EQUAL (function.memory_buffers().size(), 1);
+  BOOST_REQUIRE_EQUAL (function.memory_buffers().begin()->name(), name);
+  BOOST_REQUIRE_EQUAL (function.memory_buffers().begin()->size(), size);
+
+  BOOST_REQUIRE_EQUAL ( function.memory_buffers().begin()->alignment()
+                      , default_alignment
+                      );
+
 }
 
 BOOST_AUTO_TEST_CASE (duplicate_memory_buffer_throws)
@@ -126,9 +168,10 @@ BOOST_AUTO_TEST_CASE (memory_buffer_is_stored_in_function)
 
 BOOST_AUTO_TEST_CASE (memory_buffers_are_stored_in_function)
 {
-  std::string const name_1 (random_identifier_with_valid_prefix());
+  unique_random_identifier_with_valid_prefix names;
+  std::string const name_1 (names());
   std::string const size_1 (fhg::util::testing::random_content_string());
-  std::string const name_2 (random_identifier_with_valid_prefix());
+  std::string const name_2 (names());
   std::string const size_2 (fhg::util::testing::random_content_string());
 
   std::string const input
@@ -204,6 +247,8 @@ namespace
 
   void test_memory_buffers_for_non_module_call_throws (std::string const& tag)
   {
+    unique_random_identifier_with_valid_prefix buffer_names;
+
     std::string const name_function (fhg::util::testing::random_identifier());
 
     std::string const input
@@ -215,8 +260,8 @@ namespace
 </defun>)EOS")
         % name_function
         % tag
-        % random_identifier_with_valid_prefix()
-        % random_identifier_with_valid_prefix()
+        % buffer_names()
+        % buffer_names()
         ).str()
       );
 
@@ -317,10 +362,9 @@ namespace
   void test_memory_buffer_with_the_same_name_as_a_port_added_later_throws
     (std::string const& port_direction)
   {
-    std::string const name_port_added_earlier
-      (random_identifier_with_valid_prefix());
-    std::string const name_port_and_memory_buffer
-      (random_identifier_with_valid_prefix());
+    unique_random_identifier_with_valid_prefix port_names;
+    std::string const name_port_added_earlier (port_names());
+    std::string const name_port_and_memory_buffer (port_names());
 
     std::string const input
       ( ( boost::format (R"EOS(
@@ -402,10 +446,9 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_argument_in_function_signature)
 
 BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
 {
-  std::string const name_memory_buffer_A
-    (random_identifier_with_valid_prefix());
-  std::string const name_memory_buffer_B
-    (random_identifier_with_valid_prefix());
+  unique_random_identifier_with_valid_prefix buffer_names;
+  std::string const name_memory_buffer_A (buffer_names());
+  std::string const name_memory_buffer_B (buffer_names());
 
   std::string const input
     ( ( boost::format (R"EOS(
@@ -448,8 +491,9 @@ BOOST_AUTO_TEST_CASE (memory_buffer_accepted_as_arguments_in_function_signature)
 BOOST_AUTO_TEST_CASE
   (memory_buffer_mixed_with_port_accepted_as_argument_in_function_signature)
 {
-  std::string const name_port (random_identifier_with_valid_prefix());
-  std::string const name_memory_buffer (random_identifier_with_valid_prefix());
+  unique_random_identifier_with_valid_prefix port_and_buffer_names;
+  std::string const name_port (port_and_buffer_names());
+  std::string const name_memory_buffer (port_and_buffer_names());
 
   std::string const input
     ( ( boost::format (R"EOS(

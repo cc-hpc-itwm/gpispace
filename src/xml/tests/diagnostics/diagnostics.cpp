@@ -9,8 +9,8 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
-#include <util-generic/testing/random_string.hpp>
-#include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/random/string.hpp>
+#include <util-generic/executable_path.hpp>
 
 namespace
 {
@@ -20,8 +20,9 @@ namespace
     void require_exception_from_generate_cpp
       (const boost::format& expected_what)
     {
-      const fhg::util::temporary_path tp;
-      state.path_to_cpp() = boost::filesystem::path (tp).string();
+      boost::filesystem::path const path
+        (fhg::util::executable_path().parent_path() / "gen");
+      state.path_to_cpp() = path.string();
 
       fhg::util::testing::require_exception_with_message<Ex>
         ( [this]

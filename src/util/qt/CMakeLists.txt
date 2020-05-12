@@ -23,7 +23,8 @@ extended_add_library (NAME fhg_util_qt
       "no_undoredo_lineedit.hpp"
       "restricted_tree_column_sorter.hpp"
       "treeview_with_delete.hpp"
-  LIBRARIES Qt4::QtGui
-            Qt4::QtCore
+  LIBRARIES Qt5::Gui
+            Qt5::Core
+            Qt5::Widgets
             Util::Qt
 )

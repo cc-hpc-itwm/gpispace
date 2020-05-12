@@ -29,7 +29,7 @@
       <defun>
         <require key="ping" mandatory="true"/>
         <inout name="seq" type="unsigned long"/>
-        <module name="ping_pong" function="ping (seq)">
+        <module name="ping_pong" function="ping()">
           <code><![CDATA[
           //! \note empty module call to measure scheduling overhead
           ]]></code>
@@ -45,7 +45,7 @@
       <defun>
         <require key="pong" mandatory="true"/>
         <inout name="seq" type="unsigned long"/>
-        <module name="ping_pong" function="pong (seq)">
+        <module name="ping_pong" function="pong()">
           <code><![CDATA[
           //! \note empty module call to measure scheduling overhead
           ]]></code>

@@ -24,14 +24,14 @@ namespace gpi
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
-        static area_ptr_t create ( fhg::log::Logger&
+        static area_ptr_t create ( fhg::logging::stream_emitter&
                                  , std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , type::id_t owner
                                  );
 
-        beegfs_area_t ( fhg::log::Logger&
+        beegfs_area_t ( fhg::logging::stream_emitter&
                       , const gpi::pc::type::process_id_t creator
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total

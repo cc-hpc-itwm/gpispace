@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include <list>
-#include <boost/thread.hpp>
+#include <thread>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <fhg/util/thread/queue.hpp>
@@ -42,10 +42,10 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_other_thread)
 
   items_t items;
 
-  boost::thread filler = boost::thread ( &fill_items
-                                       , std::ref (items)
-                                       , NUM_ITEMS_TO_PUT
-                                       );
+  std::thread filler = std::thread ( &fill_items
+                                   , std::ref (items)
+                                   , NUM_ITEMS_TO_PUT
+                                   );
 
   for (int i = 0 ; i < NUM_ITEMS_TO_PUT ; ++i)
   {
@@ -63,13 +63,13 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
 
   items_t items;
 
-  std::vector<boost::thread*> threads;
+  std::vector<std::thread*> threads;
   for (int i = 0 ; i < NUM_THREADS ; i++)
   {
-    threads.push_back (new boost::thread ( &fill_items
-                                         , std::ref (items)
-                                         , NUM_ITEMS_TO_PUT
-                                         )
+    threads.push_back (new std::thread ( &fill_items
+                                       , std::ref (items)
+                                       , NUM_ITEMS_TO_PUT
+                                       )
                       );
   }
 

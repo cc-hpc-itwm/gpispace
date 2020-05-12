@@ -97,7 +97,7 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
     xml::parse::post_processing_passes (parsed, &parser_state);
     we::type::activity_t activity
       (xml::parse::xml_to_we (parsed, parser_state));
-    activity.add_input (activity.transition().input_port_by_name ("n"), N);
+    activity.add_input ("n", N);
     layer.submit (we::layer::id_type(), activity);
   }
 
@@ -111,11 +111,11 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
 
     we::type::activity_t activity (std::move (current_activity->second));
 
-    BOOST_REQUIRE_EQUAL (activity.transition().name(), names[current]);
+    BOOST_REQUIRE_EQUAL (activity.name(), names[current]);
     current = !current;
 
-    activity.add_output
-      ( activity.transition().output_port_by_name ("seq")
+    activity.add_output_TESTING_ONLY
+      ( "seq"
       , activity.input().front().first
       );
     layer.finished ( std::move (current_activity->first)

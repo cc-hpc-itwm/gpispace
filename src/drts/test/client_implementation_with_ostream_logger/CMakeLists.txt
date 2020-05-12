@@ -13,6 +13,7 @@ fhg_add_test (NAME drts_client_implementation_with_ostream_logger
   LIBRARIES gspc
             test-utilities
             fhg-util
+            gspc::logging
             Boost::program_options
             Boost::filesystem
   REQUIRES_INSTALLATION

@@ -10,8 +10,8 @@
 #include <we/type/value/read.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
-#include <util-generic/testing/random_string.hpp>
 
 #include <functional>
 #include <limits>
@@ -425,13 +425,11 @@ namespace
   void require_random_integrals_evaluating_to
     (std::function<void (T const&, T const&)> check)
   {
-    std::random_device generator;
-    std::uniform_int_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    fhg::util::testing::random<T> number;
 
     for (int i (0); i < 100; ++i)
     {
-      check (number (generator), number (generator));
+      check (number(), number());
     }
   }
 
@@ -484,19 +482,23 @@ namespace
   }
 
   template<typename T>
-  void require_random_fractionals_evaluating_to
-    (std::function<void (T const&, T const&)> check)
+    T random_real()
   {
-    std::random_device generator;
     std::uniform_real_distribution<T> number
       ( -std::numeric_limits<T>::max() / T (2.0)
       ,  std::numeric_limits<T>::max() / T (2.0)
       );
+    return number (fhg::util::testing::detail::GLOBAL_random_engine());
+  }
 
+  template<typename T>
+  void require_random_fractionals_evaluating_to
+    (std::function<void (T const&, T const&)> check)
+  {
     for (int i (0); i < 100; ++i)
     {
-      check ( parse_showed (number (generator))
-            , parse_showed (number (generator))
+      check ( parse_showed (random_real<T>())
+            , parse_showed (random_real<T>())
             );
     }
   }
@@ -955,18 +957,12 @@ namespace
   template<typename T>
   void check_quotient_for_fractional()
   {
-    std::random_device generator;
-    std::uniform_real_distribution<T> number
-      ( -std::numeric_limits<T>::max() / T (2.0)
-      ,  std::numeric_limits<T>::max() / T (2.0)
-      );
-
     for (int i (0); i < 100; ++i)
     {
       std::string const l
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
       std::string const r
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
 
       std::string const expression
         ((boost::format ("%1% / %2%") % l % r).str());
@@ -1019,18 +1015,12 @@ namespace
   template<typename T>
     void check_pow_for_fractional()
   {
-    std::random_device generator;
-    std::uniform_real_distribution<T> number
-      ( -std::numeric_limits<T>::max() / T (2.0)
-      ,  std::numeric_limits<T>::max() / T (2.0)
-      );
-
     for (int i (0); i < 100; ++i)
     {
       std::string const l
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
       std::string const r
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
 
       expr::eval::context context;
 
@@ -1082,16 +1072,10 @@ namespace
                                     , std::function <R (const T&)> operation
                                     )
   {
-    std::random_device generator;
-    std::uniform_real_distribution<T> number
-      ( -std::numeric_limits<T>::max() / T (2.0)
-      ,  std::numeric_limits<T>::max() / T (2.0)
-      );
-
     for (int i (0); i < 100; ++i)
     {
       std::string const input
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
 
       expr::eval::context context;
 
@@ -1112,13 +1096,11 @@ namespace
                                   , std::function<R (T const&)> operation
                                   )
   {
-    std::random_device generator;
-    std::uniform_int_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    fhg::util::testing::random<T> number;
 
     for (int i (0); i < 100; ++i)
     {
-      T const x (number (generator));
+      T const x (number());
 
       require_evaluating_to
         (( boost::format ("%1% (%2%%3%)")
@@ -1315,16 +1297,10 @@ namespace
   template<typename T>
   void check_square_root_for_fractional()
   {
-    std::random_device generator;
-    std::uniform_real_distribution<T> number
-      ( -std::numeric_limits<T>::max() / T (2.0)
-      ,  std::numeric_limits<T>::max() / T (2.0)
-      );
-
     for (int i (0); i < 100; ++i)
     {
       std::string const input
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
 
       expr::eval::context _;
 
@@ -1354,13 +1330,11 @@ namespace
   template<typename T>
   void check_square_root_for_signed_integral()
   {
-    std::random_device generator;
-    std::uniform_int_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    fhg::util::testing::random<T> number;
 
     for (int i (0); i < 100; ++i)
     {
-      T const x (number (generator));
+      T const x (number());
 
       std::string const expression
         ((boost::format ("sqrt (%1%%2%)") % x % suffix<T>()()).str());
@@ -1401,16 +1375,10 @@ namespace
   template<typename T>
   void check_logarithm_for_fractional()
   {
-    std::random_device generator;
-    std::uniform_real_distribution<T> number
-      ( -std::numeric_limits<T>::max() / T (2.0)
-      ,  std::numeric_limits<T>::max() / T (2.0)
-      );
-
     for (int i (0); i < 100; ++i)
     {
       std::string const input
-        ((boost::format ("%1%%2%") % number (generator) % suffix<T>()()).str());
+        ((boost::format ("%1%%2%") % random_real<T>() % suffix<T>()()).str());
 
       expr::eval::context _;
 
@@ -1440,13 +1408,11 @@ namespace
   template<typename T>
   void check_logarithm_for_signed_integral()
   {
-    std::random_device generator;
-    std::uniform_int_distribution<T> number
-      (std::numeric_limits<T>::min(), std::numeric_limits<T>::max());
+    fhg::util::testing::random<T> number;
 
     for (int i (0); i < 100; ++i)
     {
-      T const x (number (generator));
+      T const x (number());
 
       std::string const expression
         ((boost::format ("log (%1%%2%)") % x % suffix<T>()()).str());
@@ -1487,19 +1453,15 @@ namespace
   void check_random_bitsets
     (std::function<void (bitsetofint::type const&)> check)
   {
-    std::random_device generator;
-    std::uniform_int_distribution<int> count (0, 100);
-    std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
-
     for (int _ (0); _ < 100; ++_)
     {
       bitsetofint::type bs;
 
-      int n (count (generator));
+      auto n (fhg::util::testing::random<unsigned int>{} (100));
 
       while (n --> 0)
       {
-        bs.ins (number (generator));
+        bs.ins (fhg::util::testing::random<unsigned long>{} (1UL << 10));
       }
 
       check (bs);
@@ -1513,31 +1475,27 @@ namespace
                  > check
   )
   {
-    std::random_device generator;
-    std::uniform_int_distribution<int> count (0, 100);
-    std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
-
     for (int _ (0); _ < 100; ++_)
     {
       bitsetofint::type bs_l;
 
       {
-        int n (count (generator));
+        auto n (fhg::util::testing::random<unsigned int>{} (100));
 
         while (n --> 0)
         {
-          bs_l.ins (number (generator));
+          bs_l.ins (fhg::util::testing::random<unsigned long>{} (1UL << 10));
         }
       }
 
       bitsetofint::type bs_r;
 
       {
-        int n (count (generator));
+        auto n (fhg::util::testing::random<unsigned int>{} (100));
 
         while (n --> 0)
         {
-          bs_r.ins (number (generator));
+          bs_r.ins (fhg::util::testing::random<unsigned long>{} (1UL << 10));
         }
       }
 
@@ -1595,21 +1553,17 @@ BOOST_AUTO_TEST_CASE (token_bitset_logical)
 
 BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<int> count (0, 100);
-  std::uniform_int_distribution<unsigned long> number (0, 1UL << 10);
-
   for (int _ (0); _ < 100; ++_)
   {
     std::set<unsigned long> ks;
     bitsetofint::type a;
     bitsetofint::type b;
 
-    int n (count (generator));
+    auto n (fhg::util::testing::random<unsigned int>{} (100));
 
     while (n --> 0)
     {
-      unsigned long const k (number (generator));
+      auto const k (fhg::util::testing::random<unsigned long>{} (1UL << 10));
 
       ks.insert (k);
 
@@ -1649,10 +1603,7 @@ BOOST_AUTO_TEST_CASE (token_bitset_ins_del_is_elem)
 
 BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<unsigned long> count (0, 100);
-  std::uniform_int_distribution<int> number
-    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+  fhg::util::testing::random<int> number;
 
   for (int _ (0); _ < 10; ++_)
   {
@@ -1666,7 +1617,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
       , true
       );
 
-    unsigned long n (count (generator));
+    auto const n (fhg::util::testing::random<unsigned long>{} (100));
 
     std::stack<int> ks;
 
@@ -1675,7 +1626,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
       require_evaluating_to
         (boost::format ("stack_size (%1%)") % pnet::type::value::show (a), i);
 
-      int const k (number (generator));
+      int const k (number());
 
       ks.push (k);
 
@@ -1733,10 +1684,7 @@ BOOST_AUTO_TEST_CASE (tokens_stack_push_top_pop_empty_size)
 
 BOOST_AUTO_TEST_CASE (token_stack_join)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<unsigned long> count (0, 100);
-  std::uniform_int_distribution<int> number
-    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
+  fhg::util::testing::random<int> number;
 
   for (int _ (0); _ < 10; ++_)
   {
@@ -1744,17 +1692,17 @@ BOOST_AUTO_TEST_CASE (token_stack_join)
     std::list<pnet::type::value::value_type> b;
     std::list<pnet::type::value::value_type> joined;
 
-    unsigned long na (count (generator));
-    unsigned long nb (count (generator));
+    auto na (fhg::util::testing::random<unsigned long>{} (100));
+    auto nb (fhg::util::testing::random<unsigned long>{} (100));
 
     while (na --> 0)
     {
-      a.push_back (number (generator));
+      a.push_back (number());
       joined.push_back (a.back());
     }
     while (nb --> 0)
     {
-      b.push_back (number (generator));
+      b.push_back (number());
       joined.push_back (b.back());
     }
 
@@ -1771,12 +1719,8 @@ BOOST_AUTO_TEST_CASE (token_stack_join)
 BOOST_AUTO_TEST_CASE
   (tokens_map_assign_unassign_is_assigned_get_assignment_size_empty)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<int> count (0, 100);
-  std::uniform_int_distribution<int> key
-    (std::numeric_limits<int>::min(), std::numeric_limits<int>::max());
-  std::uniform_int_distribution<long> value
-    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+  fhg::util::testing::random<int> key;
+  fhg::util::testing::random<long> value;
 
   for (int _ (0); _ < 10; ++_)
   {
@@ -1788,7 +1732,7 @@ BOOST_AUTO_TEST_CASE
       , true
       );
 
-    int n (count (generator));
+    auto n (fhg::util::testing::random<unsigned int>{} (100));
     std::set<int> ks;
 
     while (n --> 0)
@@ -1798,8 +1742,8 @@ BOOST_AUTO_TEST_CASE
         , a.size()
         );
 
-      int const k (key (generator));
-      long const v (value (generator));
+      int const k (key());
+      long const v (value());
 
       ks.insert (k);
 
@@ -1888,10 +1832,7 @@ BOOST_AUTO_TEST_CASE
 
 BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<int> count (0, 100);
-  std::uniform_int_distribution<long> number
-    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+  fhg::util::testing::random<long> number;
 
   for (int _ (0); _ < 10; ++_)
   {
@@ -1903,7 +1844,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
       , true
       );
 
-    int n (count (generator));
+    auto n (fhg::util::testing::random<unsigned int>{} (100));
     std::set<long> ks;
 
     while (n --> 0)
@@ -1913,7 +1854,7 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
         , a.size()
         );
 
-      long const k (number (generator));
+      long const k (number());
       ks.insert (k);
 
       require_evaluating_to
@@ -1970,21 +1911,18 @@ BOOST_AUTO_TEST_CASE (tokens_set_empty_size_insert_erase_is_element)
 
 BOOST_AUTO_TEST_CASE (tokens_set_top_pop)
 {
-  std::random_device generator;
-  std::uniform_int_distribution<int> count (0, 100);
-  std::uniform_int_distribution<long> number
-    (std::numeric_limits<long>::min(), std::numeric_limits<long>::max());
+  fhg::util::testing::random<long> number;
 
   for (int _ (0); _ < 10; ++_)
   {
     std::set<pnet::type::value::value_type> a;
     std::set<pnet::type::value::value_type> b;
 
-    int n (count (generator));
+    auto n (fhg::util::testing::random<unsigned int>{} (100));
 
     while (n --> 0)
     {
-      long const k (number (generator));
+      long const k (number());
 
       a.insert (k);
       b.insert (k);

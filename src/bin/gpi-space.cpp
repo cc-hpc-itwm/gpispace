@@ -5,20 +5,17 @@
  */
 
 #include <fhg/revision.hpp>
-#include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <util-generic/syscall.hpp>
 #include <fhg/util/thread/event.hpp>
-
-#include <fhglog/Configuration.hpp>
-#include <fhglog/LogMacros.hpp>
 
 #include <gpi-space/gpi/gaspi.hpp>
 #include <gpi-space/pc/container/manager.hpp>
@@ -26,6 +23,7 @@
 #include <rif/started_process_promise.hpp>
 
 #include <vmem/gaspi_context.hpp>
+#include <vmem/netdev_id.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
@@ -42,12 +40,9 @@ namespace
   namespace option
   {
     constexpr const char* const gpi_timeout ("gpi-timeout");
-    constexpr const char* const log_file ("log-file");
-    constexpr const char* const log_host ("log-host");
-    constexpr const char* const log_port ("log-port");
-    constexpr const char* const log_level ("log-level");
     constexpr const char* const port ("port");
     constexpr const char* const socket ("socket");
+    constexpr const char* const netdev ("netdev");
   }
 }
 
@@ -60,25 +55,6 @@ int main (int argc, char** argv)
 
     boost::program_options::options_description options_description;
     options_description.add_options()
-      ( option::log_file
-      , boost::program_options::value<boost::filesystem::path>()
-      , "file to log to"
-      )
-      ( option::log_host
-      , boost::program_options::value
-          <fhg::util::boost::program_options::nonempty_string>()
-      , "name of log host"
-      )
-      ( option::log_port
-      , boost::program_options::value
-          <fhg::util::boost::program_options::positive_integral<unsigned short>>()
-      , "port on log-host to log to"
-      )
-      ( option::log_level
-      , boost::program_options::value
-          <fhg::util::boost::program_options::nonempty_string>()->required()
-      , "log level"
-      )
       ( option::gpi_timeout
       , boost::program_options::value
           <fhg::util::boost::program_options::positive_integral<std::size_t>>()
@@ -97,6 +73,10 @@ int main (int argc, char** argv)
           ->required()
       , "path to open communication socket"
       )
+      ( option::netdev
+      , boost::program_options::value<fhg::vmem::netdev_id>()->required()
+      , "the network device to use"
+      )
       ;
 
     boost::program_options::variables_map vm;
@@ -114,38 +94,6 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::nonexisting_path_in_existing_directory>()
       );
 
-    boost::optional<boost::filesystem::path> const log_file
-      ( vm.count (option::log_file)
-      ? boost::optional<boost::filesystem::path>
-          (vm.at (option::log_file).as<boost::filesystem::path>())
-      : boost::none
-      );
-
-    fhg::util::boost::program_options::require_all_if_one
-      (vm, {option::log_host, option::log_port});
-
-    boost::optional<std::string> const log_host
-      ( vm.count (option::log_host)
-      ? boost::optional<std::string>
-          ( vm.at (option::log_host)
-            .as<fhg::util::boost::program_options::nonempty_string>()
-          )
-      : boost::none
-      );
-    boost::optional<unsigned short> const log_port
-      ( vm.count (option::log_port)
-      ? boost::optional<unsigned short>
-          ( vm.at (option::log_port)
-            .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
-          )
-      : boost::none
-      );
-
-    std::string const log_level
-      ( vm.at (option::log_level)
-        .as<fhg::util::boost::program_options::nonempty_string>()
-      );
-
     std::chrono::seconds const gpi_timeout
       ( vm.at (option::gpi_timeout)
         .as<fhg::util::boost::program_options::positive_integral<std::size_t>>()
@@ -156,34 +104,19 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
       );
 
-    if (log_host || log_port)
-    {
-      std::string const server_url
-        ((boost::format ("%1%:%2%") % *log_host % *log_port).str());
-      fhg::util::syscall::setenv ("FHGLOG_to_server", server_url.c_str(), true);
-    }
-    fhg::util::syscall::setenv ("FHGLOG_level", log_level.c_str(), true);
-
-    if (log_file)
-    {
-      fhg::util::syscall::setenv
-        ("FHGLOG_to_file", log_file->string().c_str(), true);
-    }
-
-    boost::asio::io_service remote_log_io_service;
-    fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::logging::stream_emitter log_emitter;
 
     fhg::util::signal_handler_manager signal_handler;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-      crit_error_handler (signal_handler, logger);
+      crit_error_handler (signal_handler, log_emitter);
 
     //! \todo more than one thread, parameter
-    fhg::util::scoped_boost_asio_io_service_with_threads topology_io_service (8);
+    fhg::util::scoped_boost_asio_io_service_with_threads
+      topology_server_io_service (8);
     auto topology_rpc_server
       ( fhg::util::cxx14::make_unique
           <fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
-            (topology_io_service)
+            (topology_server_io_service)
       );
 
     fhg::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
@@ -191,13 +124,13 @@ int main (int argc, char** argv)
       ( initialization_timeout
       , port
       , topology_rpc_server->local_endpoint().port()
+      , vm.at (option::netdev).as<fhg::vmem::netdev_id>()
       );
 
     const gpi::pc::container::manager_t container_manager
-      ( logger
+      ( log_emitter
       , socket_path.string()
       , gaspi_context
-      , topology_io_service
       , std::move (topology_rpc_server)
       );
 
@@ -210,7 +143,7 @@ int main (int argc, char** argv)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handler, SIGINT, std::bind (request_stop));
 
-    promise.set_result ({});
+    promise.set_result();
 
     stop_requested.wait();
 

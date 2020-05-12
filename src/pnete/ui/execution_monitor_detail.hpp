@@ -145,11 +145,11 @@ namespace fhg
       public slots:
         void color_for_state (worker_model::state_type, QColor);
 
-        bool helpEvent ( QHelpEvent* event
-                       , QAbstractItemView* view
-                       , const QStyleOptionViewItem& option
-                       , const QModelIndex& index
-                       );
+        virtual bool helpEvent ( QHelpEvent* event
+                               , QAbstractItemView* view
+                               , const QStyleOptionViewItem& option
+                               , const QModelIndex& index
+                               ) override;
 
       private:
         std::function<void (QString)> _set_filter;

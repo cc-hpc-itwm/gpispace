@@ -5,13 +5,20 @@
 #include <drts/drts.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
+#include <logging/stream_emitter.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 
-#include <chrono>
+#include <algorithm>
+#include <exception>
 #include <list>
 #include <memory>
+#include <ostream>
 #include <string>
+#include <unordered_map>
+#include <utility>
+#include <vector>
 
 namespace gspc
 {
@@ -23,10 +30,16 @@ namespace gspc
                    , boost::optional<rifd_entry_points> const& entry_points
                    , rifd_entry_point const& master
                    , std::ostream& info_output
+                   , Certificates const& certificates
                    );
 
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-      add_worker (rifd_entry_points const&);
+      add_worker (rifd_entry_points const&, Certificates const&);
+    std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+      add_worker ( std::vector<worker_description> const&
+                 , rifd_entry_points const&
+                 , Certificates const&
+                 );
     std::unordered_map< fhg::rif::entry_point
                       , std::pair< std::string /* kind */
                                  , std::unordered_map<pid_t, std::exception_ptr>
@@ -36,34 +49,41 @@ namespace gspc
 
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
     boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
-    std::pair<std::list<std::string>, unsigned long> const
-      _nodes_and_number_of_unique_nodes;
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<std::string> const& gui_host
-                             , boost::optional<unsigned short> const& gui_port
-                             , boost::optional<std::string> const& log_host
-                             , boost::optional<unsigned short> const& log_port
+      started_runtime_system ( boost::optional<unsigned short> const& orchestrator_port
+                             , boost::optional<unsigned short> const& agent_port
                              , bool gpi_enabled
-                             , bool verbose
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
                              , installation_path
-                             , boost::optional<boost::filesystem::path> const& log_dir
-                             , bool delete_logfiles
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
-                             , std::vector<fhg::drts::worker_description> worker_descriptions
+                             , std::vector<worker_description> worker_descriptions
                              , boost::optional<unsigned short> vmem_port
+                             , boost::optional<fhg::vmem::netdev_id> vmem_netdev_id
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& master
                              , std::ostream& info_output
+                             , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+                             , std::vector<fhg::logging::endpoint> default_log_receivers
+                             , Certificates const& certificates
                              );
 
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        add_worker_impl (std::vector<fhg::rif::entry_point> const&);
+        add_worker_impl
+          ( std::vector<worker_description> const&
+          , std::vector<fhg::rif::entry_point> const&
+          , Certificates const&
+          );
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        add_worker (std::vector<fhg::rif::entry_point> const&);
+        add_worker (std::vector<fhg::rif::entry_point> const&, Certificates const&);
+      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
+        add_worker
+          ( std::vector<gspc::worker_description> const&
+          , std::vector<fhg::rif::entry_point> const&
+          , Certificates const&
+          );
       std::unordered_map
         < fhg::rif::entry_point
         , std::pair< std::string /* kind */
@@ -73,17 +93,13 @@ namespace gspc
 
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
-      std::vector<fhg::rif::entry_point> _rif_entry_points;
-      boost::optional<std::string> _gui_host;
-      boost::optional<unsigned short> _gui_port;
-      boost::optional<std::string> _log_host;
-      boost::optional<unsigned short> _log_port;
-      bool _verbose;
       boost::optional<boost::filesystem::path> _gpi_socket;
       std::vector<boost::filesystem::path> _app_path;
       installation_path _installation_path;
-      boost::optional<boost::filesystem::path> _log_dir;
-      std::vector<fhg::drts::worker_description> _worker_descriptions;
+      boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
+      boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
+        _logging_rif_info;
+      std::vector<worker_description> _worker_descriptions;
 
       fhg::drts::processes_storage _processes_storage;
 
@@ -93,7 +109,7 @@ namespace gspc
       std::string _orchestrator_host;
       unsigned short _orchestrator_port;
     } _started_runtime_system;
-    fhg::log::Logger _logger;
+    fhg::logging::stream_emitter _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
   };
 }

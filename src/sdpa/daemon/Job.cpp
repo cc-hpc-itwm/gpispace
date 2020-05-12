@@ -8,13 +8,13 @@ namespace sdpa
              , we::type::activity_t activity
              , job_source source
              , job_handler handler
-             , job_requirements_t requirements
+             , Requirements_and_preferences requirements_and_preferences
              )
       : _activity (std::move (activity))
       , id_ (id)
       , _source (std::move (source))
       , _handler (std::move (handler))
-      , _requirements (std::move (requirements))
+      , _requirements_and_preferences (std::move (requirements_and_preferences))
       , m_error_message()
       , result_()
     {
@@ -29,58 +29,58 @@ namespace sdpa
     {
       return _source;
     }
-    job_requirements_t Job::requirements() const
+    Requirements_and_preferences Job::requirements_and_preferences() const
     {
-      return _requirements;
+      return _requirements_and_preferences;
     }
 
     std::string Job::error_message () const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       return m_error_message;
     }
     const we::type::activity_t& Job::result() const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       return result_;
     }
 
     status::code Job::getStatus() const
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       return state_code (*current_state());
     }
 
     void Job::CancelJob()
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_begin_cancel());
     }
     void Job::CancelJobAck()
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_canceled());
     }
     void Job::Dispatch()
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_dispatch());
     }
     void Job::JobFailed (std::string error_message)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_failed());
       m_error_message = error_message;
     }
     void Job::JobFinished (we::type::activity_t result)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_finished());
-      result_ = result;
+      result_ = std::move (result);
     }
     void Job::Reschedule()
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       process_event (e_reschedule());
     }
   }

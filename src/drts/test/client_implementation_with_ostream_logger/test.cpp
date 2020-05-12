@@ -6,10 +6,9 @@
 
 #include <drts/private/option.hpp>
 
-#include <fhglog/Logger.hpp>
-#include <fhglog/appender/call.hpp>
-#include <fhglog/remote/server.hpp>
+#include <logging/stream_receiver.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -20,29 +19,22 @@
 #include <util-generic/join.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/printer/list.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/thread/scoped_thread.hpp>
 
 #include <list>
 
-namespace
-{
-  namespace option
-  {
-    namespace po = fhg::util::boost::program_options;
-
-    po::option<po::existing_path> const implementation
-      {"implementation", "implementation"};
-  }
-}
-
-BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
+BOOST_DATA_TEST_CASE
+  (client_implementation_with_ostream_logger, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -53,9 +45,10 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
   options_description.add (gspc::options::scoped_rifd());
   //! \todo switch to generic interface
   options_description.add_options()
-    ( option::implementation.name().c_str()
-    , option::implementation()->required()
-    , option::implementation.description().c_str()
+    ( "implementation"
+    , boost::program_options::value
+      <fhg::util::boost::program_options::existing_path>()->required()
+    , "implementation"
     );
 
   boost::program_options::variables_map vm
@@ -80,29 +73,7 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
 
   gspc::set_application_search_path (vm, installation_dir);
 
-  //! \todo get a free port
-  unsigned short const log_port (47096);
-
-  gspc::set_log_host (vm, fhg::util::hostname());
-  gspc::set_log_port (vm, log_port);
-
   vm.notify();
-
-  boost::asio::io_service io_service;
-  fhg::log::Logger logger;
-  fhg::log::remote::LogServer const log_server (logger, io_service, log_port);
-
-  std::list<std::string> logged;
-
-  logger.addAppender<fhg::log::appender::call>
-    ([&logged] (fhg::log::LogEvent const& event)
-     {
-       logged.emplace_back (event.message());
-     }
-    );
-
-  boost::strict_scoped_thread<boost::join_if_joinable> const service_thread
-    ([&io_service] { io_service.run(); });
 
   gspc::installation const installation (vm);
 
@@ -112,7 +83,6 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add<test::option::gen::cxx11>()
     . add<test::option::gen::include>
         //! \todo urgh
         (test::source_directory (vm).parent_path().parent_path().parent_path())
@@ -125,20 +95,45 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
                                  );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points());
+    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
+
+  std::list<std::string> logged;
+  fhg::logging::stream_receiver const log_receiver
+    ( drts.top_level_log_demultiplexer()
+    , [&logged] (fhg::logging::message const& message)
+      {
+        //! \note agent/orchestrator/worker do emit messages we do not want.
+        if (message._category == fhg::logging::legacy::category_level_info)
+        {
+          logged.emplace_back (message._content);
+        }
+      }
+    );
 
   boost::filesystem::path const implementation
-    (option::implementation.get_from (vm));
+    ( vm.at ("implementation")
+    . as<fhg::util::boost::program_options::existing_path>()
+    );
 
   std::list<std::string> lines;
 
   for (int i (0); i < 10; ++i)
   {
-    lines.emplace_back (fhg::util::testing::random_string_without ("\n\\\""));
+    using random_string = fhg::util::testing::random<std::string>;
+    // - \n because that's what we join/split on
+    // - non-empty because otherwise it is swallowed if at end,
+    //   leading to a test failure (top/gpispace#823)
+    // - \\ and \" because the string value parser breaks
+    lines.emplace_back
+      ( random_string{} ( random_string::except ("\n\\\"")
+                        , random_string::default_max_length
+                        , 1
+                        )
+      );
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
-    ( gspc::client (drts).put_and_run
+    ( gspc::client (drts, certificates).put_and_run
       ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
         , {"message", fhg::util::join (lines, '\n').string()}
@@ -146,9 +141,6 @@ BOOST_AUTO_TEST_CASE (client_implementation_with_ostream_logger)
       )
     );
 
-  io_service.stop();
-
   BOOST_REQUIRE_EQUAL (result.size(), 0);
-  BOOST_REQUIRE_EQUAL_COLLECTIONS
-    (lines.begin(), lines.end(), logged.begin(), logged.end());
+  BOOST_REQUIRE_EQUAL (lines, logged);
 }

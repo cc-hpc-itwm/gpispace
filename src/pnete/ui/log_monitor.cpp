@@ -1,19 +1,17 @@
 #include <pnete/ui/log_monitor.hpp>
 
-#include <util-qt/connect.hpp>
-
 #include <we/type/activity.hpp>
 
-#include <fhglog/appender/call.hpp>
+#include <util-generic/ostream/put_time.hpp>
+#include <util-generic/this_bound_mem_fn.hpp>
+
+#include <util-qt/overload.hpp>
 
 #include <boost/filesystem.hpp>
-#include <boost/function.hpp>
 #include <boost/lambda/lambda.hpp>
 #include <boost/serialization/access.hpp>
 #include <boost/serialization/vector.hpp>
-#include <boost/tokenizer.hpp>
 
-#include <QAction>
 #include <QApplication>
 #include <QDoubleSpinBox>
 #include <QFileDialog>
@@ -40,38 +38,56 @@
 #include <QMutexLocker>
 #include <QThread>
 
-#include <cmath>
-#include <functional>
+#include <algorithm>
+#include <exception>
 #include <fstream>
-#include <list>
-#include <sstream>
+#include <functional>
 #include <stdexcept>
+#include <string>
+#include <unordered_map>
+#include <utility>
 
 namespace
 {
-  template<typename T>
-    fhg::log::Logger& logger_with
-    ( void (T::* function)(const fhg::log::LogEvent&)
-    , T* that
-    , fhg::log::Logger& logger
-    )
+  struct category_data_t
   {
-    logger.addAppender<fhg::log::appender::call>
-      (std::bind (function, that, std::placeholders::_1));
+    QColor color;
+    int legacy_level;
+    char legacy_level_identifier;
+  };
 
-    return logger;
+  category_data_t category_to_data (std::string const& category)
+  {
+#define ENTRY(name_, color_, level_, identifier_)      \
+      { fhg::logging::legacy::category_level_ ## name_   \
+      , category_data_t {color_, level_, identifier_}    \
+      }
+
+    static std::unordered_map<std::string, category_data_t> const category_data
+      { ENTRY (trace, QColor (205, 183, 158), 0, 'T')
+      , ENTRY (info, QColor (25, 25, 25), 1, 'I')
+      , ENTRY (warn, QColor (255, 140, 0), 2, 'W')
+      , ENTRY (error, QColor (255, 0, 0), 3, 'E')
+      };
+
+#undef ENTRY
+
+    auto it (category_data.find (category));
+    return it != category_data.end() ? it->second
+      : throw std::invalid_argument ("category is not a legacy category");
   }
 
-  QColor severityToColor (const fhg::log::Level lvl)
+  QColor category_to_color (std::string const& category)
   {
-    switch (lvl)
-    {
-    case fhg::log::TRACE: return QColor (205, 183, 158);
-    case fhg::log::INFO: return QColor (25, 25, 25);
-    case fhg::log::WARN: return QColor (255, 140, 0);
-    case fhg::log::ERROR: return QColor (255, 0, 0);
-    default: return QColor (0, 0, 0);
-    }
+    return category_to_data (category).color;
+  }
+  int category_to_legacy_level (std::string const& category)
+  {
+    return category_to_data (category).legacy_level;
+  }
+  char category_to_short_legacy_level_identifier (std::string const& category)
+  {
+    return category_to_data (category).legacy_level_identifier;
   }
 
   enum table_columns
@@ -81,17 +97,28 @@ namespace
     TABLE_COL_MESSAGE,
     TABLE_COLUMN_COUNT,
   };
+
+  template<typename Timepoint>
+    QString timepoint_to_qstring (Timepoint const& timepoint)
+  {
+    using put_time = fhg::util::ostream::put_time<typename Timepoint::clock>;
+    return QString::fromStdString (put_time (timepoint).string());
+  }
 }
 
 namespace detail
 {
-  formatted_log_event::formatted_log_event (const fhg::log::LogEvent& evt)
-    //! \todo get time from outside?
-    : time (QTime::currentTime().toString())
-    , source (QString ("%1@%2").arg (evt.pid()).arg (evt.host ().c_str()))
-    , message (evt.message().c_str())
-    , event (evt)
-  { }
+  formatted_log_event::formatted_log_event (fhg::logging::message raw)
+    : time (timepoint_to_qstring (raw._timestamp))
+    , source ( QString ("%1@%2")
+               .arg (raw._process_id)
+               .arg (QString::fromStdString (raw._hostname))
+             )
+    , message (QString::fromStdString (raw._content))
+    , color (category_to_color (raw._category))
+    , legacy_severity (category_to_legacy_level (raw._category))
+    , _raw (std::move (raw))
+  {}
 
   log_table_model::log_table_model (QObject* parent)
     : QAbstractTableModel (parent)
@@ -157,33 +184,33 @@ namespace detail
       break;
 
     case Qt::ForegroundRole:
-      return severityToColor (event.event.severity());
+      return event.color;
 
     case Qt::UserRole:
-      return static_cast<int> (event.event.severity());
+      return event.legacy_severity;
     }
 
     return QVariant();
   }
 
-  std::vector<fhg::log::LogEvent> log_table_model::data() const
+  std::vector<fhg::logging::message> log_table_model::data() const
   {
     QMutexLocker lock (&_mutex_data);
 
-    std::vector<fhg::log::LogEvent> result;
+    std::vector<fhg::logging::message> result;
 
     for (const formatted_log_event& event : _data)
     {
-      result.push_back (event.event);
+      result.push_back (event._raw);
     }
 
     return result;
   }
 
-  void log_table_model::add (const fhg::log::LogEvent& event)
+  void log_table_model::add (fhg::logging::message message)
   {
     QMutexLocker lock (&_mutex_pending);
-    _pending_data.push_back (formatted_log_event (event));
+    _pending_data.push_back (std::move (message));
   }
 
   void log_table_model::clear()
@@ -274,8 +301,8 @@ namespace detail
 }
 
 
-log_monitor::log_monitor (unsigned short port, QWidget* parent)
-  : QWidget (parent)
+log_monitor::log_monitor()
+  : QWidget()
   , _drop_filtered (false)
   , _filter_level (1)
   , _log_table (new QTableView (this))
@@ -284,14 +311,6 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   //! \todo Do updates in separate thread again?
   // , _log_model_update_thread (new QThread (this))
   , _log_model_update_timer (new QTimer (this))
-  , _io_service()
-  , _logger()
-  , _log_server
-    ( logger_with (&log_monitor::append_log_event, this, _logger)
-    , _io_service
-    , port
-    )
-  , _io_thread ([this] { _io_service.run(); })
 {
   // _log_model->moveToThread (_log_model_update_thread);
   connect ( _log_model_update_timer, SIGNAL (timeout())
@@ -312,7 +331,7 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   _log_table->setWordWrap (false);
   _log_table->verticalHeader()->setVisible (false);
   _log_table->horizontalHeader()->setStretchLastSection (true);
-  _log_table->verticalHeader()->setResizeMode
+  _log_table->verticalHeader()->setSectionResizeMode
     (QHeaderView::ResizeToContents);
 
   QGroupBox* filter_level_box (new QGroupBox (tr ("Filter"), this));
@@ -332,13 +351,13 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
                                        << tr ("Error")
                                        );
 
-  fhg::util::qt::connect<void (int)>
-    ( filter_level_combobox, SIGNAL (currentIndexChanged(int))
+  connect
+    ( filter_level_combobox, QOverload<int>::of (&QComboBox::currentIndexChanged)
     , this, boost::lambda::var (_filter_level) = boost::lambda::_1
     );
-  fhg::util::qt::connect<void (int)>
+  connect
     ( filter_level_combobox
-    , SIGNAL (currentIndexChanged(int))
+    , QOverload<int>::of (&QComboBox::currentIndexChanged)
     , _log_filter
     , std::bind (&detail::log_filter_proxy::minimum_severity, _log_filter, std::placeholders::_1)
     );
@@ -356,8 +375,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   drop_filtered_box->setChecked (_drop_filtered);
   drop_filtered_box->setToolTip
     (tr ("Drop filtered events instead of keeping them"));
-  fhg::util::qt::connect<void (bool)>
-    ( drop_filtered_box, SIGNAL (toggled (bool))
+  connect
+    ( drop_filtered_box, &QCheckBox::toggled
     , this, boost::lambda::var (_drop_filtered) = boost::lambda::_1
     );
 
@@ -366,8 +385,8 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
 
   QPushButton* clear_log_button (new QPushButton (tr ("Clear"), this));
   clear_log_button->setToolTip (tr ("Clear all events"));
-  fhg::util::qt::connect<void()>
-    ( clear_log_button, SIGNAL (clicked())
+  connect
+    ( clear_log_button, &QPushButton::clicked
     , _log_model, std::bind (&detail::log_table_model::clear, _log_model)
     );
 
@@ -399,29 +418,27 @@ log_monitor::log_monitor (unsigned short port, QWidget* parent)
   QGridLayout* layout (new QGridLayout (this));
   layout->addWidget (_log_table, 0, 0);
   layout->addLayout (log_sidebar_layout, 0, 1);
-
-
-  QAction* save_log (new QAction (tr ("save_log"), this));
-  save_log->setShortcuts (QKeySequence::Save);
-  connect (save_log, SIGNAL (triggered()), this, SLOT (save()));
-  addAction (save_log);
 }
 
 log_monitor::~log_monitor()
 {
-  _io_service.stop();
-  _io_thread.join();
-
   _log_model_update_timer->stop();
   // _log_model_update_thread->quit();
   // _log_model_update_thread->wait();
 }
 
-void log_monitor::append_log_event (const fhg::log::LogEvent & evt)
+void log_monitor::append_log_event (fhg::logging::message const& message)
 {
-  if (evt.severity() >= _filter_level || !_drop_filtered)
+  if (message._category == sdpa::daemon::gantt_log_category)
   {
-    _log_model->add (evt);
+    return;
+  }
+
+  if ( category_to_legacy_level (message._category) >= _filter_level
+     || !_drop_filtered
+     )
+  {
+    _log_model->add (std::move (message));
   }
 }
 
@@ -456,11 +473,24 @@ void log_monitor::save ()
   try
   {
     std::ofstream ofs (fname.toStdString ().c_str ());
-    std::vector<fhg::log::LogEvent> data (_log_model->data());
 
-    for (const fhg::log::LogEvent &evt : data)
+    for (auto const& message : _log_model->data())
     {
-      ofs << evt << std::endl;
+      ofs << "["
+          << fhg::util::ostream::put_time<decltype (message._timestamp)::clock>
+               (message._timestamp)
+          << "] "
+          << message._hostname
+          << ": "
+          << "pid "
+          << message._process_id
+          << " tid"
+          << message._thread_id
+          << ": "
+          << category_to_short_legacy_level_identifier (message._category)
+          << ": "
+          << message._content
+          << "\n";
     }
     _last_saved_filename = fname;
   }

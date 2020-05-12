@@ -1,0 +1,6 @@
+<structs>
+  <struct name="block">
+    <field name="id" type="unsigned long"/>
+    <field name="slot" type="unsigned long"/>
+  </struct>
+</structs>

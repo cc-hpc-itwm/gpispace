@@ -1,10 +1,3 @@
-cd "${build_directory}"
-make -j "${gspc_parallel_test_and_build_jobs}" install >/dev/null 2>/dev/null
-mkdir -p "${shared_directory_for_tests}"
-export GSPC_NODEFILE_FOR_TESTS="${base_directory}/nodefile_for_tests"
-hostname > "${GSPC_NODEFILE_FOR_TESTS}"
-
-trap "killall -qs SIGKILL gspc-rifd orchestrator agent drts-kernel || true" EXIT
 ctest --output-on-failure --timeout 180 --schedule-random \
   -LE "performance_test|requires_vmem" \
   -j "${gspc_parallel_test_and_build_jobs}"

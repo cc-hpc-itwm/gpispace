@@ -12,6 +12,7 @@
 #include <rpc/service_handler.hpp>
 #include <rpc/service_tcp_provider.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -26,9 +27,13 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <map>
 
@@ -46,6 +51,11 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     , boost::program_options::value<boost::filesystem::path>()->required()
     , "lib for workflow to link to"
     );
+  options_description.add_options()
+    ( "ssl-cert"
+    , boost::program_options::value<std::string>()->required()
+    , "enable or disable SSL certificate"
+    );
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -55,8 +65,15 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "wait_for_token_put");
+    ( test::shared_directory (vm)
+    / ( "wait_for_token_put"
+      + ssl_cert
+      + "_cert"
+      )
+    );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -80,10 +97,10 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
     . add<test::option::gen::include> (test::source_directory (vm))
     . add<test::option::gen::include>
         (test::source_directory (vm).parent_path().parent_path().parent_path())
-    . add<test::option::gen::cxx11>()
     . add<test::option::gen::link>
         (vm.at ("rpc-lib").as<boost::filesystem::path>())
     . add<test::option::gen::ld_flag> ("-lboost_coroutine")
+    . add<test::option::gen::ld_flag> ("-lboost_context")
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
@@ -91,9 +108,13 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
                                  , gspc::rifd::port {vm}
                                  , installation
                                  );
+
+  auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
+                                               : gspc::testing::no_certs()
+                          );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
-  gspc::client client (drts);
+    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
+  gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());
 
@@ -112,6 +133,7 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
       {
         workflow_actually_running.count_down();
       }
+    , fhg::rpc::not_yielding
     );
   fhg::rpc::service_tcp_provider const registry (io_service, service_dispatcher);
 
@@ -134,11 +156,6 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
   std::multimap<std::string, pnet::type::value::value_type> const result
     (client.wait_and_extract (job_id));
 
-  std::string const port_bad ("bad");
-  std::string const port_good ("good");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_bad), 1);
-  BOOST_REQUIRE_EQUAL (result.find (port_bad)->second, bad);
-  BOOST_REQUIRE_EQUAL (result.count (port_good), 1);
-  BOOST_REQUIRE_EQUAL (result.find (port_good)->second, good);
+  decltype (result) const expected {{"bad", bad}, {"good", good}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
 }

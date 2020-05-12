@@ -15,7 +15,10 @@ namespace we
       : _search_path (search_path)
     {}
 
-    Module const& loader::operator[] (const std::string& module)
+    Module const& loader::module
+      ( bool require_module_unloads_without_rest
+      , const std::string& module
+      )
     {
       std::lock_guard<std::mutex> const _ (_table_mutex);
 
@@ -35,7 +38,11 @@ namespace we
         {
           return *_module_table
             .emplace ( module
-                     , fhg::util::cxx14::make_unique<Module> ((p / file_name).string())
+                     , require_module_unloads_without_rest
+                     ? fhg::util::cxx14::make_unique<Module>
+                         (RequireModuleUnloadsWithoutRest{}, p / file_name)
+                     : fhg::util::cxx14::make_unique<Module>
+                         (p / file_name)
                      )
             .first->second;
         }

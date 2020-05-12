@@ -4,23 +4,9 @@ extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES fhglog Util::Generic
+  LIBRARIES Util::Generic ssl crypto
 )
 add_subdirectory (fhgcom/tests)
-
-extended_add_library (NAME fhglog
-  SOURCES "fhglog/Configuration.cpp"
-          "fhglog/Logger.cpp"
-          "fhglog/event.cpp"
-          "fhglog/level.cpp"
-          "fhglog/appender/file.cpp"
-          "fhglog/appender/stream.cpp"
-          "fhglog/remote/server.cpp"
-          "fhglog/remote/appender.cpp"
-          LIBRARIES fhg-util Boost::filesystem Util::Generic
-)
-add_subdirectory (fhglog/appender/test)
-add_subdirectory (fhglog/test)
 
 add_subdirectory (gpi-space)
 add_subdirectory (vmem)
@@ -48,17 +34,18 @@ extended_add_library (NAME pnet
           "we/expr/token/tokenizer.cpp"
           "we/expr/token/type.cpp"
           "we/field.cpp"
+          "we/loader/exceptions.cpp"
           "we/loader/loader.cpp"
           "we/loader/module_call.cpp"
           "we/layer.cpp"
           "we/type/activity.cpp"
+          "we/type/memory_buffer_info_t.cpp"
           "we/type/module_call.cpp"
           "we/require_type.cpp"
           "we/signature_of.cpp"
           "we/type/bitsetofint.cpp"
           "we/type/bytearray.cpp"
           "we/type/connection.cpp"
-          "we/type/copy.cpp"
           "we/type/expression.cpp"
           "we/type/literal/control.cpp"
           "we/type/net.cpp"
@@ -73,6 +60,7 @@ extended_add_library (NAME pnet
           "we/type/signature/resolve.cpp"
           "we/type/signature/show.cpp"
           "we/type/signature/specialize.cpp"
+          "we/type/stencil_cache.cpp"
           "we/type/transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
@@ -88,6 +76,9 @@ extended_add_library (NAME pnet
           "we/type/value/serialize.cpp"
           "we/type/value/dump.cpp"
 
+          "we/plugin/Plugin.cpp"
+          "we/plugin/Plugins.cpp"
+
           "we/loader/Module.cpp"
           "we/workflow_response.cpp"
 
@@ -100,18 +91,21 @@ extended_add_library (NAME pnet
           "xml/parse/type/memory_buffer.cpp"
           "xml/parse/type/memory_transfer.cpp"
           "xml/parse/type/mod.cpp"
+          "xml/parse/type/multi_mod.cpp"
           "xml/parse/type/net.cpp"
           "xml/parse/type/place.cpp"
           "xml/parse/type/place_map.cpp"
           "xml/parse/type/port.cpp"
           "xml/parse/type/require.cpp"
           "xml/parse/type/response.cpp"
+          "xml/parse/type/eureka.cpp"
           "xml/parse/type/specialize.cpp"
           "xml/parse/type/struct.cpp"
           "xml/parse/type/template.cpp"
           "xml/parse/type/transition.cpp"
           "xml/parse/type/use.cpp"
           "xml/parse/type/with_position_of_definition.cpp"
+          "xml/parse/type/preferences.cpp"
           "xml/parse/util/cdata.cpp"
           "xml/parse/util/expect.cpp"
           "xml/parse/util/mk_fstream.cpp"
@@ -129,18 +123,23 @@ extended_add_library (NAME pnet
           "xml/parse/warning.cpp"
   LIBRARIES fhg-util
             drts-context
+            gpi-space-pc-client-static
+            gpi-space-pc-segment
             Util::Generic
-            Boost::serialization
             Boost::date_time
+            Boost::program_options
+            Boost::serialization
             RPC
             ${CMAKE_DL_LIBS}
             rapidxml
+            ssl
+            crypto
+  COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
 )
 
 add_subdirectory (xml/tests)
 add_subdirectory (xml/parse/type/test)
 
-add_subdirectory(pnetv)
 add_subdirectory (we)
 add_subdirectory (mmgr)
 
@@ -155,4 +154,102 @@ add_subdirectory (fhg)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
 
-add_subdirectory (libssh2_wrapper)
+add_subdirectory (gspc)
+
+extended_add_library (NAME logging
+  NAMESPACE gspc
+  SOURCES "logging/demultiplexer.cpp"
+          "logging/endpoint.cpp"
+          "logging/file_sink.cpp"
+          "logging/message.cpp"
+          "logging/socket_endpoint.cpp"
+          "logging/stdout_sink.cpp"
+          "logging/stream_emitter.cpp"
+          "logging/stream_receiver.cpp"
+          "logging/tcp_endpoint.cpp"
+          "logging/tcp_server_providing_add_emitters.cpp"
+  LIBRARIES Util::Generic
+            RPC
+            Boost::base
+            Boost::program_options
+)
+
+install (FILES
+  logging/endpoint.hpp
+  logging/endpoint.ipp
+  logging/socket_endpoint.hpp
+  logging/socket_endpoint.ipp
+  logging/tcp_endpoint.hpp
+  logging/tcp_endpoint.ipp
+  DESTINATION include/logging
+)
+
+extended_add_executable (NAME gspc-logging-demultiplexer
+  SOURCES "logging/gspc-logging-demultiplexer.cpp"
+  LIBRARIES gspc::logging
+            Util::Generic
+            rif-started_process_promise
+  CREATE_BUNDLE_INFO
+  INSTALL INSTALL_DESTINATION "libexec/gspc"
+)
+
+extended_add_executable (NAME gspc-logging-to-stdout
+  SOURCES "logging/gspc-logging-to-stdout.cpp"
+  LIBRARIES gspc::logging
+            Util::Generic
+  INSTALL INSTALL_DESTINATION "bin"
+)
+
+add_unit_test (NAME logging_endpoint
+  SOURCES "logging/test/endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_file_sink
+  SOURCES "logging/test/file_sink.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_ostream_redirect
+  SOURCES "logging/test/ostream_redirect.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_socket_endpoint
+  SOURCES "logging/test/socket_endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_stream_emitter
+  SOURCES "logging/test/stream_emitter.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_stream_receiver
+  SOURCES "logging/test/stream_receiver.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+add_unit_test (NAME logging_tcp_endpoint
+  SOURCES "logging/test/tcp_endpoint.cpp"
+  LIBRARIES Util::Generic
+            gspc::logging
+  USE_BOOST
+)
+
+install (FILES
+  logging/tcp_endpoint.hpp
+  DESTINATION include/logging/
+)

@@ -106,9 +106,7 @@ namespace
        }()
       );
 
-    for ( std::pair< pnet::type::value::value_type
-                   , pnet::type::value::value_type
-                   > const& worker_with_host
+    for ( auto const& worker_with_host
         : boost::get<std::map< pnet::type::value::value_type
                              , pnet::type::value::value_type
                              >

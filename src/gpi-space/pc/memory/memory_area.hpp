@@ -2,12 +2,10 @@
 
 #include <mmgr/dtmmgr.hpp>
 
-#include <boost/thread.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
-#include <boost/signals2.hpp>
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <gpi-space/types.hpp>
 #include <gpi-space/pc/type/typedefs.hpp>
@@ -17,11 +15,11 @@
 #include <gpi-space/pc/type/handle_descriptor.hpp>
 
 #include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/memory/memory_buffer.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
 #include <future>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 
@@ -34,8 +32,6 @@ namespace gpi
       class area_t : boost::noncopyable
       {
       public:
-        typedef fhg::thread::ptr_queue<buffer_t> memory_pool_t;
-
         virtual ~area_t () = default;
 
         /* public interface the basic implementation is the same
@@ -137,13 +133,12 @@ namespace gpi
           , const type::memory_location_t dst
           , area_t& dst_area
           , type::size_t amount
-          , memory_pool_t& buffer_pool
           );
         virtual double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( fhg::log::Logger&
+        area_t ( fhg::logging::stream_emitter&
                , const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
@@ -172,13 +167,6 @@ namespace gpi
         virtual gpi::pc::type::size_t get_local_size ( const gpi::pc::type::size_t size
                                                      , const gpi::pc::type::flags_t flags
                                                      ) const = 0;
-
-        virtual std::packaged_task<void()> get_specific_transfer_task
-          ( const gpi::pc::type::memory_location_t src
-          , const gpi::pc::type::memory_location_t dst
-          , area_t& dst_area
-          , gpi::pc::type::size_t amount
-          );
 
         virtual std::packaged_task<void()> get_send_task
           ( area_t& src_area
@@ -212,8 +200,8 @@ namespace gpi
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) {}
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) {}
       private:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+        typedef std::recursive_mutex mutex_type;
+        typedef std::unique_lock<mutex_type> lock_type;
         typedef std::unordered_set <gpi::pc::type::process_id_t> process_ids_t;
         typedef std::unordered_map< gpi::pc::type::handle_t
                                   , gpi::pc::type::handle::descriptor_t
@@ -224,7 +212,7 @@ namespace gpi
         void internal_alloc (gpi::pc::type::handle::descriptor_t &);
 
       protected:
-        fhg::log::Logger& _logger;
+        fhg::logging::stream_emitter& _logger;
 
       private:
         mutable mutex_type m_mutex;

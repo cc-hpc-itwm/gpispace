@@ -68,11 +68,6 @@ namespace test
         {}
       };
 
-      struct cxx11 : public cxx_flag
-      {
-        cxx11();
-      };
-
       struct include : public cxx_flag
       {
         include (boost::filesystem::path const&);

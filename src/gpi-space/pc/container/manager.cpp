@@ -10,8 +10,6 @@
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
-#include <fhglog/LogMacros.hpp>
-
 #include <gpi-space/pc/memory/shm_area.hpp>
 #include <gpi-space/pc/proto/message.hpp>
 #include <gpi-space/pc/url.hpp>
@@ -51,9 +49,12 @@ namespace gpi
             m_socket = -1;
           }
         }
-        catch (std::exception const & ex)
+        catch (...)
         {
-          LLOG(ERROR, _logger, "error within ~manager_t: " << ex.what());
+          _logger.emit ( "error within ~manager_t: "
+                       + fhg::util::current_exception_printer().string()
+                       , fhg::logging::legacy::category_level_error
+                       );
         }
 
         std::lock_guard<std::mutex> const _ (_mutex_processes);
@@ -63,10 +64,10 @@ namespace gpi
         {
           process.second.join();
 
-          LLOG( INFO
-              , _logger
-             , "process container " << process.first << " detached"
-             );
+          _logger.emit ( "process container " + std::to_string (process.first)
+                       + " detached"
+                       , fhg::logging::legacy::category_level_info
+                       );
         }
 
         _memory_manager.clear();
@@ -139,10 +140,10 @@ namespace gpi
                 );
             }
 
-            LLOG( INFO
-                , _logger
-               , "process container " << id << " attached"
-               );
+          _logger.emit ( "process container " + std::to_string (id)
+                       + " attached"
+                       , fhg::logging::legacy::category_level_info
+                       );
         }
       }
 
@@ -150,7 +151,7 @@ namespace gpi
       {
         struct handle_message_t : public boost::static_visitor<gpi::pc::proto::message_t>
         {
-          handle_message_t ( fhg::log::Logger& logger
+          handle_message_t ( fhg::logging::stream_emitter& logger
                            , gpi::pc::type::process_id_t const& proc_id
                            , memory::manager_t& memory_manager
                            , global::topology_t& topology
@@ -309,14 +310,14 @@ namespace gpi
           }
 
         private:
-          fhg::log::Logger& _logger;
+          fhg::logging::stream_emitter& _logger;
           gpi::pc::type::process_id_t const& m_proc_id;
           memory::manager_t& _memory_manager;
           global::topology_t& _topology;
         };
 
         gpi::pc::proto::message_t handle_message
-          ( fhg::log::Logger& logger
+          ( fhg::logging::stream_emitter& logger
           , gpi::pc::type::process_id_t const& id
           , gpi::pc::proto::message_t const& request
           , gpi::pc::memory::manager_t& memory_manager
@@ -358,7 +359,10 @@ namespace gpi
       void manager_t::process_communication_thread
         (gpi::pc::type::process_id_t process_id, int socket)
       {
-        LLOG(TRACE, _logger, "process container (" << process_id << ") started on socket " << socket);
+        _logger.emit ( "process container (" + std::to_string (process_id)
+                     + ") started on socket " + std::to_string (socket)
+                     , fhg::logging::legacy::category_level_trace
+                     );
 
         for (;;)
         {
@@ -417,9 +421,13 @@ namespace gpi
               , "could not send message"
               );
           }
-          catch (std::exception const & ex)
+          catch (...)
           {
-            LLOG(ERROR, _logger, "process container " << process_id << " crashed: " << ex.what());
+            _logger.emit ( "process container " + std::to_string (process_id)
+                         + " exited: "
+                         + fhg::util::current_exception_printer().string()
+                         , fhg::logging::legacy::category_level_error
+                         );
             break;
           }
         }
@@ -441,7 +449,10 @@ namespace gpi
 
         _memory_manager.garbage_collect (process_id);
 
-        LLOG(TRACE, _logger, "process container (" << process_id << ") terminated");
+        _logger.emit ( "process container (" + std::to_string (process_id)
+                     + ") terminated"
+                     , fhg::logging::legacy::category_level_trace
+                     );
 
         //! \note this detaches _this_ thread from everything
         //! left. Nothing shall be done in here that accesses `this`
@@ -456,10 +467,9 @@ namespace gpi
       }
 
 
-      manager_t::manager_t ( fhg::log::Logger& logger
+      manager_t::manager_t ( fhg::logging::stream_emitter& logger
                            , std::string const & p
                            , fhg::vmem::gaspi_context& gaspi_context
-                           , boost::asio::io_service& topology_io_service
                            , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                            )
         : _logger (logger)
@@ -470,7 +480,6 @@ namespace gpi
         , _memory_manager (_logger, gaspi_context)
         , _topology ( _memory_manager
                     , gaspi_context
-                    , topology_io_service
                     , std::move (topology_rpc_server)
                     )
       {

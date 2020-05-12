@@ -11,6 +11,7 @@
 #include <we/type/property.hpp>
 #include <we/type/requirement.hpp>
 #include <we/type/value.hpp>
+#include <we/type/eureka.hpp>
 
 #include <boost/optional.hpp>
 #include <boost/serialization/list.hpp>
@@ -22,11 +23,20 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace we { namespace type {
+namespace we
+{
+  namespace type
+  {
+    using preference_t = std::string;
+    using multi_module_call_t = std::unordered_map < preference_t
+                                                   , module_call_t
+                                                   >;
+
     struct transition_t
     {
     private:
       typedef boost::variant< module_call_t
+                            , multi_module_call_t
                             , expression_t
                             , boost::recursive_wrapper<we::type::net_type>
                             > data_type;
@@ -49,33 +59,52 @@ namespace we { namespace type {
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
+                   , boost::optional<eureka_id_type> const&
+                     _eureka_id = boost::none
+                   , const std::list<we::type::preference_t>&
+                     preferences = {}
                    )
-        : name_ (name)
-        , data_ (typ)
-          //! \todo better check user input earlier!?
-        , condition_
-          ( (!_condition || _condition.get().ast().is_const_true())
-          ? boost::none : _condition
-          )
-        , _ports_input()
-        , _ports_output()
-        , _ports_tunnel()
-        , port_id_counter_ (0)
-        , prop_(prop)
-        , _requirements()
-        , _priority (priority)
-      { }
+        try
+          :  name_  (name)
+          ,  data_  (typ)
+              //!  \todo  better  check  user  input  earlier!?
+          ,  condition_
+              (  (!_condition  ||  _condition.get().ast().is_const_true())
+              ?  boost::none  :  _condition
+              )
+          ,  _ports_input()
+          ,  _ports_output()
+          ,  _ports_tunnel()
+          ,  port_id_counter_  (0)
+          ,  prop_(prop)
+          ,  _requirements()
+          ,  _preferences  (preferences)
+          ,  _priority  (priority)
+          ,  eureka_id_ (_eureka_id)
+      {
+        if (preferences.size() && data_.type() != typeid (multi_module_call_t))
+        {
+          throw std::runtime_error
+            ("preferences defined without multiple modules with target");
+        }
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          (std::runtime_error ("Failed to create transition '" + name + "'"));
+      }
 
       const std::string& name() const;
 
       const data_type& data() const;
-      data_type& data();
+      we::type::net_type& mutable_net();
 
       boost::optional<const expression_t&> expression() const;
       boost::optional<const we::type::net_type&> net() const;
       boost::optional<const module_call_t&> module_call() const;
 
       boost::optional<expression_t> const& condition() const;
+      boost::optional<eureka_id_type> const& eureka_id() const;
 
       we::port_id_type add_port (port_t const&);
 
@@ -89,6 +118,7 @@ namespace we { namespace type {
       const we::type::property::type& prop() const;
 
       std::list<we::type::requirement_t> const& requirements() const;
+      std::list<we::type::preference_t> const& preferences() const;
       void add_requirement (we::type::requirement_t const&);
 
       we::priority_type priority() const;
@@ -113,7 +143,10 @@ namespace we { namespace type {
       we::type::property::type prop_;
 
       std::list<we::type::requirement_t> _requirements;
+      std::list<we::type::preference_t> _preferences;
       we::priority_type _priority;
+
+      boost::optional<eureka_id_type> eureka_id_;
 
       friend class boost::serialization::access;
       template <typename Archive>
@@ -128,7 +161,9 @@ namespace we { namespace type {
         ar & BOOST_SERIALIZATION_NVP(port_id_counter_);
         ar & BOOST_SERIALIZATION_NVP(prop_);
         ar & BOOST_SERIALIZATION_NVP(_requirements);
+        ar & BOOST_SERIALIZATION_NVP(_preferences);
         ar & BOOST_SERIALIZATION_NVP(_priority);
+        ar & BOOST_SERIALIZATION_NVP(eureka_id_);
       }
     };
   }

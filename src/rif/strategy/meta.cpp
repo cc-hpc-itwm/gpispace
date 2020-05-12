@@ -45,6 +45,7 @@ namespace fhg
                 , unsigned short
                 , boost::filesystem::path const&
                 , std::vector<std::string> const&
+                , std::ostream&
                 )
               >
             , std::function
@@ -95,14 +96,16 @@ namespace fhg
         }
       }
 
-      std::pair < std::unordered_map<std::string, fhg::rif::entry_point>
-                , std::unordered_map<std::string, std::exception_ptr>
-                > bootstrap
+      std::tuple < std::unordered_map<std::string, fhg::rif::entry_point>
+                 , std::unordered_map<std::string, std::exception_ptr>
+                 , std::unordered_map<std::string, std::string>
+                 > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
         , boost::filesystem::path const& gspc_home
         , std::vector<std::string> const& parameters
+        , std::ostream& out
         )
       {
         validate_strategy (strategy);
@@ -112,22 +115,28 @@ namespace fhg
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
         std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
+        std::unordered_map<std::string, std::string> real_hostnames;
 
         fhg::rpc::service_dispatcher service_dispatcher;
 
         fhg::rpc::service_handler<bootstrap_callback> const register_service
             ( service_dispatcher
-            , [&entry_points, &entry_points_guard, &entry_point_added]
+            , [&entry_points, &entry_points_guard, &entry_point_added
+              , &real_hostnames
+              ]
                 ( std::string const& key
+                , std::string hostname
                 , fhg::rif::entry_point const& entry_point
                 )
               {
                 {
                   std::lock_guard<std::mutex> const _ (entry_points_guard);
                   entry_points.emplace (key, entry_point);
+                  real_hostnames.emplace (key, hostname);
                 }
                 entry_point_added.notify_one();
               }
+            , fhg::rpc::not_yielding
             );
 
         util::scoped_boost_asio_io_service_with_threads io_service (2);
@@ -145,6 +154,7 @@ namespace fhg
               , local_endpoint.port()
               , gspc_home / "bin" / "gspc-rifd"
               , parameters
+              , out
               )
           );
 
@@ -154,12 +164,19 @@ namespace fhg
             ( lock
             , [&entry_points, &hostnames, &failed]
               {
+                //! not just do once: new entry_points may be added
+                //! later on, thus re-remove every time they changed.
+                for (auto&& failure : failed)
+                {
+                  entry_points.erase (failure.first);
+                }
+
                 return entry_points.size() + failed.size() == hostnames.size();
               }
             );
         }
 
-        return {entry_points, failed};
+        return std::make_tuple (entry_points, failed, real_hostnames);
       }
       std::pair < std::unordered_set<std::string>
                 , std::unordered_map<std::string, std::exception_ptr>

@@ -32,7 +32,7 @@ namespace sdpa
                         )
         : _components (components)
         , _activity_id (activity_id)
-        , _activity_name (activity.transition().name())
+        , _activity_name (activity.name())
         , _activity_state (activity_state)
       {}
 
@@ -67,5 +67,7 @@ namespace sdpa
       std::string _activity_name;
       state_t _activity_state;
     };
+
+    constexpr char const* const gantt_log_category = "gantt-job-events";
   }
 }

@@ -5,7 +5,11 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesEvent.hpp>
+#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
+#include <sdpa/events/JobFailedEvent.hpp>
+#include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
@@ -14,9 +18,8 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/put_token.hpp>
+#include <sdpa/events/workflow_response.hpp>
 
 #include <fhg/util/macros.hpp>
 
@@ -35,20 +38,22 @@ namespace sdpa
     Client::Client ( fhg::com::host_t const& orchestrator_host
                    , fhg::com::port_t const& orchestrator_port
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
+                   , fhg::com::Certificates const& certificates
                    )
       : _stopping (false)
       , m_peer ( std::move (peer_io_service)
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
+               , certificates
                )
       , _drts_entrypoint_address
           (m_peer.connect_to (orchestrator_host, orchestrator_port))
     {
-      m_peer.async_recv ( &m_message
-                        , std::bind ( &Client::handle_recv
+      m_peer.async_recv ( std::bind ( &Client::handle_recv
                                     , this
                                     , std::placeholders::_1
                                     , std::placeholders::_2
+                                    , std::placeholders::_3
                                     )
                         );
     }
@@ -60,6 +65,7 @@ namespace sdpa
 
     void Client::handle_recv ( boost::system::error_code const & ec
                              , boost::optional<fhg::com::p2p::address_t>
+                             , fhg::com::message_t message
                              )
     {
       static sdpa::events::Codec const codec {};
@@ -67,7 +73,7 @@ namespace sdpa
       if (! ec)
       {
         sdpa::events::SDPAEvent::Ptr const evt
-          (codec.decode (std::string (m_message.data.begin(), m_message.data.end())));
+          (codec.decode (std::string (message.data.begin(), message.data.end())));
         m_incoming_events.put (evt);
       }
       else if ( ec == boost::system::errc::operation_canceled
@@ -78,7 +84,7 @@ namespace sdpa
       }
       else
       {
-        if (m_message.header.src != m_peer.address())
+        if (message.header.src != m_peer.address())
         {
           sdpa::events::ErrorEvent::Ptr const
             error(new sdpa::events::ErrorEvent ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
@@ -91,11 +97,11 @@ namespace sdpa
 
       if (!_stopping)
       {
-        m_peer.async_recv ( &m_message
-                          , std::bind ( &Client::handle_recv
+        m_peer.async_recv ( std::bind ( &Client::handle_recv
                                       , this
                                       , std::placeholders::_1
                                       , std::placeholders::_2
+                                      , std::placeholders::_3
                                       )
                           );
       }
@@ -136,7 +142,7 @@ namespace sdpa
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* const e = dynamic_cast<Expected*> (reply.get()))
       {
-        return *e;
+        return std::move (*e);
       }
 
       handle_error_and_unexpected_event (reply);
@@ -197,10 +203,10 @@ namespace sdpa
       return state;
     }
 
-    sdpa::job_id_t Client::submitJob (we::type::activity_t const& activity)
+    sdpa::job_id_t Client::submitJob (we::type::activity_t activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>
-        (sdpa::events::SubmitJobEvent (boost::none, activity)).job_id();
+        (sdpa::events::SubmitJobEvent (boost::none, std::move (activity), boost::none)).job_id();
     }
 
     void Client::cancelJob(const job_id_t &jid)

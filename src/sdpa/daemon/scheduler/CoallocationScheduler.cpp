@@ -13,10 +13,10 @@ namespace sdpa
   namespace daemon
   {
     CoallocationScheduler::CoallocationScheduler
-      ( std::function<job_requirements_t (const sdpa::job_id_t&)> job_requirements
+      ( std::function<Requirements_and_preferences (const sdpa::job_id_t&)> requirements_and_preferences
       , WorkerManager& worker_manager
       )
-      : _job_requirements (job_requirements)
+      : _requirements_and_preferences (requirements_and_preferences)
       , _worker_manager (worker_manager)
     {}
 
@@ -40,22 +40,20 @@ namespace sdpa
         ( workers.begin()
         , workers.end()
         , 0.0
-        , [this, &job_id] (const double total, const sdpa::worker_id_t wid)
+        , [this, &job_id] ( const double total
+                          , worker_id_t const& worker
+                          )
           {
             return total
-              + _job_requirements (job_id).transfer_cost()
-                  (_worker_manager.host_INDICATES_A_RACE (wid));
+              + _requirements_and_preferences (job_id).transfer_cost()
+                  (_worker_manager.host_INDICATES_A_RACE (worker));
           }
         ) + computational_cost;
     }
 
     void CoallocationScheduler::assignJobsToWorkers()
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      if (_worker_manager.all_workers_busy_and_have_pending_jobs())
-      {
-        return;
-      }
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
 
       std::list<job_id_t> jobs_to_schedule (_jobs_to_schedule.get_and_clear());
       std::list<sdpa::job_id_t> nonmatching_jobs_queue;
@@ -65,48 +63,70 @@ namespace sdpa
         sdpa::job_id_t const jobId (jobs_to_schedule.front());
         jobs_to_schedule.pop_front();
 
-        const job_requirements_t requirements (_job_requirements (jobId));
-        const std::set<worker_id_t> matching_workers
-          (_worker_manager.find_assignment
-            ( requirements
-            , [this] (const job_id_t& job_id) -> double
-              {
-                return allocation_table_.at (job_id)->cost();
-              }
-            )
-          );
+        const Requirements_and_preferences requirements_and_preferences
+          (_requirements_and_preferences (jobId));
 
-        if (!matching_workers.empty())
+        if ( !requirements_and_preferences.preferences().empty()
+           && requirements_and_preferences.numWorkers() > 1
+           )
+        {
+          throw std::runtime_error
+            ("Coallocation with preferences is forbidden!");
+        }
+
+        const Workers_and_implementation
+          matching_workers_and_implementation
+            (_worker_manager.find_assignment (requirements_and_preferences)
+            );
+
+        if (!matching_workers_and_implementation.first.empty())
         {
           if (allocation_table_.find (jobId) != allocation_table_.end())
           {
             throw std::runtime_error ("already have reservation for job " + jobId);
           }
 
+          double cost
+            (compute_reservation_cost
+              ( jobId
+              , matching_workers_and_implementation.first
+              , requirements_and_preferences.computational_cost()
+              )
+            );
+
           try
           {
-            for (worker_id_t const& worker : matching_workers)
+            for ( auto const& worker
+                : matching_workers_and_implementation.first
+                )
             {
-              _worker_manager.assign_job_to_worker (jobId, worker);
+              _worker_manager.assign_job_to_worker
+                ( jobId
+                , worker
+                , cost
+                , requirements_and_preferences.preferences()
+                );
             }
 
-            Reservation* const pReservation
-              (new Reservation ( matching_workers
-                               , compute_reservation_cost ( jobId
-                                                          , matching_workers
-                                                          , requirements.computational_cost()
-                                                          )
-                               )
+            allocation_table_.emplace
+              ( jobId
+              , fhg::util::cxx14::make_unique<scheduler::Reservation>
+                  ( matching_workers_and_implementation.first
+                  , matching_workers_and_implementation.second
+                  , requirements_and_preferences.preferences()
+                  , cost
+                  )
               );
 
-            allocation_table_.emplace (jobId, pReservation);
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
           {
-            for (const worker_id_t& wid : matching_workers)
+            for ( auto const&  worker
+                : matching_workers_and_implementation.first
+                )
             {
-              _worker_manager.delete_job_from_worker (jobId, wid);
+              _worker_manager.delete_job_from_worker (jobId, worker, cost);
             }
 
             jobs_to_schedule.push_front (jobId);
@@ -124,56 +144,38 @@ namespace sdpa
 
     void CoallocationScheduler::steal_work()
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      _worker_manager.steal_work<Reservation>
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
+      _worker_manager.steal_work
         ( [this] (job_id_t const& job)
           {
-            return allocation_table_.at (job);
+            return allocation_table_.at (job).get();
           }
         );
     }
 
-    CoallocationScheduler::assignment_t
-      CoallocationScheduler::get_current_assignment_TESTING_ONLY() const
-    {
-      assignment_t assignment;
-      std::transform ( allocation_table_.begin()
-                     , allocation_table_.end()
-                     , std::inserter (assignment, assignment.end())
-                     , [](allocation_table_t::value_type const &p)
-                       {
-                         return std::make_pair (p.first, p.second->workers());
-                       }
-                     );
-
-      return assignment;
-    }
-
-    void CoallocationScheduler::reschedule_worker_jobs
+    void CoallocationScheduler::reschedule_worker_jobs_and_maybe_remove_worker
        ( worker_id_t const& worker
        , std::function<Job* (sdpa::job_id_t const&)> get_job
        , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job
        , bool backlog_full
        )
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
 
-      std::unordered_set<job_id_t> const jobs_to_reschedule
-        (_worker_manager.delete_or_cancel_worker_jobs<Reservation>
-          ( worker
-          , get_job
-          , [this] (job_id_t const& jobId)
-            {return allocation_table_.at (jobId);}
-          , cancel_worker_job
+      for ( job_id_t const& job_id
+          : _worker_manager.delete_or_cancel_worker_jobs
+              ( worker
+              , get_job
+              , [this] (job_id_t const& jobId)
+                {
+                  return allocation_table_.at (jobId).get();
+                }
+              , cancel_worker_job
+              )
           )
-        );
-
-      for (job_id_t const& jobId : jobs_to_reschedule)
       {
-        delete allocation_table_.at (jobId);
-        _pending_jobs.erase (jobId);
-        allocation_table_.erase (jobId);
-        enqueueJob (jobId);
+        releaseReservation (job_id);
+        enqueueJob (job_id);
       }
 
       if (backlog_full)
@@ -187,16 +189,24 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void (std::set<worker_id_t> const&, const job_id_t&)> serve_job)
+      (std::function<void ( WorkerSet const&
+                          , Implementation const& implementation
+                          , const job_id_t&
+                          )
+                    > serve_job
+      )
     {
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
       for (const job_id_t& job_id: _pending_jobs)
       {
-        std::set<worker_id_t> const& workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-             (job_id, workers, serve_job)
+              ( job_id
+              , allocation_table_.at (job_id)->workers()
+              ,  allocation_table_.at (job_id)->implementation()
+              , serve_job
+              )
            )
         {
           jobs_started.insert (job_id);
@@ -214,19 +224,26 @@ namespace sdpa
 
     void CoallocationScheduler::releaseReservation (const sdpa::job_id_t& job_id)
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
-      const allocation_table_t::const_iterator it
-       (allocation_table_.find (job_id));
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
+      auto const it (allocation_table_.find (job_id));
 
       if (it != allocation_table_.end())
       {
-        Reservation const* const ptr_reservation(it->second);
-        for (std::string const& worker : ptr_reservation->workers())
+        for (std::string const& worker : it->second->workers())
         {
-          _worker_manager.delete_job_from_worker (job_id, worker);
+          try
+          {
+            _worker_manager.delete_job_from_worker
+              (job_id, worker, it->second->cost());
+          }
+          catch (...)
+          {
+            //! \note can be ignored: was deleted using deleteWorker()
+            //! which correctly clears queues already, and
+            //! delete_job_from_worker does nothing else.
+          }
         }
 
-        delete ptr_reservation;
         _pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }
@@ -235,7 +252,7 @@ namespace sdpa
 
     bool CoallocationScheduler::reservation_canceled (job_id_t const& job) const
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
       return allocation_table_.at (job)->is_canceled();
     }
 
@@ -244,7 +261,7 @@ namespace sdpa
                                              , terminal_state result
                                              )
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
       auto const it (allocation_table_.find (job_id));
       //! \todo assert only as this probably is a logical error?
       if (it == allocation_table_.end())
@@ -258,7 +275,7 @@ namespace sdpa
     boost::optional<job_result_type>
       CoallocationScheduler::get_aggregated_results_if_all_terminated (job_id_t const& job_id)
     {
-      boost::mutex::scoped_lock const _ (mtx_alloc_table_);
+      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
       auto const it (allocation_table_.find (job_id));
       //! \todo assert only as this probably is a logical error?
       if (it == allocation_table_.end())
@@ -272,20 +289,20 @@ namespace sdpa
 
     void CoallocationScheduler::locked_job_id_list::push (job_id_t const& item)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       container_.emplace_back (item);
     }
 
     template <typename Range>
     void CoallocationScheduler::locked_job_id_list::push (Range const& range)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       container_.insert (container_.end(), std::begin (range), std::end (range));
     }
 
     size_t CoallocationScheduler::locked_job_id_list::erase (const job_id_t& item)
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
       size_t count (0);
       std::list<job_id_t>::iterator iter (container_.begin());
       while (iter != container_.end())
@@ -305,7 +322,7 @@ namespace sdpa
 
     std::list<job_id_t> CoallocationScheduler::locked_job_id_list::get_and_clear()
     {
-      boost::mutex::scoped_lock const _ (mtx_);
+      std::lock_guard<std::mutex> const _ (mtx_);
 
       std::list<job_id_t> ret;
       std::swap (ret, container_);

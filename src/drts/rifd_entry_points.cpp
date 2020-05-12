@@ -56,7 +56,7 @@ namespace gspc
     _ = std::move (other._);
     other._ = nullptr;
   }
-  PIMPL_DTOR (rifd_entry_point);
+  PIMPL_DTOR (rifd_entry_point)
 
   std::string const& rifd_entry_point::hostname() const
   {

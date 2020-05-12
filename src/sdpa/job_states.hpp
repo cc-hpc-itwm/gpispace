@@ -46,5 +46,5 @@ namespace sdpa
 
       INVALID_ENUM_VALUE (status::code, code);
     }
-  };
+  }
 }

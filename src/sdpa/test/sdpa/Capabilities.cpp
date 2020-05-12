@@ -1,259 +1,304 @@
-#include <utils.hpp>
+#include <sdpa/events/CapabilitiesGainedEvent.hpp>
+#include <sdpa/events/CapabilitiesLostEvent.hpp>
+#include <sdpa/events/WorkerRegistrationEvent.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
+
+#include <test/certificates_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/printer/generic.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/printer/set.hpp>
+#include <util-generic/testing/random.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
-
+#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-#include <condition_variable>
-#include <map>
-#include <mutex>
+#include <cstddef>
+#include <iterator>
+#include <string>
+#include <utility>
 
 namespace
 {
-  class drts_component_observing_capabilities final : public utils::basic_drts_component
+  class drts_component_observing_capabilities final
+    : public utils::basic_drts_component
   {
   public:
-    drts_component_observing_capabilities()
-      : utils::basic_drts_component (utils::random_peer_name(), true)
-    {}
+    drts_component_observing_capabilities (fhg::com::Certificates const&);
+
+    template<typename Event>
+      using Events
+        = fhg::util::threadsafe_queue
+            <std::pair<fhg::com::p2p::address_t, Event>>;
+
+    Events<sdpa::events::CapabilitiesGainedEvent> capabilities_gained;
+    Events<sdpa::events::CapabilitiesLostEvent> capabilities_lost;
+    Events<sdpa::events::WorkerRegistrationEvent> worker_registrations;
 
     virtual void handleCapabilitiesGainedEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent* event) override
-    {
-      BOOST_REQUIRE (!event->capabilities().empty());
-
-      std::lock_guard<std::mutex> const _ (_mutex);
-      for (const sdpa::capability_t& cpb : event->capabilities())
-      {
-        _capabilities.emplace_back (source, cpb);
-      }
-      _capabilities_changed.notify_one();
-    }
-
+      ( fhg::com::p2p::address_t const&
+      , sdpa::events::CapabilitiesGainedEvent const*
+      ) override;
     virtual void handleCapabilitiesLostEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent* event) override
-    {
-      std::lock_guard<std::mutex> const _ (_mutex);
-      for (const sdpa::capability_t& cpb : event->capabilities())
-      {
-        _capabilities.erase
-          ( std::find ( _capabilities.begin()
-                      , _capabilities.end()
-                      , decltype (_capabilities)::value_type (source, cpb)
-                      )
-          );
-      }
-      _capabilities_changed.notify_one();
-    }
-
-    virtual void handleErrorEvent
-      ( fhg::com::p2p::address_t const& source
-      , sdpa::events::ErrorEvent const* event
-      ) override
-    {
-      if (event->error_code() == sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN)
-      {
-        //! \note hack? isn't this part of what this test is supposed
-        //! to test?
-        std::lock_guard<std::mutex> const _ (_mutex);
-        _capabilities.remove_if
-          ( [&] (decltype (_capabilities)::value_type const& elem)
-            {
-              return elem.first == source;
-            }
-          );
-        _capabilities_changed.notify_one();
-      }
-
-      utils::basic_drts_component::handleErrorEvent (source, event);
-    }
-
-    void wait_for_capabilities
-      (sdpa::capabilities_set_t const& expected)
-    {
-      std::unique_lock<std::mutex> lock (_mutex);
-      _capabilities_changed.wait
-        (lock, [&] { return _capabilities.size() == expected.size(); });
-
-      sdpa::capabilities_set_t capabilities;
-      for ( auto const& capability
-          : _capabilities | boost::adaptors::map_values
-          )
-      {
-        BOOST_REQUIRE (capabilities.emplace (capability).second);
-      }
-      BOOST_REQUIRE (capabilities == expected);
-    }
-
-    void wait_for_capabilities (std::size_t count)
-    {
-      std::unique_lock<std::mutex> lock (_mutex);
-      _capabilities_changed.wait
-        (lock, [&] { return _capabilities.size() == count; });
-    }
+      ( fhg::com::p2p::address_t const&
+      , sdpa::events::CapabilitiesLostEvent const*
+      ) override;
+    virtual void handleWorkerRegistrationEvent
+      ( fhg::com::p2p::address_t const&
+      , sdpa::events::WorkerRegistrationEvent const*
+      ) override;
 
   private:
-    std::mutex _mutex;
-    std::condition_variable _capabilities_changed;
-    std::list<std::pair<fhg::com::p2p::address_t, sdpa::capability_t>>
-      _capabilities;
-
-    basic_drts_component::event_thread_and_worker_join _ = {*this};
+    utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
-}
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker, setup_logging)
-{
-  drts_component_observing_capabilities observer;
-
+  class basic_drts_worker_with_public_perform
+    : public utils::no_thread::basic_drts_worker
   {
-    const utils::agent agent (observer, _logger);
+  public:
+    basic_drts_worker_with_public_perform
+      ( utils::agent const& master
+      , sdpa::capabilities_set_t
+      , fhg::com::Certificates const&
+      );
 
-    const std::string name (utils::random_peer_name());
-    const sdpa::capability_t capability ("A", name);
-    utils::basic_drts_worker const worker (name, agent, {capability});
+    template<typename Event, typename... Args>
+      void perform_to_master (Args&&... args);
 
-    observer.wait_for_capabilities ({capability});
+  private:
+    utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
+  };
+
+  drts_component_observing_capabilities::drts_component_observing_capabilities
+      (fhg::com::Certificates const& certificates)
+    : utils::basic_drts_component (true, certificates)
+  {}
+
+  void drts_component_observing_capabilities::handleCapabilitiesGainedEvent
+    ( fhg::com::p2p::address_t const& source
+    , sdpa::events::CapabilitiesGainedEvent const* event
+    )
+  {
+    capabilities_gained.put (source, *event);
+  }
+  void drts_component_observing_capabilities::handleCapabilitiesLostEvent
+    ( fhg::com::p2p::address_t const& source
+    , sdpa::events::CapabilitiesLostEvent const* event
+    )
+  {
+    capabilities_lost.put (source, *event);
+  }
+  void drts_component_observing_capabilities::handleWorkerRegistrationEvent
+    ( fhg::com::p2p::address_t const& source
+    , sdpa::events::WorkerRegistrationEvent const* event
+    )
+  {
+    worker_registrations.put (source, *event);
+    return basic_drts_component::handleWorkerRegistrationEvent (source, event);
   }
 
-  observer.wait_for_capabilities ({});
-}
+  basic_drts_worker_with_public_perform::basic_drts_worker_with_public_perform
+      ( utils::agent const& master
+      , sdpa::capabilities_set_t capabilities
+      , fhg::com::Certificates const& certificates
+      )
+    : utils::no_thread::basic_drts_worker (master, capabilities, certificates)
+  {}
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (acquire_capability_from_worker_chain, setup_logging)
-{
-  drts_component_observing_capabilities observer;
-
+  template<typename Event, typename... Args>
+    void basic_drts_worker_with_public_perform::perform_to_master
+      (Args&&... args)
   {
-    const utils::agent agent_0 (observer, _logger);
-    const utils::agent agent_1 (agent_0, _logger);
-
-    const std::string name (utils::random_peer_name());
-    const sdpa::capability_t capability ("A", name);
-    utils::basic_drts_worker const worker (name, agent_1, {capability});
-
-    observer.wait_for_capabilities ({capability});
+    _network.perform<Event> (_master.get(), args...);
   }
 
-  observer.wait_for_capabilities ({});
-}
-
-BOOST_FIXTURE_TEST_CASE (acquire_capabilities_from_workers, setup_logging)
-{
-  drts_component_observing_capabilities observer;
-
+  sdpa::capabilities_set_t random_capabilities()
   {
-    const utils::agent agent (observer, _logger);
+    sdpa::capabilities_set_t capabilities;
 
-    const std::string name_0 (utils::random_peer_name());
-    const std::string name_1 (utils::random_peer_name());
-    const sdpa::capability_t capability_0 ("A", name_0);
-    const sdpa::capability_t capability_1 ("B", name_1);
-    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0});
-    utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1});
-
-    observer.wait_for_capabilities ({capability_0, capability_1});
-  }
-
-  observer.wait_for_capabilities ({});
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE (lose_capabilities_after_worker_dies, setup_logging)
-{
-  drts_component_observing_capabilities observer;
-
-  {
-    const utils::agent agent (observer, _logger);
-
-    const std::string name_0 (utils::random_peer_name());
-    const std::string name_1 (utils::random_peer_name());
-    const sdpa::capability_t capability_0 ("A", name_0);
-    const sdpa::capability_t capability_1 ("B", name_1);
-    utils::basic_drts_worker const worker_0 (name_0, agent, {capability_0});
+    auto count (fhg::util::testing::random<std::size_t>{} (100, 1));
+    while (count --> 0)
     {
-      utils::basic_drts_worker const worker_1 (name_1, agent, {capability_1});
-
-      observer.wait_for_capabilities ({capability_0, capability_1});
+      capabilities.emplace ( fhg::util::testing::random<std::string>{}()
+                           , utils::random_peer_name()
+                           );
     }
 
-    observer.wait_for_capabilities ({capability_0});
+    return capabilities;
   }
 
-  observer.wait_for_capabilities ({});
+  auto const avoid_infinite_wait_for_capabilities_call
+    (boost::unit_test::timeout (11));
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE
-  ( RACE_capabilities_of_children_are_removed_when_disconnected
-  , setup_logging
-  )
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (agent_has_no_capabilities_at_start, certificates_data, certificates)
 {
-  //! \note race exists due to us not being able to ensure that no
-  //! CapabilitiesLost is sent in the agent chain and only network
-  //! errors happen. In fact, the race is rather in the other
-  //! direction, though: when a chain of agents exits,
-  //! capabilitieslosts are very rare in what I was able to observe
-  //! (throw on explicit capabilities_lost). With multiple agents all
-  //! exiting as fast as possible, we trigger a disconnect-only quite
-  //! likely. Note that the race would not fail the test! :(
+  drts_component_observing_capabilities observer (certificates);
 
-  size_t repeat (10);
-  while (repeat --> 0)
+  utils::agent const agent (observer, certificates);
+
+  BOOST_REQUIRE_EQUAL
+    ( observer.worker_registrations.get().second.capabilities()
+    , sdpa::capabilities_set_t{}
+    );
+}
+
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (agent_forwards_capabilities_gained, certificates_data, certificates)
+{
+  drts_component_observing_capabilities observer (certificates);
+
+  utils::agent const agent (observer, certificates);
+  observer.worker_registrations.get();
+
+  auto const capabilities (random_capabilities());
+
+  // Sends given capabilities in registration up to agent in ctor.
+  utils::basic_drts_worker child (agent, capabilities, certificates);
+
+  BOOST_REQUIRE_EQUAL
+    ( observer.capabilities_gained.get().second.capabilities()
+    , capabilities
+    );
+}
+
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (agent_notifies_capabilities_lost, certificates_data, certificates)
+{
+  drts_component_observing_capabilities observer (certificates);
+
+  utils::agent const agent (observer, certificates);
+  observer.worker_registrations.get();
+
+  auto const capabilities (random_capabilities());
+
+  basic_drts_worker_with_public_perform child
+    (agent, capabilities, certificates);
+  observer.capabilities_gained.get();
+
+  child.perform_to_master<sdpa::events::CapabilitiesLostEvent> (capabilities);
+
+  BOOST_REQUIRE_EQUAL
+    ( observer.capabilities_lost.get().second.capabilities()
+    , capabilities
+    );
+}
+
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (agent_notifies_capabilities_lost_on_crash, certificates_data, certificates)
+{
+  drts_component_observing_capabilities observer (certificates);
+
+  utils::agent const agent (observer, certificates);
+  observer.worker_registrations.get();
+
+  auto const capabilities (random_capabilities());
+
   {
-    drts_component_observing_capabilities observer;
-    utils::agent const agent_0 (observer, _logger);
-    utils::agent const agent_1 (agent_0, _logger);
-    utils::agent const agent_2 (agent_1, _logger);
-    utils::agent const agent_3 (agent_2, _logger);
+    utils::basic_drts_worker child (agent, capabilities, certificates);
+    observer.capabilities_gained.get();
 
+    // \note Explicitly no capabilities lost: network error instead.
+  }
+
+  BOOST_REQUIRE_EQUAL
+    ( observer.capabilities_lost.get().second.capabilities()
+    , capabilities
+    );
+}
+
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (agent_notifies_capabilities_lost_two_childs, certificates_data, certificates)
+{
+  drts_component_observing_capabilities observer (certificates);
+
+  utils::agent const agent (observer, certificates);
+  observer.worker_registrations.get();
+
+  auto const capabilities_a (random_capabilities());
+  auto const capabilities_b (random_capabilities());
+
+  utils::basic_drts_worker child_a (agent, capabilities_a, certificates);
+
+  BOOST_REQUIRE_EQUAL
+    ( observer.capabilities_gained.get().second.capabilities()
+    , capabilities_a
+    );
+
+  {
+    utils::basic_drts_worker child_b (agent, capabilities_b, certificates);
+
+    BOOST_REQUIRE_EQUAL
+      ( observer.capabilities_gained.get().second.capabilities()
+      , capabilities_b
+      );
+  }
+
+  BOOST_REQUIRE_EQUAL
+    ( observer.capabilities_lost.get().second.capabilities()
+    , capabilities_b
+    );
+}
+
+namespace
+{
+  template<typename Set>
+    Set random_non_empty_subset (Set& set)
+  {
+    Set subset;
+
+    fhg::util::testing::random<std::size_t> random_size_t;
+
+    auto count (random_size_t (set.size(), 1));
+    while (count --> 0)
     {
-      utils::agent const agent_4 (agent_3, _logger);
-      utils::agent const agent_5 (agent_4, _logger);
-      utils::agent const agent_6 (agent_5, _logger);
-      utils::agent const agent_7 (agent_6, _logger);
-
-      std::string const worker_name (utils::random_peer_name());
-      sdpa::capability_t const capability ("A", worker_name);
-      utils::basic_drts_worker const worker
-        (worker_name, agent_7, {capability});
-
-      observer.wait_for_capabilities ({capability});
+      auto const to_remove
+        (std::next (set.begin(), random_size_t (set.size() - 1)));
+      subset.emplace (*to_remove);
+      set.erase (to_remove);
     }
 
-    observer.wait_for_capabilities ({});
+    return subset;
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
-BOOST_FIXTURE_TEST_CASE ( chain_with_a_lot_of_leafs_different_capabilities
-                        , setup_logging
-                        )
+BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_capabilities_call)
+BOOST_DATA_TEST_CASE
+  (agent_notifies_capabilities_lost_subset, certificates_data, certificates)
 {
-  drts_component_observing_capabilities observer;
+  drts_component_observing_capabilities observer (certificates);
 
+  utils::agent const agent (observer, certificates);
+  observer.worker_registrations.get();
+
+  auto capabilities (random_capabilities());
+
+  basic_drts_worker_with_public_perform child
+    (agent, capabilities, certificates);
+  observer.capabilities_gained.get();
+
+  while (!capabilities.empty())
   {
-    utils::agent const agent_0 (observer, _logger);
-    utils::agent const agent_1 (agent_0, _logger);
+    auto const subset (random_non_empty_subset (capabilities));
 
-    std::list<utils::basic_drts_worker> workers;
+    child.perform_to_master<sdpa::events::CapabilitiesLostEvent> (subset);
 
-    std::size_t const count (128);
-
-    for (std::size_t i (0); i < count; ++i)
-    {
-      sdpa::worker_id_t const name (utils::random_peer_name());
-      sdpa::capability_t const capability (std::to_string (count), name);
-      workers.emplace_back
-        (name, agent_1, sdpa::capabilities_set_t {capability});
-    }
-
-    observer.wait_for_capabilities (count);
+    BOOST_REQUIRE_EQUAL
+      (observer.capabilities_lost.get().second.capabilities(), subset);
   }
-
-  observer.wait_for_capabilities ({});
 }
+
+// \todo Test case: agent does not forward capabilities already
+// known. How can that happen though, as the agent has no capabilities
+// itself. Cycles? Diamonds?
+
+// \todo Test case: something with agent chains?

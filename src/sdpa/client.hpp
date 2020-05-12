@@ -2,19 +2,22 @@
 
 #include <sdpa/events/SDPAEvent.hpp>
 #include <sdpa/types.hpp>
+
 #include <we/layer.hpp>
 #include <we/type/activity.hpp>
-#include <we/type/net.hpp>
-
-#include <fhg/util/thread/queue.hpp>
+#include <we/type/value.hpp>
 
 #include <fhgcom/peer.hpp>
 
-#include <we/type/value.hpp>
+#include <fhg/util/thread/queue.hpp>
 
+#include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
+#include <boost/system/error_code.hpp>
 
+#include <memory>
 #include <mutex>
+#include <string>
 
 namespace sdpa
 {
@@ -31,10 +34,11 @@ namespace sdpa
       Client ( fhg::com::host_t const& orchestrator_host
              , fhg::com::port_t const& orchestrator_port
              , std::unique_ptr<boost::asio::io_service> peer_io_service
+             , fhg::com::Certificates const& certificates
              );
       ~Client();
 
-      job_id_t submitJob(const we::type::activity_t &);
+      job_id_t submitJob(we::type::activity_t);
       void cancelJob(const job_id_t &);
       status::code queryJob(const job_id_t &);
       status::code queryJob(const job_id_t &, job_info_t &);
@@ -57,9 +61,11 @@ namespace sdpa
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
-      void handle_recv (boost::system::error_code const & ec, boost::optional<fhg::com::p2p::address_t>);
+      void handle_recv ( boost::system::error_code const& ec
+                       , boost::optional<fhg::com::p2p::address_t>
+                       , fhg::com::message_t message
+                       );
 
-      fhg::com::message_t m_message;
       bool _stopping;
       fhg::com::peer_t m_peer;
       fhg::com::p2p::address_t _drts_entrypoint_address;

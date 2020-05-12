@@ -19,8 +19,10 @@
 #include <we/type/value/boost/test/printer.hpp>
 
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
@@ -115,14 +117,6 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_out ("out");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_out), 1);
-
-  BOOST_CHECK_EQUAL
-    ( result.find (port_out)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  decltype (result) const expected {{"out", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

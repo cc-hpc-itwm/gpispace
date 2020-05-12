@@ -1,5 +1,7 @@
 #include <test/make.hpp>
 
+#include <test/make_environment.hpp>
+
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
@@ -66,7 +68,9 @@ namespace test
       std::ostringstream command;
 
       command
-        << "make "
+        << "CXXFLAGS=\"-Wall -Wextra -Werror\""
+        << " CXX=\"" << cmake_cxx_compiler << "\""
+        << " make "
         << " LIB_DESTDIR=" << lib_destdir.get()
         << " -C " << wrapper_directory
         << " install"
@@ -110,9 +114,6 @@ namespace test
 
     namespace gen
     {
-      cxx11::cxx11()
-        : cxx_flag ("--std=c++11")
-      {}
       include::include (boost::filesystem::path const& path)
         : cxx_flag (boost::format ("'-I %1%'") % path)
       {}

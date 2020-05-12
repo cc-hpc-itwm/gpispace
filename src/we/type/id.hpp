@@ -1,7 +1,6 @@
 #pragma once
 
-#include <boost/cstdint.hpp>
-
+#include <cstdint>
 #include <iostream>
 
 #include <boost/serialization/nvp.hpp>
@@ -134,11 +133,11 @@ namespace we
   // cycles per second, you can run for 2^64/3e9/60/60/24/365 > 194 years.
   // It follows that an uint64_t is enough for now.
 
-  INHERIT_ID_TYPE (place_id_type, boost::uint64_t)
-  INHERIT_ID_TYPE (port_id_type, boost::uint64_t)
-  INHERIT_ID_TYPE (transition_id_type, boost::uint64_t)
-  INHERIT_ID_TYPE (token_id_type, boost::uint64_t)
+  INHERIT_ID_TYPE (place_id_type, std::uint64_t)
+  INHERIT_ID_TYPE (port_id_type, std::uint64_t)
+  INHERIT_ID_TYPE (transition_id_type, std::uint64_t)
+  INHERIT_ID_TYPE (token_id_type, std::uint64_t)
 
-  INHERIT_ID_TYPE (priority_type, boost::int16_t)
+  INHERIT_ID_TYPE (priority_type, std::int16_t)
 
 #undef INHERIT_ID_TYPE

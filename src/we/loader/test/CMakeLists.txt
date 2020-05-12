@@ -16,7 +16,6 @@ fhg_add_test (NAME we_loader_module
   SOURCES module.cpp
   USE_BOOST
   LIBRARIES pnet
-            fhglog
             ${CMAKE_DL_LIBS}
   DEPENDS initialize_throws
           empty_not_linked_with_pnet
@@ -29,5 +28,15 @@ extended_add_library (NAME order_stack TYPE SHARED SOURCES "order/stack.cpp")
 extended_add_library (NAME order_a TYPE SHARED SOURCES "order/a.cpp" LIBRARIES order_stack pnet)
 extended_add_library (NAME order_b TYPE SHARED SOURCES "order/b.cpp" LIBRARIES order_stack pnet)
 extended_add_library (NAME initialize_throws TYPE SHARED SOURCES "module/initialize_throws.cpp" LIBRARIES pnet)
-extended_add_library (NAME empty_not_linked_with_pnet TYPE SHARED SOURCES "module/empty_not_linked_with_pnet.cpp")
+extended_add_library (NAME empty_not_linked_with_pnet
+  TYPE SHARED
+  SOURCES "module/empty_not_linked_with_pnet.cpp"
+  LIBRARIES Boost::base
+)
 extended_add_library (NAME empty TYPE SHARED SOURCES "module/empty" LIBRARIES pnet)
+extended_add_library (NAME empty_nodelete
+  TYPE SHARED
+  SOURCES "module/empty.cpp"
+  LIBRARIES pnet
+)
+target_link_options (empty_nodelete PUBLIC LINKER:-z,nodelete)

@@ -1,6 +1,5 @@
 #bernd.loerwald@itwm.fraunhofer.de
 
-set (XML_PARSE_TEST_PNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/pnets")
 set (XML_PARSE_TEST_XPNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xpnets")
 
 configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)
@@ -8,17 +7,9 @@ configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)
 fhg_add_test (NAME xml_parse_duplicate_connect
   SOURCES parse_duplicate_connect.cpp
   USE_BOOST
-  INCLUDE PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LIBRARIES pnet Boost::filesystem Boost::program_options
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+  LIBRARIES pnet Boost::filesystem
   DESCRIPTION "pnetc shall throw if there are mutiple connections with the same port, place and direction"
-)
-
-fhg_add_test (NAME xml_parse_compile_and_compare
-  SOURCES parse_compile_and_compare.cpp
-  USE_BOOST
-  INCLUDE PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LIBRARIES pnet Boost::filesystem Boost::program_options
-  DESCRIPTION "pnetc shall produce the same output as given in the reference files"
 )
 
 fhg_add_test (NAME xml_util_position
@@ -44,21 +35,38 @@ fhg_add_test (NAME xml_parse_memory_buffer
   SOURCES parse_memory_buffer.cpp
   USE_BOOST
   LIBRARIES pnet
-            Boost::program_options
 )
 
 fhg_add_test (NAME xml_parse_memory_transfer
   SOURCES parse_memory_transfer.cpp
   USE_BOOST
   LIBRARIES pnet
-            Boost::program_options
 )
 
 fhg_add_test (NAME xml_conditions_and_expressions_with_cdata
   SOURCES conditions_and_expressions_with_cdata.cpp
   USE_BOOST
   LIBRARIES pnet
-            Boost::program_options
+)
+
+fhg_add_test (NAME xml_parse_invalid_preference_list
+  SOURCES parse_invalid_preference_list.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
+fhg_add_test (NAME xml_parse_valid_preference_list
+  SOURCES parse_valid_preference_list.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
+fhg_add_test (NAME xml_parse_invalid_eureka
+  SOURCES parse_invalid_eureka.cpp
+  USE_BOOST
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
+  LIBRARIES pnet Boost::filesystem
+  DESCRIPTION "pnetc shall throw for mutiple eureka connections with the same port and no output port for eureka"
 )
 
 add_subdirectory (bytearray)

@@ -12,9 +12,11 @@
 
 #include <we/type/value/boost/test/printer.hpp>
 
+#include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/chrono.hpp>
-#include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -89,11 +91,6 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
     , std::chrono::milliseconds (3 * n)
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1u);
-
-  std::string const port_count ("count");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_count), result.size());
-  BOOST_REQUIRE_EQUAL
-    (boost::get<unsigned long> (result.find (port_count)->second), n);
+  decltype (result) const expected {{"count", n}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 }

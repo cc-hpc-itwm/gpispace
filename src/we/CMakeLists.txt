@@ -22,9 +22,15 @@ extended_add_library (NAME we-dev
           "type/value/serialize.cpp"
 
           "loader/Module.cpp"
+          "loader/exceptions.cpp"
   LIBRARIES fhg-util
             ${CMAKE_DL_LIBS}
   INSTALL
+)
+
+extended_add_library (NAME we-dev-testing
+  SOURCES "expr/token/testing/all_tokens.cpp"
+  LIBRARIES we-dev
 )
 
 install (FILES
@@ -76,9 +82,15 @@ install (FILES
   type/literal/control.hpp
   DESTINATION include/we/type/literal
 )
+install (FILES
+  plugin/Base.hpp
+  DESTINATION include/we/plugin
+)
 
 add_subdirectory (expr/parse/test)
 add_subdirectory (expr/test)
 add_subdirectory (loader/test)
+add_subdirectory (plugin/test)
+add_subdirectory (plugins)
 add_subdirectory (test)
 add_subdirectory (type/test)

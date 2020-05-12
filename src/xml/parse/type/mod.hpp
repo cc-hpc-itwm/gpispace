@@ -4,6 +4,7 @@
 
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
+#include <xml/parse/type/eureka.hpp>
 
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -26,6 +27,7 @@ namespace xml
         module_type ( const util::position_type&
                     , const std::string& name
                     , const std::string& function
+                    , const boost::optional<std::string>& target
                     , const boost::optional<std::string>& port_return
                     , const std::list<std::string>& port_arg
                     , boost::optional<std::string> _memory_buffer_return
@@ -36,10 +38,13 @@ namespace xml
                     , const std::list<std::string>& ldflags
                     , const std::list<std::string>& cxxflags
                     , const boost::optional<bool> &pass_context
+                    , const boost::optional<we::type::eureka_id_type> &eureka_id
+                    , bool require_module_unloads_without_rest
                     );
 
         const std::string& name() const;
         const std::string& function() const;
+        const boost::optional<std::string>& target() const;
         const boost::optional<std::string>& port_return() const;
         const std::list<std::string>& port_arg() const;
         const boost::optional<std::string>& memory_buffer_return() const;
@@ -51,14 +56,15 @@ namespace xml
         const std::list<std::string>& ldflags() const;
         const std::list<std::string>& cxxflags() const;
         bool pass_context () const;
+        const boost::optional<we::type::eureka_id_type>& eureka_id() const;
+        bool require_module_unloads_without_rest() const;
 
         bool operator== (const module_type&) const;
-
-        friend std::size_t hash_value (const module_type&);
 
       private:
         std::string _name;
         std::string _function;
+        boost::optional<std::string> _target;
         boost::optional<std::string> _port_return;
         std::list<std::string> _port_arg;
         boost::optional<std::string> _memory_buffer_return;
@@ -69,6 +75,8 @@ namespace xml
         std::list<std::string> _ldflags;
         std::list<std::string> _cxxflags;
         boost::optional<bool> _pass_context;
+        boost::optional<we::type::eureka_id_type> _eureka_id;
+        bool _require_module_unloads_without_rest;
       };
 
       std::size_t hash_value (const module_type&);

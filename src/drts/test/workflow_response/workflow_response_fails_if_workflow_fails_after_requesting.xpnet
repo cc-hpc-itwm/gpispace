@@ -16,7 +16,7 @@
         <inout name="state" type="unsigned long"/>
         <in name="trigger" type="value_and_response_id"/>
         <out name="response" type="unsigned long"/>
-        <module name="workflow_response" function="response (state, trigger, response)">
+        <module name="workflow_response" function="response()">
           <cinclude href="stdexcept"/>
           <code><![CDATA[
             throw std::logic_error ("provoke failure");

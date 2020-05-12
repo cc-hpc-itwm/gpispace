@@ -1,5 +1,4 @@
 set (FILES_REQUIRED_IN_INSTALLATION
-  "${CMAKE_INSTALL_PREFIX}/bin/fhglog-dump"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-bootstrap-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-monitor"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-rifd"
@@ -7,8 +6,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetc"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetd"
-  "${CMAKE_INSTALL_PREFIX}/bin/pnetv"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"
@@ -31,7 +28,13 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/error.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/position.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/require.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/process/process.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/gspc/stencil_cache/callback.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/logging/socket_endpoint.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/logging/socket_endpoint.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/logging/tcp_endpoint.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/logging/tcp_endpoint.ipp"
   "${CMAKE_INSTALL_PREFIX}/include/rif/started_process_promise.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/seis/determine_size.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/seis/do_load.hpp"
@@ -74,8 +77,8 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_write.so"
-  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libprocess.a"
   "${CMAKE_INSTALL_PREFIX}/revision"
+  "${CMAKE_INSTALL_PREFIX}/git.submodules"
   "${CMAKE_INSTALL_PREFIX}/share/man/man5/xpnet.5"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/lib/4.xml"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/lib/5.xml"
@@ -130,7 +133,7 @@ macro(FHG_ADD_TEST)
   set (one_value_options)
   set (multi_value_options LABELS ARGS)
   set (required_options)
-  parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+  _parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
   set (_fwd_args)
 

@@ -5,6 +5,7 @@
 #include <util-generic/hostname.hpp>
 
 #include <GASPI.h>
+#include <GASPI_Ext.h>
 
 #include <algorithm>
 #include <limits>
@@ -57,11 +58,13 @@ namespace fhg
     gaspi_context::gaspi_context ( gaspi_timeout& time_left
                                  , unsigned short gaspi_sn_port
                                  , unsigned short local_communication_port
+                                 , netdev_id netdev_id
                                  )
     {
       gaspi_config_t config;
       FAIL_ON_NON_ZERO (gaspi_config_get, &config);
       config.sn_port = gaspi_sn_port;
+      config.netdev_id = netdev_id.value;
       FAIL_ON_NON_ZERO (gaspi_config_set, config);
 
       FAIL_ON_NON_ZERO (gaspi_proc_init, time_left());
@@ -105,8 +108,9 @@ namespace fhg
 
       strncpy ( exchange_hostname_and_port_data_send->hostname
               , fhg::util::hostname().c_str()
-              , sizeof (exchange_hostname_and_port_data_send->hostname)
+              , HOST_NAME_MAX
               );
+      exchange_hostname_and_port_data_send->hostname[HOST_NAME_MAX] = '\0';
       exchange_hostname_and_port_data_send->port = local_communication_port;
 
       FAIL_ON_NON_ZERO (gaspi_barrier, GASPI_GROUP_ALL, time_left());

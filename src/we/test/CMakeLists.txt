@@ -50,6 +50,18 @@ fhg_add_test (NAME we_expression_based_cross_product
   LIBRARIES pnet
 )
 
+fhg_add_test (NAME we_tp_many_typecheck
+  SOURCES tp_many_typecheck.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
+fhg_add_test (NAME we_tp_many_duplicate_connections
+  SOURCES tp_many_duplicate_connections.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
 fhg_add_test (NAME we_net
   SOURCES net.cpp
   USE_BOOST
@@ -57,5 +69,22 @@ fhg_add_test (NAME we_net
             Util::Generic
 )
 
-add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)
+fhg_add_test (NAME we_net_performance
+  SOURCES net.performance.cpp
+  USE_BOOST
+  LIBRARIES pnet
+            Util::Generic
+  PERFORMANCE_TEST
+)
+
+fhg_add_test (NAME we_eureka_response
+  SOURCES eureka_response.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
+add_subdirectory (buffer_alignment)
+add_subdirectory (eureka)
 add_subdirectory (input_is_copied_to_output_in_module_calls)
+add_subdirectory (put_many)
+add_subdirectory (transition_cannot_fire_when_input_port_is_not_connected)

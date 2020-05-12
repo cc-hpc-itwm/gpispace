@@ -4,9 +4,13 @@
 
 #include <fhg/assert.hpp>
 
+#include <util-generic/this_bound_mem_fn.hpp>
+
 #include <QTimer>
 
-#include <functional>
+#include <algorithm>
+#include <string>
+#include <utility>
 
 namespace fhg
 {
@@ -69,99 +73,60 @@ namespace fhg
         _state = state_;
       }
 
-      namespace
-      {
-        struct delegating_fhglog_appender : public log::Appender
-        {
-          template<typename Append, typename Flush>
-          static fhg::log::Logger& create
-            ( Append append
-            , Flush flush
-            , fhg::log::Logger& logger
-            )
-          {
-            logger.addAppender<delegating_fhglog_appender> (append, flush);
-
-            logger.setLevel (fhg::log::TRACE);
-
-            return logger;
-          }
-
-          template<typename Append, typename Flush>
-            delegating_fhglog_appender (Append append, Flush flush)
-              : _append (append)
-              , _flush (flush)
-          { }
-
-          virtual void append (const log::LogEvent& evt) override
-          {
-            _append (evt);
-          }
-
-          virtual void flush() override
-          {
-            _flush();
-          }
-
-        private:
-          std::function<void (const log::LogEvent&)> _append;
-          std::function<void()> _flush;
-        };
-      }
-
-      worker_model::worker_model (unsigned short port, QObject* parent)
+      worker_model::worker_model (QObject* parent)
         : QAbstractItemModel (parent)
         , _workers()
         , _worker_containers()
         , _base_time (QDateTime::currentDateTime())
         , _event_queue()
         , _queued_events()
-        , _io_service()
-        , _logger()
-        , _log_server ( delegating_fhglog_appender::create
-                        ( std::bind (&worker_model::append_event, this, std::placeholders::_1)
-                        , std::bind (&worker_model::handle_events, this)
-                        , _logger
-                        )
-                      , _io_service
-                      , port
-                      )
-        , _io_thread ([this] { _io_service.run(); })
       {
         QTimer* timer (new QTimer (this));
         connect (timer, SIGNAL (timeout()), SLOT (handle_events()));
-        //! \note log::LogEvent::tstamp_t has resolution of seconds
         timer->start (100);
       }
 
-      worker_model::~worker_model()
+      void worker_model::append_event (logging::message const& event)
       {
-        _io_service.stop();
-        _io_thread.join();
+        if (event._category != sdpa::daemon::gantt_log_category)
+        {
+          return;
+        }
+
+        std::lock_guard<std::mutex> guard (_event_queue);
+        _queued_events.push_back (std::move (event));
       }
 
-      void worker_model::append_event (const log::LogEvent& event)
+      namespace
       {
-        boost::lock_guard<boost::mutex> guard (_event_queue);
-        _queued_events << event;
+        template<typename Timepoint>
+          QDateTime to_qt (Timepoint timepoint)
+        {
+          using namespace std::chrono;
+          return QDateTime::fromMSecsSinceEpoch
+            ( duration_cast<duration<qint64, milliseconds::period>>
+                (timepoint.time_since_epoch())
+              .count()
+            );
+        }
       }
 
       void worker_model::handle_events()
       {
         boost::optional<QModelIndex> ul, br;
 
-        QVector<log::LogEvent> events;
+        QVector<logging::message> events;
         {
-          boost::lock_guard<boost::mutex> guard (_event_queue);
+          std::lock_guard<std::mutex> guard (_event_queue);
           std::swap (events, _queued_events);
         }
 
-        for (log::LogEvent log_event : events)
+        for (logging::message log_event : events)
         {
-          const sdpa::daemon::NotificationEvent event (log_event.message());
+          const sdpa::daemon::NotificationEvent event (log_event._content);
 
           const long time
-            ( log_event.tstamp() * 1000.0
+            ( to_qt (log_event._timestamp).toMSecsSinceEpoch()
             - _base_time.toMSecsSinceEpoch()
             );
 

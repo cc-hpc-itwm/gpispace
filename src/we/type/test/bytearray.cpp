@@ -6,7 +6,7 @@
 
 #include <we/type/bytearray.hpp>
 
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <inttypes.h>
 
@@ -70,61 +70,6 @@ BOOST_AUTO_TEST_CASE (ba_to_string_after_ctor_string_is_id)
 
   BOOST_REQUIRE_EQUAL (we::type::bytearray (s).to_string(), s);
 }
-
-#include <sstream>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
-#include <boost/archive/binary_oarchive.hpp>
-#include <boost/archive/binary_iarchive.hpp>
-#include <boost/archive/xml_oarchive.hpp>
-#include <boost/archive/xml_iarchive.hpp>
-
-#include <boost/serialization/nvp.hpp>
-#include <boost/serialization/vector.hpp>
-
-struct p
-{
-  double _x;
-  long _y;
-
-  p () = default;
-  p (const double & x, const long & y) : _x (x), _y (y) {}
-
-  friend class boost::serialization::access;
-  template<typename Archive>
-  void serialize (Archive & ar, const unsigned int)
-  {
-    ar & BOOST_SERIALIZATION_NVP (_x);
-    ar & BOOST_SERIALIZATION_NVP (_y);
-  }
-
-  bool operator == (const p & other)
-  {
-    return _x == other._x && _y == other._y;
-  }
-};
-
-struct q
-{
-  p _p;
-  std::string _s;
-
-  q () = default;
-  q (const p & p, const std::string & s) : _p(p), _s(s) {}
-
-  friend class boost::serialization::access;
-  template<typename Archive>
-  void serialize (Archive & ar, const unsigned int)
-  {
-    ar & BOOST_SERIALIZATION_NVP (_p);
-    ar & BOOST_SERIALIZATION_NVP (_s);
-  }
-
-  bool operator == (const q & other)
-  {
-    return _p == other._p && _s == other._s;
-  }
-};
 
 BOOST_AUTO_TEST_CASE (ba_assign_from_ba)
 {

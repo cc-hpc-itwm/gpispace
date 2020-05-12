@@ -1,11 +1,10 @@
 fhg_add_test (NAME vmem_handle_generator
   SOURCES handle_generator.cpp
   USE_BOOST
-  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util
 )
@@ -13,11 +12,10 @@ fhg_add_test (NAME vmem_handle_generator
 fhg_add_test (NAME vmem_memory_area
   SOURCES memory_area.cpp
   USE_BOOST
-  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util
 )
@@ -25,11 +23,10 @@ fhg_add_test (NAME vmem_memory_area
 fhg_add_test (NAME vmem_segment
   SOURCES segment.cpp
   USE_BOOST
-  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util
 )
@@ -58,11 +55,10 @@ fhg_add_test (NAME vmem_beegfs_area
   SOURCES beegfs_area.cpp
   USE_BOOST
   ARGS --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  INCLUDE SYSTEM PRIVATE "${LIBRT_INCLUDE_DIR}"
+  SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
   LIBRARIES gpi-space-pc-segment
             gpi-space-pc-memory
             fhgcom
-            fhglog
             Boost::filesystem
             ${CMAKE_THREAD_LIBS_INIT}
             fhg-util

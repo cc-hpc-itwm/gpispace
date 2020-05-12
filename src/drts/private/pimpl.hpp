@@ -13,8 +13,4 @@
   PIMPL_DTOR (_name)
 
 #define PIMPL_DTOR(_name)                     \
-  _name::~_name()                             \
-  {                                           \
-    delete _;                                 \
-    _ = nullptr;                              \
-  }
+  _name::~_name() = default;

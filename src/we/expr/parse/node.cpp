@@ -38,7 +38,7 @@ namespace expr
       {}
 
       namespace {
-        std::string show_key_vec (const std::list<std::string>& key_vec)
+        std::string show_key_vec (const Key& key_vec)
         {
           std::string s;
 
@@ -70,7 +70,7 @@ namespace expr
             s << pnet::type::value::show (v);
           }
 
-          void operator () (const std::list<std::string>& key) const
+          void operator () (const Key& key) const
           {
             s << "${" << show_key_vec (key) << "}";
           }
@@ -150,7 +150,7 @@ namespace expr
         {
         public:
           bool operator () (const pnet::type::value::value_type &) const { return true; }
-          bool operator () (const std::list<std::string>&) const { return false; }
+          bool operator () (const Key&) const { return false; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -168,7 +168,7 @@ namespace expr
         {
         public:
           bool operator () (const pnet::type::value::value_type &) const { return false; }
-          bool operator () (const std::list<std::string>&) const { return true; }
+          bool operator () (const Key&) const { return true; }
           bool operator () (const unary_t &) const { return false; }
           bool operator () (const binary_t &) const { return false; }
           bool operator () (const ternary_t &) const { return false; }
@@ -194,7 +194,7 @@ namespace expr
             return;
           }
 
-          void operator () (std::list<std::string>& v) const
+          void operator () (Key& v) const
           {
             if (v.size() > 0 && *v.begin() == from)
               {
@@ -229,6 +229,54 @@ namespace expr
       void rename (type& t, const std::string& from, const std::string& to)
       {
         boost::apply_visitor (visitor_rename (from, to), t);
+      }
+
+      namespace
+      {
+        struct visitor_collect_key_roots : boost::static_visitor<void>
+        {
+          visitor_collect_key_roots (KeyRoots& roots) : _roots (roots) {}
+
+          void operator() (pnet::type::value::value_type const&) const
+          {
+            return;
+          }
+          void operator() (Key const& key) const
+          {
+            if (key.empty())
+            {
+              throw std::invalid_argument ("collect_key_roots: empty key");
+            }
+
+            _roots.emplace (key.front());
+          }
+
+          void operator() (unary_t const& u) const
+          {
+            boost::apply_visitor (*this, u.child);
+          }
+
+          void operator() (binary_t const& b) const
+          {
+            boost::apply_visitor (*this, b.l);
+            boost::apply_visitor (*this, b.r);
+          }
+
+          void operator() (ternary_t const& t) const
+          {
+            boost::apply_visitor (*this, t.child0);
+            boost::apply_visitor (*this, t.child1);
+            boost::apply_visitor (*this, t.child2);
+          }
+
+        private:
+          KeyRoots& _roots;
+        };
+      }
+
+      void collect_key_roots (type const& node, KeyRoots& roots)
+      {
+        boost::apply_visitor (visitor_collect_key_roots (roots), node);
       }
     }
   }

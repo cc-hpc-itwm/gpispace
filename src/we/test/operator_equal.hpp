@@ -7,7 +7,7 @@
 #include <we/type/place.hpp>
 #include <we/type/net.hpp>
 
-#include <sdpa/types.hpp>
+#include <sdpa/discovery_info.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
@@ -113,7 +113,9 @@ namespace we
         && lhs.ports_output() == rhs.ports_output()
         && lhs.ports_tunnel() == rhs.ports_tunnel()
         && lhs.prop() == rhs.prop()
-        && lhs.requirements() == rhs.requirements();
+        && lhs.requirements() == rhs.requirements()
+        && lhs.eureka_id() == rhs.eureka_id()
+        && lhs.preferences() == rhs.preferences();
     }
   }
 
@@ -123,8 +125,8 @@ namespace we
       {
         return lhs.input() == rhs.input()
           && lhs.output() == rhs.output()
-          && lhs.transition() == rhs.transition()
-          && lhs.transition_id() == rhs.transition_id();
+          && lhs.data() == rhs.data()
+          ;
       }
     }
 }

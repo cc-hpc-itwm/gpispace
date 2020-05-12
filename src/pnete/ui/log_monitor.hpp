@@ -1,15 +1,14 @@
 #pragma once
 
-#include <fhglog/LogMacros.hpp>
-#include <fhglog/remote/server.hpp>
-
-#include <boost/thread.hpp>
+#include <logging/message.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <QAbstractTableModel>
 #include <QMutex>
 #include <QWidget>
+
+#include <vector>
 
 class QCheckBox;
 class QComboBox;
@@ -23,9 +22,12 @@ namespace detail
     QString source;
     QString message;
 
-    fhg::log::LogEvent event;
+    QColor color;
+    int legacy_severity;
 
-    formatted_log_event (const fhg::log::LogEvent& evt);
+    fhg::logging::message _raw;
+
+    formatted_log_event (fhg::logging::message);
   };
 
   class log_table_model : public QAbstractTableModel
@@ -45,8 +47,8 @@ namespace detail
     virtual QVariant
       data (const QModelIndex& index, int role = Qt::DisplayRole) const override;
 
-    std::vector<fhg::log::LogEvent> data() const;
-    void add (const fhg::log::LogEvent& event);
+    std::vector<fhg::logging::message> data() const;
+    void add (fhg::logging::message);
 
   public slots:
     void clear();
@@ -69,16 +71,15 @@ class log_monitor : public QWidget
   Q_OBJECT
 
 public:
-  explicit log_monitor (unsigned short port, QWidget* parent = nullptr);
+  log_monitor();
   ~log_monitor();
 
 public slots:
   void toggle_follow_logging (bool);
   void save();
+  void append_log_event (fhg::logging::message const&);
 
 private:
-  void append_log_event (const fhg::log::LogEvent &);
-
   bool _drop_filtered;
   int _filter_level;
 
@@ -90,9 +91,4 @@ private:
   QTimer* _log_model_update_timer;
 
   QString _last_saved_filename;
-
-  boost::asio::io_service _io_service;
-  fhg::log::Logger _logger;
-  fhg::log::remote::LogServer _log_server;
-  boost::thread _io_thread;
 };

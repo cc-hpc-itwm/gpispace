@@ -105,7 +105,7 @@ try
 
     if (pos == std::string::npos)
     {
-      std::logic_error ("Failed to parse entry_points_file");
+      throw std::logic_error ("Failed to parse entry_points_file");
     }
 
     entry_points.emplace ( line.substr (0, pos)
@@ -122,9 +122,7 @@ try
         )
     );
 
-  for ( std::pair<std::string, std::exception_ptr> const& failure
-      : result.second
-      )
+  for (auto const& failure : result.second)
   {
     std::cout << failure.first << ' ' << entry_points.at (failure.first) << '\n';
     std::cerr << failure.first << ": "

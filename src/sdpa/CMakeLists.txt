@@ -5,8 +5,10 @@ ADD_LIBRARY(sdpa
   daemon/GenericDaemon.cpp
   daemon/Job.cpp
   daemon/scheduler/CoallocationScheduler.cpp
+  daemon/scheduler/Reservation.cpp
   daemon/Worker.cpp
   daemon/WorkerManager.cpp
+  events/Codec.cpp
 )
 
 target_link_libraries (sdpa
@@ -20,6 +22,7 @@ target_link_libraries (sdpa
   fhg-util
   pnet
   Util::Generic
+  gspc::logging
 )
 
 add_subdirectory (test)

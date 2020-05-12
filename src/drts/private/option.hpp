@@ -1,5 +1,7 @@
 // mirko.rahn@itwm.fraunhofer.de
 
+#include <vmem/netdev_id.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -16,13 +18,11 @@ namespace gspc
 #define ACCESS(_name, _type)                    \
   SET (_name, _type);                           \
   GET (_name, _type);                           \
-  REQUIRE (_name, _type);
+  REQUIRE (_name, _type)
 
   ACCESS (log_host, std::string);
   ACCESS (log_port, unsigned short);
   ACCESS (log_level, std::string);
-  ACCESS (gui_host, std::string);
-  ACCESS (gui_port, unsigned short);
 
   ACCESS (log_directory, boost::filesystem::path);
   GET (gspc_home, boost::filesystem::path);
@@ -30,10 +30,13 @@ namespace gspc
   ACCESS (nodefile, boost::filesystem::path);
   GET (application_search_path, boost::filesystem::path);
   REQUIRE (application_search_path, boost::filesystem::path);
+  ACCESS (orchestrator_port, unsigned short);
+  ACCESS (agent_port, unsigned short);
 
   ACCESS (virtual_memory_socket, boost::filesystem::path);
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
+  ACCESS (virtual_memory_netdev_id, fhg::vmem::netdev_id);
 
   ACCESS (rif_entry_points_file, boost::filesystem::path);
   ACCESS (rif_port, unsigned short);

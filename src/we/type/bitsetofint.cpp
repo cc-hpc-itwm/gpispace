@@ -79,7 +79,7 @@ namespace bitsetofint
   {
     list ([&s] (unsigned long const& x) { s << x << std::endl; });
   }
-  void type::list (const boost::function<void (const unsigned long&)>& f) const
+  void type::list (const std::function<void (const unsigned long&)>& f) const
   {
     unsigned long x (0);
 

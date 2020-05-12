@@ -115,7 +115,8 @@
                 function="sum work (configuration, range_file)"
         >
           <cinclude href="reader.hpp"/>
-          <cinclude href="boost/thread.hpp"/>
+          <cinclude href="iostream"/>
+          <cinclude href="thread"/>
           <code><![CDATA[
             std::cout << "work on range [" << range_file.begin
                       << ".." << range_file.end << ")" << '\n';
@@ -133,8 +134,8 @@
             queue_type queue_empty;
             queue_type queue_full;
 
-            boost::thread* thread_reader
-              (new boost::thread (reader_type ( queue_empty
+            std::thread* thread_reader
+              (new std::thread (reader_type ( queue_empty
                                               , queue_full
                                               , configuration.name_file
                                               , range_file.begin
@@ -184,6 +185,7 @@
              }
             while (buffer.count() > 0);
 
+            thread_reader->join();
             delete thread_reader;
 
             delete[] buf;

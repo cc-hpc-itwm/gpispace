@@ -41,7 +41,10 @@ namespace
     static std::string const external ("dimgray");
     static std::string const modcall ("yellow");
     static std::string const expression ("white");
+    static std::string const plugin ("tan");
     static std::string const node ("white");
+    static std::string const put_token ("lightblue");
+    static std::string const tp_many ("black:invis:black");
   }
 
   namespace style
@@ -155,7 +158,10 @@ namespace
     return keyval ("bgcolor", color);
   }
 
-  std::string node (const std::string& shape, const std::string& label)
+  std::string node ( const std::string& shape
+                   , const std::string& label
+                   , std::string const& fillcolor = color::node
+                   )
   {
     return brackets ( keyval ("shape", shape)
                     + ", "
@@ -163,7 +169,7 @@ namespace
                     + ", "
                     + keyval ("style", "filled")
                     + ", "
-                    + keyval ("fillcolor", color::node)
+                    + keyval ("fillcolor", fillcolor)
                     );
   }
 
@@ -233,8 +239,8 @@ namespace
     , id_type&
     , const options&
     , fhg::util::indenter&
-    , boost::optional<we::type::activity_t::input_t>
-    , boost::optional<we::type::activity_t::output_t>
+    , boost::optional<we::type::TokensOnPorts> input
+    , boost::optional<we::type::TokensOnPorts> output
     );
 
   class visit_transition : public boost::static_visitor<std::string>
@@ -274,6 +280,20 @@ namespace
       return s.str();
     }
 
+    std::string operator() (const we::type::multi_module_call_t& mod_calls) const
+    {
+      std::ostringstream s;
+
+      for (auto const& mod_call : mod_calls)
+      {
+        s << _indent
+          << name (id, "modcall")
+          << node (shape::modcall, boost::lexical_cast<std::string> (mod_call.second));
+      }
+
+      return s.str();
+    }
+
     std::string operator() (const we::type::net_type& net) const
     {
       std::ostringstream s;
@@ -282,7 +302,7 @@ namespace
 
       s << _indent << "subgraph cluster_net_" << id_net << " {";
 
-      for (const std::pair<we::place_id_type, place::type>& ip : net.places())
+      for (auto const& ip : net.places())
       {
         const we::place_id_type& place_id (ip.first);
         const place::type& place (ip.second);
@@ -301,10 +321,7 @@ namespace
 
         std::ostringstream virt;
 
-        if ( opts.show_virtual
-           && boost::get<bool>
-                (place.property().get ({"virtual"}).get_value_or (false))
-           )
+        if (opts.show_virtual && place.property().is_true ({"virtual"}))
         {
             virt << endl << props ("virtual");
         }
@@ -318,12 +335,11 @@ namespace
              , with_signature (place.name(), place.signature(), opts)
              + quote (token.str())
              + virt.str()
+             , place.is_marked_for_put_token() ? color::put_token : color::node
              );
       }
 
-      for ( const std::pair<we::transition_id_type,we::type::transition_t>& it
-          : net.transitions()
-          )
+      for (auto const& it : net.transitions())
       {
         const we::transition_id_type& trans_id (it.first);
         const we::type::transition_t& trans (it.second);
@@ -335,47 +351,58 @@ namespace
 
         if (net.port_to_place().find (trans_id) != net.port_to_place().end())
         {
-          for ( we::type::net_type::port_to_place_with_info_type::value_type
-                  const& port_to_place
-              : net.port_to_place().at (trans_id)
-              )
+          for (auto const& port_to_place : net.port_to_place().at (trans_id))
           {
             s << fhg::util::deeper (_indent)
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (port_to_place.get_left())
+                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
                       )
               << arrow
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (port_to_place.get_right())
+                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
                       );
+          }
+        }
+
+        auto const& tid_with_tp_many (net.port_many_to_place().find (trans_id));
+        if (tid_with_tp_many != net.port_many_to_place().end())
+        {
+          for (auto const& port_to_place : tid_with_tp_many->second)
+          {
+            s << fhg::util::deeper (_indent)
+              << name ( id_trans
+                      , "port_" + boost::lexical_cast<std::string> (port_to_place.first)
+                      )
+              << arrow
+              << name ( id_net
+                      , "place_" + boost::lexical_cast<std::string> (port_to_place.second.first)
+                      )
+              << brackets (keyval ("color", color::tp_many));
           }
         }
 
         if (net.place_to_port().find (trans_id) !=  net.place_to_port().end())
         {
-          for ( we::type::net_type::place_to_port_with_info_type::value_type
-                  const& place_to_port
-              : net.place_to_port().at (trans_id)
-              )
+          for (auto const& place_to_port : net.place_to_port().at (trans_id))
           {
             s << fhg::util::deeper (_indent)
               << name ( id_net
-                      , "place_" + boost::lexical_cast<std::string> (place_to_port.get_left())
+                      , "place_" + boost::lexical_cast<std::string> (place_to_port.first)
                       )
               << arrow
               << name ( id_trans
-                      , "port_" + boost::lexical_cast<std::string> (place_to_port.get_right())
+                      , "port_" + boost::lexical_cast<std::string> (place_to_port.second.first)
                       )
               << (  net.place_to_transition_read().find
                     ( we::type::net_type::adj_pt_type::value_type
-                     (place_to_port.get_left(), trans_id)
+                     (place_to_port.first, trans_id)
                     )
                  != net.place_to_transition_read().end()
                  ? brackets (keyval ("style", style::read_connection))
                  : ""
                  );
 
-            if (place_to_port.info.get ({"pnetc", "tunnel"}))
+            if (place_to_port.second.second.get ({"pnetc", "tunnel"}))
             {
               s << association();
             }
@@ -395,8 +422,8 @@ namespace
     , id_type& id
     , const options& opts
     , fhg::util::indenter& indent
-    , boost::optional<we::type::activity_t::input_t> input
-    , boost::optional<we::type::activity_t::output_t> output
+    , boost::optional<we::type::TokensOnPorts> input
+    , boost::optional<we::type::TokensOnPorts> output
     )
   {
     std::ostringstream s;
@@ -445,7 +472,7 @@ namespace
 
       if (opts.show_token && input)
       {
-        for (we::type::activity_t::input_t::value_type const& vp : *input)
+        for (auto const& vp : *input)
         {
           if (vp.second == p.first)
           {
@@ -467,7 +494,7 @@ namespace
 
       if (opts.show_token && output)
       {
-        for (we::type::activity_t::output_t::value_type const& vp : *output)
+        for (auto const& vp : *output)
         {
           if (vp.second == p.first)
           {
@@ -543,7 +570,10 @@ namespace
     }
 
     s << fhg::util::deeper (indent)
-      << bgcolor ( t.expression() ? color::expression
+      << bgcolor ( t.expression() ? ( !!t.prop().get ({"gspc","we","plugin"})
+                                    ? color::plugin
+                                    : color::expression
+                                    )
                  : t.module_call() ? color::modcall
                  : color::external
                  )
@@ -561,14 +591,17 @@ namespace
     id_type id (0);
     fhg::util::indenter indent (1);
 
-    os << "digraph \"" << activity.transition().name() << "\" {"
+    os << "digraph \"" << activity.name() << "\" {"
        << "\n" << "compound=true"
        << "\n" << "rankdir=LR"
-       << to_dot ( activity.transition(), id, options, indent
+       << to_dot ( boost::get<we::type::transition_t> (activity.data())
+                 , id
+                 , options
+                 , indent
                  , activity.input()
                  , activity.output()
                  )
-       << "\n" << "} /* " << activity.transition().name() << " */" << "\n";
+       << "\n" << "} /* " << activity.name() << " */" << "\n";
   }
 }
 

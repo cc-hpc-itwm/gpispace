@@ -1,27 +1,28 @@
-#include <boost/test/unit_test.hpp>
+#include <gpi-space/pc/memory/beegfs_area.hpp>
 
-#include <sys/types.h> // pid_t
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <unistd.h>    // getpid, unlink
-#include <cstring>
-#include <fstream>
-
-#include <boost/lexical_cast.hpp>
-#include <boost/filesystem.hpp>
+#include <gpi-space/pc/memory/handle_generator.hpp>
+#include <gpi-space/pc/segment/segment.hpp>
+#include <gpi-space/pc/type/flags.hpp>
+#include <gpi-space/tests/dummy_topology.hpp>
 
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <test/shared_directory.hpp>
 
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/memory/beegfs_area.hpp>
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/tests/dummy_topology.hpp>
-
+#include <boost/filesystem.hpp>
+#include <boost/lexical_cast.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/unit_test.hpp>
+
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <sys/types.h> // pid_t
+#include <unistd.h>    // getpid, unlink
+
+#include <cstddef>
+#include <exception>
 
 struct setup_and_cleanup_shared_file
 {
@@ -48,12 +49,21 @@ struct setup_and_cleanup_shared_file
 
   boost::filesystem::path path_to_shared_file;
 
-  fhg::log::Logger _logger;
+  fhg::logging::stream_emitter _logger;
 };
+
+namespace
+{
+  gpi::pc::type::size_t random_handle_identifier()
+  {
+    return fhg::util::testing::random<gpi::pc::type::size_t>{}
+      ((1 << gpi::pc::type::handle_t::ident_bits) - 1);
+  }
+}
 
 BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -98,7 +108,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
 
   using namespace gpi::pc::memory;
 
@@ -133,7 +143,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
 
 BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
 
   using namespace gpi::pc::memory;
 
@@ -165,7 +175,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
 
 BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
 
   using namespace gpi::pc::memory;
 
@@ -196,7 +206,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
 
 BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
 
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
@@ -248,7 +258,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (rand() % (1 << HANDLE_IDENT_BITS));
+  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
 
   using namespace gpi::pc::memory;
 

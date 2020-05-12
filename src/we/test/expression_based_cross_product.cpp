@@ -4,6 +4,8 @@
 #include <we/type/net.hpp>
 #include <we/type/value/poke.hpp>
 
+#include <boost/range/adaptor/map.hpp>
+
 BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 {
   we::type::net_type net;
@@ -118,15 +120,9 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
       (we::type::port_t ("pair", we::type::PORT_OUT, sig_pair, pid_pair))
     );
 
-  we::type::activity_t act (tnet, boost::none);
+  std::mt19937 engine;
 
-  boost::mt19937 engine;
-
-  if (act.transition().net())
-  {
-    while ( boost::optional<we::type::activity_t> sub
-          = boost::get<we::type::net_type> (act.transition().data())
-          . fire_expressions_and_extract_activity_random
+    while ( net.fire_expressions_and_extract_activity_random
               ( engine
               , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
                 {
@@ -137,21 +133,23 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     {
       BOOST_FAIL ("BUMMER: no sub activity shall be created");
     }
-  }
 
   std::unordered_map
     < we::port_id_type
     , std::list<pnet::type::value::value_type>
     > values_by_port_id;
 
-  we::type::activity_t::output_t const output (act.output());
-
-  for ( std::pair<pnet::type::value::value_type, we::port_id_type> const&
-          token_on_port
-      : output
+  for ( auto const& token
+      : net.get_token (pid_store) | boost::adaptors::map_values
       )
   {
-    values_by_port_id[token_on_port.second].push_back (token_on_port.first);
+    values_by_port_id[port_id_store_out_net].push_back (token);
+  }
+  for ( auto const& token
+      : net.get_token (pid_pair) | boost::adaptors::map_values
+      )
+  {
+    values_by_port_id[port_id_pair_net].push_back (token);
   }
 
   BOOST_REQUIRE_EQUAL (values_by_port_id.size(), 2);

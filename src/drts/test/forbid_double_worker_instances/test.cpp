@@ -4,6 +4,7 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
 #include <test/source_directory.hpp>
@@ -11,10 +12,13 @@
 
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/range/adaptor/map.hpp>
+#include <boost/test/data/test_case.hpp>
 
-BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
+BOOST_DATA_TEST_CASE
+  (forbid_double_worker_instances, certificates_data, certificates)
 {
   boost::program_options::options_description options_description;
 
@@ -56,15 +60,15 @@ BOOST_AUTO_TEST_CASE (forbid_double_worker_instances)
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "test_worker:1", rifds.entry_points());
+    (vm, installation, "test_worker:1", rifds.entry_points(), std::cerr, certificates);
 
   std::unordered_map
     < gspc::rifd_entry_point
     , std::list<std::exception_ptr>
     , gspc::rifd_entry_point_hash
-    > const errors (drts.add_worker (rifds.entry_points()));
+    > const errors (drts.add_worker (rifds.entry_points(), boost::none));
 
-  BOOST_REQUIRE_EQUAL (drts.number_of_unique_nodes(), errors.size());
+  BOOST_REQUIRE_EQUAL (rifds.hosts().size(), errors.size());
 
   for (auto const& exceptions : errors | boost::adaptors::map_values)
   {

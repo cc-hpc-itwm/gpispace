@@ -6,6 +6,7 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/certificates_data.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -14,12 +15,14 @@
 
 #include <we/type/value.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
+#include <boost/test/data/test_case.hpp>
 
 #include <future>
 #include <map>
@@ -33,6 +36,11 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
+  options_description.add_options()
+    ( "ssl-cert"
+    , boost::program_options::value<std::string>()->required()
+    , "enable or disable SSL certificate"
+    );
 
   boost::program_options::variables_map vm
     ( test::parse_command_line
@@ -42,8 +50,16 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
         )
     );
 
+  std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
+
+
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "drts_parallel_running_workflows");
+    ( test::shared_directory (vm)
+    / ( "drts_parallel_running_workflows"
+      + ssl_cert
+      + "_cert"
+      )
+    );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
@@ -84,19 +100,24 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
                                  , gspc::rifd::port {vm}
                                  , installation
                                  );
+
+  auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
+                                               : gspc::testing::no_certs()
+                          );
+
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points());
+    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
 
   auto submit_fun
-    ( [&filename_a, &filename_b, &drts]
+    ( [&filename_a, &filename_b, &drts, &certificates]
       (std::string port, test::make_net_lib_install const& make)
     {
       std::multimap<std::string, pnet::type::value::value_type> const result
-        ( gspc::client (drts).put_and_run
+        ( gspc::client (drts, certificates).put_and_run
           ( gspc::workflow (make.pnet())
           , { {"filename_a", filename_a.string()}
             , {"filename_b", filename_b.string()}
-            , {"timeout_in_seconds", 5U}
+            , {"timeout_in_seconds", 30U}
             }
           )
         );

@@ -45,5 +45,28 @@ fhg_add_test (NAME scoped_drts
   START_SCOPED_RIF
 )
 
+extended_add_library (NAME module_nounload_detection-empty
+  SOURCES "module_nounload_detection/empty.cpp"
+  TYPE SHARED
+)
+
+fhg_add_test (NAME module_nounload_detection
+  SOURCES "module_nounload_detection.cpp"
+  USE_BOOST
+  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+  LIBRARIES gspc
+            test-utilities
+            Util::Generic
+            Boost::filesystem
+            Boost::program_options
+  COMPILE_DEFINITIONS
+    PRIVATE "LIBRARY_TO_LOAD=\"$<TARGET_FILE:module_nounload_detection-empty>\""
+  REQUIRES_INSTALLATION
+  START_SCOPED_RIF
+  DEPENDS module_nounload_detection-empty
+)
+
 add_subdirectory (client_implementation_with_ostream_logger)
 add_subdirectory (scoped_rifd_execute)

@@ -23,6 +23,7 @@ namespace xml
         ( const util::position_type& pod
         , const std::string& name
         , const std::string& function
+        , const boost::optional<std::string>& target
         , const boost::optional<std::string>& port_return
         , const std::list<std::string>& port_arg
         , boost::optional<std::string> memory_buffer_return
@@ -33,10 +34,13 @@ namespace xml
         , const std::list<std::string>& ldflags
         , const std::list<std::string>& cxxflags
         , const boost::optional<bool> &pass_context
+        , const boost::optional<we::type::eureka_id_type>& eureka_id
+        , bool require_module_unloads_without_rest
         )
         : with_position_of_definition (pod)
         , _name (name)
         , _function (function)
+        , _target (target)
         , _port_return (port_return)
         , _port_arg (port_arg)
         , _memory_buffer_return (memory_buffer_return)
@@ -47,8 +51,18 @@ namespace xml
         , _ldflags (ldflags)
         , _cxxflags (cxxflags)
         , _pass_context (pass_context)
+        , _eureka_id (eureka_id)
+        , _require_module_unloads_without_rest
+            (require_module_unloads_without_rest)
       {
         fhg_assert (!(_port_return && _memory_buffer_return));
+
+        //! \note enable unique module names with target
+        //! \note to ensure unique namespace per-target-implemetation
+        if (_target)
+        {
+          _name = _name + "_" + *_target;
+        }
       }
 
       const std::string& module_type::name() const
@@ -101,6 +115,18 @@ namespace xml
       {
         return _pass_context ? *_pass_context : false;
       }
+      const boost::optional<std::string>& module_type::target() const
+      {
+        return _target;
+      }
+      const boost::optional<we::type::eureka_id_type>& module_type::eureka_id() const
+      {
+        return _eureka_id;
+      }
+      bool module_type::require_module_unloads_without_rest() const
+      {
+        return _require_module_unloads_without_rest;
+      }
 
       bool module_type::operator == (const module_type& other) const
       {
@@ -111,11 +137,6 @@ namespace xml
           && _ldflags == other._ldflags
           && _cxxflags == other._cxxflags
           ;
-      }
-
-      std::size_t hash_value (const module_type& m)
-      {
-        return boost::hash<std::string>()(m.name());
       }
 
       namespace dump
@@ -159,6 +180,9 @@ namespace xml
           s.open ("module");
           s.attr ("name", m.name());
           s.attr ("function", dump_fun (m));
+          s.attr ( "require_module_unloads_without_rest"
+                 , m.require_module_unloads_without_rest()
+                 );
 
           for (const std::string& inc : m.cincludes())
             {

@@ -10,7 +10,7 @@
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 
-#include <libssh2_wrapper/session.hpp>
+#include <rif/strategy/ssh/session.hpp>
 
 #include <boost/format.hpp>
 
@@ -220,6 +220,7 @@ namespace fhg
                     , unsigned short register_port
                     , boost::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
+                    , std::ostream& out
                     )
         {
           EXTRACT_PARAMETERS (parameters);
@@ -238,18 +239,18 @@ namespace fhg
                                          , username
                                          , {public_key, private_key}
                                          );
-                session.execute_and_require_success_and_no_output
-                  (( boost::format
-                     ( "%1% %2% --register-host %3% --register-port %4%"
-                     " --register-key %5%"
-                     )
-                   % binary
-                   % (port ? "--port " + std::to_string (*port) : "")
-                   % register_host
-                   % register_port
-                   % hostname
-                   ).str()
-                  );
+                out << session.execute_and_require_success_and_no_stderr_output
+                         (( boost::format
+                            ( "%1% %2% --register-host %3% --register-port %4%"
+                            " --register-key %5%"
+                            )
+                          % binary
+                          % (port ? "--port " + std::to_string (*port) : "")
+                          % register_host
+                          % register_port
+                          % hostname
+                          ).str()
+                         );
               }
             ).second;
         }

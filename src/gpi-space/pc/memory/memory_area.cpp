@@ -2,7 +2,6 @@
 
 #include <stack>
 
-#include <fhglog/LogMacros.hpp>
 #include <fhg/assert.hpp>
 
 #include <boost/format.hpp>
@@ -11,6 +10,8 @@
 
 #include <gpi-space/pc/type/flags.hpp>
 #include <gpi-space/pc/type/handle.hpp>
+
+#include <util-generic/unreachable.hpp>
 
 namespace gpi
 {
@@ -22,7 +23,7 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( fhg::log::Logger& logger
+      area_t::area_t ( fhg::logging::stream_emitter& logger
                      , const gpi::pc::type::segment::segment_type type
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
@@ -305,7 +306,7 @@ namespace gpi
         {
           hdl.offset = m_mmgr.alloc (hdl.id, arena, hdl.local_size).first;
         }
-        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory)
+        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory const&)
         {
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
@@ -314,7 +315,7 @@ namespace gpi
             + " avail = " + std::to_string (m_descriptor.avail)
             );
         }
-        catch (gspc::vmem::error::alloc::insufficient_memory)
+        catch (gspc::vmem::error::alloc::insufficient_memory const&)
         {
           throw std::runtime_error
             ( "not enough memory: requested_size = "
@@ -323,7 +324,7 @@ namespace gpi
             + " avail = " + std::to_string (m_descriptor.avail)
             );
         }
-        catch (gspc::vmem::error::alloc::duplicate_handle)
+        catch (gspc::vmem::error::alloc::duplicate_handle const&)
         {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
@@ -393,12 +394,10 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          LLOG( WARN
-              , _logger
-             , "handle still in use:"
-             << " handle = " << hdl
-             << " nref = " << desc.nref
-             );
+          _logger.emit ( "handle still in use: handle = " + std::to_string (hdl)
+                       + " nref = " + std::to_string (desc.nref)
+                       , fhg::logging::legacy::category_level_warn
+                       );
         }
 
         gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
@@ -566,17 +565,6 @@ namespace gpi
       }
 
 
-      std::packaged_task<void()> area_t::get_specific_transfer_task
-        ( const gpi::pc::type::memory_location_t
-        , const gpi::pc::type::memory_location_t
-        , area_t&
-        , gpi::pc::type::size_t
-        )
-      {
-        throw std::logic_error
-          ("get_specific_transfer_task not implemented");
-      }
-
       std::packaged_task<void()> area_t::get_send_task
         ( area_t&
         , const gpi::pc::type::memory_location_t
@@ -602,23 +590,11 @@ namespace gpi
         , const type::memory_location_t dst
         , area_t& dst_area
         , type::size_t amount
-        , memory_pool_t& buffer_pool
         )
       {
-        const bool src_is_local
-          (         is_local (gpi::pc::type::memory_region_t( src
-                                                            , amount
-                                                            )
-                             )
-          );
-        const bool dst_is_local
-          (dst_area.is_local (gpi::pc::type::memory_region_t( dst
-                                                            , amount
-                                                            )
-                             )
-          );
+        const bool src_is_local (is_local (src, amount));
+        const bool dst_is_local (dst_area.is_local (dst, amount));
 
-        // vertical copy (memcpy/read/write)
         if (src_is_local && dst_is_local)
         {
           void *src_ptr = pointer_to (src);
@@ -642,107 +618,22 @@ namespace gpi
                 }
               );
           }
-          else
-          {
-            return std::packaged_task<void()>
-              ( [this, &dst_area, src, dst, amount, &buffer_pool]
-                {
-                  struct temporarily_removed_buffer
-                  {
-                    temporarily_removed_buffer (area_t::memory_pool_t& pool)
-                      : _pool (pool)
-                      , _buffer (_pool.get())
-                    {}
-                    ~temporarily_removed_buffer()
-                    {
-                      _pool.put (std::move (_buffer));
-                    }
-                    buffer_t* operator->() const
-                    {
-                      return _buffer.operator->();
-                    }
-                    area_t::memory_pool_t& _pool;
-                    std::unique_ptr<buffer_t> _buffer;
-                  } buffer = {buffer_pool};
-
-                  size_t remaining (amount);
-
-                  while (remaining)
-                  {
-                    const size_t to_read
-                      (std::min (remaining, buffer->size ()));
-
-                    const size_t num_read
-                      (read_from (src, buffer->data (), to_read));
-                    if (0 == num_read)
-                    {
-                      throw std::runtime_error
-                        ( "could not read " + std::to_string (buffer->size())
-                        + " bytes from " + boost::lexical_cast<std::string> (src)
-                        + " remaining " + std::to_string (remaining)
-                        );
-                    }
-
-                    buffer->used (num_read);
-
-                    const size_t num_written
-                      ( dst_area.write_to
-                          (dst, buffer->data (), buffer->used())
-                      );
-
-                    fhg_assert (num_read == num_written);
-
-                    buffer->used (num_read - num_written);
-
-                    remaining -= num_read;
-                  }
-                }
-              );
-          }
         }
 
-        // only reached when:
-        //    - non-local segments
-        //    - no raw memory available
-
-        // horizontal copy (same type)
-        if (type () == dst_area.type ())
+        if (src_is_local)
         {
-          return get_specific_transfer_task ( src
-                                            , dst
-                                            , dst_area
-                                            , amount
-                                            );
+          return dst_area.get_send_task (*this, src, dst, amount);
         }
-        // diagonal copy (non-local different types)
+        else if (dst_is_local)
+        {
+          return this->get_recv_task (dst_area, dst, src, amount);
+        }
         else
         {
-          if (src_is_local)
-          {
-            // send from local source to remote destination
-            return dst_area.get_send_task ( *this
-                                          , src
-                                          , dst
-                                          , amount
-                                          );
-          }
-          else if (dst_is_local)
-          {
-            // receive from remote src to local destination
-            return this->get_recv_task ( dst_area
-                                       , dst
-                                       , src
-                                       , amount
-                                       );
-          }
-          else
-          {
-            throw std::runtime_error
-              ( "unsupported memory transfer: both regions are remote: src := ["
-              + boost::lexical_cast<std::string> (src) + "] dst := ["
-              + boost::lexical_cast<std::string> (dst) + "]"
-              );
-          }
+          FHG_UTIL_UNREACHABLE
+            ( "one area always has to be local: there is always shm_area "
+              "on one side"
+            );
         }
       }
     }

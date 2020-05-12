@@ -16,10 +16,12 @@
 #include <we/type/value/poke.hpp>
 #include <we/type/value/boost/test/printer.hpp>
 
-#include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 
 #include <boost/format.hpp>
 #include <boost/program_options.hpp>
@@ -96,15 +98,8 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
       )
     );
 
-  BOOST_REQUIRE_EQUAL (result.size(), 1);
-
-  std::string const port_done ("done");
-
-  BOOST_REQUIRE_EQUAL (result.count (port_done), 1);
-  BOOST_CHECK_EQUAL
-    ( result.find (port_done)->second
-    , pnet::type::value::value_type (we::type::literal::control())
-    );
+  decltype (result) const expected {{"done", we::type::literal::control()}};
+  FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (result, expected);
 
   std::vector<char> const expected_file_content
     { 0, 0, 0

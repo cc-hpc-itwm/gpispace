@@ -185,6 +185,7 @@
               <in name="seed" type="long"/>
               <out name="job" type="job"/>
               <module name="pi" function="job get_key (seed, points)">
+                <cinclude href="iostream"/>
                 <cinclude href="sstream"/>
                 <code><![CDATA[
                   std::cout << "GET_KEY for seed " << seed << '\n';
@@ -274,6 +275,7 @@
                 <cinclude href="boost/random/mersenne_twister.hpp"/>
                 <cinclude href="boost/random/uniform_real.hpp"/>
                 <cinclude href="boost/random/variate_generator.hpp"/>
+                <cinclude href="iostream"/>
                 <code><![CDATA[
                   std::cout << "RUN"
                             << ", points " << job.points
@@ -363,6 +365,7 @@
         <in name="ratio" type="ratio"/>
         <out name="ratio" type="ratio"/>
         <module name="pi" function="finalize (ratio)">
+          <cinclude href="iostream"/>
           <code><![CDATA[
             std::cout << "FINALIZE"
                       << ", ratio " << ratio.in << " % " << ratio.total

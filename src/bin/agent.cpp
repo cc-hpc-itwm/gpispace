@@ -4,11 +4,9 @@
 #include <vector>
 #include <csignal>
 
-#include <fhglog/Configuration.hpp>
-#include <fhglog/LogMacros.hpp>
-
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <rif/started_process_promise.hpp>
@@ -35,6 +33,7 @@ namespace
   namespace option_name
   {
     constexpr const char* vmem_socket {"vmem-socket"};
+    constexpr const char* ssl_certificates {"ssl-certificates"};
   }
 }
 
@@ -49,35 +48,26 @@ int main (int argc, char **argv)
     std::string agentName;
     std::string agentUrl;
     std::vector<std::string> arrMasterNames;
-    std::string appGuiUrl;
     boost::optional<bfs::path> vmem_socket;
-
-    boost::asio::io_service remote_log_io_service;
-    fhg::log::Logger logger;
-    fhg::log::configure (remote_log_io_service, logger);
+    fhg::com::Certificates ssl_certificates;
 
     po::options_description desc("Allowed options");
     desc.add_options()
-      ("help,h", "Display this message")
       ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
       ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
-      ("master,m", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'name%host%port'")
-      ("app_gui_url,a", po::value<std::string>(&appGuiUrl)->default_value("127.0.0.1:9000"), "application GUI's url")
+      ("masters", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'host%port'")
       ( option_name::vmem_socket
-      , boost::program_options::value<validators::nonempty_string>()
+      , po::value<validators::nonempty_string>()
       , "socket file to communicate with the virtual memory manager"
+      )
+      ( option_name::ssl_certificates
+      , po::value<bfs::path>()
+      , "folder containing SSL certificates"
       )
       ;
 
     po::variables_map vm;
     po::store( po::command_line_parser( argc, argv ).options(desc).run(), vm );
-
-    if (vm.count ("help"))
-    {
-      LLOG (ERROR, logger, "usage: agent [options] ....");
-      LLOG (ERROR, logger, desc);
-      return 0;
-    }
 
     po::notify (vm);
 
@@ -86,34 +76,36 @@ int main (int argc, char **argv)
       vmem_socket = bfs::path (vm.at (option_name::vmem_socket).as<validators::nonempty_string>());
     }
 
-    std::vector<std::tuple<std::string, fhg::com::host_t, fhg::com::port_t>> masters;
-    for (std::string const& name_host_port : arrMasterNames)
+    if (vm.count (option_name::ssl_certificates))
+    {
+      ssl_certificates = vm.at (option_name::ssl_certificates).as<bfs::path>();
+    }
+
+    sdpa::master_info_t masters;
+    for (auto const& host_port : arrMasterNames)
     {
       boost::tokenizer<boost::char_separator<char>> const tok
-        (name_host_port, boost::char_separator<char> ("%"));
+        (host_port, boost::char_separator<char> ("%"));
 
       std::vector<std::string> const parts (tok.begin(), tok.end());
 
-      if (parts.size() != 3)
+      if (parts.size() != 2)
       {
         throw std::runtime_error
-          ("invalid master information: has to be of format 'name%host%port'");
+          ("invalid master information: has to be of format 'host%port'");
       }
 
-      masters.emplace_back
-        (parts[0], fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
+      masters.emplace_front (parts[0], parts[1]);
     }
 
-    boost::asio::io_service gui_io_service;
-    const sdpa::daemon::GenericDaemon agent
+    sdpa::daemon::GenericDaemon agent
       ( agentName
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , vmem_socket
-      , masters
-      , logger
-      , std::pair<std::string, boost::asio::io_service&> (appGuiUrl, gui_io_service)
+      , std::move (masters)
       , true
+      , ssl_certificates
       );
 
     fhg::util::thread::event<> stop_requested;
@@ -122,18 +114,18 @@ int main (int argc, char **argv)
 
     fhg::util::signal_handler_manager signal_handlers;
     fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-      crit_error_handler (signal_handlers, logger);
+      crit_error_handler (signal_handlers, agent.log_emitter());
 
     fhg::util::scoped_signal_handler const SIGTERM_handler
       (signal_handlers, SIGTERM, std::bind (request_stop));
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handlers, SIGINT, std::bind (request_stop));
 
-    promise.set_result ( { fhg::util::connectable_to_address_string
-                             (agent.peer_local_endpoint().address())
-                         , std::to_string
-                             (agent.peer_local_endpoint().port())
-                         }
+    promise.set_result ( fhg::util::connectable_to_address_string
+                           (agent.peer_local_endpoint().address())
+                       , std::to_string
+                           (agent.peer_local_endpoint().port())
+                       , agent.logger_registration_endpoint().to_string()
                        );
 
     stop_requested.wait();

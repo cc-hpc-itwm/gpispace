@@ -9,7 +9,6 @@
 #include <errno.h>
 #include <string.h>
 
-#include <fhglog/LogMacros.hpp>
 #include <util-generic/syscall.hpp>
 
 #include <gpi-space/pc/type/flags.hpp>

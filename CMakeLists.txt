@@ -1,34 +1,24 @@
-cmake_minimum_required (VERSION 3.1 FATAL_ERROR)
+cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
+project (gspc VERSION 20.04 LANGUAGES CXX)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
-set (CMAKE_MODULE_PATH
-  "${CMAKE_MODULE_PATH}"
-  "${CMAKE_SOURCE_DIR}/modules"
-  "$ENV{CMAKE_MODULE_PATH}"
-)
+list (APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/modules")
+list (APPEND CMAKE_MODULE_PATH "$ENV{CMAKE_MODULE_PATH}")
 
 add_subdirectory (cmake)
 
 include (add_macros)
 include (beautify_find_boost)
 include (require_compiler_version)
+include (git)
+include (git_submodules)
 
-set (PROJECT_VERSION "16.04")
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
-execute_process (
-  COMMAND git rev-parse HEAD
-  WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-  OUTPUT_VARIABLE _out_git
-  ERROR_VARIABLE _err_git
-  RESULT_VARIABLE _res_git
-)
-if (${_res_git} EQUAL 0)
-  string (STRIP "${_out_git}" _out_git)
-  set (PROJECT_REVISION ${_out_git})
-else()
-  message (FATAL_ERROR "could not discover revision info, please define -DPROJECT_REVISION by hand!")
-endif()
+
+determine_git_revision ("${CMAKE_SOURCE_DIR}" PROJECT_REVISION)
+
+install_git_submodules_information ("git.submodules")
 
 set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
 
@@ -65,7 +55,6 @@ set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS
 set (PNETC_LIB_DIR "share/gspc/xml/lib")
 
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
-add_definitions ("-DBOOST_VARIANT_DO_NOT_USE_VARIADIC_TEMPLATES")
 
 # Boost.Thread now throws when preconditions are not met.
 # This is the case when calling join() in some tests, while
@@ -87,20 +76,18 @@ find_boost (1.59 REQUIRED QUIET COMPONENTS
   program_options
   random
   serialization
-  signals
   system
   test_exec_monitor
   thread
   timer
   unit_test_framework
 )
-find_package (GASPI 1.1.0 REQUIRED QUIET)
+find_package (GASPI 1.3.1 REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
-find_package (Qt4 4.8 COMPONENTS QtCore QtGui QtXml QtNetwork REQUIRED QUIET)
+find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED QUIET)
 find_package (Threads REQUIRED QUIET)
 
-include (${QT_USE_FILE})
 include (CTest)
 include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
@@ -112,13 +99,30 @@ endmacro()
 
 include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
-include_directories (SYSTEM ${Boost_INCLUDE_DIRS})
 
 if (CMAKE_USE_PTHREADS_INIT)
   link_libraries (${CMAKE_THREAD_LIBS_INIT} rt)
 endif()
 
+include (CheckCXXSourceRuns)
+
+check_cxx_source_runs ([[
+  #include <memory>
+  int main (int, char**)
+  {
+    char c;
+    void* ptr (&c);
+    std::size_t space (sizeof (c));
+
+    return std::align (1, 0, ptr, space) ? 0 : 1;
+    //     ^^^^^^^^^^
+  }
+  ]]
+  HAS_STD_ALIGN
+)
+
 bundle_boost (DESTINATION "external/boost")
+list (APPEND INSTALL_RPATH_DIRS "lib")
 
 add_subdirectory (external)
 add_subdirectory (doc)
@@ -126,3 +130,16 @@ add_subdirectory (playground/bl)
 add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
+add_subdirectory (test/gspc)
+
+add_test (NAME installed_headers_are_selfcontained
+  COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/installed_headers_are_selfcontained.sh"
+          "${CMAKE_INSTALL_PREFIX}"
+          "${CMAKE_CXX_COMPILER}"
+)
+set_property (TEST installed_headers_are_selfcontained
+  APPEND PROPERTY LABELS "requires_installation"
+)
+set_property (TEST installed_headers_are_selfcontained
+  APPEND PROPERTY REQUIRED_FILES ${FILES_REQUIRED_IN_INSTALLATION}
+)

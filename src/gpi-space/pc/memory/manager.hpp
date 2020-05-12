@@ -2,22 +2,20 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
-#include <boost/thread/locks.hpp>
-#include <boost/thread/recursive_mutex.hpp>
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <gpi-space/pc/type/typedefs.hpp>
 #include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/memory_buffer.hpp>
 
-#include <fhg/util/thread/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <vmem/gaspi_context.hpp>
 
 #include <boost/thread/scoped_thread.hpp>
 
 #include <memory>
+#include <mutex>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -37,7 +35,7 @@ namespace gpi
       public:
         typedef boost::shared_ptr<area_t> area_ptr;
 
-        manager_t (fhg::log::Logger&, fhg::vmem::gaspi_context&);
+        manager_t (fhg::logging::stream_emitter&, fhg::vmem::gaspi_context&);
         ~manager_t ();
 
         void clear ();
@@ -113,8 +111,8 @@ namespace gpi
                    );
 
       private:
-        typedef boost::recursive_mutex mutex_type;
-        typedef boost::unique_lock<mutex_type> lock_type;
+        typedef std::recursive_mutex mutex_type;
+        typedef std::unique_lock<mutex_type> lock_type;
         typedef std::unordered_map< gpi::pc::type::segment_id_t
                                   , area_ptr
                                   > area_map_t;
@@ -133,7 +131,7 @@ namespace gpi
         void del_handle (const gpi::pc::type::handle_t);
         void unregister_memory (const gpi::pc::type::segment_id_t);
 
-        fhg::log::Logger& _logger;
+        fhg::logging::stream_emitter& _logger;
         mutable mutex_type m_mutex;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
@@ -141,11 +139,12 @@ namespace gpi
 
         std::mutex _memcpy_task_guard;
         std::size_t _next_memcpy_id;
-        fhg::thread::queue<std::packaged_task<void()>> _tasks;
+        fhg::util::interruptible_threadsafe_queue<std::packaged_task<void()>>
+          _tasks;
         std::map<std::size_t, std::future<void>> _task_by_id;
-        std::vector<std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>>
+        std::vector<std::unique_ptr<boost::strict_scoped_thread<>>>
           _task_threads;
-        fhg::thread::ptr_queue<buffer_t> m_memory_buffer_pool;
+        decltype (_tasks)::interrupt_on_scope_exit _interrupt_task_queue;
 
         handle_generator_t _handle_generator;
       };

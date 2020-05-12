@@ -1,33 +1,19 @@
 #include <boost/test/unit_test.hpp>
 
+#include <we/type/activity.hpp>
 #include <we/type/expression.hpp>
 #include <we/type/net.hpp>
 #include <we/type/transition.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 
-#include <random>
 #include <sstream>
 
-namespace
-{
-  void unexpected_workflow_response
-    (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
-  {
-    throw std::logic_error ("got unexpected workflow_response");
-  }
-
-  std::mt19937& random_engine()
-  {
-    static std::mt19937 _ {std::random_device{}()};
-
-    return _;
-  }
-}
+#include <we/test/net.common.hpp>
 
 BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
 {
@@ -36,7 +22,7 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
                        ( fhg::util::testing::random_string()
                        , we::type::expression_t()
                        , boost::none
-                       , we::type::property::type()
+                       , no_properties()
                        , we::priority_type()
                        )
                      );
@@ -58,7 +44,7 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
                          ( fhg::util::testing::random_string()
                          , we::type::expression_t()
                          , boost::none
-                         , we::type::property::type()
+                         , no_properties()
                          , we::priority_type()
                          )
                        );
@@ -81,7 +67,6 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
 {
   pnet::type::signature::signature_type const signature
     (std::string ("control"));
-  we::type::property::type const no_properties;
 
   we::type::net_type net;
 
@@ -94,7 +79,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
          (place::type ( std::to_string (++place)
                       , signature
                       , boost::none
-                      , no_properties
+                      , no_properties()
                       )
          );
      }
@@ -111,7 +96,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
     ( fhg::util::testing::random_identifier()
     , we::type::expression_t ("${out} := ${in}")
     , boost::none
-    , no_properties
+    , no_properties()
     , we::priority_type()
     );
 
@@ -121,7 +106,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
          ) -> we::port_id_type
      {
        return transition.add_port
-         (we::type::port_t (name, direction, signature, no_properties));
+         (we::type::port_t (name, direction, signature, no_properties()));
      }
     );
 
@@ -135,7 +120,7 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   auto&& connect
     ([&] (we::edge::type edge, we::place_id_type place, we::port_id_type port)
      {
-       net.add_connection (edge, transition_id, place, port, no_properties);
+       net.add_connection (edge, transition_id, place, port, no_properties());
      }
     );
 
@@ -156,4 +141,28 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   BOOST_REQUIRE (net.get_token (place_in).empty());
   BOOST_REQUIRE_EQUAL (net.get_token (place_out).size(), 1);
   BOOST_REQUIRE_EQUAL (net.get_token (place_credit).size(), 1);
+}
+
+namespace we
+{
+  namespace type
+  {
+    BOOST_AUTO_TEST_CASE (empty_net)
+    {
+      net_type net;
+
+      BOOST_REQUIRE (net.places().empty());
+      BOOST_REQUIRE (net.transitions().empty());
+      BOOST_REQUIRE (net.transition_to_place().empty());
+      BOOST_REQUIRE (net.place_to_transition_consume().empty());
+      BOOST_REQUIRE (net.place_to_transition_read().empty());
+      BOOST_REQUIRE (net.port_to_place().empty());
+      BOOST_REQUIRE (net.port_to_response().empty());
+      BOOST_REQUIRE (net.place_to_port().empty());
+      BOOST_REQUIRE
+        ( !net.fire_expressions_and_extract_activity_random
+            (random_engine(), unexpected_workflow_response)
+        );
+    }
+  }
 }

@@ -31,32 +31,6 @@ namespace we
       std::string const _type;
     };
 
-    class struct_has_field : public boost::static_visitor<bool>
-    {
-    public:
-      struct_has_field (std::string const& name, std::string const& type)
-        : _name (name)
-        , _type (type)
-      {}
-      bool operator() (std::pair< std::string
-                                , pnet::type::signature::structure_type
-                                > const& fields
-                      ) const
-      {
-        return std::any_of
-          ( fields.second.begin(), fields.second.end()
-          , [this] (pnet::type::signature::field_type const& field)
-            {
-              return boost::apply_visitor (is_field (_name, _type), field);
-            }
-          );
-      }
-
-    private:
-      std::string const _name;
-      std::string const _type;
-    };
-
     class has_field : public boost::static_visitor<bool>
     {
     public:
@@ -70,7 +44,13 @@ namespace we
       }
       bool operator() (pnet::type::signature::structured_type const& s) const
       {
-        return boost::apply_visitor (struct_has_field (_name, _type), s);
+        return std::any_of
+          ( s.second.begin(), s.second.end()
+          , [this] (pnet::type::signature::field_type const& field)
+            {
+              return boost::apply_visitor (is_field (_name, _type), field);
+            }
+          );
       }
 
     private:

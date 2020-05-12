@@ -19,4 +19,6 @@ namespace gpi
 
   using timeout_t = unsigned long;
   using segment_id_t = unsigned char;
+
+  using netdev_id_t = int;
 }

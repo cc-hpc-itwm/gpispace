@@ -2,21 +2,21 @@
 
 #pragma once
 
-#include <fhglog/event.hpp>
-#include <fhglog/remote/server.hpp>
+#include <logging/message.hpp>
 
 #include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <boost/asio.hpp>
 #include <boost/optional.hpp>
 #include <boost/range.hpp>
-#include <boost/thread.hpp>
 
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QVector>
 
 #include <functional>
+#include <mutex>
+#include <vector>
 
 namespace fhg
 {
@@ -37,8 +37,9 @@ namespace fhg
           range_getter_role
         };
 
-        worker_model (unsigned short port, QObject* parent = nullptr);
-        ~worker_model();
+        worker_model (QObject* parent);
+
+        void append_event (logging::message const&);
 
         virtual int rowCount (const QModelIndex& = QModelIndex()) const override;
         virtual int columnCount (const QModelIndex& = QModelIndex()) const override;
@@ -98,14 +99,8 @@ namespace fhg
         QMap<QString, std::vector<value_type>> _worker_containers;
         QDateTime _base_time;
 
-        boost::mutex _event_queue;
-        QVector<log::LogEvent> _queued_events;
-        void append_event (const log::LogEvent&);
-
-        boost::asio::io_service _io_service;
-        fhg::log::Logger _logger;
-        log::remote::LogServer _log_server;
-        boost::thread _io_thread;
+        std::mutex _event_queue;
+        QVector<logging::message> _queued_events;
       };
     }
   }

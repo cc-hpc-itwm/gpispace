@@ -1,15 +1,13 @@
-// mirko.rahn@itwm.fraunhofer.de
-
-#include <boost/test/unit_test.hpp>
-
 #include <xml/parse/type/memory_buffer.hpp>
 
+#include <fhg/util/xml.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/random_string.hpp>
-#include <fhg/util/xml.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <boost/format.hpp>
+#include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE (name_is_stored)
 {
@@ -21,6 +19,7 @@ BOOST_AUTO_TEST_CASE (name_is_stored)
       ( xml::parse::util::position_type
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
+      , fhg::util::testing::random_string()
       , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
@@ -39,35 +38,53 @@ BOOST_AUTO_TEST_CASE (size_is_stored)
         (nullptr, nullptr, fhg::util::testing::random_string())
       , fhg::util::testing::random_string()
       , size
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).size()
     );
 }
 
+BOOST_AUTO_TEST_CASE (alignment_is_stored)
+{
+  auto const alignment (fhg::util::testing::random_string());
+
+  BOOST_REQUIRE_EQUAL
+    ( alignment
+    , xml::parse::type::memory_buffer_type
+      ( xml::parse::util::position_type
+        (nullptr, nullptr, fhg::util::testing::random_string())
+      , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
+      , alignment
+      , boost::none
+      , we::type::property::type()
+      ).alignment()
+    );
+}
+
 namespace
 {
-  void check_read_only_is_stored (boost::optional<bool> read_only)
+  std::vector<boost::optional<bool>> tribool_values()
   {
-      BOOST_REQUIRE_EQUAL
-      ( read_only
-      , xml::parse::type::memory_buffer_type
+    return {{false, false}, {true, true}, {true, false}};
+  }
+}
+
+BOOST_DATA_TEST_CASE (read_only_is_stored, tribool_values(), read_only)
+{
+  BOOST_REQUIRE_EQUAL
+    ( read_only
+    , xml::parse::type::memory_buffer_type
         ( xml::parse::util::position_type
           (nullptr, nullptr, fhg::util::testing::random_string())
+        , fhg::util::testing::random_string()
         , fhg::util::testing::random_string()
         , fhg::util::testing::random_string()
         , read_only
         , we::type::property::type()
         ).read_only()
       );
-  }
-}
-
-BOOST_AUTO_TEST_CASE (read_only_is_stored)
-{
-  check_read_only_is_stored (boost::none);
-  check_read_only_is_stored (true);
-  check_read_only_is_stored (false);
 }
 
 BOOST_AUTO_TEST_CASE (name_is_unique_key)
@@ -81,55 +98,51 @@ BOOST_AUTO_TEST_CASE (name_is_unique_key)
         (nullptr, nullptr, fhg::util::testing::random_string())
       , name
       , fhg::util::testing::random_string()
+      , fhg::util::testing::random_string()
       , boost::none
       , we::type::property::type()
       ).unique_key()
     );
 }
 
-namespace
+BOOST_DATA_TEST_CASE (dump, tribool_values(), read_only)
 {
-  void check_dump (boost::optional<bool> read_only)
-  {
-    std::string const name (fhg::util::testing::random_identifier());
-    std::string const size (fhg::util::testing::random_string_without_zero());
+  std::string const name (fhg::util::testing::random_identifier());
+  std::string const size (fhg::util::testing::random_string_without_zero());
+  std::string const alignment
+    (fhg::util::testing::random_string_without_zero());
 
-      xml::parse::type::memory_buffer_type mb
-      ( xml::parse::util::position_type
-      (nullptr, nullptr, fhg::util::testing::random_string())
-      , name
-      , size
-      , read_only
-      , we::type::property::type()
-      );
+  xml::parse::type::memory_buffer_type mb
+    ( xml::parse::util::position_type
+        (nullptr, nullptr, fhg::util::testing::random_string())
+    , name
+    , size
+    , alignment
+    , read_only
+    , we::type::property::type()
+    );
 
-    std::ostringstream oss;
+  std::ostringstream oss;
 
-    fhg::util::xml::xmlstream s (oss);
+  fhg::util::xml::xmlstream s (oss);
 
-    xml::parse::type::dump::dump (s, mb);
+  xml::parse::type::dump::dump (s, mb);
 
-    const std::string expected
-      ( ( boost::format (R"EOS(<memory-buffer name="%1%"%3%>
+  const std::string expected
+    ( ( boost::format (R"EOS(<memory-buffer name="%1%"%3%>
   <size>%2%</size>
+  <alignment>%4%</alignment>
 </memory-buffer>)EOS")
-        % name
-        % size
-        % ( !boost::get_pointer (read_only) ? std::string()
-          : ( boost::format (R"EOS( read-only="%1%")EOS")
-            % (*read_only ? "true" : "false")
-            ).str()
-          )
-        ).str()
-      );
+      % name
+      % size
+      % ( !boost::get_pointer (read_only) ? std::string()
+        : ( boost::format (R"EOS( read-only="%1%")EOS")
+          % (*read_only ? "true" : "false")
+          ).str()
+        )
+      % alignment
+      ).str()
+    );
 
-    BOOST_REQUIRE_EQUAL (expected, oss.str());
-  }
-}
-
-BOOST_AUTO_TEST_CASE (dump)
-{
-  check_dump (boost::none);
-  check_dump (true);
-  check_dump (false);
+  BOOST_REQUIRE_EQUAL (expected, oss.str());
 }

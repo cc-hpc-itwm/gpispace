@@ -1,7 +1,10 @@
 #pragma once
 
-#include <boost/thread/condition_variable.hpp>
+#include <boost/utility.hpp>
+
+#include <condition_variable>
 #include <list>
+#include <mutex>
 
 namespace fhg
 {
@@ -17,7 +20,7 @@ namespace fhg
 
       std::pair<T, bool> get()
       {
-        boost::unique_lock<boost::mutex> lock (_mtx);
+        std::unique_lock<std::mutex> lock (_mtx);
         _cond_non_empty.wait (lock, [this] { return !_container.empty(); });
 
         T t (_container.front());
@@ -29,7 +32,7 @@ namespace fhg
       template<class... Args>
       bool try_put (Args&&... args)
       {
-        boost::unique_lock<boost::mutex> const _ (_mtx);
+        std::unique_lock<std::mutex> const _ (_mtx);
 
         if (_container.size() < _capacity)
         {
@@ -44,8 +47,8 @@ namespace fhg
       std::size_t capacity() {return _capacity;}
 
     private:
-      boost::mutex _mtx;
-      boost::condition_variable_any _cond_non_empty;
+      std::mutex _mtx;
+      std::condition_variable _cond_non_empty;
 
       std::list<T> _container;
       std::size_t _capacity;

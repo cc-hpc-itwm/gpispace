@@ -1,5 +1,6 @@
 #pragma once
 
+#include <drts/certificates.hpp>
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
@@ -23,10 +24,6 @@ namespace gspc
 
     void set_wait_for_output();
 
-    void add_input ( std::string const& port
-                   , pnet::type::value::value_type const& value
-                   );
-
     std::string to_string() const;
 
     workflow (workflow&&);
@@ -40,8 +37,8 @@ namespace gspc
   class client : boost::noncopyable
   {
   public:
-    client (scoped_runtime_system const&);
-    explicit client (information_to_reattach const&);
+    client (scoped_runtime_system const&, Certificates const& = boost::none);
+    explicit client (information_to_reattach const&, Certificates const& = boost::none);
 
     job_id_t submit
       ( workflow const&
@@ -71,11 +68,6 @@ namespace gspc
     {
       return wait_and_extract (submit (workflow, values_on_ports));
     }
-
-    void step (class workflow& workflow, unsigned long number_of_steps);
-    void break_after ( class workflow& workflow
-                     , std::vector<std::string> transition_names
-                     );
 
     void put_token ( job_id_t
                    , std::string place_name

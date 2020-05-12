@@ -1,10 +1,8 @@
 <defun name="n_of_m">
   <in name="m" type="long" place="m_in"/>
   <in name="parallel" type="long" place="parallel_in"/>
-  <in name="cmd" type="string" place="cmd"/>
   <out name="done" type="control" place="finalized"/>
   <net>
-    <place name="cmd" type="string"/>
     <place name="m_in" type="long"/>
     <place name="parallel_in" type="long"/>
 
@@ -57,39 +55,17 @@
 
     <transition name="run">
       <defun>
-        <in name="cmd" type="string"/>
         <in name="n" type="long"/>
         <in name="m" type="long"/>
         <out name="n" type="long"/>
-        <module name="n_of_m" function="run (cmd, n, m)">
-          <cinclude href="sstream"/>
-          <cinclude href="process/process.hpp"/>
+        <module name="n_of_m" function="run (n, m)">
           <cinclude href="iostream"/>
-          <ld flag="-lprocess"/>
           <code><![CDATA[
-            std::ostringstream cmdline;
-
-            cmdline << cmd << " " << n << " " << m;
-
-            std::cout << "RUNNING " << cmdline.str() << '\n';
-
-            const std::size_t bufsize (1 << 10);
-            char buf[bufsize];
-
-            const std::size_t bytes_written
-              ( process::execute ( cmdline.str()
-                                 , NULL, 0
-                                 , buf, bufsize
-                                 )
-              );
-
-              std::cout
-                << "OUTPUT " << std::string (buf, buf + bytes_written) << '\n';
+            std::cout << "RUN " << n << " of " << m << "\n";
           ]]>
           </code>
         </module>
       </defun>
-      <connect-read port="cmd" place="cmd"/>
       <connect-read port="m" place="m"/>
       <connect-in port="n" place="n_before"/>
       <connect-out port="n" place="n_after"/>
@@ -139,7 +115,6 @@
 
     <transition name="finalize">
       <defun>
-        <in name="cmd" type="string"/>
         <in name="m" type="long"/>
         <in name="eaten" type="control"/>
         <out name="finalized" type="control"/>
@@ -147,7 +122,6 @@
           ${finalized} := []
         </expression>
       </defun>
-      <connect-in port="cmd" place="cmd"/>
       <connect-in port="m" place="m"/>
       <connect-in port="eaten" place="eaten"/>
       <connect-out port="finalized" place="finalized"/>

@@ -8,7 +8,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/variate_generator.hpp>
 #include <boost/program_options.hpp>
-#include <boost/thread.hpp>
+#include <thread>
 
 #include <writer.hpp>
 
@@ -108,7 +108,7 @@ try
     }
   }
 
-  boost::thread thread_writer (writer_type (queue_empty, queue_full, file));
+  std::thread thread_writer (writer_type (queue_empty, queue_full, file));
 
   double* begin (buf);
   double* end (begin + elem_per_buf * num_buf);

@@ -1,35 +1,46 @@
-#include <utils.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
+
+#include <test/certificates_data.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
 
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
-BOOST_FIXTURE_TEST_CASE (execute_workflow_with_subscribed_client, setup_logging)
+BOOST_DATA_TEST_CASE
+  (execute_workflow_with_subscribed_client, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
-  const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
+  const utils::fake_drts_worker_directly_finishing_jobs worker (agent, certificates);
 
   BOOST_REQUIRE_EQUAL
     ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::module_call(), orchestrator)
+      (utils::module_call(), orchestrator, certificates)
     , sdpa::status::FINISHED
     );
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_workflow_and_subscribe_with_second_client, setup_logging)
+BOOST_DATA_TEST_CASE
+  ( execute_workflow_and_subscribe_with_second_client
+  , certificates_data
+  , certificates
+  )
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
-  const utils::fake_drts_worker_directly_finishing_jobs worker (agent);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
+  const utils::fake_drts_worker_directly_finishing_jobs worker (agent, certificates);
 
   sdpa::job_id_t job_id_user;
   {
-    utils::client c (orchestrator);
+    utils::client c (orchestrator, certificates);
     job_id_user = c.submit_job (utils::module_call());
   }
 
-  utils::client c (orchestrator);
+  utils::client c (orchestrator, certificates);
   BOOST_REQUIRE_EQUAL
     ( c.wait_for_terminal_state_and_cleanup (job_id_user)
     , sdpa::status::FINISHED

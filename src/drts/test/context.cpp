@@ -6,11 +6,14 @@
 
 #include <util-generic/syscall.hpp>
 #include <util-generic/testing/random.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <thread>
 #include <chrono>
+#include <future>
+#include <stdexcept>
+#include <string>
+#include <thread>
 
 namespace
 {
@@ -61,7 +64,7 @@ namespace
         )
     {}
 
-    fhg::log::Logger logger;
+    fhg::logging::stream_emitter logger;
     drts::worker::context context;
   };
 
@@ -89,13 +92,13 @@ BOOST_FIXTURE_TEST_CASE
   channel_from_child_to_parent channel;
 
   context.execute_and_kill_on_cancel
-    ( [r, &channel, &exited]()
+    ( [r, &channel]()
       {
         channel.write (r);
       }
     , &on_cancel_unexpected
     , &on_signal_unexpected
-    , [r, &exited] (int exit_code)
+    , [&exited] (int exit_code)
       {
         BOOST_REQUIRE_EQUAL (exit_code, 0);
 
@@ -112,9 +115,11 @@ BOOST_FIXTURE_TEST_CASE
   (execute_and_kill_on_cancel_calls_on_cancel, context_fixture)
 {
   bool cancelled {false};
+  bool signaled {false};
+  bool exited {false};
 
   std::thread execution
-    ( [this, &cancelled]()
+    ( [&]
       {
         std::this_thread::sleep_for
           ( std::chrono::milliseconds
@@ -130,8 +135,8 @@ BOOST_FIXTURE_TEST_CASE
             {
               cancelled = true;
             }
-          , &on_signal_unexpected
-          , &on_exit_unexpected
+          , [&] (int) { signaled = true; }
+          , [&] (int) { exited = true; }
           );
       }
     );
@@ -141,6 +146,8 @@ BOOST_FIXTURE_TEST_CASE
   execution.join();
 
   BOOST_REQUIRE (cancelled);
+  BOOST_REQUIRE (!signaled);
+  BOOST_REQUIRE (!exited);
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -149,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE
   bool signalled {false};
 
   context.execute_and_kill_on_cancel
-    ( [&signalled] ()
+    ( []()
       {
         fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGUSR1);
       }
@@ -301,25 +308,45 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_FIXTURE_TEST_CASE
   (execute_and_kill_on_cancel_simpler_cancelled, context_fixture)
 {
-  std::thread execution
-    ( [this]()
-      {
-        fhg::util::testing::require_exception
-          ( [this]()
-            {
-              context.execute_and_kill_on_cancel
-                ( []()
-                  {
-                    while (1) {}
-                  }
-                );
-            }
-          , drts::worker::context::cancelled()
-          );
-      }
+  auto future
+    ( std::async ( std::launch::async
+                 , [&]
+                   {
+                     context.execute_and_kill_on_cancel
+                       ( []
+                         {
+                           while (1) {}
+                         }
+                       );
+                   }
+                 )
     );
 
   context.module_call_do_cancel();
 
-  execution.join();
+  fhg::util::testing::require_exception
+    ( [&]
+      {
+        future.get();
+      }
+    , drts::worker::context::cancelled()
+    );
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( execute_and_kill_on_cancel_can_be_called_more_often_than_max_open_files
+  , context_fixture
+  )
+{
+  long const maximum_open_files (fhg::util::syscall::sysconf (_SC_OPEN_MAX));
+
+  for (long i (0); i < 2 * maximum_open_files; ++i)
+  {
+    context.execute_and_kill_on_cancel
+      ( [](){}
+      , &on_cancel_unexpected
+      , &on_signal_unexpected
+      , [] (int exit_code) { BOOST_REQUIRE_EQUAL (exit_code, 0); }
+      );
+  }
 }

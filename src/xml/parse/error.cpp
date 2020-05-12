@@ -10,6 +10,7 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 
@@ -264,6 +265,33 @@ namespace xml
                    )
         {}
 
+      eureka_port_type_mismatch::eureka_port_type_mismatch
+       ( type::transition_type const& transition
+       , const type::eureka_type& eureka
+       )
+         : generic ( boost::format ( "connect-eureka output port %1%"
+                                     " is not of type \"set\""
+                                     " in transition %2% at %3%"
+                                   )
+                   % eureka.port()
+                   % transition.name()
+                   % eureka.position_of_definition()
+                   )
+        {}
+
+      connect_eureka_to_nonexistent_out_port::connect_eureka_to_nonexistent_out_port
+       ( type::transition_type const& transition
+       , const type::eureka_type& eureka
+       )
+         : generic ( boost::format ( "connect-eureka to non-existent output port %1%"
+                                     " in transition %2% at %3%"
+                                   )
+                   % eureka.port()
+                   % transition.name()
+                   % eureka.position_of_definition()
+                   )
+        {}
+
       connect_type_error::connect_type_error
         ( type::transition_type const& transition
         , const type::connect_type& connection
@@ -351,7 +379,7 @@ namespace xml
               , fhg::util::ostream::callback::select<T, util::position_type>
                   (&T::position_of_definition)
               );
-        };
+        }
 
         std::string print_memory_transfer_positions_of_definition
           (type::function_type const& function)
@@ -552,6 +580,20 @@ namespace xml
             )
       {}
 
+      duplicate_eureka::duplicate_eureka
+        ( const type::eureka_type& early
+        , const type::eureka_type& late
+        )
+          : generic_duplicate<type::eureka_type>
+            ( early
+            , late
+            , boost::format ( "duplicate connect-eureka"
+                              " for port: %1%"
+                            )
+            % early.port()
+            )
+      {}
+
       duplicate_memory_buffer::duplicate_memory_buffer
         ( type::memory_buffer_type const& early
         , type::memory_buffer_type const& late
@@ -569,6 +611,115 @@ namespace xml
                   % place.name()
                   % place.position_of_definition()
                   )
+      {}
+
+      duplicate_preference::duplicate_preference
+        (const std::string& target, const util::position_type& position)
+          : generic ( boost::format ( "duplicate target type '%1%' at %2%"
+                                      ", already in the preferences"
+                                    )
+                    % target
+                    % position
+                    )
+      {}
+
+      empty_preferences::empty_preferences
+        (const util::position_type& position)
+          : generic ( boost::format ( "preferences enabled, but no targets"
+                                      " specified at %1%"
+                                    )
+                    % position
+                    )
+      {}
+
+      preferences_without_modules::preferences_without_modules
+        (const util::position_type& position)
+          : generic ( boost::format ( "preferences enabled, but no modules"
+                                      " with target defined in %1%"
+                                    )
+                    % position
+                    )
+      {}
+
+      missing_target_for_module::missing_target_for_module
+        (const std::string& module, const util::position_type& position)
+          : generic ( boost::format ( "module '%1%' missing target"
+                                      " for multi-module transition at %2%"
+                                    )
+                    % module
+                    % position
+                    )
+      {}
+
+      modules_without_preferences::modules_without_preferences
+        ( const std::string& module
+        , const std::string& target
+        , const util::position_type& position
+        )
+          : generic ( boost::format ( "module '%1%' defined with target '%2%'"
+                                      ", but preferences not enabled at %3%"
+                                    )
+                    % module
+                    % target
+                    % position
+                    )
+      {}
+
+      duplicate_module_for_target::duplicate_module_for_target
+        ( const std::string& module
+        , const std::string& target
+        , const util::position_type& position
+        )
+          : generic ( boost::format ( "duplicate module '%1%' for target '%2%'"
+                                      " at %3%"
+                                    )
+                    % module
+                    % target
+                    % position
+                    )
+      {}
+
+      mismatching_eureka_for_module::mismatching_eureka_for_module
+        (const std::string& module, const util::position_type& position)
+          : generic ( boost::format ( "mismatching eureka group for module '%1%'"
+                                      " in multi-module transition at %2%"
+                                    )
+                    % module
+                    % position
+                    )
+      {}
+
+      namespace
+      {
+        std::string print_target_list ( const std::string& _prefix
+                               , const std::list<std::string>& _list
+                               )
+       {
+         return !_list.empty() ? fhg::util::print_container ( _prefix + " ('"
+                                                            , "', '"
+                                                            , "')"
+                                                            , _list
+                                                            ).string()
+                               : "";
+       }
+      }
+
+      mismatching_modules_and_preferences::mismatching_modules_and_preferences
+        ( const std::list<std::string>& missing_in_preferences
+        , const std::list<std::string>& missing_in_modules
+        , const util::position_type& position
+        )
+          : generic ( boost::format ( "mismatching targets for multi-module"
+                                      " transition in %3%, %1%%2%"
+                                    )
+                    % print_target_list ( "mismatch-in-preferences"
+                                        , missing_in_preferences
+                                        )
+                    % print_target_list ( ", mismatch-in-modules"
+                                        , missing_in_modules
+                                        )
+                    % position
+                    )
       {}
     }
   }

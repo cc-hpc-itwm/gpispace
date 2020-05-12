@@ -1,5 +1,7 @@
 #include <we/loader/module_call.hpp>
 
+#include <we/loader/exceptions.hpp>
+
 #include <we/type/id.hpp>
 #include <we/type/port.hpp>
 #include <we/type/range.hpp>
@@ -19,14 +21,6 @@ namespace we
 {
   namespace
   {
-    unsigned long evaluate_size_or_die ( expr::eval::context context
-                                       , std::string const& expression
-                                       )
-    {
-      return boost::get<unsigned long>
-        (expr::parse::parser (expression).eval_all (context));
-    }
-
     class buffer
     {
     public:
@@ -140,6 +134,50 @@ namespace we
     }
   }
 
+  namespace
+  {
+    // https://github.com/boostorg/align/issues/13 prevents from using
+    // boost::align::alignment
+    void* _align ( std::size_t alignment
+                 , std::size_t size
+                 , void*& ptr
+                 , std::size_t& space
+                 )
+    {
+#if HAS_STD_ALIGN
+      return std::align (alignment, size, ptr, space);
+#else
+      // see boost/align/detail/align.hpp
+      if (size <= space)
+      {
+        auto p = reinterpret_cast<char*>
+          ( ~(alignment - 1)
+          & (reinterpret_cast<std::uintptr_t> (ptr) + alignment - 1)
+          );
+        std::size_t const d = p - static_cast<char*> (ptr);
+        std::size_t const n = space - d;
+        if (d <= space && size <= n)
+        {
+          ptr = p;
+          space = n;
+          return p;
+        }
+      }
+
+      return nullptr;
+#endif
+    }
+
+    template<typename T>
+      bool align (std::size_t alignment, std::size_t size, T*& ptr, std::size_t& space)
+    {
+      void* ptr_void (ptr);
+      auto const result (_align (alignment, size, ptr_void, space));
+      ptr = static_cast<T*> (ptr_void);
+      return result != nullptr;
+    }
+  }
+
   namespace loader
   {
     expr::eval::context module_call
@@ -151,22 +189,35 @@ namespace we
       , const we::type::module_call_t& module_call
       )
     {
-      unsigned long position (0);
-
       std::map<std::string, void*> pointers;
       std::unordered_map<std::string, buffer> memory_buffer;
 
-      for ( std::pair<std::string, std::string> const& buffer_and_size
-          : module_call.memory_buffers()
-          )
+      if (!module_call.memory_buffers().empty())
       {
-        if (!virtual_memory_api || !shared_memory)
+        if (!virtual_memory_api)
         {
           throw std::logic_error
             ( ( boost::format
-                ( "module call '%1%::%2%' with %3% memory transfers scheduled "
-                  "to worker '%4%' that is unable to manage memory"
-                )
+                  ( "module call '%1%::%2%' with %3% memory transfers "
+                    "scheduled to worker '%4%' that is unable to manage "
+                    "memory: no handler for the virtual memory was provided."
+                  )
+              % module_call.module()
+              % module_call.function()
+              % module_call.memory_buffers().size()
+              % context->worker_name()
+              ).str()
+            );
+          }
+
+        if (!shared_memory)
+        {
+          throw std::logic_error
+            ( ( boost::format
+                  ( "module call '%1%::%2%' with %3% memory transfers "
+                    "scheduled to worker '%4%' that is unable to manage "
+                    "memory: no local shared memory was allocated."
+                  )
               % module_call.module()
               % module_call.function()
               % module_call.memory_buffers().size()
@@ -175,26 +226,57 @@ namespace we
             );
         }
 
-        char* const local_memory
-          (static_cast<char*> (virtual_memory_api->ptr (*shared_memory)));
-
-        unsigned long const size
-          (evaluate_size_or_die (input, buffer_and_size.second));
-
-        memory_buffer.emplace (buffer_and_size.first, buffer (position, size));
-        pointers.emplace (buffer_and_size.first, local_memory + position);
-
-        position += size;
-
-        if (position > shared_memory->size())
+        std::size_t const shared_memory_size (shared_memory->size());
+        auto const total_size_required
+          (module_call.memory_buffer_size_total (input));
+        if (total_size_required > shared_memory_size)
         {
-          //! \todo specific exception
           throw std::runtime_error
-            ( ( boost::format ("not enough local memory: %1% > %2%")
-              % position
-              % shared_memory->size()
+            ( ( boost::format
+                  ("not enough local memory allocated: %1% bytes required, "
+                   "only %2% bytes allocated"
+                  )
+              % total_size_required
+              % shared_memory_size
               ).str()
             );
+         }
+
+        char* const local_memory
+          ((static_cast<char*> (virtual_memory_api->ptr (*shared_memory))));
+        char* buffer_ptr (local_memory);
+        std::size_t space (shared_memory_size);
+
+        for (auto const& buffer_and_info : module_call.memory_buffers())
+        {
+          unsigned long const size (buffer_and_info.second.size (input));
+          unsigned long const alignment
+            (buffer_and_info.second.alignment (input));
+
+          if (!align (alignment, size, buffer_ptr, space))
+          {
+            throw std::runtime_error
+              ( ( boost::format
+                    ("Not enough local memory: %1% > %2%. "
+                     "Please take into account also the buffer alignments "
+                     "when allocating local shared memory!"
+                    )
+                % (buffer_ptr - local_memory + size + alignment)
+                % shared_memory_size
+                ).str()
+	      );
+       	  }
+
+          memory_buffer.emplace
+            ( std::piecewise_construct
+            , std::forward_as_tuple (buffer_and_info.first)
+            , std::forward_as_tuple
+                (buffer_ptr - local_memory, size)
+            );
+          pointers.emplace (buffer_and_info.first, buffer_ptr);
+
+          buffer_ptr = buffer_ptr + size;
+          space -= size;
         }
       }
 
@@ -209,12 +291,29 @@ namespace we
       expr::eval::context out (input);
 
       {
-        drts::worker::redirect_output const clog (context, fhg::log::TRACE, std::clog);
-        drts::worker::redirect_output const cout (context, fhg::log::INFO, std::cout);
-        drts::worker::redirect_output const cerr (context, fhg::log::WARN, std::cerr);
+        drts::worker::redirect_output const clog
+          (context, fhg::logging::legacy::category_level_trace, std::clog);
+        drts::worker::redirect_output const cout
+          (context, fhg::logging::legacy::category_level_info, std::cout);
+        drts::worker::redirect_output const cerr
+          (context, fhg::logging::legacy::category_level_warn, std::cerr);
 
-        loader[module_call.module()].call
+        auto const& module
+          ( loader.module ( module_call.require_module_unloads_without_rest()
+                          , module_call.module()
+                          )
+          );
+
+        auto const before (fhg::util::currently_loaded_libraries());
+        module.call
           (module_call.function(), context, input, out, pointers);
+        auto const after (fhg::util::currently_loaded_libraries());
+
+        if (before != after)
+        {
+          throw function_does_not_unload
+            (module_call.module(), module_call.function(), before, after);
+        }
       }
 
       transfer ( put_global_data, virtual_memory_api, shared_memory

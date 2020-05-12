@@ -9,6 +9,8 @@
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>
 
+#include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
+
 #include <vmem/gaspi_context.hpp>
 
 #include <boost/noncopyable.hpp>
@@ -29,7 +31,6 @@ namespace gpi
       public:
         topology_t ( memory::manager_t& memory_manager
                    , fhg::vmem::gaspi_context&
-                   , boost::asio::io_service& io_service
                    , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
                    );
 
@@ -84,7 +85,7 @@ namespace gpi
         fhg::rpc::service_handler<add_memory_desc> _add_memory;
         fhg::rpc::service_handler<del_memory_desc> _del_memory;
 
-        boost::asio::io_service& _io_service;
+        fhg::util::scoped_boost_asio_io_service_with_threads _client_io_service;
         std::list<fhg::rpc::remote_tcp_endpoint> _others;
 
         std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> _server;

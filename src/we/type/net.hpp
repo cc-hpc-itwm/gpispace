@@ -2,26 +2,32 @@
 
 #include <we/type/net.fwd.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/plugin/Plugins.hpp>
+#include <we/type/activity.fwd.hpp>
 #include <we/type/connection.hpp>
 #include <we/type/id.hpp>
 #include <we/type/place.hpp>
-#include <we/type/transition.fwd.hpp>
+#include <we/type/transition.hpp>
 #include <we/type/value.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
+#include <we/eureka_response.hpp>
 
 #include <boost/bimap/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
-#include <boost/random.hpp>
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/unordered_map.hpp>
 #include <boost/serialization/unordered_set.hpp>
 
 #include <forward_list>
 #include <functional>
+#include <random>
+#include <stdexcept>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
+#include <cstdlib>
 
 namespace we
 {
@@ -37,33 +43,28 @@ namespace we
         , boost::bimaps::unordered_multiset_of<transition_id_type>
         , boost::bimaps::set_of_relation<>
         > adj_pt_type;
-      typedef boost::bimaps::bimap
-        < port_id_type
-        , place_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > port_to_place_with_info_type;
-      typedef boost::bimaps::bimap
-        < port_id_type
-        , std::string
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > port_to_response_with_info_type;
-      typedef boost::bimaps::bimap
-        < place_id_type
+      typedef std::unordered_map
+        < transition_id_type
+        , std::unordered_map< port_id_type
+                            , std::pair<place_id_type, we::type::property::type>
+                            >
+        > port_to_place_type;
+      typedef std::unordered_map
+        < transition_id_type
+        , std::unordered_map< port_id_type
+                            , std::pair<std::string, we::type::property::type>
+                            >
+        > port_to_response_type;
+      typedef std::unordered_map
+        < transition_id_type
         , port_id_type
-        , boost::bimaps::left_based
-        , boost::bimaps::with_info<we::type::property::type>
-        > place_to_port_with_info_type;
-      typedef std::unordered_map< transition_id_type
-                                , port_to_place_with_info_type
-                                > port_to_place_type;
-      typedef std::unordered_map< transition_id_type
-                                , port_to_response_with_info_type
-                                > port_to_response_type;
-      typedef std::unordered_map< transition_id_type
-                                , place_to_port_with_info_type
-                                > place_to_port_type;
+        > port_to_eureka_type;
+      typedef std::unordered_map
+        < transition_id_type
+        , std::unordered_map< place_id_type
+                            , std::pair<port_id_type, we::type::property::type>
+                            >
+        > place_to_port_type;
       using token_by_id_type =
         std::unordered_map<token_id_type, pnet::type::value::value_type>;
 
@@ -86,13 +87,18 @@ namespace we
                         , std::string const& to
                         , we::type::property::type const&
                         );
+      void add_eureka ( transition_id_type
+                      , port_id_type
+                      );
 
       adj_tp_type const& transition_to_place() const;
       adj_pt_type const& place_to_transition_consume() const;
       adj_pt_type const& place_to_transition_read() const;
 
       port_to_place_type const& port_to_place() const;
+      port_to_place_type const& port_many_to_place() const;
       port_to_response_type const& port_to_response() const;
+      port_to_eureka_type const& port_to_eureka() const;
       place_to_port_type const& place_to_port() const;
 
       void put_value (place_id_type, const pnet::type::value::value_type&);
@@ -102,40 +108,31 @@ namespace we
 
       token_by_id_type const& get_token (place_id_type) const;
 
-      template<typename Engine>
       boost::optional<we::type::activity_t>
-      fire_expressions_and_extract_activity_random
-        ( Engine& engine
-        , we::workflow_response_callback const& workflow_response
-        )
-      {
-        while (!_enabled.empty())
-        {
-          std::unordered_set<we::transition_id_type> const& transition_ids
-            (_enabled.begin()->second);
-          boost::uniform_int<std::size_t> random (0, transition_ids.size() - 1);
-          transition_id_type const transition_id
-            (*std::next (transition_ids.begin(), random (engine)));
-          we::type::transition_t const& transition (_tmap.at (transition_id));
+        fire_expressions_and_extract_activity_random
+          ( std::mt19937&
+          , we::workflow_response_callback const&
+          , we::eureka_response_callback const&
+          , gspc::we::plugin::Plugins&
+          , gspc::we::plugin::PutToken
+          );
 
-          if (transition.expression())
-          {
-            fire_expression (transition_id, transition, workflow_response);
-          }
-          else
-          {
-            return extract_activity (transition_id, transition);
-          }
-        }
+      boost::optional<we::type::activity_t>
+        fire_expressions_and_extract_activity_random
+          ( std::mt19937&
+          , we::workflow_response_callback const&
+          , we::eureka_response_callback const& = &net_type::unexpected_eureka
+          );
 
-        return boost::none;
-      }
-
-      void inject ( activity_t const&
+      void inject ( transition_id_type
+                  , TokensOnPorts const& output
+                  , TokensOnPorts const& input //! \todo remember input
                   , workflow_response_callback
                   = [] ( pnet::type::value::value_type const&
                        , pnet::type::value::value_type const&
                        ) {}
+                  , eureka_response_callback
+                    = &we::type::net_type::unexpected_eureka
                   );
 
     private:
@@ -151,6 +148,8 @@ namespace we
       adj_tp_type _adj_tp;
 
       port_to_place_type _port_to_place;
+      port_to_place_type _port_many_to_place;
+      port_to_eureka_type _port_to_eureka;
       port_to_response_type _port_to_response;
       place_to_port_type _place_to_port;
 
@@ -189,6 +188,9 @@ namespace we
         ( transition_id_type
         , we::type::transition_t const&
         , we::workflow_response_callback const&
+        , we::eureka_response_callback const&
+        , gspc::we::plugin::Plugins&
+        , gspc::we::plugin::PutToken
         );
 
       typedef std::pair<place_id_type, token_id_type> token_to_be_deleted_type;
@@ -204,6 +206,8 @@ namespace we
         (place_id_type, pnet::type::value::value_type const&);
       void do_update (to_be_updated_type const&);
 
+      static void unexpected_eureka (eureka_ids_type const&);
+
       friend class boost::serialization::access;
       template<typename Archive>
       void serialize (Archive& ar, const unsigned int)
@@ -217,7 +221,9 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_adj_pt_read);
         ar & BOOST_SERIALIZATION_NVP (_adj_tp);
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
+        ar & BOOST_SERIALIZATION_NVP (_port_many_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_to_response);
+        ar & BOOST_SERIALIZATION_NVP (_port_to_eureka);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
         ar & BOOST_SERIALIZATION_NVP (_token_id);
         ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);

@@ -1,11 +1,9 @@
-#include <sdpa/daemon/Job.hpp>
-#include <sdpa/events/SubscribeAckEvent.hpp>
-
 #include <sdpa/daemon/GenericDaemon.hpp>
+
+#include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
-#include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -13,24 +11,29 @@
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/RetrieveJobResultsEvent.hpp>
+#include <sdpa/events/SubscribeAckEvent.hpp>
+#include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/put_token.hpp>
+#include <sdpa/events/workflow_response.hpp>
 #include <sdpa/id_generator.hpp>
 
 #include <fhg/util/boost/optional.hpp>
-#include <util-generic/hostname.hpp>
 #include <fhg/util/macros.hpp>
-#include <util-generic/join.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/fallthrough.hpp>
+#include <util-generic/functor_visitor.hpp>
+#include <util-generic/hostname.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <boost/tokenizer.hpp>
 #include <boost/range/adaptor/map.hpp>
+#include <boost/tokenizer.hpp>
 
+#include <algorithm>
+#include <chrono>
 #include <functional>
 #include <sstream>
-#include <algorithm>
 #include <thread>
-#include <chrono>
 
 namespace sdpa
 {
@@ -63,36 +66,16 @@ namespace
   }
 }
 
-    namespace
-    {
-      //! \note templated for convenience of not needing public access
-      //! to master info stuff
-      template<typename InfoMap> InfoMap make_master_info_map
-        (std::vector<name_host_port_tuple> const& masters)
-      {
-        InfoMap ret;
-        for (name_host_port_tuple const& name_host_port : masters)
-        {
-          ret.emplace_front ( std::get<1> (name_host_port)
-                            , std::get<2> (name_host_port)
-                            );
-        }
-        return ret;
-      }
-    }
-
 GenericDaemon::GenericDaemon( const std::string name
                             , const std::string url
                             , std::unique_ptr<boost::asio::io_service> peer_io_service
                             , boost::optional<boost::filesystem::path> const& vmem_socket
-                            , std::vector<name_host_port_tuple> const& masters
-                            , fhg::log::Logger& logger
-                            , const boost::optional<std::pair<std::string, boost::asio::io_service&>>& gui_info
+                            , master_info_t masters
                             , bool create_wfe
+                            , fhg::com::Certificates const& certificates
                             )
-  : _logger (logger)
-  , _name (name)
-  , _master_info (make_master_info_map<master_info_t> (masters))
+  : _name (name)
+  , _master_info (std::move (masters))
   , _subscriptions()
   , _discover_sources()
   , _job_map_mutex()
@@ -101,7 +84,7 @@ GenericDaemon::GenericDaemon( const std::string name
   , _worker_manager()
   , _scheduler ( [this] (job_id_t job_id)
                  {
-                   return findJob (job_id)->requirements();
+                   return findJob (job_id)->requirements_and_preferences();
                  }
                , _worker_manager
                )
@@ -113,13 +96,8 @@ GenericDaemon::GenericDaemon( const std::string name
     (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
   , mtx_subscriber_()
   , mtx_cpb_()
-  , m_capabilities()
-  , m_guiService ( gui_info && !gui_info->first.empty()
-                 ? fhg::util::cxx14::make_unique<NotificationService>
-                   (gui_info->first, gui_info->second)
-                 : nullptr
-                 )
-  , _registration_timeout (boost::posix_time::seconds (1))
+  , _log_emitter()
+  , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
   , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
                                , events::SDPAEvent::Ptr const& e
@@ -130,6 +108,7 @@ GenericDaemon::GenericDaemon( const std::string name
                       , std::move (peer_io_service)
                       , host_from_url (url)
                       , port_from_url (url)
+                      , certificates
                       )
   , ptr_workflow_engine_ ( create_wfe
                          ? new we::layer
@@ -149,13 +128,22 @@ GenericDaemon::GenericDaemon( const std::string name
                          )
   , _registration_threads()
   , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
+  , _interrupt_scheduling_thread
+      ( [this]
+        {
+          std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
+          _scheduling_interrupted = true;
+          _scheduling_requested_condition.notify_one();
+        }
+      )
   , _virtual_memory_api
     ( vmem_socket
     ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        (_logger, vmem_socket->string())
+        (_log_emitter, vmem_socket->string())
     : nullptr
     )
   , _event_handler_thread (&GenericDaemon::handle_events, this)
+  , _interrupt_event_queue (_event_queue)
 {
   for (master_network_info& master : _master_info)
   {
@@ -185,20 +173,27 @@ const std::string& GenericDaemon::name() const
       return _network_strategy.local_endpoint();
     }
 
-void GenericDaemon::serveJob(std::set<worker_id_t> const& workers, const job_id_t& jobId)
+void GenericDaemon::serveJob
+  ( WorkerSet const& workers
+  , Implementation const& implementation
+  , const job_id_t& jobId
+  )
 {
-  //take a job from the workers' queue and serve it
-  Job const* const ptrJob = findJob(jobId);
-  if(ptrJob)
+  Job const* const ptrJob = findJob (jobId);
+  if (ptrJob)
   {
-      // create a SubmitJobEvent for the job job_id serialize and attach description
-      LLOG(TRACE, _logger, "The job "<<ptrJob->id()<<" was assigned the following workers: {"<< fhg::util::join (workers, ", ") << '}');
-
-      for (const worker_id_t& worker_id : workers)
-      {
-        child_proxy (this, _worker_manager.address_by_worker (worker_id).get()->second)
-          .submit_job (ptrJob->id(), ptrJob->activity(), workers);
-      }
+    for (auto const& worker : workers)
+    {
+      child_proxy
+        ( this
+        , _worker_manager.address_by_worker (worker).get()->second
+        )
+        .submit_job ( ptrJob->id()
+                    , ptrJob->activity()
+                    , implementation
+                    , workers
+                    );
+    }
   }
 }
 
@@ -214,59 +209,37 @@ std::string GenericDaemon::gen_id()
                                , job_handler handler
                                )
     {
-      const double computational_cost (1.0); //!Note: use here an adequate cost provided by we! (can be the wall time)
-
-      job_requirements_t requirements
-        { activity.transition().requirements()
-        , activity.get_schedule_data()
-        , [&]
-          {
-            //! \todo Move to gpi::pc::client::api_t
-            if (!activity.transition().module_call())
-            {
-              return null_transfer_cost;
-            }
-
-            expr::eval::context const context {activity.evaluation_context()};
-
-            std::list<std::pair<we::local::range, we::global::range>>
-              vm_transfers (activity.transition().module_call()->gets (context));
-
-            std::list<std::pair<we::local::range, we::global::range>>
-              puts_before (activity.transition().module_call()->puts_evaluated_before_call (context));
-
-            vm_transfers.splice (vm_transfers.end(), puts_before);
-
-            if (vm_transfers.empty())
-            {
-              return null_transfer_cost;
-            }
-
-            if (!_virtual_memory_api)
-            {
-              throw std::logic_error
-                ("vmem transfers without vmem knowledge in agent");
-            }
-            return _virtual_memory_api->transfer_costs (vm_transfers);
-          }()
-        , computational_cost
-        , activity.memory_buffer_size_total()
-        };
-
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
                     , std::move (handler)
-                    , std::move (requirements)
+                    , activity.requirements_and_preferences
+                        (_virtual_memory_api.get())
                     );
     }
 
+
+    Job* GenericDaemon::addJobWithNoPreferences
+      ( const sdpa::job_id_t& job_id
+      , we::type::activity_t activity
+      , job_source source
+      , job_handler handler
+      )
+    {
+      return addJob
+        ( job_id
+        , std::move (activity)
+        , std::move (source)
+        , std::move (handler)
+        , {{}, {}, null_transfer_cost, 1.0, 0, {}} //empty preferences
+        );
+    }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
                                , job_handler handler
-                               , job_requirements_t requirements
+                               , Requirements_and_preferences requirements_and_preferences
                                )
     {
       Job* pJob = new Job
@@ -274,10 +247,10 @@ std::string GenericDaemon::gen_id()
         , std::move (activity)
         , std::move (source)
         , std::move (handler)
-        , std::move (requirements)
+        , std::move (requirements_and_preferences)
         );
 
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
       if (!job_map_.emplace (job_id, pJob).second)
       {
@@ -290,7 +263,7 @@ std::string GenericDaemon::gen_id()
 
     Job* GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
     {
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       return it != job_map_.end() ? it->second : nullptr;
@@ -309,7 +282,7 @@ std::string GenericDaemon::gen_id()
 
     void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id)
     {
-      boost::mutex::scoped_lock const _ (_job_map_mutex);
+      std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
       const job_map_t::const_iterator it (job_map_.find( job_id ));
       if (it == job_map_.end())
@@ -403,6 +376,55 @@ std::string GenericDaemon::gen_id()
       }
     }
 
+    void GenericDaemon::emit_gantt ( job_id_t const& id
+                                   , we::type::activity_t const& activity
+                                   , NotificationEvent::state_t state
+                                   )
+    {
+      _log_emitter.emit_message
+        ( { NotificationEvent ({name()}, id, state, activity).encoded()
+          , gantt_log_category
+          }
+        );
+    }
+
+    fhg::logging::endpoint GenericDaemon::logger_registration_endpoint() const
+    {
+      return _log_emitter.local_endpoint();
+    }
+    fhg::logging::stream_emitter& GenericDaemon::log_emitter()
+    {
+      return _log_emitter;
+    }
+
+bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
+{
+  try
+  {
+    workflowEngine()->submit (job_id, pJob->activity());
+
+    // Should set the workflow_id here, or send it together with the activity
+    pJob->Dispatch();
+
+    return true;
+  }
+  catch (...)
+  {
+    fhg::util::current_exception_printer const error (": ");
+    _log_emitter.emit ( "Exception occurred: " + error.string()
+                      + ". Failed to submit the job " + job_id
+                      + " to the workflow engine!"
+                      , fhg::logging::legacy::category_level_error
+                      );
+
+    //! \note: was failed (job_id, error.string()) but wanted to skip
+    //! the emission of the gantt
+    job_failed (pJob, error.string());
+
+    return false;
+  }
+}
+
 void GenericDaemon::handleSubmitJobEvent
   (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
 {
@@ -418,7 +440,8 @@ void GenericDaemon::handleSubmitJobEvent
   const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
   auto const maybe_master (master_by_address (source));
-  Job* const pJob (addJob ( job_id
+  Job* const pJob (addJobWithNoPreferences
+                          ( job_id
                           , e.activity()
                           , maybe_master
                           ? job_source (job_source_master {*maybe_master})
@@ -426,7 +449,6 @@ void GenericDaemon::handleSubmitJobEvent
                           , hasWorkflowEngine()
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
-                          , {{}, {}, null_transfer_cost, 1.0, 0}
                           )
                   );
 
@@ -440,32 +462,9 @@ void GenericDaemon::handleSubmitJobEvent
   // if it comes from outside and the agent has an WFE, submit it to it
   if (boost::get<job_handler_wfe> (&pJob->handler()))
   {
-    try
+    if (workflow_engine_submit (job_id, pJob))
     {
-      const we::type::activity_t act (pJob->activity());
-      workflowEngine()->submit (job_id, act);
-
-      // Should set the workflow_id here, or send it together with the activity
-      pJob->Dispatch();
-
-      if (m_guiService)
-      {
-        const sdpa::daemon::NotificationEvent evt_
-          ( {name()}
-          , job_id
-          , NotificationEvent::STATE_STARTED
-          , act
-          );
-
-        m_guiService->notify (evt_);
-      }
-    }
-    catch (...)
-    {
-      fhg::util::current_exception_printer const error (": ");
-      LLOG (ERROR, _logger, "Exception occurred: " << error << ". Failed to submit the job "<<job_id<<" to the workflow engine!");
-
-      failed (job_id, error.string());
+      emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
     }
   }
   else {
@@ -553,9 +552,8 @@ void GenericDaemon::handleErrorEvent
         throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
       }
     }
-    BOOST_FALLTHROUGH;
+    FHG_UTIL_FALLTHROUGH;
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
       unsubscribe(source);
 
@@ -570,7 +568,7 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        _scheduler.reschedule_worker_jobs
+        _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
           ( as_worker.get()->second
           , [this] (job_id_t const& job)
             {
@@ -603,22 +601,35 @@ void GenericDaemon::handleErrorEvent
     }
     default:
     {
-      LLOG ( ERROR, _logger
-           , "Unhandled error (" << error.error_code() << ") :" << error.reason()
-           );
+      _log_emitter.emit ( "Unhandled error ("
+                        + std::to_string (error.error_code()) + "): "
+                        + error.reason()
+                        , fhg::logging::legacy::category_level_error
+                        );
     }
   }
 }
 
 void GenericDaemon::submit ( const we::layer::id_type& job_id
-                           , const we::type::activity_t& activity
+                           , we::type::activity_t activity
                            )
 try
 {
-  addJob (job_id, activity, job_source_wfe(), job_handler_worker());
+  if (activity.handle_by_workflow_engine())
+  {
+    workflow_engine_submit
+      ( job_id
+      , addJobWithNoPreferences
+          (job_id, std::move (activity), job_source_wfe(), job_handler_wfe())
+      );
+  }
+  else
+  {
+    addJob (job_id, std::move (activity), job_source_wfe(), job_handler_worker());
 
-  _scheduler.enqueueJob (job_id);
-  request_scheduling();
+    _scheduler.enqueueJob (job_id);
+    request_scheduling();
+  }
 }
 catch (...)
 {
@@ -632,7 +643,7 @@ void GenericDaemon::cancel (const we::layer::id_type& job_id)
 }
 void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 {
-  boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+  std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
 
   Job* const pJob (findJob (job_id));
   if (!pJob)
@@ -643,6 +654,11 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
     return;
   }
 
+  bool const cancel_already_requested
+    ( pJob->getStatus() == sdpa::status::CANCELING
+    || pJob->getStatus() == sdpa::status::CANCELED
+    );
+
   pJob->CancelJob();
 
   const std::unordered_set<worker_id_t>
@@ -650,6 +666,11 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 
   if (!workers_to_cancel.empty())
   {
+    if (cancel_already_requested)
+    {
+      return;
+    }
+
     for (worker_id_t const& w : workers_to_cancel)
     {
       child_proxy ( this
@@ -677,14 +698,16 @@ void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activ
 
   job_finished (pJob, result);
 
-  if (m_guiService)
+  //! \note #817: gantt does not support nesting
+  if ( fhg::util::visit<bool>
+         ( pJob->source()
+         , [] (job_source_wfe const&) { return false; }
+         , [] (job_source_master const&) { return true; }
+         , [] (job_source_client const&) { return true; }
+         )
+     )
   {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_FINISHED
-                           , pJob->result()
-                           }
-                         );
+    emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
   }
 }
 
@@ -696,15 +719,7 @@ void GenericDaemon::failed( const we::layer::id_type& id
 
   job_failed (pJob, reason);
 
-  if (m_guiService)
-  {
-    m_guiService->notify ( { {name()}
-                           , pJob->id()
-                           , NotificationEvent::STATE_FAILED
-                           , pJob->activity()
-                           }
-                         );
-  }
+  emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
 }
 
 void GenericDaemon::canceled (const we::layer::id_type& job_id)
@@ -712,6 +727,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
   Job* const pJob (require_job (job_id, "rts_canceled (unknown job)"));
 
   job_canceled (pJob);
+
+  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
 
   if (boost::get<job_source_master> (&pJob->source()))
   {
@@ -774,7 +791,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       _scheduler.releaseReservation (job->id());
       request_scheduling();
 
-      if (boost::get<job_source_master> (&job->source()))
+      if (boost::get<job_source_wfe> (&job->source()))
       {
         deleteJob (job->id());
       }
@@ -785,8 +802,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       , events::JobFinishedEvent const* event
       )
     {
-      child_proxy (this, source).job_finished_ack (event->job_id());
-
       Job* const job
         (require_job (event->job_id(), "job_finished for unknown job"));
 
@@ -797,6 +812,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         );
 
       handle_job_termination (job);
+
+      child_proxy (this, source).job_finished_ack (event->job_id());
     }
 
     void GenericDaemon::handleJobFailedEvent
@@ -804,8 +821,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       , events::JobFailedEvent const* event
       )
     {
-      child_proxy (this, source).job_failed_ack (event->job_id());
-
       Job* const job
         (require_job (event->job_id(), "job_failed for unknown job"));
 
@@ -816,6 +831,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         );
 
       handle_job_termination (job);
+
+      child_proxy (this, source).job_failed_ack (event->job_id());
     }
 
     void GenericDaemon::handleCancelJobAckEvent
@@ -1008,6 +1025,7 @@ void GenericDaemon::handleCapabilitiesLostEvent
 }
 
 void GenericDaemon::handle_events()
+try
 {
   while (true)
   {
@@ -1026,6 +1044,9 @@ void GenericDaemon::handle_events()
         );
     }
   }
+}
+catch (decltype (_event_queue)::interrupted const&)
+{
 }
 
 void GenericDaemon::delay (std::function<void()> fun)
@@ -1046,7 +1067,7 @@ void GenericDaemon::request_registration_soon
 void GenericDaemon::do_registration_after_sleep
   (master_network_info& master)
 {
-  boost::this_thread::sleep (_registration_timeout);
+  std::this_thread::sleep_for (_registration_timeout);
 
   requestRegistration (master);
 }
@@ -1063,17 +1084,11 @@ void GenericDaemon::requestRegistration (master_network_info& master)
   }
 
   std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  capabilities_set_t cpbSet (m_capabilities);
+  capabilities_set_t cpbSet;
 
   _worker_manager.getCapabilities (cpbSet);
 
   parent_proxy (this, master).worker_registration (cpbSet);
-}
-
-void GenericDaemon::addCapability(const capability_t& cpb)
-{
-  std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  m_capabilities.insert(cpb);
 }
 
 void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
@@ -1163,11 +1178,11 @@ void GenericDaemon::handleSubmitJobAckEvent
   Job* const ptrJob = findJob(pEvent->job_id());
   if(!ptrJob)
   {
-    LLOG (ERROR, _logger,  "job " << pEvent->job_id()
-                        << " could not be acknowledged:"
-                        << " the job " <<  pEvent->job_id()
-                        << " not found!"
-                        );
+    _log_emitter.emit ( "job " + pEvent->job_id()
+                      + " could not be acknowledged: the job "
+                      + pEvent->job_id() + " not found!"
+                      , fhg::logging::legacy::category_level_error
+                      );
 
     throw std::runtime_error
       ("Could not acknowledge job: " + pEvent->job_id() + " not found");
@@ -1555,25 +1570,41 @@ namespace sdpa
       for (;;)
       {
         {
-          boost::mutex::scoped_lock lock (_scheduling_requested_guard);
+          std::unique_lock<std::mutex> lock (_scheduling_requested_guard);
           _scheduling_requested_condition.wait
-            (lock, [this] { return _scheduling_requested; });
+            ( lock
+            , [this]
+              {
+                return _scheduling_requested || _scheduling_interrupted;
+              }
+            );
+
+          if (_scheduling_interrupted)
+          {
+            break;
+          }
 
           _scheduling_requested = false;
         }
 
-        boost::mutex::scoped_lock const _ (_scheduling_thread_mutex);
+        std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
 
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
-          (std::bind (&GenericDaemon::serveJob, this, std::placeholders::_1, std::placeholders::_2));
+          (std::bind ( &GenericDaemon::serveJob
+                     , this
+                     , std::placeholders::_1
+                     , std::placeholders::_2
+                     , std::placeholders::_3
+                     )
+          );
       }
     }
 
     void GenericDaemon::request_scheduling()
     {
-      boost::mutex::scoped_lock const _ (_scheduling_requested_guard);
+      std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
       _scheduling_requested = true;
       _scheduling_requested_condition.notify_one();
     }
@@ -1593,11 +1624,12 @@ namespace sdpa
 
     void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
                                                 , we::type::activity_t activity
+                                                , boost::optional<std::string> const& implementation
                                                 , std::set<worker_id_t> const& workers
                                                 ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
-        (_address, id, activity, workers);
+        (_address, id, std::move (activity), implementation, workers);
     }
 
     void GenericDaemon::child_proxy::cancel_job (job_id_t id) const

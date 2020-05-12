@@ -26,6 +26,11 @@ namespace gpi
           : length (0)
         {}
 
+        void clear()
+        {
+          length = 0;
+        }
+
         uint32_t     length;
       };
 

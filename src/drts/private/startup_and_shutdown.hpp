@@ -2,11 +2,20 @@
 
 #pragma once
 
+#include <drts/certificates.hpp>
+#include <drts/worker_description.hpp>
+#include <drts/drts.fwd.hpp>
+
 #include <installation_path.hpp>
 
 #include <fhg/util/signal_handler_manager.hpp>
 
+#include <logging/endpoint.hpp>
+
 #include <rif/entry_point.hpp>
+#include <rif/protocol.hpp>
+
+#include <vmem/netdev_id.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
@@ -23,20 +32,19 @@ namespace fhg
 {
   namespace drts
   {
-    struct worker_description
-    {
-      std::vector<std::string> capabilities;
-      std::size_t num_per_node;
-      std::size_t max_nodes;
-      std::size_t shm_size;
-      boost::optional<std::size_t> socket;
-    };
-    worker_description parse_capability
+    gspc::worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec);
 
     using hostinfo_type = std::pair<std::string, unsigned short>;
 
-    enum class component_type {vmem, orchestrator, agent, worker};
+    enum class component_type
+    {
+      vmem,
+      orchestrator,
+      agent,
+      worker,
+      logging_demultiplexer,
+    };
 
     struct processes_storage : boost::noncopyable
     {
@@ -71,40 +79,42 @@ namespace fhg
       ( std::vector<fhg::rif::entry_point> const& entry_points
       , std::string master_name
       , fhg::drts::hostinfo_type master_hostinfo
-      , fhg::drts::worker_description const& description
-      , bool verbose
-      , boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
+      , gspc::worker_description const& description
       , fhg::drts::processes_storage& processes
-      , boost::optional<boost::filesystem::path> const& log_dir
       , boost::optional<boost::filesystem::path> const& gpi_socket
       , std::vector<boost::filesystem::path> const& app_path
       , gspc::installation_path const&
       , std::ostream& info_output
+      , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
+      , gspc::Certificates const& certificates
       );
 
-    hostinfo_type startup
-      ( boost::optional<std::string> const& gui_host
-      , boost::optional<unsigned short> const& gui_port
-      , boost::optional<std::string> const& log_host
-      , boost::optional<unsigned short> const& log_port
+    struct startup_result
+    {
+      hostinfo_type orchestrator;
+      boost::optional<rif::protocol::start_logging_demultiplexer_result>
+        top_level_logging_demultiplexer;
+    };
+
+    startup_result startup
+      ( boost::optional<unsigned short> const& orchestrator_port
+      , boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
-      , bool verbose
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const&
-      , bool delete_logfiles
       , fhg::util::signal_handler_manager& signal_handler_manager
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , boost::optional<unsigned short> vmem_port
+      , boost::optional<vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const&
       , fhg::rif::entry_point const&
-      , boost::optional<boost::filesystem::path> const& log_dir
       , processes_storage&
       , std::string& master_agent_name
       , fhg::drts::hostinfo_type& master_agent_hostinfo
       , std::ostream& info_output
+      , boost::optional<fhg::rif::entry_point> log_rif_entry_point
+      , std::vector<fhg::logging::endpoint> default_log_receivers
+      , gspc::Certificates const& certificates
       );
   }
 }

@@ -106,7 +106,7 @@ namespace gspc
     std::pair< entry_point_by_host
              , std::unordered_map<std::string, std::exception_ptr>
              >
-      bootstrap (std::vector<std::string> const& hostnames)
+      bootstrap (std::vector<std::string> const& hostnames, std::ostream& out)
     {
       std::unordered_map<std::string, std::exception_ptr> failed;
       std::vector<std::string> no_duplicates;
@@ -132,14 +132,23 @@ namespace gspc
         }
       }
 
-      std::pair< entry_point_by_host
-               , std::unordered_map<std::string, std::exception_ptr>
-               > const boot
-        ( fhg::rif::strategy::bootstrap
-            (_strategy, no_duplicates, _port, _installation.gspc_home(), _parameters)
+      std::tuple< entry_point_by_host
+                , std::unordered_map<std::string, std::exception_ptr>
+                , std::unordered_map<std::string, std::string>
+                > const boot
+        ( fhg::rif::strategy::bootstrap ( _strategy
+                                        , no_duplicates
+                                        , _port
+                                        , _installation.gspc_home()
+                                        , _parameters
+                                        , out
+                                        )
         );
 
-      for (auto const& new_entry_point : boot.first)
+      std::unordered_map<std::string, std::string> const& real_hostname
+        (std::get<2> (boot));
+
+      for (auto const& new_entry_point : std::get<0> (boot))
       {
         if (!_entry_points.emplace (new_entry_point).second)
         {
@@ -149,14 +158,17 @@ namespace gspc
              ).str()
             );
         }
+
+        _real_hostnames.emplace
+          (new_entry_point.first, real_hostname.at (new_entry_point.first));
       }
 
-      for (auto& failed_boot : boot.second)
+      for (auto& failed_boot : std::get<1> (boot))
       {
         failed.emplace (std::move (failed_boot));
       }
 
-      return {boot.first, failed};
+      return {std::get<0> (boot), failed};
     }
 
     std::pair < std::unordered_set<std::string>
@@ -168,10 +180,8 @@ namespace gspc
 
       for (auto const& entry_point : entry_points)
       {
-        if (!result.second.count (entry_point.first))
-        {
-          _entry_points.erase (entry_point.first);
-        }
+        _entry_points.erase (entry_point.first);
+        _real_hostnames.erase (entry_point.first);
       }
 
       return result;
@@ -250,6 +260,7 @@ namespace gspc
     installation _installation;
 
     entry_point_by_host _entry_points;
+    std::unordered_map<std::string, std::string> _real_hostnames;
   };
 
   rifds::rifds ( rifd::strategy const& strategy
@@ -281,7 +292,7 @@ namespace gspc
 
   std::vector<std::string> rifds::hosts() const
   {
-    return keys (_->entry_points());
+    return values (_->_real_hostnames);
   }
   std::pair< rifd_entry_points
            , std::pair< std::unordered_set<std::string>
@@ -303,9 +314,9 @@ namespace gspc
   std::pair< rifd_entry_points
            , std::unordered_map<std::string, std::exception_ptr>
            >
-    rifds::bootstrap (rifd::hostnames const& hostnames)
+    rifds::bootstrap (rifd::hostnames const& hostnames, std::ostream& out)
   {
-    auto result (_->bootstrap (hostnames._->_));
+    auto result (_->bootstrap (hostnames._->_, out));
 
     return { new rifd_entry_points::implementation (values (result.first))
            , result.second
@@ -345,11 +356,12 @@ namespace gspc
                            , rifd::hostname const& hostname
                            , rifd::port const& port
                            , installation const& installation
+                           , std::ostream& out
                            )
     : rifds (strategy, port, installation)
   {
     auto const failed
-      (bootstrap (std::vector<std::string> {hostname._->_}).second);
+      (bootstrap (std::vector<std::string> {hostname._->_}, out).second);
     if (!failed.empty())
     {
       teardown();
@@ -371,10 +383,11 @@ namespace gspc
                              , rifd::hostnames const& hostnames
                              , rifd::port const& port
                              , installation const& installation
+                             , std::ostream& out
                              )
     : rifds (strategy, port, installation)
   {
-    auto const failed (bootstrap (hostnames).second);
+    auto const failed (bootstrap (hostnames, out).second);
     if (!failed.empty())
     {
       teardown();

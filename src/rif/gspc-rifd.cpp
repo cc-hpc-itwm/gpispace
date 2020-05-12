@@ -1,11 +1,16 @@
 // bernd.loerwald@itwm.fraunhofer.de
 
+#include <drts/certificates.hpp>
+
 #include <rif/entry_point.hpp>
+
+#include <vmem/netdev_id.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/syscall.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
@@ -14,17 +19,19 @@
 
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 
-#include <fhglog/level_io.hpp>
+#include <logging/protocol.hpp>
 
 #include <rif/execute_and_get_startup_messages.hpp>
 #include <rif/protocol.hpp>
 #include <rif/strategy/meta.hpp>
 
-#include <rpc/remote_tcp_endpoint.hpp>
+#include <rpc/future.hpp>
 #include <rpc/remote_function.hpp>
-#include <rpc/service_tcp_provider.hpp>
+#include <rpc/remote_socket_endpoint.hpp>
+#include <rpc/remote_tcp_endpoint.hpp>
 #include <rpc/service_dispatcher.hpp>
 #include <rpc/service_handler.hpp>
+#include <rpc/service_tcp_provider.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -35,6 +42,7 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <fstream>
+#include <stdexcept>
 
 namespace
 {
@@ -127,11 +135,18 @@ try
   boost::optional<unsigned short> const port
     ( vm.count (option::port)
     ? boost::make_optional<unsigned short>
+      ( static_cast<unsigned short>
         ( vm.at (option::port)
         . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
         )
+      )
     : boost::none
     );
+
+  if (port)
+  {
+    throw std::logic_error ("NYI: gspc-rifd ignores given ports.");
+  }
 
   std::string const register_host
     (vm.at (option::register_host).as<std::string>());
@@ -148,7 +163,10 @@ try
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages>
     execute_and_get_startup_messages_service
-      (service_dispatcher, &fhg::rif::execute_and_get_startup_messages);
+      ( service_dispatcher
+      , &fhg::rif::execute_and_get_startup_messages
+      , fhg::rpc::not_yielding
+      );
 
   fhg::rpc::service_handler<fhg::rif::protocol::execute_and_get_startup_messages_and_wait>
     execute_and_get_startup_messages_and_wait_service
@@ -169,6 +187,7 @@ try
 
           return pid_and_startup_messages.second;
         }
+      , fhg::rpc::not_yielding
       );
 
   fhg::rpc::service_handler<fhg::rif::protocol::kill> kill_service
@@ -194,41 +213,72 @@ try
         }
         return failures;
       }
+    , fhg::rpc::not_yielding
     );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_orchestrator>
+    start_orchestrator_service
+      ( service_dispatcher
+      , [] ( boost::filesystem::path const& exe
+           , gspc::Certificates const& certificates
+           , boost::optional<unsigned short> port
+           )
+        {
+          std::vector<std::string> args
+            { "-u", "*:" + std::to_string (port.get_value_or (0))
+            , "-n", "orchestrator"
+            };
+          if (certificates)
+          {
+            args.push_back ("--ssl-certificates");
+            args.push_back (certificates->string());
+          }
+
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                ( exe
+                , args
+                , std::unordered_map<std::string, std::string>()
+                )
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 3)
+          {
+            throw std::logic_error ( "could not start orchestrator"
+                                     ": expected 3 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_scheduler_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.hostinfo
+            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          result.logger_registration_endpoint = messages[2];
+          return result;
+        }
+      , fhg::rpc::not_yielding
+      );
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
     start_vmem_service
       ( service_dispatcher
       , [] ( boost::filesystem::path command
-           , fhg::log::Level log_level
            , boost::filesystem::path socket
            , unsigned short gaspi_port
            , std::chrono::seconds proc_init_timeout
-           , boost::optional<std::pair<std::string, unsigned short>> log_server
-           , boost::optional<boost::filesystem::path> log_file
            , std::vector<std::string> nodes
            , std::string gaspi_master
-           , bool is_master
+           , std::size_t rank
+           , fhg::vmem::netdev_id netdev_id
            ) -> pid_t
         {
           std::vector<std::string> arguments
-            { "--log-level", fhg::log::string (log_level)
-            , "--socket", socket.string()
+            { "--socket", socket.string()
             , "--port", std::to_string (gaspi_port)
             , "--gpi-timeout", std::to_string (proc_init_timeout.count())
+            , "--netdev", to_string (netdev_id)
             };
-          if (log_server)
-          {
-            arguments.emplace_back ("--log-host");
-            arguments.emplace_back (log_server->first);
-            arguments.emplace_back ("--log-port");
-            arguments.emplace_back (std::to_string (log_server->second));
-          }
-          if (log_file)
-          {
-            arguments.emplace_back ("--log-file");
-            arguments.emplace_back (log_file->string());
-          }
 
           //! \todo allow to specify folder to put temporary file in
           boost::filesystem::path const nodefile
@@ -272,10 +322,11 @@ try
             ( fhg::rif::execute_and_get_startup_messages
                 ( command
                 , arguments
-                , { {"GASPI_MFILE", nodefile.string()}
-                  , {"GASPI_MASTER", gaspi_master}
+                , { {"GASPI_MASTER", gaspi_master}
                   , {"GASPI_SOCKET", "0"}
-                  , {"GASPI_TYPE", is_master ? "GASPI_MASTER" : "GASPI_WORKER"}
+                  , {"GASPI_MFILE", nodefile.string()}
+                  , {"GASPI_RANK", std::to_string (rank)}
+                  , {"GASPI_NRANKS", std::to_string (nodes.size())}
                   , {"GASPI_SET_NUMA_SOCKET", "0"}
                   }
                 )
@@ -288,10 +339,166 @@ try
 
           return startup_messages.first;
         }
+      , fhg::rpc::not_yielding
+      );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_agent>
+    start_agent_service
+      ( service_dispatcher
+      , [] ( std::string const& name
+           , fhg::rif::protocol::hostinfo_t const& parent
+           , boost::optional<unsigned short> const& agent_port
+           , boost::optional<boost::filesystem::path> const& gpi_socket
+           , gspc::Certificates const& certificates
+           , boost::filesystem::path const& command
+           )
+        {
+          std::vector<std::string> arguments
+            { "-u", "*:" + std::to_string (agent_port.get_value_or (0))
+            , "-n", name
+            , "--masters", parent.first + "%" + std::to_string (parent.second)
+            };
+          if (gpi_socket)
+          {
+            arguments.emplace_back ("--vmem-socket");
+            arguments.emplace_back (gpi_socket->string());
+          }
+          if (certificates)
+          {
+            arguments.emplace_back ("--ssl-certificates");
+            arguments.emplace_back (certificates->string());
+          }
+
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                ( command
+                , arguments
+                , std::unordered_map<std::string, std::string>()
+                )
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 3)
+          {
+            throw std::logic_error ( "could not start agent " + name
+                                   + ": expected 3 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_scheduler_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.hostinfo
+            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
+          result.logger_registration_endpoint = messages[2];
+          return result;
+        }
+      , fhg::rpc::not_yielding
+      );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_worker>
+    start_worker_service
+      ( service_dispatcher
+      , [] ( std::string name
+           , boost::filesystem::path command
+           , std::vector<std::string> arguments
+           , std::unordered_map<std::string, std::string> environment
+           )
+        {
+          arguments.emplace_back ("-n");
+          arguments.emplace_back (name);
+
+          arguments.emplace_back ("--backlog-length");
+          arguments.emplace_back ("1");
+
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                (command, arguments, environment)
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 1)
+          {
+            throw std::logic_error ( "could not start worker " + name
+                                   + ": expected 1 line of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_worker_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.logger_registration_endpoint = messages[0];
+          return result;
+        }
+      , fhg::rpc::not_yielding
       );
 
   fhg::util::scoped_boost_asio_io_service_with_threads_and_deferred_startup
     io_service (1);
+
+  std::unordered_map<pid_t, fhg::rpc::remote_socket_endpoint>
+    add_emitters_endpoints;
+
+  fhg::rpc::service_handler<fhg::rif::protocol::start_logging_demultiplexer>
+    start_logging_demultiplexer_service
+      ( service_dispatcher
+      , [&add_emitters_endpoints, &io_service]
+          (boost::asio::yield_context yield, boost::filesystem::path exe)
+        {
+          auto const pid_and_startup_messages
+            ( fhg::rif::execute_and_get_startup_messages
+                (exe, {}, std::unordered_map<std::string, std::string>())
+            );
+          auto const& messages (pid_and_startup_messages.second);
+
+          if (messages.size() != 2)
+          {
+            throw std::logic_error ( "could not start logging-demultiplexer "
+                                     ": expected 2 lines of startup messages"
+                                   );
+          }
+
+          fhg::rif::protocol::start_logging_demultiplexer_result result;
+          result.pid = pid_and_startup_messages.first;
+          result.sink_endpoint = messages[0];
+
+          add_emitters_endpoints.emplace
+            ( std::piecewise_construct
+            , std::forward_as_tuple (result.pid)
+            , std::forward_as_tuple
+                ( io_service
+                , yield
+                , fhg::logging::socket_endpoint (messages[1]).socket
+                )
+            );
+
+          return result;
+        }
+      , fhg::rpc::yielding
+      );
+
+  fhg::rpc::service_handler<fhg::rif::protocol::add_emitter_to_logging_demultiplexer>
+    add_emitter_to_logging_demultiplexer_service
+      ( service_dispatcher
+      , [&add_emitters_endpoints]
+          ( boost::asio::yield_context yield
+          , pid_t pid
+          , std::vector<fhg::logging::endpoint> emitters
+          )
+        {
+          auto const it (add_emitters_endpoints.find (pid));
+          if (it == add_emitters_endpoints.end())
+          {
+            throw std::invalid_argument
+              ("unknown log demultiplexer: " + std::to_string (pid));
+          }
+
+          fhg::rpc::sync_remote_function
+            < fhg::logging::protocol::receiver::add_emitters
+            , fhg::rpc::future
+            > {it->second} (yield, std::move (emitters));
+        }
+      , fhg::rpc::yielding
+      );
+
   fhg::rpc::service_tcp_provider_with_deferred_start server
     (io_service, service_dispatcher);
 
@@ -309,6 +516,7 @@ try
     fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
       {endpoint}
       ( register_key
+      , fhg::util::hostname()
       , fhg::rif::entry_point
           ( fhg::util::connectable_to_address_string (local_endpoint.address())
           , local_endpoint.port()

@@ -17,7 +17,7 @@ namespace share_example_stream
 
     std::chrono::high_resolution_clock::rep const start (delta.now());
 
-    char const* const data (static_cast<char const* const> (ptr_data.first));
+    char const* const data (static_cast<char const*> (ptr_data.first));
 
     std::istringstream iss (std::string (data, data + ptr_data.second));
 

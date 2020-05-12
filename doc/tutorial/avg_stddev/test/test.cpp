@@ -84,6 +84,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
     , installation_dir
     , test::option::options()
     . add<test::option::gen::include> (test::source_directory (vm) / "include")
+    . add<test::option::gen::cxx_flag> ("--std=c++11")
     );
 
   boost::filesystem::path const generator
@@ -97,7 +98,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   long const num_buffer (10);
 
   fhg::util::nest_exceptions<std::runtime_error>
-    ([&generator, &size_buffer, &num_values, &data_file]()
+    ([&generator, &data_file]()
      {
        //! \todo inline the generator code instead of calling a binary
        std::ostringstream command_generate;

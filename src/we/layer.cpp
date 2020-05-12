@@ -6,13 +6,13 @@
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <fhg/util/read_bool.hpp>
-#include <fhg/util/starts_with.hpp>
 
 #include <boost/range/adaptor/map.hpp>
 
 #include <functional>
-#include <sstream>
+#include <algorithm>
 
 namespace we
 {
@@ -41,134 +41,15 @@ namespace we
       , _rts_id_generator (rts_id_generator)
       , _random_extraction_engine (random_extraction_engine)
       , _extract_from_nets_thread (&layer::extract_from_nets, this)
+      , _stop_extracting ([this] { _nets_to_extract_from.interrupt(); })
     {}
-
-    namespace
-    {
-      std::string wrapped_activity_prefix()
-      {
-        return "_wrap_";
-      }
-
-      std::string wrapped_name (we::type::port_t const& port)
-      {
-        return (port.is_output() ? "_out_" : "_in_") + port.name();
-      }
-
-      type::activity_t wrap (type::activity_t const& activity)
-      {
-        we::type::net_type net;
-
-        we::transition_id_type const transition_id
-          (net.add_transition (activity.transition()));
-
-        fhg_assert (activity.transition().ports_tunnel().size() == 0);
-
-        std::unordered_map<std::string, we::place_id_type> place_ids;
-
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity.transition().ports_input()
-            )
-        {
-          we::place_id_type const place_id
-            (net.add_place (place::type ( wrapped_name (p.second)
-                                        , p.second.signature()
-                                        , boost::none
-                                        )
-                           )
-            );
-
-          net.add_connection ( we::edge::PT
-                             , transition_id
-                             , place_id
-                             , p.first
-                             , we::type::property::type()
-                             );
-
-          place_ids.emplace (wrapped_name (p.second), place_id);
-        }
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity.transition().ports_output()
-            )
-        {
-          we::place_id_type const place_id
-            (net.add_place (place::type ( wrapped_name (p.second)
-                                        , p.second.signature()
-                                        , boost::none
-                                        )
-                           )
-            );
-
-          net.add_connection ( we::edge::TP
-                             , transition_id
-                             , place_id
-                             , p.first
-                             , we::type::property::type()
-                             );
-
-          place_ids.emplace (wrapped_name (p.second), place_id);
-        }
-
-        for (const type::activity_t::input_t::value_type& top : activity.input())
-        {
-          we::type::port_t const& port
-            (activity.transition().ports_input().at (top.second));
-
-          net.put_value
-            (place_ids.find (wrapped_name (port))->second, top.first);
-        }
-
-        //! \todo copy output too
-
-        we::type::transition_t const
-          transition_net_wrapper ( wrapped_activity_prefix()
-                                 + activity.transition().name()
-                                 , net
-                                 , boost::none
-                                 , we::type::property::type()
-                                 , we::priority_type()
-                                 );
-
-        return type::activity_t
-          (transition_net_wrapper, activity.transition_id());
-      }
-
-      type::activity_t unwrap (type::activity_t const& activity)
-      {
-        we::type::net_type const& net (*activity.transition().net());
-
-        type::activity_t activity_inner
-          (net.transitions().begin()->second, activity.transition_id());
-
-        for ( we::type::transition_t::port_map_t::value_type const& p
-            : activity_inner.transition().ports_output()
-            )
-        {
-            we::place_id_type const place_id
-              ( net.port_to_place().at (net.transitions().begin()->first)
-              .left.find (p.first)->get_right()
-              );
-
-            for ( const pnet::type::value::value_type& token
-                : net.get_token (place_id) | boost::adaptors::map_values
-                )
-            {
-              activity_inner.add_output (p.first, token);
-            }
-        }
-
-        //! \todo copy input too
-
-        return activity_inner;
-      }
-    }
 
     void layer::submit (id_type id, type::activity_t act)
     {
       _nets_to_extract_from.put
         ( activity_data_type ( id
                              , fhg::util::cxx14::make_unique<type::activity_t>
-                                 (act.transition().net() ? act : wrap (act))
+                                 (std::move (act).wrap())
                              )
         , true
         );
@@ -189,22 +70,8 @@ namespace we
 
       _nets_to_extract_from.apply
         ( *parent
-        , [this, parent, result, id] (activity_data_type& activity_data)
-        {
-          activity_data.child_finished
-            ( result
-            , [this, parent] ( pnet::type::value::value_type const& description
-                             , pnet::type::value::value_type const& value
-                             )
-              {
-                workflow_response ( *parent
-                                  , get_response_id (description)
-                                  , value
-                                  );
-              }
-            );
-          _running_jobs.terminated (*parent, id);
-        }
+        ,  async_remove_queue::RemovalFunction::ToFinish
+             (this, *parent, std::move (result), id)
         );
     }
 
@@ -240,7 +107,9 @@ namespace we
 
       //! \todo Don't forget that this child actually failed and
       //! store reason.
-      if (_finalize_job_cancellation.count (*parent))
+      if (  _finalize_job_cancellation.count (*parent)
+         || _ignore_canceled_by_eureka.count (id)
+         )
       {
         canceled (id);
         return;
@@ -273,7 +142,25 @@ namespace we
     void layer::canceled (id_type child)
     {
       boost::optional<id_type> const parent (_running_jobs.parent (child));
-      fhg_assert (parent);
+
+      if (!parent)
+      {
+        return;
+      }
+
+      if (_ignore_canceled_by_eureka.erase (child))
+      {
+        _nets_to_extract_from.apply
+          ( *parent
+          , [this, child] (activity_data_type& activity_data)
+          {
+            id_type const parent_id (activity_data._id);
+            _running_jobs.terminated (parent_id, child);
+          }
+          );
+
+        return;
+      }
 
       if (_running_jobs.terminated (*parent, child))
       {
@@ -293,7 +180,7 @@ namespace we
         {
           const id_type a_id (activity_data._id);
 
-          boost::mutex::scoped_lock const _ (_discover_state_mutex);
+          std::lock_guard<std::mutex> const _ (_discover_state_mutex);
           fhg_assert (_discover_state.find (discover_id) == _discover_state.end());
 
           std::pair<std::size_t, sdpa::discovery_info_t > state
@@ -323,7 +210,7 @@ namespace we
     void layer::discovered
       (id_type discover_id, sdpa::discovery_info_t result)
     {
-      boost::mutex::scoped_lock const _ (_discover_state_mutex);
+      std::lock_guard<std::mutex> const _ (_discover_state_mutex);
       fhg_assert (_discover_state.find (discover_id) != _discover_state.end());
 
       std::pair<std::size_t, sdpa::discovery_info_t >& state
@@ -352,9 +239,7 @@ namespace we
         , [this, put_token_id, place_name, value]
           (activity_data_type& activity_data)
         {
-          boost::get<we::type::net_type>
-            (activity_data._activity->transition().data())
-            .put_token (place_name, value);
+          activity_data._activity->put_token (place_name, value);
 
           _rts_token_put (put_token_id, boost::none);
         }
@@ -375,12 +260,11 @@ namespace we
     }
     _nets_to_extract_from.apply
       ( id
-      , [this, workflow_response_id, place_name, value]
+      , [workflow_response_id, place_name, value]
           (activity_data_type& activity_data)
         {
-          boost::get<we::type::net_type>
-            (activity_data._activity->transition().data())
-            .put_token ( place_name
+           activity_data._activity->
+             put_token ( place_name
                        , make_response_description
                            (workflow_response_id, value)
                        );
@@ -407,11 +291,43 @@ namespace we
     }
   }
 
+  void layer::eureka_response ( id_type parent
+                              , boost::optional<id_type> eureka_calling_child
+                              , type::eureka_ids_type const& eureka_ids
+                              )
+  {
+    _nets_to_extract_from.apply
+      ( parent
+      , [this, parent, eureka_calling_child, eureka_ids]
+          (activity_data_type const& activity_data)
+        {
+          if (_running_jobs.contains (activity_data._id))
+          {
+            for (type::eureka_id_type const& eureka_id : eureka_ids)
+            {
+              _running_jobs.apply_and_remove_eureka
+                ( eureka_id
+                , parent
+                , eureka_calling_child
+                , [&] (id_type t_id)
+                  {
+                    _ignore_canceled_by_eureka.emplace (t_id);
+                    _rts_cancel (t_id);
+                  }
+                );
+            }
+          }
+        }
+      );
+  }
+
     void layer::extract_from_nets()
+    try
     {
       while (true)
       {
         activity_data_type activity_data (_nets_to_extract_from.get());
+        auto const id (activity_data._id);
 
         bool was_active (false);
 
@@ -425,10 +341,7 @@ namespace we
           fhg::util::nest_exceptions<std::runtime_error>
             ( [&]
               {
-                //! \note We wrap all input activites in a net.
-                activity = boost::get<we::type::net_type>
-                  (activity_data._activity->transition().data())
-                  . fire_expressions_and_extract_activity_random
+                activity = activity_data._activity->extract
                       ( _random_extraction_engine
                       , [this, &activity_data] ( pnet::type::value::value_type const& description
                                                , pnet::type::value::value_type const& value
@@ -438,6 +351,28 @@ namespace we
                                             , get_response_id (description)
                                             , value
                                             );
+                        }
+                      , [this, &activity_data] (type::eureka_ids_type const& eureka_ids)
+                        {
+                          eureka_response ( activity_data._id
+                                          , boost::none
+                                          , eureka_ids
+                                          );
+                        }
+                      , _plugins
+                      , [this, id]
+                          ( std::string place_name
+                          , pnet::type::value::value_type value
+                          )
+                        {
+                          _nets_to_extract_from.apply
+                            ( id
+                            , [place_name, value]
+                                (activity_data_type& ad)
+                              {
+                                ad._activity->put_token (place_name, value);
+                              }
+                            );
                         }
                       );
               }
@@ -456,18 +391,16 @@ namespace we
         if (activity)
         {
           const id_type child_id (_rts_id_generator());
-          _running_jobs.started (activity_data._id, child_id);
-          _rts_submit (child_id, *activity);
+          _running_jobs.started ( activity_data._id
+                                , child_id
+                                , activity->eureka_id()
+                                );
+          _rts_submit (child_id, std::move (*activity));
           was_active = true;
         }
 
         if (  _running_jobs.contains (activity_data._id)
-           || ( boost::get<bool> ( activity_data._activity->transition().prop()
-                                 . get ({"drts", "wait_for_output"})
-                                 . get_value_or (false)
-                                 )
-              && activity_data._activity->output_missing()
-              )
+           || activity_data._activity->wait_for_output()
            )
         {
           id_type const id (activity_data._id);
@@ -494,28 +427,24 @@ namespace we
         else
         {
           rts_finished_and_forget
-            ( activity_data._id
-            , fhg::util::starts_with
-              ( wrapped_activity_prefix()
-              , activity_data._activity->transition().name()
-              )
-            ? unwrap (*activity_data._activity)
-            : *activity_data._activity
-            );
+            (activity_data._id, std::move (*activity_data._activity).unwrap());
         }
       }
+    }
+    catch (async_remove_queue::interrupted const&)
+    {
     }
 
     void layer::rts_finished_and_forget (id_type id, type::activity_t activity)
     {
       _nets_to_extract_from.forget (id);
       cancel_outstanding_responses (id, "workflow finished");
-      _rts_finished (id, activity);
+      _rts_finished (id, std::move (activity));
     }
     void layer::rts_failed_and_forget (id_type id, std::string message)
     {
       _nets_to_extract_from.forget (id);
-      cancel_outstanding_responses (id, "workflow failed");
+      cancel_outstanding_responses (id, message);
       _rts_failed (id, message);
     }
     void layer::rts_canceled_and_forget (id_type id)
@@ -545,6 +474,62 @@ namespace we
   }
 
     // list_with_id_lookup
+
+  void layer::async_remove_queue::RemovalFunction::operator()
+    (activity_data_type& activity_data) &&
+  {
+    fhg::util::visit<void>
+      ( _function
+      , [&] (std::function<void (activity_data_type&)>& fun)
+        {
+          return fun (activity_data);
+        }
+      , [&] (ToFinish& to_finish)
+        {
+          activity_data.child_finished
+            ( std::move (to_finish._result)
+            , [&] ( pnet::type::value::value_type const& description
+                  , pnet::type::value::value_type const& value
+                  )
+              {
+                to_finish._that->workflow_response
+                  ( to_finish._parent
+                  , get_response_id (description)
+                  , value
+                  );
+              }
+            , [&] (type::eureka_ids_type const& eureka_ids)
+              {
+                to_finish._that->eureka_response
+                  ( to_finish._parent
+                  , to_finish._id
+                  , eureka_ids
+                  );
+              }
+            );
+          to_finish._that->_running_jobs.terminated
+            ( to_finish._parent
+            , to_finish._id
+            );
+        }
+      );
+  }
+  template<typename Fun>
+  layer::async_remove_queue::RemovalFunction::RemovalFunction
+    (Fun&& fun)
+      : _function (std::forward<Fun> (fun))
+  {}
+  layer::async_remove_queue::RemovalFunction::RemovalFunction
+    (ToFinish to_finish)
+      : _function (std::move (to_finish))
+  {}
+  layer::async_remove_queue::RemovalFunction::ToFinish::ToFinish
+    (layer* that, id_type parent, type::activity_t result, id_type id)
+      : _that (that)
+      , _parent (std::move (parent))
+      , _result (std::move (result))
+      , _id (std::move (id))
+  {}
 
     layer::activity_data_type
       layer::async_remove_queue::list_with_id_lookup::get_front()
@@ -591,10 +576,15 @@ namespace we
 
     layer::activity_data_type layer::async_remove_queue::get()
     {
-      boost::recursive_mutex::scoped_lock lock (_container_mutex);
+      std::unique_lock<std::recursive_mutex> lock (_container_mutex);
 
-      _condition_non_empty.wait
-        (lock, [this]() -> bool { return !_container.empty(); });
+      _condition_not_empty_or_interrupted.wait
+        (lock, [this] { return !_container.empty() || _interrupted; });
+
+      if (_interrupted)
+      {
+        throw interrupted();
+      }
 
       return _container.get_front();
     }
@@ -602,7 +592,7 @@ namespace we
     void layer::async_remove_queue::put
       (activity_data_type activity_data, bool active)
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       bool do_put (true);
 
@@ -616,15 +606,12 @@ namespace we
 
         while (fun_and_do_put_it != pos->second.end())
         {
-          std::tuple< std::function<void (activity_data_type&)>
-                    , std::function<void (std::exception_ptr)>
-                    , bool
-                    > fun_and_do_put (*fun_and_do_put_it);
+          auto fun_and_do_put (std::move (*fun_and_do_put_it));
           fun_and_do_put_it = pos->second.erase (fun_and_do_put_it);
 
           try
           {
-            std::get<0> (fun_and_do_put) (activity_data);
+            std::move (std::get<0> (fun_and_do_put)) (activity_data);
           }
           catch (...)
           {
@@ -652,7 +639,7 @@ namespace we
         {
           _container.push_back (std::move (activity_data));
 
-          _condition_non_empty.notify_one();
+          _condition_not_empty_or_interrupted.notify_one();
         }
         else
         {
@@ -663,11 +650,11 @@ namespace we
 
     void layer::async_remove_queue::remove_and_apply
       ( id_type id
-      , std::function<void (activity_data_type const&)> fun
+      , RemovalFunction fun
       , std::function<void (std::exception_ptr)> on_error
       )
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -677,7 +664,7 @@ namespace we
       {
         try
         {
-          fun (std::move (*pos_container->second));
+          std::move (fun) (*pos_container->second);
         }
         catch (...)
         {
@@ -689,7 +676,7 @@ namespace we
       {
         try
         {
-          fun (std::move (*pos_container_inactive->second));
+          std::move (fun) (*pos_container_inactive->second);
         }
         catch (...)
         {
@@ -699,17 +686,17 @@ namespace we
       }
       else
       {
-        _to_be_removed[id].emplace_back (fun, on_error, false);
+        _to_be_removed[id].emplace_back (std::move (fun), on_error, false);
       }
     }
 
     void layer::async_remove_queue::apply
       ( id_type id
-      , std::function<void (activity_data_type&)> fun
+      , RemovalFunction fun
       , std::function<void (std::exception_ptr)> on_error
       )
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       list_with_id_lookup::iterator const pos_container (_container.find (id));
       list_with_id_lookup::iterator const pos_container_inactive
@@ -719,7 +706,7 @@ namespace we
       {
         try
         {
-          fun (*pos_container->second);
+          std::move (fun) (*pos_container->second);
         }
         catch (...)
         {
@@ -733,7 +720,7 @@ namespace we
         _container_inactive.erase (pos_container_inactive);
         try
         {
-          fun (activity_data);
+          std::move (fun) (activity_data);
         }
         catch (...)
         {
@@ -741,17 +728,17 @@ namespace we
         }
         _container.push_back (std::move (activity_data));
 
-        _condition_non_empty.notify_one();
+        _condition_not_empty_or_interrupted.notify_one();
       }
       else
       {
-        _to_be_removed[id].emplace_back (fun, on_error, true);
+        _to_be_removed[id].emplace_back (std::move (fun), on_error, true);
       }
     }
 
     void layer::async_remove_queue::forget (id_type id)
     {
-      boost::recursive_mutex::scoped_lock const _ (_container_mutex);
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
 
       to_be_removed_type::iterator const pos
         (_to_be_removed.find (id));
@@ -780,26 +767,41 @@ namespace we
       }
     }
 
+    void layer::async_remove_queue::interrupt()
+    {
+      std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
+
+      _interrupted = true;
+      _condition_not_empty_or_interrupted.notify_all();
+    }
 
     // activity_data_type
 
     void layer::activity_data_type::child_finished
       ( type::activity_t child
       , we::workflow_response_callback const& workflow_response
+      , we::eureka_response_callback const& eureka_response
       )
     {
-      //! \note We wrap all input activites in a net.
-      boost::get<we::type::net_type> (_activity->transition().data())
-        .inject (child, workflow_response);
+      _activity->inject (child, workflow_response, eureka_response);
     }
 
 
     // locked_parent_child_relation_type
 
     void layer::locked_parent_child_relation_type::started
-      (id_type parent, id_type child)
+      ( id_type parent
+      , id_type child
+      , boost::optional<type::eureka_id_type> const& eureka_id
+      )
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      if (eureka_id)
+      {
+        _eureka_in_progress.insert
+          ({eureka_parent_id_type (*eureka_id, parent), child});
+      }
 
       _relation.insert (relation_type::value_type (parent, child));
     }
@@ -807,7 +809,9 @@ namespace we
     bool layer::locked_parent_child_relation_type::terminated
       (id_type parent, id_type child)
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
+
+      _eureka_in_progress.right.erase (child);
 
       _relation.erase (relation_type::value_type (parent, child));
 
@@ -817,7 +821,7 @@ namespace we
     boost::optional<layer::id_type>
       layer::locked_parent_child_relation_type::parent (id_type child)
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       relation_type::right_map::const_iterator const pos
         (_relation.right.find (child));
@@ -833,7 +837,7 @@ namespace we
     bool layer::locked_parent_child_relation_type::contains
       (id_type parent) const
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       return _relation.left.find (parent) != _relation.left.end();
     }
@@ -841,7 +845,7 @@ namespace we
     void layer::locked_parent_child_relation_type::apply
       (id_type parent, std::function<void (id_type)> fun) const
     {
-      boost::mutex::scoped_lock const _ (_relation_mutex);
+      std::lock_guard<std::mutex> const _ (_relation_mutex);
 
       for ( id_type child
           : _relation.left.equal_range (parent) | boost::adaptors::map_values
@@ -849,5 +853,32 @@ namespace we
       {
         fun (child);
       }
+    }
+
+
+    template <typename Func>
+    void layer::locked_parent_child_relation_type::apply_and_remove_eureka
+      ( type::eureka_id_type const& eureka_id
+      , id_type const& parent
+      , boost::optional<id_type> const& eureka_caller
+      , Func fun
+      )
+    {
+      std::lock_guard<std::mutex> const lock_for_eureka (_relation_mutex);
+
+      eureka_parent_id_type const eureka_by_parent (eureka_id, parent);
+
+      for ( id_type child
+          : _eureka_in_progress.left.equal_range (eureka_by_parent)
+          | boost::adaptors::map_values
+          )
+      {
+        if (eureka_caller != child)
+        {
+          fun (child);
+        }
+      }
+
+      _eureka_in_progress.left.erase (eureka_by_parent);
     }
 }

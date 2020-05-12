@@ -1,8 +1,8 @@
 #pragma once
 
-#include <cstring> // memset
-#include <inttypes.h>
-#include <iostream>
+#include <cstddef>
+#include <cstdint>
+#include <cstring>
 #include <string>
 
 namespace fhg
@@ -18,7 +18,12 @@ namespace fhg
 
         address_t (std::string const & name);
 
-        uint8_t data[16];
+        std::uint8_t data[16];
+
+        void clear()
+        {
+          std::memset (data, 0, sizeof (data));
+        }
       } __attribute__((packed));
 
       // standard operators
@@ -37,12 +42,12 @@ namespace fhg
           : type_of_msg (0)
           , length (0)
         {
-          memset (&src, 0, sizeof(address_t));
-          memset (&dst, 0, sizeof(address_t));
+          src.clear();
+          dst.clear();
         }
 
-        uint32_t type_of_msg;
-        uint32_t length;           // size of payload in bytes
+        std::uint32_t type_of_msg;
+        std::uint32_t length;      // size of payload in bytes
         address_t src;             // unique source address
         address_t dst;             // unique destination address
       } __attribute__ ((packed));

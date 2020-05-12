@@ -2,6 +2,7 @@
 
 #include <boost/format.hpp>
 
+#include <iostream>
 #include <stdexcept>
 
 void map_produce ( map::user_data_type const& user_data
@@ -43,7 +44,7 @@ void map_process
   }
 
   unsigned long const* const mem_input
-    (static_cast<unsigned long const* const> (input.first));
+    (static_cast<unsigned long const*> (input.first));
   unsigned long* const mem_output
     (static_cast<unsigned long*> (output.first));
 
@@ -65,7 +66,7 @@ void map_consume ( map::user_data_type const& user_data
             << '\n';
 
   unsigned long const* const mem
-    (static_cast<unsigned long const* const> (buffer.first));
+    (static_cast<unsigned long const*> (buffer.first));
 
   for (unsigned long i (0); i < buffer.second / sizeof (unsigned long); ++i)
   {

@@ -107,7 +107,10 @@
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="function" type="xsd:string" use="required"/>
+    <xsd:attribute name="eureka-group" type="xsd:string" use="optional"/>
     <xsd:attribute name="pass_context" type="xsd:boolean" use="optional"/>
+    <xsd:attribute name="require_module_unloads_without_rest" type="xsd:boolean" use="optional"/>
+    <xsd:attribute name="target" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="type_map_type">
@@ -152,7 +155,7 @@
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="type" type="xsd:string" use="required"/>
     <xsd:attribute name="virtual" type="xsd:boolean" use="optional"/>
-    <xsd:attribute name="put_token" type="xsd::boolean" use="optional"/>
+    <xsd:attribute name="put_token" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="port_type">
@@ -165,6 +168,12 @@
     <xsd:attribute name="place" type="xsd:string" use="optional"/>
   </xsd:complexType>
 
+  <xsd:complexType name="preferences_type">
+    <xsd:choice minOccurs="1" maxOccurs="unbounded">
+      <xsd:element name="target" type="xsd:string"/>
+    </xsd:choice>
+  </xsd:complexType>
+
   <xsd:complexType name="memory_buffer_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
@@ -172,6 +181,7 @@
         <xsd:element name="include-properties" type="properties_include_type"/>
       </xsd:choice>
       <xsd:element minOccurs="1" maxOccurs="1" name="size" type="xsd:string"/>
+      <xsd:element minOccurs="0" maxOccurs="1" name="alignment" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="name" type="xsd:NCName" use="required"/>
     <xsd:attribute name="read-only" type="xsd:boolean" use="optional"/>
@@ -218,6 +228,10 @@
     <xsd:attribute name="port" type="xsd:NCName" use="required"/>
   </xsd:complexType>
 
+  <xsd:complexType name="connect_eureka_type">
+    <xsd:attribute name="port" type="xsd:NCName" use="required"/>
+  </xsd:complexType>
+
   <xsd:complexType name="place_map_type">
     <xsd:choice minOccurs="0" maxOccurs="unbounded">
       <xsd:element name="properties" type="property_map_type"/>
@@ -243,6 +257,9 @@
         <xsd:element name="require" type="require_type"/>
         <xsd:element name="struct" type="struct_type"/>
         <xsd:element name="include-structs" type="struct_include_type"/>
+      </xsd:choice>
+      <xsd:choice minOccurs="0" maxOccurs="1">
+        <xsd:element name="preferences" type="preferences_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
@@ -281,9 +298,11 @@
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="connect-in" type="connect_type"/>
         <xsd:element name="connect-out" type="connect_type"/>
+        <xsd:element name="connect-out-many" type="connect_type"/>
         <xsd:element name="connect-inout" type="connect_type"/>
         <xsd:element name="connect-read" type="connect_type"/>
         <xsd:element name="connect-response" type="connect_response_type"/>
+        <xsd:element name="connect-eureka" type="connect_eureka_type"/>
         <xsd:element name="place-map" type="place_map_type"/>
         <xsd:element name="condition" type="xsd:string"/>
       </xsd:choice>

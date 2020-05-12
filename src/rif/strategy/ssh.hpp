@@ -28,6 +28,7 @@ namespace fhg
                     , unsigned short register_port
                     , boost::filesystem::path const& binary
                     , std::vector<std::string> const& parameters
+                    , std::ostream&
                     );
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>

@@ -29,14 +29,14 @@ namespace gspc
       constexpr char const* const log_host {"log-host"};
       constexpr char const* const log_port {"log-port"};
       constexpr char const* const log_level {"log-level"};
-      constexpr char const* const gui_host {"gui-host"};
-      constexpr char const* const gui_port {"gui-port"};
 
       constexpr char const* const log_directory {"log-directory"};
       constexpr char const* const gspc_home {"gspc-home"};
       constexpr char const* const nodefile {"nodefile"};
       constexpr char const* const application_search_path
         {"application-search-path"};
+      constexpr char const* const orchestrator_port {"orchestrator-port"};
+      constexpr char const* const agent_port {"agent-port"};
 
       constexpr char const* const virtual_memory_socket
         {"virtual-memory-socket"};
@@ -44,6 +44,8 @@ namespace gspc
         {"virtual-memory-port"};
       constexpr char const* const virtual_memory_startup_timeout
         {"virtual-memory-startup-timeout"};
+      constexpr char const* const virtual_memory_netdev_id
+        {"virtual-memory-netdev-id"};
 
       constexpr char const* const rif_entry_points_file {"rif-entry-points-file"};
       constexpr char const* const rif_port {"rif-port"};
@@ -64,29 +66,20 @@ namespace gspc
       logging.add_options()
         ( name::log_host
         , boost::program_options::value<validators::nonempty_string>()
-        , "name of log host"
+        , "name of a host running a gspc-monitor with registration enabled"
         )
         ( name::log_port
         , boost::program_options::value
           <validators::positive_integral<unsigned short>>()
-        , "port on log-host to log to"
+        , "port on log-host running a gspc-monitor with registration enabled"
         )
         ( name::log_level
-        , boost::program_options::value<std::string>()->default_value ("INFO")
-        , "log level to use"
+        , boost::program_options::value<std::string>()
+        , "DO NOT USE - log level to use"
         )
         ( name::log_directory
         , boost::program_options::value<validators::is_directory_if_exists>()
-        , "directory where to store drts runtime log information"
-        )
-        ( name::gui_host
-        , boost::program_options::value<validators::nonempty_string>()
-        , "name of gui host"
-        )
-        ( name::gui_port
-        , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()
-        , "port on gui-host to send to"
+        , "DO NOT USE - directory where to store drts runtime log information"
         )
         ;
 
@@ -118,6 +111,16 @@ namespace gspc
         ( name::application_search_path
         , boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
+        )
+        ( name::orchestrator_port
+        , boost::program_options::value
+          <validators::positive_integral<unsigned short>>()
+        , "orchestrator port"
+        )
+        ( name::agent_port
+        , boost::program_options::value
+          <validators::positive_integral<unsigned short>>()
+        , "agent port"
         )
         ;
 
@@ -203,6 +206,12 @@ namespace gspc
         , boost::program_options::value<validators::positive_integral<unsigned long>>()
         ->required()
         , "timeout in seconds for the virtual memory manager to connect and start up."
+        )
+        ( name::virtual_memory_netdev_id
+        , boost::program_options::value<fhg::vmem::netdev_id>()
+          ->default_value({})
+        , "propose a network device ID to use ('auto' for automatic detection"
+          ", or '0' or '1' to select a specific device)"
         )
         ;
 
@@ -314,39 +323,48 @@ namespace gspc
   REQUIRE (_name, _type, validators::positive_integral<_type>)
 
 #define ACCESS_PATH(_name, _as)                 \
-  SET_PATH (_name, _as);                        \
-  GET_PATH (_name, _as);                        \
+  SET_PATH (_name, _as)                         \
+  GET_PATH (_name, _as)                         \
   REQUIRE_PATH (_name, _as)
 #define ACCESS_STRING(_name, _as)               \
-  SET_STRING (_name, _as);                      \
-  GET_STRING (_name, _as);                      \
+  SET_STRING (_name, _as)                       \
+  GET_STRING (_name, _as)                       \
   REQUIRE_STRING (_name, _as)
 #define ACCESS_POSITIVE_INTEGRAL(_name, _type)  \
-  SET_POSITIVE_INTEGRAL (_name, _type);         \
-  GET_POSITIVE_INTEGRAL (_name, _type);         \
+  SET_POSITIVE_INTEGRAL (_name, _type)          \
+  GET_POSITIVE_INTEGRAL (_name, _type)          \
   REQUIRE_POSITIVE_INTEGRAL (_name, _type)
 
 
-  ACCESS_STRING (log_host, validators::nonempty_string);
-  ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short);
-  ACCESS_STRING (log_level, std::string);
-  ACCESS_STRING (gui_host, validators::nonempty_string);
-  ACCESS_POSITIVE_INTEGRAL (gui_port, unsigned short);
+  ACCESS_STRING (log_host, validators::nonempty_string)
+  ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short)
+  ACCESS_STRING (log_level, std::string)
 
-  ACCESS_PATH (log_directory, validators::is_directory_if_exists);
-  ACCESS_PATH (gspc_home, validators::existing_directory);
-  ACCESS_PATH (nodefile, validators::existing_path);
-  ACCESS_PATH (application_search_path, validators::existing_directory);
+  ACCESS_PATH (log_directory, validators::is_directory_if_exists)
+  ACCESS_PATH (gspc_home, validators::existing_directory)
+  ACCESS_PATH (nodefile, validators::existing_path)
+  ACCESS_PATH (application_search_path, validators::existing_directory)
+  ACCESS_POSITIVE_INTEGRAL (orchestrator_port, unsigned short)
+  ACCESS_POSITIVE_INTEGRAL (agent_port, unsigned short)
 
   ACCESS_PATH ( virtual_memory_socket
               , validators::nonexisting_path_in_existing_directory
-              );
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short);
-  ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long);
+              )
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short)
+  ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long)
+  SET (virtual_memory_netdev_id, fhg::vmem::netdev_id)
+  {
+    set_as<fhg::vmem::netdev_id>
+      (vm, name::virtual_memory_netdev_id, to_string (value));
+  }
+  GET_MAYBE
+    (virtual_memory_netdev_id, fhg::vmem::netdev_id, fhg::vmem::netdev_id)
+  REQUIRE
+    (virtual_memory_netdev_id, fhg::vmem::netdev_id, fhg::vmem::netdev_id)
 
-  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file);
-  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short);
-  ACCESS_STRING (rif_strategy, std::string);
+  ACCESS_PATH (rif_entry_points_file, validators::nonempty_file)
+  ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short)
+  ACCESS_STRING (rif_strategy, std::string)
 
   GET_MAYBE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)
   REQUIRE (rif_strategy_parameters, std::vector<std::string>, std::vector<std::string>)

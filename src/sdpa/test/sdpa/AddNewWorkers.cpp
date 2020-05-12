@@ -1,22 +1,51 @@
-#include <utils.hpp>
+#include <sdpa/test/sdpa/utils.hpp>
+#include <sdpa/types.hpp>
+
+#include <test/certificates_data.hpp>
+
+#include <we/type/activity.hpp>
+#include <we/type/module_call.hpp>
+#include <we/type/net.hpp>
+#include <we/type/place.hpp>
+#include <we/type/transition.hpp>
+
+#include <fhg/util/thread/event.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random.hpp>
+
+#include <boost/optional.hpp>
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
+
+#include <list>
+#include <memory>
+#include <string>
+#include <unordered_map>
+#include <vector>
 
 we::type::activity_t net_with_n_children (unsigned int n)
 {
   we::type::property::type props;
   props.set ({"fhg", "drts", "schedule", "num_worker"}, std::to_string (1) + "UL");
 
+  fhg::util::testing::unique_random<std::string> transition_names;
+
   std::vector<we::type::transition_t> transitions;
   for (unsigned int k{0}; k < n; k++)
   {
     transitions.emplace_back
-      ( fhg::util::testing::random_string()
-      , we::type::module_call_t ( fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                , std::unordered_map<std::string, std::string>()
-                                , std::list<we::type::memory_transfer>()
-                                , std::list<we::type::memory_transfer>()
-                                )
+      ( transition_names()
+      , we::type::module_call_t
+          ( fhg::util::testing::random_string()
+          , fhg::util::testing::random_string()
+          , std::unordered_map<std::string, we::type::memory_buffer_info_t>()
+          , std::list<we::type::memory_transfer>()
+          , std::list<we::type::memory_transfer>()
+          , true
+          )
       , boost::none
       , props
       , we::priority_type()
@@ -75,19 +104,17 @@ we::type::activity_t net_with_n_children (unsigned int n)
                              , we::type::property::type()
                              , we::priority_type()
                              )
-    , boost::none
     );
 }
 
 // This case tests if each worker added after a user workflow submission
 // gets assigned a task, provided sufficient activities are produced by the
 // workflow engine
-BOOST_FIXTURE_TEST_CASE
-  (add_new_workers, setup_logging)
+BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (_logger);
-  const utils::agent agent (orchestrator, _logger);
-  utils::client client (orchestrator);
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
+  utils::client client (orchestrator, certificates);
 
   const unsigned int n_initial_workers (25);
   const unsigned int n_new_workers (25);
@@ -107,6 +134,7 @@ BOOST_FIXTURE_TEST_CASE
       ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
         ( [&e] (std::string str) {e.notify (str);}
         , agent
+        , certificates
         )
       );
   }
@@ -133,6 +161,7 @@ BOOST_FIXTURE_TEST_CASE
       ( fhg::util::cxx14::make_unique<utils::fake_drts_worker_waiting_for_finished_ack>
         ( [&e] (std::string str) {e.notify (str);}
         , agent
+        , certificates
         )
       );
   }

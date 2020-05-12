@@ -110,30 +110,37 @@ try
               )
           , vm.count (option::port)
           ? boost::make_optional<unsigned short>
+            ( static_cast<unsigned short>
               ( vm.at (option::port)
               . as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
               )
+            )
           : boost::none
           , boost::filesystem::canonical
               (fhg::util::executable_path().parent_path() / INSTALLATION_HOME)
           , vm.at (option::strategy_parameters)
           . as<option::strategy_parameters_type>()
+          , std::cout
           )
     );
-  for ( std::pair<std::string, fhg::rif::entry_point> const& entry_point
-      : result.first
-      )
+
+  std::unordered_map<std::string, std::string> const& real_hostnames
+    (std::get<2> (result));
+
+  for (auto const& entry_point : std::get<0> (result))
   {
-    std::cout << entry_point.first << ' ' << entry_point.second << '\n';
+    std::cout << entry_point.first << ' ' << entry_point.second
+              << " (" << real_hostnames.at (entry_point.first) << ')'
+              << '\n';
   }
 
-  for (auto const& failure : result.second)
+  for (auto const& failure : std::get<1> (result))
   {
     std::cerr << failure.first << ": "
               << fhg::util::exception_printer (failure.second) << "\n";
   }
 
-  return result.second.empty() ? 0 : 1;
+  return std::get<1> (result).empty() ? 0 : 1;
 }
 catch (...)
 {

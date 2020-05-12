@@ -2,7 +2,7 @@
 
 extended_add_library (NAME transform_file_type
   SOURCES "type.cpp"
-  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   LIBRARIES we-dev
             Boost::filesystem
 )
@@ -11,7 +11,7 @@ extended_add_library (NAME transform_file_map-impl
   TYPE MODULE
   SOURCES "implementation.cpp"
   LIBRARIES transform_file_type
-  INCLUDE_DIRECTORIES "${CMAKE_SOURCE_DIR}/share/example"
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
 )
 
 math (EXPR size_input "20 << 20")
@@ -22,7 +22,7 @@ math (EXPR num_block "120")
 fhg_add_test (NAME share_example_map_transform_file
   SOURCES test.cpp
   USE_BOOST
-  INCLUDE PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
        --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/../../"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"

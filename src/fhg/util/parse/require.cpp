@@ -5,6 +5,8 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/position.hpp>
 
+#include <util-generic/unreachable.hpp>
+
 namespace fhg
 {
   namespace util
@@ -195,6 +197,8 @@ namespace fhg
               return true;
             }
 
+            FHG_UTIL_UNREACHABLE ("other cases excluded before the switch");
+
           case 't':
             ++pos;
             require::require (pos, "rue");
@@ -212,7 +216,7 @@ namespace fhg
 
         void list ( position& pos
                   , const char open, const char sep, const char close
-                  , const boost::function<void (position&)>& f
+                  , const std::function<void (position&)>& f
                   , const bool skip_space_before_element
                   , const bool skip_space_after_element
                   )

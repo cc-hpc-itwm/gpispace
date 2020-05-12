@@ -5,7 +5,7 @@
 #include <fhg/util/boost/variant.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
-#include <util-generic/testing/random_string.hpp>
+#include <util-generic/testing/random/string.hpp>
 
 #include <list>
 #include <sstream>

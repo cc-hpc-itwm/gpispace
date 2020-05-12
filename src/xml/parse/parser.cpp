@@ -30,11 +30,14 @@
 #include <xml/parse/type/place_map.hpp>
 #include <xml/parse/type/port.hpp>
 #include <xml/parse/type/response.hpp>
+#include <xml/parse/type/eureka.hpp>
 #include <xml/parse/type/specialize.hpp>
 #include <xml/parse/type/struct.hpp>
 #include <xml/parse/type/template.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/use.hpp>
+#include <xml/parse/type/preferences.hpp>
+#include <xml/parse/type/multi_mod.hpp>
 
 #include <xml/parse/util/position.hpp>
 
@@ -42,7 +45,7 @@
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
-#include <we/type/activity.hpp>
+#include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
 
@@ -54,6 +57,7 @@
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/algorithm.hpp>
 
 #include <functional>
 
@@ -214,6 +218,118 @@ namespace xml
 
       // ******************************************************************* //
 
+      type::preferences_type preferences_type ( const xml_node_type* node
+                                              , state::type& state
+                                              )
+      {
+        std::unordered_set<type::preference_type> unique_targets;
+        std::list<type::preference_type> target_list;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "target")
+            {
+              const std::string target_name
+                (validate_name ( std::string (child->value(), child->value_size())
+                               , "target"
+                               , state.file_in_progress()
+                               )
+                );
+
+              if (!unique_targets.emplace (target_name).second)
+              {
+                throw error::duplicate_preference ( target_name
+                                                  , state.position (child)
+                                                  );
+              }
+              else
+              {
+                target_list.push_back (target_name);
+              }
+            }
+            else
+            {
+              state.warn
+                ( warning::unexpected_element ( child_name
+                                              , "target"
+                                              , state.file_in_progress()
+                                              )
+                );
+            }
+          }
+        }
+
+        return target_list;
+      }
+
+      void is_matching_preferences_and_modules_with_eureka_id
+        ( const xml_node_type* node
+        , state::type const& state
+        , type::preferences_type const& preferences
+        , type::multi_module_type const& multi_mod
+        )
+      {
+        boost::optional<we::type::eureka_id_type> const& eureka_group
+          (multi_mod.eureka_id());
+
+        std::list<type::preference_type> modules;
+        for (auto const& mod : multi_mod.modules())
+        {
+          if (mod.second.eureka_id() != eureka_group)
+          {
+            throw error::mismatching_eureka_for_module
+              ( mod.second.name()
+              , state.position (node)
+              );
+          }
+          modules.push_back (mod.first);
+        }
+        modules.sort();
+
+        std::list<type::preference_type> pref_list (preferences.targets());
+        pref_list.sort();
+
+        std::list<type::preference_type> mismatching_preferences;
+        std::set_difference ( pref_list.begin()
+                            , pref_list.end()
+                            , modules.begin()
+                            , modules.end()
+                            , std::inserter
+                              ( mismatching_preferences
+                              , mismatching_preferences.begin()
+                              )
+                            );
+
+        std::list<type::preference_type> mismatching_modules;
+        std::set_difference ( modules.begin()
+                            , modules.end()
+                            , pref_list.begin()
+                            , pref_list.end()
+                            , std::inserter
+                              ( mismatching_modules
+                              , mismatching_modules.begin()
+                              )
+                            );
+
+        if (mismatching_modules.size() || mismatching_preferences.size())
+        {
+          throw error::mismatching_modules_and_preferences
+            ( mismatching_preferences
+            , mismatching_modules
+            , state.position (node)
+            );
+        }
+      }
+
+      // ******************************************************************* //
+
       void set_type_map ( const xml_node_type* node
                         , const state::type& state
                         , type::type_map_type& map
@@ -367,6 +483,19 @@ namespace xml
           , required ("response_type", node, "port", state)
           , required ("response_type", node, "to", state)
           , properties
+          );
+      }
+
+
+      // **************************************************************** //
+
+      type::eureka_type eureka_type ( const xml_node_type* node
+                                    , state::type& state
+                                    )
+      {
+        return type::eureka_type
+          ( state.position (node)
+          , required ("eureka_type", node, "port", state)
           );
       }
 
@@ -581,6 +710,7 @@ namespace xml
           );
 
         boost::optional<std::string> size;
+        boost::optional<std::string> alignment;
 
         we::type::property::type properties;
 
@@ -612,6 +742,10 @@ namespace xml
             {
               size = fhg::util::join (parse_cdata (child, state), ';').string();
             }
+            else if (child_name == "alignment")
+            {
+              alignment = fhg::util::join (parse_cdata (child, state), ';').string();
+            }
             else
             {
               state.warn
@@ -634,6 +768,7 @@ namespace xml
           ( state.position (node)
           , name
           , *size
+          , alignment.get_value_or ("1UL")
           , fhg::util::boost::fmap<std::string, bool>
             (fhg::util::read_bool, optional (node, "read-only"))
           , properties
@@ -706,6 +841,7 @@ namespace xml
         boost::optional<type::use_type> use;
         type::transition_type::connections_type connections;
         type::transition_type::responses_type responses;
+        type::transition_type::eurekas_type eurekas;
         type::transition_type::place_maps_type place_map;
         std::list<type::structure_type> structs;
         type::conditions_type conditions;
@@ -761,6 +897,11 @@ namespace xml
               connections.push<error::duplicate_connect>
                 (connect_type (child, state, we::edge::TP));
             }
+            else if (child_name == "connect-out-many")
+            {
+              connections.push<error::duplicate_connect>
+                (connect_type (child, state, we::edge::TP_MANY));
+            }
             else if (child_name == "connect-read")
             {
               connections.push<error::duplicate_connect>
@@ -770,6 +911,11 @@ namespace xml
             {
               responses.push<error::duplicate_response>
                 (response_type (child, state));
+            }
+            else if (child_name == "connect-eureka")
+            {
+              eurekas.push<error::duplicate_eureka>
+                (eureka_type (child, state));
             }
             else if (child_name == "condition")
             {
@@ -827,6 +973,7 @@ namespace xml
                           )                                                \
           , connections                                                    \
           , responses                                                      \
+          , eurekas                                                        \
           , place_map                                                      \
           , structs                                                        \
           , conditions                                                     \
@@ -1347,6 +1494,7 @@ namespace xml
         , state::type& state
         , type::function_type::ports_type const& ports
         , fhg::pnet::util::unique<type::memory_buffer_type> const& memory_buffers
+        , const bool is_target_required
         , boost::filesystem::path const& path
         )
       {
@@ -1361,7 +1509,17 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
+        const boost::optional<bool> require_module_unloads_without_rest
+          ( fhg::util::boost::fmap<std::string, bool>
+              ( fhg::util::read_bool
+              , optional (node, "require_module_unloads_without_rest")
+              )
+          );
+        const boost::optional<we::type::eureka_id_type> eureka_id
+          (optional (node, "eureka-group"));
         const util::position_type pod (state.position (node));
+        const boost::optional<std::string> target
+          (optional (node, "target"));
         const std::tuple
           < std::string
           , boost::optional<std::string>
@@ -1435,10 +1593,25 @@ namespace xml
           }
         }
 
+        if (is_target_required && !target)
+        {
+          throw error::missing_target_for_module ( name
+                                                 , pod
+                                                 );
+        }
+        else if (!is_target_required && target)
+        {
+          throw error::modules_without_preferences ( name
+                                                   , *target
+                                                   , pod
+                                                   );
+        }
+
         return type::module_type
           ( pod
           , name
           , function
+          , target
           , port_return
           , port_arg
           , memory_buffer_return
@@ -1449,6 +1622,10 @@ namespace xml
           , ldflags
           , cxxflags
           , pass_context
+          , eureka_id
+          , require_module_unloads_without_rest
+          ? *require_module_unloads_without_rest
+          : true
           );
       }
 
@@ -1687,9 +1864,11 @@ namespace xml
         std::list<type::structure_type> structs;
         type::conditions_type conditions;
         type::requirements_type requirements;
+        type::preferences_type preferences;
         boost::optional<type::expression_type> expression;
         boost::optional<type::module_type> module;
         boost::optional<type::net_type> net;
+        type::multi_module_type multi_module;
         we::type::property::type properties;
 
         for ( xml_node_type* child (node->first_node())
@@ -1760,12 +1939,23 @@ namespace xml
             }
             else if (child_name == "module")
             {
-              module = module_type ( child
-                                   , state
-                                   , ports
-                                   , memory_buffers
-                                   , state.position (node).path()
-                                   );
+              type::module_type parsed_module =
+                module_type ( child
+                            , state
+                            , ports
+                            , memory_buffers
+                            , !preferences.targets().empty()
+                            , state.position (node).path()
+                            );
+
+              if (parsed_module.target())
+              {
+                multi_module.add (parsed_module);
+              }
+              else
+              {
+                module = parsed_module;
+              }
             }
             else if (child_name == "net")
             {
@@ -1795,6 +1985,15 @@ namespace xml
             {
               require_type (requirements, child, state);
             }
+            else if (child_name == "preferences")
+            {
+              preferences = preferences_type (child, state);
+
+              if (preferences.targets().empty())
+              {
+                throw error::empty_preferences (state.position (child));
+              }
+            }
             else
             {
               state.warn ( warning::unexpected_element ( child_name
@@ -1804,6 +2003,19 @@ namespace xml
                        );
             }
           }
+        }
+
+        if (!preferences.targets().empty() && multi_module.modules().empty())
+        {
+          throw error::preferences_without_modules (state.position (node));
+        }
+        else if (!preferences.targets().empty())
+        {
+          is_matching_preferences_and_modules_with_eureka_id ( node
+                                                             , state
+                                                             , preferences
+                                                             , multi_module
+                                                             );
         }
 
 #define FUNCTION(_content) type::function_type  \
@@ -1818,11 +2030,13 @@ namespace xml
           , structs                             \
           , conditions                          \
           , requirements                        \
+          , preferences                         \
           , _content                            \
           , properties                          \
           }
 
         return !!expression ? FUNCTION (*expression)
+          : !!multi_module.modules().size() ? FUNCTION (multi_module)
           : !!module ? FUNCTION (*module)
           : !!net ? FUNCTION (*net)
           : throw std::logic_error ("missing function content");
@@ -1994,7 +2208,7 @@ namespace xml
       type::dump::dump (s, function);
     }
 
-    we::type::activity_t xml_to_we
+    we::type::transition_t xml_to_we
       ( const xml::parse::type::function_type& function
       , const xml::parse::state::type& state
       )
@@ -2008,8 +2222,7 @@ namespace xml
       std::unordered_map<std::string, we::port_id_type> port_id_out;
       std::unordered_map<we::port_id_type, std::string> real_place_names;
 
-      we::type::transition_t trans
-        ( function.synthesize
+      return function.synthesize
           ( function.name().get_value_or ("anonymous")
           , state
           , port_id_in
@@ -2021,9 +2234,7 @@ namespace xml
           , {}
           , real_place_names
           )
-        );
-
-      return we::type::activity_t (trans, boost::none);
+        ;
     }
   } // namespace parse
 } // namespace xml

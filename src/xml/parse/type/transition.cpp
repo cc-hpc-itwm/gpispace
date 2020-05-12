@@ -12,6 +12,7 @@
 
 #include <xml/parse/type/dumps.hpp>
 
+#include <we/type/value/name.hpp>
 #include <we/type/expression.hpp>
 #include <we/workflow_response.hpp>
 
@@ -36,6 +37,7 @@ namespace xml
         , const std::string& name
         , const connections_type& connections
         , responses_type const& responses
+        , eurekas_type const& eurekas
         , const place_maps_type& place_map
         , const structs_type& structs_
         , const conditions_type& conditions
@@ -49,6 +51,7 @@ namespace xml
         , _name (name)
         , _connections (connections)
         , _responses (responses)
+        , _eurekas (eurekas)
         , _place_map (place_map)
         , structs (structs_)
         , _conditions (conditions)
@@ -82,6 +85,7 @@ namespace xml
                , prefix + _name
                , connections
                , _responses
+               , _eurekas
                , place_map
                , structs
                , _conditions
@@ -119,6 +123,7 @@ namespace xml
                , fhg::util::remove_prefix (prefix, _name)
                , connections
                , _responses
+               , _eurekas
                , place_map
                , structs
                , _conditions
@@ -159,6 +164,10 @@ namespace xml
       transition_type::responses_type const& transition_type::responses() const
       {
         return _responses;
+      }
+      transition_type::eurekas_type const& transition_type::eurekas() const
+      {
+        return _eurekas;
       }
       const transition_type::place_maps_type&
         transition_type::place_map() const
@@ -269,15 +278,56 @@ namespace xml
         }
       }
 
+      // ***************************************************************** //
+
+
+      void transition_type::type_check ( eureka_type const& eureka
+                                       , state::type const&
+                                       ) const
+      {
+        auto const& ports (resolved_function().ports());
+
+        auto const& eureka_port
+          ( std::find_if
+            ( std::begin (ports), std::end (ports)
+            , [&eureka] (port_type const& port)
+              {
+                return (  port.direction() == we::type::PORT_OUT
+                       && port.name() == eureka.port()
+                       );
+              }
+            )
+          );
+
+        if (eureka_port == std::end (ports))
+        {
+          throw error::connect_eureka_to_nonexistent_out_port ( *this
+                                                              , eureka
+                                                              );
+        }
+        else if (eureka_port->type() != pnet::type::value::SET())
+        {
+          throw error::eureka_port_type_mismatch (*this, eureka);
+        }
+      }
+
+      // ***************************************************************** //
+
+      bool transition_type::is_connect_tp_many ( const we::edge::type direction
+                                               , const std::string &port_type
+                                               ) const
+      {
+        return (  direction == we::edge::TP_MANY
+               && port_type == pnet::type::value::LIST()
+               );
+      }
+
       //! \todo move to connect_type
       void transition_type::type_check ( const connect_type & connect
                                        , const state::type &
                                        , net_type const& parent_net
                                        ) const
       {
-        const std::string direction
-          (we::edge::enum_to_string (connect.direction()));
-
         const boost::optional<const place_type&> place
           (parent_net.places().get (connect.place()));
 
@@ -303,7 +353,9 @@ namespace xml
             (*this, connect);
         }
 
-        if (place->signature() != port->signature())
+        if (  place->signature() != port->signature()
+           && not is_connect_tp_many (connect.direction(), port->type())
+           )
         {
           throw error::connect_type_error ( *this
                                           , connect
@@ -343,6 +395,10 @@ namespace xml
         for (response_type const& response : responses())
         {
           type_check (response, state);
+        }
+        for (eureka_type const& eureka : eurekas())
+        {
+          type_check (eureka, state);
         }
 
         boost::apply_visitor (transition_type_check (state), _function_or_use);
@@ -684,15 +740,12 @@ namespace xml
 
               if (num_outport > 1)
               {
-                const boost::optional<const ::we::type::property::value_type&>
-                  warning_switch ( properties.get ( { "pnetc"
-                                                    , "warning"
-                                                    , "inline_many_output_ports"
-                                                    }
-                                                  )
-                                 );
-
-                if (boost::get<bool> (warning_switch.get_value_or (false)))
+                if (properties.is_true ( { "pnetc"
+                                         , "warning"
+                                         , "inline_many_output_ports"
+                                         }
+                                       )
+                  )
                 {
                   state.warn ( warning::inline_many_output_ports
                              ( trans.name()
@@ -768,9 +821,15 @@ namespace xml
                 );
             }
 
-            for ( std::pair<we::port_id_type, std::string> const& association
-                : real_place_names
-                )
+            for (eureka_type const& eureka : trans.eurekas())
+            {
+              we_net.add_eureka
+                ( tid
+                , port_id_out.at (eureka.port())
+                );
+            }
+
+            for (auto const& association : real_place_names)
             {
               we::type::property::type properties;
 
@@ -830,6 +889,7 @@ namespace xml
           dumps (s, t.place_map());
           dumps (s, t.connections());
           dumps (s, t.responses());
+          dumps (s, t.eurekas());
 
           for (const std::string& cond : t.conditions())
           {

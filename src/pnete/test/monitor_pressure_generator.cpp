@@ -1,17 +1,26 @@
 // bernd.loerwald@itwm.fraunhofer.de
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
-#include <fhglog/LogMacros.hpp>
-#include <util-generic/print_exception.hpp>
-#include <cstdlib>
-#include <boost/format.hpp>
-#include <boost/optional.hpp>
-#include <boost/thread.hpp>
+#include <logging/stream_emitter.hpp>
 
-#include <sdpa/daemon/NotificationService.hpp>
+#include <sdpa/daemon/NotificationEvent.hpp>
 
 #include <we/type/activity.hpp>
 #include <we/type/transition.hpp>
+
+#include <util-generic/print_exception.hpp>
+#include <util-generic/syscall.hpp>
+
+#include <boost/format.hpp>
+#include <boost/optional.hpp>
+
+#include <algorithm>
+#include <iostream>
+#include <list>
+#include <map>
+#include <string>
+#include <thread>
+#include <vector>
 
 using namespace sdpa::daemon;
 
@@ -29,19 +38,21 @@ struct activity
                                     , we::type::property::type()
                                     , we::priority_type()
                                     )
-           , boost::none
            )
   {
     _workers.push_back (worker);
   }
 
-  void send_out_notification ( const NotificationService* service_a
-                             , const NotificationService* service_b
-                             ) const
+  void send_out_notification (fhg::logging::stream_emitter& emitter) const
   {
     const NotificationEvent event (_workers, _id, _state, _act);
-    service_a->notify (event);
-    service_b->notify (event);
+    emitter.emit_message ({event.encoded(), sdpa::daemon::gantt_log_category});
+    static char const* arr[4] = { fhg::logging::legacy::category_level_trace
+                                , fhg::logging::legacy::category_level_info
+                                , fhg::logging::legacy::category_level_warn
+                                , fhg::logging::legacy::category_level_error
+                                };
+    emitter.emit_message ({_id, arr[lrand48() % 4]});
   }
 
   bool next_state()
@@ -79,33 +90,28 @@ std::string worker_gen()
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
   const unsigned long r (lrand48() % sizeof(names)/sizeof(*names));
-  return (boost::format ("%1%-%2%") % names[r] % ++ids[r]).str();
+  return (boost::format ("%1%-ip-127-0-0-1 %3% 50501-%2%") % names[r] % ++ids[r] % fhg::util::syscall::getpid()).str();
 }
 
 int main(int ac, char **av)
 try
 {
-  if (ac < 3)
+  if (ac > 1 && std::string (av[1]) == "help")
   {
     std::cerr << av[0]
-              << " port_a port_b <worker_count=1> <notification_per_second<=1000=1>\n";
+              << " <worker_count=1> <notification_per_second<=1000=1>\n";
     return -1;
   }
 
-  const int port_a (atoi (av[1]));
-  const int port_b (atoi (av[2]));
-  const int worker_count (ac >= 4 ? atoi (av[3]) : 1);
-  const int duration (ac >= 5 ? 1000 / atoi (av[4]) : 1);
+  const int worker_count (ac >= 2 ? atoi (av[1]) : 1);
+  const int duration (ac >= 3 ? 1000 / atoi (av[2]) : 1);
 
-  boost::asio::io_service io_service;
-
-  const NotificationService service_a
-    ((boost::format ("localhost:%1%") % port_a).str(), io_service);
-  const NotificationService service_b
-    ((boost::format ("localhost:%1%") % port_b).str(), io_service);
+  fhg::logging::stream_emitter emitter;
 
   std::vector<std::string> worker_names (worker_count);
   std::generate (worker_names.begin(), worker_names.end(), worker_gen);
+
+  std::cout << emitter.local_endpoint().to_string() << "\n";
 
   std::map<std::string, boost::optional<activity>> workers;
 
@@ -118,19 +124,19 @@ try
       workers[worker] = activity (worker);
     }
 
-    workers[worker]->send_out_notification (&service_a, &service_b);
+    workers[worker]->send_out_notification (emitter);
 
     if (!workers[worker]->next_state())
     {
       workers[worker] = boost::none;
     }
 
-    boost::this_thread::sleep (boost::posix_time::milliseconds (duration));
+    std::this_thread::sleep_for (std::chrono::milliseconds (duration));
   }
 
   //! \note Wait for remote logger being done.
   //! \todo Wait more cleverly.
-  boost::this_thread::sleep (boost::posix_time::seconds (2));
+  std::this_thread::sleep_for (std::chrono::seconds (2));
 
   return 0;
 }

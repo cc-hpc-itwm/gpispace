@@ -1,8 +1,10 @@
 #pragma once
 
-#include <fhglog/Logger.hpp>
+#include <logging/stream_emitter.hpp>
 
 #include <gpi-space/types.hpp>
+
+#include <util-generic/finally.hpp>
 
 #include <vmem/gaspi_context.hpp>
 
@@ -28,7 +30,7 @@ namespace gpi
     {
     public:
       gaspi_t ( fhg::vmem::gaspi_context&
-              , fhg::log::Logger&
+              , fhg::logging::stream_emitter&
               , const unsigned long long per_node_size
               , fhg::vmem::gaspi_timeout&
               );
@@ -69,7 +71,7 @@ namespace gpi
 
       fhg::vmem::gaspi_context& _gaspi_context;
 
-      fhg::log::Logger& _logger;
+      fhg::logging::stream_emitter& _logger;
       size_t _per_node_size;
       void *m_dma;
       fhg::vmem::gaspi_context::reserved_segment_id _segment_id;
@@ -146,8 +148,9 @@ namespace gpi
       std::condition_variable _notification_received;
       std::map<notification_t, std::size_t> _outstanding_notifications;
 
-      std::unique_ptr<boost::strict_scoped_thread<boost::interrupt_and_join_if_joinable>>
-        _notification_check;
+      std::atomic<bool> _notification_check_interrupted;
+      std::unique_ptr<boost::strict_scoped_thread<>> _notification_check;
+      fhg::util::finally_t<std::function<void()>> _interrupt_notification_check;
       void notification_check();
     };
   }

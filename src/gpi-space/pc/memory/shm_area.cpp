@@ -6,11 +6,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <fhglog/LogMacros.hpp>
 #include <gpi-space/pc/url.hpp>
 #include <fhg/util/read_bool.hpp>
 
 #include <util-generic/finally.hpp>
+#include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
 #include <boost/lexical_cast.hpp>
@@ -96,7 +96,7 @@ namespace gpi
         }
       }
 
-      shm_area_t::shm_area_t ( fhg::log::Logger& logger
+      shm_area_t::shm_area_t ( fhg::logging::stream_emitter& logger
                              , const gpi::pc::type::process_id_t creator
                              , type::name_t const& name
                              , const gpi::pc::type::size_t user_size
@@ -147,16 +147,14 @@ namespace gpi
           m_ptr = nullptr;
           detail::unlink (m_path);
         }
-        catch (std::exception const & ex)
+        catch (...)
         {
-          LLOG( ERROR
-              , _logger
-             , "error in ~shm_area_t:"
-             << " id = " << descriptor().id
-             << " ptr = " << m_ptr
-             << " path = " << m_path
-             << " error = " << ex.what()
-             );
+          _logger.emit ( "error in ~shm_area_t: id = "
+                       + std::to_string (descriptor().id)
+                       + " path = " + m_path + " error = "
+                       + fhg::util::current_exception_printer().string()
+                       , fhg::logging::legacy::category_level_error
+                       );
         }
       }
 
