@@ -465,24 +465,6 @@ namespace utils
       , fhg::util::testing::random_string()
       );
   }
-  basic_drts_component::basic_drts_component
-      ( orchestrator const& master
-      , bool accept_workers
-      , fhg::com::Certificates const& certificates
-      )
-    : basic_drts_component (accept_workers, certificates)
-  {
-    _master = _network.connect_to (master.host(), master.port());
-
-    _network.perform<sdpa::events::WorkerRegistrationEvent>
-      ( _master.get()
-      , _name
-      , sdpa::capabilities_set_t{}
-      , fhg::util::testing::random<unsigned long>{}()
-      , accept_workers
-      , fhg::util::testing::random_string()
-      );
-  }
 
   basic_drts_component::basic_drts_component
       ( reused_component_name name
