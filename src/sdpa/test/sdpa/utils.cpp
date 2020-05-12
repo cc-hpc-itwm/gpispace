@@ -312,12 +312,6 @@ namespace utils
     : agent (make_master_network_info (master), certificates)
   {}
 
-  agent::agent ( orchestrator const& master
-               , fhg::com::Certificates const& certificates
-               )
-    : agent (make_master_network_info (master), certificates)
-  {}
-
   agent::agent (agent const& master, fhg::com::Certificates const& certificates)
     : agent (make_master_network_info (master), certificates)
   {}
