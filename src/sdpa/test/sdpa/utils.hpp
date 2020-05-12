@@ -65,25 +65,6 @@ namespace utils
     log_to_stdout (sdpa::daemon::GenericDaemon& component);
   };
 
-  struct orchestrator
-  {
-    orchestrator (fhg::com::Certificates const&);
-
-    orchestrator() = delete;
-    orchestrator (orchestrator const&) = delete;
-    orchestrator (orchestrator&) = delete;
-    orchestrator& operator= (orchestrator const&) = delete;
-    orchestrator& operator= (orchestrator&) = delete;
-    ~orchestrator() = default;
-
-    sdpa::daemon::GenericDaemon _;
-    log_to_stdout _log_to_stdout = {_};
-
-    std::string name() const;
-    fhg::com::host_t host() const;
-    fhg::com::port_t port() const;
-  };
-
   class basic_drts_component;
 
   struct agent

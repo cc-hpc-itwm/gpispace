@@ -250,31 +250,6 @@ namespace utils
     sink().add_emitters_blocking ({component.logger_registration_endpoint()});
   }
 
-  orchestrator::orchestrator (fhg::com::Certificates const& certificates)
-    : _ ( random_peer_name(), "127.0.0.1"
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-        , boost::none
-        , sdpa::master_info_t()
-        , false
-        , certificates
-        )
-  {}
-
-  std::string orchestrator::name() const
-  {
-    return _.name();
-  }
-  fhg::com::host_t orchestrator::host() const
-  {
-    return fhg::com::host_t ( fhg::util::connectable_to_address_string
-                                (_.peer_local_endpoint().address())
-                            );
-  }
-  fhg::com::port_t orchestrator::port() const
-  {
-    return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
-  }
-
   namespace
   {
     template<typename Master>
