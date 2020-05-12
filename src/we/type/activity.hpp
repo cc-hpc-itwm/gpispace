@@ -12,8 +12,6 @@
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
 
-#include <gspc/example/workflow_engine/MapWorkflowEngine.hpp>
-
 #include <drts/worker/context_fwd.hpp>
 
 #include <sdpa/requirements_and_preferences.hpp>
@@ -83,12 +81,7 @@ namespace we
 
       std::string to_string() const;
 
-      using Data = boost::variant< transition_t
-                                 , ::gspc::MapWorkflowEngine
-                                 >
-        ;
-
-      Data const& data() const;
+      boost::variant<we::type::transition_t> const& data() const;
 
       std::string const& name() const;
       bool handle_by_workflow_engine() const;
@@ -153,7 +146,7 @@ namespace we
       we::type::transition_t& mutable_transition();
       const we::type::transition_t& transition() const;
 
-      Data _data;
+      boost::variant<we::type::transition_t> _data;
       boost::optional<we::transition_id_type> _transition_id;
 
       friend class net_type;

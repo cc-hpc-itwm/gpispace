@@ -16,13 +16,4 @@ namespace gspc
     ar & N;
     ar & i;
   }
-
-  //! \note BEGIN required by activity_t
-  template<typename Archive>
-    void MapWorkflowEngine::serialize (Archive& ar, unsigned int)
-  {
-    ar & _workflow_state;
-    ar & _processing_state;
-  }
-  //! \note END required by activity_t
 }

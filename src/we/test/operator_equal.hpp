@@ -121,27 +121,11 @@ namespace we
 
     namespace type
     {
-      namespace
-      {
-        struct equal_wfe : public boost::static_visitor<bool>
-        {
-          bool operator() (transition_t const& l, transition_t const& r) const
-          {
-            return l == r;
-          }
-          template<typename L, typename R>
-            bool operator() (L const&, R const&) const
-          {
-            throw std::logic_error ("compare something non-transition_t");
-          }
-        };
-      }
-
       bool operator== (activity_t const& lhs, activity_t const& rhs)
       {
         return lhs.input() == rhs.input()
           && lhs.output() == rhs.output()
-          && boost::apply_visitor (equal_wfe{}, lhs.data(), rhs.data())
+          && lhs.data() == rhs.data()
           ;
       }
     }
