@@ -973,4 +973,15 @@ namespace utils
 
     return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
   }
+
+  sdpa::status::code client::submit_job_and_wait_for_termination_as_subscriber
+    ( we::type::activity_t workflow
+    , agent const& master_agent
+    , fhg::com::Certificates const& certificates
+    )
+  {
+    client c (master_agent, certificates);
+
+    return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
+  }
 }
