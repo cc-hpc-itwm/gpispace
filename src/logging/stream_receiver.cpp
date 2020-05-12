@@ -20,6 +20,17 @@ namespace fhg
       : stream_receiver (std::vector<endpoint>(), std::move (callback))
     {}
 
+    stream_receiver::stream_receiver (yielding_callback_t callback)
+      : _io_service (1)
+      , _receive (_service_dispatcher, std::move (callback), rpc::yielding)
+      , _service_tcp_provider (_io_service, _service_dispatcher)
+      , _service_socket_provider (_io_service, _service_dispatcher)
+      , _local_endpoint ( util::connectable_to_address_string
+                            (_service_tcp_provider.local_endpoint())
+                        , _service_socket_provider.local_endpoint()
+                        )
+    {}
+
     stream_receiver::stream_receiver (endpoint emitter, callback_t callback)
       : stream_receiver ( std::vector<endpoint> {std::move (emitter)}
                         , std::move (callback)
@@ -29,12 +40,8 @@ namespace fhg
     stream_receiver::stream_receiver ( std::vector<endpoint> emitters
                                      , callback_t callback
                                      )
-      : _callback (std::move (callback))
-      , _io_service (1)
-      , _receive
-          ( _service_dispatcher
-          , [this] (message const& message) { return _callback (message); }
-          )
+      : _io_service (1)
+      , _receive (_service_dispatcher, std::move (callback), rpc::not_yielding)
       , _service_tcp_provider (_io_service, _service_dispatcher)
       , _service_socket_provider (_io_service, _service_dispatcher)
       , _local_endpoint ( util::connectable_to_address_string
@@ -42,39 +49,59 @@ namespace fhg
                         , _service_socket_provider.local_endpoint()
                         )
     {
-      add_emitters (std::move (emitters));
+      add_emitters_blocking (std::move (emitters));
     }
 
-    void stream_receiver::add_emitters (std::vector<endpoint> emitters)
+    namespace
     {
-      std::list<std::unique_ptr<rpc::remote_endpoint>> endpoints;
-      std::vector<std::future<void>> futures;
-
-      for (auto& emitter : emitters)
+      template<typename... MaybeYield>
+        void add_emitters_impl ( std::vector<endpoint> emitters
+                               , endpoint const& local_endpoint
+                               , boost::asio::io_service& io_service
+                               , MaybeYield... yield
+                               )
       {
-        util::visit<void>
-          ( emitter.best (_local_endpoint.as_socket->host)
-          , [&] (socket_endpoint const& as_socket)
-            {
-              endpoints.emplace_back
-                ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
-                    (_io_service, as_socket.socket)
-                );
-            }
-          , [&] (tcp_endpoint const& as_tcp)
-            {
-              endpoints.emplace_back
-                ( util::cxx14::make_unique<rpc::remote_tcp_endpoint>
-                    (_io_service, as_tcp)
-                );
-            }
-          );
+        std::list<std::unique_ptr<rpc::remote_endpoint>> endpoints;
+        std::vector<std::future<void>> futures;
 
-        using function = rpc::remote_function<protocol::register_receiver>;
-        futures.emplace_back (function {*endpoints.back()} (_local_endpoint));
+        for (auto& emitter : emitters)
+        {
+          util::visit<void>
+            ( emitter.best (local_endpoint.as_socket->host)
+            , [&] (socket_endpoint const& as_socket)
+              {
+                endpoints.emplace_back
+                  ( util::cxx14::make_unique<rpc::remote_socket_endpoint>
+                      (io_service, yield..., as_socket.socket)
+                  );
+              }
+            , [&] (tcp_endpoint const& as_tcp)
+              {
+                endpoints.emplace_back
+                  ( util::cxx14::make_unique<rpc::remote_tcp_endpoint>
+                      (io_service, yield..., as_tcp)
+                  );
+              }
+            );
+
+          using function = rpc::remote_function<protocol::register_receiver>;
+          futures.emplace_back (function {*endpoints.back()} (local_endpoint));
+        }
+
+        util::wait_and_collect_exceptions (futures);
       }
+    }
 
-      util::wait_and_collect_exceptions (futures);
+    void stream_receiver::add_emitters
+      (boost::asio::yield_context yield, std::vector<endpoint> emitters)
+    {
+      return add_emitters_impl
+        (std::move (emitters), _local_endpoint, _io_service, yield);
+    }
+    void stream_receiver::add_emitters_blocking (std::vector<endpoint> emitters)
+    {
+      return add_emitters_impl
+        (std::move (emitters), _local_endpoint, _io_service);
     }
   }
 }

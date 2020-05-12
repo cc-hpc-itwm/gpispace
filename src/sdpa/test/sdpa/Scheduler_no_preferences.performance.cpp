@@ -64,7 +64,6 @@ struct fixture_add_new_workers
 
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
-  fhg::util::testing::unique_random<sdpa::worker_id_t> _worker_name_pool;
 
   void add_job ( const sdpa::job_id_t& job_id
                , const Requirements_and_preferences& reqs
@@ -88,7 +87,7 @@ struct fixture_add_new_workers
   {
     while (n --> 0)
     {
-      auto const worker (_worker_name_pool());
+      auto const worker (utils::random_peer_name());
       sdpa::capabilities_set_t cpbset;
       for (std::string const& capability_name : cpbnames)
       {
@@ -132,21 +131,21 @@ BOOST_FIXTURE_TEST_CASE
 
   add_new_workers (capabilities, num_workers);
 
-  fhg::util::testing::require_maximum_running_time<std::chrono::seconds>
-    const maxmimum_running_time (60);
-
-  for (unsigned int i {0}; i < num_tasks; i++)
+  FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (60))
   {
-    sdpa::job_id_t const task (job_name_pool());
-    add_job
-      ( task
-      , require (*std::next ( capabilities.begin()
-                            , random_integral<unsigned int>() % 2
-                            )
-                )
-      );
+    for (unsigned int i {0}; i < num_tasks; i++)
+    {
+      sdpa::job_id_t const task (job_name_pool());
+      add_job
+        ( task
+        , require (*std::next ( capabilities.begin()
+                              , random_integral<unsigned int>() % 2
+                              )
+                  )
+        );
 
-    _scheduler.enqueueJob (task);
-    request_scheduling();
-  }
+      _scheduler.enqueueJob (task);
+      request_scheduling();
+    }
+  };
 }

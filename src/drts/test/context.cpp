@@ -9,8 +9,11 @@
 #include <util-generic/testing/random/string.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
-#include <thread>
 #include <chrono>
+#include <future>
+#include <stdexcept>
+#include <string>
+#include <thread>
 
 namespace
 {
@@ -112,9 +115,11 @@ BOOST_FIXTURE_TEST_CASE
   (execute_and_kill_on_cancel_calls_on_cancel, context_fixture)
 {
   bool cancelled {false};
+  bool signaled {false};
+  bool exited {false};
 
   std::thread execution
-    ( [this, &cancelled]()
+    ( [&]
       {
         std::this_thread::sleep_for
           ( std::chrono::milliseconds
@@ -130,8 +135,8 @@ BOOST_FIXTURE_TEST_CASE
             {
               cancelled = true;
             }
-          , &on_signal_unexpected
-          , &on_exit_unexpected
+          , [&] (int) { signaled = true; }
+          , [&] (int) { exited = true; }
           );
       }
     );
@@ -141,6 +146,8 @@ BOOST_FIXTURE_TEST_CASE
   execution.join();
 
   BOOST_REQUIRE (cancelled);
+  BOOST_REQUIRE (!signaled);
+  BOOST_REQUIRE (!exited);
 }
 
 BOOST_FIXTURE_TEST_CASE
@@ -301,27 +308,29 @@ BOOST_FIXTURE_TEST_CASE
 BOOST_FIXTURE_TEST_CASE
   (execute_and_kill_on_cancel_simpler_cancelled, context_fixture)
 {
-  std::thread execution
-    ( [this]()
-      {
-        fhg::util::testing::require_exception
-          ( [this]()
-            {
-              context.execute_and_kill_on_cancel
-                ( []()
-                  {
-                    while (1) {}
-                  }
-                );
-            }
-          , drts::worker::context::cancelled()
-          );
-      }
+  auto future
+    ( std::async ( std::launch::async
+                 , [&]
+                   {
+                     context.execute_and_kill_on_cancel
+                       ( []
+                         {
+                           while (1) {}
+                         }
+                       );
+                   }
+                 )
     );
 
   context.module_call_do_cancel();
 
-  execution.join();
+  fhg::util::testing::require_exception
+    ( [&]
+      {
+        future.get();
+      }
+    , drts::worker::context::cancelled()
+    );
 }
 
 BOOST_FIXTURE_TEST_CASE

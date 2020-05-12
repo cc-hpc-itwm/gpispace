@@ -18,7 +18,6 @@ namespace sdpa
           SDPA_EBACKLOGFULL,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EUNKNOWN,
-          SDPA_ENETWORKFAILURE
         };
 
       ErrorEvent

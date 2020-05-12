@@ -79,6 +79,7 @@ namespace
     }                                                                   \
     void happened()                                                     \
     {                                                                   \
+      std::lock_guard<std::mutex> const lock (_happened_mutex);         \
       _happened = true;                                                 \
       _happened_condition.notify_one();                                 \
     }                                                                   \
@@ -131,16 +132,6 @@ struct daemon
             ;
         }
       );
-
-    BOOST_REQUIRE (_to_submit.empty());
-    BOOST_REQUIRE (_to_cancel.empty());
-    BOOST_REQUIRE (_to_finished.empty());
-    BOOST_REQUIRE (_to_failed.empty());
-    BOOST_REQUIRE (_to_canceled.empty());
-    BOOST_REQUIRE (_to_discover.empty());
-    BOOST_REQUIRE (_to_discovered.empty());
-    BOOST_REQUIRE (_to_token_put.empty());
-    BOOST_REQUIRE (_to_workflow_response.empty());
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
@@ -507,7 +498,7 @@ struct daemon
   unsigned long _in_progress_replies;
 };
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
 {
   we::type::transition_t transition
@@ -550,7 +541,7 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
 {
   we::type::transition_t transition
@@ -609,7 +600,7 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_one_child, daemon)
 {
@@ -637,7 +628,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_two_childs, daemon)
 {
@@ -674,7 +665,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_sequential_jobs_shall_be_properly_handled, daemon)
 {
@@ -721,7 +712,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_interleaving_jobs_shall_be_properly_handled, daemon)
 {
@@ -770,7 +761,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_one_child, daemon)
 {
@@ -877,14 +868,14 @@ namespace
     };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (canceled_shall_be_called_after_cancel_two_childs, cancel_test_daemon)
 {
   test_routine (canceled, canceled);
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_DATA_TEST_CASE
   ( any_terminiation_during_canceling_is_equivalent_to_canceled
   , boost::unit_test::data::make (cancel_test_daemon::methods)
@@ -896,7 +887,7 @@ BOOST_DATA_TEST_CASE
   cancel_test_daemon().test_routine (first_child, second_child);
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   ( canceled_shall_be_called_after_cancel_two_childs_with_one_child_finished
   , daemon
@@ -939,7 +930,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
 {
   we::type::activity_t activity_input;
@@ -968,7 +959,7 @@ BOOST_FIXTURE_TEST_CASE (child_failure_shall_fail_parent, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure, daemon)
 {
@@ -1010,7 +1001,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (sibling_jobs_shall_be_canceled_on_child_failure_and_any_termination_is_okay, daemon)
 {
@@ -1056,7 +1047,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (finished_shall_be_called_after_finished_N_childs, daemon)
 {
@@ -1096,7 +1087,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (discovered_shall_be_called_after_discover_one_child, daemon)
 {
@@ -1111,7 +1102,7 @@ BOOST_FIXTURE_TEST_CASE
 
   we::layer::id_type child_id;
   {
-    expect_submit _ (this, &child_id, activity_child);
+    expect_submit const _ (this, &child_id, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -1119,7 +1110,7 @@ BOOST_FIXTURE_TEST_CASE
   const we::layer::id_type discover_id
     (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
   {
-    expect_discover _ (this, discover_id, child_id);
+    expect_discover const _ (this, discover_id, child_id);
 
     do_discover (discover_id, id);
   }
@@ -1133,7 +1124,7 @@ BOOST_FIXTURE_TEST_CASE
   sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
 
   {
-    expect_discovered _ (this, discover_id, discover_result);
+    expect_discovered const _ (this, discover_id, discover_result);
 
     do_discovered (discover_id, discover_result_child);
   }
@@ -1145,7 +1136,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (discovered_shall_be_called_after_discover_two_childs, daemon)
 {
@@ -1161,8 +1152,8 @@ BOOST_FIXTURE_TEST_CASE
   we::layer::id_type child_id_a;
   we::layer::id_type child_id_b;
   {
-    expect_submit _a (this, &child_id_a, activity_child);
-    expect_submit _b (this, &child_id_b, activity_child);
+    expect_submit const _a (this, &child_id_a, activity_child);
+    expect_submit const _b (this, &child_id_b, activity_child);
 
     do_submit (id, activity_input);
   }
@@ -1170,8 +1161,8 @@ BOOST_FIXTURE_TEST_CASE
   const we::layer::id_type discover_id
     (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
   {
-    expect_discover _a (this, discover_id, child_id_a);
-    expect_discover _b (this, discover_id, child_id_b);
+    expect_discover const _a (this, discover_id, child_id_a);
+    expect_discover const _b (this, discover_id, child_id_b);
 
     do_discover (discover_id, id);
   }
@@ -1194,7 +1185,7 @@ BOOST_FIXTURE_TEST_CASE
   do_discovered (discover_id, discover_result_child_a);
 
   {
-    expect_discovered _ (this, discover_id, discover_result);
+    expect_discovered const _ (this, discover_id, discover_result);
 
     //! \note There is a race here where layer may call rts_discovered
     //! before do_discovered, but this is checked by comparing the
@@ -1212,7 +1203,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (layer_properly_puts_token, daemon)
 {
   we::type::activity_t activity_input;
@@ -1435,7 +1426,7 @@ namespace
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
 {
   we::type::activity_t activity_input;
@@ -1520,7 +1511,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
 {
   we::type::activity_t activity_input;
@@ -1730,7 +1721,7 @@ namespace
   };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_requirements)
 {
   wfe_and_counter_of_submitted_requirements helper (30);
@@ -1865,7 +1856,7 @@ namespace
   };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_AUTO_TEST_CASE (layer_properly_forwards_preferences)
 {
   wfe_remembering_submitted_preferences wfe;
@@ -2063,7 +2054,7 @@ namespace
   };
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (first_child_task_calls_eureka, daemon)
 {
@@ -2104,7 +2095,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (no_child_task_calls_eureka, daemon)
 {
@@ -2140,7 +2131,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (last_of_the_child_tasks_call_eureka, daemon)
 {
@@ -2176,7 +2167,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (one_of_two_groups_call_eureka, daemon)
 {
@@ -2254,7 +2245,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (two_of_three_groups_call_eureka, daemon)
 {
@@ -2332,7 +2323,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (one_of_two_eureka_jobs_call_eureka, daemon)
 {
@@ -2367,6 +2358,7 @@ BOOST_FIXTURE_TEST_CASE
       (this, &child_id_A_1, test_job_A.get_activity ("A", child));
     expect_submit const _a2
       (this, &child_id_A_2, test_job_A.get_activity ("A", child));
+
     do_submit (id_A, test_job_A.input);
   }
 
@@ -2409,7 +2401,7 @@ BOOST_FIXTURE_TEST_CASE
   }
 }
 
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (2))
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
 BOOST_FIXTURE_TEST_CASE
   (calling_eureka_on_failed_child_tasks, daemon)
 {

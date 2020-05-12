@@ -884,10 +884,19 @@ namespace sdpa
         //! called after a worker died)
         reservation->mark_as_canceled_if_no_result_stored_yet (worker_id);
 
+        bool const cancel_already_requested
+          ( pJob->getStatus() == sdpa::status::CANCELING
+          || pJob->getStatus() == sdpa::status::CANCELED
+          );
+
         if ( !reservation->apply_to_workers_without_result // false for worker 5, true for worker 4
-               ( [&jobId, &cancel_worker_job] (worker_id_t const& wid)
+               ( [&jobId, &cancel_already_requested, &cancel_worker_job]
+                 (worker_id_t const& wid)
                  {
-                   cancel_worker_job (wid, jobId);
+                   if (!cancel_already_requested)
+                   {
+                     cancel_worker_job (wid, jobId);
+                   }
                  }
                )
            )

@@ -153,7 +153,7 @@ namespace sdpa
         );
     }
 
-    void CoallocationScheduler::reschedule_worker_jobs
+    void CoallocationScheduler::reschedule_worker_jobs_and_maybe_remove_worker
        ( worker_id_t const& worker
        , std::function<Job* (sdpa::job_id_t const&)> get_job
        , std::function<void (sdpa::worker_id_t const&, job_id_t const&)> cancel_worker_job

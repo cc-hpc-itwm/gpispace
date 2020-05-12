@@ -22,7 +22,7 @@ namespace expr
         {
           static auto random_number (fhg::util::testing::random<std::size_t>{});
 
-          return fhg::util::testing::randoms<Key> (1 + random_number() % 100);
+          return fhg::util::testing::randoms<Key> (random_number(100, 1));
         }
       }
 

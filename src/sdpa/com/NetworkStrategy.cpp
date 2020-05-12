@@ -23,14 +23,11 @@ namespace sdpa
         )
       : _codec()
       , _event_handler (event_handler)
-      , m_message()
       , m_shutting_down (false)
       , _peer (std::move (peer_io_service), host, port, certificates)
     {
       _peer.async_recv
-        ( &m_message
-        , fhg::util::bind_this (this, &NetworkStrategy::handle_recv)
-        );
+        (fhg::util::bind_this (this, &NetworkStrategy::handle_recv));
     }
 
     NetworkStrategy::~NetworkStrategy()
@@ -52,30 +49,27 @@ namespace sdpa
     void NetworkStrategy::handle_recv
       ( boost::system::error_code const& ec
       , boost::optional<fhg::com::p2p::address_t> source
+      , fhg::com::message_t message
       )
     {
       if (!ec)
       {
         events::SDPAEvent::Ptr const evt
           ( _codec.decode
-              (std::string (m_message.data.begin(), m_message.data.end()))
+              (std::string (message.data.begin(), message.data.end()))
           );
         _event_handler (source.get(), evt);
 
         _peer.async_recv
-          ( &m_message
-          , fhg::util::bind_this (this, &NetworkStrategy::handle_recv)
-          );
+          (fhg::util::bind_this (this, &NetworkStrategy::handle_recv));
       }
       else if (!m_shutting_down)
       {
-        if (m_message.header.src != _peer.address())
+        if (message.header.src != _peer.address())
         {
           events::ErrorEvent::Ptr const error
             ( boost::make_shared<events::ErrorEvent>
-                ( ec == boost::asio::error::eof // Connection closed cleanly by peer
-                ? events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                : events::ErrorEvent::SDPA_ENETWORKFAILURE
+                ( events::ErrorEvent::SDPA_ENODE_SHUTDOWN
                 , ec.message()
                 )
             );
@@ -83,9 +77,7 @@ namespace sdpa
             (source.get_value_or (fhg::com::p2p::address_t ("unknown")), error);
 
           _peer.async_recv
-            ( &m_message
-            , fhg::util::bind_this (this, &NetworkStrategy::handle_recv)
-            );
+            (fhg::util::bind_this (this, &NetworkStrategy::handle_recv));
         }
       }
     }
@@ -105,7 +97,7 @@ namespace sdpa
                 _event_handler
                   ( address
                   , boost::make_shared<events::ErrorEvent>
-                      (events::ErrorEvent::SDPA_ENETWORKFAILURE, ec.message())
+                      (events::ErrorEvent::SDPA_ENODE_SHUTDOWN, ec.message())
                   );
               }
             }
@@ -116,7 +108,7 @@ namespace sdpa
         _event_handler
           ( address
           , boost::make_shared<events::ErrorEvent>
-              ( events::ErrorEvent::SDPA_ENETWORKFAILURE
+              ( events::ErrorEvent::SDPA_ENODE_SHUTDOWN
               , fhg::util::current_exception_printer (": ").string()
               )
           );

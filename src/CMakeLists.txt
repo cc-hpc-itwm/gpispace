@@ -135,6 +135,7 @@ extended_add_library (NAME pnet
             rapidxml
             ssl
             crypto
+  COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
 )
 
 add_subdirectory (xml/tests)
@@ -154,8 +155,6 @@ add_subdirectory (fhg)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
 
-add_subdirectory (libssh2_wrapper)
-
 add_subdirectory (gspc)
 
 extended_add_library (NAME logging
@@ -169,6 +168,7 @@ extended_add_library (NAME logging
           "logging/stream_emitter.cpp"
           "logging/stream_receiver.cpp"
           "logging/tcp_endpoint.cpp"
+          "logging/tcp_server_providing_add_emitters.cpp"
   LIBRARIES Util::Generic
             RPC
             Boost::base

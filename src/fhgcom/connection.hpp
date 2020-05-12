@@ -3,20 +3,25 @@
 #include <fhgcom/header.hpp>
 #include <fhgcom/message.hpp>
 
-#include <fhg/assert.hpp>
+#include <fhg/util/thread/event.hpp>
 
-#include <boost/asio.hpp>
-#include <boost/asio/ssl.hpp>
+#include <boost/asio/io_service.hpp>
+#include <boost/asio/ip/tcp.hpp>
+#include <boost/asio/ssl/stream.hpp>
+#include <boost/asio/strand.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
+#include <boost/shared_ptr.hpp>
 #include <boost/system/error_code.hpp>
+#include <boost/system/system_error.hpp>
 #include <boost/variant/variant.hpp>
 
+#include <algorithm>
 #include <cstddef>
+#include <exception>
 #include <functional>
 #include <list>
 #include <memory>
-#include <stdexcept>
 #include <vector>
 
 namespace boost
@@ -34,6 +39,8 @@ namespace fhg
 {
   namespace com
   {
+    class peer_t;
+
     using tcp_socket_t = boost::asio::ip::tcp::socket;
     using ssl_stream_t = boost::asio::ssl::stream<tcp_socket_t>;
     using socket_t = boost::variant<std::unique_ptr<tcp_socket_t>, std::unique_ptr<ssl_stream_t>>;
@@ -57,18 +64,19 @@ namespace fhg
       explicit
       connection_t
         ( boost::asio::io_service & io_service
-        , std::unique_ptr<boost::asio::ssl::context> const& ctx
+        , boost::asio::ssl::context* ctx
         , boost::asio::io_service::strand const& strand
-        , std::function<void (ptr_t connection, const message_t*)> handle_hello_message
-        , std::function<void (ptr_t connection, const message_t*)> handle_user_data
+        , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_hello_message
+        , std::function<void (ptr_t connection, std::unique_ptr<message_t>)> handle_user_data
         , std::function<void (ptr_t connection, const boost::system::error_code&)> handle_error
+        , peer_t* peer
         );
 
       ~connection_t ();
 
       boost::asio::ip::tcp::socket & socket();
 
-      void async_send (const message_t * msg, completion_handler_t hdl);
+      void async_send (message_t msg, completion_handler_t hdl);
 
       template <typename SettableSocketOption>
       void set_option(const SettableSocketOption & o)
@@ -88,49 +96,28 @@ namespace fhg
         m_remote_addr = a;
       }
 
-      void request_handshake();
+      //! Assumes to be called from within strand. Will call back
+      //! peer_t::request_handshake_response via strand, never from
+      //! within this call stack.
+      void request_handshake
+        (std::shared_ptr<util::thread::event<std::exception_ptr>> connect_done);
+      //! Assumes to be called from within strand. Will call back
+      //! peer_t::acknowledge_handshake_response via strand, never
+      //! from within this call stack.
       void acknowledge_handshake();
 
     private:
       struct to_send_t
       {
-        to_send_t (const message_t * msg, completion_handler_t hdl)
-          : message(msg)
-          , handler(hdl)
-        {}
-        const message_t * message;
+        to_send_t (message_t msg, completion_handler_t hdl);
+
         completion_handler_t handler;
-
-        std::vector<boost::asio::const_buffer> const & to_buffers() const
-        {
-          fhg_assert (message != nullptr);
-
-          if (message->data.size () != message->header.length)
-          {
-            throw std::length_error ("header/data length mismatch");
-          }
-
-          fhg_assert (message->data.size() == message->header.length);
-
-          if (m_buf.empty ())
-          {
-            m_buf.push_back (boost::asio::buffer ( &message->header
-                                                 , sizeof(p2p::header_t)
-                                                 )
-                            );
-            m_buf.push_back (boost::asio::buffer (message->data));
-          }
-
-          return m_buf;
-        }
-
-      private:
-        mutable std::vector<boost::asio::const_buffer> m_buf;
+        message_t _message;
+        std::vector<boost::asio::const_buffer> buffers;
       };
 
       void start_read ();
       void start_send ();
-      void start_send (to_send_t const &);
 
       void handle_read_header ( const boost::system::error_code & ec
                               , std::size_t bytes_transferred
@@ -141,13 +128,15 @@ namespace fhg
 
       void handle_write ( const boost::system::error_code & ec );
 
+      peer_t* _peer;
+
       boost::asio::io_service::strand strand_;
       socket_t socket_;
       tcp_socket_t& _raw_socket;
-      std::function<void (ptr_t connection, const message_t*)> _handle_hello_message;
-      std::function<void (ptr_t connection, const message_t*)> _handle_user_data;
+      std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_hello_message;
+      std::function<void (ptr_t connection, std::unique_ptr<message_t>)> _handle_user_data;
       std::function<void (ptr_t connection, const boost::system::error_code&)> _handle_error;
-      message_t *in_message_;
+      std::unique_ptr<message_t> in_message_;
 
       std::list <to_send_t> to_send_;
 

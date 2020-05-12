@@ -40,31 +40,54 @@ namespace
     void handleCancelJobEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent* e) override
     {
+      std::lock_guard<std::mutex> const lock(_cancels_mutex);
       const std::map<std::string, job_t>::const_iterator it
         ( std::find_if
           ( _jobs.begin(), _jobs.end()
           , [&e] (std::pair<std::string, job_t> v)
-          {
-            return v.second._id == e->job_id();
-          }
+            {
+              return v.second._id == e->job_id();
+            }
           )
         );
-      BOOST_REQUIRE (it != _jobs.end());
-      BOOST_REQUIRE_EQUAL (source, it->second._owner);
 
+      if (it == _jobs.end())
+      {
+        throw std::runtime_error ("Attempted to cancel unknown job!");
+      }
+
+      _sources_and_owners.emplace_back (source, it->second._owner);
       _announce_cancel (it->first);
     }
 
     void canceled (std::string name)
     {
+      std::lock_guard<std::mutex> const lock(_cancels_mutex);
       const job_t job (_jobs.at (name));
       _jobs.erase (name);
 
       _network.perform<sdpa::events::CancelJobAckEvent> (job._owner, job._id);
     }
 
+    bool cancellation_was_triggered_by_owners()
+    {
+      return std::all_of
+        ( _sources_and_owners.begin()
+        , _sources_and_owners.end()
+        , [this]
+          ( std::pair<fhg::com::p2p::address_t, fhg::com::p2p::address_t>
+              const& source_and_owner
+          )
+          {
+            return source_and_owner.first == source_and_owner.second;
+          }
+        );
+    }
   private:
     std::function<void (std::string)> _announce_cancel;
+    mutable std::mutex _cancels_mutex;
+    std::list<std::pair<fhg::com::p2p::address_t, fhg::com::p2p::address_t>>
+      _sources_and_owners;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 }
@@ -109,6 +132,8 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
+
+  BOOST_REQUIRE (worker.cancellation_was_triggered_by_owners());
 }
 
 BOOST_DATA_TEST_CASE (call_cancel_twice_orch, certificates_data, certificates)
@@ -155,6 +180,8 @@ BOOST_DATA_TEST_CASE (call_cancel_twice_agent, certificates_data, certificates)
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
 
   BOOST_REQUIRE_THROW (client.cancel_job (job_id), std::runtime_error);
+
+  BOOST_REQUIRE (worker.cancellation_was_triggered_by_owners());
 }
 
 BOOST_DATA_TEST_CASE (cancel_pending_jobs, certificates_data, certificates)
@@ -220,4 +247,7 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::CANCELED);
+
+  BOOST_REQUIRE (worker_0.cancellation_was_triggered_by_owners());
+  BOOST_REQUIRE (worker_1.cancellation_was_triggered_by_owners());
 }

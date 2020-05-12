@@ -59,21 +59,21 @@ namespace fhg
       std::vector<std::string> assemble_comparison_file
         (std::string sentinel, std::size_t count)
       {
-        auto const lines
-          (util::split<std::string, std::string> (sentinel, '\n'));
-        std::vector<std::string> result;
-        while (count --> 0)
-        {
-          std::copy (lines.begin(), lines.end(), std::back_inserter (result));
-        }
-        return result;
+        return std::vector<std::string> (count, sentinel);
+      }
+
+      std::string random_single_line_string()
+      {
+        return util::testing::random<std::string>{}
+          (util::testing::random<std::string>::except ("\n"));
       }
     }
 
     BOOST_AUTO_TEST_CASE (formatter_is_invoked_per_message)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
-      auto const sentinel (util::testing::random<std::string>{}());
+      // '\n' is used as separator in file
+      auto const sentinel (random_single_line_string());
 
       util::temporary_path const temporary_sink_dir;
       boost::filesystem::path const sink_path
@@ -227,7 +227,8 @@ namespace fhg
     BOOST_AUTO_TEST_CASE (file_sink_actually_registers_and_receives)
     {
       auto const emit_count (util::testing::random<std::size_t>{}() % 314);
-      auto const sentinel (util::testing::random<std::string>{}());
+      // '\n' is used as separator in file
+      auto const sentinel (random_single_line_string());
 
       stream_emitter emitter;
 

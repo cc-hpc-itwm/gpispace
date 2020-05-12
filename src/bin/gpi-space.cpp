@@ -111,11 +111,12 @@ int main (int argc, char** argv)
       crit_error_handler (signal_handler, log_emitter);
 
     //! \todo more than one thread, parameter
-    fhg::util::scoped_boost_asio_io_service_with_threads topology_io_service (8);
+    fhg::util::scoped_boost_asio_io_service_with_threads
+      topology_server_io_service (8);
     auto topology_rpc_server
       ( fhg::util::cxx14::make_unique
           <fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
-            (topology_io_service)
+            (topology_server_io_service)
       );
 
     fhg::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
@@ -130,7 +131,6 @@ int main (int argc, char** argv)
       ( log_emitter
       , socket_path.string()
       , gaspi_context
-      , topology_io_service
       , std::move (topology_rpc_server)
       );
 

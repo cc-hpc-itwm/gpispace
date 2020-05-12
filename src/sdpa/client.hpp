@@ -61,9 +61,11 @@ namespace sdpa
       template<typename Expected, typename Sent>
         Expected send_and_wait_for_reply (Sent event);
 
-      void handle_recv (boost::system::error_code const & ec, boost::optional<fhg::com::p2p::address_t>);
+      void handle_recv ( boost::system::error_code const& ec
+                       , boost::optional<fhg::com::p2p::address_t>
+                       , fhg::com::message_t message
+                       );
 
-      fhg::com::message_t m_message;
       bool _stopping;
       fhg::com::peer_t m_peer;
       fhg::com::p2p::address_t _drts_entrypoint_address;

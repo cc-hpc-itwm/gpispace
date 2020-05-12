@@ -36,14 +36,16 @@ namespace boost
       {
         void operator() (std::ostream&, fhg::com::p2p::address_t const&) const;
       };
+      template<> struct print_log_value<sdpa::Capability>
+      {
+        void operator() (std::ostream&, sdpa::Capability const&) const;
+      };
     }
   }
 }
 
 namespace utils
 {
-  std::string require_and_read_file (std::string filename);
-
   std::string random_peer_name();
 
   //! \todo unify with test/layer
@@ -86,6 +88,7 @@ namespace utils
 
   struct agent
   {
+    agent (sdpa::master_network_info, fhg::com::Certificates const&);
     agent (basic_drts_component const& master, fhg::com::Certificates const&);
     agent (orchestrator const& master, fhg::com::Certificates const&);
     agent (agent const& master, fhg::com::Certificates const&);
@@ -110,16 +113,75 @@ namespace utils
     fhg::com::port_t port() const;
   };
 
-  class basic_drts_component : sdpa::events::EventHandler
+  using CapabilityNames = std::unordered_set<std::string>;
+
+  // \todo Only used by Restart* tests. Is persistent worker names
+  // actually relevant there? If not, remove!
+  struct reused_component_name
+  {
+    //! Only construct with a result from component.name() or
+    //! random_peer_name()!
+    explicit reused_component_name (std::string name)
+      : _name (name)
+    {}
+    std::string _name;
+  };
+
+  class basic_drts_component_no_logic : sdpa::events::EventHandler
   {
   public:
-    basic_drts_component ( std::string name
+    basic_drts_component_no_logic (fhg::com::Certificates const&);
+    basic_drts_component_no_logic
+      (reused_component_name, fhg::com::Certificates const&);
+
+    std::string name() const;
+    fhg::com::host_t host() const;
+    fhg::com::port_t port() const;
+
+  private:
+    fhg::util::interruptible_threadsafe_queue
+      <std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
+        _event_queue;
+
+  protected:
+    std::string _name;
+    sdpa::com::NetworkStrategy _network;
+
+    void event_thread_fun();
+
+    struct event_thread
+    {
+      event_thread (basic_drts_component_no_logic&);
+
+      basic_drts_component_no_logic& _component;
+      boost::strict_scoped_thread<> _event_thread;
+      decltype (basic_drts_component_no_logic::_event_queue)::interrupt_on_scope_exit
+        _interrupt_thread;
+    };
+  };
+
+  class basic_drts_component : public basic_drts_component_no_logic
+  {
+  public:
+    basic_drts_component ( bool accept_workers
+                         , fhg::com::Certificates const&
+                         );
+    basic_drts_component ( agent const& master
+                         , sdpa::capabilities_set_t
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
-    basic_drts_component ( std::string name
+    basic_drts_component ( agent const& master
+                         , CapabilityNames
+                         , bool accept_workers
+                         , fhg::com::Certificates const&
+                         );
+    basic_drts_component ( orchestrator const& master
+                         , bool accept_workers
+                         , fhg::com::Certificates const&
+                         );
+    basic_drts_component ( reused_component_name
                          , agent const& master
-                         , sdpa::capabilities_set_t
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
@@ -142,35 +204,18 @@ namespace utils
 
     void wait_for_workers_to_shutdown();
 
-    std::string name() const;
-    fhg::com::host_t host() const;
-    fhg::com::port_t port() const;
-
   protected:
-    std::string _name;
     boost::optional<fhg::com::p2p::address_t> _master;
     bool _accept_workers;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
-  private:
-    fhg::util::interruptible_threadsafe_queue
-      <std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr>>
-        _event_queue;
-
-  protected:
-    sdpa::com::NetworkStrategy _network;
-
-    void event_thread();
-
     struct event_thread_and_worker_join
+      : basic_drts_component_no_logic::event_thread
     {
       event_thread_and_worker_join (basic_drts_component&);
       ~event_thread_and_worker_join();
 
       basic_drts_component& _component;
-      boost::strict_scoped_thread<> _event_thread;
-      decltype (basic_drts_component::_event_queue)::interrupt_on_scope_exit
-        _interrupt_thread;
     };
 
   private:
@@ -188,14 +233,13 @@ namespace utils
         , fhg::com::Certificates const&
         );
       basic_drts_worker
-        ( std::string name
-        , agent const& master
+        ( agent const& master
+        , sdpa::capabilities_set_t
         , fhg::com::Certificates const&
         );
       basic_drts_worker
-        ( std::string name
+        ( reused_component_name
         , agent const& master
-        , sdpa::capabilities_set_t
         , fhg::com::Certificates const&
         );
     };
@@ -206,12 +250,6 @@ namespace utils
     public:
       fake_drts_worker_notifying_module_call_submission
         ( std::function<void (std::string)> announce_job
-        , agent const& master
-        , fhg::com::Certificates const&
-        );
-      fake_drts_worker_notifying_module_call_submission
-        ( std::string name
-        , std::function<void (std::string)> announce_job
         , agent const& master
         , fhg::com::Certificates const&
         );
@@ -244,6 +282,7 @@ namespace utils
         job_t (sdpa::job_id_t id, fhg::com::p2p::address_t owner);
       };
       std::map<std::string, job_t> _jobs;
+      void delete_job (sdpa::job_id_t const& job_id);
 
     private:
       std::function<void (std::string)> _announce_job;
@@ -276,12 +315,7 @@ namespace utils
     basic_drts_worker ( agent const& master
                       , fhg::com::Certificates const&
                       );
-    basic_drts_worker ( std::string name
-                      , agent const& master
-                      , fhg::com::Certificates const&
-                      );
-    basic_drts_worker ( std::string name
-                      , agent const& master
+    basic_drts_worker ( agent const& master
                       , sdpa::capabilities_set_t
                       , fhg::com::Certificates const&
                       );
@@ -297,12 +331,6 @@ namespace utils
       , agent const& master
       , fhg::com::Certificates const&
       );
-    fake_drts_worker_notifying_module_call_submission
-      ( std::string name
-      , std::function<void (std::string)> announce_job
-      , agent const& master
-      , fhg::com::Certificates const&
-      );
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
@@ -315,7 +343,7 @@ namespace utils
       , fhg::com::Certificates const&
       );
     fake_drts_worker_directly_finishing_jobs
-      ( std::string name
+      ( reused_component_name
       , agent const& master
       , fhg::com::Certificates const&
       );
@@ -353,7 +381,6 @@ namespace utils
       , agent const& master
       , fhg::com::Certificates const&
       );
-    ~fake_drts_worker_notifying_cancel();
 
     void handleCancelJobEvent
       ( fhg::com::p2p::address_t const&
@@ -437,26 +464,5 @@ namespace utils
       , orchestrator const&
       , fhg::com::Certificates const&
       );
-
-    struct submitted_job
-    {
-      submitted_job
-        ( we::type::activity_t
-        , orchestrator const&
-        , fhg::com::Certificates const&
-        );
-      ~submitted_job();
-
-      submitted_job (submitted_job const&) = delete;
-      submitted_job (submitted_job&) = delete;
-      submitted_job& operator= (submitted_job const&) = delete;
-      submitted_job& operator= (submitted_job&) = delete;
-
-      sdpa::discovery_info_t discover();
-
-    private:
-      std::unique_ptr<client> _client;
-      sdpa::job_id_t _job_id;
-    };
   };
 }

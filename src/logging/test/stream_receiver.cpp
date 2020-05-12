@@ -131,6 +131,7 @@ namespace fhg
           {
             received.set_value (endpoint);
           }
+        , fhg::rpc::not_yielding
         );
       rpc::service_tcp_provider const provider (io_service, dispatcher);
       auto const endpoint
@@ -163,6 +164,7 @@ namespace fhg
           {
             registered.set_value (endpoint);
           }
+        , fhg::rpc::not_yielding
         );
       rpc::service_tcp_provider const provider (io_service, dispatcher);
 

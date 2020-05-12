@@ -136,6 +136,7 @@ namespace fhg
                 }
                 entry_point_added.notify_one();
               }
+            , fhg::rpc::not_yielding
             );
 
         util::scoped_boost_asio_io_service_with_threads io_service (2);

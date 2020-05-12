@@ -6,12 +6,14 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <test/hopefully_free_port.hpp>
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
-#include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
+#include <test/source_directory.hpp>
 
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -30,14 +32,21 @@
 
 namespace
 {
-  unsigned int get_free_port()
+  // \note If this test failed, double check if the exceptions that
+  // are thrown are still the same, this heuristic isn't perfect.
+  bool should_retry (std::runtime_error const& exception)
   {
-    boost::asio::io_service service;
-    boost::asio::ip::tcp::acceptor acceptor
-      (service, boost::asio::ip::tcp::endpoint (boost::asio::ip::tcp::v4(), 0));
-    acceptor.set_option (boost::asio::ip::tcp::acceptor::reuse_address (true));
+    try
+    {
+      std::rethrow_if_nested (exception);
+    }
+    catch (std::runtime_error const& nested)
+    {
+      return should_retry (nested);
+    }
 
-    return acceptor.local_endpoint().port();
+    return std::string (exception.what()).find ("bind: Address already in use")
+      != std::string::npos;
   }
 }
 
@@ -74,11 +83,7 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
 
   gspc::set_application_search_path (vm, installation_dir);
 
-  auto const orchestrator_port (get_free_port());
-  gspc::set_orchestrator_port (vm, orchestrator_port);
-
-  auto const agent_port (get_free_port());
-  gspc::set_agent_port (vm, agent_port);
+  auto const vm_without_ports (vm);
 
   vm.notify();
 
@@ -107,24 +112,59 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
     , installation
     );
 
-  auto const worker_port (get_free_port());
+  std::unique_ptr<gspc::scoped_runtime_system> drts;
+  std::unique_ptr<test::hopefully_free_port> orchestrator_port;
+  std::unique_ptr<test::hopefully_free_port> agent_port;
+  std::unique_ptr<test::hopefully_free_port> worker_port;
 
-  gspc::scoped_runtime_system drts
-    ( vm
-    , installation
-    , "worker:1/" + std::to_string (worker_port)
-    , rifds.entry_points()
-    );
+  // Even if we directly allocate a port, release it and let the DRTS
+  // use it, there still is a race that the port could be already in
+  // use by a different process again. This is quite rare but for the
+  // sake of tests not spuriously failing in this case, give this part
+  // of the test more than one try as it is not what is wanted to
+  // test: We are interested if after startup *we* use those ports,
+  // not if we fail starting up because someone else is using them
+  // (which implicitly also confirms test success but just for one
+  // component).
+  int tries (0);
+  while (!drts)
+  {
+    try
+    {
+      orchestrator_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
+      agent_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
+      worker_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
 
-  BOOST_REQUIRE (is_using_port ("orchestrator", orchestrator_port));
-  BOOST_REQUIRE (is_using_port ("agent", agent_port));
+      auto vm_with_ports (vm_without_ports);
+      gspc::set_orchestrator_port (vm_with_ports, orchestrator_port->release());
+      gspc::set_agent_port (vm_with_ports, agent_port->release());
+      vm_with_ports.notify();
 
-  gspc::client client (drts);
+      drts = fhg::util::cxx14::make_unique<gspc::scoped_runtime_system>
+               ( vm_with_ports
+               , installation
+               , "worker:1/" + std::to_string (worker_port->release())
+               , rifds.entry_points()
+               );
+    }
+    catch (std::runtime_error const& err)
+    {
+      if (tries++ > 5 || !should_retry (err))
+      {
+        throw;
+      }
+    }
+  }
+
+  BOOST_REQUIRE (is_using_port ("orchestrator", *orchestrator_port));
+  BOOST_REQUIRE (is_using_port ("agent", *agent_port));
+
+  gspc::client client (*drts);
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( client.put_and_run
         ( gspc::workflow (make.pnet())
-        , { {"port", worker_port}
+        , { {"port", static_cast<unsigned int> (*worker_port)}
           , {"start", true}
           }
         )

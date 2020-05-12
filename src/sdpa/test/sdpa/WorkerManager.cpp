@@ -1,4 +1,6 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+
+#include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
 
 #include <we/type/requirement.hpp>
@@ -23,7 +25,8 @@ namespace
 {
   std::vector<std::string> generate_worker_names (const int n)
   {
-    return fhg::util::testing::unique_randoms<std::vector<std::string>> (n);
+    return fhg::util::testing::randoms<std::vector<std::string>>
+      (n, &utils::random_peer_name);
   }
 }
 
@@ -325,7 +328,6 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
       }
     );
 
-  fhg::util::testing::unique_random<sdpa::worker_id_t> worker_id_pool;
   fhg::util::testing::unique_random<sdpa::job_id_t> job_id_pool;
   // </boilerplate>
 
@@ -352,7 +354,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
 
   // 1 running; 2 stealable, cost 1 each
   {
-    sdpa::worker_id_t const worker_id (worker_id_pool());
+    sdpa::worker_id_t const worker_id (utils::random_peer_name());
     add_worker (worker_id);
     add_running_job (worker_id, job_id_pool(), 1.0, false);
     add_pending_job (worker_id, job_id_pool(), 1.0, true);
@@ -361,14 +363,14 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
 
   // 1 running; 1 stealable, cost 0 each
   {
-    sdpa::worker_id_t const worker_id (worker_id_pool());
+    sdpa::worker_id_t const worker_id (utils::random_peer_name());
     add_worker (worker_id);
     add_running_job (worker_id, job_id_pool(), 0.0, false);
     add_pending_job (worker_id, job_id_pool(), 0.0, false);
   }
 
-  add_worker (worker_id_pool());
-  add_worker (worker_id_pool());
+  add_worker (utils::random_peer_name());
+  add_worker (utils::random_peer_name());
 
 
   // With the invalid-read, the second job is stolen from the

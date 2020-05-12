@@ -96,7 +96,6 @@ GenericDaemon::GenericDaemon( const std::string name
     (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
   , mtx_subscriber_()
   , mtx_cpb_()
-  , m_capabilities()
   , _log_emitter()
   , _registration_timeout (std::chrono::seconds (1))
   , _event_queue()
@@ -555,7 +554,6 @@ void GenericDaemon::handleErrorEvent
     }
     FHG_UTIL_FALLTHROUGH;
     case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    case events::ErrorEvent::SDPA_ENETWORKFAILURE:
     {
       unsubscribe(source);
 
@@ -570,7 +568,7 @@ void GenericDaemon::handleErrorEvent
           }
         }
 
-        _scheduler.reschedule_worker_jobs
+        _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
           ( as_worker.get()->second
           , [this] (job_id_t const& job)
             {
@@ -656,6 +654,11 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
     return;
   }
 
+  bool const cancel_already_requested
+    ( pJob->getStatus() == sdpa::status::CANCELING
+    || pJob->getStatus() == sdpa::status::CANCELED
+    );
+
   pJob->CancelJob();
 
   const std::unordered_set<worker_id_t>
@@ -663,6 +666,11 @@ void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
 
   if (!workers_to_cancel.empty())
   {
+    if (cancel_already_requested)
+    {
+      return;
+    }
+
     for (worker_id_t const& w : workers_to_cancel)
     {
       child_proxy ( this
@@ -794,8 +802,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       , events::JobFinishedEvent const* event
       )
     {
-      child_proxy (this, source).job_finished_ack (event->job_id());
-
       Job* const job
         (require_job (event->job_id(), "job_finished for unknown job"));
 
@@ -806,6 +812,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         );
 
       handle_job_termination (job);
+
+      child_proxy (this, source).job_finished_ack (event->job_id());
     }
 
     void GenericDaemon::handleJobFailedEvent
@@ -813,8 +821,6 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       , events::JobFailedEvent const* event
       )
     {
-      child_proxy (this, source).job_failed_ack (event->job_id());
-
       Job* const job
         (require_job (event->job_id(), "job_failed for unknown job"));
 
@@ -825,6 +831,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         );
 
       handle_job_termination (job);
+
+      child_proxy (this, source).job_failed_ack (event->job_id());
     }
 
     void GenericDaemon::handleCancelJobAckEvent
@@ -1076,17 +1084,11 @@ void GenericDaemon::requestRegistration (master_network_info& master)
   }
 
   std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  capabilities_set_t cpbSet (m_capabilities);
+  capabilities_set_t cpbSet;
 
   _worker_manager.getCapabilities (cpbSet);
 
   parent_proxy (this, master).worker_registration (cpbSet);
-}
-
-void GenericDaemon::addCapability(const capability_t& cpb)
-{
-  std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  m_capabilities.insert(cpb);
 }
 
 void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)

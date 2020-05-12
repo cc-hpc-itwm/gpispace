@@ -19,6 +19,7 @@ namespace fhg
         std::string result;
         do
         {
+          // ':': separator to port
           result = util::testing::random_string_without (":");
         }
         while (result.empty());

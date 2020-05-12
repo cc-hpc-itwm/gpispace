@@ -7,10 +7,15 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/timer/application.hpp>
 
-#include <algorithm>
 #include <chrono>
+#include <cstddef>
 #include <cstdint>
+#include <future>
+#include <limits>
+#include <stdexcept>
+#include <string>
 #include <thread>
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -544,17 +549,16 @@ namespace gspc
 
     fhg::util::latch running (1);
 
-    std::thread thread
-      { [&]
-        {
-          running.count_down();
+    auto allocation_future
+      ( std::async ( std::launch::async
+                   , [&]
+                     {
+                       running.count_down();
 
-          auto allocation (cache.alloc (datas.back()));
-
-          REQUIRE_ALLOCATION (allocation, 1, false);
-          BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
-        }
-      };
+                       return cache.alloc (datas.back());
+                     }
+                   )
+      );
 
     running.wait();
 
@@ -564,7 +568,9 @@ namespace gspc
 
     cache.free (datas.at (index));
 
-    thread.join();
+    auto const allocation (allocation_future.get());
+    REQUIRE_ALLOCATION (allocation, 1, false);
+    BOOST_REQUIRE_EQUAL (allocation.id, slot.at (datas.at (index)));
   }
 
   BOOST_AUTO_TEST_CASE (alloc_can_be_interrupted)
@@ -581,17 +587,16 @@ namespace gspc
 
     fhg::util::latch running (1);
 
-    std::thread thread
-      { [&]
-        {
-          running.count_down();
+    auto allocation_future
+      ( std::async ( std::launch::async
+                   , [&]
+                     {
+                       running.count_down();
 
-          BOOST_CHECK_THROW
-            ( cache.alloc (datas.back())
-            , TestCache::interrupted
-            );
-        }
-      };
+                       cache.alloc (datas.back());
+                     }
+                   )
+      );
 
     running.wait();
 
@@ -601,7 +606,7 @@ namespace gspc
 
     cache.interrupt();
 
-    thread.join();
+    BOOST_CHECK_THROW (allocation_future.get(), TestCache::interrupted);
   }
 
   BOOST_AUTO_TEST_CASE (interrupt_is_sticky_and_interrupts_all_accesses)

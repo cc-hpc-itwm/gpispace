@@ -1,9 +1,9 @@
-#include <boost/test/unit_test.hpp>
-
 #include <fhgcom/header.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+
+#include <boost/test/unit_test.hpp>
 
 BOOST_AUTO_TEST_CASE ( test_address )
 {

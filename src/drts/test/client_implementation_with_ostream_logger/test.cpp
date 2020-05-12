@@ -19,8 +19,9 @@
 #include <util-generic/join.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/printer/optional.hpp>
-#include <util-generic/testing/random/string.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>
@@ -118,7 +119,17 @@ BOOST_DATA_TEST_CASE
 
   for (int i (0); i < 10; ++i)
   {
-    lines.emplace_back (fhg::util::testing::random_string_without ("\n\\\""));
+    using random_string = fhg::util::testing::random<std::string>;
+    // - \n because that's what we join/split on
+    // - non-empty because otherwise it is swallowed if at end,
+    //   leading to a test failure (top/gpispace#823)
+    // - \\ and \" because the string value parser breaks
+    lines.emplace_back
+      ( random_string{} ( random_string::except ("\n\\\"")
+                        , random_string::default_max_length
+                        , 1
+                        )
+      );
   }
 
   std::multimap<std::string, pnet::type::value::value_type> const result
@@ -131,6 +142,5 @@ BOOST_DATA_TEST_CASE
     );
 
   BOOST_REQUIRE_EQUAL (result.size(), 0);
-  BOOST_REQUIRE_EQUAL_COLLECTIONS
-    (lines.begin(), lines.end(), logged.begin(), logged.end());
+  BOOST_REQUIRE_EQUAL (lines, logged);
 }

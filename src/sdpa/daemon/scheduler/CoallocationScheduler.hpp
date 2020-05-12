@@ -40,7 +40,7 @@ namespace sdpa
       void assignJobsToWorkers();
       void steal_work();
 
-      void reschedule_worker_jobs
+      void reschedule_worker_jobs_and_maybe_remove_worker
         ( worker_id_t const&
         , std::function<Job* (sdpa::job_id_t const&)>
         , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>

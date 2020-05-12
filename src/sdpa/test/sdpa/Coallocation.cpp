@@ -12,6 +12,7 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <atomic>
 #include <chrono>
 #include <string>
 #include <thread>
@@ -55,14 +56,20 @@ BOOST_DATA_TEST_CASE
 
   // 3. start worker 2
   fhg::util::thread::event<std::string> job_submitted_2;
-  bool worker_2_shall_not_get_a_job (false);
+  std::atomic<bool> worker_2_shall_not_get_a_job (false);
+  std::atomic<bool> worker_2_got_a_job_while_forbidden (false);
   utils::fake_drts_worker_waiting_for_finished_ack worker_2
-    ([&job_submitted_2, &worker_2_shall_not_get_a_job] (std::string j)
-    {
-      // 7. another job is submitted to worker 2 and worker 3
-      BOOST_REQUIRE (!worker_2_shall_not_get_a_job);
-      job_submitted_2.notify (j);
-    }
+    ( [&] (std::string j)
+      {
+        // \note Notifying after the check to avoid a race between
+        // setting the forbidden-flag and checking!
+        // bad: 7. a job is submitted while coallocated worker is
+        // still active
+        worker_2_got_a_job_while_forbidden
+          = worker_2_got_a_job_while_forbidden || worker_2_shall_not_get_a_job;
+        // 4.1. worker 2 gets the job
+        job_submitted_2.notify (j);
+      }
     , agent
     , certificates
     );
@@ -75,14 +82,16 @@ BOOST_DATA_TEST_CASE
   worker_2_shall_not_get_a_job = true;
   worker_2.finish_and_wait_for_ack (job_name);
 
+  std::atomic<bool> worker_3_got_a_job (false);
+
   {
     // 6. start worker 3
     utils::fake_drts_worker_notifying_module_call_submission worker_3
-      ([] (std::string)
-      {
-        // 7. another job is submitted to worker 2 and worker 3
-        BOOST_FAIL ("worker_3 shall never get a job: all other workers are busy");
-      }
+      ( [&] (std::string)
+        {
+          // bad: 7. another job is submitted to worker 2 and worker 3
+          worker_3_got_a_job = true;
+        }
       , agent
       , certificates
       );
@@ -94,7 +103,7 @@ BOOST_DATA_TEST_CASE
     //! happen though: Scheduling should be triggered when worker_3
     //! registered.
     //! may be equivalent to agent._.request_scheduling();
-    std::this_thread::sleep_for (std::chrono::seconds (5));
+    std::this_thread::sleep_for (std::chrono::seconds (2));
   }
 
   // x. cleanup: terminate jobs.
@@ -114,6 +123,15 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+
+  BOOST_REQUIRE_MESSAGE
+    ( !worker_3_got_a_job
+    , "worker_3 shall never get a job: all other workers are busy"
+    );
+  BOOST_REQUIRE_MESSAGE
+    ( !worker_2_got_a_job_while_forbidden
+    , "worker_2 shall not get a job: coallocated worker still busy"
+    );
 }
 
 BOOST_DATA_TEST_CASE
@@ -136,13 +154,17 @@ BOOST_DATA_TEST_CASE
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
   fhg::util::thread::event<std::string> job_submitted_2;
-  bool worker_2_shall_not_get_a_job (false);
+  std::atomic<bool> worker_2_shall_not_get_a_job (false);
+  std::atomic<bool> worker_2_got_a_job_while_forbidden (false);
   utils::fake_drts_worker_waiting_for_finished_ack worker_2
-    ([&job_submitted_2, &worker_2_shall_not_get_a_job] (std::string j)
-    {
-      BOOST_REQUIRE (!worker_2_shall_not_get_a_job);
-      job_submitted_2.notify (j);
-    }
+    ( [&] (std::string j)
+      {
+        // \note Notifying after the check to avoid a race between
+        // setting the forbidden-flag and checking!
+        worker_2_got_a_job_while_forbidden
+          = worker_2_got_a_job_while_forbidden || worker_2_shall_not_get_a_job;
+        job_submitted_2.notify (j);
+      }
     , agent
     , certificates
     );
@@ -175,6 +197,11 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+
+  BOOST_REQUIRE_MESSAGE
+    ( !worker_2_got_a_job_while_forbidden
+    , "worker_2 shall not get a second job: two other workers are available"
+    );
 }
 
 BOOST_DATA_TEST_CASE
@@ -194,12 +221,16 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted_1;
   fhg::util::thread::event<std::string> cancel_requested_1;
-  bool worker_1_shall_not_get_a_job (false);
+  std::atomic<bool> worker_1_shall_not_get_a_job (false);
+  std::atomic<bool> worker_1_got_a_job_while_forbidden (false);
   utils::fake_drts_worker_notifying_cancel worker_1
-    ([&job_submitted_1, &worker_1_shall_not_get_a_job] (std::string j)
-    {
-      BOOST_REQUIRE (!worker_1_shall_not_get_a_job);
-      job_submitted_1.notify (j);
+    ( [&] (std::string j)
+      {
+        // \note Notifying after the check to avoid a race between
+        // setting the forbidden-flag and checking!
+        worker_1_got_a_job_while_forbidden
+          = worker_1_got_a_job_while_forbidden || worker_1_shall_not_get_a_job;
+        job_submitted_1.notify (j);
     }
     , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
     , agent
@@ -233,20 +264,22 @@ BOOST_DATA_TEST_CASE
   const std::string canceled_job_1 (cancel_requested_1.wait());
   worker_2.canceled (cancel_requested_2.wait());
 
+  std::atomic<bool> worker_4_or_5_got_a_job (false);
+
   {
     utils::fake_drts_worker_notifying_module_call_submission worker_4
-      ([] (std::string)
-      {
-        BOOST_FAIL ("worker_4 shall never get a job: worker 1 is still canceling");
-      }
+      ( [&] (std::string)
+        {
+          worker_4_or_5_got_a_job = true;
+        }
       , agent
       , certificates
       );
     utils::fake_drts_worker_notifying_module_call_submission worker_5
-      ([] (std::string)
-      {
-        BOOST_FAIL ("worker_5 shall never get a job: workers 1 is still canceling");
-      }
+      ( [&] (std::string)
+        {
+          worker_4_or_5_got_a_job = true;
+        }
       , agent
       , certificates
       );
@@ -267,6 +300,100 @@ BOOST_DATA_TEST_CASE
   worker_1_shall_not_get_a_job = false;
 
   //! \note cleanup of both jobs
+  {
+    fhg::util::thread::event<std::string> job_submitted_3;
+
+    utils::fake_drts_worker_waiting_for_finished_ack worker_3
+      ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
+      , agent
+      , certificates
+      );
+
+    {
+      std::string job_name (job_submitted_1.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+
+      worker_1.finish (job_name);
+      worker_2.finish (job_name);
+      worker_3.finish_and_wait_for_ack (job_name);
+    }
+    {
+      std::string job_name (job_submitted_1.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+      BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+
+      worker_1.finish (job_name);
+      worker_2.finish (job_name);
+      worker_3.finish_and_wait_for_ack (job_name);
+    }
+  }
+
+  BOOST_REQUIRE_EQUAL
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+
+  BOOST_REQUIRE_MESSAGE
+    ( !worker_1_got_a_job_while_forbidden
+    , "worker_1 shall not get a job: has not yet cancel-acked"
+    );
+
+  BOOST_REQUIRE_MESSAGE
+    ( !worker_4_or_5_got_a_job
+    , "worker_4 shall never get a job: worker 1 is still canceling"
+    );
+}
+
+BOOST_DATA_TEST_CASE
+  ( coallocated_tasks_are_canceled_when_one_worker_having_a_sibling_task_dies
+  , certificates_data
+  , certificates
+  )
+{
+  //! \note related to issue #822
+
+  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (orchestrator, certificates);
+
+  utils::client client (orchestrator, certificates);
+  sdpa::job_id_t const job_id
+    (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
+
+  fhg::util::thread::event<std::string> job_submitted_1;
+  fhg::util::thread::event<std::string> cancel_requested_1;
+  utils::fake_drts_worker_notifying_cancel worker_1
+    ( [&] (std::string j) { job_submitted_1.notify (j); }
+    , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
+    , agent
+    , certificates
+    );
+
+  fhg::util::thread::event<std::string> job_submitted_2;
+  fhg::util::thread::event<std::string> cancel_requested_2;
+  utils::fake_drts_worker_notifying_cancel worker_2
+    ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
+    , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
+    , agent
+    , certificates
+    );
+
+  {
+    fhg::util::thread::event<std::string> job_submitted_3;
+
+    const utils::fake_drts_worker_notifying_module_call_submission worker_3
+      ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
+      , agent
+      , certificates
+      );
+
+    std::string job_name (job_submitted_1.wait());
+    BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+    BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+  }
+
+  const std::string canceled_job_1 (cancel_requested_1.wait());
+  worker_2.canceled (cancel_requested_2.wait());
+  worker_1.canceled (canceled_job_1);
+
   {
     fhg::util::thread::event<std::string> job_submitted_3;
 

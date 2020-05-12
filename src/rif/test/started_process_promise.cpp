@@ -1,5 +1,3 @@
-#include <boost/test/unit_test.hpp>
-
 #include <rif/started_process_promise.hpp>
 
 #include <util-generic/executable_path.hpp>
@@ -12,8 +10,11 @@
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/format.hpp>
+#include <boost/mpl/list.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
+#include <boost/test/data/test_case.hpp>
+#include <boost/test/unit_test.hpp>
 
 #include <string>
 #include <vector>
@@ -191,97 +192,90 @@ BOOST_AUTO_TEST_CASE (setting_exception_writes_something_ending_with_sentinel_va
 
 namespace
 {
-  void setup_and_set_result_and_check (std::vector<std::string> messages)
+  std::vector<std::vector<std::string>> messagess()
   {
-    int pipefd[2];
-    fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
-
-    argument_builder arguments
-      {"./application.exe", std::to_string (pipefd[1]).c_str()};
-
-    int argc (arguments.argc());
-    char** argv (arguments.argv());
-
-    {
-      fhg::rif::started_process_promise promise (argc, argv);
-      promise.set_result (messages);
-
-      std::vector<char> const data (read_from_fd (pipefd[0]));
-      std::string str (data.begin(), data.end());
-      std::istringstream sstr (str);
-      boost::archive::text_iarchive archive (sstr);
-
-      bool result;
-      archive & result;
-
-      BOOST_REQUIRE_EQUAL (result, true);
-
-      std::vector<std::string> deserialized_messages;
-      archive & deserialized_messages;
-
-      BOOST_REQUIRE_EQUAL (deserialized_messages, messages);
-    }
+    return { {}
+           , {"foo"}
+           , fhg::util::testing::randoms<std::vector<std::string>> (100)
+           };
   }
 }
 
-BOOST_AUTO_TEST_CASE (result_serializes_a_vector_of_messages)
+BOOST_DATA_TEST_CASE
+  (result_serializes_a_vector_of_messages, messagess(), messages)
 {
-  setup_and_set_result_and_check ({});
-  setup_and_set_result_and_check ({"foo"});
-  setup_and_set_result_and_check
-    (fhg::util::testing::randoms<std::vector<std::string>> (100));
-}
+  int pipefd[2];
+  fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
 
-namespace
-{
-  template<typename Exception, typename... Args>
-    void setup_and_set_exception_and_check (Args... exception_args)
+  argument_builder arguments
+    {"./application.exe", std::to_string (pipefd[1]).c_str()};
+
+  int argc (arguments.argc());
+  char** argv (arguments.argv());
+
   {
-    int pipefd[2];
-    fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
+    fhg::rif::started_process_promise promise (argc, argv);
+    promise.set_result (messages);
 
-    argument_builder arguments
-      {"./application.exe", std::to_string (pipefd[1]).c_str()};
+    std::vector<char> const data (read_from_fd (pipefd[0]));
+    std::string str (data.begin(), data.end());
+    std::istringstream sstr (str);
+    boost::archive::text_iarchive archive (sstr);
 
-    int argc (arguments.argc());
-    char** argv (arguments.argv());
+    bool result;
+    archive & result;
 
-    {
-      fhg::rif::started_process_promise promise (argc, argv);
-      promise.set_exception
-        (std::make_exception_ptr (Exception (exception_args...)));
+    BOOST_REQUIRE_EQUAL (result, true);
 
-      std::vector<char> const data (read_from_fd (pipefd[0]));
-      std::string str (data.begin(), data.end());
-      std::istringstream sstr (str);
-      boost::archive::text_iarchive archive (sstr);
+    std::vector<std::string> deserialized_messages;
+    archive & deserialized_messages;
 
-      bool result;
-      archive & result;
-
-      BOOST_REQUIRE_EQUAL (result, false);
-
-      std::string serialized_exception;
-      archive & serialized_exception;
-
-      fhg::util::testing::require_exception
-        ( [&serialized_exception]
-          {
-            std::rethrow_exception
-              ( fhg::util::serialization::exception::deserialize
-                  (serialized_exception)
-              );
-          }
-        , Exception (exception_args...)
-        );
-    }
+    BOOST_REQUIRE_EQUAL (deserialized_messages, messages);
   }
 }
 
-BOOST_AUTO_TEST_CASE (exceptions_are_serialized_using_util_generic)
+using exception_types = boost::mpl::list<std::runtime_error, std::range_error>;
+
+BOOST_AUTO_TEST_CASE_TEMPLATE
+  (exceptions_are_serialized_using_util_generic, Exception, exception_types)
 {
-  setup_and_set_exception_and_check<std::runtime_error>
-    (fhg::util::testing::random<std::string>()());
-  setup_and_set_exception_and_check<std::range_error>
-    (fhg::util::testing::random<std::string>()());
+  auto const exception_arg (fhg::util::testing::random<std::string>{}());
+
+  int pipefd[2];
+  fhg::util::syscall::pipe (pipefd, O_NONBLOCK);
+
+  argument_builder arguments
+    {"./application.exe", std::to_string (pipefd[1]).c_str()};
+
+  int argc (arguments.argc());
+  char** argv (arguments.argv());
+
+  {
+    fhg::rif::started_process_promise promise (argc, argv);
+    promise.set_exception (std::make_exception_ptr (Exception (exception_arg)));
+
+    std::vector<char> const data (read_from_fd (pipefd[0]));
+    std::string str (data.begin(), data.end());
+    std::istringstream sstr (str);
+    boost::archive::text_iarchive archive (sstr);
+
+    bool result;
+    archive & result;
+
+    BOOST_REQUIRE_EQUAL (result, false);
+
+    std::string serialized_exception;
+    archive & serialized_exception;
+
+    fhg::util::testing::require_exception
+      ( [&serialized_exception]
+        {
+          std::rethrow_exception
+            ( fhg::util::serialization::exception::deserialize
+                (serialized_exception)
+            );
+        }
+      , Exception (exception_arg)
+      );
+  }
 }

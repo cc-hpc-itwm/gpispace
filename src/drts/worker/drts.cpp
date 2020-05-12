@@ -628,9 +628,9 @@ catch (decltype (m_pending_jobs)::interrupted const&)
 void DRTSImpl::start_receiver()
 {
   _peer.async_recv
-    ( &m_message
-    , [this] ( boost::system::error_code const& ec
+    ( [this] ( boost::system::error_code const& ec
              , boost::optional<fhg::com::p2p::address_t> source
+             , fhg::com::message_t message
              )
       {
         static sdpa::events::Codec codec;
@@ -641,7 +641,7 @@ void DRTSImpl::start_receiver()
             ( source.get()
             , sdpa::events::SDPAEvent::Ptr
                 ( codec.decode
-                    (std::string (m_message.data.begin(), m_message.data.end()))
+                    (std::string (message.data.begin(), message.data.end()))
                 )
             );
 

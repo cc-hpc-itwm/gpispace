@@ -10,7 +10,6 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
-#include <boost/align/align.hpp>
 #include <boost/format.hpp>
 
 #include <functional>
@@ -137,11 +136,43 @@ namespace we
 
   namespace
   {
+    // https://github.com/boostorg/align/issues/13 prevents from using
+    // boost::align::alignment
+    void* _align ( std::size_t alignment
+                 , std::size_t size
+                 , void*& ptr
+                 , std::size_t& space
+                 )
+    {
+#if HAS_STD_ALIGN
+      return std::align (alignment, size, ptr, space);
+#else
+      // see boost/align/detail/align.hpp
+      if (size <= space)
+      {
+        auto p = reinterpret_cast<char*>
+          ( ~(alignment - 1)
+          & (reinterpret_cast<std::uintptr_t> (ptr) + alignment - 1)
+          );
+        std::size_t const d = p - static_cast<char*> (ptr);
+        std::size_t const n = space - d;
+        if (d <= space && size <= n)
+        {
+          ptr = p;
+          space = n;
+          return p;
+        }
+      }
+
+      return nullptr;
+#endif
+    }
+
     template<typename T>
       bool align (std::size_t alignment, std::size_t size, T*& ptr, std::size_t& space)
     {
       void* ptr_void (ptr);
-      auto const result (boost::alignment::align (alignment, size, ptr_void, space));
+      auto const result (_align (alignment, size, ptr_void, space));
       ptr = static_cast<T*> (ptr_void);
       return result != nullptr;
     }
@@ -230,7 +261,7 @@ namespace we
                      "Please take into account also the buffer alignments "
                      "when allocating local shared memory!"
                     )
-                % (buffer_ptr - local_memory + size)
+                % (buffer_ptr - local_memory + size + alignment)
                 % shared_memory_size
                 ).str()
 	      );
