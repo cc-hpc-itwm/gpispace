@@ -852,16 +852,6 @@ namespace utils
     _announce_cancel (pEvt->job_id());
   }
 
-  client::client ( orchestrator const& orch
-                 , fhg::com::Certificates const& certificates
-                 )
-    : _ ( orch.host()
-        , orch.port()
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-        , certificates
-        )
-  {}
-
   client::client ( agent const& master_agent
                  , fhg::com::Certificates const& certificates
                  )
@@ -941,18 +931,6 @@ namespace utils
 
   sdpa::status::code client::submit_job_and_wait_for_termination
     ( we::type::activity_t workflow
-    , orchestrator const& orch
-    , fhg::com::Certificates const& certificates
-    )
-  {
-    client c (orch, certificates);
-
-    return c.wait_for_terminal_state_and_cleanup_polling
-      (c.submit_job (workflow));
-  }
-
-  sdpa::status::code client::submit_job_and_wait_for_termination
-    ( we::type::activity_t workflow
     , agent const& master_agent
     , fhg::com::Certificates const& certificates
     )
@@ -961,17 +939,6 @@ namespace utils
 
     return c.wait_for_terminal_state_and_cleanup_polling
       (c.submit_job (workflow));
-  }
-
-  sdpa::status::code client::submit_job_and_wait_for_termination_as_subscriber
-    ( we::type::activity_t workflow
-    , orchestrator const& orch
-    , fhg::com::Certificates const& certificates
-    )
-  {
-    client c (orch, certificates);
-
-    return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
   }
 
   sdpa::status::code client::submit_job_and_wait_for_termination_as_subscriber
