@@ -22,14 +22,29 @@ BOOST_DATA_TEST_CASE (coallocation_workflow, certificates_data, certificates)
   const utils::orchestrator orchestrator (certificates);
   const utils::agent agent (orchestrator, certificates);
 
-  const utils::fake_drts_worker_directly_finishing_jobs worker_0 (agent, certificates);
-  const utils::fake_drts_worker_directly_finishing_jobs worker_1 (agent, certificates);
+  utils::client client (orchestrator, certificates);
+  sdpa::job_id_t const job_id
+    (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
+
+  fhg::util::thread::event<std::string> job_submitted_0;
+  utils::fake_drts_worker_waiting_for_finished_ack worker_0
+    ( [&job_submitted_0] (std::string s) { job_submitted_0.notify (s); }
+    , agent
+    , certificates
+    );
+
+  fhg::util::thread::event<std::string> job_submitted_1;
+  utils::fake_drts_worker_waiting_for_finished_ack worker_1
+    ( [&job_submitted_1] (std::string s) { job_submitted_1.notify (s); }
+    , agent
+    , certificates
+    );
+
+  worker_0.finish_and_wait_for_ack (job_submitted_0.wait());
+  worker_1.finish_and_wait_for_ack (job_submitted_1.wait());
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (2), orchestrator, certificates)
-    , sdpa::status::FINISHED
-    );
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
 BOOST_DATA_TEST_CASE
@@ -314,8 +329,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish (job_name);
-      worker_2.finish (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
     {
@@ -323,8 +338,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish (job_name);
-      worker_2.finish (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
   }
@@ -408,8 +423,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish (job_name);
-      worker_2.finish (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
     {
@@ -417,8 +432,8 @@ BOOST_DATA_TEST_CASE
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
       BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
 
-      worker_1.finish (job_name);
-      worker_2.finish (job_name);
+      worker_1.finish_and_wait_for_ack (job_name);
+      worker_2.finish_and_wait_for_ack (job_name);
       worker_3.finish_and_wait_for_ack (job_name);
     }
   }
@@ -464,11 +479,11 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE_EQUAL (submitted, job_submitted_2.wait());
     worker_1.reset();
     cancel_id = cancel_requested_2.wait();
-    worker_2.finish (submitted);
+    worker_2.finish_and_wait_for_ack (submitted);
   }
 
   fhg::util::thread::event<std::string> job_submitted_3;
-  utils::fake_drts_worker_notifying_module_call_submission worker_3
+  utils::fake_drts_worker_waiting_for_finished_ack worker_3
     ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
     , agent
     , certificates
@@ -478,8 +493,8 @@ BOOST_DATA_TEST_CASE
     sdpa::job_id_t const submitted (job_submitted_2.wait());
     BOOST_REQUIRE_EQUAL (submitted, job_submitted_3.wait());
 
-    worker_2.finish (submitted);
-    worker_3.finish (submitted);
+    worker_2.finish_and_wait_for_ack (submitted);
+    worker_3.finish_and_wait_for_ack (submitted);
   }
 
   BOOST_REQUIRE_EQUAL
