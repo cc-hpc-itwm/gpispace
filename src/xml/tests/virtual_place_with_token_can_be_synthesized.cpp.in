@@ -1,0 +1,46 @@
+#include <boost/test/unit_test.hpp>
+
+#include <xml/parse/parser.hpp>
+#include <xml/parse/state.hpp>
+
+#include <we/type/transition.hpp>
+#include <we/type/net.hpp>
+
+#include <fhg/util/xml.hpp>
+#include <util-generic/read_file.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+
+#include <sstream>
+#include <string>
+
+namespace xml
+{
+  namespace parse
+  {
+    BOOST_AUTO_TEST_CASE (virtual_place_with_token_can_be_synthesized)
+    {
+      state::type state;
+
+      state.synthesize_virtual_places() = true;
+
+      std::string const filename
+        ("@XML_PARSE_TEST_XPNETS_DIR@/"
+        "virtual_place_with_token_can_be_synthesized.xpnet"
+        );
+
+      auto function (just_parse (state, filename));
+      post_processing_passes (function, &state);
+
+      ::we::type::transition_t transition;
+
+      BOOST_REQUIRE_NO_THROW (transition = xml_to_we (function, state));
+
+      //! \note additional sanity not strictly required, to not throw
+      //! is the important point
+      BOOST_REQUIRE (!!transition.net());
+      BOOST_REQUIRE_EQUAL ( transition.name()
+                          , "virtual_place_with_token_can_be_synthesized"
+                          );
+    }
+  }
+}
