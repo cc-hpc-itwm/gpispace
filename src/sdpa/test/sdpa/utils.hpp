@@ -432,12 +432,6 @@ namespace utils
 
     sdpa::client::Client _;
 
-    static sdpa::status::code submit_job_and_wait_for_termination
-      ( we::type::activity_t
-      , agent const&
-      , fhg::com::Certificates const&
-      );
-
     static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
       ( we::type::activity_t
       , agent const&
