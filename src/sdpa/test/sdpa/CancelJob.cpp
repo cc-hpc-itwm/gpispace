@@ -92,7 +92,7 @@ namespace
   };
 }
 
-BOOST_DATA_TEST_CASE (cancel_no_agent, certificates_data, certificates)
+BOOST_DATA_TEST_CASE (cancel_no_worker, certificates_data, certificates)
 {
   const utils::agent agent (certificates);
 
