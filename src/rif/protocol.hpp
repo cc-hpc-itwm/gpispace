@@ -95,7 +95,7 @@ namespace fhg
         ( start_agent
         , start_scheduler_result
             ( std::string name
-            , hostinfo_t parent
+            , boost::optional<hostinfo_t> parent
             , boost::optional<unsigned short> agent_port
             , boost::optional<boost::filesystem::path> gpi_socket
             , gspc::Certificates

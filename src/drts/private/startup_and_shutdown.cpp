@@ -120,8 +120,8 @@ namespace
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
     , std::string const& name
-    , std::string const& parent_name
-    , fhg::drts::hostinfo_type const& parent_hostinfo
+    , boost::optional<std::string> const& parent_name
+    , boost::optional<fhg::drts::hostinfo_type> const& parent_hostinfo
     , boost::optional<unsigned short> const& agent_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , gspc::installation_path const& installation_path
@@ -132,8 +132,12 @@ namespace
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
-                << rif_entry_point
-                << " with parent " << parent_name << "\n";
+                << rif_entry_point;
+    if (parent_name)
+    {
+      info_output << " with parent " << *parent_name;
+    }
+    info_output << "\n";
 
     auto const result
       ( rif_client.start_agent
@@ -699,7 +703,7 @@ namespace fhg
       master_agent_hostinfo = start_agent ( master
                                           , master_rif_client
                                           , master_agent_name
-                                          , "orchestrator"
+                                          , std::string ("orchestrator")
                                           , orchestrator_startup_result.hostinfo
                                           , agent_port
                                           , gpi_socket
