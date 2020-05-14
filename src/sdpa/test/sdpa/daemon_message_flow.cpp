@@ -128,13 +128,13 @@ BOOST_DATA_TEST_CASE
   const std::string agent_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
 
-  const sdpa::daemon::GenericDaemon agent_without_workflow_engine
+  const sdpa::daemon::GenericDaemon agent
     ( agent_name
     , "localhost"
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , boost::none
     , sdpa::master_info_t()
-    , false
+    , true
     , certificates
     );
 
@@ -144,11 +144,11 @@ BOOST_DATA_TEST_CASE
     ( child.connect_to
       ( fhg::com::host_t
           ( fhg::util::connectable_to_address_string
-              (agent_without_workflow_engine.peer_local_endpoint().address())
+              (agent.peer_local_endpoint().address())
           )
       , fhg::com::port_t
           ( std::to_string
-              (agent_without_workflow_engine.peer_local_endpoint().port())
+              (agent.peer_local_endpoint().port())
           )
       )
     , fhg::util::testing::random_string()
