@@ -487,7 +487,7 @@ namespace fhg
     }
 
     startup_result startup
-      ( boost::optional<unsigned short> const& orchestrator_port
+      ( boost::optional<unsigned short> const&
       , boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
@@ -567,31 +567,6 @@ namespace fhg
             + " to connect to top level logging demultiplexer failed"
             );
         }
-      }
-
-      auto const orchestrator_startup_result
-        ( fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                return master_rif_client.start_orchestrator
-                  ( installation_path.orchestrator()
-                  , certificates
-                  , orchestrator_port
-                  ).get();
-              }
-              , "could not start orchestrator"
-              )
-        );
-
-      processes.store (master, "orchestrator", orchestrator_startup_result.pid);
-
-      if (logging_rif_client)
-      {
-        logging_rif_client->add_emitter_to_logging_demultiplexer
-          ( logging_rif_info->pid
-          , std::vector<fhg::logging::endpoint>
-              {orchestrator_startup_result.logger_registration_endpoint}
-          ).get();
       }
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
@@ -703,8 +678,8 @@ namespace fhg
       master_agent_hostinfo = start_agent ( master
                                           , master_rif_client
                                           , master_agent_name
-                                          , std::string ("orchestrator")
-                                          , orchestrator_startup_result.hostinfo
+                                          , boost::none
+                                          , boost::none
                                           , agent_port
                                           , gpi_socket
                                           , installation_path
@@ -720,7 +695,7 @@ namespace fhg
                                           , certificates
                                           );
 
-      return {orchestrator_startup_result.hostinfo, logging_rif_info};
+      return {master_agent_hostinfo, logging_rif_info};
     }
 
     namespace
