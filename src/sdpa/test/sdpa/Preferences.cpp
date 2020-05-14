@@ -154,35 +154,6 @@ namespace
   }
 }
 
-BOOST_DATA_TEST_CASE
-  ( agent_receives_the_expected_preferences_from_the_master
-  , certificates_data
-  , certificates
-  )
-{
-  fhg::util::testing::unique_random<std::string> generate_preference;
-
-  Preferences const preferences
-    {generate_preference(), generate_preference(), generate_preference()};
-
-  auto const capability
-     ( *std::next
-         ( preferences.begin()
-         , fhg::util::testing::random<std::size_t>{} (preferences.size() - 1)
-         )
-     );
-
-  utils::agent const agent (certificates);
-  drts_component_observing_preferences observer
-    (agent, capability, certificates);
-
-  auto const activity (activity_with_preferences (preferences));
-  utils::client (agent, certificates).submit_job (activity);
-
-  auto const submitted (observer.jobs_submitted.get());
-  BOOST_REQUIRE_EQUAL (submitted.second.activity(), activity);
-}
-
 BOOST_AUTO_TEST_CASE
   (preferences_are_properly_stored_in_requirements_and_preferences)
 {
