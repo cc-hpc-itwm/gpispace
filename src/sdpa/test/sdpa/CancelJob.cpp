@@ -136,12 +136,12 @@ BOOST_DATA_TEST_CASE (cancel_with_agent, certificates_data, certificates)
 }
 
 BOOST_DATA_TEST_CASE
-  ( call_cancel_twice_agent_without_workflow_engine
+  ( call_cancel_twice_agent_without_workers
   , certificates_data
   , certificates
   )
 {
-  const utils::agent agent (certificates, false);
+  const utils::agent agent (certificates);
 
   utils::client client (agent, certificates);
 

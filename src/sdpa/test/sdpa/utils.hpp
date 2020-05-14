@@ -72,7 +72,7 @@ namespace utils
     agent (sdpa::master_network_info, fhg::com::Certificates const&);
     agent (basic_drts_component const& master, fhg::com::Certificates const&);
     agent (agent const& master, fhg::com::Certificates const&);
-    agent (fhg::com::Certificates const&, bool has_workflow_engine = true);
+    agent (fhg::com::Certificates const&);
 
     agent ( agent const& master_0
           , agent const& master_1

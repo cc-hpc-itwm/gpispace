@@ -259,12 +259,12 @@ namespace utils
     }
   }
 
-  agent::agent (fhg::com::Certificates const& certificates, bool has_workflow_engine)
+  agent::agent (fhg::com::Certificates const& certificates)
     :  _ ( random_peer_name(), "127.0.0.1"
          , fhg::util::cxx14::make_unique<boost::asio::io_service>()
          , boost::none
          , sdpa::master_info_t()
-         , has_workflow_engine
+         , true
          , certificates
          )
   {}
