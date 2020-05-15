@@ -714,7 +714,6 @@ namespace fhg
         std::string const kind
           ( component == component_type::worker ? "drts-kernel"
           : component == component_type::agent ? "agent"
-          : component == component_type::orchestrator ? "orchestrator"
           : component == component_type::vmem ? "vmem"
           : component == component_type::logging_demultiplexer ? "logging-demultiplexer"
           : throw std::logic_error ("invalid enum value")
@@ -901,7 +900,6 @@ namespace fhg
         ( { component_type::worker
           , component_type::agent
           , component_type::vmem
-          , component_type::orchestrator
           , component_type::logging_demultiplexer
           }
         , [this] (component_type component)

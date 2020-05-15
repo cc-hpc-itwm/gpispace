@@ -40,7 +40,6 @@ namespace fhg
     enum class component_type
     {
       vmem,
-      orchestrator,
       agent,
       worker,
       logging_demultiplexer,
