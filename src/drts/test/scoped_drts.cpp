@@ -124,7 +124,7 @@ BOOST_DATA_TEST_CASE
       );
 
     BOOST_TEST_CONTEXT (info_output_stream.str())
-    BOOST_REQUIRE_EQUAL (info_output.size(), 7);
+    BOOST_REQUIRE_EQUAL (info_output.size(), 6);
 
     std::string const entry_point_master
       ([&info_output, &hosts]()
@@ -162,7 +162,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE_EQUAL
       ( info_output[3]
       , ( boost::format ("I: starting agent: agent-%1%-0"
-                        " on rif entry point %1% with parent orchestrator"
+                        " on rif entry point %1%"
                         )
         % entry_point_master
         ).str()
@@ -181,16 +181,6 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[5]
-        , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
-        )
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[6]
         , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
                        % entry_point_master
                        ).str()
@@ -268,7 +258,7 @@ BOOST_DATA_TEST_CASE
       );
 
     BOOST_TEST_CONTEXT (info_output_stream.str())
-    BOOST_REQUIRE_EQUAL (info_output.size(), 9);
+    BOOST_REQUIRE_EQUAL (info_output.size(), 8);
 
     std::string const entry_point_master
       ([&info_output, &hosts]()
@@ -306,7 +296,7 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE_EQUAL
       ( info_output[3]
       , ( boost::format ("I: starting agent: agent-%1%-0"
-                        " on rif entry point %1% with parent orchestrator"
+                        " on rif entry point %1%"
                         )
         % entry_point_master
         ).str()
@@ -363,16 +353,6 @@ BOOST_DATA_TEST_CASE
     BOOST_REQUIRE
       ( std::regex_match
         ( info_output[7]
-        , std::regex { ( boost::format ("terminating orchestrator on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
-        )
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[8]
         , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
                        % entry_point_master
                        ).str()
