@@ -106,8 +106,8 @@ namespace gspc
       std::string _master_agent_name;
       fhg::drts::hostinfo_type _master_agent_hostinfo;
 
-      std::string _orchestrator_host;
-      unsigned short _orchestrator_port;
+      std::string _top_level_agent_host;
+      unsigned short _top_level_agent_port;
     } _started_runtime_system;
     fhg::logging::stream_emitter _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;

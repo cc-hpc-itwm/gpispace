@@ -89,8 +89,8 @@ namespace gspc
   information_to_reattach::information_to_reattach (scoped_runtime_system const& drts)
     : _ (new implementation
           ( gspc::host_and_port_type
-              { drts._->_started_runtime_system._orchestrator_host
-              , drts._->_started_runtime_system._orchestrator_port
+              { drts._->_started_runtime_system._top_level_agent_host
+              , drts._->_started_runtime_system._top_level_agent_port
               }
           )
         )

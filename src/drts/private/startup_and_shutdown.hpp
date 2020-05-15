@@ -91,7 +91,7 @@ namespace fhg
 
     struct startup_result
     {
-      hostinfo_type orchestrator;
+      hostinfo_type top_level_agent;
       boost::optional<rif::protocol::start_logging_demultiplexer_result>
         top_level_logging_demultiplexer;
     };

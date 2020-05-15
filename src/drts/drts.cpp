@@ -205,8 +205,8 @@ namespace gspc
           , certificates
           )
       );
-    _orchestrator_host = startup_result.orchestrator.first;
-    _orchestrator_port = startup_result.orchestrator.second;
+    _top_level_agent_host = startup_result.top_level_agent.first;
+    _top_level_agent_port = startup_result.top_level_agent.second;
     _logging_rif_info = startup_result.top_level_logging_demultiplexer;
 
     if (!rif_entry_points.empty())
