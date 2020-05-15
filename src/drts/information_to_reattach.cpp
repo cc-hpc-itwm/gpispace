@@ -49,31 +49,31 @@ namespace gspc
       }
     }
 
-    gspc::host_and_port_type get_orchestrator_endpoint
+    gspc::host_and_port_type get_top_level_agent_endpoint
       (pnet::type::value::value_type const& value)
     {
-      return { get_or_throw<std::string> ({"orchestrator", "host"}, value)
-             , static_cast<unsigned short> (get_or_throw<unsigned int> ({"orchestrator", "port"}, value))
+      return { get_or_throw<std::string> ({"top_level_agent", "host"}, value)
+             , static_cast<unsigned short> (get_or_throw<unsigned int> ({"top_level_agent", "port"}, value))
              };
     }
   }
 
   information_to_reattach::implementation::implementation (std::string const& serialized_value)
-    : _endpoint (get_orchestrator_endpoint (pnet::type::value::from_string (serialized_value)))
+    : _endpoint (get_top_level_agent_endpoint (pnet::type::value::from_string (serialized_value)))
   {}
 
-  information_to_reattach::implementation::implementation (host_and_port_type const& orchestrator)
-    : _endpoint (orchestrator)
+  information_to_reattach::implementation::implementation (host_and_port_type const& top_level_agent)
+    : _endpoint (top_level_agent)
   {}
 
   std::string information_to_reattach::implementation::to_string () const
   {
     pnet::type::value::value_type serialized;
-    pnet::type::value::poke ( std::list<std::string> {"orchestrator", "host"}
+    pnet::type::value::poke ( std::list<std::string> {"top_level_agent", "host"}
                             , serialized
                             , _endpoint.host
                             );
-    pnet::type::value::poke ( std::list<std::string> {"orchestrator", "port"}
+    pnet::type::value::poke ( std::list<std::string> {"top_level_agent", "port"}
                             , serialized
                             , static_cast<unsigned int> (_endpoint.port)
                             );
