@@ -52,8 +52,7 @@ namespace gspc
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<unsigned short> const& orchestrator_port
-                             , boost::optional<unsigned short> const& agent_port
+      started_runtime_system ( boost::optional<unsigned short> const& agent_port
                              , bool gpi_enabled
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path

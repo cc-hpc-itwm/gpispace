@@ -156,8 +156,7 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<unsigned short> const&
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
@@ -349,8 +348,7 @@ namespace gspc
         : boost::none
         )
       , _started_runtime_system
-          ( get_orchestrator_port (vm)
-          , get_agent_port (vm)
+          ( get_agent_port (vm)
           , !!_virtual_memory_socket
           , _virtual_memory_socket
           , get_application_search_path (vm)
