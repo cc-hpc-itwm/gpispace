@@ -56,11 +56,11 @@ namespace gspc
   struct client::implementation
   {
     implementation
-      ( gspc::host_and_port_type const& orchestrator_endpoint
+      ( gspc::host_and_port_type const& top_level_agent_endpoint
       , Certificates const& certificates
       )
-      : _client ( fhg::com::host_t (orchestrator_endpoint.host)
-                , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
+      : _client ( fhg::com::host_t (top_level_agent_endpoint.host)
+                , fhg::com::port_t (std::to_string (top_level_agent_endpoint.port))
                 , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , certificates
                 )
