@@ -35,7 +35,6 @@ namespace gspc
       constexpr char const* const nodefile {"nodefile"};
       constexpr char const* const application_search_path
         {"application-search-path"};
-      constexpr char const* const orchestrator_port {"orchestrator-port"};
       constexpr char const* const agent_port {"agent-port"};
 
       constexpr char const* const virtual_memory_socket
@@ -111,11 +110,6 @@ namespace gspc
         ( name::application_search_path
         , boost::program_options::value<validators::existing_directory>()
         , "adds a path to the list of application search paths"
-        )
-        ( name::orchestrator_port
-        , boost::program_options::value
-          <validators::positive_integral<unsigned short>>()
-        , "orchestrator port"
         )
         ( name::agent_port
         , boost::program_options::value
@@ -344,7 +338,6 @@ namespace gspc
   ACCESS_PATH (gspc_home, validators::existing_directory)
   ACCESS_PATH (nodefile, validators::existing_path)
   ACCESS_PATH (application_search_path, validators::existing_directory)
-  ACCESS_POSITIVE_INTEGRAL (orchestrator_port, unsigned short)
   ACCESS_POSITIVE_INTEGRAL (agent_port, unsigned short)
 
   ACCESS_PATH ( virtual_memory_socket
