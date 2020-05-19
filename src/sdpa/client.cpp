@@ -163,6 +163,8 @@ namespace sdpa
         {
           throw std::runtime_error ("got status change for different job");
         }
+
+        _job_results.emplace (id, job_finished->result());
         return sdpa::status::FINISHED;
       }
       else if ( sdpa::events::JobFailedEvent* const job_failed
@@ -292,12 +294,24 @@ namespace sdpa
     {
       send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
         (sdpa::events::DeleteJobEvent (jid));
+
+      _job_results.erase (jid);
     }
 
     we::type::activity_t Client::retrieveResults(const job_id_t &jid)
     {
       return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
         (sdpa::events::RetrieveJobResultsEvent (jid)).result();
+    }
+
+    we::type::activity_t Client::result (sdpa::job_id_t const& job)
+    {
+      if (!_job_results.count (job))
+      {
+        throw std::runtime_error ("couldn't find any resulted stored for the job " + job);
+      }
+
+      return _job_results.at (job);
     }
   }
 }

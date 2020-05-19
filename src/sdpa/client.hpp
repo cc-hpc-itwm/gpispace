@@ -53,6 +53,8 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
+      we::type::activity_t result (sdpa::job_id_t const&);
+
     private:
       std::mutex _make_client_thread_safe;
 
@@ -69,6 +71,7 @@ namespace sdpa
       bool _stopping;
       fhg::com::peer_t m_peer;
       fhg::com::p2p::address_t _drts_entrypoint_address;
+      std::unordered_map<sdpa::job_id_t, we::type::activity_t> _job_results;
     };
   }
 }
