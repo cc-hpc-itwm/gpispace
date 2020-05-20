@@ -28,7 +28,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/error.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/position.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/require.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/gspc/stencil_cache/callback.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.ipp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/socket_endpoint.hpp"
