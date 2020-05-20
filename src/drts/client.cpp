@@ -153,6 +153,12 @@ namespace gspc
     return wait_and_delete_job (job_id, _->_client).result();
   }
 
+  std::multimap<std::string, pnet::type::value::value_type>
+    client::wait_and_extract (job_id_t job_id)
+  {
+    return extract_result_and_forget_job (job_id);
+  }
+
   pnet::type::value::value_type client::synchronous_workflow_response
     ( job_id_t job_id
     , std::string place_name
