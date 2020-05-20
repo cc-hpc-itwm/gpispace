@@ -109,6 +109,8 @@ namespace sdpa {
         {
           sendEventToOther<Event> (subscriber, std::forward<Args> (args)...);
         }
+
+        _subscriptions.right.erase (job_id);
       }
 
       // agent info and properties
