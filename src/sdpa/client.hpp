@@ -31,8 +31,8 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client ( fhg::com::host_t const& orchestrator_host
-             , fhg::com::port_t const& orchestrator_port
+      Client ( fhg::com::host_t const& top_level_agent_host
+             , fhg::com::port_t const& top_level_agent_port
              , std::unique_ptr<boost::asio::io_service> peer_io_service
              , fhg::com::Certificates const& certificates
              );

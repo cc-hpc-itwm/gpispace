@@ -35,8 +35,8 @@ namespace sdpa
 {
   namespace client
   {
-    Client::Client ( fhg::com::host_t const& orchestrator_host
-                   , fhg::com::port_t const& orchestrator_port
+    Client::Client ( fhg::com::host_t const& top_level_agent_host
+                   , fhg::com::port_t const& top_level_agent_port
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , fhg::com::Certificates const& certificates
                    )
@@ -47,7 +47,7 @@ namespace sdpa
                , certificates
                )
       , _drts_entrypoint_address
-          (m_peer.connect_to (orchestrator_host, orchestrator_port))
+          (m_peer.connect_to (top_level_agent_host, top_level_agent_port))
     {
       m_peer.async_recv ( std::bind ( &Client::handle_recv
                                     , this
