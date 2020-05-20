@@ -1113,8 +1113,6 @@ void GenericDaemon::handleSubscribeEvent
                              );
   }
 
-  _subscriptions.insert ({source, jobId});
-
   sendEventToOther<events::SubscribeAckEvent> (source, jobId);
 
   // check if the subscribed jobs are already in a terminal state
@@ -1144,7 +1142,8 @@ void GenericDaemon::handleSubscribeEvent
   case sdpa::status::PENDING:
   case sdpa::status::RUNNING:
   case sdpa::status::CANCELING:
-    // send nothing to the master if the job is not completed
+    // store the subscriber and notify it later, when the job is terminated
+    _subscriptions.insert ({source, jobId});
     return;
   }
 
