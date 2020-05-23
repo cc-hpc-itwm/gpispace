@@ -40,6 +40,7 @@
 #include <functional>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
 
 namespace fhg
 {
@@ -1344,7 +1345,7 @@ namespace fhg
           selected_hostnames << node (index)._hostname;
         }
 
-        qStableSort (_nodes.begin(), _nodes.end(), pred);
+        std::stable_sort (_nodes.begin(), _nodes.end(), pred);
 
         rebuild_node_index();
 

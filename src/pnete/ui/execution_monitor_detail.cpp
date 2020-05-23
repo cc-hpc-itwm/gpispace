@@ -26,6 +26,7 @@
 #include <QToolTip>
 
 #include <functional>
+#include <algorithm>
 
 namespace fhg
 {
@@ -432,7 +433,11 @@ namespace fhg
           }
         };
 
-        template<typename T> T sorted (T t) { qSort (t); return t; }
+        template<typename T> T sorted (T t)
+        {
+          std::sort (t.begin(), t.end());
+          return t;
+        }
 
         bool intersects_or_touches (const QRectF& lhs, const QRectF& rhs)
         {

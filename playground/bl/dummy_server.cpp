@@ -22,6 +22,7 @@
 #include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
 
+#include <algorithm>
 #include <functional>
 
 server::server (int port, const QString& hostlist, QObject* parent)
@@ -431,7 +432,7 @@ void thread::may_read()
           const QMutexLocker lock (&_hosts_mutex);
 
           QList<QString> hosts (_hosts.keys());
-          qStableSort (hosts.begin(), hosts.end(), less());
+          std::stable_sort (hosts.begin(), hosts.end(), less());
 
           for (const QString& host : hosts)
           {
