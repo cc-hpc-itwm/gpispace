@@ -4,6 +4,7 @@
 
 #include <util/qt/cast.hpp>
 #include <util/qt/mvc/delegating_header_view.hpp>
+#include <util-qt/compat.hpp>
 #include <util-qt/overload.hpp>
 #include <util-qt/painter_state_saver.hpp>
 #include <util/qt/scoped_disconnect.hpp>
@@ -685,7 +686,8 @@ namespace fhg
             {
               x_pos += 3.0;
               const QString text (QString ("%1").arg (in_state[state]));
-              const qreal text_width (QFontMetrics (painter->font()).width (text) + 4.0);
+              const qreal text_width
+                (horizontal_advance (painter->font(), text) + 4.0);
               painter->drawText ( QRectF ( rect_with_inset.left() + x_pos
                                          , rect_with_inset.top()
                                          , text_width
@@ -1079,7 +1081,7 @@ namespace fhg
                   ).toString (format)
                 );
               painter->drawText ( QPointF ( (i - from) * scale + rect.left()
-                                          - QFontMetrics (painter->font()).width (text) / 2
+                                          - horizontal_advance (painter->font(), text) / 2
                                           , rect.bottom() - rect.height() * 0.35
                                           )
                                 , text
