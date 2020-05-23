@@ -14,10 +14,12 @@
 
 #include <QApplication>
 #include <QCheckBox>
+#include <QDateTime>
 #include <QDebug>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHeaderView>
 #include <QLabel>
 #include <QListWidgetItem>
 #include <QMenu>
@@ -33,15 +35,11 @@
 #include <QStyle>
 #include <QToolTip>
 #include <QVBoxLayout>
-#include <QDateTime>
-#include <QHeaderView>
 
-#include <boost/optional.hpp>
-
-#include <functional>
-#include <iostream>
-#include <sstream>
 #include <algorithm>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace fhg
 {

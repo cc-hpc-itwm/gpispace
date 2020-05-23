@@ -5,10 +5,12 @@
 #include <pnete/ui/execution_monitor_worker_model.hpp>
 
 #include <util/qt/mvc/fixed_proxy_models.hpp>
-#include <util/qt/mvc/section_index.hpp>
 #include <util/qt/mvc/header_delegate.hpp>
+#include <util/qt/mvc/section_index.hpp>
 
 #include <QStyledItemDelegate>
+
+#include <functional>
 
 class QCheckBox;
 class QSpinBox;

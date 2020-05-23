@@ -4,8 +4,6 @@
 
 #include <pnete/ui/gspc_monitor_client.hpp>
 
-#include <boost/optional.hpp>
-
 #include <QColor>
 #include <QDateTime>
 #include <QList>
@@ -15,6 +13,10 @@
 #include <QTableWidget>
 #include <QTimer>
 #include <QWidget>
+
+#include <boost/optional.hpp>
+
+#include <functional>
 
 namespace fhg
 {
