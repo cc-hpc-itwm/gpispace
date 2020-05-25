@@ -823,13 +823,6 @@ namespace utils
     return _.queryJob (id);
   }
 
-  sdpa::status::code client::wait_for_terminal_state_polling
-    (sdpa::job_id_t const& id)
-  {
-    sdpa::client::job_info_t UNUSED_job_info;
-    return _.wait_for_terminal_state_polling (id, UNUSED_job_info);
-  }
-
   sdpa::status::code client::wait_for_terminal_state (sdpa::job_id_t const& id)
   {
     sdpa::client::job_info_t UNUSED_job_info;
@@ -842,14 +835,6 @@ namespace utils
     return _.wait_for_terminal_state (id, job_info);
   }
 
-  sdpa::status::code client::wait_for_terminal_state_and_cleanup_polling
-    (sdpa::job_id_t const& id)
-  {
-    auto const ret (wait_for_terminal_state_polling (id));
-    retrieve_job_results (id);
-    delete_job (id);
-    return ret;
-  }
   sdpa::status::code client::wait_for_terminal_state_and_cleanup
     (sdpa::job_id_t const& id)
   {

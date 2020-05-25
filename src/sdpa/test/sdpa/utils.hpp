@@ -411,14 +411,10 @@ namespace utils
 
     sdpa::status::code query_job_status (sdpa::job_id_t const&);
 
-    sdpa::status::code wait_for_terminal_state_polling (sdpa::job_id_t const&);
-
     sdpa::status::code wait_for_terminal_state (sdpa::job_id_t const&);
     sdpa::status::code wait_for_terminal_state
       (sdpa::job_id_t const&, sdpa::client::job_info_t& job_info);
 
-    sdpa::status::code wait_for_terminal_state_and_cleanup_polling
-      (sdpa::job_id_t const&);
     sdpa::status::code wait_for_terminal_state_and_cleanup
       (sdpa::job_id_t const&);
 
