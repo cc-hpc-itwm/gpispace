@@ -1,0 +1,18 @@
+<defun name="virtual_place_with_token_can_be_synthesized">
+  <net>
+    <place name="p" type="int" virtual="true">
+      <token>
+        <value>0</value>
+      </token>
+    </place>
+    <transition name="inner">
+      <defun>
+        <tunnel name="p" type="int" place="p"/>
+        <net>
+          <place name="p" type="int" virtual="true"/>
+        </net>
+      </defun>
+      <place-map virtual="p" real="p"/>
+    </transition>
+  </net>
+</defun>

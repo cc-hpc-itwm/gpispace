@@ -1033,10 +1033,13 @@ namespace we
     }
     std::string const& cross_type::input_port_name (place_id_type pid) const
     {
-      return _transition.ports_input()
-        .at ( _net.place_to_port().at (_tid)
-            . at (pid).first
-            ).name()
+      auto const port (_net.place_to_port().at (_tid).at (pid).first);
+
+      auto input (_transition.ports_input().find (port));
+
+      return input != _transition.ports_input().end()
+        ? input->second.name()
+        : _transition.ports_tunnel().at (port).name()
         ;
     }
 

@@ -69,5 +69,19 @@ fhg_add_test (NAME xml_parse_invalid_eureka
   DESCRIPTION "pnetc shall throw for mutiple eureka connections with the same port and no output port for eureka"
 )
 
+configure_file (
+  ${CMAKE_CURRENT_SOURCE_DIR}/virtual_place_with_token_can_be_synthesized.cpp.in
+  ${CMAKE_CURRENT_BINARY_DIR}/virtual_place_with_token_can_be_synthesized.cpp
+  @ONLY
+)
+
+fhg_add_test (NAME xml_parse_virtual_place_with_token_can_be_synthesized
+  SOURCES ${CMAKE_CURRENT_BINARY_DIR}/virtual_place_with_token_can_be_synthesized.cpp
+  USE_BOOST
+  LIBRARIES pnet
+            Util::Generic
+            Boost::filesystem
+)
+
 add_subdirectory (bytearray)
 add_subdirectory (diagnostics)

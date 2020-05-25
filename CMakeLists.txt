@@ -130,7 +130,6 @@ add_subdirectory (playground/bl)
 add_subdirectory (share)
 add_subdirectory (src)
 add_subdirectory (test)
-add_subdirectory (test/gspc)
 
 add_test (NAME installed_headers_are_selfcontained
   COMMAND "${CMAKE_CURRENT_SOURCE_DIR}/test/installed_headers_are_selfcontained.sh"

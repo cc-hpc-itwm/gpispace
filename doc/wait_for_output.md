@@ -6,7 +6,7 @@ mark the top level network as wait_for_output, meaning that even if nothing can 
     <property key="wait_for_output" value="true"/>
   </properties>
 
-(test/gspc/stencil_cache/workflow/stencil_cache.xpnet) or by marking the workflow object before submission
+(src/drts/test/add_worker/add_worker.xpnet) or by marking the workflow object before submission
 
     gspc::workflow workflow (make.pnet());
     workflow.set_wait_for_output();

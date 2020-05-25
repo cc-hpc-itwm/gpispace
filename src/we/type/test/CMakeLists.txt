@@ -16,15 +16,6 @@ fhg_add_test (NAME we_type_signature
   LIBRARIES pnet
 )
 
-fhg_add_test (NAME we_type_stencil_cache_has_correct_destruction_order
-  SOURCES "stencil_cache_has_correct_destruction_order.cpp"
-  ARGS --neighbors $<TARGET_FILE:stencil_cache_workflow_neighbors_callback>
-  USE_BOOST
-  LIBRARIES pnet
-            stencil_cache_workflow_neighbors_callback
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}"
-)
-
 fhg_add_test (NAME we_type_bitsetofint
   SOURCES bitsetofint.cpp
   USE_BOOST
