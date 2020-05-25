@@ -51,7 +51,6 @@ namespace sdpa
         (job_id_t, std::string place_name, pnet::type::value::value_type);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
-      sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
     private:
       std::mutex _make_client_thread_safe;
