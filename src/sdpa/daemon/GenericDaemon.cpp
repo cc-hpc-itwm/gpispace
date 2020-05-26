@@ -1459,16 +1459,16 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job const* const job (findJob (event->job_id()));
 
-      std::unordered_set<worker_id_t> const workers
-        (_worker_manager.findSubmOrAckWorkers (event->job_id()));
-
-      if (!job || (workers.empty() && !workflowEngine()))
+      if (!job || job->getStatus() != sdpa::status::RUNNING)
       {
         throw std::runtime_error
           ( "unable to request workflow response: " + event->job_id()
           + " unknown or not running"
           );
       }
+
+      std::unordered_set<worker_id_t> const workers
+        (_worker_manager.findSubmOrAckWorkers (event->job_id()));
 
       if (!workers.empty())
       {
@@ -1488,7 +1488,7 @@ void GenericDaemon::handleJobFailedAckEvent
       //! wfe. All jobs are regarded as going to the wfe and the only
       //! way to prevent a loop is to check whether the
       //! workflow_response comes out of the wfe. Special "worker" id?
-      else
+      else if (workflowEngine())
       {
         _workflow_response_source.emplace (event->workflow_response_id(), source);
 
@@ -1501,6 +1501,17 @@ void GenericDaemon::handleJobFailedAckEvent
                                                     , event->place_name()
                                                     , event->value()
                                                     );
+      }
+      else
+      {
+        throw std::runtime_error
+          ( ( boost::format
+                ("The job %1% is in running state but it wasn't yet submitted "
+                 "to any worker and the agent has no workflow engine!"
+                )
+            % event->job_id()
+            ).str()
+          );
       }
     }
     catch (...)
