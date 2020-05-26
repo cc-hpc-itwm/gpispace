@@ -1325,19 +1325,11 @@ void GenericDaemon::handleJobFailedAckEvent
             .discover_job_states (pEvt->job_id(), pEvt->discover_id());
         }
       }
-      //! \todo Other criteria to know it was submitted to the
-      //! wfe. All jobs are regarded as going to the wfe and the only
-      //! way to prevent a loop is to check whether the discover comes
-      //! out of the wfe. Special "worker" id?
       else if (workflowEngine())
       {
         _discover_sources.emplace
           (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
 
-        //! \todo There is a race here: between SubmitJobAck and
-        //! we->submit(), there's still a lot of stuff. We can't
-        //! guarantee, that the job is already submitted to the wfe!
-        //! We need to handle the "pending" state.
         workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
       }
       else
