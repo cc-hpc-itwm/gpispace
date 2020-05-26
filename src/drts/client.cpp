@@ -129,8 +129,7 @@ namespace gspc
     {
       wait_for_terminal_state (job_id, client);
 
-      ::we::type::activity_t const result_activity
-        (client.retrieveResults (job_id));
+      auto const result_activity (client.result (job_id));
 
       client.deleteJob (job_id);
 
