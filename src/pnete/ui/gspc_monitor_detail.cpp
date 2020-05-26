@@ -2,6 +2,7 @@
 
 #include <pnete/ui/gspc_monitor_detail.hpp>
 
+#include <util-qt/compat.hpp>
 #include <util-qt/widget/file_line_edit.hpp>
 
 #include <fhg/assert.hpp>
@@ -13,10 +14,12 @@
 
 #include <QApplication>
 #include <QCheckBox>
+#include <QDateTime>
 #include <QDebug>
 #include <QDialogButtonBox>
 #include <QFormLayout>
 #include <QGroupBox>
+#include <QHeaderView>
 #include <QLabel>
 #include <QListWidgetItem>
 #include <QMenu>
@@ -32,14 +35,11 @@
 #include <QStyle>
 #include <QToolTip>
 #include <QVBoxLayout>
-#include <QDateTime>
-#include <QHeaderView>
 
-#include <boost/optional.hpp>
-
-#include <functional>
-#include <iostream>
-#include <sstream>
+#include <algorithm>
+#include <stdexcept>
+#include <string>
+#include <utility>
 
 namespace fhg
 {
@@ -1067,8 +1067,8 @@ namespace fhg
         if (_action_expects_next_state.contains (action))
         {
           const QString expected (_action_expects_next_state[action]);
-          const QSet<QString> currently_pending_hosts
-            (hosts.toSet().intersect (_pending_updates));
+          auto const currently_pending_hosts
+            (list_to_set (hosts).intersect (_pending_updates));
           _ignore_next_nodes_state |= currently_pending_hosts;
 
           for (const QString& host : hosts)
@@ -1133,13 +1133,13 @@ namespace fhg
             {
               _monitor_client->pause();
 
-              QSet<int> nodes (QSet<int>::fromList (_selection));
+              auto nodes (list_to_set (_selection));
               nodes << *node_index;
 
               QStringList hostnames;
 
-              QSet<QString> action_name_intersection
-                (QSet<QString>::fromList (state (node (*node_index)._state)._actions));
+              auto action_name_intersection
+                (list_to_set (state (node (*node_index)._state)._actions));
               QSet<QString> action_name_union;
 
               bool one_node_expects_state_change (false);
@@ -1152,8 +1152,8 @@ namespace fhg
                 one_node_expects_state_change
                   = one_node_expects_state_change || n._expects_state_change;
 
-                const QSet<QString> actions
-                  (QSet<QString>::fromList (state (n._state)._actions));
+                auto const actions
+                  (list_to_set (state (n._state)._actions));
 
                 action_name_union.unite (actions);
                 action_name_intersection.intersect (actions);
@@ -1344,7 +1344,7 @@ namespace fhg
           selected_hostnames << node (index)._hostname;
         }
 
-        qStableSort (_nodes.begin(), _nodes.end(), pred);
+        std::stable_sort (_nodes.begin(), _nodes.end(), pred);
 
         rebuild_node_index();
 

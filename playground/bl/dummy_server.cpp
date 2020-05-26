@@ -8,21 +8,21 @@
 #include <fhg/util/parse/error.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <iostream>
-
 #include <QApplication>
 #include <QDebug>
-#include <stdexcept>
-#include <QStringList>
-#include <QTimer>
-#include <QMutexLocker>
-#include <QFileSystemWatcher>
 #include <QFile>
+#include <QFileSystemWatcher>
+#include <QMutexLocker>
+#include <QTimer>
 
-#include <boost/random/mersenne_twister.hpp>
 #include <boost/random/discrete_distribution.hpp>
+#include <boost/random/mersenne_twister.hpp>
 
+#include <algorithm>
 #include <functional>
+#include <iostream>
+#include <stdexcept>
+#include <string>
 
 server::server (int port, const QString& hostlist, QObject* parent)
   : QTcpServer (parent)
@@ -431,7 +431,7 @@ void thread::may_read()
           const QMutexLocker lock (&_hosts_mutex);
 
           QList<QString> hosts (_hosts.keys());
-          qStableSort (hosts.begin(), hosts.end(), less());
+          std::stable_sort (hosts.begin(), hosts.end(), less());
 
           for (const QString& host : hosts)
           {
