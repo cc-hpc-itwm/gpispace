@@ -1525,18 +1525,10 @@ void GenericDaemon::handleJobFailedAckEvent
                                );
         }
       }
-      //! \todo Other criteria to know it was submitted to the
-      //! wfe. All jobs are regarded as going to the wfe and the only
-      //! way to prevent a loop is to check whether the
-      //! workflow_response comes out of the wfe. Special "worker" id?
       else if (workflowEngine())
       {
         _workflow_response_source.emplace (event->workflow_response_id(), source);
 
-        //! \todo There is a race here: between SubmitJobAck and
-        //! we->submit(), there's still a lot of stuff. We can't
-        //! guarantee, that the job is already submitted to the wfe!
-        //! We need to handle the "pending" state.
         workflowEngine()->request_workflow_response ( event->job_id()
                                                     , event->workflow_response_id()
                                                     , event->place_name()
