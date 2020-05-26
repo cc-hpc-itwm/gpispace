@@ -1246,10 +1246,30 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job const* const pJob (findJob (job_id));
 
+      if (!pJob)
+      {
+        workflowEngine()->discovered
+          ( discover_id
+          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
+          );
+
+        return;
+      }
+
+      if (pJob->getStatus() != sdpa::status::RUNNING)
+      {
+        workflowEngine()->discovered
+          ( discover_id
+          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
+          );
+
+        return;
+      }
+
       std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (job_id));
 
-      if (pJob && !workers.empty())
+      if (!workers.empty())
       {
         for (worker_id_t const& w : workers)
         {
@@ -1257,18 +1277,11 @@ void GenericDaemon::handleJobFailedAckEvent
               .discover_job_states (job_id, discover_id);
         }
       }
-      else if (pJob)
-      {
-        workflowEngine()->discovered
-          ( discover_id
-          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
-          );
-      }
       else
       {
         workflowEngine()->discovered
           ( discover_id
-          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
+          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
           );
       }
     }
@@ -1278,10 +1291,30 @@ void GenericDaemon::handleJobFailedAckEvent
     {
       Job const* const pJob (findJob (pEvt->job_id()));
 
+      if (!pJob)
+      {
+        parent_proxy (this, source).discover_job_states_reply
+          ( pEvt->discover_id()
+          , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
+          );
+
+        return;
+      }
+
+      if (pJob->getStatus() != sdpa::status::RUNNING)
+      {
+        parent_proxy (this, source).discover_job_states_reply
+          ( pEvt->discover_id()
+          , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
+          );
+
+        return;
+      }
+
       std::unordered_set<worker_id_t> const workers
         (_worker_manager.findSubmOrAckWorkers (pEvt->job_id()));
 
-      if (pJob && !workers.empty())
+      if (!workers.empty())
       {
         _discover_sources.emplace
           (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
@@ -1296,7 +1329,7 @@ void GenericDaemon::handleJobFailedAckEvent
       //! wfe. All jobs are regarded as going to the wfe and the only
       //! way to prevent a loop is to check whether the discover comes
       //! out of the wfe. Special "worker" id?
-      else if (pJob && workflowEngine())
+      else if (workflowEngine())
       {
         _discover_sources.emplace
           (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
@@ -1307,18 +1340,15 @@ void GenericDaemon::handleJobFailedAckEvent
         //! We need to handle the "pending" state.
         workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
       }
-      else if (pJob)
-      {
-        parent_proxy (this, source).discover_job_states_reply
-          ( pEvt->discover_id()
-          , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
-          );
-      }
       else
       {
-        parent_proxy (this, source).discover_job_states_reply
-          ( pEvt->discover_id()
-          , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
+        throw std::runtime_error
+          ( ( boost::format
+                ("The job %1% is in running state but it wasn't sent to any "
+                 "worker yet and the agent has no workflow engine!"
+                )
+            % pEvt->job_id()
+            ).str()
           );
       }
     }
