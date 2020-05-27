@@ -77,6 +77,7 @@ namespace
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master, certificates)
       , _reply (reply)
+      , _received_discover_request (false)
     {}
 
     virtual void handleDiscoverJobStatesEvent
@@ -90,10 +91,18 @@ namespace
         , sdpa::discovery_info_t
             (e->job_id(), _reply, sdpa::discovery_info_set_t())
         );
+
+      _received_discover_request = true;
+    }
+
+    bool received_discover_request()
+    {
+      return _received_discover_request;
     }
 
   private:
     sdpa::status::code _reply;
+    bool _received_discover_request;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
@@ -115,7 +124,7 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
 
   fhg::util::thread::event<std::string> job_submitted;
 
-  fake_drts_worker_discovering const worker
+  fake_drts_worker_discovering worker
     ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
     , agent
     , certificates
@@ -128,7 +137,17 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
   auto const job_id (client.submit_job (utils::module_call (activity_name)));
   BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  auto const discovery_result (client.discover (job_id));
+  auto discovery_result (client.discover (job_id));
+
+  // in case the agent didn't receive yet a submit ack for that job
+  // from the worker and didn't update its state to RUNNING,
+  // id doesn't forward the discovery request to the worker,
+  // reporting the status PENDING
+  while (!worker.received_discover_request())
+  {
+    REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
+    discovery_result = client.discover (job_id);
+  }
 
   BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
 
@@ -225,7 +244,7 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::thread::event<std::string> job_submitted;
 
-  fake_drts_worker_discovering const worker
+  fake_drts_worker_discovering worker
     ( [&job_submitted] (std::string j) { job_submitted.notify (j); }
     , *agents.front()
     , certificates
@@ -238,7 +257,17 @@ BOOST_DATA_TEST_CASE
   auto const job_id (client.submit_job (utils::module_call (activity_name)));
   BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  auto const info (client.discover (job_id));
+  auto info (client.discover (job_id));
+
+  // in case the agent didn't receive yet a submit ack for that job
+  // from the worker and didn't update its state to RUNNING,
+  // id doesn't forward the discovery request to the worker,
+  // reporting the status PENDING
+  while (!worker.received_discover_request())
+  {
+    REQUIRE_ONE_LEAF_WITH_STATUS (info, sdpa::status::PENDING);
+    info = client.discover (job_id);
+  }
 
   BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
   BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);
