@@ -304,7 +304,7 @@ namespace sdpa
         (sdpa::events::RetrieveJobResultsEvent (jid)).result();
     }
 
-    we::type::activity_t Client::result (sdpa::job_id_t const& job)
+    we::type::activity_t Client::result (sdpa::job_id_t const& job) const
     {
       if (!_job_results.count (job))
       {

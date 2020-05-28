@@ -53,7 +53,7 @@ namespace sdpa
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
       sdpa::status::code wait_for_terminal_state_polling (job_id_t, job_info_t&);
 
-      we::type::activity_t result (sdpa::job_id_t const&);
+      we::type::activity_t result (sdpa::job_id_t const&) const;
 
     private:
       std::mutex _make_client_thread_safe;
