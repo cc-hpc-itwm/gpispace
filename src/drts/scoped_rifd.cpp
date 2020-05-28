@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <drts/scoped_rifd.hpp>
 
 #include <drts/drts.hpp>

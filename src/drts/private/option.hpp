@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <vmem/netdev_id.hpp>
 
 #include <boost/filesystem.hpp>

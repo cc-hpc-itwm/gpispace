@@ -1,5 +1,3 @@
-// {rahn,petry}@itwm.fhg.de
-
 #pragma once
 
 #include <we/type/expression.fwd.hpp>

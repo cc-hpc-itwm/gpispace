@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <pnete/ui/gspc_monitor_client.hpp>

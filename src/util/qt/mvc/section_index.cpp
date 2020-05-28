@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/section_index.hpp>
 
 #include <boost/functional/hash.hpp>

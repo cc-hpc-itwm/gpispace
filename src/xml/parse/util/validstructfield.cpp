@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/util/validstructfield.hpp>
 
 #include <xml/parse/util/valid_name.hpp>

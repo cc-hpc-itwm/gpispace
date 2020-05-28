@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/connection.hpp>
 
 #include <fhg/util/macros.hpp>

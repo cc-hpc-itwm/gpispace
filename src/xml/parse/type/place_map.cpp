@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/type/place_map.hpp>
 
 #include <xml/parse/type/net.hpp>

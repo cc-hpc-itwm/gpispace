@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/activity.hpp>
 #include <we/type/id.hpp>
 #include <we/type/net.hpp>

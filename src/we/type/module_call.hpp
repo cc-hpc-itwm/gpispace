@@ -1,21 +1,3 @@
-/*
- * =====================================================================================
- *
- *       Filename:  module_call.hpp
- *
- *    Description:  module call descriptor
- *
- *        Version:  1.0
- *        Created:  04/13/2010 12:22:29 AM
- *       Revision:  none
- *       Compiler:  gcc
- *
- *         Author:  Alexander Petry (petry), alexander.petry@itwm.fraunhofer.de
- *        Company:  Fraunhofer ITWM
- *
- * =====================================================================================
- */
-
 #pragma once
 
 #include <we/type/module_call.fwd.hpp>

@@ -1,5 +1,3 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
 fhg_add_test (NAME util_alphanum
   SOURCES alphanum.cpp
   USE_BOOST

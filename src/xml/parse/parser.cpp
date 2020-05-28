@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/type/connect.hpp>
 #include <xml/parse/type/transition.hpp>
 #include <xml/parse/type/net.hpp>

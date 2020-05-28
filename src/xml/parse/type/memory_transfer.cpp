@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/type/memory_transfer.hpp>
 #include <xml/parse/util/position.hpp>
 

@@ -1,5 +1,3 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
 find_package(libssh2 QUIET REQUIRED COMPONENTS _relocatable)
 
 #! \note need to use openssl API to ensure threadsafety, if ssh2 uses it

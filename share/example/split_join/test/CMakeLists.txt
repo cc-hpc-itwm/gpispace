@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 set (REENTRANT_VERSION not_reentrant)
 
 foreach (SPLIT_VERSION ${SPLIT_JOIN_SPLIT_VERSIONS})

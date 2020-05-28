@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <we/expr/parse/parser.hpp>
 #include <we/expr/parse/simplify/simplify.hpp>
 #include <we/expr/parse/simplify/util.hpp>

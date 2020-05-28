@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/warning.hpp>
 
 #include <xml/parse/type/connect.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <logging/stream_emitter.hpp>

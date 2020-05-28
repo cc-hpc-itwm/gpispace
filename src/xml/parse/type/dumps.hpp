@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 //! \note To prevent including nearly everything, it is required to

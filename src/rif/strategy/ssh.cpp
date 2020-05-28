@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <rif/strategy/ssh.hpp>
 
 #include <util-generic/blocked.hpp>

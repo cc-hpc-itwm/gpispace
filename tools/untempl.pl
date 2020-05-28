@@ -1,4 +1,4 @@
-# strip template arguments, mirko.rahn@itwm.fraunhofer.de
+# strip template arguments
 
 use strict;
 

@@ -1,5 +1,3 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
 extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"

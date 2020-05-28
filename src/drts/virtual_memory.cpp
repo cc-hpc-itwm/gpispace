@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <drts/drts.hpp>
 #include <drts/virtual_memory.hpp>
 

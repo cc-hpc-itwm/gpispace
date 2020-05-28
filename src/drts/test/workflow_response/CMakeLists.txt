@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME drts_workflow_response_using_secure_communication
   SOURCES test_using_secure_communication.cpp
   USE_BOOST

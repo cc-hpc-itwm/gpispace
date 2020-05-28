@@ -1,10 +1,3 @@
-/**
- * @file   itopology.hpp
- * @author Alexander Petry <petry@itwm.fhg.de>
- *
- * @brief  Topology interface for global operations
- */
-
 #pragma once
 
 #include <gpi-space/types.hpp>

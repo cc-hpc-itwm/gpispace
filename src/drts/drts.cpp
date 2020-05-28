@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <drts/drts.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>

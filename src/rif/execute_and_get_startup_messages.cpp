@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <rif/execute_and_get_startup_messages.hpp>
 
 #include <rif/started_process_promise.hpp>

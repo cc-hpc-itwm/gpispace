@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/signature/specialize.hpp>
 
 namespace pnet
