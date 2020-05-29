@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de
-
 #include <test/scoped_nodefile_from_environment.hpp>
 
 #include <drts/drts.hpp>

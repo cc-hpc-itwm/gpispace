@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <pnete/ui/gspc_monitor_detail.hpp>
 
 #include <util-qt/compat.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/flat_to_tree_proxy.hpp>
 
 #include <util-qt/variant.hpp>

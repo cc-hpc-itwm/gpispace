@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <we/type/property.hpp>
 
 #include <we/type/value/peek.hpp>

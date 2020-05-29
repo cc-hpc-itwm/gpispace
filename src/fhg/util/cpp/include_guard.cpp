@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <fhg/util/cpp/include_guard.hpp>
 
 #include <iostream>

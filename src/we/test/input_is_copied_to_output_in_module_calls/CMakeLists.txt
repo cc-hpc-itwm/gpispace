@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME we_input_is_copied_to_output_in_module_calls
   SOURCES test.cpp
   USE_BOOST

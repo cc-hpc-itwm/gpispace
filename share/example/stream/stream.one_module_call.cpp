@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <share/example/stream/test.hpp>
 
 #include <sstream>

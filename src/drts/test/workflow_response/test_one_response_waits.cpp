@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <boost/test/unit_test.hpp>
 
 #include <test_start_callback.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <fhg/util/signal_handler_manager.hpp>
 
 #include <fhg/assert.hpp>

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/exception.hpp>
 
 #include <we/type/signature/show.hpp>

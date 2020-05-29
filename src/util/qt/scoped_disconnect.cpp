@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/scoped_disconnect.hpp>
 
 #include <QObject>

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/value/show.hpp>
 
 #include <util-generic/print_container.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/filter_ignoring_branch_nodes_proxy.hpp>
 
 namespace fhg

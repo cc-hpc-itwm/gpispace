@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/field.hpp>
 #include <we/type/value/peek.hpp>
 

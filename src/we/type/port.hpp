@@ -1,5 +1,3 @@
-// {alexander.petry,bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/id.hpp>

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <stdlib.h> // abort
 
 #include <we/expr/parse/action.hpp>

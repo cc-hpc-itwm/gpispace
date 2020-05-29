@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <drts/certificates.hpp>
 
 #include <rif/entry_point.hpp>

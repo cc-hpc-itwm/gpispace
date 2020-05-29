@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/layer.hpp>
 
 #include <fhg/assert.hpp>

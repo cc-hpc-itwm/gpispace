@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include "dummy_server.hpp"
 
 #include "parse.hpp"

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/error.hpp>
 #include <parser_fixture.hpp>
 

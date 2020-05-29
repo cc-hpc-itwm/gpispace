@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <util-generic/syscall.hpp>

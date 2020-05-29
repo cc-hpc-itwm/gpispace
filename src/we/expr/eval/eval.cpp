@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/expr/eval/eval.hpp>
 
 #include <we/expr/token/assoc.hpp>

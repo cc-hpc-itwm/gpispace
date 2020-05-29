@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 extended_add_library (NAME transform_file_type
   SOURCES "type.cpp"
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"

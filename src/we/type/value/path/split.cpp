@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/value/path/split.hpp>
 
 #include <util-generic/split.hpp>

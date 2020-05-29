@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/type/with_position_of_definition.hpp>
 
 namespace xml

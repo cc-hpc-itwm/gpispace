@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 extended_add_library (NAME log_map-impl
   TYPE MODULE
   SOURCES "implementation.cpp"

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <pnete/ui/execution_monitor_worker_model.hpp>

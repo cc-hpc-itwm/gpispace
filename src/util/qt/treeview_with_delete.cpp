@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util-qt/compat.hpp>
 #include <util/qt/treeview_with_delete.hpp>
 

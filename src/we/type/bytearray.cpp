@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/bytearray.hpp>
 
 #include <boost/functional/hash.hpp>

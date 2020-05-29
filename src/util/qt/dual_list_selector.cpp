@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/dual_list_selector.hpp>
 
 #include <fhg/assert.hpp>

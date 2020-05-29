@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 extended_add_executable (NAME gen
   SOURCES "gen.cpp"
   LIBRARIES Util::Generic
