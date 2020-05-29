@@ -371,7 +371,7 @@ BOOST_DATA_TEST_CASE
   client.submit_job
     (net_with_n_children_and_preferences (n_total_workers, preferences));
 
-  for ( auto const& job_submitted_and_preference
+  for ( auto const job_submitted_and_preference
       : boost::combine (jobs_submitted, expected_preferences)
       )
   {
@@ -471,7 +471,7 @@ BOOST_DATA_TEST_CASE
   // For every preference, in order of most preferred to least, we
   // submit enough jobs to fill up all workers with the most preferred
   // capability left.
-  for ( auto const& num_workers_and_preference
+  for ( auto const num_workers_and_preference
       : boost::combine (num_workers_per_preference, preferences)
       )
   {
