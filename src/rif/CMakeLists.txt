@@ -1,20 +1,4 @@
-find_package(libssh2 QUIET REQUIRED COMPONENTS _relocatable)
-
-#! \note need to use openssl API to ensure threadsafety, if ssh2 uses it
-if (TARGET libssh2-ssl)
-  find_package (OpenSSL QUIET REQUIRED)
-
-  get_filename_component (_openssl-found "${OPENSSL_INCLUDE_DIR}" DIRECTORY)
-  get_property (_openssl-ssh2-lib TARGET libssh2-ssl PROPERTY IMPORTED_LOCATION)
-  get_filename_component (_openssl-ssh2-libdir "${_openssl-ssh2-lib}" DIRECTORY)
-  get_filename_component (_openssl-ssh2 "${_openssl-ssh2-libdir}" DIRECTORY)
-
-  if (NOT "${_openssl-found}" STREQUAL "${_openssl-ssh2}")
-    message (FATAL_ERROR "libssh2 uses openssl [${_openssl-ssh2}] but"
-      " find_package found a different openssl [${_openssl-found}]"
-    )
-  endif()
-endif()
+find_package (libssh2 REQUIRED COMPONENTS _relocatable)
 
 fhg_add_runtime_executable (NAME gspc-rifd
   SOURCES "gspc-rifd.cpp"
@@ -65,7 +49,7 @@ extended_add_library (NAME rif-strategies
           "strategy/ssh/session.cpp"
   LIBRARIES RPC
             fhg-util
-            libssh2
+            libssh2::libssh2
 )
 
 fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
