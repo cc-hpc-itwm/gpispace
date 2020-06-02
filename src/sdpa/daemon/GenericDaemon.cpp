@@ -1266,36 +1266,40 @@ void GenericDaemon::handleJobFailedAckEvent
         return;
       }
 
-      std::unordered_set<worker_id_t> const workers
-        (_worker_manager.findSubmOrAckWorkers (job_id));
+      fhg::util::visit<void>
+        ( pJob->handler()
+        , [&] (job_handler_worker const&)
+          {
+            std::unordered_set<worker_id_t> const workers
+              (_worker_manager.findSubmOrAckWorkers (job_id));
 
-      if (!workers.empty())
-      {
-        for (worker_id_t const& w : workers)
-        {
-          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-              .discover_job_states (job_id, discover_id);
-        }
-      }
-      else
-      {
-        workflowEngine()->discovered
-          ( discover_id
-          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
-          );
-      }
+            for (worker_id_t const& w : workers)
+            {
+              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+                .discover_job_states (job_id, discover_id);
+            }
+          }
+        , [&] (job_handler_wfe const&)
+          {
+            workflowEngine()->discovered
+              ( discover_id
+              , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
+              );
+          }
+        );
     }
 
     void GenericDaemon::handleDiscoverJobStatesEvent
       (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent *pEvt)
     {
-      Job const* const pJob (findJob (pEvt->job_id()));
+      auto const job_id (pEvt->job_id());
+      Job const* const pJob (findJob (job_id));
 
       if (!pJob)
       {
         parent_proxy (this, source).discover_job_states_reply
           ( pEvt->discover_id()
-          , discovery_info_t (pEvt->job_id(), boost::none, discovery_info_set_t())
+          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
           );
 
         return;
@@ -1305,44 +1309,36 @@ void GenericDaemon::handleJobFailedAckEvent
       {
         parent_proxy (this, source).discover_job_states_reply
           ( pEvt->discover_id()
-          , discovery_info_t (pEvt->job_id(), pJob->getStatus(), discovery_info_set_t())
+          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
           );
 
         return;
       }
 
-      std::unordered_set<worker_id_t> const workers
-        (_worker_manager.findSubmOrAckWorkers (pEvt->job_id()));
+      fhg::util::visit<void>
+        ( pJob->handler()
+        , [&] (job_handler_worker const&)
+          {
+            _discover_sources.emplace
+              (std::make_pair (pEvt->discover_id(), job_id), source);
 
-      if (!workers.empty())
-      {
-        _discover_sources.emplace
-          (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
+            std::unordered_set<worker_id_t> const workers
+              (_worker_manager.findSubmOrAckWorkers (job_id));
 
-        for (worker_id_t const& w : workers)
-        {
-          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-            .discover_job_states (pEvt->job_id(), pEvt->discover_id());
-        }
-      }
-      else if (workflowEngine())
-      {
-        _discover_sources.emplace
-          (std::make_pair (pEvt->discover_id(), pEvt->job_id()), source);
+            for (worker_id_t const& w: workers)
+            {
+              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+                .discover_job_states (job_id, pEvt->discover_id());
+            }
+          }
+        , [&] (job_handler_wfe const&)
+          {
+            _discover_sources.emplace
+              (std::make_pair (pEvt->discover_id(), job_id), source);
 
-        workflowEngine()->discover (pEvt->discover_id(), pEvt->job_id());
-      }
-      else
-      {
-        throw std::runtime_error
-          ( ( boost::format
-                ("The job %1% is in running state but it wasn't sent to any "
-                 "worker yet and the agent has no workflow engine!"
-                )
-            % pEvt->job_id()
-            ).str()
-          );
-      }
+            workflowEngine()->discover (pEvt->discover_id(), job_id);
+          }
+        );
     }
 
     void GenericDaemon::discovered
