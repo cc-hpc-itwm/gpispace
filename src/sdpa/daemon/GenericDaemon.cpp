@@ -1478,54 +1478,48 @@ void GenericDaemon::handleJobFailedAckEvent
       (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
     try
     {
-      Job const* const job (findJob (event->job_id()));
+      auto const job_id (event->job_id());
+      Job const* const job (findJob (job_id));
 
       if (!job || job->getStatus() != sdpa::status::RUNNING)
       {
         throw std::runtime_error
-          ( "unable to request workflow response: " + event->job_id()
+          ( "unable to request workflow response: " + job_id
           + " unknown or not running"
           );
       }
 
-      std::unordered_set<worker_id_t> const workers
-        (_worker_manager.findSubmOrAckWorkers (event->job_id()));
+      fhg::util::visit<void>
+        ( job->handler()
+        , [&] (job_handler_worker const&)
+          {
+            _workflow_response_source.emplace (event->workflow_response_id(), source);
 
-      if (!workers.empty())
-      {
-        _workflow_response_source.emplace (event->workflow_response_id(), source);
+            std::unordered_set<worker_id_t> const workers
+              (_worker_manager.findSubmOrAckWorkers (job_id));
 
-        for (worker_id_t const& w : workers)
-        {
-          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-            .workflow_response ( event->job_id()
-                               , event->workflow_response_id()
-                               , event->place_name()
-                               , event->value()
-                               );
-        }
-      }
-      else if (workflowEngine())
-      {
-        _workflow_response_source.emplace (event->workflow_response_id(), source);
+            for (worker_id_t const& w : workers)
+            {
+              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+                .workflow_response ( job_id
+                                   , event->workflow_response_id()
+                                   , event->place_name()
+                                   , event->value()
+                                   );
+            }
 
-        workflowEngine()->request_workflow_response ( event->job_id()
-                                                    , event->workflow_response_id()
-                                                    , event->place_name()
-                                                    , event->value()
-                                                    );
-      }
-      else
-      {
-        throw std::runtime_error
-          ( ( boost::format
-                ("The job %1% is in running state but it wasn't yet submitted "
-                 "to any worker and the agent has no workflow engine!"
-                )
-            % event->job_id()
-            ).str()
-          );
-      }
+          }
+        , [&] (job_handler_wfe const&)
+          {
+            _workflow_response_source.emplace (event->workflow_response_id(), source);
+
+            workflowEngine()->request_workflow_response ( job_id
+                                                        , event->workflow_response_id()
+                                                        , event->place_name()
+                                                        , event->value()
+                                                        );
+          }
+        );
     }
     catch (...)
     {
