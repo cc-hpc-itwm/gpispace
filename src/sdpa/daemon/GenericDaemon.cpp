@@ -1405,7 +1405,8 @@ void GenericDaemon::handleJobFailedAckEvent
       (fhg::com::p2p::address_t const& source, const events::put_token* event)
     try
     {
-      Job const* const job (findJob (event->job_id()));
+      auto const job_id (event->job_id());
+      Job const* const job (findJob (job_id));
 
       if (!job || job->getStatus() != sdpa::status::RUNNING)
       {
@@ -1413,44 +1414,36 @@ void GenericDaemon::handleJobFailedAckEvent
           ("unable to put token: " + event->job_id() + " unknown or not running");
       }
 
-      std::unordered_set<worker_id_t> const workers
-        (_worker_manager.findSubmOrAckWorkers (event->job_id()));
+      fhg::util::visit<void>
+        ( job->handler()
+        , [&] (job_handler_worker const&)
+          {
+            _put_token_source.emplace (event->put_token_id(), source);
 
-      if (!workers.empty())
-      {
-        _put_token_source.emplace (event->put_token_id(), source);
+            std::unordered_set<worker_id_t> const workers
+              (_worker_manager.findSubmOrAckWorkers (job_id));
 
-        for (worker_id_t const& w : workers)
-        {
-          child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-            .put_token ( event->job_id()
-                       , event->put_token_id()
-                       , event->place_name()
-                       , event->value()
-                       );
-        }
-      }
-      else if (workflowEngine())
-      {
-        _put_token_source.emplace (event->put_token_id(), source);
+            for (worker_id_t const& w : workers)
+            {
+              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
+                .put_token ( job_id
+                           , event->put_token_id()
+                           , event->place_name()
+                           , event->value()
+                           );
+            }
+          }
+        , [&] (job_handler_wfe const&)
+          {
+            _put_token_source.emplace (event->put_token_id(), source);
 
-        workflowEngine()->put_token ( event->job_id()
-                                    , event->put_token_id()
-                                    , event->place_name()
-                                    , event->value()
-                                    );
-      }
-      else
-      {
-        throw std::runtime_error
-          ( ( boost::format
-                ("The job %1% is in running state but it wasn't sent to any "
-                 "worker yet and the agent has no workflow engine!"
-                )
-                % event->job_id()
-            ).str()
-          );
-      }
+            workflowEngine()->put_token ( job_id
+                                        , event->put_token_id()
+                                        , event->place_name()
+                                        , event->value()
+                                        );
+          }
+        );
     }
     catch (...)
     {
