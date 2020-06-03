@@ -420,8 +420,6 @@ namespace utils
 
     sdpa::discovery_info_t discover (sdpa::job_id_t const&);
 
-    we::type::activity_t retrieve_job_results (sdpa::job_id_t const&);
-
     void delete_job (sdpa::job_id_t const&);
 
     void cancel_job (sdpa::job_id_t const&);

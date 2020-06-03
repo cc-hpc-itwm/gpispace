@@ -839,7 +839,6 @@ namespace utils
     (sdpa::job_id_t const& id)
   {
     auto const ret (wait_for_terminal_state (id));
-    retrieve_job_results (id);
     delete_job (id);
     return ret;
   }
@@ -848,11 +847,6 @@ namespace utils
   {
     static fhg::util::testing::unique_random<std::string> discover_ids;
     return _.discoverJobStates (discover_ids(), id);
-  }
-
-  we::type::activity_t client::retrieve_job_results (sdpa::job_id_t const& id)
-  {
-    return _.retrieveResults (id);
   }
 
   void client::delete_job (sdpa::job_id_t const& id)
