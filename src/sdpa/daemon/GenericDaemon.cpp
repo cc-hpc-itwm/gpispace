@@ -450,10 +450,6 @@ void GenericDaemon::handleSubmitJobEvent
                           )
                   );
 
-  //! \todo Don't ack before we know that we can: may fail 20 lines
-  //! below. add Nack event of some sorts to not need
-  //! submitack+jobfailed to fail submission. this would also resolve
-  //! the race in handleDiscoverJobStatesEvent.
   parent_proxy (this, source).submit_job_ack (job_id);
 
   // check if the message comes from outside or from WFE
