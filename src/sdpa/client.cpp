@@ -285,12 +285,6 @@ namespace sdpa
       _job_results.erase (jid);
     }
 
-    we::type::activity_t Client::retrieveResults(const job_id_t &jid)
-    {
-      return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
-        (sdpa::events::RetrieveJobResultsEvent (jid)).result();
-    }
-
     we::type::activity_t Client::result (sdpa::job_id_t const& job) const
     {
       if (!_job_results.count (job))
