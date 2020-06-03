@@ -18,6 +18,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <functional>
+#include <future>
 #include <list>
 #include <memory>
 #include <string>
@@ -77,7 +78,6 @@ namespace
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master, certificates)
       , _reply (reply)
-      , _received_discover_request (false)
     {}
 
     virtual void handleDiscoverJobStatesEvent
@@ -85,24 +85,24 @@ namespace
       , const sdpa::events::DiscoverJobStatesEvent* e
       ) override
     {
+      _received_discover_request.notify();
+
       _network.perform<sdpa::events::DiscoverJobStatesReplyEvent>
         ( source
         , e->discover_id()
         , sdpa::discovery_info_t
             (e->job_id(), _reply, sdpa::discovery_info_set_t())
         );
-
-      _received_discover_request = true;
     }
 
-    bool received_discover_request()
+    void wait_to_receive_discover_request()
     {
-      return _received_discover_request;
+      _received_discover_request.wait();
     }
 
   private:
     sdpa::status::code _reply;
-    bool _received_discover_request;
+    fhg::util::thread::event<> _received_discover_request;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
@@ -111,6 +111,22 @@ namespace
     using namespace sdpa::status;
     return {FINISHED, FAILED, CANCELED, PENDING, RUNNING, CANCELING};
   }
+
+  sdpa::discovery_info_t repeat_discover_while_worker_not_reached
+     ( std::atomic<bool> const& stop_discovering
+     , sdpa::job_id_t const& job_id
+     , utils::client& client
+     )
+   {
+     sdpa::discovery_info_t discovery_result;
+     do
+     {
+       discovery_result = client.discover (job_id);
+     } while (!stop_discovering);
+
+     return discovery_result;
+   }
+
 }
 
 BOOST_DATA_TEST_CASE ( discover_worker_job_status
@@ -137,17 +153,25 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
   auto const job_id (client.submit_job (utils::module_call (activity_name)));
   BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  auto discovery_result (client.discover (job_id));
-
   // in case the agent didn't receive yet a submit ack for that job
   // from the worker and didn't update its state to RUNNING,
   // id doesn't forward the discovery request to the worker,
   // reporting the status PENDING
-  while (!worker.received_discover_request())
-  {
-    REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
-    discovery_result = client.discover (job_id);
-  }
+  std::atomic<bool> stop_discovering (false);
+  std::future<sdpa::discovery_info_t> worker_job_discovered
+    ( std::async
+        ( std::launch::async
+        , repeat_discover_while_worker_not_reached
+        , std::cref (stop_discovering)
+        , std::cref (job_id)
+        , std::ref (client)
+        )
+    );
+
+  worker.wait_to_receive_discover_request();
+  stop_discovering = true;
+
+  auto const discovery_result (worker_job_discovered.get());
 
   BOOST_REQUIRE_EQUAL (max_depth (discovery_result), 2);
 
@@ -257,17 +281,25 @@ BOOST_DATA_TEST_CASE
   auto const job_id (client.submit_job (utils::module_call (activity_name)));
   BOOST_REQUIRE_EQUAL (job_submitted.wait(), activity_name);
 
-  auto info (client.discover (job_id));
-
   // in case the agent didn't receive yet a submit ack for that job
   // from the worker and didn't update its state to RUNNING,
   // id doesn't forward the discovery request to the worker,
   // reporting the status PENDING
-  while (!worker.received_discover_request())
-  {
-    REQUIRE_ONE_LEAF_WITH_STATUS (info, sdpa::status::PENDING);
-    info = client.discover (job_id);
-  }
+  std::atomic<bool> stop_discovering (false);
+  std::future<sdpa::discovery_info_t> worker_job_discovered
+    ( std::async
+        ( std::launch::async
+        , repeat_discover_while_worker_not_reached
+        , std::cref (stop_discovering)
+        , std::cref (job_id)
+        , std::ref (client)
+        )
+    );
+
+  worker.wait_to_receive_discover_request();
+  stop_discovering = true;
+
+  auto const info (worker_job_discovered.get());
 
   BOOST_REQUIRE_EQUAL (recursive_child_count (info), num_agents);
   BOOST_REQUIRE_EQUAL (leaf_state (info, num_agents), sdpa::status::RUNNING);
