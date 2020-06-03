@@ -366,8 +366,6 @@ namespace sdpa {
         //! \todo Client only. Move to client_proxy?
         void query_job_status_reply
           (job_id_t, status::code, std::string error_message) const;
-        //! \todo Client only. Move to client_proxy?
-        void retrieve_job_results_reply (job_id_t, we::type::activity_t) const;
 
         void put_token_response ( std::string put_token_id
                                 , boost::optional<std::exception_ptr>

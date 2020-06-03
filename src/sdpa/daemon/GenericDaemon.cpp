@@ -1748,13 +1748,6 @@ namespace sdpa
         (_address, id, status, error_message);
     }
 
-    void GenericDaemon::parent_proxy::retrieve_job_results_reply
-      (job_id_t id, we::type::activity_t result) const
-    {
-      _that->sendEventToOther<events::JobResultsReplyEvent>
-        (_address, id, result);
-    }
-
     void GenericDaemon::parent_proxy::put_token_response
       (std::string put_token_id, boost::optional<std::exception_ptr> error) const
     {
