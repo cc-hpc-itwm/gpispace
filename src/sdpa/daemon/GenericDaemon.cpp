@@ -864,11 +864,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         {
           _wfe->finished (_job->id(), _job->result());
         }
-        void operator() (job_source_client const&) const
-        {
-          _this->notify_subscribers<events::JobFinishedEvent>
-            (_job->id(), _job->id(), _job->result());
-        }
+        void operator() (job_source_client const&) const {}
         void operator() (job_source_master const& master) const
         {
           parent_proxy (_this, master._).job_finished (_job->id(), _job->result());
@@ -878,6 +874,9 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         we::layer* _wfe;
       } visitor = {this, job, ptr_workflow_engine_.get()};
       boost::apply_visitor (visitor, job->source());
+
+      notify_subscribers<events::JobFinishedEvent>
+        (job->id(), job->id(), job->result());
     }
     void GenericDaemon::job_failed (Job* job, std::string const& reason)
     {
@@ -890,11 +889,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         {
           _wfe->failed (_job->id(), _job->error_message());
         }
-        void operator() (job_source_client const&) const
-        {
-          _this->notify_subscribers<events::JobFailedEvent>
-            (_job->id(), _job->id(), _job->error_message());
-        }
+        void operator() (job_source_client const&) const {}
         void operator() (job_source_master const& master) const
         {
           parent_proxy (_this, master._).job_failed
@@ -905,6 +900,9 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         we::layer* _wfe;
       } visitor = {this, job, ptr_workflow_engine_.get()};
       boost::apply_visitor (visitor, job->source());
+
+      notify_subscribers<events::JobFailedEvent>
+        (job->id(), job->id(), job->error_message());
     }
     void GenericDaemon::job_canceled (Job* job)
     {
@@ -917,11 +915,7 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         {
           _wfe->canceled (_job->id());
         }
-        void operator() (job_source_client const&) const
-        {
-          _this->notify_subscribers<events::CancelJobAckEvent>
-            (_job->id(), _job->id());
-        }
+        void operator() (job_source_client const&) const {}
         void operator() (job_source_master const& master) const
         {
           parent_proxy (_this, master._).cancel_job_ack (_job->id());
@@ -931,6 +925,8 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
         we::layer* _wfe;
       } visitor = {this, job, ptr_workflow_engine_.get()};
       boost::apply_visitor (visitor, job->source());
+
+      notify_subscribers<events::CancelJobAckEvent> (job->id(), job->id());
     }
 
     boost::optional<master_info_t::iterator>
