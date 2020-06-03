@@ -136,7 +136,6 @@ namespace sdpa {
       virtual void handle_worker_registration_response(fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response*) override;
       virtual void handleWorkerRegistrationEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
       virtual void handleQueryJobStatusEvent(fhg::com::p2p::address_t const& source, const sdpa::events::QueryJobStatusEvent* ) override;
-      virtual void handleRetrieveJobResultsEvent(fhg::com::p2p::address_t const& source, const sdpa::events::RetrieveJobResultsEvent* ) override;
       virtual void handleBacklogNoLongerFullEvent (fhg::com::p2p::address_t const& source, const events::BacklogNoLongerFullEvent*) override;
 
       virtual void handleDiscoverJobStatesReplyEvent

@@ -13,7 +13,6 @@
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>

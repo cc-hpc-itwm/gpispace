@@ -10,7 +10,6 @@
 #include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/put_token.hpp>
@@ -1531,28 +1530,6 @@ void GenericDaemon::handleJobFailedAckEvent
       parent_proxy (this, take (_workflow_response_source, workflow_response_id))
         .workflow_response_response (workflow_response_id, result);
     }
-
-
-void GenericDaemon::handleRetrieveJobResultsEvent
-  (fhg::com::p2p::address_t const& source, const events::RetrieveJobResultsEvent* pEvt )
-{
-  Job const* const pJob = findJob(pEvt->job_id());
-  if (!pJob)
-  {
-    throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
-  }
-
-  if (!sdpa::status::is_terminal (pJob->getStatus()))
-  {
-    throw std::runtime_error
-      ( "Not allowed to request results for a non-terminated job, its current status is : "
-      +  sdpa::status::show(pJob->getStatus())
-      );
-  }
-
-  parent_proxy (this, source).retrieve_job_results_reply
-    (pEvt->job_id(), pJob->result());
-}
 
 void GenericDaemon::handleQueryJobStatusEvent
   (fhg::com::p2p::address_t const& source, const events::QueryJobStatusEvent* pEvt )
