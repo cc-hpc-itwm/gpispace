@@ -37,15 +37,6 @@ namespace
     : public utils::basic_drts_component
   {
   public:
-    // "Agent"
-    drts_component_observing_preferences
-        ( utils::orchestrator const& master
-        , fhg::com::Certificates const& certificates
-        )
-      : basic_drts_component (master, false, certificates)
-    {}
-
-    // "Worker"
     drts_component_observing_preferences
         ( utils::agent const& master
         , std::string capability
@@ -163,28 +154,6 @@ namespace
   }
 }
 
-BOOST_DATA_TEST_CASE
-  ( agent_receives_the_expected_preferences_from_the_orchestrator
-  , certificates_data
-  , certificates
-  )
-{
-  fhg::util::testing::unique_random<std::string> generate_preference;
-
-  Preferences const preferences
-    {generate_preference(), generate_preference(), generate_preference()};
-
-  utils::orchestrator const orchestrator (certificates);
-  drts_component_observing_preferences observer
-    (orchestrator, certificates);
-
-  auto const activity (activity_with_preferences (preferences));
-  utils::client (orchestrator, certificates).submit_job (activity);
-
-  auto const submitted (observer.jobs_submitted.get());
-  BOOST_REQUIRE_EQUAL (submitted.second.activity(), activity);
-}
-
 BOOST_AUTO_TEST_CASE
   (preferences_are_properly_stored_in_requirements_and_preferences)
 {
@@ -217,10 +186,9 @@ BOOST_DATA_TEST_CASE
   Preferences const preferences
     {preference_pool(), preference_pool(), preference_pool()};
 
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   auto const job ( client.submit_job
                      ( activity_with_preferences
@@ -236,11 +204,12 @@ BOOST_DATA_TEST_CASE
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job, info), sdpa::status::FAILED);
 
-  BOOST_REQUIRE_EQUAL
-    ( info.error_message
-    , agent.name()
-    + ": Not allowed to use coallocation for activities with "
-      "multiple module implementations!"
+  BOOST_REQUIRE
+    ( info.error_message.find
+        ("Not allowed to use coallocation for activities with "
+         "multiple module implementations!"
+        )
+    != std::string::npos
     );
 
   client.delete_job (job);
@@ -254,8 +223,7 @@ BOOST_DATA_TEST_CASE
 {
   fhg::util::testing::unique_random<std::string> generate_preference;
 
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
   Preferences const preferences
     {generate_preference(), generate_preference(), generate_preference()};
@@ -271,7 +239,7 @@ BOOST_DATA_TEST_CASE
     (agent, chosen_preference, certificates);
 
   auto const activity (activity_with_preferences (preferences));
-  utils::client (orchestrator, certificates).submit_job (activity);
+  utils::client (agent, certificates).submit_job (activity);
 
   auto const submitted (observer.jobs_submitted.get());
   BOOST_REQUIRE_EQUAL (submitted.second.implementation(), chosen_preference);
@@ -331,8 +299,7 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::testing::unique_random<std::string> generate_preference;
 
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
   std::list<fhg::util::thread::event<boost::optional<std::string>>> jobs_submitted;
   std::list<fake_drts_worker_notifying_implementation_reception> workers;
@@ -366,7 +333,7 @@ BOOST_DATA_TEST_CASE
     }
   }
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   client.submit_job
     (net_with_n_children_and_preferences (n_total_workers, preferences));
@@ -437,8 +404,7 @@ BOOST_DATA_TEST_CASE
 
   fhg::util::testing::unique_random<std::string> generate_preference;
 
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
   drts_component_observing_preferences_shared_queue::Queue jobs_submitted;
   std::list<drts_component_observing_preferences_shared_queue> workers;
@@ -466,7 +432,7 @@ BOOST_DATA_TEST_CASE
     }
   }
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   // For every preference, in order of most preferred to least, we
   // submit enough jobs to fill up all workers with the most preferred

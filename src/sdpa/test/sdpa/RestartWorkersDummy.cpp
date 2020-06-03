@@ -16,10 +16,9 @@
 BOOST_DATA_TEST_CASE
   (restart_worker_with_dummy_workflow, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id (client.submit_job (utils::module_call()));
 
   sdpa::worker_id_t worker_id;

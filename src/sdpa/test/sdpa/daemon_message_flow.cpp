@@ -102,7 +102,7 @@ BOOST_AUTO_TEST_SUITE (agent)
 
 BOOST_AUTO_TEST_SUITE_END()
 
-BOOST_AUTO_TEST_SUITE (orchestrator)
+BOOST_AUTO_TEST_SUITE (agent_without_workflow_engine)
 
 //! \todo CancelJob: invalid job, canceling job, terminal job,
 //! subscribing, submitted, non-submitted, subscribers notified?
@@ -125,16 +125,16 @@ BOOST_AUTO_TEST_SUITE (generic)
 BOOST_DATA_TEST_CASE
   (job_finished_ack_fails_with_bad_job_id, certificates_data, certificates)
 {
-  const std::string orchestrator_name (utils::random_peer_name());
+  const std::string agent_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
 
-  const sdpa::daemon::GenericDaemon orchestrator
-    ( orchestrator_name
+  const sdpa::daemon::GenericDaemon agent
+    ( agent_name
     , "localhost"
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , boost::none
     , sdpa::master_info_t()
-    , false
+    , true
     , certificates
     );
 
@@ -143,11 +143,13 @@ BOOST_DATA_TEST_CASE
   child.send<sdpa::events::JobFinishedAckEvent>
     ( child.connect_to
       ( fhg::com::host_t
-        ( fhg::util::connectable_to_address_string
-            (orchestrator.peer_local_endpoint().address())
-        )
+          ( fhg::util::connectable_to_address_string
+              (agent.peer_local_endpoint().address())
+          )
       , fhg::com::port_t
-        (std::to_string (orchestrator.peer_local_endpoint().port()))
+          ( std::to_string
+              (agent.peer_local_endpoint().port())
+          )
       )
     , fhg::util::testing::random_string()
     );

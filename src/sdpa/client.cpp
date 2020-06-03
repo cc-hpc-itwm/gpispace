@@ -192,19 +192,6 @@ namespace sdpa
       handle_error_and_unexpected_event (reply);
     }
 
-    sdpa::status::code Client::wait_for_terminal_state_polling
-      (job_id_t id, job_info_t& job_info)
-    {
-      sdpa::status::code state (queryJob (id, job_info));
-      while (!sdpa::status::is_terminal (state))
-      {
-        std::this_thread::sleep_for (std::chrono::milliseconds (100));
-
-        state = queryJob (id, job_info);
-      }
-      return state;
-    }
-
     sdpa::job_id_t Client::submitJob (we::type::activity_t activity)
     {
       return send_and_wait_for_reply<sdpa::events::SubmitJobAckEvent>

@@ -19,10 +19,9 @@
 
 BOOST_DATA_TEST_CASE (coallocation_workflow, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
@@ -55,9 +54,8 @@ BOOST_DATA_TEST_CASE
 {
   //! \note issue #374
 
-  // 0. setup environment orch -> agent.
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  // 0. setup agent
+  const utils::agent agent (certificates);
 
   // 1. start worker 1
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -65,7 +63,7 @@ BOOST_DATA_TEST_CASE
     ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
 
   // 2. submit workflow which generates tasks (2) that require 2 workers
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
@@ -157,14 +155,13 @@ BOOST_DATA_TEST_CASE
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
   fhg::util::thread::event<std::string> job_submitted_1;
   utils::fake_drts_worker_waiting_for_finished_ack worker_1
     ([&job_submitted_1] (std::string j) { job_submitted_1.notify (j); }, agent, certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (2)));
 
@@ -227,10 +224,9 @@ BOOST_DATA_TEST_CASE
 {
   //! \note related to issue #374
 
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
 
@@ -366,10 +362,9 @@ BOOST_DATA_TEST_CASE
 {
   //! \note related to issue #822
 
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_two_children_requiring_n_workers (3)));
 
@@ -448,10 +443,9 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));
 
