@@ -67,8 +67,6 @@ namespace
 
 BOOST_AUTO_TEST_SUITE (client)
 
-//! \todo retreiveResults() sends RetrieveJobResults, receives JobResultsReply
-
 //! \todo queryJob() sends QueryJobStatus, receives JobStatusReply
 
 //! \todo discoverJobStates() sends DiscoverJobStates, receives DiscoverJobStatesReply

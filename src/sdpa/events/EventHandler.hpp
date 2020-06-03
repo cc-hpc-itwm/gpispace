@@ -19,7 +19,6 @@ namespace sdpa
     class JobFailedEvent;
     class JobFinishedAckEvent;
     class JobFinishedEvent;
-    class JobResultsReplyEvent;
     class JobStatusReplyEvent;
     class QueryJobStatusEvent;
     class SubmitJobAckEvent;
@@ -57,8 +56,6 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: JobFinishedAck"); }
       virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, const JobFinishedEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobFinished"); }
-      virtual void handleJobResultsReplyEvent (fhg::com::p2p::address_t const&, const JobResultsReplyEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: JobResultsReply"); }
       virtual void handleJobStatusReplyEvent (fhg::com::p2p::address_t const&, const JobStatusReplyEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: JobStatusReply"); }
       virtual void handleQueryJobStatusEvent (fhg::com::p2p::address_t const&, const QueryJobStatusEvent*)

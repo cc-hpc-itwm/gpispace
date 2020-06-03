@@ -7,7 +7,6 @@
 #include <sdpa/events/DiscoverJobStatesEvent.hpp>
 #include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
