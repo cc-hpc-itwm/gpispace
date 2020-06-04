@@ -121,7 +121,7 @@ namespace sdpa {
       }
 
       // event handlers
-    public:
+    private:
       virtual void handleCancelJobEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::CancelJobEvent const*
@@ -198,8 +198,19 @@ namespace sdpa {
         ( fhg::com::p2p::address_t const&
         , events::workflow_response_response const*
         ) override;
+      virtual void handleJobFailedEvent
+        ( fhg::com::p2p::address_t const&
+        , events::JobFailedEvent const*
+        ) override;
+      virtual void handleJobFinishedEvent
+        ( fhg::com::p2p::address_t const&
+        , events::JobFinishedEvent const*
+        ) override;
+      virtual void handleCancelJobAckEvent
+        ( fhg::com::p2p::address_t const&
+        , events::CancelJobAckEvent const*
+        ) override;
 
-    private:
       // event communication
       template<typename Event, typename... Args>
         void sendEventToOther
@@ -220,18 +231,6 @@ namespace sdpa {
       bool workflow_engine_submit (job_id_t, Job*);
 
       void handle_job_termination (Job*);
-      virtual void handleJobFailedEvent
-        ( fhg::com::p2p::address_t const&
-        , events::JobFailedEvent const*
-        ) override;
-      virtual void handleJobFinishedEvent
-        ( fhg::com::p2p::address_t const&
-        , events::JobFinishedEvent const*
-        ) override;
-      virtual void handleCancelJobAckEvent
-        ( fhg::com::p2p::address_t const&
-        , events::CancelJobAckEvent const*
-        ) override;
 
       //! \todo aggregated results for coallocation jobs and sub jobs
       void job_finished (Job*, we::type::activity_t const&);
