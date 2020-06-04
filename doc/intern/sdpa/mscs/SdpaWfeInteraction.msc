@@ -101,7 +101,6 @@ msc {
   |||;
   ...;
 
-  O->U [ label = "jobResults(wf.id(), results)" ];
   U->O [ label = "deleteJob(wf.id())" ];
   O=>O [ label = "remove everything related to the job" ];
   O->U [ label = "deleteJobAck(wf.id())" ];
