@@ -122,29 +122,74 @@ namespace sdpa {
 
       // event handlers
     public:
-      virtual void handleCancelJobEvent (fhg::com::p2p::address_t const&, sdpa::events::CancelJobEvent const*) override;
-      virtual void handleCapabilitiesGainedEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesGainedEvent*) override;
-      virtual void handleCapabilitiesLostEvent(fhg::com::p2p::address_t const& source, const sdpa::events::CapabilitiesLostEvent*) override;
-      virtual void handleDeleteJobEvent (fhg::com::p2p::address_t const&, events::DeleteJobEvent const*) override;
-      virtual void handleErrorEvent(fhg::com::p2p::address_t const& source, const sdpa::events::ErrorEvent* ) override;
-      virtual void handleJobFailedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent* ) override;
-      virtual void handleJobFinishedAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent* ) override;
-      virtual void handleSubmitJobAckEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobAckEvent* ) override;
-      virtual void handleSubmitJobEvent(fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent* ) override;
-      //virtual void handleSubscribeAckEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeAckEvent*) ?!
-      virtual void handle_worker_registration_response(fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response*) override;
-      virtual void handleWorkerRegistrationEvent(fhg::com::p2p::address_t const& source, const sdpa::events::WorkerRegistrationEvent* ) override;
-      virtual void handleQueryJobStatusEvent(fhg::com::p2p::address_t const& source, const sdpa::events::QueryJobStatusEvent* ) override;
-      virtual void handleBacklogNoLongerFullEvent (fhg::com::p2p::address_t const& source, const events::BacklogNoLongerFullEvent*) override;
-
+      virtual void handleCancelJobEvent
+        ( fhg::com::p2p::address_t const&
+        , sdpa::events::CancelJobEvent const*
+        ) override;
+      virtual void handleCapabilitiesGainedEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::CapabilitiesGainedEvent*
+        ) override;
+      virtual void handleCapabilitiesLostEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::CapabilitiesLostEvent*
+        ) override;
+      virtual void handleDeleteJobEvent
+        ( fhg::com::p2p::address_t const&
+        , events::DeleteJobEvent const*
+        ) override;
+      virtual void handleErrorEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::ErrorEvent*
+        ) override;
+      virtual void handleJobFailedAckEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::JobFailedAckEvent*
+        ) override;
+      virtual void handleJobFinishedAckEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::JobFinishedAckEvent*
+        ) override;
+      virtual void handleSubmitJobAckEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::SubmitJobAckEvent*
+        ) override;
+      virtual void handleSubmitJobEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::SubmitJobEvent*
+        ) override;
+      virtual void handle_worker_registration_response
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::worker_registration_response*
+        ) override;
+      virtual void handleWorkerRegistrationEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::WorkerRegistrationEvent*
+        ) override;
+      virtual void handleQueryJobStatusEvent
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::QueryJobStatusEvent*
+        ) override;
+      virtual void handleBacklogNoLongerFullEvent
+        ( fhg::com::p2p::address_t const&
+        , const events::BacklogNoLongerFullEvent*
+        ) override;
       virtual void handleDiscoverJobStatesReplyEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesReplyEvent*) override;
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::DiscoverJobStatesReplyEvent*
+        ) override;
       virtual void handleDiscoverJobStatesEvent
-        (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
-
-      virtual void handle_put_token (fhg::com::p2p::address_t const& source, const events::put_token*) override;
-      virtual void handle_put_token_response (fhg::com::p2p::address_t const& source, const events::put_token_response*) override;
-
+        ( fhg::com::p2p::address_t const&
+        , const sdpa::events::DiscoverJobStatesEvent*
+        ) override;
+      virtual void handle_put_token
+        ( fhg::com::p2p::address_t const&
+        , const events::put_token*
+        ) override;
+      virtual void handle_put_token_response
+        ( fhg::com::p2p::address_t const&
+        , const events::put_token_response*
+        ) override;
       virtual void handle_workflow_response
         ( fhg::com::p2p::address_t const&
         , const events::workflow_response*
@@ -175,9 +220,18 @@ namespace sdpa {
       bool workflow_engine_submit (job_id_t, Job*);
 
       void handle_job_termination (Job*);
-      virtual void handleJobFailedEvent (fhg::com::p2p::address_t const&, events::JobFailedEvent const*) override;
-      virtual void handleJobFinishedEvent (fhg::com::p2p::address_t const&, events::JobFinishedEvent const*) override;
-      virtual void handleCancelJobAckEvent (fhg::com::p2p::address_t const&, events::CancelJobAckEvent const*) override;
+      virtual void handleJobFailedEvent
+        ( fhg::com::p2p::address_t const&
+        , events::JobFailedEvent const*
+        ) override;
+      virtual void handleJobFinishedEvent
+        ( fhg::com::p2p::address_t const&
+        , events::JobFinishedEvent const*
+        ) override;
+      virtual void handleCancelJobAckEvent
+        ( fhg::com::p2p::address_t const&
+        , events::CancelJobAckEvent const*
+        ) override;
 
       //! \todo aggregated results for coallocation jobs and sub jobs
       void job_finished (Job*, we::type::activity_t const&);
