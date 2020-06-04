@@ -55,11 +55,11 @@
 
 namespace sdpa {
   namespace daemon {
-    class GenericDaemon final : public sdpa::events::EventHandler
+    class Agent final : public sdpa::events::EventHandler
                               , boost::noncopyable
     {
     public:
-      GenericDaemon( const std::string name
+      Agent( const std::string name
                    , const std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
@@ -67,7 +67,7 @@ namespace sdpa {
                    , bool create_wfe
                    , fhg::com::Certificates const& certificates
                    );
-      virtual ~GenericDaemon() = default;
+      virtual ~Agent() = default;
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
@@ -298,9 +298,9 @@ namespace sdpa {
       job_map_t job_map_;
       struct cleanup_job_map_on_dtor_helper
       {
-        cleanup_job_map_on_dtor_helper (GenericDaemon::job_map_t&);
+        cleanup_job_map_on_dtor_helper (Agent::job_map_t&);
         ~cleanup_job_map_on_dtor_helper();
-        GenericDaemon::job_map_t& _;
+        Agent::job_map_t& _;
       } _cleanup_job_map_on_dtor_helper;
 
       WorkerManager _worker_manager;
@@ -357,7 +357,7 @@ namespace sdpa {
 
       struct child_proxy
       {
-        child_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
+        child_proxy (Agent*, fhg::com::p2p::address_t const&);
 
         void worker_registration_response
           (boost::optional<std::exception_ptr>) const;
@@ -388,16 +388,16 @@ namespace sdpa {
                                ) const;
 
       private:
-        GenericDaemon* _that;
+        Agent* _that;
         fhg::com::p2p::address_t _address;
         std::string _callback_identifier;
       };
 
       struct parent_proxy
       {
-        parent_proxy (GenericDaemon*, fhg::com::p2p::address_t const&);
-        parent_proxy (GenericDaemon*, master_network_info const&);
-        parent_proxy (GenericDaemon*, boost::optional<master_info_t::iterator> const&);
+        parent_proxy (Agent*, fhg::com::p2p::address_t const&);
+        parent_proxy (Agent*, master_network_info const&);
+        parent_proxy (Agent*, boost::optional<master_info_t::iterator> const&);
 
         void worker_registration (capabilities_set_t) const;
         void notify_shutdown() const;
@@ -428,7 +428,7 @@ namespace sdpa {
           ) const;
 
       private:
-        GenericDaemon* _that;
+        Agent* _that;
         fhg::com::p2p::address_t _address;
         std::string _callback_identifier;
       };

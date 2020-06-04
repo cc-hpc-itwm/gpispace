@@ -126,7 +126,7 @@ BOOST_DATA_TEST_CASE
   const std::string agent_name (utils::random_peer_name());
   const std::string child_name (utils::random_peer_name());
 
-  const sdpa::daemon::GenericDaemon agent
+  const sdpa::daemon::Agent agent
     ( agent_name
     , "localhost"
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
@@ -161,6 +161,6 @@ BOOST_DATA_TEST_CASE
     (event->error_code(), sdpa::events::ErrorEvent::SDPA_EUNKNOWN);
   BOOST_REQUIRE_EQUAL (event->job_id(), boost::none);
 }
-//! \todo Analyse control flow in all GenericDaemon event handlers
+//! \todo Analyse control flow in all Agent event handlers
 
 BOOST_AUTO_TEST_SUITE_END()

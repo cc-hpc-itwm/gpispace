@@ -98,7 +98,7 @@ int main (int argc, char **argv)
       masters.emplace_front (parts[0], parts[1]);
     }
 
-    sdpa::daemon::GenericDaemon agent
+    sdpa::daemon::Agent agent
       ( agentName
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()

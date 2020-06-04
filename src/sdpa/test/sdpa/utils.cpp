@@ -245,7 +245,7 @@ namespace utils
     static fhg::logging::stdout_sink _;
     return _;
   }
-  log_to_stdout::log_to_stdout (sdpa::daemon::GenericDaemon& component)
+  log_to_stdout::log_to_stdout (sdpa::daemon::Agent& component)
   {
     sink().add_emitters_blocking ({component.logger_registration_endpoint()});
   }

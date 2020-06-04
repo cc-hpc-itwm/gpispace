@@ -65,7 +65,7 @@ namespace sdpa
       }
     }
 
-    GenericDaemon::GenericDaemon
+    Agent::Agent
         ( const std::string name
         , const std::string url
         , std::unique_ptr<boost::asio::io_service> peer_io_service
@@ -113,22 +113,22 @@ namespace sdpa
       , ptr_workflow_engine_
           ( create_wfe
           ? new we::layer
-              ( std::bind (&GenericDaemon::submit, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::cancel, this, std::placeholders::_1)
-              , std::bind (&GenericDaemon::finished, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::failed, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::canceled, this, std::placeholders::_1)
-              , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&GenericDaemon::gen_id, this)
+              ( std::bind (&Agent::submit, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::cancel, this, std::placeholders::_1)
+              , std::bind (&Agent::finished, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::failed, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::canceled, this, std::placeholders::_1)
+              , std::bind (&Agent::discover, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::discovered, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::token_put, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&Agent::gen_id, this)
               , *_random_extraction_engine
               )
           : nullptr
           )
       , _registration_threads()
-      , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
+      , _scheduling_thread (&Agent::scheduling_thread, this)
       , _interrupt_scheduling_thread
           ( [this]
             {
@@ -143,7 +143,7 @@ namespace sdpa
             (_log_emitter, vmem_socket->string())
         : nullptr
         )
-      , _event_handler_thread (&GenericDaemon::handle_events, this)
+      , _event_handler_thread (&Agent::handle_events, this)
       , _interrupt_event_queue (_event_queue)
     {
       for (master_network_info& master : _master_info)
@@ -152,12 +152,12 @@ namespace sdpa
       }
     }
 
-    GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
+    Agent::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
         (job_map_t& m)
       : _ (m)
     {}
 
-    GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
+    Agent::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
     {
       for (const Job* const pJob : _ | boost::adaptors::map_values )
       {
@@ -165,17 +165,17 @@ namespace sdpa
       }
     }
 
-    const std::string& GenericDaemon::name() const
+    const std::string& Agent::name() const
     {
       return _name;
     }
 
-    boost::asio::ip::tcp::endpoint GenericDaemon::peer_local_endpoint() const
+    boost::asio::ip::tcp::endpoint Agent::peer_local_endpoint() const
     {
       return _network_strategy.local_endpoint();
     }
 
-    void GenericDaemon::serveJob
+    void Agent::serveJob
       ( WorkerSet const& workers
       , Implementation const& implementation
       , const job_id_t& jobId
@@ -199,13 +199,13 @@ namespace sdpa
       }
     }
 
-    std::string GenericDaemon::gen_id()
+    std::string Agent::gen_id()
     {
       static id_generator generator ("job");
       return generator.next();
     }
 
-    Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
+    Job* Agent::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
                                , job_source source
                                , job_handler handler
@@ -221,7 +221,7 @@ namespace sdpa
     }
 
 
-    Job* GenericDaemon::addJobWithNoPreferences
+    Job* Agent::addJobWithNoPreferences
       ( const sdpa::job_id_t& job_id
       , we::type::activity_t activity
       , job_source source
@@ -237,7 +237,7 @@ namespace sdpa
         );
     }
 
-    Job* GenericDaemon::addJob
+    Job* Agent::addJob
       ( const sdpa::job_id_t& job_id
       , we::type::activity_t activity
       , job_source source
@@ -264,7 +264,7 @@ namespace sdpa
       return pJob;
     }
 
-    Job* GenericDaemon::findJob (const sdpa::job_id_t& job_id ) const
+    Job* Agent::findJob (const sdpa::job_id_t& job_id ) const
     {
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
@@ -272,7 +272,7 @@ namespace sdpa
       return it != job_map_.end() ? it->second : nullptr;
     }
 
-    Job* GenericDaemon::require_job
+    Job* Agent::require_job
       (job_id_t const& id, std::string const& error) const
     {
       Job* job (findJob (id));
@@ -283,7 +283,7 @@ namespace sdpa
       return job;
     }
 
-    void GenericDaemon::deleteJob (const sdpa::job_id_t& job_id)
+    void Agent::deleteJob (const sdpa::job_id_t& job_id)
     {
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
@@ -297,7 +297,7 @@ namespace sdpa
       job_map_.erase (it);
     }
 
-    void GenericDaemon::handleDeleteJobEvent
+    void Agent::handleDeleteJobEvent
       ( fhg::com::p2p::address_t const& source
       , events::DeleteJobEvent const* event
       )
@@ -320,7 +320,7 @@ namespace sdpa
       parent_proxy (this, source).delete_job_ack (event->job_id());
     }
 
-    void GenericDaemon::handleCancelJobEvent
+    void Agent::handleCancelJobEvent
       ( fhg::com::p2p::address_t const& source
       , events::CancelJobEvent const* event
       )
@@ -381,7 +381,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::emit_gantt ( job_id_t const& id
+    void Agent::emit_gantt ( job_id_t const& id
                                    , we::type::activity_t const& activity
                                    , NotificationEvent::state_t state
                                    )
@@ -393,17 +393,17 @@ namespace sdpa
         );
     }
 
-    fhg::logging::endpoint GenericDaemon::logger_registration_endpoint() const
+    fhg::logging::endpoint Agent::logger_registration_endpoint() const
     {
       return _log_emitter.local_endpoint();
     }
 
-    fhg::logging::stream_emitter& GenericDaemon::log_emitter()
+    fhg::logging::stream_emitter& Agent::log_emitter()
     {
       return _log_emitter;
     }
 
-    bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
+    bool Agent::workflow_engine_submit (job_id_t job_id, Job* pJob)
     {
       try
       {
@@ -431,7 +431,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handleSubmitJobEvent
+    void Agent::handleSubmitJobEvent
       ( fhg::com::p2p::address_t const& source
       , const events::SubmitJobEvent* evt
       )
@@ -477,7 +477,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handleWorkerRegistrationEvent
+    void Agent::handleWorkerRegistrationEvent
       ( fhg::com::p2p::address_t const& source
       , const events::WorkerRegistrationEvent* event
       )
@@ -529,7 +529,7 @@ namespace sdpa
         .worker_registration_response (std::current_exception());
     }
 
-    void GenericDaemon::handleErrorEvent
+    void Agent::handleErrorEvent
       ( fhg::com::p2p::address_t const& source
       , const events::ErrorEvent* evt
       )
@@ -618,7 +618,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::submit ( const we::layer::id_type& job_id
+    void Agent::submit ( const we::layer::id_type& job_id
                                , we::type::activity_t activity
                                )
     try
@@ -645,13 +645,13 @@ namespace sdpa
         (job_id, fhg::util::current_exception_printer (": ").string());
     }
 
-    void GenericDaemon::cancel (const we::layer::id_type& job_id)
+    void Agent::cancel (const we::layer::id_type& job_id)
     {
       delay
-        (std::bind (&GenericDaemon::cancel_worker_handled_job, this, job_id));
+        (std::bind (&Agent::cancel_worker_handled_job, this, job_id));
     }
 
-    void GenericDaemon::cancel_worker_handled_job
+    void Agent::cancel_worker_handled_job
       (we::layer::id_type const& job_id)
     {
       std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
@@ -703,7 +703,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::finished ( const we::layer::id_type& id
+    void Agent::finished ( const we::layer::id_type& id
                                  , const we::type::activity_t& result
                                  )
     {
@@ -724,7 +724,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::failed ( const we::layer::id_type& id
+    void Agent::failed ( const we::layer::id_type& id
                                , std::string const & reason
                                )
     {
@@ -735,7 +735,7 @@ namespace sdpa
       emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
     }
 
-    void GenericDaemon::canceled (const we::layer::id_type& job_id)
+    void Agent::canceled (const we::layer::id_type& job_id)
     {
       Job* const pJob (require_job (job_id, "rts_canceled (unknown job)"));
 
@@ -749,7 +749,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handle_job_termination (Job* job)
+    void Agent::handle_job_termination (Job* job)
     {
       auto const results
         (_scheduler.get_aggregated_results_if_all_terminated (job->id()));
@@ -809,7 +809,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handleJobFinishedEvent
+    void Agent::handleJobFinishedEvent
       ( fhg::com::p2p::address_t const& source
       , events::JobFinishedEvent const* event
       )
@@ -828,7 +828,7 @@ namespace sdpa
       child_proxy (this, source).job_finished_ack (event->job_id());
     }
 
-    void GenericDaemon::handleJobFailedEvent
+    void Agent::handleJobFailedEvent
       ( fhg::com::p2p::address_t const& source
       , events::JobFailedEvent const* event
       )
@@ -847,7 +847,7 @@ namespace sdpa
       child_proxy (this, source).job_failed_ack (event->job_id());
     }
 
-    void GenericDaemon::handleCancelJobAckEvent
+    void Agent::handleCancelJobAckEvent
       ( fhg::com::p2p::address_t const& source
       , events::CancelJobAckEvent const* event
       )
@@ -864,7 +864,7 @@ namespace sdpa
       handle_job_termination (job);
     }
 
-    void GenericDaemon::job_finished
+    void Agent::job_finished
       (Job* job, we::type::activity_t const& result)
     {
       job->JobFinished (result);
@@ -881,7 +881,7 @@ namespace sdpa
         {
           parent_proxy (_this, master._).job_finished (_job->id(), _job->result());
         }
-        GenericDaemon* _this;
+        Agent* _this;
         Job* _job;
         we::layer* _wfe;
       } visitor = {this, job, ptr_workflow_engine_.get()};
@@ -890,7 +890,7 @@ namespace sdpa
       notify_subscribers<events::JobFinishedEvent>
         (job->id(), job->id(), job->result());
     }
-    void GenericDaemon::job_failed (Job* job, std::string const& reason)
+    void Agent::job_failed (Job* job, std::string const& reason)
     {
       job->JobFailed (reason);
 
@@ -907,7 +907,7 @@ namespace sdpa
           parent_proxy (_this, master._).job_failed
             (_job->id(), _job->error_message());
         }
-        GenericDaemon* _this;
+        Agent* _this;
         Job* _job;
         we::layer* _wfe;
       } visitor = {this, job, ptr_workflow_engine_.get()};
@@ -916,7 +916,7 @@ namespace sdpa
       notify_subscribers<events::JobFailedEvent>
         (job->id(), job->id(), job->error_message());
     }
-    void GenericDaemon::job_canceled (Job* job)
+    void Agent::job_canceled (Job* job)
     {
       job->CancelJobAck();
 
@@ -932,7 +932,7 @@ namespace sdpa
         {
           parent_proxy (_this, master._).cancel_job_ack (_job->id());
         }
-        GenericDaemon* _this;
+        Agent* _this;
         Job* _job;
         we::layer* _wfe;
       } visitor = {this, job, ptr_workflow_engine_.get()};
@@ -942,7 +942,7 @@ namespace sdpa
     }
 
     boost::optional<master_info_t::iterator>
-      GenericDaemon::master_by_address (fhg::com::p2p::address_t const& address)
+      Agent::master_by_address (fhg::com::p2p::address_t const& address)
     {
       master_info_t::iterator const it
         ( std::find_if ( _master_info.begin()
@@ -956,7 +956,7 @@ namespace sdpa
       return boost::make_optional (it != _master_info.end(), it);
     }
 
-    void GenericDaemon::handle_worker_registration_response
+    void Agent::handle_worker_registration_response
       ( fhg::com::p2p::address_t const& source
       , sdpa::events::worker_registration_response const* response
       )
@@ -969,7 +969,7 @@ namespace sdpa
       response->get();
     }
 
-    void GenericDaemon::handleCapabilitiesGainedEvent
+    void Agent::handleCapabilitiesGainedEvent
       ( fhg::com::p2p::address_t const& source
       , const events::CapabilitiesGainedEvent* pCpbGainEvt
       )
@@ -1012,7 +1012,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handleCapabilitiesLostEvent
+    void Agent::handleCapabilitiesLostEvent
       ( fhg::com::p2p::address_t const& source
       , const events::CapabilitiesLostEvent* pCpbLostEvt
       )
@@ -1041,7 +1041,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handle_events()
+    void Agent::handle_events()
     try
     {
       while (true)
@@ -1066,7 +1066,7 @@ namespace sdpa
     {
     }
 
-    void GenericDaemon::delay (std::function<void()> fun)
+    void Agent::delay (std::function<void()> fun)
     {
       _event_queue.put
         ( fhg::com::p2p::address_t()
@@ -1074,14 +1074,14 @@ namespace sdpa
         );
     }
 
-    void GenericDaemon::request_registration_soon
+    void Agent::request_registration_soon
       (master_network_info& master)
     {
       _registration_threads.start
-        (std::bind (&GenericDaemon::do_registration_after_sleep, this, master));
+        (std::bind (&Agent::do_registration_after_sleep, this, master));
     }
 
-    void GenericDaemon::do_registration_after_sleep
+    void Agent::do_registration_after_sleep
       (master_network_info& master)
     {
       std::this_thread::sleep_for (_registration_timeout);
@@ -1089,7 +1089,7 @@ namespace sdpa
       requestRegistration (master);
     }
 
-    void GenericDaemon::requestRegistration (master_network_info& master)
+    void Agent::requestRegistration (master_network_info& master)
     {
       try
       {
@@ -1108,14 +1108,14 @@ namespace sdpa
       parent_proxy (this, master).worker_registration (cpbSet);
     }
 
-    void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
+    void Agent::unsubscribe(const fhg::com::p2p::address_t& id)
     {
       std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
       _subscriptions.left.erase (id);
     }
 
-    void GenericDaemon::handleSubscribeEvent
+    void Agent::handleSubscribeEvent
       ( fhg::com::p2p::address_t const& source
       , const events::SubscribeEvent* pEvt
       )
@@ -1169,7 +1169,7 @@ namespace sdpa
       INVALID_ENUM_VALUE (sdpa::status::code, status);
     }
 
-    bool GenericDaemon::isSubscriber
+    bool Agent::isSubscriber
       (fhg::com::p2p::address_t const& agentId, job_id_t const& job)
     {
       std::lock_guard<std::mutex> const _ (mtx_subscriber_);
@@ -1187,7 +1187,7 @@ namespace sdpa
      *           an error message
      * Postcondition: is either into the Running state or inexistent
      */
-    void GenericDaemon::handleSubmitJobAckEvent
+    void Agent::handleSubmitJobAckEvent
       (fhg::com::p2p::address_t const& source, const events::SubmitJobAckEvent* pEvent)
     {
       // Only, now should be state of the job updated to RUNNING
@@ -1222,7 +1222,7 @@ namespace sdpa
     }
 
     // respond to a worker that the JobFinishedEvent was received
-    void GenericDaemon::handleJobFinishedAckEvent
+    void Agent::handleJobFinishedAckEvent
       (fhg::com::p2p::address_t const&, const events::JobFinishedAckEvent* pEvt)
     {
       // The result was successfully delivered by the worker and the WE was notified
@@ -1237,7 +1237,7 @@ namespace sdpa
     }
 
     // respond to a worker that the JobFailedEvent was received
-    void GenericDaemon::handleJobFailedAckEvent
+    void Agent::handleJobFailedAckEvent
       ( fhg::com::p2p::address_t const&
       , const events::JobFailedAckEvent* pEvt
       )
@@ -1251,18 +1251,18 @@ namespace sdpa
       deleteJob(pEvt->job_id());
     }
 
-    void GenericDaemon::discover
+    void Agent::discover
       ( we::layer::id_type discover_id
       , we::layer::id_type job_id
       )
     {
-      delay ( std::bind ( &GenericDaemon::delayed_discover, this
+      delay ( std::bind ( &Agent::delayed_discover, this
                         , discover_id, job_id
                         )
             );
     }
 
-    void GenericDaemon::delayed_discover
+    void Agent::delayed_discover
       ( we::layer::id_type discover_id
       , we::layer::id_type job_id
       )
@@ -1312,7 +1312,7 @@ namespace sdpa
         );
     }
 
-    void GenericDaemon::handleDiscoverJobStatesEvent
+    void Agent::handleDiscoverJobStatesEvent
       ( fhg::com::p2p::address_t const& source
       , const sdpa::events::DiscoverJobStatesEvent *pEvt
       )
@@ -1366,7 +1366,7 @@ namespace sdpa
         );
     }
 
-    void GenericDaemon::discovered
+    void Agent::discovered
       ( we::layer::id_type discover_id
       , sdpa::discovery_info_t discover_result
       )
@@ -1380,7 +1380,7 @@ namespace sdpa
       _discover_sources.erase (source_id);
     }
 
-    void GenericDaemon::handleDiscoverJobStatesReplyEvent
+    void Agent::handleDiscoverJobStatesReplyEvent
       ( fhg::com::p2p::address_t const&
       , const sdpa::events::DiscoverJobStatesReplyEvent* e
       )
@@ -1403,7 +1403,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handleBacklogNoLongerFullEvent
+    void Agent::handleBacklogNoLongerFullEvent
       ( fhg::com::p2p::address_t const& source
       , const events::BacklogNoLongerFullEvent*
       )
@@ -1432,7 +1432,7 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::handle_put_token
+    void Agent::handle_put_token
       ( fhg::com::p2p::address_t const& source
       , const events::put_token* event
       )
@@ -1484,7 +1484,7 @@ namespace sdpa
         (event->put_token_id(), std::current_exception());
     }
 
-    void GenericDaemon::handle_put_token_response
+    void Agent::handle_put_token_response
       ( fhg::com::p2p::address_t const&
       , events::put_token_response const* event
       )
@@ -1493,7 +1493,7 @@ namespace sdpa
         .put_token_response (event->put_token_id(), event->exception());
     }
 
-    void GenericDaemon::token_put
+    void Agent::token_put
       ( std::string put_token_id
       , boost::optional<std::exception_ptr> error
       )
@@ -1502,7 +1502,7 @@ namespace sdpa
         .put_token_response (put_token_id, error);
     }
 
-    void GenericDaemon::handle_workflow_response
+    void Agent::handle_workflow_response
       ( fhg::com::p2p::address_t const& source
       , const events::workflow_response* event
       )
@@ -1557,7 +1557,7 @@ namespace sdpa
         (event->workflow_response_id(), std::current_exception());
     }
 
-    void GenericDaemon::handle_workflow_response_response
+    void Agent::handle_workflow_response_response
       ( fhg::com::p2p::address_t const&
       , events::workflow_response_response const* event
       )
@@ -1565,7 +1565,7 @@ namespace sdpa
       parent_proxy (this, take (_workflow_response_source, event->workflow_response_id()))
         .workflow_response_response (event->workflow_response_id(), event->content());
     }
-    void GenericDaemon::workflow_response_response
+    void Agent::workflow_response_response
       ( std::string workflow_response_id
       , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
@@ -1574,7 +1574,7 @@ namespace sdpa
         .workflow_response_response (workflow_response_id, result);
     }
 
-    void GenericDaemon::handleQueryJobStatusEvent
+    void Agent::handleQueryJobStatusEvent
       ( fhg::com::p2p::address_t const& source
       , const events::QueryJobStatusEvent* pEvt
       )
@@ -1591,7 +1591,7 @@ namespace sdpa
         (pJob->id(), pJob->getStatus(), pJob->error_message());
     }
 
-    void GenericDaemon::scheduling_thread()
+    void Agent::scheduling_thread()
     {
       for (;;)
       {
@@ -1618,7 +1618,7 @@ namespace sdpa
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
-          (std::bind ( &GenericDaemon::serveJob
+          (std::bind ( &Agent::serveJob
                      , this
                      , std::placeholders::_1
                      , std::placeholders::_2
@@ -1628,27 +1628,27 @@ namespace sdpa
       }
     }
 
-    void GenericDaemon::request_scheduling()
+    void Agent::request_scheduling()
     {
       std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
       _scheduling_requested = true;
       _scheduling_requested_condition.notify_one();
     }
 
-    GenericDaemon::child_proxy::child_proxy
-        (GenericDaemon* that, fhg::com::p2p::address_t const& address)
+    Agent::child_proxy::child_proxy
+        (Agent* that, fhg::com::p2p::address_t const& address)
       : _that (that)
       , _address (address)
     {}
 
-    void GenericDaemon::child_proxy::worker_registration_response
+    void Agent::child_proxy::worker_registration_response
       (boost::optional<std::exception_ptr> error) const
     {
       _that->sendEventToOther<events::worker_registration_response>
         (_address, std::move (error));
     }
 
-    void GenericDaemon::child_proxy::submit_job
+    void Agent::child_proxy::submit_job
       ( boost::optional<job_id_t> id
       , we::type::activity_t activity
       , boost::optional<std::string> const& implementation
@@ -1659,29 +1659,29 @@ namespace sdpa
         (_address, id, std::move (activity), implementation, workers);
     }
 
-    void GenericDaemon::child_proxy::cancel_job (job_id_t id) const
+    void Agent::child_proxy::cancel_job (job_id_t id) const
     {
       _that->sendEventToOther<events::CancelJobEvent> (_address, id);
     }
 
-    void GenericDaemon::child_proxy::job_failed_ack (job_id_t id) const
+    void Agent::child_proxy::job_failed_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::JobFailedAckEvent> (_address, id);
     }
 
-    void GenericDaemon::child_proxy::job_finished_ack (job_id_t id) const
+    void Agent::child_proxy::job_finished_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::JobFinishedAckEvent> (_address, id);
     }
 
-    void GenericDaemon::child_proxy::discover_job_states
+    void Agent::child_proxy::discover_job_states
       (job_id_t job_id, job_id_t discover_id) const
     {
       _that->sendEventToOther<events::DiscoverJobStatesEvent>
         (_address, job_id, discover_id);
     }
 
-    void GenericDaemon::child_proxy::put_token
+    void Agent::child_proxy::put_token
       ( job_id_t job_id
       , std::string put_token_id
       , std::string place_name
@@ -1692,7 +1692,7 @@ namespace sdpa
         (_address, job_id, put_token_id, place_name, value);
     }
 
-    void GenericDaemon::child_proxy::workflow_response
+    void Agent::child_proxy::workflow_response
       ( job_id_t job_id
       , std::string workflow_response_id
       , std::string place_name
@@ -1703,25 +1703,25 @@ namespace sdpa
         (_address, job_id, workflow_response_id, place_name, value);
     }
 
-    GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, fhg::com::p2p::address_t const& address)
+    Agent::parent_proxy::parent_proxy
+        (Agent* that, fhg::com::p2p::address_t const& address)
       : _that (that)
       , _address (address)
     {}
 
-    GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, master_network_info const& master)
+    Agent::parent_proxy::parent_proxy
+        (Agent* that, master_network_info const& master)
       : parent_proxy (that, master.address.get())
     {}
 
-    GenericDaemon::parent_proxy::parent_proxy
-        ( GenericDaemon* that
+    Agent::parent_proxy::parent_proxy
+        ( Agent* that
         , boost::optional<master_info_t::iterator> const& job_master
         )
       : parent_proxy (that, *job_master.get())
     {}
 
-    void GenericDaemon::parent_proxy::worker_registration
+    void Agent::parent_proxy::worker_registration
       ( capabilities_set_t capabilities
       ) const
     {
@@ -1731,75 +1731,75 @@ namespace sdpa
         );
     }
 
-    void GenericDaemon::parent_proxy::notify_shutdown() const
+    void Agent::parent_proxy::notify_shutdown() const
     {
       _that->sendEventToOther<events::ErrorEvent>
         (_address, events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "");
     }
 
-    void GenericDaemon::parent_proxy::job_failed
+    void Agent::parent_proxy::job_failed
       (job_id_t id, std::string message) const
     {
       _that->sendEventToOther<events::JobFailedEvent> (_address, id, message);
     }
 
-    void GenericDaemon::parent_proxy::job_finished
+    void Agent::parent_proxy::job_finished
       (job_id_t id, we::type::activity_t result) const
     {
       _that->sendEventToOther<events::JobFinishedEvent> (_address, id, result);
     }
 
-    void GenericDaemon::parent_proxy::cancel_job_ack (job_id_t id) const
+    void Agent::parent_proxy::cancel_job_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::CancelJobAckEvent> (_address, id);
     }
 
-    void GenericDaemon::parent_proxy::delete_job_ack (job_id_t id) const
+    void Agent::parent_proxy::delete_job_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::DeleteJobAckEvent> (_address, id);
     }
 
-    void GenericDaemon::parent_proxy::submit_job_ack (job_id_t id) const
+    void Agent::parent_proxy::submit_job_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::SubmitJobAckEvent> (_address, id);
     }
 
-    void GenericDaemon::parent_proxy::capabilities_gained
+    void Agent::parent_proxy::capabilities_gained
       (capabilities_set_t capabilities) const
     {
       _that->sendEventToOther<events::CapabilitiesGainedEvent>
         (_address, capabilities);
     }
 
-    void GenericDaemon::parent_proxy::capabilities_lost
+    void Agent::parent_proxy::capabilities_lost
       (capabilities_set_t capabilities) const
     {
       _that->sendEventToOther<events::CapabilitiesLostEvent>
         (_address, capabilities);
     }
 
-    void GenericDaemon::parent_proxy::discover_job_states_reply
+    void Agent::parent_proxy::discover_job_states_reply
       (job_id_t discover_id, discovery_info_t info) const
     {
       _that->sendEventToOther<events::DiscoverJobStatesReplyEvent>
         (_address, discover_id, info);
     }
 
-    void GenericDaemon::parent_proxy::query_job_status_reply
+    void Agent::parent_proxy::query_job_status_reply
       (job_id_t id, status::code status, std::string error_message) const
     {
       _that->sendEventToOther<events::JobStatusReplyEvent>
         (_address, id, status, error_message);
     }
 
-    void GenericDaemon::parent_proxy::put_token_response
+    void Agent::parent_proxy::put_token_response
       (std::string put_token_id, boost::optional<std::exception_ptr> error) const
     {
       _that->sendEventToOther<events::put_token_response>
         (_address, put_token_id, error);
     }
 
-    void GenericDaemon::parent_proxy::workflow_response_response
+    void Agent::parent_proxy::workflow_response_response
       ( std::string workflow_response_id
       , boost::variant<std::exception_ptr, pnet::type::value::value_type> content
       ) const
