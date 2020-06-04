@@ -35,171 +35,175 @@
 
 namespace sdpa
 {
-  namespace daemon {
-namespace
-{
-  std::vector<std::string> require_proper_url (std::string url)
+  namespace daemon
   {
-    const boost::tokenizer<boost::char_separator<char>> tok
-      (url, boost::char_separator<char> (":"));
-
-    const std::vector<std::string> vec (tok.begin(), tok.end());
-
-    if (vec.empty() || vec.size() > 2)
+    namespace
     {
-      throw std::runtime_error ("configuration of network failed: invalid url: has to be of format 'host[:port]'");
+      std::vector<std::string> require_proper_url (std::string url)
+      {
+        const boost::tokenizer<boost::char_separator<char>> tok
+          (url, boost::char_separator<char> (":"));
+
+        const std::vector<std::string> vec (tok.begin(), tok.end());
+
+        if (vec.empty() || vec.size() > 2)
+        {
+          throw std::runtime_error ("configuration of network failed: invalid url: has to be of format 'host[:port]'");
+        }
+
+        return vec;
+      }
+
+      fhg::com::host_t host_from_url (std::string url)
+      {
+        return fhg::com::host_t (require_proper_url (url)[0]);
+      }
+      fhg::com::port_t port_from_url (std::string url)
+      {
+        const std::vector<std::string> vec (require_proper_url (url));
+        return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
+      }
     }
 
-    return vec;
-  }
+    GenericDaemon::GenericDaemon
+        ( const std::string name
+        , const std::string url
+        , std::unique_ptr<boost::asio::io_service> peer_io_service
+        , boost::optional<boost::filesystem::path> const& vmem_socket
+        , master_info_t masters
+        , bool create_wfe
+        , fhg::com::Certificates const& certificates
+        )
+      : _name (name)
+      , _master_info (std::move (masters))
+      , _subscriptions()
+      , _discover_sources()
+      , _job_map_mutex()
+      , job_map_()
+      , _cleanup_job_map_on_dtor_helper (job_map_)
+      , _worker_manager()
+      , _scheduler ( [this] (job_id_t job_id)
+                     {
+                       return findJob (job_id)->requirements_and_preferences();
+                     }
+                   , _worker_manager
+                   )
+      , _scheduling_thread_mutex()
+      , _scheduling_requested_guard()
+      , _scheduling_requested_condition()
+      , _scheduling_requested (false)
+      , _random_extraction_engine
+        (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
+      , mtx_subscriber_()
+      , mtx_cpb_()
+      , _log_emitter()
+      , _registration_timeout (std::chrono::seconds (1))
+      , _event_queue()
+      , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
+                                   , events::SDPAEvent::Ptr const& e
+                                   )
+                          {
+                            _event_queue.put (source, e);
+                          }
+                          , std::move (peer_io_service)
+                          , host_from_url (url)
+                          , port_from_url (url)
+                          , certificates
+                          )
+      , ptr_workflow_engine_
+          ( create_wfe
+          ? new we::layer
+              ( std::bind (&GenericDaemon::submit, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::cancel, this, std::placeholders::_1)
+              , std::bind (&GenericDaemon::finished, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::failed, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::canceled, this, std::placeholders::_1)
+              , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
+              , std::bind (&GenericDaemon::gen_id, this)
+              , *_random_extraction_engine
+              )
+          : nullptr
+          )
+      , _registration_threads()
+      , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
+      , _interrupt_scheduling_thread
+          ( [this]
+            {
+              std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
+              _scheduling_interrupted = true;
+              _scheduling_requested_condition.notify_one();
+            }
+          )
+      , _virtual_memory_api
+        ( vmem_socket
+        ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
+            (_log_emitter, vmem_socket->string())
+        : nullptr
+        )
+      , _event_handler_thread (&GenericDaemon::handle_events, this)
+      , _interrupt_event_queue (_event_queue)
+    {
+      for (master_network_info& master : _master_info)
+      {
+        requestRegistration (master);
+      }
+    }
 
-  fhg::com::host_t host_from_url (std::string url)
-  {
-    return fhg::com::host_t (require_proper_url (url)[0]);
-  }
-  fhg::com::port_t port_from_url (std::string url)
-  {
-    const std::vector<std::string> vec (require_proper_url (url));
-    return fhg::com::port_t (vec.size() == 2 ? vec[1] : "0");
-  }
-}
+    GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
+        (job_map_t& m)
+      : _ (m)
+    {}
 
-GenericDaemon::GenericDaemon( const std::string name
-                            , const std::string url
-                            , std::unique_ptr<boost::asio::io_service> peer_io_service
-                            , boost::optional<boost::filesystem::path> const& vmem_socket
-                            , master_info_t masters
-                            , bool create_wfe
-                            , fhg::com::Certificates const& certificates
-                            )
-  : _name (name)
-  , _master_info (std::move (masters))
-  , _subscriptions()
-  , _discover_sources()
-  , _job_map_mutex()
-  , job_map_()
-  , _cleanup_job_map_on_dtor_helper (job_map_)
-  , _worker_manager()
-  , _scheduler ( [this] (job_id_t job_id)
-                 {
-                   return findJob (job_id)->requirements_and_preferences();
-                 }
-               , _worker_manager
-               )
-  , _scheduling_thread_mutex()
-  , _scheduling_requested_guard()
-  , _scheduling_requested_condition()
-  , _scheduling_requested (false)
-  , _random_extraction_engine
-    (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
-  , mtx_subscriber_()
-  , mtx_cpb_()
-  , _log_emitter()
-  , _registration_timeout (std::chrono::seconds (1))
-  , _event_queue()
-  , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
-                               , events::SDPAEvent::Ptr const& e
-                               )
-                      {
-                        _event_queue.put (source, e);
-                      }
-                      , std::move (peer_io_service)
-                      , host_from_url (url)
-                      , port_from_url (url)
-                      , certificates
-                      )
-  , ptr_workflow_engine_ ( create_wfe
-                         ? new we::layer
-                           ( std::bind (&GenericDaemon::submit, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::cancel, this, std::placeholders::_1)
-                           , std::bind (&GenericDaemon::finished, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::failed, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::canceled, this, std::placeholders::_1)
-                           , std::bind (&GenericDaemon::discover, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::token_put, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
-                           , std::bind (&GenericDaemon::gen_id, this)
-                           , *_random_extraction_engine
-                           )
-                         : nullptr
-                         )
-  , _registration_threads()
-  , _scheduling_thread (&GenericDaemon::scheduling_thread, this)
-  , _interrupt_scheduling_thread
-      ( [this]
-        {
-          std::lock_guard<std::mutex> const _ (_scheduling_requested_guard);
-          _scheduling_interrupted = true;
-          _scheduling_requested_condition.notify_one();
-        }
-      )
-  , _virtual_memory_api
-    ( vmem_socket
-    ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-        (_log_emitter, vmem_socket->string())
-    : nullptr
-    )
-  , _event_handler_thread (&GenericDaemon::handle_events, this)
-  , _interrupt_event_queue (_event_queue)
-{
-  for (master_network_info& master : _master_info)
-  {
-    requestRegistration (master);
-  }
-}
+    GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
+    {
+      for (const Job* const pJob : _ | boost::adaptors::map_values )
+      {
+        delete pJob;
+      }
+    }
 
-GenericDaemon::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
-    (job_map_t& m)
-  : _ (m)
-{}
-GenericDaemon::cleanup_job_map_on_dtor_helper::~cleanup_job_map_on_dtor_helper()
-{
-  for (const Job* const pJob : _ | boost::adaptors::map_values )
-  {
-    delete pJob;
-  }
-}
-
-const std::string& GenericDaemon::name() const
-{
-  return _name;
-}
+    const std::string& GenericDaemon::name() const
+    {
+      return _name;
+    }
 
     boost::asio::ip::tcp::endpoint GenericDaemon::peer_local_endpoint() const
     {
       return _network_strategy.local_endpoint();
     }
 
-void GenericDaemon::serveJob
-  ( WorkerSet const& workers
-  , Implementation const& implementation
-  , const job_id_t& jobId
-  )
-{
-  Job const* const ptrJob = findJob (jobId);
-  if (ptrJob)
-  {
-    for (auto const& worker : workers)
+    void GenericDaemon::serveJob
+      ( WorkerSet const& workers
+      , Implementation const& implementation
+      , const job_id_t& jobId
+      )
     {
-      child_proxy
-        ( this
-        , _worker_manager.address_by_worker (worker).get()->second
-        )
-        .submit_job ( ptrJob->id()
-                    , ptrJob->activity()
-                    , implementation
-                    , workers
-                    );
+      Job const* const ptrJob = findJob (jobId);
+      if (ptrJob)
+      {
+        for (auto const& worker : workers)
+        {
+          child_proxy
+            ( this
+            , _worker_manager.address_by_worker (worker).get()->second
+            )
+            .submit_job ( ptrJob->id()
+                        , ptrJob->activity()
+                        , implementation
+                        , workers
+                        );
+        }
+      }
     }
-  }
-}
 
-std::string GenericDaemon::gen_id()
-{
-  static id_generator generator ("job");
-  return generator.next();
-}
+    std::string GenericDaemon::gen_id()
+    {
+      static id_generator generator ("job");
+      return generator.next();
+    }
 
     Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
                                , we::type::activity_t activity
@@ -233,12 +237,13 @@ std::string GenericDaemon::gen_id()
         );
     }
 
-    Job* GenericDaemon::addJob ( const sdpa::job_id_t& job_id
-                               , we::type::activity_t activity
-                               , job_source source
-                               , job_handler handler
-                               , Requirements_and_preferences requirements_and_preferences
-                               )
+    Job* GenericDaemon::addJob
+      ( const sdpa::job_id_t& job_id
+      , we::type::activity_t activity
+      , job_source source
+      , job_handler handler
+      , Requirements_and_preferences requirements_and_preferences
+      )
     {
       Job* pJob = new Job
         ( job_id
@@ -259,7 +264,7 @@ std::string GenericDaemon::gen_id()
       return pJob;
     }
 
-    Job* GenericDaemon::findJob(const sdpa::job_id_t& job_id ) const
+    Job* GenericDaemon::findJob (const sdpa::job_id_t& job_id ) const
     {
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
@@ -278,7 +283,7 @@ std::string GenericDaemon::gen_id()
       return job;
     }
 
-    void GenericDaemon::deleteJob(const sdpa::job_id_t& job_id)
+    void GenericDaemon::deleteJob (const sdpa::job_id_t& job_id)
     {
       std::lock_guard<std::mutex> const _ (_job_map_mutex);
 
@@ -293,7 +298,9 @@ std::string GenericDaemon::gen_id()
     }
 
     void GenericDaemon::handleDeleteJobEvent
-      (fhg::com::p2p::address_t const& source, events::DeleteJobEvent const* event)
+      ( fhg::com::p2p::address_t const& source
+      , events::DeleteJobEvent const* event
+      )
     {
       Job* const job (require_job (event->job_id(), "delete_job for unknown job"));
 
@@ -390,55 +397,58 @@ std::string GenericDaemon::gen_id()
     {
       return _log_emitter.local_endpoint();
     }
+
     fhg::logging::stream_emitter& GenericDaemon::log_emitter()
     {
       return _log_emitter;
     }
 
-bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
-{
-  try
-  {
-    workflowEngine()->submit (job_id, pJob->activity());
+    bool GenericDaemon::workflow_engine_submit (job_id_t job_id, Job* pJob)
+    {
+      try
+      {
+        workflowEngine()->submit (job_id, pJob->activity());
 
-    // Should set the workflow_id here, or send it together with the activity
-    pJob->Dispatch();
+        // Should set the workflow_id here, or send it together with the activity
+        pJob->Dispatch();
 
-    return true;
-  }
-  catch (...)
-  {
-    fhg::util::current_exception_printer const error (": ");
-    _log_emitter.emit ( "Exception occurred: " + error.string()
-                      + ". Failed to submit the job " + job_id
-                      + " to the workflow engine!"
-                      , fhg::logging::legacy::category_level_error
-                      );
+        return true;
+      }
+      catch (...)
+      {
+        fhg::util::current_exception_printer const error (": ");
+        _log_emitter.emit ( "Exception occurred: " + error.string()
+                          + ". Failed to submit the job " + job_id
+                          + " to the workflow engine!"
+                          , fhg::logging::legacy::category_level_error
+                          );
 
-    //! \note: was failed (job_id, error.string()) but wanted to skip
-    //! the emission of the gantt
-    job_failed (pJob, error.string());
+        //! \note: was failed (job_id, error.string()) but wanted to skip
+        //! the emission of the gantt
+        job_failed (pJob, error.string());
 
-    return false;
-  }
-}
+        return false;
+      }
+    }
 
-void GenericDaemon::handleSubmitJobEvent
-  (fhg::com::p2p::address_t const& source, const events::SubmitJobEvent* evt)
-{
-  const events::SubmitJobEvent& e (*evt);
+    void GenericDaemon::handleSubmitJobEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::SubmitJobEvent* evt
+      )
+    {
+      const events::SubmitJobEvent& e (*evt);
 
-  // First, check if the job 'job_id' wasn't already submitted!
-  if(e.job_id() && findJob(*e.job_id()))
-  {
-    parent_proxy (this, source).submit_job_ack (*e.job_id());
-    return;
-  }
+      // First, check if the job 'job_id' wasn't already submitted!
+      if(e.job_id() && findJob(*e.job_id()))
+      {
+        parent_proxy (this, source).submit_job_ack (*e.job_id());
+        return;
+      }
 
-  const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
+      const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-  auto const maybe_master (master_by_address (source));
-  Job* const pJob (addJobWithNoPreferences
+      auto const maybe_master (master_by_address (source));
+      Job* const pJob ( addJobWithNoPreferences
                           ( job_id
                           , e.activity()
                           , maybe_master
@@ -448,288 +458,296 @@ void GenericDaemon::handleSubmitJobEvent
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
                           )
-                  );
+                      );
 
-  parent_proxy (this, source).submit_job_ack (job_id);
+      parent_proxy (this, source).submit_job_ack (job_id);
 
-  // check if the message comes from outside or from WFE
-  // if it comes from outside and the agent has an WFE, submit it to it
-  if (boost::get<job_handler_wfe> (&pJob->handler()))
-  {
-    if (workflow_engine_submit (job_id, pJob))
-    {
-      emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
-    }
-  }
-  else {
-    _scheduler.enqueueJob(job_id);
-    request_scheduling();
-  }
-}
-
-void GenericDaemon::handleWorkerRegistrationEvent
-  (fhg::com::p2p::address_t const& source, const events::WorkerRegistrationEvent* event)
-try
-{
-  // check if the worker source has already registered!
-  // delete inherited capabilities that are owned by the current agent
-  sdpa::capabilities_set_t workerCpbSet;
-
-  // take the difference
-  for (const sdpa::capability_t& cpb : event->capabilities())
-  {
-    // own capabilities have always the depth 0 and are not inherited
-    // by the descendants
-    if (!isOwnCapability (cpb))
-    {
-      workerCpbSet.emplace (cpb.with_increased_depth());
-    }
-  }
-
-  _worker_manager.addWorker
-    ( event->name()
-    , workerCpbSet
-    , event->allocated_shared_memory_size()
-    , event->children_allowed()
-    , event->hostname(), source
-    );
-
-  request_scheduling();
-
-  // send to the masters my new set of capabilities
-  if (!workerCpbSet.empty())
-  {
-    for (master_network_info const& info : _master_info)
-    {
-      if (info.address)
+      // check if the message comes from outside or from WFE
+      // if it comes from outside and the agent has an WFE, submit it to it
+      if (boost::get<job_handler_wfe> (&pJob->handler()))
       {
-        parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+        if (workflow_engine_submit (job_id, pJob))
+        {
+          emit_gantt (job_id, pJob->activity(), NotificationEvent::STATE_STARTED);
+        }
+      }
+      else {
+        _scheduler.enqueueJob(job_id);
+        request_scheduling();
       }
     }
-  }
 
-  child_proxy (this, source)
-    .worker_registration_response (boost::none);
-}
-catch (...)
-{
-  child_proxy (this, source)
-    .worker_registration_response (std::current_exception());
-}
-
-void GenericDaemon::handleErrorEvent
-  (fhg::com::p2p::address_t const& source, const events::ErrorEvent* evt)
-{
-  const sdpa::events::ErrorEvent& error (*evt);
-
-  boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
-    (_worker_manager.worker_by_address (source));
-
-  // if it'a communication error, inspect all jobs and
-  // send results if they are in a terminal state
-
-  switch (error.error_code())
-  {
-    // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
-    // 'reason' should not be reused for important information
-    case events::ErrorEvent::SDPA_EBACKLOGFULL:
+    void GenericDaemon::handleWorkerRegistrationEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::WorkerRegistrationEvent* event
+      )
+    try
     {
-      sdpa::job_id_t const jobId(*error.job_id());
-      Job* const pJob (findJob (jobId));
-      if (!pJob)
+      // check if the worker source has already registered!
+      // delete inherited capabilities that are owned by the current agent
+      sdpa::capabilities_set_t workerCpbSet;
+
+      // take the difference
+      for (const sdpa::capability_t& cpb : event->capabilities())
       {
-        throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
+        // own capabilities have always the depth 0 and are not inherited
+        // by the descendants
+        if (!isOwnCapability (cpb))
+        {
+          workerCpbSet.emplace (cpb.with_increased_depth());
+        }
       }
 
-      if (!as_worker)
-      {
-        throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
-      }
-    }
-    FHG_UTIL_FALLTHROUGH;
-    case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
-    {
-      unsubscribe(source);
+      _worker_manager.addWorker
+        ( event->name()
+        , workerCpbSet
+        , event->allocated_shared_memory_size()
+        , event->children_allowed()
+        , event->hostname(), source
+        );
 
-      if (as_worker)
+      request_scheduling();
+
+      // send to the masters my new set of capabilities
+      if (!workerCpbSet.empty())
       {
         for (master_network_info const& info : _master_info)
         {
           if (info.address)
           {
-            parent_proxy (this, *info.address).capabilities_lost
-              (_worker_manager.worker_capabilities (as_worker.get()->second));
+            parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
           }
         }
+      }
 
-        _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
-          ( as_worker.get()->second
-          , [this] (job_id_t const& job)
+      child_proxy (this, source)
+        .worker_registration_response (boost::none);
+    }
+    catch (...)
+    {
+      child_proxy (this, source)
+        .worker_registration_response (std::current_exception());
+    }
+
+    void GenericDaemon::handleErrorEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::ErrorEvent* evt
+      )
+    {
+      const sdpa::events::ErrorEvent& error (*evt);
+
+      boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
+        (_worker_manager.worker_by_address (source));
+
+      // if it'a communication error, inspect all jobs and
+      // send results if they are in a terminal state
+
+      switch (error.error_code())
+      {
+        // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
+        // 'reason' should not be reused for important information
+        case events::ErrorEvent::SDPA_EBACKLOGFULL:
+        {
+          sdpa::job_id_t const jobId(*error.job_id());
+          Job* const pJob (findJob (jobId));
+          if (!pJob)
+          {
+            throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
+          }
+
+          if (!as_worker)
+          {
+            throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
+          }
+        }
+        FHG_UTIL_FALLTHROUGH;
+        case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
+        {
+          unsubscribe(source);
+
+          if (as_worker)
+          {
+            for (master_network_info const& info : _master_info)
             {
-              return findJob (job);
+              if (info.address)
+              {
+                parent_proxy (this, *info.address).capabilities_lost
+                  (_worker_manager.worker_capabilities (as_worker.get()->second));
+              }
             }
-          , [this] (worker_id_t const& worker, job_id_t const& job)
+
+            _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
+              ( as_worker.get()->second
+              , [this] (job_id_t const& job)
+                {
+                  return findJob (job);
+                }
+              , [this] (worker_id_t const& worker, job_id_t const& job)
+                {
+                  return child_proxy ( this
+                                     , _worker_manager.address_by_worker (worker).get()->second
+                                     ).cancel_job (job);
+                }
+              , (error.error_code() == events::ErrorEvent::SDPA_EBACKLOGFULL)
+              );
+
+            request_scheduling();
+          }
+          else
+          {
+            boost::optional<master_info_t::iterator> const as_master
+              (master_by_address (source));
+
+            if (as_master)
             {
-              return child_proxy ( this
-                                 , _worker_manager.address_by_worker (worker).get()->second
-                                 ).cancel_job (job);
+              as_master.get()->address = boost::none;
+              request_registration_soon (*as_master.get());
             }
-          , (error.error_code() == events::ErrorEvent::SDPA_EBACKLOGFULL)
+          }
+
+          break;
+        }
+        default:
+        {
+          _log_emitter.emit ( "Unhandled error ("
+                            + std::to_string (error.error_code()) + "): "
+                            + error.reason()
+                            , fhg::logging::legacy::category_level_error
+                            );
+        }
+      }
+    }
+
+    void GenericDaemon::submit ( const we::layer::id_type& job_id
+                               , we::type::activity_t activity
+                               )
+    try
+    {
+      if (activity.handle_by_workflow_engine())
+      {
+        workflow_engine_submit
+          ( job_id
+          , addJobWithNoPreferences
+              (job_id, std::move (activity), job_source_wfe(), job_handler_wfe())
           );
-
-        request_scheduling();
       }
       else
       {
-        boost::optional<master_info_t::iterator> const as_master
-          (master_by_address (source));
+        addJob (job_id, std::move (activity), job_source_wfe(), job_handler_worker());
 
-        if (as_master)
-        {
-          as_master.get()->address = boost::none;
-          request_registration_soon (*as_master.get());
-        }
+        _scheduler.enqueueJob (job_id);
+        request_scheduling();
+      }
+    }
+    catch (...)
+    {
+      workflowEngine()->failed
+        (job_id, fhg::util::current_exception_printer (": ").string());
+    }
+
+    void GenericDaemon::cancel (const we::layer::id_type& job_id)
+    {
+      delay
+        (std::bind (&GenericDaemon::cancel_worker_handled_job, this, job_id));
+    }
+
+    void GenericDaemon::cancel_worker_handled_job
+      (we::layer::id_type const& job_id)
+    {
+      std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
+
+      Job* const pJob (findJob (job_id));
+      if (!pJob)
+      {
+        //! \note Job may have been removed between wfe requesting cancel
+        //! and event thread handling this, which is not an error: wfe
+        //! correctly handles that situation and expects us to ignore it.
+        return;
       }
 
-      break;
+      bool const cancel_already_requested
+        ( pJob->getStatus() == sdpa::status::CANCELING
+        || pJob->getStatus() == sdpa::status::CANCELED
+        );
+
+      pJob->CancelJob();
+
+      const std::unordered_set<worker_id_t>
+        workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
+
+      if (!workers_to_cancel.empty())
+      {
+        if (cancel_already_requested)
+        {
+          return;
+        }
+
+        for (worker_id_t const& w : workers_to_cancel)
+        {
+          child_proxy ( this
+                      , _worker_manager.address_by_worker (w).get()->second
+                      ).cancel_job (job_id);
+        }
+      }
+      else
+      {
+        job_canceled (pJob);
+
+        _scheduler.delete_job (job_id);
+        _scheduler.releaseReservation (job_id);
+
+        if (!boost::get<job_source_client> (&pJob->source()))
+        {
+          deleteJob (job_id);
+        }
+      }
     }
-    default:
+
+    void GenericDaemon::finished ( const we::layer::id_type& id
+                                 , const we::type::activity_t& result
+                                 )
     {
-      _log_emitter.emit ( "Unhandled error ("
-                        + std::to_string (error.error_code()) + "): "
-                        + error.reason()
-                        , fhg::logging::legacy::category_level_error
-                        );
-    }
-  }
-}
+      Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
 
-void GenericDaemon::submit ( const we::layer::id_type& job_id
-                           , we::type::activity_t activity
-                           )
-try
-{
-  if (activity.handle_by_workflow_engine())
-  {
-    workflow_engine_submit
-      ( job_id
-      , addJobWithNoPreferences
-          (job_id, std::move (activity), job_source_wfe(), job_handler_wfe())
-      );
-  }
-  else
-  {
-    addJob (job_id, std::move (activity), job_source_wfe(), job_handler_worker());
+      job_finished (pJob, result);
 
-    _scheduler.enqueueJob (job_id);
-    request_scheduling();
-  }
-}
-catch (...)
-{
-  workflowEngine()->failed
-    (job_id, fhg::util::current_exception_printer (": ").string());
-}
-
-void GenericDaemon::cancel (const we::layer::id_type& job_id)
-{
-  delay (std::bind (&GenericDaemon::cancel_worker_handled_job, this, job_id));
-}
-void GenericDaemon::cancel_worker_handled_job (we::layer::id_type const& job_id)
-{
-  std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
-
-  Job* const pJob (findJob (job_id));
-  if (!pJob)
-  {
-    //! \note Job may have been removed between wfe requesting cancel
-    //! and event thread handling this, which is not an error: wfe
-    //! correctly handles that situation and expects us to ignore it.
-    return;
-  }
-
-  bool const cancel_already_requested
-    ( pJob->getStatus() == sdpa::status::CANCELING
-    || pJob->getStatus() == sdpa::status::CANCELED
-    );
-
-  pJob->CancelJob();
-
-  const std::unordered_set<worker_id_t>
-    workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
-
-  if (!workers_to_cancel.empty())
-  {
-    if (cancel_already_requested)
-    {
-      return;
-    }
-
-    for (worker_id_t const& w : workers_to_cancel)
-    {
-      child_proxy ( this
-                  , _worker_manager.address_by_worker (w).get()->second
-                  ).cancel_job (job_id);
-    }
-  }
-  else
-  {
-    job_canceled (pJob);
-
-    _scheduler.delete_job (job_id);
-    _scheduler.releaseReservation (job_id);
-
-    if (!boost::get<job_source_client> (&pJob->source()))
-    {
-      deleteJob (job_id);
-    }
-  }
-}
-
-void GenericDaemon::finished(const we::layer::id_type& id, const we::type::activity_t& result)
-{
-  Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
-
-  job_finished (pJob, result);
-
-  //! \note #817: gantt does not support nesting
-  if ( fhg::util::visit<bool>
-         ( pJob->source()
-         , [] (job_source_wfe const&) { return false; }
-         , [] (job_source_master const&) { return true; }
-         , [] (job_source_client const&) { return true; }
+      //! \note #817: gantt does not support nesting
+      if ( fhg::util::visit<bool>
+             ( pJob->source()
+             , [] (job_source_wfe const&) { return false; }
+             , [] (job_source_master const&) { return true; }
+             , [] (job_source_client const&) { return true; }
+             )
          )
-     )
-  {
-    emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
-  }
-}
+      {
+        emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_FINISHED);
+      }
+    }
 
-void GenericDaemon::failed( const we::layer::id_type& id
-                          , std::string const & reason
-                          )
-{
-  Job* const pJob (require_job (id, "got failed message for old/unknown Job " + id));
+    void GenericDaemon::failed ( const we::layer::id_type& id
+                               , std::string const & reason
+                               )
+    {
+      Job* const pJob (require_job (id, "got failed message for old/unknown Job " + id));
 
-  job_failed (pJob, reason);
+      job_failed (pJob, reason);
 
-  emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
-}
+      emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
+    }
 
-void GenericDaemon::canceled (const we::layer::id_type& job_id)
-{
-  Job* const pJob (require_job (job_id, "rts_canceled (unknown job)"));
+    void GenericDaemon::canceled (const we::layer::id_type& job_id)
+    {
+      Job* const pJob (require_job (job_id, "rts_canceled (unknown job)"));
 
-  job_canceled (pJob);
+      job_canceled (pJob);
 
-  emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
+      emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
 
-  if (boost::get<job_source_master> (&pJob->source()))
-  {
-    deleteJob (job_id);
-  }
-}
-
+      if (boost::get<job_source_master> (&pJob->source()))
+      {
+        deleteJob (job_id);
+      }
+    }
 
     void GenericDaemon::handle_job_termination (Job* job)
     {
@@ -938,301 +956,316 @@ void GenericDaemon::canceled (const we::layer::id_type& job_id)
       return boost::make_optional (it != _master_info.end(), it);
     }
 
-void GenericDaemon::handle_worker_registration_response
-  ( fhg::com::p2p::address_t const& source
-  , sdpa::events::worker_registration_response const* response
-  )
-{
-  fhg::util::boost::get_or_throw<std::runtime_error>
-    ( master_by_address (source)
-    , "workerRegistrationAckEvent from source not in list of masters"
-    );
-
-  response->get();
-}
-
-void GenericDaemon::handleCapabilitiesGainedEvent
-  (fhg::com::p2p::address_t const& source, const events::CapabilitiesGainedEvent* pCpbGainEvt)
-{
-  WorkerManager::worker_connections_t::right_map::iterator const worker
-    ( fhg::util::boost::get_or_throw<std::runtime_error>
-        ( _worker_manager.worker_by_address (source)
-        , "capabilities_gained for unknown worker"
-        )
-    );
-
-  sdpa::capabilities_set_t workerCpbSet;
-
-  for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities())
-  {
-    // own capabilities have always the depth 0
-    if (!isOwnCapability (cpb))
+    void GenericDaemon::handle_worker_registration_response
+      ( fhg::com::p2p::address_t const& source
+      , sdpa::events::worker_registration_response const* response
+      )
     {
-      workerCpbSet.emplace (cpb.with_increased_depth());
+      fhg::util::boost::get_or_throw<std::runtime_error>
+        ( master_by_address (source)
+        , "workerRegistrationAckEvent from source not in list of masters"
+        );
+
+      response->get();
     }
-  }
 
-  bool const bModified
-    (_worker_manager.add_worker_capabilities (worker->second, workerCpbSet));
-
-  if (bModified)
-  {
-    request_scheduling();
-
-    if (!workerCpbSet.empty())
+    void GenericDaemon::handleCapabilitiesGainedEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::CapabilitiesGainedEvent* pCpbGainEvt
+      )
     {
-      for (master_network_info const& info : _master_info)
+      WorkerManager::worker_connections_t::right_map::iterator const worker
+        ( fhg::util::boost::get_or_throw<std::runtime_error>
+            ( _worker_manager.worker_by_address (source)
+            , "capabilities_gained for unknown worker"
+            )
+        );
+
+      sdpa::capabilities_set_t workerCpbSet;
+
+      for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities())
       {
-        if (info.address)
+        // own capabilities have always the depth 0
+        if (!isOwnCapability (cpb))
         {
-          parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+          workerCpbSet.emplace (cpb.with_increased_depth());
+        }
+      }
+
+      bool const bModified
+        (_worker_manager.add_worker_capabilities (worker->second, workerCpbSet));
+
+      if (bModified)
+      {
+        request_scheduling();
+
+        if (!workerCpbSet.empty())
+        {
+          for (master_network_info const& info : _master_info)
+          {
+            if (info.address)
+            {
+              parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
+            }
+          }
         }
       }
     }
-  }
-}
 
-void GenericDaemon::handleCapabilitiesLostEvent
-  (fhg::com::p2p::address_t const& source, const events::CapabilitiesLostEvent* pCpbLostEvt)
-{
-  // tell the scheduler to remove the capabilities of the worker source
-
- WorkerManager::worker_connections_t::right_map::iterator const worker
-    ( fhg::util::boost::get_or_throw<std::runtime_error>
-        (_worker_manager.worker_by_address (source), "capabilities_lost for unknown worker")
-    );
-
-  if (_worker_manager.remove_worker_capabilities ( worker->second
-                                                              , pCpbLostEvt->capabilities()
-                                                              )
-     )
-  {
-    for (master_network_info const& info : _master_info)
+    void GenericDaemon::handleCapabilitiesLostEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::CapabilitiesLostEvent* pCpbLostEvt
+      )
     {
-      if (info.address)
+      // tell the scheduler to remove the capabilities of the worker source
+
+     WorkerManager::worker_connections_t::right_map::iterator const worker
+        ( fhg::util::boost::get_or_throw<std::runtime_error>
+            ( _worker_manager.worker_by_address (source)
+            , "capabilities_lost for unknown worker"
+            )
+        );
+
+      if ( _worker_manager.remove_worker_capabilities
+             ( worker->second, pCpbLostEvt->capabilities())
+         )
       {
-        parent_proxy (this, *info.address).capabilities_lost
-          (pCpbLostEvt->capabilities());
+        for (master_network_info const& info : _master_info)
+        {
+          if (info.address)
+          {
+            parent_proxy (this, *info.address).capabilities_lost
+              (pCpbLostEvt->capabilities());
+          }
+        }
       }
     }
-  }
-}
 
-void GenericDaemon::handle_events()
-try
-{
-  while (true)
-  {
-    const std::pair<fhg::com::p2p::address_t, events::SDPAEvent::Ptr> event
-      (_event_queue.get());
+    void GenericDaemon::handle_events()
     try
     {
-      event.second->handleBy (event.first, this);
+      while (true)
+      {
+        const std::pair<fhg::com::p2p::address_t, events::SDPAEvent::Ptr> event
+          (_event_queue.get());
+        try
+        {
+          event.second->handleBy (event.first, this);
+        }
+        catch (...)
+        {
+          sendEventToOther<events::ErrorEvent>
+            ( event.first
+            , events::ErrorEvent::SDPA_EUNKNOWN
+            , fhg::util::current_exception_printer (": ").string()
+            );
+        }
+      }
     }
-    catch (...)
+    catch (decltype (_event_queue)::interrupted const&)
     {
-      sendEventToOther<events::ErrorEvent>
-        ( event.first
-        , events::ErrorEvent::SDPA_EUNKNOWN
-        , fhg::util::current_exception_printer (": ").string()
+    }
+
+    void GenericDaemon::delay (std::function<void()> fun)
+    {
+      _event_queue.put
+        ( fhg::com::p2p::address_t()
+        , events::SDPAEvent::Ptr (new events::delayed_function_call (fun))
         );
     }
-  }
-}
-catch (decltype (_event_queue)::interrupted const&)
-{
-}
 
-void GenericDaemon::delay (std::function<void()> fun)
-{
-  _event_queue.put
-    ( fhg::com::p2p::address_t()
-    , events::SDPAEvent::Ptr (new events::delayed_function_call (fun))
-    );
-}
-
-void GenericDaemon::request_registration_soon
-  (master_network_info& master)
-{
-  _registration_threads.start
-    (std::bind (&GenericDaemon::do_registration_after_sleep, this, master));
-}
-
-void GenericDaemon::do_registration_after_sleep
-  (master_network_info& master)
-{
-  std::this_thread::sleep_for (_registration_timeout);
-
-  requestRegistration (master);
-}
-
-void GenericDaemon::requestRegistration (master_network_info& master)
-{
-  try
-  {
-    master.address = _network_strategy.connect_to (master.host, master.port);
-  }
-  catch (std::exception const&)
-  {
-    request_registration_soon (master);
-  }
-
-  std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-  capabilities_set_t cpbSet;
-
-  _worker_manager.getCapabilities (cpbSet);
-
-  parent_proxy (this, master).worker_registration (cpbSet);
-}
-
-void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
-{
-  std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-
-  _subscriptions.left.erase (id);
-}
-
-void GenericDaemon::handleSubscribeEvent
-  (fhg::com::p2p::address_t const& source, const events::SubscribeEvent* pEvt)
-{
-  const job_id_t& jobId (pEvt->job_id());
-
-  std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-
-  Job const* const pJob (findJob (jobId));
-  if (!pJob)
-  {
-    throw std::runtime_error ( "Could not subscribe for the job" + jobId
-                             + ". The job does not exist!"
-                             );
-  }
-
-  sendEventToOther<events::SubscribeAckEvent> (source, jobId);
-
-  // check if the subscribed jobs are already in a terminal state
-  const sdpa::status::code status (pJob->getStatus());
-  switch (status)
-  {
-  case sdpa::status::FINISHED:
+    void GenericDaemon::request_registration_soon
+      (master_network_info& master)
     {
-      sendEventToOther<events::JobFinishedEvent>
-        (source, pJob->id(), pJob->result());
+      _registration_threads.start
+        (std::bind (&GenericDaemon::do_registration_after_sleep, this, master));
     }
-    return;
 
-  case sdpa::status::FAILED:
+    void GenericDaemon::do_registration_after_sleep
+      (master_network_info& master)
     {
-      sendEventToOther<events::JobFailedEvent>
-        (source, pJob->id(), pJob->error_message());
-    }
-    return;
+      std::this_thread::sleep_for (_registration_timeout);
 
-  case sdpa::status::CANCELED:
+      requestRegistration (master);
+    }
+
+    void GenericDaemon::requestRegistration (master_network_info& master)
     {
-      sendEventToOther<events::CancelJobAckEvent> (source, pJob->id());
+      try
+      {
+        master.address = _network_strategy.connect_to (master.host, master.port);
+      }
+      catch (std::exception const&)
+      {
+        request_registration_soon (master);
+      }
+
+      std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
+      capabilities_set_t cpbSet;
+
+      _worker_manager.getCapabilities (cpbSet);
+
+      parent_proxy (this, master).worker_registration (cpbSet);
     }
-    return;
 
-  case sdpa::status::PENDING:
-  case sdpa::status::RUNNING:
-  case sdpa::status::CANCELING:
-    // store the subscriber and notify it later, when the job is terminated
-    _subscriptions.insert ({source, jobId});
-    return;
-  }
+    void GenericDaemon::unsubscribe(const fhg::com::p2p::address_t& id)
+    {
+      std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
-  INVALID_ENUM_VALUE (sdpa::status::code, status);
-}
+      _subscriptions.left.erase (id);
+    }
 
-bool GenericDaemon::isSubscriber
-  (fhg::com::p2p::address_t const& agentId, job_id_t const& job)
-{
-  std::lock_guard<std::mutex> const _ (mtx_subscriber_);
-  return _subscriptions.count
-    (decltype (_subscriptions)::value_type (agentId, job));
-}
+    void GenericDaemon::handleSubscribeEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::SubscribeEvent* pEvt
+      )
+    {
+      const job_id_t& jobId (pEvt->job_id());
 
-/**
- * Event SubmitJobAckEvent
- * Precondition: an acknowledgment event was received from a master
- * Action: - if the job was found, put the job into the state Running
- *         - move the job from the submitted queue of the worker worker_id, into its
- *           acknowledged queue
- *         - in the case when the worker was not found, trigger an exception and send back
- *           an error message
- * Postcondition: is either into the Running state or inexistent
- */
-void GenericDaemon::handleSubmitJobAckEvent
-  (fhg::com::p2p::address_t const& source, const events::SubmitJobAckEvent* pEvent)
-{
-  // Only, now should be state of the job updated to RUNNING
-  // since it was not rejected, no error occurred etc ....
-  //find the job ptrJob and call
-  Job* const ptrJob = findJob(pEvent->job_id());
-  if(!ptrJob)
-  {
-    _log_emitter.emit ( "job " + pEvent->job_id()
-                      + " could not be acknowledged: the job "
-                      + pEvent->job_id() + " not found!"
-                      , fhg::logging::legacy::category_level_error
-                      );
+      std::lock_guard<std::mutex> const _ (mtx_subscriber_);
 
-    throw std::runtime_error
-      ("Could not acknowledge job: " + pEvent->job_id() + " not found");
-  }
+      Job const* const pJob (findJob (jobId));
+      if (!pJob)
+      {
+        throw std::runtime_error ( "Could not subscribe for the job" + jobId
+                                 + ". The job does not exist!"
+                                 );
+      }
 
-  if(ptrJob->getStatus() == sdpa:: status::CANCELING)
-    return;
+      sendEventToOther<events::SubscribeAckEvent> (source, jobId);
 
-  WorkerManager::worker_connections_t::right_map::iterator const worker
-    ( fhg::util::boost::get_or_throw<std::runtime_error>
-        ( _worker_manager.worker_by_address (source)
-        , "submit_job_ack for unknown worker"
-        )
-    );
+      // check if the subscribed jobs are already in a terminal state
+      const sdpa::status::code status (pJob->getStatus());
+      switch (status)
+      {
+      case sdpa::status::FINISHED:
+        {
+          sendEventToOther<events::JobFinishedEvent>
+            (source, pJob->id(), pJob->result());
+        }
+        return;
 
-  ptrJob->Dispatch();
-  _worker_manager.acknowledge_job_sent_to_worker
-    (pEvent->job_id(), worker->second);
-}
+      case sdpa::status::FAILED:
+        {
+          sendEventToOther<events::JobFailedEvent>
+            (source, pJob->id(), pJob->error_message());
+        }
+        return;
 
-// respond to a worker that the JobFinishedEvent was received
-void GenericDaemon::handleJobFinishedAckEvent
-  (fhg::com::p2p::address_t const&, const events::JobFinishedAckEvent* pEvt)
-{
-  // The result was successfully delivered by the worker and the WE was notified
-  // therefore, I can delete the job from the job map
-  if (!findJob(pEvt->job_id()))
-  {
-    throw std::runtime_error ("Couldn't find the job!");
-  }
+      case sdpa::status::CANCELED:
+        {
+          sendEventToOther<events::CancelJobAckEvent> (source, pJob->id());
+        }
+        return;
 
-  // delete it from the map when you receive a JobFinishedAckEvent!
-  deleteJob(pEvt->job_id());
-}
+      case sdpa::status::PENDING:
+      case sdpa::status::RUNNING:
+      case sdpa::status::CANCELING:
+        // store the subscriber and notify it later, when the job is terminated
+        _subscriptions.insert ({source, jobId});
+        return;
+      }
 
-// respond to a worker that the JobFailedEvent was received
-void GenericDaemon::handleJobFailedAckEvent
-  (fhg::com::p2p::address_t const&, const events::JobFailedAckEvent* pEvt )
-{
-  if (!findJob(pEvt->job_id()))
-  {
-    throw std::runtime_error ("Couldn't find the job!");
-  }
+      INVALID_ENUM_VALUE (sdpa::status::code, status);
+    }
 
-  // delete it from the map when you receive a JobFailedAckEvent!
-  deleteJob(pEvt->job_id());
-}
+    bool GenericDaemon::isSubscriber
+      (fhg::com::p2p::address_t const& agentId, job_id_t const& job)
+    {
+      std::lock_guard<std::mutex> const _ (mtx_subscriber_);
+      return _subscriptions.count
+        (decltype (_subscriptions)::value_type (agentId, job));
+    }
 
-    void GenericDaemon::discover (we::layer::id_type discover_id, we::layer::id_type job_id)
+    /**
+     * Event SubmitJobAckEvent
+     * Precondition: an acknowledgment event was received from a master
+     * Action: - if the job was found, put the job into the state Running
+     *         - move the job from the submitted queue of the worker worker_id, into its
+     *           acknowledged queue
+     *         - in the case when the worker was not found, trigger an exception and send back
+     *           an error message
+     * Postcondition: is either into the Running state or inexistent
+     */
+    void GenericDaemon::handleSubmitJobAckEvent
+      (fhg::com::p2p::address_t const& source, const events::SubmitJobAckEvent* pEvent)
+    {
+      // Only, now should be state of the job updated to RUNNING
+      // since it was not rejected, no error occurred etc ....
+      //find the job ptrJob and call
+      Job* const ptrJob = findJob(pEvent->job_id());
+      if(!ptrJob)
+      {
+        _log_emitter.emit ( "job " + pEvent->job_id()
+                          + " could not be acknowledged: the job "
+                          + pEvent->job_id() + " not found!"
+                          , fhg::logging::legacy::category_level_error
+                          );
+
+        throw std::runtime_error
+          ("Could not acknowledge job: " + pEvent->job_id() + " not found");
+      }
+
+      if(ptrJob->getStatus() == sdpa:: status::CANCELING)
+        return;
+
+      WorkerManager::worker_connections_t::right_map::iterator const worker
+        ( fhg::util::boost::get_or_throw<std::runtime_error>
+            ( _worker_manager.worker_by_address (source)
+            , "submit_job_ack for unknown worker"
+            )
+        );
+
+      ptrJob->Dispatch();
+      _worker_manager.acknowledge_job_sent_to_worker
+        (pEvent->job_id(), worker->second);
+    }
+
+    // respond to a worker that the JobFinishedEvent was received
+    void GenericDaemon::handleJobFinishedAckEvent
+      (fhg::com::p2p::address_t const&, const events::JobFinishedAckEvent* pEvt)
+    {
+      // The result was successfully delivered by the worker and the WE was notified
+      // therefore, I can delete the job from the job map
+      if (!findJob(pEvt->job_id()))
+      {
+        throw std::runtime_error ("Couldn't find the job!");
+      }
+
+      // delete it from the map when you receive a JobFinishedAckEvent!
+      deleteJob(pEvt->job_id());
+    }
+
+    // respond to a worker that the JobFailedEvent was received
+    void GenericDaemon::handleJobFailedAckEvent
+      ( fhg::com::p2p::address_t const&
+      , const events::JobFailedAckEvent* pEvt
+      )
+    {
+      if (!findJob(pEvt->job_id()))
+      {
+        throw std::runtime_error ("Couldn't find the job!");
+      }
+
+      // delete it from the map when you receive a JobFailedAckEvent!
+      deleteJob(pEvt->job_id());
+    }
+
+    void GenericDaemon::discover
+      ( we::layer::id_type discover_id
+      , we::layer::id_type job_id
+      )
     {
       delay ( std::bind ( &GenericDaemon::delayed_discover, this
                         , discover_id, job_id
                         )
             );
     }
+
     void GenericDaemon::delayed_discover
-      (we::layer::id_type discover_id, we::layer::id_type job_id)
+      ( we::layer::id_type discover_id
+      , we::layer::id_type job_id
+      )
     {
       Job const* const pJob (findJob (job_id));
 
@@ -1280,7 +1313,9 @@ void GenericDaemon::handleJobFailedAckEvent
     }
 
     void GenericDaemon::handleDiscoverJobStatesEvent
-      (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent *pEvt)
+      ( fhg::com::p2p::address_t const& source
+      , const sdpa::events::DiscoverJobStatesEvent *pEvt
+      )
     {
       auto const job_id (pEvt->job_id());
       Job const* const pJob (findJob (job_id));
@@ -1332,7 +1367,9 @@ void GenericDaemon::handleJobFailedAckEvent
     }
 
     void GenericDaemon::discovered
-      (we::layer::id_type discover_id, sdpa::discovery_info_t discover_result)
+      ( we::layer::id_type discover_id
+      , sdpa::discovery_info_t discover_result
+      )
     {
       const std::pair<job_id_t, job_id_t> source_id
         (discover_id, discover_result.job_id());
@@ -1344,7 +1381,9 @@ void GenericDaemon::handleJobFailedAckEvent
     }
 
     void GenericDaemon::handleDiscoverJobStatesReplyEvent
-      (fhg::com::p2p::address_t const&, const sdpa::events::DiscoverJobStatesReplyEvent* e)
+      ( fhg::com::p2p::address_t const&
+      , const sdpa::events::DiscoverJobStatesReplyEvent* e
+      )
     {
       const std::pair<job_id_t, job_id_t> source_id
         (e->discover_id(), e->discover_result().job_id());
@@ -1365,10 +1404,12 @@ void GenericDaemon::handleJobFailedAckEvent
     }
 
     void GenericDaemon::handleBacklogNoLongerFullEvent
-      (fhg::com::p2p::address_t const& source, const events::BacklogNoLongerFullEvent*)
+      ( fhg::com::p2p::address_t const& source
+      , const events::BacklogNoLongerFullEvent*
+      )
     {
       boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
-          (_worker_manager.worker_by_address (source));
+        (_worker_manager.worker_by_address (source));
 
       _worker_manager.set_worker_backlog_full (as_worker.get()->second, false);
       request_scheduling ();
@@ -1392,7 +1433,9 @@ void GenericDaemon::handleJobFailedAckEvent
     }
 
     void GenericDaemon::handle_put_token
-      (fhg::com::p2p::address_t const& source, const events::put_token* event)
+      ( fhg::com::p2p::address_t const& source
+      , const events::put_token* event
+      )
     try
     {
       auto const job_id (event->job_id());
@@ -1440,6 +1483,7 @@ void GenericDaemon::handleJobFailedAckEvent
       parent_proxy (this, source).put_token_response
         (event->put_token_id(), std::current_exception());
     }
+
     void GenericDaemon::handle_put_token_response
       ( fhg::com::p2p::address_t const&
       , events::put_token_response const* event
@@ -1448,6 +1492,7 @@ void GenericDaemon::handleJobFailedAckEvent
       parent_proxy (this, take (_put_token_source, event->put_token_id()))
         .put_token_response (event->put_token_id(), event->exception());
     }
+
     void GenericDaemon::token_put
       ( std::string put_token_id
       , boost::optional<std::exception_ptr> error
@@ -1458,7 +1503,9 @@ void GenericDaemon::handleJobFailedAckEvent
     }
 
     void GenericDaemon::handle_workflow_response
-      (fhg::com::p2p::address_t const& source, const events::workflow_response* event)
+      ( fhg::com::p2p::address_t const& source
+      , const events::workflow_response* event
+      )
     try
     {
       auto const job_id (event->job_id());
@@ -1509,6 +1556,7 @@ void GenericDaemon::handleJobFailedAckEvent
       parent_proxy (this, source).workflow_response_response
         (event->workflow_response_id(), std::current_exception());
     }
+
     void GenericDaemon::handle_workflow_response_response
       ( fhg::com::p2p::address_t const&
       , events::workflow_response_response const* event
@@ -1526,27 +1574,23 @@ void GenericDaemon::handleJobFailedAckEvent
         .workflow_response_response (workflow_response_id, result);
     }
 
-void GenericDaemon::handleQueryJobStatusEvent
-  (fhg::com::p2p::address_t const& source, const events::QueryJobStatusEvent* pEvt )
-{
-  sdpa::job_id_t const jobId = pEvt->job_id();
+    void GenericDaemon::handleQueryJobStatusEvent
+      ( fhg::com::p2p::address_t const& source
+      , const events::QueryJobStatusEvent* pEvt
+      )
+    {
+      sdpa::job_id_t const jobId = pEvt->job_id();
 
-  Job const* const pJob (findJob(jobId));
-  if (!pJob)
-  {
-    throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
-  }
+      Job const* const pJob (findJob(jobId));
+      if (!pJob)
+      {
+        throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
+      }
 
-  parent_proxy (this, source).query_job_status_reply
-    (pJob->id(), pJob->getStatus(), pJob->error_message());
-}
+      parent_proxy (this, source).query_job_status_reply
+        (pJob->id(), pJob->getStatus(), pJob->error_message());
+    }
 
-}}
-
-namespace sdpa
-{
-  namespace daemon
-  {
     void GenericDaemon::scheduling_thread()
     {
       for (;;)
@@ -1604,11 +1648,12 @@ namespace sdpa
         (_address, std::move (error));
     }
 
-    void GenericDaemon::child_proxy::submit_job ( boost::optional<job_id_t> id
-                                                , we::type::activity_t activity
-                                                , boost::optional<std::string> const& implementation
-                                                , std::set<worker_id_t> const& workers
-                                                ) const
+    void GenericDaemon::child_proxy::submit_job
+      ( boost::optional<job_id_t> id
+      , we::type::activity_t activity
+      , boost::optional<std::string> const& implementation
+      , std::set<worker_id_t> const& workers
+      ) const
     {
       _that->sendEventToOther<events::SubmitJobEvent>
         (_address, id, std::move (activity), implementation, workers);
@@ -1663,12 +1708,16 @@ namespace sdpa
       : _that (that)
       , _address (address)
     {}
+
     GenericDaemon::parent_proxy::parent_proxy
         (GenericDaemon* that, master_network_info const& master)
       : parent_proxy (that, master.address.get())
     {}
+
     GenericDaemon::parent_proxy::parent_proxy
-        (GenericDaemon* that, boost::optional<master_info_t::iterator> const& job_master)
+        ( GenericDaemon* that
+        , boost::optional<master_info_t::iterator> const& job_master
+        )
       : parent_proxy (that, *job_master.get())
     {}
 
