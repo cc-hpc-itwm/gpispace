@@ -1,5 +1,4 @@
-#include <sdpa/daemon/GenericDaemon.hpp>
-
+#include <sdpa/daemon/Agent.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>

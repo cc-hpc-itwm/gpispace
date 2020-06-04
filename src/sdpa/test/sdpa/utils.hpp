@@ -2,7 +2,7 @@
 
 #include <sdpa/client.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/Agent.hpp>
 
 #include <fhgcom/peer.hpp>
 

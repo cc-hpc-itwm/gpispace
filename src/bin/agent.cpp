@@ -13,7 +13,7 @@
 
 #include <boost/program_options.hpp>
 
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/Agent.hpp>
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>

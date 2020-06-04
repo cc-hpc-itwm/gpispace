@@ -1,5 +1,5 @@
 #include <sdpa/com/NetworkStrategy.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/Agent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
