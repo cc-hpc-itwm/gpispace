@@ -2,7 +2,7 @@
 
 #include <sdpa/client.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/Agent.hpp>
 
 #include <fhgcom/peer.hpp>
 
@@ -62,7 +62,7 @@ namespace utils
   struct log_to_stdout
   {
     fhg::logging::stdout_sink& sink();
-    log_to_stdout (sdpa::daemon::GenericDaemon& component);
+    log_to_stdout (sdpa::daemon::Agent& component);
   };
 
   class basic_drts_component;
@@ -86,7 +86,7 @@ namespace utils
     agent& operator= (agent&) = delete;
     ~agent() = default;
 
-    sdpa::daemon::GenericDaemon _;
+    sdpa::daemon::Agent _;
     log_to_stdout _log_to_stdout = {_};
 
     std::string name() const;
