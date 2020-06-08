@@ -57,6 +57,14 @@ namespace fhg
                 (vm.at (option::block_size).as<option::block_size_validator>()) \
             : boost::none                                               \
             )
+
+          void do_pbsdsh
+            (std::string const& hostname, boost::format const& command)
+          {
+            //! \todo use torque's tm_spawn API directly to avoid system()
+            util::system_with_blocked_SIGCHLD
+              (str (boost::format ("pbsdsh -h %1% %2%") % hostname % command));
+          }
         }
 
         std::unordered_map<std::string, std::exception_ptr>
@@ -77,19 +85,19 @@ namespace fhg
             , [] (std::string const& hostname) { return hostname; }
             , [&] (std::string const& hostname)
               {
-                //! \todo use torque's tm_spawn API directly to avoid system()
-                util::system_with_blocked_SIGCHLD
-                  (( boost::format
-                     ( "pbsdsh -h %5% %1% %2% --register-host %3% --register-port %4%"
-                     " --register-key %5%"
-                     )
-                   % binary
-                   % (port ? "--port " + std::to_string (*port) : "")
-                   % register_host
-                   % register_port
-                   % hostname
-                   ).str()
-                  );
+                do_pbsdsh ( hostname
+                          , boost::format
+                              ( "%1%"
+                                "%2%"
+                                " --register-host %3% --register-port %4%"
+                                " --register-key %5%"
+                              )
+                          % binary
+                          % (port ? " --port " + std::to_string (*port) : "")
+                          % register_host
+                          % register_port
+                          % hostname
+                          );
               }
             ).second;
         }
@@ -112,13 +120,10 @@ namespace fhg
               }
             , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
               {
-                //! \todo use torque's tm_spawn API directly to avoid system()
-                util::system_with_blocked_SIGCHLD
-                  (( boost::format ("pbsdsh -h %1% /bin/kill -TERM %2%")
-                   % entry_point.second.hostname
-                   % entry_point.second.pid
-                   ).str()
-                  );
+                do_pbsdsh ( entry_point.second.hostname
+                          , boost::format ("/bin/kill -TERM %1%")
+                          % entry_point.second.pid
+                          );
               }
             );
         }
