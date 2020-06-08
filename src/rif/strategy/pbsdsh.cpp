@@ -112,8 +112,10 @@ namespace fhg
               }
             , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
               {
+                //! \todo use torque's tm_spawn API directly to avoid system()
                 util::system_with_blocked_SIGCHLD
-                  (( boost::format ("/bin/kill -TERM %1%")
+                  (( boost::format ("pbsdsh -h %1% /bin/kill -TERM %2%")
+                   % entry_point.second.hostname
                    % entry_point.second.pid
                    ).str()
                   );
