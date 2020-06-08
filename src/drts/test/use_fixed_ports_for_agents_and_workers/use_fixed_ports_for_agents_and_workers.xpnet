@@ -1,4 +1,4 @@
-<defun name="use_fixed_ports_for_orchestrator_agents_and_workers">
+<defun name="use_fixed_ports_for_agents_and_workers">
   <in name="start" type="bool" place="start"/>
   <in name="port" type="unsigned int" place="port"/>
   <out name="port_is_used" type="bool" place="port_is_used"/>

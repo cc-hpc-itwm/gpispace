@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 add_subdirectory (atomic/test)
 add_subdirectory (avg_stddev/test)
 add_subdirectory (credit/test)

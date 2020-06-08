@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME drts_parallel_running_workflows
   SOURCES test.cpp
   USE_BOOST

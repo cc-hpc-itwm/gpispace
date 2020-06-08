@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/expr/token/tokenizer.hpp>
 
 #include <we/expr/token/prop.hpp>

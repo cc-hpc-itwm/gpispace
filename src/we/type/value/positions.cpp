@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/value/positions.hpp>
 #include <we/type/value/path/append.hpp>
 

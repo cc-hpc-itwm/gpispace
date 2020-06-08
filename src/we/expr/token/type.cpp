@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/expr/token/type.hpp>
 
 #include <boost/format.hpp>

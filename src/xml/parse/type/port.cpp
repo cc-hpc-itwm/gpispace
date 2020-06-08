@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <xml/parse/type/port.hpp>
 
 #include <xml/parse/state.hpp>

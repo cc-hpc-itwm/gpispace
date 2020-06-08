@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/signature/is_literal.hpp>
 #include <we/type/value/name.hpp>
 

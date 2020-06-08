@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/type/require.hpp>
 
 #include <fhg/util/xml.hpp>

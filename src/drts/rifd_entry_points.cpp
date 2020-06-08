@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <drts/rifd_entry_points.hpp>
 
 #include <drts/private/pimpl.hpp>

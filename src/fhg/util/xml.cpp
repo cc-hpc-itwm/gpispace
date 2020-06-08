@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <fhg/util/xml.hpp>
 
 #include <stdexcept>

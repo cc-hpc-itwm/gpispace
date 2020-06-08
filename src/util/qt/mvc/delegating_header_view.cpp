@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/delegating_header_view.hpp>
 
 #include <util-qt/widget/mini_button.hpp>

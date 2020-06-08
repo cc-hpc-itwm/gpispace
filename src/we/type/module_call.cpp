@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/module_call.fwd.hpp>
 #include <we/type/module_call.hpp>
 

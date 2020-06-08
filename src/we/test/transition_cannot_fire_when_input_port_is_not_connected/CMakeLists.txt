@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME we_transition_cannot_fire_when_input_port_is_not_connected
   SOURCES test.cpp
   USE_BOOST

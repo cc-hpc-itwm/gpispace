@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/no_undoredo_lineedit.hpp>
 
 #include <QAction>

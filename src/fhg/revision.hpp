@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de
-
 #pragma once
 
 #include <string>

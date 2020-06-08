@@ -13,7 +13,7 @@
 
 #include <boost/program_options.hpp>
 
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/Agent.hpp>
 #include <we/layer.hpp>
 #include <boost/filesystem/path.hpp>
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
@@ -98,7 +98,7 @@ int main (int argc, char **argv)
       masters.emplace_front (parts[0], parts[1]);
     }
 
-    sdpa::daemon::GenericDaemon agent
+    sdpa::daemon::Agent agent
       ( agentName
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()

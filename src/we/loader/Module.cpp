@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/loader/Module.hpp>
 
 #include <we/loader/exceptions.hpp>

@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME share_example_use_sequence
   SOURCES test.cpp
   USE_BOOST

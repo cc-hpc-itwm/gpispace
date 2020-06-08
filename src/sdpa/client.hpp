@@ -31,8 +31,8 @@ namespace sdpa
     class Client : boost::noncopyable
     {
     public:
-      Client ( fhg::com::host_t const& orchestrator_host
-             , fhg::com::port_t const& orchestrator_port
+      Client ( fhg::com::host_t const& top_level_agent_host
+             , fhg::com::port_t const& top_level_agent_port
              , std::unique_ptr<boost::asio::io_service> peer_io_service
              , fhg::com::Certificates const& certificates
              );
@@ -43,7 +43,6 @@ namespace sdpa
       status::code queryJob(const job_id_t &);
       status::code queryJob(const job_id_t &, job_info_t &);
       void deleteJob(const job_id_t &);
-      we::type::activity_t retrieveResults(const job_id_t &);
       sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
       void put_token
         (job_id_t, std::string place_name, pnet::type::value::value_type);
@@ -51,6 +50,8 @@ namespace sdpa
         (job_id_t, std::string place_name, pnet::type::value::value_type);
 
       sdpa::status::code wait_for_terminal_state (job_id_t, job_info_t&);
+
+      we::type::activity_t result (sdpa::job_id_t const&) const;
 
     private:
       std::mutex _make_client_thread_safe;
@@ -68,6 +69,7 @@ namespace sdpa
       bool _stopping;
       fhg::com::peer_t m_peer;
       fhg::com::p2p::address_t _drts_entrypoint_address;
+      std::unordered_map<sdpa::job_id_t, we::type::activity_t> _job_results;
     };
   }
 }

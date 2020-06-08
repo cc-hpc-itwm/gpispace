@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME tutorial_credit
   SOURCES test.cpp
   USE_BOOST

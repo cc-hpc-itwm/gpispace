@@ -1,5 +1,3 @@
-// {petry, rahn}@itwm.fhg.de
-
 #pragma once
 
 #include <we/expr/eval/context.hpp>

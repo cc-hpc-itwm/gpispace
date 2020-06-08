@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME we_layer
   SOURCES layer.cpp
   USE_BOOST

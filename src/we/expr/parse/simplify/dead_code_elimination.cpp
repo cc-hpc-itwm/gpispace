@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <we/expr/parse/simplify/dead_code_elimination.hpp>
 
 #include <we/expr/parse/simplify/util.hpp>

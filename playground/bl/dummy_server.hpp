@@ -1,14 +1,12 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <fhg/util/parse/position.hpp>
 
-#include <QTcpSocket>
-#include <QTcpServer>
-#include <QThread>
 #include <QMutex>
 #include <QStringList>
+#include <QTcpServer>
+#include <QTcpSocket>
+#include <QThread>
 
 class server : public QTcpServer
 {

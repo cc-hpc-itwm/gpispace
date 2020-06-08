@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/signature/dump.hpp>
 #include <we/type/signature/traverse.hpp>
 

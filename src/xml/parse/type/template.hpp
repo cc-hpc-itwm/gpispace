@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #pragma once
 
 #include <xml/parse/type/function.hpp>

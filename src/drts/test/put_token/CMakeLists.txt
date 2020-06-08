@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME drts_token_put
   SOURCES test.cpp
   USE_BOOST

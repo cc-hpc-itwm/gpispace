@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <drts/certificates.hpp>
 
 #include <rif/entry_point.hpp>
@@ -216,50 +214,6 @@ try
     , fhg::rpc::not_yielding
     );
 
-  fhg::rpc::service_handler<fhg::rif::protocol::start_orchestrator>
-    start_orchestrator_service
-      ( service_dispatcher
-      , [] ( boost::filesystem::path const& exe
-           , gspc::Certificates const& certificates
-           , boost::optional<unsigned short> port
-           )
-        {
-          std::vector<std::string> args
-            { "-u", "*:" + std::to_string (port.get_value_or (0))
-            , "-n", "orchestrator"
-            };
-          if (certificates)
-          {
-            args.push_back ("--ssl-certificates");
-            args.push_back (certificates->string());
-          }
-
-          auto const pid_and_startup_messages
-            ( fhg::rif::execute_and_get_startup_messages
-                ( exe
-                , args
-                , std::unordered_map<std::string, std::string>()
-                )
-            );
-          auto const& messages (pid_and_startup_messages.second);
-
-          if (messages.size() != 3)
-          {
-            throw std::logic_error ( "could not start orchestrator"
-                                     ": expected 3 lines of startup messages"
-                                   );
-          }
-
-          fhg::rif::protocol::start_scheduler_result result;
-          result.pid = pid_and_startup_messages.first;
-          result.hostinfo
-            = {messages[0], boost::lexical_cast<unsigned short> (messages[1])};
-          result.logger_registration_endpoint = messages[2];
-          return result;
-        }
-      , fhg::rpc::not_yielding
-      );
-
   fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
     start_vmem_service
       ( service_dispatcher
@@ -346,7 +300,7 @@ try
     start_agent_service
       ( service_dispatcher
       , [] ( std::string const& name
-           , fhg::rif::protocol::hostinfo_t const& parent
+           , boost::optional<fhg::rif::protocol::hostinfo_t> const& parent
            , boost::optional<unsigned short> const& agent_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
@@ -356,8 +310,13 @@ try
           std::vector<std::string> arguments
             { "-u", "*:" + std::to_string (agent_port.get_value_or (0))
             , "-n", name
-            , "--masters", parent.first + "%" + std::to_string (parent.second)
             };
+          if (parent)
+          {
+            arguments.emplace_back ("--masters");
+            arguments.emplace_back
+              (parent->first + "%" + std::to_string (parent->second));
+          }
           if (gpi_socket)
           {
             arguments.emplace_back ("--vmem-socket");

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <boost/filesystem/path.hpp>
 
 #include <string>

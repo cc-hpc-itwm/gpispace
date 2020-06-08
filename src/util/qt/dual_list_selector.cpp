@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/dual_list_selector.hpp>
 
 #include <fhg/assert.hpp>
@@ -15,6 +13,7 @@
 
 #include <boost/optional.hpp>
 
+#include <algorithm>
 #include <functional>
 
 Q_DECLARE_METATYPE (QModelIndex)
@@ -179,7 +178,7 @@ namespace fhg
             (from_view->selectionModel()->selectedIndexes());
           // "The list contains no duplicates, and is not sorted.", while we
           // would prefer to have things sorted to not fuck up deleting
-          qSort (selection);
+          std::sort (selection.begin(), selection.end());
           move_selected_entries_list (from_view, to, selection);
         }
 

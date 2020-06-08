@@ -1,5 +1,3 @@
-// {mirko.rahn}@itwm.fraunhofer.de
-
 #include <we/type/transition.hpp>
 
 #include <we/exception.hpp>

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fhg.de
-
 #include <we/type/expression.hpp>
 
 #include <boost/algorithm/string.hpp>

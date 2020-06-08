@@ -1,5 +1,3 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
 extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
@@ -60,7 +58,6 @@ extended_add_library (NAME pnet
           "we/type/signature/resolve.cpp"
           "we/type/signature/show.cpp"
           "we/type/signature/specialize.cpp"
-          "we/type/stencil_cache.cpp"
           "we/type/transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
@@ -153,8 +150,6 @@ add_subdirectory (sdpa)
 add_subdirectory (fhg)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
-
-add_subdirectory (gspc)
 
 extended_add_library (NAME logging
   NAMESPACE gspc

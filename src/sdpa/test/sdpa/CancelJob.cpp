@@ -74,7 +74,7 @@ namespace
       return std::all_of
         ( _sources_and_owners.begin()
         , _sources_and_owners.end()
-        , [this]
+        , []
           ( std::pair<fhg::com::p2p::address_t, fhg::com::p2p::address_t>
               const& source_and_owner
           )

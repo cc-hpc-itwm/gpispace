@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <util/qt/mvc/header_delegate.fwd.hpp>

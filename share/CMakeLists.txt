@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 add_subdirectory (example)
 add_subdirectory (gspc)
 add_subdirectory (lib)

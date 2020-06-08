@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/require_type.hpp>
 #include <we/exception.hpp>
 

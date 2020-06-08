@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 //! \note Qt provides an API for mapping indices, thus changing

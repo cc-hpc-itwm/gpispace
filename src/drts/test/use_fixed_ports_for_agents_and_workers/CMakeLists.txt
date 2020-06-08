@@ -1,4 +1,4 @@
-fhg_add_test (NAME use_fixed_ports_for_orchestrator_agents_and_workers
+fhg_add_test (NAME use_fixed_ports_for_agents_and_workers
   SOURCES test.cpp
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
