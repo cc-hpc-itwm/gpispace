@@ -19,10 +19,9 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   sdpa::job_id_t const job_id
     (client.submit_job (utils::net_with_one_child_requiring_workers (2)));

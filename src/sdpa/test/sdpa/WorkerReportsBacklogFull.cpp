@@ -65,10 +65,9 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   client.submit_job (utils::net_with_one_child_requiring_workers (3));
 
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -116,10 +115,9 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   client.submit_job (utils::net_with_one_child_requiring_workers (3));
 
   fhg::util::thread::event<std::string> job_submitted_1;
@@ -158,10 +156,9 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
+  const utils::agent agent (certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
   client.submit_job (utils::net_with_one_child_requiring_workers (2));
 
   fhg::util::thread::event<std::string> job_submitted_1;

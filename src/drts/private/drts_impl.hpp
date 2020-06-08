@@ -50,8 +50,7 @@ namespace gspc
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<unsigned short> const& orchestrator_port
-                             , boost::optional<unsigned short> const& agent_port
+      started_runtime_system ( boost::optional<unsigned short> const& agent_port
                              , bool gpi_enabled
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
@@ -104,8 +103,8 @@ namespace gspc
       std::string _master_agent_name;
       fhg::drts::hostinfo_type _master_agent_hostinfo;
 
-      std::string _orchestrator_host;
-      unsigned short _orchestrator_port;
+      std::string _top_level_agent_host;
+      unsigned short _top_level_agent_port;
     } _started_runtime_system;
     fhg::logging::stream_emitter _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;

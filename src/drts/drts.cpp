@@ -154,8 +154,7 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<unsigned short> const& orchestrator_port
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
@@ -184,8 +183,7 @@ namespace gspc
 
     auto const startup_result
       ( fhg::drts::startup
-          ( orchestrator_port
-          , agent_port
+          ( agent_port
           , gpi_enabled
           , _gpi_socket
           , _installation_path
@@ -204,8 +202,8 @@ namespace gspc
           , certificates
           )
       );
-    _orchestrator_host = startup_result.orchestrator.first;
-    _orchestrator_port = startup_result.orchestrator.second;
+    _top_level_agent_host = startup_result.top_level_agent.first;
+    _top_level_agent_port = startup_result.top_level_agent.second;
     _logging_rif_info = startup_result.top_level_logging_demultiplexer;
 
     if (!rif_entry_points.empty())
@@ -348,8 +346,7 @@ namespace gspc
         : boost::none
         )
       , _started_runtime_system
-          ( get_orchestrator_port (vm)
-          , get_agent_port (vm)
+          ( get_agent_port (vm)
           , !!_virtual_memory_socket
           , _virtual_memory_socket
           , get_application_search_path (vm)

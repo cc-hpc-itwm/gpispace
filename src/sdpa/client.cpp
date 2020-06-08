@@ -10,10 +10,8 @@
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
-#include <sdpa/events/JobResultsReplyEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/QueryJobStatusEvent.hpp>
-#include <sdpa/events/RetrieveJobResultsEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
@@ -35,8 +33,8 @@ namespace sdpa
 {
   namespace client
   {
-    Client::Client ( fhg::com::host_t const& orchestrator_host
-                   , fhg::com::port_t const& orchestrator_port
+    Client::Client ( fhg::com::host_t const& top_level_agent_host
+                   , fhg::com::port_t const& top_level_agent_port
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , fhg::com::Certificates const& certificates
                    )
@@ -47,7 +45,7 @@ namespace sdpa
                , certificates
                )
       , _drts_entrypoint_address
-          (m_peer.connect_to (orchestrator_host, orchestrator_port))
+          (m_peer.connect_to (top_level_agent_host, top_level_agent_port))
     {
       m_peer.async_recv ( std::bind ( &Client::handle_recv
                                     , this
@@ -163,6 +161,8 @@ namespace sdpa
         {
           throw std::runtime_error ("got status change for different job");
         }
+
+        _job_results.emplace (id, job_finished->result());
         return sdpa::status::FINISHED;
       }
       else if ( sdpa::events::JobFailedEvent* const job_failed
@@ -188,19 +188,6 @@ namespace sdpa
       }
 
       handle_error_and_unexpected_event (reply);
-    }
-
-    sdpa::status::code Client::wait_for_terminal_state_polling
-      (job_id_t id, job_info_t& job_info)
-    {
-      sdpa::status::code state (queryJob (id, job_info));
-      while (!sdpa::status::is_terminal (state))
-      {
-        std::this_thread::sleep_for (std::chrono::milliseconds (100));
-
-        state = queryJob (id, job_info);
-      }
-      return state;
     }
 
     sdpa::job_id_t Client::submitJob (we::type::activity_t activity)
@@ -292,12 +279,18 @@ namespace sdpa
     {
       send_and_wait_for_reply<sdpa::events::DeleteJobAckEvent>
         (sdpa::events::DeleteJobEvent (jid));
+
+      _job_results.erase (jid);
     }
 
-    we::type::activity_t Client::retrieveResults(const job_id_t &jid)
+    we::type::activity_t Client::result (sdpa::job_id_t const& job) const
     {
-      return send_and_wait_for_reply<sdpa::events::JobResultsReplyEvent>
-        (sdpa::events::RetrieveJobResultsEvent (jid)).result();
+      if (!_job_results.count (job))
+      {
+        throw std::runtime_error ("couldn't find any resulted stored for the job " + job);
+      }
+
+      return _job_results.at (job);
     }
   }
 }

@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload)
   FHG_UTIL_TESTING_REQUIRE_EXCEPTION_MATCHING_REGEX
     ( std::runtime_error
     , "Job " + job_id + ": failed: error-message := "
-      "agent-.*-0: worker-.*-1: call to \'m::f\' failed: "
+      "worker-.*-1: call to \'m::f\' failed: "
     + we::loader::module_load_failed
         ( library
         , we::loader::module_does_not_unload (library, {library}).what()
@@ -165,7 +165,7 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
   FHG_UTIL_TESTING_REQUIRE_EXCEPTION_MATCHING_REGEX
     ( std::runtime_error
     , "Job " + job_id + ": failed: error-message := "
-      "agent-.*-0: worker-.*-1: call to \'m::f\' failed: "
+      "worker-.*-1: call to \'m::f\' failed: "
     + we::loader::function_does_not_unload ("m", "f", {to_load}).what()
     , std::regex::basic
     , client.wait_and_extract (job_id)
