@@ -1,3 +1,24 @@
+zypper in cmake
+zypper in gcc5 gcc5-c++
+zypper in boost_1_61-devel
+zypper in hwloc hwloc-devel
+zypper in libnuma-devel
+zypper in libQt5Core-devel libQt5Gui-devel libQt5Xml-devel libQt5Network-devel libQt5Widgets-devel
+zypper in asciidoc
+zypper in chrpath
+zypper in source-highlight
+zypper in glibc-devel-static
+zypper in libssh2-devel
+
+git clone https://github.com/cc-hpc-itwm/GPI-2.git
+cd GPI-2
+git checkout tags/v1.3.1
+git submodule update --init --recursive
+grep "^CC\s*=\s*gcc$" . -lR | xargs sed -i'' -e "s/^CC\s*=\s*gcc$/# DISABLED BY WORKBENCH: \\0/"
+./install.sh -p "/home/projects/sdpa/external_software/gaspi/1.3.1+eth" --with-fortran=false --with-ethernet
+cd ..
+rm -rf GPI-2
+
 _scriptdir=$(readlink -f ${BASH_SOURCE}); source "${_scriptdir%/*}"/common
 
 external=/home/projects/sdpa/external_software

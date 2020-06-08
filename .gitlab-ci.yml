@@ -23,6 +23,8 @@ build (centos 6.5):
 
 build (sles 12sp4):
   stage: build
+  before_script:
+    - zypper in git-core
   script:
     - source "${ci_scripts_dir}/jobs/build"
   tags:
