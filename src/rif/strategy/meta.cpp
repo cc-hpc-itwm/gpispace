@@ -6,6 +6,7 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
 #include <rif/strategy/pbsdsh.hpp>
+#include <rif/strategy/srun.hpp>
 #include <rif/strategy/ssh.hpp>
 
 #include <rpc/service_tcp_provider.hpp>
@@ -57,6 +58,7 @@ namespace fhg
 
         std::unordered_map <std::string, Strategy> const strategies
           { {"pbsdsh", {pbsdsh::bootstrap, pbsdsh::teardown}}
+          , {"srun", {srun::bootstrap, srun::teardown}}
           , {"ssh", {ssh::bootstrap, ssh::teardown}}
           };
 

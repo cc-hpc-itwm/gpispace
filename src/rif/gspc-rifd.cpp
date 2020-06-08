@@ -10,6 +10,7 @@
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
+#include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
@@ -48,6 +49,7 @@ namespace
   {
     constexpr const char* const port {"port"};
     constexpr const char* const dont_fork {"dont-fork"};
+    constexpr const char* const override_pid {"override-pid"};
     constexpr const char* const register_host {"register-host"};
     constexpr const char* const register_port {"register-port"};
     constexpr const char* const register_key {"register-key"};
@@ -123,6 +125,10 @@ try
     , boost::program_options::value<bool>()->zero_tokens()
     , "do not fork but execute synchronously"
     )
+    ( option::override_pid
+    , boost::program_options::value<pid_t>()
+    , "the pid to report to the register server"
+    )
     ;
 
   boost::program_options::variables_map vm;
@@ -163,6 +169,12 @@ try
     );
 
   bool const dont_fork (vm.count (option::dont_fork));
+
+  auto const override_pid ( FHG_UTIL_MAKE_OPTIONAL
+                             ( vm.count (option::override_pid)
+                             , vm.at (option::override_pid).as<pid_t>()
+                             )
+                          );
 
   fhg::rpc::service_dispatcher service_dispatcher;
 
@@ -514,12 +526,12 @@ try
 
   if (dont_fork)
   {
-    notify_pid (fhg::util::syscall::getpid());
+    notify_pid (override_pid.value_or (fhg::util::syscall::getpid()));
     run_server();
   }
   else if (pid_t child = fhg::util::syscall::fork())
   {
-    notify_pid (child);
+    notify_pid (override_pid.value_or (child));
   }
   else
   {
