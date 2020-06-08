@@ -21,6 +21,13 @@ build (centos 6.5):
   tags:
     - centos-6.5
 
+build (sles 12sp4):
+  stage: build
+  script:
+    - source "${ci_scripts_dir}/jobs/build"
+  tags:
+    - sles12sp4
+
 tests (centos 5.7):
   stage: test
   script:
@@ -37,6 +44,14 @@ tests (centos 6.5):
   tags:
     - centos-6.5
 
+tests (sles 12sp4):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/test"
+  tags:
+    - sles12sp4
+
 #! \todo add virtual memory tests on centos 5.7: needs infiniband or
 #        gpi2+eth (requires higher kernel version)
 
@@ -47,6 +62,14 @@ virtual memory tests (centos 6.5):
     - source "${ci_scripts_dir}/jobs/virtual_memory_test"
   tags:
     - centos-6.5
+
+virtual memory tests (sles 12sp4):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/virtual_memory_test"
+  tags:
+    - sles12sp4
 
 performance tests (centos 5.7):
   stage: test
@@ -65,3 +88,12 @@ performance tests (centos 6.5):
   allow_failure: true
   tags:
     - centos-6.5
+
+performance tests (sles 12sp4):
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/performance_test"
+  allow_failure: true
+  tags:
+    - sles12sp4
