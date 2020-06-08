@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/util/position.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

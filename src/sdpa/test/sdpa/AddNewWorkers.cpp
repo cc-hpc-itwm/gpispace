@@ -112,9 +112,8 @@ we::type::activity_t net_with_n_children (unsigned int n)
 // workflow engine
 BOOST_DATA_TEST_CASE (add_new_workers, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
-  utils::client client (orchestrator, certificates);
+  const utils::agent agent (certificates);
+  utils::client client (agent, certificates);
 
   const unsigned int n_initial_workers (25);
   const unsigned int n_new_workers (25);

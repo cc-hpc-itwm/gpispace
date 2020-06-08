@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <pnete/ui/gspc_monitor_client.hpp>
 
 #include <fhg/util/num.hpp>

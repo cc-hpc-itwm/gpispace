@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 set (SPLIT_JOIN_SPLIT_VERSIONS
   join_after_split
   parallel_split_join

@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 fhg_add_test (NAME drts_add_worker
   SOURCES test_add_worker.cpp
   USE_BOOST

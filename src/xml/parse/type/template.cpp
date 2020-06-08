@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <xml/parse/type/template.hpp>
 
 #include <xml/parse/type/net.hpp>

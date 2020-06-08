@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <we/type/transition.hpp>
 #include <we/type/net.hpp>
 #include <we/type/activity.hpp>

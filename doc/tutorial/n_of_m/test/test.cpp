@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>

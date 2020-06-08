@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <drts/certificates.hpp>
@@ -40,7 +38,6 @@ namespace fhg
     enum class component_type
     {
       vmem,
-      orchestrator,
       agent,
       worker,
       logging_demultiplexer,
@@ -91,14 +88,13 @@ namespace fhg
 
     struct startup_result
     {
-      hostinfo_type orchestrator;
+      hostinfo_type top_level_agent;
       boost::optional<rif::protocol::start_logging_demultiplexer_result>
         top_level_logging_demultiplexer;
     };
 
     startup_result startup
-      ( boost::optional<unsigned short> const& orchestrator_port
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const&

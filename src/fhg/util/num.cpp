@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/from_string.hpp>

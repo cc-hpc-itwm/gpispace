@@ -34,10 +34,6 @@ namespace gspc
     {
       return *this / "libexec" / "gspc";
     }
-    boost::filesystem::path orchestrator() const
-    {
-      return libexec() / "orchestrator";
-    }
     boost::filesystem::path agent() const
     {
       return libexec() / "agent";

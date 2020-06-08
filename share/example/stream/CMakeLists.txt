@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 math (EXPR size_slot "2 << 10")
 math (EXPR num_slots "20")
 

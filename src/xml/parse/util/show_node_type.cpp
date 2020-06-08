@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/util/show_node_type.hpp>
 
 #include <rapidxml.hpp>

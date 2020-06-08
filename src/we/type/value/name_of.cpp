@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/value/name_of.hpp>
 #include <we/type/value/name.hpp>
 

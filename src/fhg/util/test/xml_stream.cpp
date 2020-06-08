@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <boost/test/unit_test.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

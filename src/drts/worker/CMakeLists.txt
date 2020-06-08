@@ -1,5 +1,3 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
 fhg_add_runtime_executable (NAME drts-kernel
   SOURCES "drts-kernel.cpp"
           "drts.cpp"

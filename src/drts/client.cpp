@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 
@@ -56,11 +54,11 @@ namespace gspc
   struct client::implementation
   {
     implementation
-      ( gspc::host_and_port_type const& orchestrator_endpoint
+      ( gspc::host_and_port_type const& top_level_agent_endpoint
       , Certificates const& certificates
       )
-      : _client ( fhg::com::host_t (orchestrator_endpoint.host)
-                , fhg::com::port_t (std::to_string (orchestrator_endpoint.port))
+      : _client ( fhg::com::host_t (top_level_agent_endpoint.host)
+                , fhg::com::port_t (std::to_string (top_level_agent_endpoint.port))
                 , fhg::util::cxx14::make_unique<boost::asio::io_service>()
                 , certificates
                 )
@@ -129,8 +127,7 @@ namespace gspc
     {
       wait_for_terminal_state (job_id, client);
 
-      ::we::type::activity_t const result_activity
-        (client.retrieveResults (job_id));
+      auto const result_activity (client.result (job_id));
 
       client.deleteJob (job_id);
 
@@ -151,6 +148,12 @@ namespace gspc
     client::extract_result_and_forget_job (job_id_t job_id)
   {
     return wait_and_delete_job (job_id, _->_client).result();
+  }
+
+  std::multimap<std::string, pnet::type::value::value_type>
+    client::wait_and_extract (job_id_t job_id)
+  {
+    return extract_result_and_forget_job (job_id);
   }
 
   pnet::type::value::value_type client::synchronous_workflow_response

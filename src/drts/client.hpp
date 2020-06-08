@@ -51,12 +51,7 @@ namespace gspc
     std::multimap<std::string, pnet::type::value::value_type>
       extract_result_and_forget_job (job_id_t);
     std::multimap<std::string, pnet::type::value::value_type>
-      wait_and_extract (job_id_t job_id)
-    {
-      wait (job_id);
-
-      return extract_result_and_forget_job (job_id);
-    }
+      wait_and_extract (job_id_t job_id);
 
     std::multimap<std::string, pnet::type::value::value_type>
       put_and_run

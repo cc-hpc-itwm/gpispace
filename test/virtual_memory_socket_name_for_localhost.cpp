@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <test/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <drts/private/option.hpp>

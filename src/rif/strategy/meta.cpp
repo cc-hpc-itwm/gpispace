@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <rif/strategy/meta.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>

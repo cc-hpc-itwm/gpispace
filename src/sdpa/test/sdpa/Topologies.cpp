@@ -10,13 +10,11 @@
 #include <boost/test/unit_test.hpp>
 
 BOOST_DATA_TEST_CASE
-  (orchestrator_agent_worker, certificates_data, certificates)
+  (agent_worker, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
+  const utils::agent agent (certificates);
 
-  const utils::agent agent (orchestrator, certificates);
-
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent, certificates);
 
   fhg::util::thread::event<std::string> job_submitted;
   utils::fake_drts_worker_waiting_for_finished_ack worker
@@ -30,19 +28,15 @@ BOOST_DATA_TEST_CASE
   worker.finish_and_wait_for_ack (job_submitted.wait());
 
   BOOST_REQUIRE_EQUAL
-     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+    (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
 }
 
 BOOST_DATA_TEST_CASE (chained_agents, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-
-  //! \note "variable agents #" was hardcoded to 1 when this test got
-  //! rewritten. Probably should be more, so got bumped to 2.
-  const utils::agent agent_0 (orchestrator, certificates);
+  const utils::agent agent_0 (certificates);
   const utils::agent agent_1 (agent_0, certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent_0, certificates);
 
   fhg::util::thread::event<std::string> job_submitted;
   utils::fake_drts_worker_waiting_for_finished_ack worker
@@ -62,13 +56,11 @@ BOOST_DATA_TEST_CASE (chained_agents, certificates_data, certificates)
 BOOST_DATA_TEST_CASE
   (two_workers_with_seperate_master_agent, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-
-  const utils::agent agent_0 (orchestrator, certificates);
+  const utils::agent agent_0 (certificates);
   const utils::agent agent_1 (agent_0, certificates);
   const utils::agent agent_2 (agent_0, certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (agent_0, certificates);
 
   fhg::util::thread::event<std::string> job_submitted_0;
   utils::fake_drts_worker_waiting_for_finished_ack worker_0
@@ -100,13 +92,12 @@ BOOST_DATA_TEST_CASE
 BOOST_DATA_TEST_CASE
   (agent_with_multiple_master_agents, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-
-  const utils::agent agent_0 (orchestrator, certificates);
-  const utils::agent agent_1 (orchestrator, certificates);
+  const utils::agent top_agent (certificates);
+  const utils::agent agent_0 (top_agent, certificates);
+  const utils::agent agent_1 (top_agent, certificates);
   const utils::agent agent_2 (agent_0, agent_1, certificates);
 
-  utils::client client (orchestrator, certificates);
+  utils::client client (top_agent, certificates);
 
   fhg::util::thread::event<std::string> job_submitted;
   utils::fake_drts_worker_waiting_for_finished_ack worker

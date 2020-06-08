@@ -1,5 +1,3 @@
-#bernd.loerwald@itwm.fraunhofer.de
-
 set (XML_PARSE_TEST_XPNETS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/xpnets")
 
 configure_file (parser_fixture.hpp.in parser_fixture.hpp @ONLY)

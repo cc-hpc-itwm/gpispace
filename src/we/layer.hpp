@@ -1,5 +1,3 @@
-// {mirko.rahn,bernd.loerwald}@itwm.fraunhofer.de
-
 #pragma once
 
 #include <util-generic/finally.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util-generic/print_exception.hpp>
 
 #include <iostream>

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <fhg/util/num/show.hpp>
 
 #include <iostream>

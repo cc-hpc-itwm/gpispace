@@ -1,5 +1,3 @@
-// {bernd.loerwald,mirko.rahn}@itwm.fraunhofer.de
-
 #include <we/type/port.hpp>
 
 #include <fhg/util/macros.hpp>

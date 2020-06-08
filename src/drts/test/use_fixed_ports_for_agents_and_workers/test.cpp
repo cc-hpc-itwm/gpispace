@@ -50,7 +50,7 @@ namespace
   }
 }
 
-BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
+BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
 {
   boost::program_options::options_description options_description;
 
@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
 
   fhg::util::temporary_path const shared_directory
     ( test::shared_directory (vm)
-    / "use_fixed_ports_for_orchestrator_agents_and_workers"
+    / "use_fixed_ports_for_agents_and_workers"
     );
 
   test::scoped_nodefile_from_environment const nodefile_from_environment
@@ -91,7 +91,7 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
 
   test::make_net_lib_install const make
     ( installation
-    , "use_fixed_ports_for_orchestrator_agents_and_workers"
+    , "use_fixed_ports_for_agents_and_workers"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -113,7 +113,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
     );
 
   std::unique_ptr<gspc::scoped_runtime_system> drts;
-  std::unique_ptr<test::hopefully_free_port> orchestrator_port;
   std::unique_ptr<test::hopefully_free_port> agent_port;
   std::unique_ptr<test::hopefully_free_port> worker_port;
 
@@ -131,12 +130,10 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
   {
     try
     {
-      orchestrator_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
       agent_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
       worker_port = fhg::util::cxx14::make_unique<test::hopefully_free_port>();
 
       auto vm_with_ports (vm_without_ports);
-      gspc::set_orchestrator_port (vm_with_ports, orchestrator_port->release());
       gspc::set_agent_port (vm_with_ports, agent_port->release());
       vm_with_ports.notify();
 
@@ -156,7 +153,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_orchestrator_agents_and_workers)
     }
   }
 
-  BOOST_REQUIRE (is_using_port ("orchestrator", *orchestrator_port));
   BOOST_REQUIRE (is_using_port ("agent", *agent_port));
 
   gspc::client client (*drts);

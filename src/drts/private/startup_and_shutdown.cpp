@@ -120,8 +120,8 @@ namespace
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
     , std::string const& name
-    , std::string const& parent_name
-    , fhg::drts::hostinfo_type const& parent_hostinfo
+    , boost::optional<std::string> const& parent_name
+    , boost::optional<fhg::drts::hostinfo_type> const& parent_hostinfo
     , boost::optional<unsigned short> const& agent_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , gspc::installation_path const& installation_path
@@ -132,8 +132,12 @@ namespace
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
-                << rif_entry_point
-                << " with parent " << parent_name << "\n";
+                << rif_entry_point;
+    if (parent_name)
+    {
+      info_output << " with parent " << *parent_name;
+    }
+    info_output << "\n";
 
     auto const result
       ( rif_client.start_agent
@@ -483,8 +487,7 @@ namespace fhg
     }
 
     startup_result startup
-      ( boost::optional<unsigned short> const& orchestrator_port
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
@@ -563,31 +566,6 @@ namespace fhg
             + " to connect to top level logging demultiplexer failed"
             );
         }
-      }
-
-      auto const orchestrator_startup_result
-        ( fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                return master_rif_client.start_orchestrator
-                  ( installation_path.orchestrator()
-                  , certificates
-                  , orchestrator_port
-                  ).get();
-              }
-              , "could not start orchestrator"
-              )
-        );
-
-      processes.store (master, "orchestrator", orchestrator_startup_result.pid);
-
-      if (logging_rif_client)
-      {
-        logging_rif_client->add_emitter_to_logging_demultiplexer
-          ( logging_rif_info->pid
-          , std::vector<fhg::logging::endpoint>
-              {orchestrator_startup_result.logger_registration_endpoint}
-          ).get();
       }
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
@@ -699,8 +677,8 @@ namespace fhg
       master_agent_hostinfo = start_agent ( master
                                           , master_rif_client
                                           , master_agent_name
-                                          , "orchestrator"
-                                          , orchestrator_startup_result.hostinfo
+                                          , boost::none
+                                          , boost::none
                                           , agent_port
                                           , gpi_socket
                                           , installation_path
@@ -716,7 +694,7 @@ namespace fhg
                                           , certificates
                                           );
 
-      return {orchestrator_startup_result.hostinfo, logging_rif_info};
+      return {master_agent_hostinfo, logging_rif_info};
     }
 
     namespace
@@ -736,7 +714,6 @@ namespace fhg
         std::string const kind
           ( component == component_type::worker ? "drts-kernel"
           : component == component_type::agent ? "agent"
-          : component == component_type::orchestrator ? "orchestrator"
           : component == component_type::vmem ? "vmem"
           : component == component_type::logging_demultiplexer ? "logging-demultiplexer"
           : throw std::logic_error ("invalid enum value")
@@ -923,7 +900,6 @@ namespace fhg
         ( { component_type::worker
           , component_type::agent
           , component_type::vmem
-          , component_type::orchestrator
           , component_type::logging_demultiplexer
           }
         , [this] (component_type component)

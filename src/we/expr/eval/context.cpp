@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/expr/eval/context.hpp>
 
 #include <we/exception.hpp>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/alphanum_sort_proxy.hpp>
 
 #include <QDate>

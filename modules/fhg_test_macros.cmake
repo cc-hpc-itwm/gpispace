@@ -71,7 +71,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/gpi-space"
-  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/orchestrator"
   #! \note This does not include bundled libraries!
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_load.so"

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/restricted_tree_column_sorter.hpp>
 
 #include <QHeaderView>

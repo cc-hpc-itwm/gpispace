@@ -1,5 +1,3 @@
-# bernd.loerwald@itwm.fraunhofer.de
-
 extended_add_library (NAME fhg_util_qt
   SOURCES "dual_list_selector.cpp"
           "mvc/alphanum_sort_proxy.cpp"

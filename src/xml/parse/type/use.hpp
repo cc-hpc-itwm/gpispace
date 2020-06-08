@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
 #include <xml/parse/type/transition.fwd.hpp>

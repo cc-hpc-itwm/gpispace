@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <we/type/value/path/join.hpp>
 
 #include <util-generic/join.hpp>

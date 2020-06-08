@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <fhg/util/parse/require.hpp>
 
 #include <fhg/util/parse/error.hpp>

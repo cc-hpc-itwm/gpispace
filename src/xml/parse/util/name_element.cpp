@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/util/name_element.hpp>
 
 #include <xml/parse/state.hpp>

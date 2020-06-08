@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <we/expr/parse/simplify/copy_propagation.hpp>
 
 #include <we/expr/parse/simplify/expression_list.hpp>
