@@ -47,6 +47,7 @@ namespace
   namespace option
   {
     constexpr const char* const port {"port"};
+    constexpr const char* const dont_fork {"dont-fork"};
     constexpr const char* const register_host {"register-host"};
     constexpr const char* const register_port {"register-port"};
     constexpr const char* const register_key {"register-key"};
@@ -118,6 +119,10 @@ try
         ->required()
     , "key to register with"
     )
+    ( option::dont_fork
+    , boost::program_options::value<bool>()->zero_tokens()
+    , "do not fork but execute synchronously"
+    )
     ;
 
   boost::program_options::variables_map vm;
@@ -156,6 +161,8 @@ try
     ( vm.at (option::register_key)
     . as<fhg::util::boost::program_options::nonempty_string>()
     );
+
+  bool const dont_fork (vm.count (option::dont_fork));
 
   fhg::rpc::service_dispatcher service_dispatcher;
 
@@ -461,40 +468,64 @@ try
   fhg::rpc::service_tcp_provider_with_deferred_start server
     (io_service, service_dispatcher);
 
-  if (pid_t child = fhg::util::syscall::fork())
+  auto const notify_pid
+    ( [&] (pid_t pid)
+      {
+        io_service.post_fork_parent();
+
+        fhg::util::scoped_boost_asio_io_service_with_threads io_service_parent (1);
+        fhg::rpc::remote_tcp_endpoint endpoint
+          (io_service_parent, register_host, register_port);
+
+        boost::asio::ip::tcp::endpoint const local_endpoint
+          (server.local_endpoint());
+
+        fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
+          {endpoint}
+          ( register_key
+          , fhg::util::hostname()
+          , fhg::rif::entry_point
+              ( fhg::util::connectable_to_address_string (local_endpoint.address())
+              , local_endpoint.port()
+              , pid
+              )
+          );
+      }
+    );
+  auto const daemonize
+    ( [&]
+      {
+        fhg::util::syscall::setsid();
+
+        fhg::util::syscall::close (0);
+        fhg::util::syscall::close (1);
+        fhg::util::syscall::close (2);
+      }
+    );
+
+  auto const run_server
+    ( [&]
+      {
+        server.start();
+        io_service.post_fork_child();
+        io_service.start_in_threads_and_current_thread();
+      }
+    );
+
+  if (dont_fork)
   {
-    io_service.post_fork_parent();
-
-    fhg::util::scoped_boost_asio_io_service_with_threads io_service_parent (1);
-    fhg::rpc::remote_tcp_endpoint endpoint
-      (io_service_parent, register_host, register_port);
-
-    boost::asio::ip::tcp::endpoint const local_endpoint
-      (server.local_endpoint());
-
-    fhg::rpc::sync_remote_function<fhg::rif::strategy::bootstrap_callback>
-      {endpoint}
-      ( register_key
-      , fhg::util::hostname()
-      , fhg::rif::entry_point
-          ( fhg::util::connectable_to_address_string (local_endpoint.address())
-          , local_endpoint.port()
-          , child
-          )
-      );
-
-    return 0;
+    notify_pid (fhg::util::syscall::getpid());
+    run_server();
   }
-
-  fhg::util::syscall::setsid();
-
-  fhg::util::syscall::close (0);
-  fhg::util::syscall::close (1);
-  fhg::util::syscall::close (2);
-
-  server.start();
-  io_service.post_fork_child();
-  io_service.start_in_threads_and_current_thread();
+  else if (pid_t child = fhg::util::syscall::fork())
+  {
+    notify_pid (child);
+  }
+  else
+  {
+    daemonize();
+    run_server();
+  }
 
   return 0;
 }
