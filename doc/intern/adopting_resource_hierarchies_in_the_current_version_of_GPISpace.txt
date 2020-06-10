@@ -1,0 +1,25 @@
+Initial sketch summarizing some ideas from the first discussion
+about adopting resource hierarchies in the current GPI-Space version.
+
+1) A Resource Manager will be added to the agent.
+2) This Resource Manager will use the Forest data structure type
+   from the prototype.
+3) The user starts the runtime system with a Forest that is 
+   sent to the top-level agent for initializing the Resource Manager.
+4) In case no explicit forest is provided by the user, the Resource Manager
+   will be initialized with a forest consisting of single cores.
+5) The worker topology description is kept as it is for the moment. 
+6) Since the agent is spawned before the workers, it is ensured at worker registration
+   time that the Resource Manager is already initialized with all resources.
+7) The Scheduler acquires/releases resources from/to the Resource Manager
+   before starting or after finishing tasks. Acquiring resources can be done 
+   at assignment time or at the task starting time (when using pre-assignment,
+   as the situation currently is).
+8) Ignore for now the possible defragmentation issues related to releasing
+   non-deterministically the resources.
+   
+To do next:
+1) Take a closer look at the structure data types in the prototype and figure out 
+   how to integrate them in the production version (Forest, Resource, etc);
+2) Investigate/assess the impact/modifications to be done on/in other GPI-Space components
+3) Investigate/assess the impact/modifications that should be done in the tests
