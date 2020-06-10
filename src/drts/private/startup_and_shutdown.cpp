@@ -441,14 +441,6 @@ namespace fhg
           .get_value_or (def_num_proc)
         );
 
-      if (num_per_node == 0)
-      {
-        throw std::invalid_argument
-          ( "invalid number of workers per node in capability specification: "
-            "positive integer expected in " + cap_spec
-          );
-      }
-
       return
         { fhg::util::split<std::string, std::string, std::vector<std::string>>
             ( get_match<std::string>
