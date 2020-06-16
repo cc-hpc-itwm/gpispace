@@ -1,12 +1,14 @@
 #include <rif/strategy/ssh.hpp>
 
 #include <util-generic/blocked.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 
 #include <rif/strategy/ssh/session.hpp>
 
@@ -101,118 +103,77 @@ namespace fhg
 
           namespace option
           {
-            namespace validator = fhg::util::boost::program_options;
+            namespace po = fhg::util::boost::program_options;
 
-            constexpr char const* const block_size {"sshs-at-once"};
-            constexpr char const* const block_size_description
-              {"how many SSH connections to establish at once"};
-            using block_size_type = std::size_t;
-            using block_size_validator
-              = validator::positive_integral<std::size_t>;
-            constexpr block_size_type const block_size_default = 64;
+            po::option<std::size_t, po::positive_integral<std::size_t>>
+              const block_size { "sshs-at-once"
+                               , "how many SSH connections to establish at once"
+                               , 64
+                               };
 
-            constexpr char const* const ssh_port {"ssh-port"};
-            constexpr char const* const ssh_port_description
-              {"port where sshd listens on remote hosts"};
-            using ssh_port_type = unsigned short;
-            using ssh_port_validator
-              = validator::positive_integral<unsigned short>;
-            constexpr ssh_port_type const ssh_port_default = 22;
+            po::option<unsigned short, po::positive_integral<unsigned short>>
+              const ssh_port { "ssh-port"
+                             , "port where sshd listens on remote host"
+                             , 22
+                             };
 
-            constexpr char const* const username {"ssh-username"};
-            constexpr char const* const username_description
-              {"username to use for remote host"};
-            using username_type = std::string;
-            using username_validator = validator::nonempty_string;
-            username_type const username_default()
+            po::option<std::string, po::nonempty_string> username()
             {
-              char* const user (util::syscall::getenv ("USER"));
-              return user ? user : "";
+              auto const name {"ssh-username"};
+              auto const description {"username to use for remote host"};
+
+              boost::optional<std::string> const user (util::getenv ("USER"));
+              return {name, description, user.get_value_or ("")};
             }
 
-            constexpr char const* const public_key {"ssh-public-key"};
-            constexpr char const* const public_key_description
-              {"public key file used for authentication"};
-            using public_key_type = boost::filesystem::path;
             //! \todo validate?
-            using public_key_validator = public_key_type;
-            public_key_type public_key_default()
+            po::option<boost::filesystem::path> public_key()
             {
-              char* const home (util::syscall::getenv ("HOME"));
-              return home
-                ? boost::filesystem::path (home) / ".ssh" / "id_rsa.pub"
-                : boost::filesystem::path();
+              auto const name {"ssh-public-key"};
+              auto const description {"public key file used for authentication"};
+
+              boost::optional<boost::filesystem::path> const home
+                (util::getenv ("HOME"));
+              return { name
+                     , description
+                     , home
+                     ? boost::filesystem::path (*home) / ".ssh" / "id_rsa.pub"
+                     : boost::filesystem::path()
+                     };
             }
 
-            constexpr char const* const private_key {"ssh-private-key"};
-            constexpr char const* const private_key_description
-              {"private key file used for authentication"};
-            using private_key_type = boost::filesystem::path;
             //! \todo validate?
-            using private_key_validator = private_key_type;
-            private_key_type private_key_default()
+            po::option<boost::filesystem::path> private_key()
             {
-              char* const home (util::syscall::getenv ("HOME"));
-              return home
-                ? boost::filesystem::path (home) / ".ssh" / "id_rsa"
-                : boost::filesystem::path();
+              auto const name {"ssh-private-key"};
+              auto const description {"private key file used for authentication"};
+
+              boost::optional<boost::filesystem::path> const home
+                (util::getenv ("HOME"));
+              return { name
+                     , description
+                     , home
+                     ? boost::filesystem::path (*home) / ".ssh" / "id_rsa"
+                     : boost::filesystem::path()
+                     };
             }
           }
 
-          //! \todo use fhg::util::boost::program_options::generic
-#define EXTRACT_PARAMETERS(parameters_)                                 \
-          boost::program_options::options_description options;          \
-          options.add_options()                                         \
-            ( option::block_size                                        \
-            , boost::program_options::value<option::block_size_validator>() \
-              ->default_value (option::block_size_default)              \
-            , option::block_size_description                            \
-            )                                                           \
-            ( option::ssh_port                                          \
-            , boost::program_options::value<option::ssh_port_validator>() \
-              ->default_value (option::ssh_port_default)->required()    \
-            , option::ssh_port_description                              \
-            )                                                           \
-            ( option::username                                          \
-            , boost::program_options::value<option::username_validator>() \
-              ->default_value (option::username_default())->required()  \
-            , option::username_description                              \
-            )                                                           \
-            ( option::public_key                                        \
-            , boost::program_options::value<option::public_key_validator>()\
-              ->default_value (option::public_key_default())->required() \
-            , option::public_key_description                            \
-            )                                                           \
-            ( option::private_key                                       \
-            , boost::program_options::value<option::private_key_validator>() \
-              ->default_value (option::private_key_default())->required() \
-            , option::private_key_description                           \
-            )                                                           \
-            ;                                                           \
-                                                                        \
-          boost::program_options::variables_map vm;                     \
-          boost::program_options::store                                 \
-            ( boost::program_options::command_line_parser (parameters)  \
-              .options (options).run()                                  \
-            , vm                                                        \
-            );                                                          \
-                                                                        \
-          boost::program_options::notify (vm);                          \
-                                                                        \
-          boost::optional<option::block_size_type> const block_size     \
-            ( vm.count (option::block_size)                             \
-            ? boost::optional<option::block_size_type>                  \
-                (vm.at (option::block_size).as<option::block_size_validator>()) \
-            : boost::none                                               \
-            );                                                          \
-          option::username_type const username                          \
-            (vm.at (option::username).as<option::username_validator>()); \
-          option::ssh_port_type const ssh_port                          \
-            (vm.at (option::ssh_port).as<option::ssh_port_validator>()); \
-          option::public_key_type const public_key                      \
-            (vm.at (option::public_key).as<option::public_key_validator>()); \
-          option::private_key_type const private_key                    \
-            (vm.at (option::private_key).as<option::private_key_validator>())
+#define EXTRACT_PARAMETERS(parameters_)                                     \
+          auto const vm ( option::po::options ("ssh")                       \
+                        . add (option::block_size)                          \
+                        . require (option::ssh_port)                        \
+                        . require (option::username())                      \
+                        . require (option::public_key())                    \
+                        . require (option::private_key())                   \
+                        . store_and_notify (parameters_)                    \
+                        );                                                  \
+                                                                            \
+          auto const block_size (option::block_size.get<> (vm));            \
+          auto const username (*option::username().get<> (vm));             \
+          auto const ssh_port (*option::ssh_port.get<> (vm));               \
+          auto const public_key (*option::public_key().get<> (vm));         \
+          auto const private_key (*option::private_key().get<> (vm))
 
         }
 
