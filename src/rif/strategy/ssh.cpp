@@ -120,8 +120,8 @@ namespace fhg
 
             po::option<std::string, po::nonempty_string> username()
             {
-              auto const name {"ssh-username"};
-              auto const description {"username to use for remote host"};
+              auto const name ("ssh-username");
+              auto const description ("username to use for remote host");
 
               boost::optional<std::string> const user (util::getenv ("USER"));
               if (user && !user->empty())
@@ -154,8 +154,8 @@ namespace fhg
 
             po::option<boost::filesystem::path, po::existing_path> public_key()
             {
-              auto const name {"ssh-public-key"};
-              auto const description {"public key file used for authentication"};
+              auto const name ("ssh-public-key");
+              auto const description ("public key file used for authentication");
 
               if (auto const maybe_default = maybe_default_key (".pub"))
               {
@@ -169,8 +169,8 @@ namespace fhg
 
             po::option<boost::filesystem::path, po::existing_path> private_key()
             {
-              auto const name {"ssh-private-key"};
-              auto const description {"private key file used for authentication"};
+              auto const name ("ssh-private-key");
+              auto const description ("private key file used for authentication");
 
               if (auto const maybe_default = maybe_default_key (""))
               {
