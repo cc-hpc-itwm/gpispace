@@ -57,7 +57,8 @@ add_unit_test (NAME started_process_promise
 )
 
 extended_add_library (NAME rif-strategies
-  SOURCES "strategy/meta.cpp"
+  SOURCES "strategy/local.cpp"
+          "strategy/meta.cpp"
           "strategy/pbsdsh.cpp"
           "strategy/ssh.cpp"
           "strategy/ssh/context.cpp"

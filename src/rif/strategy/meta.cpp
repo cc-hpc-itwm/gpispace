@@ -5,6 +5,7 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
+#include <rif/strategy/local.hpp>
 #include <rif/strategy/pbsdsh.hpp>
 #include <rif/strategy/ssh.hpp>
 
@@ -56,7 +57,8 @@ namespace fhg
         };
 
         std::unordered_map <std::string, Strategy> const strategies
-          { {"pbsdsh", {pbsdsh::bootstrap, pbsdsh::teardown}}
+          { {"local", {local::bootstrap, local::teardown}}
+          , {"pbsdsh", {pbsdsh::bootstrap, pbsdsh::teardown}}
           , {"ssh", {ssh::bootstrap, ssh::teardown}}
           };
 
