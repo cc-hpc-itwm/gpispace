@@ -123,7 +123,32 @@ namespace fhg
               auto const description {"username to use for remote host"};
 
               boost::optional<std::string> const user (util::getenv ("USER"));
-              return {name, description, user.get_value_or ("")};
+              if (user && !user->empty())
+              {
+                return {name, description, *user};
+              }
+              else
+              {
+                return {name, description};
+              }
+            }
+
+            boost::optional<boost::filesystem::path> maybe_default_key
+              (std::string suffix)
+            {
+              auto const home (util::getenv ("HOME"));
+              if (home)
+              {
+                auto const key_path ( boost::filesystem::path (*home)
+                                    / ".ssh"
+                                    / ("id_rsa" + suffix)
+                                    );
+                if (boost::filesystem::exists (key_path))
+                {
+                  return key_path;
+                }
+              }
+              return boost::none;
             }
 
             //! \todo validate?
@@ -132,14 +157,14 @@ namespace fhg
               auto const name {"ssh-public-key"};
               auto const description {"public key file used for authentication"};
 
-              boost::optional<boost::filesystem::path> const home
-                (util::getenv ("HOME"));
-              return { name
-                     , description
-                     , home
-                     ? boost::filesystem::path (*home) / ".ssh" / "id_rsa.pub"
-                     : boost::filesystem::path()
-                     };
+              if (auto const maybe_default = maybe_default_key (".pub"))
+              {
+                return {name, description, *maybe_default};
+              }
+              else
+              {
+                return {name, description};
+              }
             }
 
             //! \todo validate?
@@ -148,14 +173,14 @@ namespace fhg
               auto const name {"ssh-private-key"};
               auto const description {"private key file used for authentication"};
 
-              boost::optional<boost::filesystem::path> const home
-                (util::getenv ("HOME"));
-              return { name
-                     , description
-                     , home
-                     ? boost::filesystem::path (*home) / ".ssh" / "id_rsa"
-                     : boost::filesystem::path()
-                     };
+              if (auto const maybe_default = maybe_default_key (""))
+              {
+                return {name, description, *maybe_default};
+              }
+              else
+              {
+                return {name, description};
+              }
             }
           }
 
