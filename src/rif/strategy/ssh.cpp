@@ -6,6 +6,7 @@
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>
+#include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -151,8 +152,7 @@ namespace fhg
               return boost::none;
             }
 
-            //! \todo validate?
-            po::option<boost::filesystem::path> public_key()
+            po::option<boost::filesystem::path, po::existing_path> public_key()
             {
               auto const name {"ssh-public-key"};
               auto const description {"public key file used for authentication"};
@@ -167,8 +167,7 @@ namespace fhg
               }
             }
 
-            //! \todo validate?
-            po::option<boost::filesystem::path> private_key()
+            po::option<boost::filesystem::path, po::existing_path> private_key()
             {
               auto const name {"ssh-private-key"};
               auto const description {"private key file used for authentication"};
