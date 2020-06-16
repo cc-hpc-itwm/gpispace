@@ -86,6 +86,11 @@ namespace fhg
                 );
             }
 
+            socket() = delete;
+            socket (socket const&) = delete;
+            socket (socket&&) = delete;
+            socket& operator= (socket const&) = delete;
+            socket& operator= (socket&&) = delete;
             ~socket()
             {
               util::syscall::close (_fd);
