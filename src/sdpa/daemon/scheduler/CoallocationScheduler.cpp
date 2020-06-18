@@ -197,37 +197,45 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void ( WorkerSet const&
-                          , Implementation const& implementation
-                          , const job_id_t&
-                          )
-                    > serve_job
+      ( std::function<void ( WorkerSet const&
+                           , Implementation const& implementation
+                           , const job_id_t&
+                           )
+                     > serve_job
       )
     {
       std::set<job_id_t> jobs_started;
-      std::unordered_set<job_id_t> remaining_jobs;
 
-      std::lock_guard<std::recursive_mutex> const lock (_mtx_pending_jobs);
-      for (const job_id_t& job_id: _pending_jobs)
+      long num_free_workers_left
+        (_worker_manager.num_free_workers());
+
+      std::lock_guard<std::recursive_mutex> const _ (_mtx_pending_jobs);
+      for ( auto it (_pending_jobs.begin())
+          ; num_free_workers_left > 0  && it != _pending_jobs.end()
+          ;
+          )
       {
+        auto const job_id (*it);
+
         std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
+        auto const assigned_workers (allocation_table_.at (job_id)->workers());
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
               ( job_id
-              , allocation_table_.at (job_id)->workers()
-              ,  allocation_table_.at (job_id)->implementation()
+              , assigned_workers
+              , allocation_table_.at (job_id)->implementation()
               , serve_job
               )
            )
         {
           jobs_started.insert (job_id);
+          it = _pending_jobs.erase (it);
+          num_free_workers_left -= assigned_workers.size();
         }
         else
         {
-          remaining_jobs.emplace (job_id);
+          it++;
         }
       }
-
-      std::swap (_pending_jobs, remaining_jobs);
 
       return jobs_started;
     }
