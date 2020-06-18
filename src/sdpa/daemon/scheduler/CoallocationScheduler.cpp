@@ -182,6 +182,7 @@ namespace sdpa
           )
       {
         releaseReservation (job_id);
+        delete_pending_job (job_id);
         enqueueJob (job_id);
       }
 
@@ -252,9 +253,6 @@ namespace sdpa
             //! delete_job_from_worker does nothing else.
           }
         }
-
-        std::lock_guard<std::recursive_mutex> const lock (_mtx_pending_jobs);
-        _pending_jobs.erase (it->first);
 
         allocation_table_.erase (it);
       }

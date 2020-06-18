@@ -694,6 +694,7 @@ namespace sdpa
 
         _scheduler.delete_job (job_id);
         _scheduler.releaseReservation (job_id);
+        _scheduler.delete_pending_job (job_id);
 
         if (!boost::get<job_source_client> (&pJob->source()))
         {
