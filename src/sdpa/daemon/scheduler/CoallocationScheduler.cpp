@@ -30,6 +30,12 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
+    void CoallocationScheduler::delete_pending_job (sdpa::job_id_t const& job)
+    {
+      std::lock_guard<std::recursive_mutex> const lock (_mtx_pending_jobs);
+      _pending_jobs.erase (job);
+    }
+
     double CoallocationScheduler::compute_reservation_cost
       ( const job_id_t& job_id
       , const std::set<worker_id_t>& workers

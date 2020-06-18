@@ -26,6 +26,7 @@ namespace sdpa
 
       // -- used by daemon
       bool delete_job (const sdpa::job_id_t&);
+      void delete_pending_job (const sdpa::job_id_t&);
 
       void store_result (worker_id_t const&, job_id_t const&, terminal_state);
       boost::optional<job_result_type>
