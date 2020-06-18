@@ -703,8 +703,8 @@ namespace sdpa
     }
 
     void Agent::finished ( const we::layer::id_type& id
-                                 , const we::type::activity_t& result
-                                 )
+                         , const we::type::activity_t& result
+                         )
     {
       Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
 
@@ -724,8 +724,8 @@ namespace sdpa
     }
 
     void Agent::failed ( const we::layer::id_type& id
-                               , std::string const & reason
-                               )
+                       , std::string const & reason
+                       )
     {
       Job* const pJob (require_job (id, "got failed message for old/unknown Job " + id));
 
