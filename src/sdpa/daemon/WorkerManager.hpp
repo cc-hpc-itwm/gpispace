@@ -98,6 +98,8 @@ namespace sdpa
       };
 
     public:
+      unsigned long num_free_workers();
+
       std::unordered_set<worker_id_t> findSubmOrAckWorkers
         (const sdpa::job_id_t& job_id) const;
 
@@ -181,6 +183,7 @@ namespace sdpa
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
 
       mutable std::mutex mtx_;
+      unsigned long _num_free_workers {0};
     };
   }
 }
