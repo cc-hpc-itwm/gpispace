@@ -89,6 +89,8 @@ namespace sdpa
       using allocation_table_t
         = std::unordered_map<job_id_t, std::unique_ptr<scheduler::Reservation>>;
       allocation_table_t allocation_table_;
+
+      mutable std::recursive_mutex _mtx_pending_jobs;
       std::unordered_set<job_id_t> _pending_jobs;
 
       friend class access_allocation_table_TESTING_ONLY;

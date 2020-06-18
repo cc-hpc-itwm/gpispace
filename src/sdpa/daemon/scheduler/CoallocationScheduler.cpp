@@ -118,6 +118,7 @@ namespace sdpa
                   )
               );
 
+            std::lock_guard<std::recursive_mutex> lock (_mtx_pending_jobs);
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
@@ -198,9 +199,11 @@ namespace sdpa
     {
       std::set<job_id_t> jobs_started;
       std::unordered_set<job_id_t> remaining_jobs;
-      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
+
+      std::lock_guard<std::recursive_mutex> const lock (_mtx_pending_jobs);
       for (const job_id_t& job_id: _pending_jobs)
       {
+        std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
         if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
               ( job_id
               , allocation_table_.at (job_id)->workers()
@@ -244,7 +247,9 @@ namespace sdpa
           }
         }
 
+        std::lock_guard<std::recursive_mutex> const lock (_mtx_pending_jobs);
         _pending_jobs.erase (it->first);
+
         allocation_table_.erase (it);
       }
       //! \todo why can we ignore this?
