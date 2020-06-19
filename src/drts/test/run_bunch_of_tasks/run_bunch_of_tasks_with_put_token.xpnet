@@ -1,0 +1,52 @@
+<defun name="run_bunch_of_tasks_with_put_token">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+  <in name="start" type="string" place="start"/>
+  <in name="num_tasks" type="long" place="num_tasks"/>
+  <out name="total_tasks_executed" type="long" place="total_tasks_executed"/>
+  <net>
+    <place name="start" type="string" put_token="true"/>
+    <place name="num_tasks" type="long"/>
+    <place name="num_executed_tasks" type="long">
+      <token><value>0L</value></token>
+    </place>
+    <place name="total_tasks_executed" type="long"/>
+
+    <transition name="execute_task">
+      <defun>
+        <in name="start" type="string"/>
+        <in name="num_tasks" type="long"/>
+        <inout name="num_executed_tasks" type="long"/>
+        <module name="test_module" function="task (num_executed_tasks)">
+          <code><![CDATA[
+            num_executed_tasks++;
+         ]]></code>
+       </module>
+      </defun>
+      <condition>
+        ${num_executed_tasks} :lt: ${num_tasks}
+      </condition>
+      <connect-in port="start" place="start"/>
+      <connect-read port="num_tasks" place="num_tasks"/>
+      <connect-inout port="num_executed_tasks" place="num_executed_tasks"/>
+    </transition>
+      
+    <transition name="done">
+      <defun>
+        <in name="num_executed_tasks" type="long"/>
+        <in name="num_tasks" type="long"/>
+        <out name="total_tasks_executed" type="long"/>
+          <expression>
+            ${total_tasks_executed} := ${num_tasks};
+          </expression>
+      </defun>
+      <condition>
+        ${num_executed_tasks} :eq: ${num_tasks}
+      </condition>
+      <connect-in port="num_executed_tasks" place="num_executed_tasks"/>
+      <connect-in port="num_tasks" place="num_tasks"/>
+      <connect-out port="total_tasks_executed" place="total_tasks_executed"/>
+    </transition>
+  </net>
+</defun>
