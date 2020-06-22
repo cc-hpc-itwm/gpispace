@@ -136,8 +136,6 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload_can_be_allowed)
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
-  auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   auto const result (client.put_and_run (make.pnet(), {}));
 
@@ -155,8 +153,6 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
-  auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
 
@@ -182,8 +178,6 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
-  auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   auto const result (client.put_and_run (make.pnet(), {}));
 
