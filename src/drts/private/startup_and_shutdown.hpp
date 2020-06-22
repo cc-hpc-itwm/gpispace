@@ -20,10 +20,14 @@
 #include <boost/optional.hpp>
 
 #include <chrono>
+#include <cstddef>
+#include <exception>
 #include <mutex>
+#include <ostream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace fhg
@@ -80,6 +84,10 @@ namespace fhg
       , fhg::drts::processes_storage& processes
       , boost::optional<boost::filesystem::path> const& gpi_socket
       , std::vector<boost::filesystem::path> const& app_path
+      , std::vector<std::string> const& worker_env_copy_variable
+      , bool worker_env_copy_current
+      , std::vector<boost::filesystem::path> const& worker_env_copy_file
+      , std::vector<std::string> const& worker_env_set_variable
       , gspc::installation_path const&
       , std::ostream& info_output
       , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log

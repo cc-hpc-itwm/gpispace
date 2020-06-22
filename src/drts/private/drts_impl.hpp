@@ -54,6 +54,10 @@ namespace gspc
                              , bool gpi_enabled
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
+                             , std::vector<std::string> worker_env_copy_variable
+                             , bool worker_env_copy_current
+                             , std::vector<boost::filesystem::path> worker_env_copy_file
+                             , std::vector<std::string> worker_env_set_variable
                              , installation_path
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
                              , std::vector<worker_description> worker_descriptions
@@ -92,6 +96,10 @@ namespace gspc
       fhg::rif::entry_point _master;
       boost::optional<boost::filesystem::path> _gpi_socket;
       std::vector<boost::filesystem::path> _app_path;
+      std::vector<std::string> _worker_env_copy_variable;
+      bool _worker_env_copy_current;
+      std::vector<boost::filesystem::path> _worker_env_copy_file;
+      std::vector<std::string> _worker_env_set_variable;
       installation_path _installation_path;
       boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
       boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>

@@ -158,6 +158,10 @@ namespace gspc
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
+      , std::vector<std::string> worker_env_copy_variable
+      , bool worker_env_copy_current
+      , std::vector<boost::filesystem::path> worker_env_copy_file
+      , std::vector<std::string> worker_env_set_variable
       , gspc::installation_path installation_path
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
@@ -174,6 +178,10 @@ namespace gspc
     , _master (master)
     , _gpi_socket (gpi_socket)
     , _app_path (app_path)
+    , _worker_env_copy_variable (std::move (worker_env_copy_variable))
+    , _worker_env_copy_current (worker_env_copy_current)
+    , _worker_env_copy_file (std::move (worker_env_copy_file))
+    , _worker_env_set_variable (std::move (worker_env_set_variable))
     , _installation_path (installation_path)
     , _logging_rif_entry_point (logging_rif_entry_point)
     , _worker_descriptions (worker_descriptions)
@@ -282,6 +290,10 @@ namespace gspc
               , _processes_storage
               , _gpi_socket
               , _app_path
+              , _worker_env_copy_variable
+              , _worker_env_copy_current
+              , _worker_env_copy_file
+              , _worker_env_set_variable
               , _installation_path
               , _info_output
               , FHG_UTIL_MAKE_OPTIONAL
@@ -352,6 +364,10 @@ namespace gspc
           , get_application_search_path (vm)
           ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
           : std::vector<boost::filesystem::path>()
+          , get_worker_env_copy_variable (vm).get_value_or ({})
+          , get_worker_env_copy_current (vm).get_value_or (false)
+          , get_worker_env_copy_file (vm).get_value_or ({})
+          , get_worker_env_set_variable (vm).get_value_or ({})
           , installation.gspc_home()
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
