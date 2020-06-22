@@ -333,7 +333,7 @@ namespace fhg
             environment.emplace
               ( "LD_LIBRARY_PATH"
               , (installation_path.lib()).string() + ":"
-              + (installation_path.libexec()).string()
+              + (installation_path.libexec_gspc()).string()
               );
 
             futures.emplace_back
