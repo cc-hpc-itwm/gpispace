@@ -36,7 +36,7 @@ namespace fhg
                         . store_and_notify (parameters_)                \
                         );                                              \
                                                                         \
-          auto const block_size (option::block_size.get<> (vm))
+          auto const block_size (option::block_size.get_from (vm))
 
           void do_pbsdsh
             (std::string const& hostname, boost::format const& command)

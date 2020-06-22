@@ -193,11 +193,11 @@ namespace fhg
                         . store_and_notify (parameters_)                    \
                         );                                                  \
                                                                             \
-          auto const block_size (*option::block_size.get<> (vm));           \
-          auto const username (*option::username().get<> (vm));             \
-          auto const ssh_port (*option::ssh_port.get<> (vm));               \
-          auto const public_key (*option::public_key().get<> (vm));         \
-          auto const private_key (*option::private_key().get<> (vm))
+          auto const block_size (option::block_size.get_from (vm));         \
+          auto const username (option::username().get_from (vm));           \
+          auto const ssh_port (option::ssh_port.get_from (vm));             \
+          auto const public_key (option::public_key().get_from (vm));       \
+          auto const private_key (option::private_key().get_from (vm))
 
         }
 
