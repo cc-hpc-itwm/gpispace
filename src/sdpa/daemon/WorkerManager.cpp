@@ -388,16 +388,17 @@ namespace sdpa
       return Workers_and_implementation ({}, boost::none);
     }
 
-    bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const& job_id
-      , WorkerSet const& workers
-      , Implementation const& implementation
-      , std::function<void ( WorkerSet const&
-                           , Implementation const&
-                           , const job_id_t&
-                           )
-                     > const& serve_job
-      )
+    std::pair<bool, unsigned long>
+      WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
+        ( job_id_t const& job_id
+        , WorkerSet const& workers
+        , Implementation const& implementation
+        , std::function<void ( WorkerSet const&
+                             , Implementation const&
+                             , const job_id_t&
+                             )
+                       > const& serve_job
+        )
     {
       std::lock_guard<std::mutex> const _(mtx_);
       bool const can_start
@@ -421,7 +422,7 @@ namespace sdpa
         serve_job (workers, implementation, job_id);
       }
 
-      return can_start;
+      return std::make_pair (can_start, _num_free_workers);
     }
 
     std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel

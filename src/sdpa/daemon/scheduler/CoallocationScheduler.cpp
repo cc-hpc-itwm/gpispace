@@ -221,7 +221,7 @@ namespace sdpa
               , assigned_workers
               , allocation_table_.at (job_id)->implementation()
               , serve_job
-              )
+              ).first
            )
         {
           jobs_started.insert (job_id);
