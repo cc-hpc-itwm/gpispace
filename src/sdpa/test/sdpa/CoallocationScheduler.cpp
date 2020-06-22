@@ -677,6 +677,8 @@ BOOST_FIXTURE_TEST_CASE
                         );
   }
 
+  _scheduler.releaseReservation (job_id_0);
+
   BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs (serve_job)
                       , set_jobs_t ({job_id_1})
                       );
@@ -765,6 +767,8 @@ BOOST_FIXTURE_TEST_CASE
                         , set_workers_t ({worker_id})
                         );
   }
+
+  _scheduler.releaseReservation (job_id_0);
 
   BOOST_REQUIRE_EQUAL ( _scheduler.start_pending_jobs (serve_job)
                       , set_jobs_t ({job_id_1})
