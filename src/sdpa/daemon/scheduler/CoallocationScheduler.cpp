@@ -32,7 +32,6 @@ namespace sdpa
 
     void CoallocationScheduler::delete_pending_job (sdpa::job_id_t const& job)
     {
-      std::lock_guard<std::recursive_mutex> const lock (_mtx_pending_jobs);
       _pending_jobs.erase (job);
     }
 
@@ -124,7 +123,6 @@ namespace sdpa
                   )
               );
 
-            std::lock_guard<std::recursive_mutex> lock (_mtx_pending_jobs);
             _pending_jobs.emplace (jobId);
           }
           catch (std::out_of_range const&)
@@ -209,7 +207,6 @@ namespace sdpa
       long num_free_workers_left
         (_worker_manager.num_free_workers());
 
-      std::lock_guard<std::recursive_mutex> const _ (_mtx_pending_jobs);
       for ( auto it (_pending_jobs.begin())
           ; num_free_workers_left > 0  && it != _pending_jobs.end()
           ;
