@@ -306,7 +306,7 @@ namespace sdpa {
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
-      std::mutex _scheduling_thread_mutex;
+      std::mutex _cancel_mutex;
       std::mutex _scheduling_requested_guard;
       std::condition_variable _scheduling_requested_condition;
       bool _scheduling_interrupted = false;

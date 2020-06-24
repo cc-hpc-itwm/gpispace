@@ -87,7 +87,7 @@ namespace sdpa
                      }
                    , _worker_manager
                    )
-      , _scheduling_thread_mutex()
+      , _cancel_mutex()
       , _scheduling_requested_guard()
       , _scheduling_requested_condition()
       , _scheduling_requested (false)
@@ -575,7 +575,7 @@ namespace sdpa
               }
             }
 
-            std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
+            std::lock_guard<std::mutex> const _ (_cancel_mutex);
             _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
               ( as_worker.get()->second
               , [this] (job_id_t const& job)
@@ -654,7 +654,7 @@ namespace sdpa
     void Agent::cancel_worker_handled_job
       (we::layer::id_type const& job_id)
     {
-      std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
+      std::lock_guard<std::mutex> const _ (_cancel_mutex);
 
       Job* const pJob (findJob (job_id));
       if (!pJob)
@@ -1614,7 +1614,7 @@ namespace sdpa
           _scheduling_requested = false;
         }
 
-        std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
+        std::lock_guard<std::mutex> const _ (_cancel_mutex);
 
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();
