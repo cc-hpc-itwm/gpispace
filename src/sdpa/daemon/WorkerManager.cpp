@@ -916,7 +916,7 @@ namespace sdpa
       return jobs_to_reschedule;
     }
 
-    unsigned long WorkerManager::num_free_workers()
+    unsigned long WorkerManager::num_free_workers() const
     {
       std::lock_guard<std::mutex> const _ (mtx_);
       return _num_free_workers;
