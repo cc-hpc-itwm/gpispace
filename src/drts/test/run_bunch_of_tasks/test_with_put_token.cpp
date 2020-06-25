@@ -125,9 +125,6 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
     std::multimap<std::string, pnet::type::value::value_type> const result
       (client.wait_and_extract (job_id));
 
-    BOOST_REQUIRE_EQUAL (result.count ("total_tasks_executed"), 1);
-
-    auto const expected (result.equal_range ("total_tasks_executed").first->second);
-    BOOST_REQUIRE_EQUAL (boost::get<long>(expected), num_tasks);
+    BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
   };
 }

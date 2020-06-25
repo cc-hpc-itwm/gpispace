@@ -4,49 +4,37 @@
   </properties>
   <in name="start" type="control" place="start"/>
   <in name="num_tasks" type="long" place="num_tasks"/>
-  <out name="total_tasks_executed" type="long" place="total_tasks_executed"/>
+  <out name="done" type="control" place="done"/>
   <net>
     <place name="start" type="control" put_token="true"/>
     <place name="num_tasks" type="long"/>
-    <place name="num_executed_tasks" type="long">
-      <token><value>0L</value></token>
-    </place>
-    <place name="total_tasks_executed" type="long"/>
-
+    <place name="done" type="control"/>
+    
+    <place name="task_finished" type="control"/>
     <transition name="execute_task">
       <defun>
         <in name="start" type="control"/>
-        <in name="num_tasks" type="long"/>
-        <inout name="num_executed_tasks" type="long"/>
-        <module name="test_module" function="task (num_executed_tasks)">
+        <out name="task_finished" type="control"/>
+        <module name="test_module" function="task (task_finished)">
           <code><![CDATA[
-            num_executed_tasks++;
+            task_finished = we::type::literal::control();
          ]]></code>
        </module>
       </defun>
-      <condition>
-        ${num_executed_tasks} :lt: ${num_tasks}
-      </condition>
       <connect-in port="start" place="start"/>
-      <connect-read port="num_tasks" place="num_tasks"/>
-      <connect-inout port="num_executed_tasks" place="num_executed_tasks"/>
+      <connect-out port="task_finished" place="task_finished"/>
     </transition>
       
-    <transition name="done">
-      <defun>
-        <in name="num_executed_tasks" type="long"/>
-        <in name="num_tasks" type="long"/>
-        <out name="total_tasks_executed" type="long"/>
-          <expression>
-            ${total_tasks_executed} := ${num_tasks};
-          </expression>
-      </defun>
-      <condition>
-        ${num_executed_tasks} :eq: ${num_tasks}
-      </condition>
-      <connect-in port="num_executed_tasks" place="num_executed_tasks"/>
-      <connect-in port="num_tasks" place="num_tasks"/>
-      <connect-out port="total_tasks_executed" place="total_tasks_executed"/>
+    <include-template href="wait.xml"/>
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_control"/>
+      <place-map virtual="wait" real="num_tasks"/>
+      <connect-in port="trigger" place="task_finished"/>
+      <connect-out port="done" place="done"/>
     </transition>
   </net>
 </defun>
