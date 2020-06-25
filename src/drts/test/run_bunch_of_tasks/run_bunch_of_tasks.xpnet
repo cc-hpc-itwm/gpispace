@@ -27,15 +27,15 @@
       <connect-out port="out" place="task_id"/>
     </transition>
 
-    <place name="task_finished" type="bool"/>
+    <place name="task_finished" type="control"/>
     <transition name="test_transition">
       <defun>
         <in name="task_id" type="long"/>
-        <out name="task_finished" type="bool"/>
+        <out name="task_finished" type="control"/>
         <module name="test_module"
                 function="task (task_finished)">
           <code><![CDATA[
-            task_finished = true;
+            task_finished = we::type::literal::control();
           ]]></code>
         </module>
       </defun>
@@ -44,12 +44,12 @@
     </transition>
 
     <include-template href="wait.xml"/>
-    <specialize name="wait_bool" use="wait">
-      <type-map replace="T" with="bool"/>
+    <specialize name="wait_control" use="wait">
+      <type-map replace="T" with="control"/>
     </specialize>
 
     <transition name="wait">
-      <use name="wait_bool"/>
+      <use name="wait_control"/>
       <place-map virtual="wait" real="num_remaining_tasks"/>
       <connect-in port="trigger" place="task_finished"/>
       <connect-out port="done" place="done"/>
