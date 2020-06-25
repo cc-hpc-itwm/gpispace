@@ -98,7 +98,7 @@ namespace sdpa
       };
 
     public:
-      unsigned long num_free_workers();
+      unsigned long num_free_workers() const;
 
       std::unordered_set<worker_id_t> findSubmOrAckWorkers
         (const sdpa::job_id_t& job_id) const;
