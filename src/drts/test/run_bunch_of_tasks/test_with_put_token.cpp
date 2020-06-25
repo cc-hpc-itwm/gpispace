@@ -13,6 +13,8 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -122,9 +124,8 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
       client.put_token (job_id, "start", start);
     }
 
-    std::multimap<std::string, pnet::type::value::value_type> const result
-      (client.wait_and_extract (job_id));
-
-    BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+    auto const result (client.wait_and_extract (job_id));
+    decltype (result) const expected {{"done", we::type::literal::control()}};
+    FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
   };
 }
