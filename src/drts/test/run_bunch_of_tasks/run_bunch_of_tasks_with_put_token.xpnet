@@ -2,11 +2,11 @@
   <properties name="drts">
     <property key="wait_for_output" value="true"/>
   </properties>
-  <in name="start" type="string" place="start"/>
+  <in name="start" type="control" place="start"/>
   <in name="num_tasks" type="long" place="num_tasks"/>
   <out name="total_tasks_executed" type="long" place="total_tasks_executed"/>
   <net>
-    <place name="start" type="string" put_token="true"/>
+    <place name="start" type="control" put_token="true"/>
     <place name="num_tasks" type="long"/>
     <place name="num_executed_tasks" type="long">
       <token><value>0L</value></token>
@@ -15,7 +15,7 @@
 
     <transition name="execute_task">
       <defun>
-        <in name="start" type="string"/>
+        <in name="start" type="control"/>
         <in name="num_tasks" type="long"/>
         <inout name="num_executed_tasks" type="long"/>
         <module name="test_module" function="task (num_executed_tasks)">

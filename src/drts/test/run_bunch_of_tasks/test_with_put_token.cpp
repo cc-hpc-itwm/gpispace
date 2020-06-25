@@ -106,7 +106,7 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
     );
 
   gspc::client client (drts);
-  pnet::type::value::value_type const start (std::string ("start"));
+  we::type::literal::control start;
 
   FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (35))
   {
