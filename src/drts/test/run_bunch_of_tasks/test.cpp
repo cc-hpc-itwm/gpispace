@@ -13,6 +13,8 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
+#include <util-generic/testing/printer/multimap.hpp>
+#include <util-generic/testing/require_container_is_permutation.hpp>
 #include <util-generic/testing/require_maximum_running_time.hpp>
 
 #include <we/type/value/boost/test/printer.hpp>
@@ -109,13 +111,14 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
 
   FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (8))
   {
-    std::multimap<std::string, pnet::type::value::value_type> const result
+    auto const result
       (client.put_and_run
          ( gspc::workflow (make.pnet())
          , {{"num_tasks", num_tasks}}
          )
       );
 
-    BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+    decltype (result) const expected {{"done", we::type::literal::control()}};
+    FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION (expected, result);
   };
 }
