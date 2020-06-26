@@ -10,6 +10,8 @@
 #include <test/source_directory.hpp>
 #include <test/shared_directory.hpp>
 
+#include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+
 #include <util-generic/read_lines.hpp>
 #include <util-generic/temporary_file.hpp>
 #include <util-generic/temporary_path.hpp>
@@ -30,6 +32,8 @@
 
 BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
 {
+  namespace validators = fhg::util::boost::program_options;
+
   boost::program_options::options_description options_description;
 
   options_description.add (test::options::source_directory());
@@ -39,12 +43,12 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
     ( "num-workers"
-    , boost::program_options::value<long>()->required()
+    , boost::program_options::value<validators::positive_integral<long>>()->required()
     , "number of workers"
     );
   options_description.add_options()
     ( "num-tasks"
-    , boost::program_options::value<long>()->required()
+    , boost::program_options::value<validators::positive_integral<long>>()->required()
     , "number of tasks"
     );
 
@@ -56,8 +60,10 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
         )
     );
 
-  long const num_tasks (vm.at ("num-tasks").as<long>());
-  long const num_workers (vm.at ("num-workers").as<long>());
+  long const num_tasks
+    (vm.at ("num-tasks").as<validators::positive_integral<long>>());
+  long const num_workers
+    (vm.at ("num-workers").as<validators::positive_integral<long>>());
 
   fhg::util::temporary_path const shared_directory
     ( test::shared_directory (vm)
