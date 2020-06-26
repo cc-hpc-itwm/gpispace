@@ -35,6 +35,18 @@ namespace gspc
         {"application-search-path"};
       constexpr char const* const agent_port {"agent-port"};
 
+#define OPTION_NAME_WORKER_ENV_COPY_VARIABLE "worker-env-copy-variable"
+#define OPTION_NAME_WORKER_ENV_COPY_CURRENT "worker-env-copy-current"
+#define OPTION_NAME_WORKER_ENV_COPY_FILE "worker-env-copy-file"
+      constexpr char const* const worker_env_copy_variable
+        {OPTION_NAME_WORKER_ENV_COPY_VARIABLE};
+      constexpr char const* const worker_env_copy_current
+        {OPTION_NAME_WORKER_ENV_COPY_CURRENT};
+      constexpr char const* const worker_env_copy_file
+        {OPTION_NAME_WORKER_ENV_COPY_FILE};
+      constexpr char const* const worker_env_set_variable
+        {"worker-env-set-variable"};
+
       constexpr char const* const virtual_memory_socket
         {"virtual-memory-socket"};
       constexpr char const* const virtual_memory_port
@@ -50,9 +62,94 @@ namespace gspc
       constexpr char const* const rif_strategy_parameters
         {"rif-strategy-parameters"};
     }
+
+    namespace validators
+    {
+      using namespace fhg::util::boost::program_options;
+
+      struct env_key
+      {
+        env_key (std::string value);
+        operator std::string() const;
+        friend std::ostream& operator<< (std::ostream&, env_key const&);
+      private:
+        std::string _value;
+      };
+      void validate
+        (boost::any&, std::vector<std::string> const&, env_key*, int);
+
+      struct env_kvpair
+      {
+        env_kvpair (std::string value);
+        operator std::string() const;
+        friend std::ostream& operator<< (std::ostream&, env_kvpair const&);
+      private:
+        std::string _value;
+      };
+      void validate
+        (boost::any&, std::vector<std::string> const&, env_kvpair*, int);
+
+      env_key::env_key (std::string value)
+        : _value (std::move (value))
+      {
+        if (_value.find ('=') != std::string::npos)
+        {
+          throw boost::program_options::invalid_option_value
+            ("environment key shall not contain '='");
+        }
+        if (_value.empty())
+        {
+          throw boost::program_options::invalid_option_value
+            ("environment key shall not be empty");
+        }
+      }
+      env_key::operator std::string() const
+      {
+        return _value;
+      }
+      std::ostream& operator<< (std::ostream& os, env_key const& v)
+      {
+        return os << v._value;
+      }
+      void validate
+        (boost::any& r, std::vector<std::string> const& vs, env_key*, int)
+      {
+        fhg::util::boost::program_options::validate<env_key> (r, vs);
+      }
+
+      env_kvpair::env_kvpair (std::string value)
+        : _value (std::move (value))
+      {
+        auto pos (_value.find ('='));
+        if (pos == std::string::npos)
+        {
+          throw boost::program_options::invalid_option_value
+            ( "environment key-value pair shall contain '=' separating key "
+              "and value"
+            );
+        }
+        if (pos == 0)
+        {
+          throw boost::program_options::invalid_option_value
+            ("environment key-value pair's key shall not be empty");
+        }
+      }
+      env_kvpair::operator std::string() const
+      {
+        return _value;
+      }
+      std::ostream& operator<< (std::ostream& os, env_kvpair const& v)
+      {
+        return os << v._value;
+      }
+      void validate
+        (boost::any& r, std::vector<std::string> const& vs, env_kvpair*, int)
+      {
+        fhg::util::boost::program_options::validate<env_kvpair> (r, vs);
+      }
+    }
   }
 
-  namespace validators = fhg::util::boost::program_options;
 
   namespace options
   {
@@ -113,6 +210,42 @@ namespace gspc
         , boost::program_options::value
           <validators::positive_integral<unsigned short>>()
         , "agent port"
+        )
+        ( name::worker_env_copy_variable
+        , boost::program_options::value<std::vector<validators::env_key>>()
+            ->default_value ({}, "none")
+        , "Copy the given environment variables with the currently exported "
+          "value to the remote workers."
+        )
+        ( name::worker_env_copy_current
+        , boost::program_options::value<bool>()
+            ->implicit_value (true)
+            ->default_value (false)
+        , "Copy the entire environment from the current process to the remote "
+          "worker, with no filter at all. Equivalent to specifying "
+          OPTION_NAME_WORKER_ENV_COPY_VARIABLE " for all keys in the current "
+          "environment."
+        )
+        ( name::worker_env_copy_file
+        , boost::program_options::value<std::vector<validators::existing_path>>()
+            ->default_value ({}, "none")
+        , "Copy the environment described in the given files to the remote "
+          "worker. If multiple files are given which contain the same key, "
+          "the used value is unspecified, but one of the given values.\n"
+          "A file shall have `key=value` lines. This implies multi-line "
+          "values are not possible. The key is defined as everything up "
+          "to the first `=`.\n"
+          "Overwrites values set via " OPTION_NAME_WORKER_ENV_COPY_VARIABLE
+          " and " OPTION_NAME_WORKER_ENV_COPY_CURRENT "."
+        )
+        ( name::worker_env_set_variable
+        , boost::program_options::value<std::vector<validators::env_kvpair>>()
+            ->default_value ({}, "none")
+        , "Set a given environment variable in the remote worker process.\n"
+          "Arguments shall be of format `key=value`.\n"
+          "Overwrites values set via " OPTION_NAME_WORKER_ENV_COPY_VARIABLE
+          ", " OPTION_NAME_WORKER_ENV_COPY_CURRENT " and "
+          OPTION_NAME_WORKER_ENV_COPY_FILE "."
         )
         ;
 
@@ -243,6 +376,34 @@ namespace gspc
       }
     }
 
+    template<typename T, typename U = T>
+      void set_as_vec ( boost::program_options::variables_map& vm
+                      , std::string const& option_name
+                      , std::vector<U> const& value
+                      )
+    {
+      std::vector<T> value_u {value.begin(), value.end()};
+      auto const pos_and_success
+        ( vm.emplace ( option_name
+                     , boost::program_options::variable_value
+                         (std::move (value_u), false)
+                     )
+        );
+
+      if (!pos_and_success.second)
+      {
+        throw std::runtime_error
+          (( boost::format
+             ("Failed to set option '%1%' to '%2%': Found old value '%3%'")
+           % option_name
+           % fhg::util::join (value, ",")
+           % fhg::util::join
+               (pos_and_success.first->second.as<std::vector<T>>(), ",")
+           ).str()
+          );
+      }
+    }
+
     template<typename T>
       void set_as ( boost::program_options::variables_map& vm
                   , std::string const& option_name
@@ -273,6 +434,11 @@ namespace gspc
     set_as<validators::positive_integral<_type>>                        \
       (vm, name::_name, std::to_string (value));                        \
   }
+#define SET_VECTOR(_name, _type, _validator)                  \
+  SET (_name, std::vector<_type>)                             \
+  {                                                           \
+    set_as_vec<_validator, _type> (vm, name::_name, value);   \
+  }
 
 #define GET_MAYBE(_name, _type, _as)                                    \
   boost::optional<_type> get_ ## _name                                  \
@@ -290,6 +456,18 @@ namespace gspc
 #define GET_STRING(_name, _as) GET_MAYBE (_name, std::string, _as)
 #define GET_POSITIVE_INTEGRAL(_name, _type)                             \
   GET_MAYBE (_name, _type, validators::positive_integral<_type>)
+#define GET_VECTOR(_name, _type, _as)                                   \
+  boost::optional<std::vector<_type>> get_ ## _name                     \
+    (boost::program_options::variables_map const& vm)                   \
+  {                                                                     \
+    if (vm.count (name::_name))                                         \
+    {                                                                   \
+      auto const v (vm.at (name::_name).as<std::vector<_as>>());        \
+      return std::vector<_type> {v.begin(), v.end()};                   \
+    }                                                                   \
+                                                                        \
+    return boost::none;                                                 \
+  }
 
 #define REQUIRE(_name, _type, _as)                                      \
   _type require_ ## _name                                               \
@@ -313,6 +491,22 @@ namespace gspc
   REQUIRE (_name, std::string, _as)
 #define REQUIRE_POSITIVE_INTEGRAL(_name, _type)                 \
   REQUIRE (_name, _type, validators::positive_integral<_type>)
+#define REQUIRE_VECTOR(_name, _type, _as)                               \
+  std::vector<_type> require_ ## _name                                  \
+    (boost::program_options::variables_map const& vm)                   \
+  {                                                                     \
+    if (vm.count (name::_name))                                         \
+    {                                                                   \
+      auto const v (vm.at (name::_name).as<std::vector<_as>>());        \
+      return std::vector<_type> {v.begin(), v.end()};                   \
+    }                                                                   \
+                                                                        \
+    throw std::logic_error                                              \
+      (( boost::format ("missing key '%1%' in variables map")           \
+       % name::_name                                                    \
+       ).str()                                                          \
+      );                                                                \
+  }
 
 #define ACCESS_PATH(_name, _as)                 \
   SET_PATH (_name, _as)                         \
@@ -326,7 +520,23 @@ namespace gspc
   SET_POSITIVE_INTEGRAL (_name, _type)          \
   GET_POSITIVE_INTEGRAL (_name, _type)          \
   REQUIRE_POSITIVE_INTEGRAL (_name, _type)
+#define ACCESS_VECTOR(_name, _type, _validator)               \
+  SET_VECTOR (_name, _type, _validator)                       \
+  GET_VECTOR (_name, _type, _validator)                       \
+  REQUIRE_VECTOR (_name, _type, _validator)
+#define ACCESS_BOOL(_name)                                    \
+  SET (_name, bool)                                           \
+  {                                                           \
+    set_as (vm, name::_name, value, std::to_string (value));  \
+  }                                                           \
+  GET_MAYBE (_name, bool, bool)                               \
+  REQUIRE (_name, bool, bool)
 
+  ACCESS_VECTOR (worker_env_copy_variable, std::string, validators::env_key)
+  ACCESS_BOOL (worker_env_copy_current)
+  ACCESS_VECTOR
+    (worker_env_copy_file, boost::filesystem::path, validators::existing_path)
+  ACCESS_VECTOR (worker_env_set_variable, std::string, validators::env_kvpair)
 
   ACCESS_STRING (log_host, validators::nonempty_string)
   ACCESS_POSITIVE_INTEGRAL (log_port, unsigned short)

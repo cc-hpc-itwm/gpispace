@@ -7,6 +7,7 @@
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/make_optional.hpp>
@@ -34,18 +35,19 @@
 
 #include <algorithm>
 #include <atomic>
-#include <chrono>
-#include <fstream>
+#include <cassert>
 #include <functional>
 #include <future>
-#include <iostream>
+#include <iterator>
+#include <list>
+#include <memory>
 #include <numeric>
 #include <regex>
 #include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <tuple>
+#include <type_traits>
+
+#include <unistd.h>
 
 namespace fhg
 {
@@ -179,6 +181,10 @@ namespace fhg
     , fhg::drts::processes_storage& processes
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
+    , std::vector<std::string> const& worker_env_copy_variable
+    , bool worker_env_copy_current
+    , std::vector<boost::filesystem::path> const& worker_env_copy_file
+    , std::vector<std::string> const& worker_env_set_variable
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
     , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
@@ -330,11 +336,50 @@ namespace fhg
             }
 
             std::unordered_map<std::string, std::string> environment;
-            environment.emplace
-              ( "LD_LIBRARY_PATH"
-              , (installation_path.lib()).string() + ":"
-              + (installation_path.libexec()).string()
+
+            auto const& parse_and_add_definition
+              ( [&] (std::string const& definition)
+                {
+                  auto const pos (definition.find ('='));
+                  assert (pos != std::string::npos && pos != 0);
+                  environment.emplace
+                    (definition.substr (0, pos), definition.substr (pos + 1));
+                }
               );
+
+            for (auto const& key : worker_env_copy_variable)
+            {
+              auto const value (fhg::util::getenv (key.c_str()));
+              if (!value)
+              {
+                throw std::invalid_argument
+                  ( "requested to copy environment variable '" + key
+                  + "', but variable is not set"
+                  );
+              }
+              environment.emplace (key, *value);
+            }
+
+            if (worker_env_copy_current)
+            {
+              for (auto env (environ); *env; ++env)
+              {
+                parse_and_add_definition (*env);
+              }
+            }
+
+            for (auto const& file : worker_env_copy_file)
+            {
+              for (auto const& definition : fhg::util::read_lines (file))
+              {
+                parse_and_add_definition (definition);
+              }
+            }
+
+            for (auto const& definition : worker_env_set_variable)
+            {
+              parse_and_add_definition (definition);
+            }
 
             futures.emplace_back
               ( connection.second

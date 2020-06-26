@@ -68,5 +68,20 @@ fhg_add_test (NAME module_nounload_detection
   DEPENDS module_nounload_detection-empty
 )
 
+fhg_add_test (NAME worker_env
+  SOURCES "worker_env.cpp"
+  USE_BOOST
+  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+  LIBRARIES gspc
+            test-utilities
+            Util::Generic
+            Boost::filesystem
+            Boost::program_options
+  REQUIRES_INSTALLATION
+  START_SCOPED_RIF
+)
+
 add_subdirectory (client_implementation_with_ostream_logger)
 add_subdirectory (scoped_rifd_execute)
