@@ -203,6 +203,7 @@ namespace sdpa
       )
     {
       std::set<job_id_t> jobs_started;
+      bool started (false);
 
       long num_free_workers_left
         (_worker_manager.num_free_workers());
@@ -216,17 +217,18 @@ namespace sdpa
 
         std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
         auto const assigned_workers (allocation_table_.at (job_id)->workers());
-        if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-              ( job_id
-              , assigned_workers
-              , allocation_table_.at (job_id)->implementation()
-              , serve_job
-              ).first
-           )
+        std::tie (started, num_free_workers_left) =
+          _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+            ( job_id
+            , allocation_table_.at (job_id)->workers()
+            , allocation_table_.at (job_id)->implementation()
+            , serve_job
+            );
+
+        if (started)
         {
           jobs_started.insert (job_id);
           it = _pending_jobs.erase (it);
-          num_free_workers_left -= assigned_workers.size();
         }
         else
         {
