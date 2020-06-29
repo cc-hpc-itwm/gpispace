@@ -489,7 +489,12 @@ namespace sdpa
 
       equivalence_class._idle_workers.erase (worker->first);
 
-      _num_free_workers--;
+      // Update the counter only if the worker is terminal,
+      // i.e. it has no slaves. Submission to slave agents is always allowed.
+      if (worker->second.is_terminal())
+      {
+        _num_free_workers--;
+      }
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
@@ -539,7 +544,12 @@ namespace sdpa
           equivalence_class._idle_workers.emplace (worker->first);
         }
 
-        _num_free_workers++;
+        // Update the counter only if the worker is terminal,
+        // i.e. it has no slaves. Submission to slave agents is always allowed.
+        if (worker->second.is_terminal())
+        {
+          _num_free_workers++;
+        }
       }
     }
 
