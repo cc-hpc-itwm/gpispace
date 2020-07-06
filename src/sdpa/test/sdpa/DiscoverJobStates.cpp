@@ -171,10 +171,15 @@ BOOST_DATA_TEST_CASE
 
   utils::client client (agent, certificates);
 
-  REQUIRE_ONE_LEAF_WITH_STATUS
-    ( client.discover (client.submit_job (utils::module_call()))
-    , sdpa::status::PENDING
-    );
+  auto const job_id (client.submit_job (utils::module_call()));
+  auto discovery_info (client.discover (job_id));
+
+  while (discovery_info.children().empty())
+  {
+    discovery_info = client.discover (job_id);
+  }
+
+  REQUIRE_ONE_LEAF_WITH_STATUS (discovery_info, sdpa::status::PENDING);
 }
 
 namespace
