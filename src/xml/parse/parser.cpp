@@ -985,10 +985,17 @@ namespace xml
           , properties                                                     \
           }
 
-        return !!function ? TRANSITION (function.get())
-          : !!use ? TRANSITION (use.get())
-          : throw std::logic_error ("transition requires function or use")
-          ;
+        if (!!function)
+        {
+          return TRANSITION (function.get());
+        }
+        
+        if (!!use)
+        {
+          return TRANSITION (use.get());
+        }
+
+        throw std::logic_error("transition requires function or use");
 
 #undef TRANSITION
       }
@@ -2033,11 +2040,27 @@ namespace xml
           , properties                          \
           }
 
-        return !!expression ? FUNCTION (*expression)
-          : !!multi_module.modules().size() ? FUNCTION (multi_module)
-          : !!module ? FUNCTION (*module)
-          : !!net ? FUNCTION (*net)
-          : throw std::logic_error ("missing function content");
+        if (!!expression)
+        {
+          return FUNCTION (*expression);
+        }
+
+        if (!!multi_module.modules().size())
+        {
+          return FUNCTION (multi_module);
+        }
+
+        if (!!module)
+        {
+          return FUNCTION (*module);
+        }
+
+        if (!!net)
+        {
+          return FUNCTION (*net);
+        }
+
+        throw std::logic_error ("missing function content");
 
 #undef FUNCTION
       }

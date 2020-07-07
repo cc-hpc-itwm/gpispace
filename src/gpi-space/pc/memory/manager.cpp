@@ -34,12 +34,17 @@ namespace gpi
       {
         url_t url (url_s);
 
-        return
-          ( url.type() == "gaspi" ? gaspi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner)
-          : url.type() == "beegfs" ? beegfs_area_t::create (logger, url_s, topology, handle_generator, owner)
-          : throw std::runtime_error
-              ("no memory type registered with: '" + url_s + "'")
-          );
+        if (url.type() == "gaspi")
+        {
+          return gaspi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner);
+        }
+
+        if (url.type() == "beegfs")
+        {
+          return beegfs_area_t::create (logger, url_s, topology, handle_generator, owner);
+        }
+
+        throw std::runtime_error ("no memory type registered with: '" + url_s + "'");
       }
       }
 

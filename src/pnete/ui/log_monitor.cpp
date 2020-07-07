@@ -73,8 +73,13 @@ namespace
 #undef ENTRY
 
     auto it (category_data.find (category));
-    return it != category_data.end() ? it->second
-      : throw std::invalid_argument ("category is not a legacy category");
+
+    if (it == category_data.end())
+    {
+      throw std::invalid_argument ("category is not a legacy category");
+    }
+
+    return it->second;
   }
 
   QColor category_to_color (std::string const& category)

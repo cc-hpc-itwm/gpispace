@@ -84,15 +84,27 @@ namespace
 
   const char* description (const QString& action)
   {
-    return action == "add_to_working_set"
-      ? "add this node to the working set"
-      : action == "reboot"
-      ? "reboot {hostname}"
-      : action == "remove_from_working_set"
-      ? "remove this node from the working set"
-      : action == "foo"
-      ? "foo bar"
-      : throw std::runtime_error ("unknown action name");
+      if (action == "add_to_working_set")
+      {
+        return "add this node to the working set";
+      }
+      
+      if (action == "reboot")
+      {
+        return "reboot {hostname}";
+      }
+
+      if (action == "remove_from_working_set")
+      {
+        return "remove this node from the working set";
+      }
+
+      if (action == "foo")
+      {
+        return "foo bar";
+      }
+
+      throw std::runtime_error ("unknown action name");
   }
 
   QString random_initial_state()
@@ -323,21 +335,34 @@ void thread::execute_action (fhg::util::parse::position& pos)
 void thread::send_action_description (fhg::util::parse::position& pos)
 {
   const QString action (prefix::require::qstring (pos));
+  QString detail;
+  if (action == "add_to_working_set")
+  {
+    detail = "expected_next_state: \"used\"";
+  }
+  else if (action == "reboot")
+  {
+    detail = "expected_next_state: \"down\", requires_confirmation: true, arguments: [\"foo\":[label:\"foo bar\",type:boolean], \"bar\":[label:\"bar baz\",type:integer]], ";
+  }
+  else if (action == "remove_from_working_set")
+  {
+    detail = "expected_next_state: \"available\"";
+  }
+  else if (action == "foo")
+  {
+    detail = "expected_next_state: \"available\"";
+  }
+  else
+  {
+    throw std::runtime_error ("unknown action");
+  }
+
   _socket->write
     ( qPrintable ( QString
                    ("action_description: [\"%1\": [long_text: \"%2\", %3],]\n")
                  .arg (action)
                  .arg (description (action))
-                 .arg (action == "add_to_working_set"
-                      ? "expected_next_state: \"used\""
-                      : action == "reboot"
-                      ? "expected_next_state: \"down\", requires_confirmation: true, arguments: [\"foo\":[label:\"foo bar\",type:boolean], \"bar\":[label:\"bar baz\",type:integer]], "
-                      : action == "remove_from_working_set"
-                      ? "expected_next_state: \"available\""
-                      : action == "foo"
-                      ? "expected_next_state: \"available\""
-                      : throw std::runtime_error ("unknown action")
-                      )
+                 .arg (detail)
                  )
     );
 }
