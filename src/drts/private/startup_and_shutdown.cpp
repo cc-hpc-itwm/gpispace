@@ -748,13 +748,22 @@ namespace fhg
               , std::ostream& info_output
               )
       {
-        std::string const kind
-          ( component == component_type::worker ? "drts-kernel"
-          : component == component_type::agent ? "agent"
-          : component == component_type::vmem ? "vmem"
-          : component == component_type::logging_demultiplexer ? "logging-demultiplexer"
-          : throw std::logic_error ("invalid enum value")
-          );
+        std::string const kind = [](component_type c)
+        {
+          switch(c)
+          {
+            case component_type::worker:
+              return "drts-kernel";
+            case component_type::agent:
+              return "agent";
+            case component_type::vmem:
+              return "vmem";
+            case component_type::logging_demultiplexer:
+              return "logging-demultiplexer";
+            default:
+              throw std::logic_error ("invalid enum value");
+          }
+        }(component);
 
         std::unordered_map
           < rif::entry_point

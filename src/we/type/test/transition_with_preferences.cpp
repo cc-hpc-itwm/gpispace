@@ -32,18 +32,26 @@ namespace {
     , const transition_type type
     )
   {
+    auto dtype = [&type]()
+    {
+      switch (type)
+      {
+      case transition_type::net:
+        return data_type(we::type::net_type());
+      case transition_type::expression:
+        return data_type(we::type::expression_t (""));
+      case transition_type::module:
+        return data_type(we::type::module_call_t());
+      case transition_type::multi_module:
+        return data_type(we::type::multi_module_call_t());
+      default:
+        throw std::logic_error ("invalid transition data_type specified");
+      }
+    };
+
     return we::type::transition_t
       ( transition_name
-      , type == transition_type::net ?
-          data_type (we::type::net_type())
-      : type == transition_type::expression ?
-          data_type (we::type::expression_t (""))
-      : type == transition_type::module ?
-          data_type (we::type::module_call_t())
-      : type == transition_type::multi_module ?
-          data_type (we::type::multi_module_call_t())
-      : throw std::logic_error
-          ("invalid transition data_type specified")
+      , dtype()
       , boost::none
       , {}
       , we::priority_type()
