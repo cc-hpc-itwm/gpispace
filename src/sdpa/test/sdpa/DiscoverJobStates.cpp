@@ -176,6 +176,7 @@ BOOST_DATA_TEST_CASE
 
   while (discovery_info.children().empty())
   {
+    BOOST_REQUIRE_EQUAL (discovery_info.state(), boost::none);
     discovery_info = client.discover (job_id);
   }
 
