@@ -174,7 +174,7 @@ BOOST_DATA_TEST_CASE
   auto const job_id (client.submit_job (utils::module_call()));
   auto discovery_info (client.discover (job_id));
 
-  while (discovery_info.children().empty())
+  while (max_depth (discovery_info) == 1)
   {
     BOOST_REQUIRE_EQUAL (discovery_info.state(), boost::none);
     discovery_info = client.discover (job_id);
