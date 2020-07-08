@@ -80,6 +80,7 @@ namespace sdpa
       , _job_map_mutex()
       , job_map_()
       , _cleanup_job_map_on_dtor_helper (job_map_)
+      , _resource_manager()
       , _worker_manager()
       , _scheduler ( [this] (job_id_t job_id)
                      {

@@ -25,6 +25,8 @@
 
 #include <gpi-space/pc/client/api.hpp>
 
+#include <sdpa/daemon/resource_manager/ResourceManager.hpp>
+
 #include <logging/stream_emitter.hpp>
 
 #include <we/layer.hpp>
@@ -302,6 +304,7 @@ namespace sdpa {
         Agent::job_map_t& _;
       } _cleanup_job_map_on_dtor_helper;
 
+      gspc::ResourceManager _resource_manager;
       WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
