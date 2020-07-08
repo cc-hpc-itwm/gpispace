@@ -1,14 +1,16 @@
-ADD_LIBRARY(sdpa
-  capability.cpp
-  client.cpp
-  com/NetworkStrategy.cpp
-  daemon/Agent.cpp
-  daemon/Job.cpp
-  daemon/scheduler/CoallocationScheduler.cpp
-  daemon/scheduler/Reservation.cpp
-  daemon/Worker.cpp
-  daemon/WorkerManager.cpp
-  events/Codec.cpp
+extended_add_library ( NAME sdpa
+  SOURCES "capability.cpp"
+          "client.cpp"
+          "com/NetworkStrategy.cpp"
+          "daemon/Agent.cpp"
+          "daemon/Job.cpp"
+          "daemon/scheduler/CoallocationScheduler.cpp"
+          "daemon/scheduler/Reservation.cpp"
+          "daemon/Worker.cpp"
+          "daemon/WorkerManager.cpp"
+          "events/Codec.cpp"
+          "daemon/resource_manager/ResourceManager.cpp"
+  LIBRARIES "resources"
 )
 
 target_link_libraries (sdpa
