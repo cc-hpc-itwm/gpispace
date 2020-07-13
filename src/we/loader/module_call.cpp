@@ -10,6 +10,8 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <fhg/assert.hpp>
+
 #include <boost/format.hpp>
 
 #include <functional>
