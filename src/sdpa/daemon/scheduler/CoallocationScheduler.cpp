@@ -30,6 +30,11 @@ namespace sdpa
       _jobs_to_schedule.push (jobId);
     }
 
+    void CoallocationScheduler::delete_pending_job (sdpa::job_id_t const& job)
+    {
+      _pending_jobs.erase (job);
+    }
+
     double CoallocationScheduler::compute_reservation_cost
       ( const job_id_t& job_id
       , const std::set<worker_id_t>& workers
@@ -175,6 +180,7 @@ namespace sdpa
           )
       {
         releaseReservation (job_id);
+        delete_pending_job (job_id);
         enqueueJob (job_id);
       }
 
@@ -189,35 +195,46 @@ namespace sdpa
     }
 
     std::set<job_id_t> CoallocationScheduler::start_pending_jobs
-      (std::function<void ( WorkerSet const&
-                          , Implementation const& implementation
-                          , const job_id_t&
-                          )
-                    > serve_job
+      ( std::function<void ( WorkerSet const&
+                           , Implementation const& implementation
+                           , const job_id_t&
+                           )
+                     > serve_job
       )
     {
       std::set<job_id_t> jobs_started;
-      std::unordered_set<job_id_t> remaining_jobs;
-      std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
-      for (const job_id_t& job_id: _pending_jobs)
+      bool started (false);
+
+      long num_free_workers_left
+        (_worker_manager.num_free_workers());
+
+      for ( auto it (_pending_jobs.begin())
+          ; num_free_workers_left > 0  && it != _pending_jobs.end()
+          ;
+          )
       {
-        if (_worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-              ( job_id
-              , allocation_table_.at (job_id)->workers()
-              ,  allocation_table_.at (job_id)->implementation()
-              , serve_job
-              )
-           )
+        auto const job_id (*it);
+
+        std::lock_guard<std::recursive_mutex> const _ (mtx_alloc_table_);
+        auto const assigned_workers (allocation_table_.at (job_id)->workers());
+        std::tie (started, num_free_workers_left) =
+          _worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
+            ( job_id
+            , allocation_table_.at (job_id)->workers()
+            , allocation_table_.at (job_id)->implementation()
+            , serve_job
+            );
+
+        if (started)
         {
           jobs_started.insert (job_id);
+          it = _pending_jobs.erase (it);
         }
         else
         {
-          remaining_jobs.emplace (job_id);
+          it++;
         }
       }
-
-      std::swap (_pending_jobs, remaining_jobs);
 
       return jobs_started;
     }
@@ -244,7 +261,6 @@ namespace sdpa
           }
         }
 
-        _pending_jobs.erase (it->first);
         allocation_table_.erase (it);
       }
       //! \todo why can we ignore this?
