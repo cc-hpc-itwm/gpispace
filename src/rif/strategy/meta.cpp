@@ -5,6 +5,7 @@
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
+#include <rif/strategy/local.hpp>
 #include <rif/strategy/pbsdsh.hpp>
 #include <rif/strategy/ssh.hpp>
 
@@ -32,10 +33,9 @@ namespace fhg
     {
       namespace
       {
-        std::unordered_map
-          < std::string
-          , std::pair
-            < std::function
+        struct Strategy
+        {
+          std::function
               < std::unordered_map<std::string, std::exception_ptr>
                 ( std::vector<std::string> const&
                 , boost::optional<unsigned short> const&
@@ -45,19 +45,22 @@ namespace fhg
                 , std::vector<std::string> const&
                 , std::ostream&
                 )
-              >
-            , std::function
+              > bootstrap;
+          std::function
               < std::pair < std::unordered_set<std::string>
                           , std::unordered_map<std::string, std::exception_ptr>
                           >
                 ( std::unordered_map<std::string, fhg::rif::entry_point> const&
                 , std::vector<std::string> const&
                 )
-              >
-            >
-          > const strategies { {"pbsdsh", {pbsdsh::bootstrap, pbsdsh::teardown}}
-                             , {"ssh", {ssh::bootstrap, ssh::teardown}}
-                             };
+              > teardown;
+        };
+
+        std::unordered_map <std::string, Strategy> const strategies
+          { {"local", {local::bootstrap, local::teardown}}
+          , {"pbsdsh", {pbsdsh::bootstrap, pbsdsh::teardown}}
+          , {"ssh", {ssh::bootstrap, ssh::teardown}}
+          };
 
         void validate_strategy (std::string const& strategy)
         {
@@ -145,7 +148,7 @@ namespace fhg
           (rpc_server.local_endpoint());
 
         std::unordered_map<std::string, std::exception_ptr> const failed
-          ( strategies.at (strategy).first
+          ( strategies.at (strategy).bootstrap
               ( hostnames
               , port
               , fhg::util::connectable_to_address_string (local_endpoint.address())
@@ -186,7 +189,7 @@ namespace fhg
       {
         validate_strategy (strategy);
 
-        return strategies.at (strategy).second (entry_points, parameters);
+        return strategies.at (strategy).teardown (entry_points, parameters);
       }
     }
   }

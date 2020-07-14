@@ -1,8 +1,12 @@
+find_package (OpenSSL REQUIRED)
+
 extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES Util::Generic ssl crypto
+  LIBRARIES Util::Generic
+            OpenSSL::SSL
+            OpenSSL::Crypto
 )
 add_subdirectory (fhgcom/tests)
 
@@ -129,8 +133,8 @@ extended_add_library (NAME pnet
             RPC
             ${CMAKE_DL_LIBS}
             rapidxml
-            ssl
-            crypto
+            OpenSSL::SSL
+            OpenSSL::Crypto
   COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
 )
 

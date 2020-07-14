@@ -1,0 +1,32 @@
+<defun name="top">
+  <out name="env" type="set" place="env"/>
+  <net>
+    <place name="trigger" type="control">
+      <token><value>[]</value></token>
+    </place>
+    <place name="env" type="set"/>
+
+    <transition name="t">
+      <defun>
+        <in name="trigger" type="control"/>
+        <out name="env" type="set"/>
+        <module name="m" function="env f()">
+          <cinclude href="we/type/value/wrap.hpp"/>
+          <cinclude href="set"/>
+          <cinclude href="string"/>
+          <cinclude href="unistd.h"/>
+          <code><![CDATA[
+            std::set<std::string> env;
+            for (auto e (environ); *e; ++e)
+            {
+              env.emplace (*e);
+            }
+            return pnet::type::value::wrap (env);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in place="trigger" port="trigger"/>
+      <connect-out place="env" port="env"/>
+    </transition>
+  </net>
+</defun>

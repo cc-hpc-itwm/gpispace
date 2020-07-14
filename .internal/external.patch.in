@@ -1,0 +1,31 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 8735d723d..b9c3487e7 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -11,14 +11,13 @@ add_subdirectory (cmake)
+ include (add_macros)
+ include (beautify_find_boost)
+ include (require_compiler_version)
+-include (git)
+-include (git_submodules)
+ 
+ set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
+ 
+-determine_git_revision ("${CMAKE_SOURCE_DIR}" PROJECT_REVISION)
+-
+-install_git_submodules_information ("git.submodules")
++# BEGIN RELEASE @BRANCH@
++set (PROJECT_REVISION @REVISION@)
++install (FILES "${CMAKE_SOURCE_DIR}/git.submodules" DESTINATION .)
++# END RELEASE
+ 
+ set (required_string_option_sentinel_value "required_string_option_sentinel_value-NOT_SET")
+ 
+@@ -126,7 +125,6 @@ list (APPEND INSTALL_RPATH_DIRS "lib")
+ 
+ add_subdirectory (external)
+ add_subdirectory (doc)
+-add_subdirectory (playground/bl)
+ add_subdirectory (share)
+ add_subdirectory (src)
+ add_subdirectory (test)

@@ -97,11 +97,22 @@ namespace
   };
   std::ostream& operator<< (std::ostream& os, Order const& o)
   {
-    return os << ( o == Order::AsyncRecv_Connect_Send ? "AsyncRecv_Connect_Send"
-                 : o == Order::Connect_Send_AsyncRecv ? "Connect_Send_AsyncRecv"
-                 : o == Order::Connect_AsyncRecv_Send ? "Connect_AsyncRecv_Send"
-                 : throw std::invalid_argument ("bad order")
-                 );
+    switch (o)
+    {
+      case Order::AsyncRecv_Connect_Send:
+        os << "AsyncRecv_Connect_Send";
+        break;
+      case Order::Connect_Send_AsyncRecv:
+        os << "Connect_Send_AsyncRecv";
+        break;
+      case Order::Connect_AsyncRecv_Send:
+        os << "Connect_AsyncRecv_Send";
+        break;
+      default:
+        throw std::invalid_argument ("bad order");
+    }
+
+    return os;
   }
 
   std::vector<std::string> test_messages()
