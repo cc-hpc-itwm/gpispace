@@ -1,0 +1,87 @@
+<defun name="many_ranges_in_memory_transfer">
+  <in name="data" type="bytearray" place="data"/>
+  <in name="global" type="list" place="global"/>
+  <in name="size_of_range" type="unsigned long" place="size_of_range"/>
+  <in name="distance_between_ranges" type="unsigned long" place="distance_between_ranges"/>
+  <in name="number_of_ranges" type="unsigned long" place="number_of_ranges"/>
+  <out name="out" type="control" place="out"/>
+  <net>
+    <place name="data" type="bytearray"/>
+    <place name="global" type="list"/>
+    <place name="size_of_range" type="unsigned long"/>
+    <place name="distance_between_ranges" type="unsigned long"/>
+    <place name="number_of_ranges" type="unsigned long"/>
+    <place name="out" type="control"/>
+    <transition name="t">
+      <defun>
+        <in name="data" type="bytearray"/>
+        <in name="global" type="list"/>
+        <in name="size_of_range" type="unsigned long"/>
+        <in name="distance_between_ranges" type="unsigned long"/>
+        <in name="number_of_ranges" type="unsigned long"/>
+        <out name="out" type="control"/>
+        <memory-buffer name="local">
+          <size>
+            ${number_of_ranges} * ${size_of_range}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <local>
+            ${range.buffer} := "local";
+            ${range.offset} := 0UL;
+            ${range.size} := ${number_of_ranges} * ${size_of_range};
+            stack_push (List(), ${range})
+          </local>
+          <global>
+            ${global}
+          </global>
+        </memory-get>
+        <module name="m" function="out f ( local
+                                         , data
+                                         , size_of_range
+                                         , distance_between_ranges
+                                         , number_of_ranges
+                                         )">
+          <cinclude href="boost/format.hpp"/>
+          <cinclude href="stdexcept"/>
+          <cinclude href="string"/>
+          <code><![CDATA[
+          auto l (static_cast<char const*> (local));
+          auto d (data.v().data());
+
+          for ( unsigned long range (0UL)
+              ; range < number_of_ranges
+              ; ++range
+              , d += distance_between_ranges
+              )
+          {
+            for (unsigned long i (0UL); i < size_of_range; ++i, ++l, ++d)
+            {
+              if (*l != *d)
+              {
+                throw std::runtime_error
+                  (str ( boost::format
+                           ("wrong content at (%1%, %2%): chr(%3%) != chr(%4%)")
+                       % range
+                       % i
+                       % static_cast<int> (*l)
+                       % static_cast<int> (*d)
+                       )
+                  );
+              }
+            }
+          }
+
+          return we::type::literal::control();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="data" place="data"/>
+      <connect-in port="global" place="global"/>
+      <connect-in port="size_of_range" place="size_of_range"/>
+      <connect-in port="distance_between_ranges" place="distance_between_ranges"/>
+      <connect-in port="number_of_ranges" place="number_of_ranges"/>
+      <connect-out port="out" place="out"/>
+    </transition>
+  </net>
+</defun>
