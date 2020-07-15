@@ -339,27 +339,43 @@ namespace gpi
           }
         }
 
+        namespace
+        {
+          template<typename Buf, typename IO, typename Desc>
+            void io_exact
+              (int fd, Buf buffer, size_t size, IO io, Desc what, Desc got)
+          {
+            auto const bytes (io (fd, buffer, size));
+
+            if (bytes == size)
+            {
+              return;
+            }
+
+            if (0 < bytes && bytes < size)
+            {
+              return io_exact (fd, buffer + bytes, size - bytes, io, what, got);
+            }
+
+            //! \note the case bytes == 0 is used to terminate the
+            //! communication_threads
+
+            throw std::runtime_error
+              (str ( boost::format
+                       ("io_exact: unable to %1% %2% bytes, %3% %4%")
+                   % what
+                   % size
+                   % got
+                   % bytes
+                   )
+              );
+          }
+        }
+
         void read_exact (int fd, char* buffer, size_t size)
         {
-          auto const bytes_read (fhg::util::syscall::read (fd, buffer, size));
-
-          if (bytes_read == size)
-          {
-            return;
-          }
-
-          if (0 < bytes_read && bytes_read < size)
-          {
-            return read_exact (fd, buffer + bytes_read, size - bytes_read);
-          }
-
-          throw std::runtime_error
-            (str ( boost::format
-                     ("read_exact: unable to read %1% bytes, read %2%")
-                 % size
-                 % bytes_read
-                 )
-            );
+          return io_exact
+            (fd, buffer, size, &fhg::util::syscall::read, "read", "read");
         }
         void read_exact (int fd, void* buffer, size_t size)
         {
@@ -367,27 +383,8 @@ namespace gpi
         }
         void write_exact (int fd, char const* buffer, size_t size)
         {
-          auto const bytes_written
-            (fhg::util::syscall::write (fd, buffer, size));
-
-          if (bytes_written == size)
-          {
-            return;
-          }
-
-          if (0 < bytes_written && bytes_written < size)
-          {
-            return write_exact
-              (fd, buffer + bytes_written, size - bytes_written);
-          }
-
-          throw std::runtime_error
-            (str ( boost::format
-                     ("write_exact: unable to write %1% bytes, wrote %2%")
-                 % size
-                 % bytes_written
-                 )
-            );
+          return io_exact
+            (fd, buffer, size, &fhg::util::syscall::write, "write", "written");
         }
         void write_exact (int fd, void const* buffer, size_t size)
         {
