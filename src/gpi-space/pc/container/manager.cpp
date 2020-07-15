@@ -345,30 +345,31 @@ namespace gpi
             void io_exact
               (int fd, Buf buffer, size_t size, IO io, Desc what, Desc got)
           {
-            auto const bytes (io (fd, buffer, size));
+            auto missing (size);
 
-            if (bytes == size)
+            while (missing > 0)
             {
-              return;
+              auto const bytes (io (fd, buffer, size));
+
+              if (bytes == 0 || bytes > size)
+              {
+                //! \note the case bytes == 0 is used to terminate the
+                //! communication_threads
+
+                throw std::runtime_error
+                  (str ( boost::format
+                           ("io_exact: unable to %1% %2% bytes, %3% %4%")
+                       % what
+                       % size
+                       % got
+                       % bytes
+                       )
+                  );
+              }
+
+              missing -= bytes;
+              buffer += bytes;
             }
-
-            if (0 < bytes && bytes < size)
-            {
-              return io_exact (fd, buffer + bytes, size - bytes, io, what, got);
-            }
-
-            //! \note the case bytes == 0 is used to terminate the
-            //! communication_threads
-
-            throw std::runtime_error
-              (str ( boost::format
-                       ("io_exact: unable to %1% %2% bytes, %3% %4%")
-                   % what
-                   % size
-                   % got
-                   % bytes
-                   )
-              );
           }
         }
 
