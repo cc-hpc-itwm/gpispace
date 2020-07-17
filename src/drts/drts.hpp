@@ -1,9 +1,12 @@
 #pragma once
 
 #include <drts/certificates.hpp>
+#include <drts/Forest.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
+#include <drts/resource/Class.hpp>
+#include <drts/resource/ID.hpp>
 #include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.fwd.hpp>
@@ -67,19 +70,25 @@ namespace gspc
   class scoped_runtime_system
   {
   public:
-    scoped_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
-                          , std::string const& topology_description
-                          , std::ostream& info_output = std::cerr
-                          , Certificates const& certificates = boost::none
-                          );
-    scoped_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
-                          , std::string const& topology_description
-                          , rifd_entry_points const& entry_points
-                          , std::ostream& info_output = std::cerr
-                          , Certificates const& certificates = boost::none
-                          );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , std::string const& topology_description
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      , boost::optional<UniqueForest<resource::Class>> const&
+          resource_descriptions = boost::none
+      );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , std::string const& topology_description
+      , rifd_entry_points const& entry_points
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      , boost::optional<UniqueForest<resource::Class>> const&
+          resource_descriptions = boost::none
+      );
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const&
@@ -88,6 +97,8 @@ namespace gspc
       , rifd_entry_point const& master
       , std::ostream& info_output = std::cerr
       , Certificates const& certificates = boost::none
+      , boost::optional<UniqueForest<resource::Class>> const&
+          resource_descriptions = boost::none
       );
 
     std::unordered_map< rifd_entry_point

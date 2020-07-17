@@ -1,8 +1,11 @@
 #pragma once
 
 #include <drts/certificates.hpp>
-#include <drts/worker_description.hpp>
 #include <drts/drts.fwd.hpp>
+#include <drts/Forest.hpp>
+#include <drts/resource/Class.hpp>
+#include <drts/resource/ID.hpp>
+#include <drts/worker_description.hpp>
 
 #include <installation_path.hpp>
 
@@ -119,6 +122,7 @@ namespace fhg
       , boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , gspc::Certificates const& certificates
+      , boost::optional<gspc::Forest<gspc::resource::ID, gspc::resource::Class>> const& resources
       );
   }
 }

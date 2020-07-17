@@ -73,6 +73,8 @@ namespace gspc
       , std::string const& topology_description
       , std::ostream& info_output
       , Certificates const& certificates
+      , boost::optional<UniqueForest<resource::Class>> const&
+          resource_descriptions
       )
     : scoped_runtime_system
         ( vm
@@ -81,6 +83,7 @@ namespace gspc
         , require_rif_entry_points_file (vm)
         , info_output
         , certificates
+        , resource_descriptions
         )
   {}
   scoped_runtime_system::scoped_runtime_system
@@ -90,6 +93,8 @@ namespace gspc
     , rifd_entry_points const& entry_points
     , std::ostream& info_output
     , Certificates const& certificates
+    , boost::optional<UniqueForest<resource::Class>> const&
+        resource_descriptions
     )
       : scoped_runtime_system
           ( vm
@@ -110,6 +115,7 @@ namespace gspc
             }()
           , info_output
           , certificates
+          , resource_descriptions
           )
   {}
   scoped_runtime_system::scoped_runtime_system
@@ -120,6 +126,7 @@ namespace gspc
     , rifd_entry_point const& master
     , std::ostream& info_output
     , Certificates const& certificates
+    , boost::optional<UniqueForest<resource::Class>> const& resource_descriptions
     )
       : _ (new implementation ( vm
                               , installation
@@ -128,6 +135,7 @@ namespace gspc
                               , master
                               , info_output
                               , certificates
+                              , resource_descriptions
                               )
           )
   {}
@@ -173,6 +181,8 @@ namespace gspc
       , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
+      , boost::optional<UniqueForest<resource::Class>> const&
+          //resource_descriptions
       )
     : _info_output (info_output)
     , _master (master)
@@ -188,6 +198,8 @@ namespace gspc
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
+
+    // here one should assemble the forest!!!!!!
 
     auto const startup_result
       ( fhg::drts::startup
@@ -208,6 +220,7 @@ namespace gspc
           , _logging_rif_entry_point
           , default_log_receivers
           , certificates
+          , boost::none //resources
           )
       );
     _top_level_agent_host = startup_result.top_level_agent.first;
@@ -349,6 +362,8 @@ namespace gspc
     , rifd_entry_point const& master
     , std::ostream& info_output
     , Certificates const& certificates
+    , boost::optional<UniqueForest<resource::Class>> const&
+        resource_descriptions
     )
       : _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -382,6 +397,7 @@ namespace gspc
           , master._->_entry_point
           , extract_default_receivers (vm)
           , certificates
+          , resource_descriptions
           )
       , _logger()
       , _virtual_memory_api

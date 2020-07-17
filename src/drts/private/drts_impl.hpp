@@ -29,6 +29,7 @@ namespace gspc
                    , rifd_entry_point const& master
                    , std::ostream& info_output
                    , Certificates const& certificates
+                   , boost::optional<UniqueForest<resource::Class>> const& resources
                    );
 
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
@@ -69,6 +70,7 @@ namespace gspc
                              , boost::optional<fhg::rif::entry_point> log_rif_entry_point
                              , std::vector<fhg::logging::endpoint> default_log_receivers
                              , Certificates const& certificates
+                             , boost::optional<UniqueForest<resource::Class>> const& resources
                              );
 
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>

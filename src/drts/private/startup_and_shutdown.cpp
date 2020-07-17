@@ -541,6 +541,7 @@ namespace fhg
       , boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , std::vector<logging::endpoint> default_log_receivers
       , gspc::Certificates const& certificates
+      , boost::optional<gspc::Forest<gspc::resource::ID, gspc::resource::Class>> const& //resources
       )
     {
       fhg::util::scoped_signal_handler interrupt_signal_handler
