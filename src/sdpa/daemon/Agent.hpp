@@ -55,18 +55,17 @@
 
 namespace sdpa {
   namespace daemon {
-    class Agent final : public sdpa::events::EventHandler
-                              , boost::noncopyable
+    class Agent final : public sdpa::events::EventHandler, boost::noncopyable
     {
     public:
       Agent( const std::string name
-                   , const std::string url
-                   , std::unique_ptr<boost::asio::io_service> peer_io_service
-                   , boost::optional<boost::filesystem::path> const& vmem_socket
-                   , master_info_t masters
-                   , bool create_wfe
-                   , fhg::com::Certificates const& certificates
-                   );
+           , const std::string url
+           , std::unique_ptr<boost::asio::io_service> peer_io_service
+           , boost::optional<boost::filesystem::path> const& vmem_socket
+           , master_info_t masters
+           , bool create_wfe
+           , fhg::com::Certificates const& certificates
+           );
       virtual ~Agent() = default;
 
       const std::string& name() const;
