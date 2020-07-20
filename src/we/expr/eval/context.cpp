@@ -6,6 +6,8 @@
 #include <we/type/value/peek.hpp>
 #include <we/type/value/show.hpp>
 
+#include <util-generic/join.hpp>
+
 #include <iostream>
 
 namespace expr
@@ -87,7 +89,8 @@ namespace expr
         }
       }
 
-      throw pnet::exception::missing_binding (key);
+      throw pnet::exception::missing_binding
+        (fhg::util::join (key_vec, ".").string());
     }
 
     std::ostream& operator<< (std::ostream& os, context const& c)
