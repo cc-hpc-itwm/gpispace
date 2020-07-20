@@ -4,6 +4,7 @@
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/format.hpp>
 #include <boost/variant/static_visitor.hpp>
 
 #include <util-generic/nest_exceptions.hpp>
@@ -338,21 +339,57 @@ namespace gpi
           }
         }
 
+        namespace
+        {
+          template<typename Buf, typename IO, typename Desc>
+            void io_exact
+              (int fd, Buf buffer, size_t size, IO io, Desc what, Desc got)
+          {
+            auto missing (size);
+
+            while (missing > 0)
+            {
+              auto const bytes (io (fd, buffer, size));
+
+              if (bytes == 0 || bytes > size)
+              {
+                //! \note the case bytes == 0 is used to terminate the
+                //! communication_threads
+
+                throw std::runtime_error
+                  (str ( boost::format
+                           ("io_exact: unable to %1% %2% bytes, %3% %4%")
+                       % what
+                       % size
+                       % got
+                       % bytes
+                       )
+                  );
+              }
+
+              missing -= bytes;
+              buffer += bytes;
+            }
+          }
+        }
+
+        void read_exact (int fd, char* buffer, size_t size)
+        {
+          return io_exact
+            (fd, buffer, size, &fhg::util::syscall::read, "read", "read");
+        }
         void read_exact (int fd, void* buffer, size_t size)
         {
-          if (fhg::util::syscall::read (fd, buffer, size) != size)
-          {
-            throw std::runtime_error
-              ("unable to read " + std::to_string (size) + " bytes");
-          }
+          return read_exact (fd, static_cast<char*> (buffer), size);
+        }
+        void write_exact (int fd, char const* buffer, size_t size)
+        {
+          return io_exact
+            (fd, buffer, size, &fhg::util::syscall::write, "write", "written");
         }
         void write_exact (int fd, void const* buffer, size_t size)
         {
-          if (fhg::util::syscall::write (fd, buffer, size) != size)
-          {
-            throw std::runtime_error
-              ("unable to write " + std::to_string (size) + " bytes");
-          }
+          return write_exact (fd, static_cast<char const*> (buffer), size);
         }
       }
 
