@@ -9,6 +9,8 @@ before_script:
 
 build (centos 5.7):
   stage: build
+  extends:
+    - .legacy_before_script
   script:
     - source "${ci_scripts_dir}/jobs/build"
   tags:
@@ -23,6 +25,8 @@ build (centos 6.5):
 
 tests (centos 5.7):
   stage: test
+  extends:
+    - .legacy_before_script
   script:
     - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/test"
@@ -50,6 +54,8 @@ virtual memory tests (centos 6.5):
 
 performance tests (centos 5.7):
   stage: test
+  extends:
+    - .legacy_before_script
   script:
     - source "${ci_scripts_dir}/jobs/test.common"
     - source "${ci_scripts_dir}/jobs/performance_test"
@@ -65,3 +71,16 @@ performance tests (centos 6.5):
   allow_failure: true
   tags:
     - centos-6.5
+
+.legacy_before_script:
+  variables:
+    GIT_SUBMODULE_STRATEGY: none
+  before_script:
+    - set -euo pipefail
+    - ci_scripts_dir="${PWD}/.ci"
+    - source "${ci_scripts_dir}/env/${HOSTNAME}"
+    # curl is too old, so cloning fails via http, so enforce ssh
+    - sed -i'' -e 's,url = ../../,url = git@gitlab.hpc.devnet.itwm.fhg.de:,'
+           .gitmodules
+    - git submodule update --init --recursive
+    - source "${ci_scripts_dir}/jobs/before"
