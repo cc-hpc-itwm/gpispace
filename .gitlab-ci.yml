@@ -1,14 +1,14 @@
-container setup (centos 6):
+"centos6: container setup":
   extends:
     - .env_centos6_devtoolset8
     - .job_docker_setup
 
-container setup (centos 7):
+"centos7: container setup":
   extends:
     - .env_centos7_devtoolset8
     - .job_docker_setup
 
-build (centos 5.7):
+"centos5.7: build":
   stage: build
   extends:
     - .legacy_before_script
@@ -17,19 +17,19 @@ build (centos 5.7):
   tags:
     - centos-5.7
 
-build (centos 6):
+"centos6: build":
   extends:
     - .env_centos6_devtoolset8
     - .ccache_setup
     - .job_build
 
-build (centos 7):
+"centos7: build":
   extends:
     - .env_centos7_devtoolset8
     - .ccache_setup
     - .job_build
 
-tests (centos 5.7):
+"centos5.7: tests":
   stage: test
   extends:
     - .legacy_before_script
@@ -39,13 +39,13 @@ tests (centos 5.7):
   tags:
     - centos-5.7
 
-tests (centos 6):
+"centos6: tests":
   extends:
     - .env_centos6_devtoolset8
     - .ccache_setup
     - .job_test
 
-tests (centos 7):
+"centos7: tests":
   extends:
     - .env_centos7_devtoolset8
     - .ccache_setup
@@ -54,19 +54,19 @@ tests (centos 7):
 #! \todo add virtual memory tests on centos 5.7: needs infiniband or
 #        gpi2+eth (requires higher kernel version)
 
-virtual memory tests (centos 6):
+"centos6: virtual memory tests":
   extends:
     - .env_centos6_devtoolset8
     - .ccache_setup
     - .job_test_vmem
 
-virtual memory tests (centos 7):
+"centos7: virtual memory tests":
   extends:
     - .env_centos7_devtoolset8
     - .ccache_setup
     - .job_test_vmem
 
-performance tests (centos 5.7):
+"centos5.7: performance tests":
   stage: test
   extends:
     - .legacy_before_script
@@ -77,13 +77,13 @@ performance tests (centos 5.7):
   tags:
     - centos-5.7
 
-performance tests (centos 6):
+"centos6: performance tests":
   extends:
     - .env_centos6_devtoolset8
     - .ccache_setup
     - .job_test_performance
 
-performance tests (centos 7):
+"centos7: performance tests":
   extends:
     - .env_centos7_devtoolset8
     - .ccache_setup
