@@ -85,6 +85,7 @@ git apply external.patch
 # cleanup repo
 git rm -r \
     .ci \
+    .docker \
     .gitlab-ci.yml \
     .internal \
     .mailmap \

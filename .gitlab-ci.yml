@@ -1,11 +1,7 @@
-before_script:
-  - set -euo pipefail
-  - ci_scripts_dir="${PWD}/.ci"
-  - source "${ci_scripts_dir}/env/${HOSTNAME}"
-
-  - git submodule update --init --recursive
-
-  - source "${ci_scripts_dir}/jobs/before"
+container setup (centos 6):
+  extends:
+    - .env_centos6_devtoolset8
+    - .job_docker_setup
 
 build (centos 5.7):
   stage: build
@@ -16,12 +12,11 @@ build (centos 5.7):
   tags:
     - centos-5.7
 
-build (centos 6.5):
-  stage: build
-  script:
-    - source "${ci_scripts_dir}/jobs/build"
-  tags:
-    - centos-6.5
+build (centos 6):
+  extends:
+    - .env_centos6_devtoolset8
+    - .ccache_setup
+    - .job_build
 
 tests (centos 5.7):
   stage: test
@@ -33,24 +28,20 @@ tests (centos 5.7):
   tags:
     - centos-5.7
 
-tests (centos 6.5):
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/test"
-  tags:
-    - centos-6.5
+tests (centos 6):
+  extends:
+    - .env_centos6_devtoolset8
+    - .ccache_setup
+    - .job_test
 
 #! \todo add virtual memory tests on centos 5.7: needs infiniband or
 #        gpi2+eth (requires higher kernel version)
 
-virtual memory tests (centos 6.5):
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/virtual_memory_test"
-  tags:
-    - centos-6.5
+virtual memory tests (centos 6):
+  extends:
+    - .env_centos6_devtoolset8
+    - .ccache_setup
+    - .job_test_vmem
 
 performance tests (centos 5.7):
   stage: test
@@ -63,14 +54,84 @@ performance tests (centos 5.7):
   tags:
     - centos-5.7
 
-performance tests (centos 6.5):
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/performance_test"
-  allow_failure: true
+performance tests (centos 6):
+  extends:
+    - .env_centos6_devtoolset8
+    - .ccache_setup
+    - .job_test_performance
+
+# environments
+## every env_$x shall:
+## - variable docker_image: the tagged image in the registry
+## - variable environment_key: a globally unique key for this
+##   environment in .ci/env/*.cmake
+## - variable GSPC_NODEFILE_FOR_TESTS: a file containing hosts to use for testing
+## - variable or before_script export `gspc_parallel_test_and_build_jobs`
+## - let docker use given image on a valid runner
+## - ensure the repository is checked out including submodules
+
+.env_centos6_devtoolset8:
+  variables:
+    environment_key: "centos6-devtoolset8"
+    docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
+    GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
+    GIT_SUBMODULE_STRATEGY: recursive
+  image: ${docker_image}
   tags:
-    - centos-6.5
+    - docker06
+  before_script:
+    - export gspc_parallel_test_and_build_jobs=$(nproc)
+
+# script snippets
+
+.script_configure: &script_configure
+  - cmake -C ".ci/env/${environment_key}.cmake"
+          -B "${CI_PROJECT_DIR}/build/"
+          -S "${CI_PROJECT_DIR}/"
+.script_configure_silent: &script_configure_silent
+  - cmake -C ".ci/env/${environment_key}.cmake"
+          -B "${CI_PROJECT_DIR}/build/"
+          -S "${CI_PROJECT_DIR}/" >/dev/null
+.script_build: &script_build
+  - cmake --build "${CI_PROJECT_DIR}/build/"
+          -j ${gspc_parallel_test_and_build_jobs}
+  - cmake --install "${CI_PROJECT_DIR}/build/" >/dev/null
+.script_build_silent: &script_build_silent
+  - cmake --build ${CI_PROJECT_DIR}/build
+          -j ${gspc_parallel_test_and_build_jobs} >/dev/null
+  - cmake --install "${CI_PROJECT_DIR}/build/" >/dev/null
+.script_test: &script_test
+  - cd "${CI_PROJECT_DIR}/build/" &&
+    ctest --output-on-failure
+          --timeout 240
+          --schedule-random
+          -LE "performance_test|requires_vmem"
+          -j ${gspc_parallel_test_and_build_jobs}
+.script_test_performance: &script_test_performance
+  - cd "${CI_PROJECT_DIR}/build/" &&
+    ctest --output-on-failure
+          --timeout 240
+          --schedule-random
+          -L "performance_test"
+.script_test_vmem: &script_test_vmem
+  - cd "${CI_PROJECT_DIR}/build/" &&
+    ctest --output-on-failure
+          --timeout 240
+          --schedule-random
+          -L "requires_vmem"
+
+# job building blocks
+
+.ccache_setup:
+  variables:
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
+    CCACHE_SLOPPINESS: "time_macros"
+    CMAKE_C_COMPILER_LAUNCHER: "ccache"
+    CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
+  cache:
+    key: "${environment_key}"
+    paths:
+      - ${CCACHE_DIR}
 
 .legacy_before_script:
   variables:
@@ -84,3 +145,48 @@ performance tests (centos 6.5):
            .gitmodules
     - git submodule update --init --recursive
     - source "${ci_scripts_dir}/jobs/before"
+
+.job_build:
+  stage: build
+  script:
+    - *script_configure
+    - *script_build
+
+.job_test:
+  stage: test
+  script:
+    - *script_configure_silent
+    - *script_build_silent
+    - *script_test
+
+.job_test_performance:
+  stage: test
+  script:
+    - *script_configure_silent
+    - *script_build_silent
+    - *script_test_performance
+  allow_failure: true
+
+.job_test_vmem:
+  stage: test
+  script:
+    - *script_configure_silent
+    - *script_build_silent
+    - *script_test_vmem
+
+.job_docker_setup:
+  stage: pre-build
+  image: docker:latest
+  variables:
+    DOCKER_HOST: "tcp://10.108.0.1:2375"
+    GIT_SUBMODULE_STRATEGY: none
+  tags:
+    - docker08
+  script:
+    - docker build --pull -t "${docker_image}" ".docker/${environment_key}"
+    - docker push "${docker_image}"
+
+stages:
+  - pre-build
+  - build
+  - test
