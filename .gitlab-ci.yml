@@ -3,6 +3,11 @@ container setup (centos 6):
     - .env_centos6_devtoolset8
     - .job_docker_setup
 
+container setup (centos 7):
+  extends:
+    - .env_centos7_devtoolset8
+    - .job_docker_setup
+
 build (centos 5.7):
   stage: build
   extends:
@@ -15,6 +20,12 @@ build (centos 5.7):
 build (centos 6):
   extends:
     - .env_centos6_devtoolset8
+    - .ccache_setup
+    - .job_build
+
+build (centos 7):
+  extends:
+    - .env_centos7_devtoolset8
     - .ccache_setup
     - .job_build
 
@@ -34,12 +45,24 @@ tests (centos 6):
     - .ccache_setup
     - .job_test
 
+tests (centos 7):
+  extends:
+    - .env_centos7_devtoolset8
+    - .ccache_setup
+    - .job_test
+
 #! \todo add virtual memory tests on centos 5.7: needs infiniband or
 #        gpi2+eth (requires higher kernel version)
 
 virtual memory tests (centos 6):
   extends:
     - .env_centos6_devtoolset8
+    - .ccache_setup
+    - .job_test_vmem
+
+virtual memory tests (centos 7):
+  extends:
+    - .env_centos7_devtoolset8
     - .ccache_setup
     - .job_test_vmem
 
@@ -60,6 +83,12 @@ performance tests (centos 6):
     - .ccache_setup
     - .job_test_performance
 
+performance tests (centos 7):
+  extends:
+    - .env_centos7_devtoolset8
+    - .ccache_setup
+    - .job_test_performance
+
 # environments
 ## every env_$x shall:
 ## - variable docker_image: the tagged image in the registry
@@ -73,6 +102,18 @@ performance tests (centos 6):
 .env_centos6_devtoolset8:
   variables:
     environment_key: "centos6-devtoolset8"
+    docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
+    GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
+    GIT_SUBMODULE_STRATEGY: recursive
+  image: ${docker_image}
+  tags:
+    - docker06
+  before_script:
+    - export gspc_parallel_test_and_build_jobs=$(nproc)
+
+.env_centos7_devtoolset8:
+  variables:
+    environment_key: "centos7-devtoolset8"
     docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
     GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
     GIT_SUBMODULE_STRATEGY: recursive
