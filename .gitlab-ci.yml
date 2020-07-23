@@ -11,7 +11,7 @@
 "centos5.7: build":
   extends:
     - .env_centos57_gcc494
-    - .job_build_legacy
+    - .job_build
 
 "centos6: build":
   extends:
@@ -28,7 +28,7 @@
 "centos5.7: tests":
   extends:
     - .env_centos57_gcc494
-    - .job_build_legacy
+    - .job_test
 
 "centos6: tests":
   extends:
@@ -60,7 +60,7 @@
 "centos5.7: performance tests":
   extends:
     - .env_centos57_gcc494
-    - .job_test_performance_legacy
+    - .job_test_performance
 
 "centos6: performance tests":
   extends:
@@ -116,19 +116,22 @@
 
 .env_centos57_gcc494:
   variables:
-    environment_key: "centos57_gcc494"
+    environment_key: "centos57-gcc494"
     GIT_SUBMODULE_STRATEGY: none
   tags:
     - centos-5.7
   before_script:
     - set -euo pipefail
-    - ci_scripts_dir="${PWD}/.ci"
-    - source "${ci_scripts_dir}/env/${HOSTNAME}"
+    - source "${CI_PROJECT_DIR}/.ci/env/${HOSTNAME}"
     # curl is too old and cloning fails via http, so enforce ssh
     - sed -i'' -e 's,url = ../../,url = git@gitlab.hpc.devnet.itwm.fhg.de:,'
            .gitmodules
     - git submodule update --init --recursive
-    - source "${ci_scripts_dir}/jobs/before"
+    - export GSPC_NODEFILE_FOR_TESTS="${CI_PROJECT_DIR}/nodefile_for_tests"
+    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    # todo: move into add_test macro by wrapping tests with a script
+    # that kills even within a run
+    - trap "killall -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
 
 .env_centos6_devtoolset8:
   variables:
@@ -159,21 +162,23 @@
 # todo: combine silent cases somehow?
 
 .script_configure: &script_configure
-  - cmake -C ".ci/env/${environment_key}.cmake"
+  - cmake -C "${CI_PROJECT_DIR}/.ci/env/${environment_key}.cmake"
           -B "${CI_PROJECT_DIR}/build/"
           -S "${CI_PROJECT_DIR}/"
 .script_configure_silent: &script_configure_silent
-  - cmake -C ".ci/env/${environment_key}.cmake"
+  - cmake -C "${CI_PROJECT_DIR}/.ci/env/${environment_key}.cmake"
           -B "${CI_PROJECT_DIR}/build/"
           -S "${CI_PROJECT_DIR}/" >/dev/null
 .script_build: &script_build
   - cmake --build "${CI_PROJECT_DIR}/build/"
           -j ${gspc_parallel_test_and_build_jobs}
-  - cmake --install "${CI_PROJECT_DIR}/build/" >/dev/null
+  - cmake --build "${CI_PROJECT_DIR}/build/"
+          --target install >/dev/null
 .script_build_silent: &script_build_silent
   - cmake --build ${CI_PROJECT_DIR}/build
           -j ${gspc_parallel_test_and_build_jobs} >/dev/null
-  - cmake --install "${CI_PROJECT_DIR}/build/" >/dev/null
+  - cmake --build "${CI_PROJECT_DIR}/build/"
+          --target install >/dev/null
 .script_test: &script_test
   - cd "${CI_PROJECT_DIR}/build/" &&
     ctest --output-on-failure
@@ -203,7 +208,7 @@
 .use_gitlab_backed_ccache:
   variables:
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
-    CCACHE_SLOPPINESS: "time_macros"
+    CCACHE_SLOPPINESS: "time_macros,file_macro"
     CMAKE_C_COMPILER_LAUNCHER: "ccache"
     CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
   cache:
@@ -238,24 +243,6 @@
     - *script_configure_silent
     - *script_build_silent
     - *script_test_vmem
-
-.job_build_legacy:
-  stage: build
-  script:
-    - source "${ci_scripts_dir}/jobs/build"
-
-.job_test_legacy:
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/test"
-
-.job_test_performance_legacy:
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/performance_test"
-  allow_failure: true
 
 # Build the image described in the environment for later use.
 # note: Requires a runner that can `docker build`, which when using
