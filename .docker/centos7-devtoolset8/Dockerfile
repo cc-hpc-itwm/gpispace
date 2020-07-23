@@ -11,16 +11,20 @@ RUN yum -y update                                                             \
                    devtoolset-8-make                                          \
                    glibc-static                                               \
                    hwloc-devel                                                \
+# missing hwloc dependency                                                    \
                    libssh2-devel                                              \
                    libtool-ltdl-devel                                         \
+# netstat needed for fixed-port test                                          \
                    net-tools                                                  \
                    numactl-devel                                              \
                    openssh-server                                             \
+# not automatically pulled in by devel, needed for generating keys            \
                    openssl                                                    \
                    openssl-devel                                              \
                    qt5-qtbase-devel                                           \
                    rh-git218                                                  \
                    sudo                                                       \
+# required for building gpi and boost                                         \
                    which                                                      \
                    zlib-devel                                                 \
  && yum -y clean all --enablerepo='*'

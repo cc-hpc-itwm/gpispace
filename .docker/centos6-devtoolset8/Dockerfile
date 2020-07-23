@@ -10,15 +10,19 @@ RUN yum -y update                                                             \
                    devtoolset-8-make                                          \
                    glibc-static                                               \
                    hwloc-devel                                                \
+# missing hwloc dependency                                                    \
                    libtool-ltdl-devel                                         \
+# netstat needed for fixed-port test                                          \
                    net-tools                                                  \
                    numactl-devel                                              \
                    openssh-server                                             \
+# not automatically pulled in by devel, needed for generating keys            \
                    openssl                                                    \
                    openssl-devel                                              \
                    qt5-qtbase-devel                                           \
                    sclo-git212                                                \
                    sudo                                                       \
+# required for building gpi and boost                                         \
                    which                                                      \
                    zlib-devel                                                 \
  && yum -y clean all --enablerepo='*'
@@ -88,7 +92,7 @@ RUN libssh2_version=1.8.0                                                     \
 ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig:${PKG_CONFIG_PATH}"
 
 RUN :                                                                         \
-# default nproc limit is 1024 on rhel to prevent fork bombs. gpispace         \
+# default nproc limit is 1024 on rhel6 to prevent fork bombs. gpispace        \
 # tests are a fork bomb though, so remove limit.                              \
  && rm "/etc/security/limits.d/90-nproc.conf"                                 \
                                                                               \

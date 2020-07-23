@@ -9,95 +9,126 @@
     - .job_docker_setup
 
 "centos5.7: build":
-  stage: build
   extends:
-    - .legacy_before_script
-  script:
-    - source "${ci_scripts_dir}/jobs/build"
-  tags:
-    - centos-5.7
+    - .env_centos57_gcc494
+    - .job_build_legacy
 
 "centos6: build":
   extends:
     - .env_centos6_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_build
 
 "centos7: build":
   extends:
     - .env_centos7_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_build
 
 "centos5.7: tests":
-  stage: test
   extends:
-    - .legacy_before_script
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/test"
-  tags:
-    - centos-5.7
+    - .env_centos57_gcc494
+    - .job_build_legacy
 
 "centos6: tests":
   extends:
     - .env_centos6_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_test
 
 "centos7: tests":
   extends:
     - .env_centos7_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_test
 
-#! \todo add virtual memory tests on centos 5.7: needs infiniband or
-#        gpi2+eth (requires higher kernel version)
+# todo: "centos5.7: virtual memory tests"? needs infiniband or
+# gpi2+eth compatibility (requires higher kernel version)
 
 "centos6: virtual memory tests":
   extends:
     - .env_centos6_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_test_vmem
 
 "centos7: virtual memory tests":
   extends:
     - .env_centos7_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_test_vmem
 
 "centos5.7: performance tests":
-  stage: test
   extends:
-    - .legacy_before_script
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/performance_test"
-  allow_failure: true
-  tags:
-    - centos-5.7
+    - .env_centos57_gcc494
+    - .job_test_performance_legacy
 
 "centos6: performance tests":
   extends:
     - .env_centos6_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_test_performance
 
 "centos7: performance tests":
   extends:
     - .env_centos7_devtoolset8
-    - .ccache_setup
+    - .use_gitlab_backed_ccache
     - .job_test_performance
 
-# environments
-## every env_$x shall:
-## - variable docker_image: the tagged image in the registry
-## - variable environment_key: a globally unique key for this
-##   environment in .ci/env/*.cmake
-## - variable GSPC_NODEFILE_FOR_TESTS: a file containing hosts to use for testing
-## - variable or before_script export `gspc_parallel_test_and_build_jobs`
-## - let docker use given image on a valid runner
-## - ensure the repository is checked out including submodules
+# Environments:
+# every env_$x shall:
+# - variable environment_key: a globally unique key for this
+#   environment in .ci/env/*.cmake
+# - variable GSPC_NODEFILE_FOR_TESTS: a file containing hosts to use
+#   for testing
+# - variable or before_script export `gspc_parallel_test_and_build_jobs`
+# - if using docker:
+#   - variable docker_image: the tagged image in the registry
+#   - let docker use given image on a valid runner
+#   else:
+#   - specify tags to select a matching runner
+# - ensure the repository is checked out including submodules
+
+# note: GPI-Space tests fork a lot, which in default docker
+# configurations often is slow due to the default ulimits for nofiles
+# and nproc being unlimited. When adding a runner or changing the tag
+# required, make sure the new runner does not have that same
+# issue. dockerd config should specify default_ulimits that are saner
+# than unlimited, e.g. nofiles=1024 and nproc=65335.
+# Additionally, virtual memory uses shm_open() which on Linux defaults
+# to using /dev/shm, which by default docker gives 64MB to. This can
+# be configured in the dockerd config globally, or in the gitlab
+# runner config.
+# Example configuration of `docker06`:
+#   root@n06:~# tail -n 14 /etc/docker/daemon.json | head -n 13
+#     "default-shm-size": "64G",
+#     "default-ulimits": {
+#       "nofile": {
+#         "Name": "nofile",
+#         "Hard": 1024,
+#         "Soft": 1024
+#       },
+#       "nproc": {
+#         "Name": "nproc",
+#         "Soft": 65536,
+#         "Hard": 65536
+#       }
+#     }
+
+.env_centos57_gcc494:
+  variables:
+    environment_key: "centos57_gcc494"
+    GIT_SUBMODULE_STRATEGY: none
+  tags:
+    - centos-5.7
+  before_script:
+    - set -euo pipefail
+    - ci_scripts_dir="${PWD}/.ci"
+    - source "${ci_scripts_dir}/env/${HOSTNAME}"
+    # curl is too old and cloning fails via http, so enforce ssh
+    - sed -i'' -e 's,url = ../../,url = git@gitlab.hpc.devnet.itwm.fhg.de:,'
+           .gitmodules
+    - git submodule update --init --recursive
+    - source "${ci_scripts_dir}/jobs/before"
 
 .env_centos6_devtoolset8:
   variables:
@@ -123,7 +154,9 @@
   before_script:
     - export gspc_parallel_test_and_build_jobs=$(nproc)
 
-# script snippets
+# Script Snippets:
+# assemble job scripts using these for sake of consistency.
+# todo: combine silent cases somehow?
 
 .script_configure: &script_configure
   - cmake -C ".ci/env/${environment_key}.cmake"
@@ -161,9 +194,13 @@
           --schedule-random
           -L "requires_vmem"
 
-# job building blocks
+# Job Building Blocks:
+# define what a job does using these.
+# note: any job shall have at most one `.job_` as they overwrite `script:`.
 
-.ccache_setup:
+# Use a ccache stored in gitlab's cache.
+# the cache is specific to the environment used to avoid conflicts.
+.use_gitlab_backed_ccache:
   variables:
     CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
     CCACHE_SLOPPINESS: "time_macros"
@@ -173,19 +210,6 @@
     key: "${environment_key}"
     paths:
       - ${CCACHE_DIR}
-
-.legacy_before_script:
-  variables:
-    GIT_SUBMODULE_STRATEGY: none
-  before_script:
-    - set -euo pipefail
-    - ci_scripts_dir="${PWD}/.ci"
-    - source "${ci_scripts_dir}/env/${HOSTNAME}"
-    # curl is too old, so cloning fails via http, so enforce ssh
-    - sed -i'' -e 's,url = ../../,url = git@gitlab.hpc.devnet.itwm.fhg.de:,'
-           .gitmodules
-    - git submodule update --init --recursive
-    - source "${ci_scripts_dir}/jobs/before"
 
 .job_build:
   stage: build
@@ -215,6 +239,28 @@
     - *script_build_silent
     - *script_test_vmem
 
+.job_build_legacy:
+  stage: build
+  script:
+    - source "${ci_scripts_dir}/jobs/build"
+
+.job_test_legacy:
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/test"
+
+.job_test_performance_legacy:
+  stage: test
+  script:
+    - source "${ci_scripts_dir}/jobs/test.common"
+    - source "${ci_scripts_dir}/jobs/performance_test"
+  allow_failure: true
+
+# Build the image described in the environment for later use.
+# note: Requires a runner that can `docker build`, which when using
+# docker means the runner has to be in priviledged mode to allow for
+# docker-in-docker, and the docker daemon has to be exposed.
 .job_docker_setup:
   stage: pre-build
   image: docker:latest
