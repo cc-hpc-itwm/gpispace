@@ -94,7 +94,8 @@ git rm -r \
     doc/put_many \
     CHANGELOG.todo \
     playground \
-    tools
+    tools \
+    meta/gspc-doc-request.txt
 git submodule foreach --quiet 'rm $toplevel/$path/.git'
 rm -rf \
     .git \
