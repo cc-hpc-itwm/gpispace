@@ -1,0 +1,3 @@
+"${GPISPACE_INSTALL_DIR}/bin/pnetc"                               \
+  --input "compute_and_aggregate.xpnet"                           \
+  --output "${APP_INSTALL_DIR}/compute_and_aggregate.pnet"

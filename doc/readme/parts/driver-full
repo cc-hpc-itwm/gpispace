@@ -1,0 +1,33 @@
+#include <drts/client.hpp>
+#include <drts/drts.hpp>
+#include <drts/scoped_rifd.hpp>
+
+#include <boost/program_options.hpp>
+
+#include <iostream>
+#include <map>
+#include <stdexcept>
+#include <string>
+
+int main (int argc, char** argv)
+try
+{
+@@driver-option_parsing@@
+
+@@driver-setup@@
+
+@@driver-drts@@
+
+@@driver-assemble_workflow@@
+
+@@driver-put_and_run@@
+
+@@driver-extract_result@@
+
+  return 0;
+}
+catch (std::exception const& ex)
+{
+  std::cerr << "Error: " << ex.what() << "\n";
+  return 1;
+}

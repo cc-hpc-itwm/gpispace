@@ -1,0 +1,17 @@
+"${CXX}"                                                          \
+  -Wall -Wextra -Werror                                           \
+  -std=c++11                                                      \
+  -DAPP_INSTALL_DIR="\"${APP_INSTALL_DIR}\""                      \
+  -DGPISPACE_INSTALL_DIR="\"${GPISPACE_INSTALL_DIR}\""            \
+  -isystem "${GPISPACE_INSTALL_DIR}/include"                      \
+  -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \
+  -Wl,--exclude-libs,libboost_program_options.a                   \
+  -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
+  -L "${GPISPACE_INSTALL_DIR}/external/boost/lib/"                \
+  -Wl,-rpath-link,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"   \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib:${GPISPACE_INSTALL_DIR}/external/boost/lib/" \
+  driver.cpp                                                      \
+  -lgspc                                                          \
+  -lboost_program_options                                         \
+  -lboost_system                                                  \
+  -o "${APP_INSTALL_DIR}/bin/compute_and_aggregate"

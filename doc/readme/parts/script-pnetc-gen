@@ -1,0 +1,5 @@
+"${GPISPACE_INSTALL_DIR}/bin/pnetc"                               \
+  --input="compute_and_aggregate.xpnet"                           \
+  --output="/dev/null"                                            \
+  --gen-cxxflags=-O3                                              \
+  --path-to-cpp="${APP_INSTALL_DIR}/src"

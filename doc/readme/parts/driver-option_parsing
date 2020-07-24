@@ -1,0 +1,26 @@
+  boost::program_options::options_description options ("compute_and_aggregate");
+  options
+    .add (gspc::options::drts())
+    .add (gspc::options::logging())
+    .add (gspc::options::scoped_rifd())
+    .add_options()
+       ("N", boost::program_options::value<int>()->required())
+       ("workers-per-node", boost::program_options::value<int>()->required())
+       ("help", boost::program_options::bool_switch()->default_value (false));
+
+  boost::program_options::variables_map vm;
+  boost::program_options::store
+    ( boost::program_options::command_line_parser (argc, argv)
+      .options (options).run()
+    , vm
+    );
+
+  if (vm.at ("help").as<bool>()) {
+    std::cout << "Usage:\n" << options << "\n";
+    return 0;
+  }
+
+  vm.notify();
+
+  int const workers_per_node (vm.at ("workers-per-node").as<int>());
+  int const N (vm.at ("N").as<int>());

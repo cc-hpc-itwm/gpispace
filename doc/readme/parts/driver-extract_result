@@ -1,0 +1,8 @@
+  if (results.size() != 1 || results.count ("aggregated_value") != 1) {
+    throw std::logic_error ("unexpected output");
+  }
+
+  pnet::type::value::value_type const final_result_value
+    (results.find ("aggregated_value")->second);
+
+  std::cout << boost::get<unsigned int> (final_result_value) << std::endl;

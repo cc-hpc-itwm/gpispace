@@ -1,3 +1,4 @@
+add_subdirectory (readme)
 add_subdirectory (tutorial)
 
 find_package (ASCIIDOC)

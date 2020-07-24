@@ -1,0 +1,26 @@
+#!/bin/bash
+set -euo pipefail
+scriptfile="$(readlink -f ${BASH_SOURCE})"; scriptdir="${scriptfile%/*}"
+cd "${scriptdir}"
+
+GPISPACE_INSTALL_DIR="${1}"
+APP_INSTALL_DIR="${2:-$(mktemp -d)}"
+LOG_PORT="${3:-}"
+CXX="${4:-c++}"
+
+mkdir -p "${APP_INSTALL_DIR}/"{bin,lib,src}
+
+@@script-pnetc-pnet@@
+
+@@script-pnetc-gen@@
+
+@@script-pnetc-make@@
+
+@@script-build-app@@
+
+if test -n "${LOG_PORT}"
+then
+  @@script-monitor@@
+fi
+
+@@script-run@@
