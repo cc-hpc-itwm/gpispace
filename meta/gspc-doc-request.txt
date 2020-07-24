@@ -1,0 +1,189 @@
+GPI-Space Documentation Wishes      v0.1
+==============================
+
+This document contains my personal feedback about the documentation of
+GPI-Space. In particular, I am listing things which took me lots of time to
+figure out and which I wish I had known earlier. As there are snippets of
+documentation scattered nearly everywhere (doc folder, help messages, comments,
+"gpispace-kurs", commit messages, issues), it may very well be the case that I
+missed something. The order here has no special meaning (in particular, the
+items are not ordered by priority, "badness", etc.).
+Note: As I am not using the "virtual memory layer", there are no comments about
+that part here.
+
+1. API Documentation
+--------------------
+
+There should be some kind of documentation/reference for the classes/functions
+I am using in my application. I am thinking of something like:
+http://www.cplusplus.com/reference/vector/vector/vector/
+https://www.singular.uni-kl.de/dox/html/simpleideals_8cc.html
+http://flintlib.org/doc/fq_nmod_poly_factor.html
+I want to be able to look up, for example, that put_and_run is a member of
+gspc::client, is in src/drts/client.hpp, takes a workflow and a
+std::multimap<...> etc. Or, I want to look up the possible constructors of
+gspc::scoped_runtime_system.
+I guess that this part can, to some extent, be automatically generated.
+
+2. Topology and Co.
+-------------------
+
+For the topology description, there is this long cap_spec_regex. I know I can
+write "blah:4 blubb:1x1" to have exactly one "blubb" worker in the system [on
+which host will it be started?], but what else could I specify here? What can
+I do if I want to have different numbers of workers on different machines (I
+know that there is a workaround involving having several rifd's). How can I add
+or remove workers while the computations is running (examples welcome)? How can
+I specify the SSH credentials more specifically (cf. issues #717, #810)?
+
+3. Petri nets and XML
+---------------------
+
+While there is share/man/xpnet.5.in, there is no real documentation of the XML
+file format (apart from share/xsd/pnet.xsd). The man page does document the
+expression language, but it seems to be horribly incomplete. It has some basic
+details, but it does not even say that variables are accessed by ${blah}, that
+statements are separated by ';', that assignments are ':=' etc., that parts of
+structs are accessed by '.', that I can have "Set{}" etc. Could I introduce
+arbitrary variables (not related ports)? Also, the "return value" of a condition
+is the "last part" of the expression (IIRC). I originally did not know that
+output ports do not start with an "existing struct", so if I assign ${out.b}
+and ${out.a} in the wrong order, a struct of a different type is created and
+only later does an error occur in execution. The stack_... operations apply to
+lists, there is no "stack" type (or is there?). It is claimed that simple
+comparisons are only possible for "long" types. There are casts between "long"
+and "double", are these the only ones? Is casting between numeric types and
+strings possible? Concatenation of strings? It should be emphasized that lists
+etc. can contain members of different type.
+
+5. Monitor and Logging
+----------------------
+There should be a bit more about the gspc-monitor: How exactly is "Add emitters"
+used, what do the numbers mean that are shown next to the processes, how are the
+log levels related to using std::cout/std::cerr etc. in the application. Maybe
+there should be documentation about the "logging API" (I know it exists, but I
+do not know any details). There should be something about the std::cout etc. not
+being useful for processes inside the kill_on_cancel-wrapper.
+
+6. Heureka
+----------
+OK, in order to actually kill processes on a heureka, the kill_on_cancel-wrapper
+must be used (unless the "sandbox solution" is ready). There should be something
+about the different constructors and the necessary user-provided (trivial)
+on_exit-handler (returning 0 being unexpected is strange at the minimum). Also,
+the question of how (not) to return something from the task should be dealt
+with, at least, how to indicate a failure. And what does it mean that "all
+tasks" of the corresponding group are cancelled? It seems that one must make
+sure that all those tasks/tokens have already been "produced", is there a race
+lurking? Finally, it should be mentioned that the assignment to heureka groups
+is fixed (for now), i.e. the group of a certain "task" is statically determined
+by its transition, it cannot be set at run-time.
+
+7. Error handling
+-----------------
+If my implementation detects an (unrecoverable) error, it can throw. Is this the
+"correct" way? What happens then? Immediate termination of "everything"? In
+contrast, what happens in case of a segfault/signal? There was a situation when
+I never saw the error message, I do not remember the details (see issue #743 -
+OK, I could have found the kill_on_cancel-explanation there, sorry, forgot about
+that). Under what conditions does GPI-Space restart jobs? Generally, what should
+the user know/do about fault tolerance? (E.g., if data is stores in files,
+implementations of transitions should consider these files to be immutable ...?)
+
+8. Debugging + workflow response
+--------------------------------
+Are there "best practices" for debugging Petri nets/workflows? You can do
+"printf debugging" by writing to std::cout (or to files), you can have a waiting
+loop to have time for attaching a debugger - are there better ways? Is is it
+possible to "trace" the execution, in particular the evaluation of conditions
+and expressions, which do not involve module calls? Is there an easy way to
+check if, after finishing, there are still tokens left on some places? What do
+(some of) the error messages mean one can get if evaluation of expressions
+fails? (I suppose some more issues could, in theory, be found at compile-time
+by some kind of static analysis ...) (Related: Even line numbers would sometimes
+be helpful, cf. issue #23 and remarks in #560.)
+What exactly does "workflow response" mean, what is it good for, how to use it
+(examples, please)?
+
+9. Subnets & Co.
+----------------
+There are several include-tags (-function (transition), -properties, -structs,
+-template) in the XML dialect. How are they used (examples), what would be
+typical use cases/best practices? Related: What exactly does "subnet" mean,
+what are "virtual places" and what are "tunnels" (again: example, use case)?
+There was (IIRC) something like "subnet works like transition, though this is
+not verified/ enforced" - sorry, forgot the details.
+There is pnet2dot, while it does document its options, some examples/hints to
+get good/"readable" output would be nice.
+
+10. Building own application
+----------------------------
+While there are quite a lot of examples of (parts of) Petri nets, I am missing
+something like a minimal, but complete application (including its Makefile/
+top-level CMakeLists.txt). Yes, there is ./doc/tutorial/hello_world/, but this
+seems to be an example how to include a legacy binary. While that does not
+really matter, there is no real start-up binary, but instead it is more or less
+a unit test. I would rather like to have an independent "hello world" example.
+Also, it should be noted that the users are not necessarily specialists in
+CMake, boost and modern C++. While heavy modularization and extensive use of
+"syntactic sugar" might be good for real applications, they can IMHO draw the
+attention away from understanding how GPI-Space is used (just think of the
+"put_and_run" hidden amidst a length expression).
+There should be a reference to the documentation of util-generic (I am not
+talking about the empty set, am I?) for the fhg::util::scoped_dlhandle (note to
+myself, more or less: Singular also wanted RTLD_DEEPBIND). Speaking of
+util-generic: The purpose of these submodules should be explained ... of course,
+this will change when these structures are "flattened" for the release, but
+still the user need to know what to do about that for his application.
+The wrap/unwrap stuff needs documentation (possibly along with some words about
+the internal representation of tokens, those boost_variant-things ...).
+On a more fundamental level, the build process for the user's application needs
+to be explained. Typically, he will use the (C)Makefiles/structure from an
+existing application as a template, I guess, but adaptations must be made. While
+there is no use in duplication the CMake documentation, some explanation of what
+these Makefiles do would be helpful. At some point, the "code generator" part of
+pnetc could be described. (Note to myself: Finally understand what that "Does
+_NOT_ track external dependencies" means, cf. issue #748, understand #713.) What
+does the user need to know about bundling? What exactly happens here, who
+"decides" which .so-files are copied and which rpaths/runpaths are adjusted? How
+can one have a debug build (say, with a debug version of Singular)? What other
+(important) build options are there (like -DALLOW_ANY_GPISPACE_VERSION=ON), can
+I set ALLOW_DIFFERENT_GIT_SUBMODULES here? Is it possible to not bundle
+GPI-Space, but use one copy of it for several applications? Finally, in the end,
+what parts of "everything" go into which .so-file ("interface",
+"implementation", "installation"), assuming the "usual (C)Makefiles are used?
+
+11. Building GPI-Space
+----------------------
+More precise information about required library/compiler versions is very
+welcome. As before, which important build options are there, can I skip these
+test things (Yes, I know I cannot ...)? Can I just use the system boost? What
+are these git submodules for (again, this will probably become irrelevant).
+
+12. Running the application
+---------------------------
+A working password-less SSH configuration is needed (see also 2.), unless a
+different rifd-strategy is used (e.g. that new single-machine/localhost thing).
+The nodefile is "uniq'icized". Everything (application, data) has to be
+available in a shared file system under the same path (at least in the standard
+use case). What if I want to have different binaries on different machines
+(think of system libraries in Gentoo compiled with specific optimizations,
+possibly utilizing instructions not present in older CPUs.)
+What are all the processes for? Which ones do I need to kill on all machines if
+I need to cancel everything? What does "extraction" of tasks mean, what is the
+"backlog", what is "work stealing" (provided these are still relevant). For
+example: Values obtained via "read arcs" are "cached", waiting task will be
+executed even if that read token has long been gone. The actual worker process
+are not restarted between tasks, that has consequences if a linked library has
+a state. (This will change with a sandbox being available.) Related (does not
+really belong here): What does the user have to know about those checks for
+function_does_not_unload/module_does_not_unload (if they are still there)?
+
+13. General hints
+-----------------
+What are general hints and caveats the user should be aware of? Possible
+prompts: The tasks "should be > 1s", else the workflow engine (?) could become
+a bottleneck. The tokens themselves should be kept rather small (they are
+copied n times). When there are many input places for a transition, the
+evaluation of the condition on the Cartesian product can become expensive
+("Grünewald transformation"?).
