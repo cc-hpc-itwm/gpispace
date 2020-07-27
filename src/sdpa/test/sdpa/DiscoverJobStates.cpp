@@ -148,7 +148,15 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
   // reporting the status PENDING
   while (!worker.received_discover_request())
   {
-    REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
+    if (max_depth (discovery_result) == 1)
+    {
+      BOOST_REQUIRE_EQUAL (discovery_result.state(), boost::none);
+    }
+    else
+    {
+      REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
+    }
+
     discovery_result = client.discover (job_id);
   }
 
@@ -257,7 +265,15 @@ BOOST_DATA_TEST_CASE
   // reporting the status PENDING
   while (!worker.received_discover_request())
   {
-    REQUIRE_ONE_LEAF_WITH_STATUS (info, sdpa::status::PENDING);
+    if (max_depth (info) == 1)
+    {
+      BOOST_REQUIRE_EQUAL (info.state(), boost::none);
+    }
+    else
+    {
+      REQUIRE_ONE_LEAF_WITH_STATUS (info, sdpa::status::PENDING);
+    }
+
     info = client.discover (job_id);
   }
 
