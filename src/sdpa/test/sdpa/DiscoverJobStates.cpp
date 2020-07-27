@@ -20,6 +20,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace
@@ -85,6 +86,7 @@ namespace
       , const sdpa::events::DiscoverJobStatesEvent* e
       ) override
     {
+      std::lock_guard<std::mutex> lock (_mtx_discover);
       _network.perform<sdpa::events::DiscoverJobStatesReplyEvent>
         ( source
         , e->discover_id()
@@ -97,12 +99,14 @@ namespace
 
     bool received_discover_request()
     {
+      std::lock_guard<std::mutex> lock (_mtx_discover);
       return _received_discover_request;
     }
 
   private:
     sdpa::status::code _reply;
     bool _received_discover_request;
+    std::mutex _mtx_discover;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
