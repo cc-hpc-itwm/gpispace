@@ -11,6 +11,7 @@
 
 #include <chrono>
 #include <future>
+#include <iostream>
 #include <stdexcept>
 #include <string>
 #include <thread>
@@ -62,7 +63,12 @@ namespace
         ( drts::worker::context_constructor
           (fhg::util::testing::random_string(), {}, logger)
         )
-    {}
+    {
+      // \todo Remove once we properly flush on forks (issue #751).
+      std::cout.flush();
+      std::cerr.flush();
+      std::clog.flush();
+    }
 
     fhg::logging::stream_emitter logger;
     drts::worker::context context;
