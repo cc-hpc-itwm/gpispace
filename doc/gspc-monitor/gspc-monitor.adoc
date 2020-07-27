@@ -1,21 +1,35 @@
 The GPI-Space Monitor
 =====================
 
-The command
+The GPI-Space monitor provides a dynamic Gantt chart of the current
+state of the distributed runtime system as well as application logging
+output. Components within the runtime system are emitting messages to
+registered subscribers. The monitor is one possible subscriber. There
+are two ways to use it:
 
 [source,bash]
 $MASTER:shared> QT_GRAPHICSSYSTEM=native                      \
                 .../gpispace/bin/gspc-monitor                 \
-                --gui-port $GUI_PORT                          \
-                --log-port $LOG_PORT
+                --port $LOG_PORT
 
-starts the GPI-Space monitor which provides a dynamic Gantt chart of
-the current state of the distributed runtime system as well as
-application logging output.
+starts a monitor that will listen for emitters on +$LOG_PORT+, which
+can be given to the GSPC runtime system with +--log-host $MASTER
+--log-port $LOG_PORT+ for it to set up subscriptions. Alternatively,
 
-The GPI-Space monitor can be started and stopped at any time and it
-observes all running jobs that share the +$GUI_PORT+ and +$LOG_PORT+,
-as specified when starting an application and monitor.
+[source,bash]
+$MASTER:shared> QT_GRAPHICSSYSTEM=native                      \
+                .../gpispace/bin/gspc-monitor                 \
+                --emitters "${EMITTER_STRING}"
+
+will start a monitor that attaches to an existing emitter. The
++--emitters+ option can be given multiple times, and the both
+arguments can be provided at the same time.
+
+The monitor can be reused for multiple jobs, by either giving host and
+port for the same monitor to multiple jobs, or by pressing the +Add
+emitters+ button during runtime of the monitor, and adding the log
+emitter which is automatically started when starting the runtime
+system and is printed within the startup messages.
 
 After startup of the gspc-monitor, there is one window with two tabs,
 the "Execution Monitor" and the "Logging" window.
