@@ -164,7 +164,7 @@ namespace gspc
       , std::vector<std::string> worker_env_set_variable
       , gspc::installation_path installation_path
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , std::vector<worker_description> worker_descriptions
+      , std::string const& topology_description
       , boost::optional<unsigned short> vmem_port
       , boost::optional<fhg::vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
@@ -184,7 +184,7 @@ namespace gspc
     , _worker_env_set_variable (std::move (worker_env_set_variable))
     , _installation_path (installation_path)
     , _logging_rif_entry_point (logging_rif_entry_point)
-    , _worker_descriptions (worker_descriptions)
+    , _worker_descriptions (parse_worker_descriptions (topology_description))
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
@@ -370,7 +370,7 @@ namespace gspc
           , get_worker_env_set_variable (vm).get_value_or ({})
           , installation.gspc_home()
           , _virtual_memory_startup_timeout
-          , parse_worker_descriptions (topology_description)
+          , topology_description
           , get_virtual_memory_port (vm)
           , get_virtual_memory_netdev_id (vm)
           , !entry_points
