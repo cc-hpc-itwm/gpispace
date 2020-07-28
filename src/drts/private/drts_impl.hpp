@@ -60,7 +60,7 @@ namespace gspc
                              , std::vector<std::string> worker_env_set_variable
                              , installation_path
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
-                             , std::vector<worker_description> worker_descriptions
+                             , std::string const& topology_description
                              , boost::optional<unsigned short> vmem_port
                              , boost::optional<fhg::vmem::netdev_id> vmem_netdev_id
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
