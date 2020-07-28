@@ -241,7 +241,7 @@ namespace gspc
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
       , boost::optional<UniqueForest<resource::Class>> const&
-          //resource_descriptions
+          resource_descriptions
       )
     : _info_output (info_output)
     , _master (master)
@@ -253,12 +253,39 @@ namespace gspc
     , _worker_env_set_variable (std::move (worker_env_set_variable))
     , _installation_path (installation_path)
     , _logging_rif_entry_point (logging_rif_entry_point)
-    , _worker_descriptions (parse_worker_descriptions (topology_description))
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
 
-    // here one should assemble the forest!!!!!!
+    using Resources = Forest<resource::ID, resource::Class>;
+    Resources resources;
+
+    if (resource_descriptions)
+    {
+      // assemble forest and create worker descriptions
+      remote_interface::ID next_remote_interface_id {0};
+
+      for ( std::size_t n (0)
+         ; n < rif_entry_points.size()
+         ; ++n, ++next_remote_interface_id
+         )
+      {
+        resource::ID next_resource_id {{next_remote_interface_id}};
+
+        resources.UNSAFE_merge
+          ( resource_descriptions->unordered_transform
+              ( [&] (unique_forest::Node<resource::Class> const& r) -> Resources::Node
+                {
+                  return {++next_resource_id, r.second};
+                }
+              )
+          );
+      }
+    }
+    else
+    {
+      _worker_descriptions = parse_worker_descriptions (topology_description);
+    }
 
     auto const startup_result
       ( fhg::drts::startup
@@ -279,7 +306,7 @@ namespace gspc
           , _logging_rif_entry_point
           , default_log_receivers
           , certificates
-          , boost::none //resources
+          , boost::make_optional (!!resource_descriptions, resources)
           )
       );
     _top_level_agent_host = startup_result.top_level_agent.first;
