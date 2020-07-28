@@ -5,6 +5,8 @@
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
+#include <drts/resource/Class.hpp>
+#include <drts/resource/ID.hpp>
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.hpp>
 
@@ -241,7 +243,7 @@ namespace gspc
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
       , boost::optional<UniqueForest<Resource>> const&
-          //resource_descriptions
+          resource_descriptions
       )
     : _info_output (info_output)
     , _master (master)
@@ -253,10 +255,59 @@ namespace gspc
     , _worker_env_set_variable (std::move (worker_env_set_variable))
     , _installation_path (installation_path)
     , _logging_rif_entry_point (logging_rif_entry_point)
-    , _worker_descriptions (parse_worker_descriptions (topology_description))
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
+
+    using Resources = Forest<resource::ID, resource::Class>;
+    Resources resources;
+    using Worker_descriptions = Forest<resource::ID, worker_description>;
+    Worker_descriptions worker_descriptions;
+
+    if (resource_descriptions)
+    {
+      // assemble forest and create worker descriptions
+      remote_interface::ID next_remote_interface_id {0};
+
+      for (auto const& entry_point : rif_entry_points)
+      {
+        resource::ID next_resource_id {{next_remote_interface_id}};
+
+        worker_descriptions.UNSAFE_merge
+          ( resource_descriptions->unordered_transform
+              ( [&] (unique_forest::Node<Resource> const& r) -> Worker_descriptions::Node
+                {
+                  std::vector<std::string> capabilities;
+                  for ( std::string const& cpb
+                      : fhg::util::split<std::string, std::string> (r.second.resource_class, '+')
+                      )
+                  {
+                    capabilities.emplace_back (cpb);
+                  }
+
+                  worker_description const description
+                    { capabilities
+                    , 1
+                    , 0
+                    , r.second.shm_size
+                    , boost::none
+                    , boost::none
+                    , ++next_resource_id
+                    , entry_point
+                    };
+
+                  return {next_resource_id, description};
+                }
+              )
+          );
+
+        ++next_remote_interface_id;
+      }
+    }
+    else
+    {
+      _worker_descriptions = parse_worker_descriptions (topology_description);
+    }
 
     auto const startup_result
       ( fhg::drts::startup
