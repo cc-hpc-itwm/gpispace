@@ -317,6 +317,12 @@ namespace fhg
             return SIGNED (cast<unsigned long, unsigned int> (ul, pos));
           }
 
+        case 'f':
+        case 'F':
+          ++pos;
+
+          return SIGNED (cast<unsigned long, float> (ul, pos));
+
         default:
           if (!pos.end())
           {
