@@ -86,7 +86,7 @@ namespace gspc
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const& installation
-      , UniqueForest<resource::Class> const& resource_descriptions
+      , UniqueForest<Resource> const& resource_descriptions
       , std::ostream& info_output
       , Certificates const& certificates
       )
@@ -131,7 +131,7 @@ namespace gspc
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
-    , UniqueForest<resource::Class> const& resource_descriptions
+    , UniqueForest<Resource> const& resource_descriptions
     , rifd_entry_points const& entry_points
     , std::ostream& info_output
     , Certificates const& certificates
@@ -181,7 +181,7 @@ namespace gspc
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
-    , UniqueForest<resource::Class> const& resource_descriptions
+    , UniqueForest<Resource> const& resource_descriptions
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
@@ -240,7 +240,7 @@ namespace gspc
       , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
-      , boost::optional<UniqueForest<resource::Class>> const&
+      , boost::optional<UniqueForest<Resource>> const&
           resource_descriptions
       )
     : _info_output (info_output)
@@ -274,9 +274,9 @@ namespace gspc
 
         resources.UNSAFE_merge
           ( resource_descriptions->unordered_transform
-              ( [&] (unique_forest::Node<resource::Class> const& r) -> Resources::Node
+              ( [&] (unique_forest::Node<Resource> const& r) -> Resources::Node
                 {
-                  return {++next_resource_id, r.second};
+                  return {++next_resource_id, r.second.resource_class};
                 }
               )
           );
@@ -448,7 +448,7 @@ namespace gspc
     , rifd_entry_point const& master
     , std::ostream& info_output
     , Certificates const& certificates
-    , boost::optional<UniqueForest<resource::Class>> const&
+    , boost::optional<UniqueForest<Resource>> const&
         resource_descriptions
     )
       : _virtual_memory_socket (get_virtual_memory_socket (vm))

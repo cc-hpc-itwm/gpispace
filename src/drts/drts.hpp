@@ -5,6 +5,7 @@
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
+#include <drts/Resource.hpp>
 #include <drts/resource/Class.hpp>
 #include <drts/resource/ID.hpp>
 #include <drts/rifd_entry_points.hpp>
@@ -80,7 +81,7 @@ namespace gspc
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const&
-      , UniqueForest<resource::Class> const& resource_descriptions
+      , UniqueForest<Resource> const& resource_descriptions
       , std::ostream& info_output = std::cerr
       , Certificates const& certificates = boost::none
       );
@@ -95,7 +96,7 @@ namespace gspc
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const&
-      , UniqueForest<resource::Class> const& resource_descriptions
+      , UniqueForest<Resource> const& resource_descriptions
       , rifd_entry_points const& entry_points
       , std::ostream& info_output = std::cerr
       , Certificates const& certificates = boost::none
@@ -112,7 +113,7 @@ namespace gspc
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const&
-      , UniqueForest<resource::Class> const& resource_descriptions
+      , UniqueForest<Resource> const& resource_descriptions
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
       , std::ostream& info_output = std::cerr
