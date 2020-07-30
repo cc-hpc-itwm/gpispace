@@ -18,8 +18,18 @@ ${LICENSE_${_licensetextname}}
 endmacro()
 
 
+file (READ licenses/lgpl-3.0.txt LICENSE_LGPLv3)
+foreach (name "Qt 5")
+  append_license ("${name}"
+    "the GNU Lesser General Public License version 3 (LGPLv3.0)"
+    "Source code for the library can be obtained by contacting
+gpispace-support@itwm.fraunhofer.de."
+    LGPLv3
+  )
+endforeach()
+
 file (READ licenses/lgpl-2.1.txt LICENSE_LGPLv2)
-foreach (name "Qt 4" "ibverbs" "libnuma")
+foreach (name "ibverbs" "libnuma")
   append_license ("${name}"
     "the GNU Lesser General Public License version 2.1 (LGPLv2.1)"
     "Source code for the library can be obtained by contacting
