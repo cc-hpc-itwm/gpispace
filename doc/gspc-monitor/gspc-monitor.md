@@ -30,7 +30,9 @@ The monitor can be reused for multiple jobs, by either giving host and
 port for the same monitor to multiple jobs, or by pressing the `Add
 emitters` button during runtime of the monitor, and adding the log
 emitter which is automatically started when starting the runtime
-system and is printed within the startup messages.
+system and is printed within the startup messages. Note that when
+giving the runtime system logging information it will require that to
+exist.
 
 After startup of the gspc-monitor, there is one window with two tabs,
 the "Execution Monitor" and the "Logging" window.
