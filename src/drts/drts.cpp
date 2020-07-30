@@ -282,10 +282,6 @@ namespace gspc
           );
       }
     }
-    else
-    {
-      _worker_descriptions = parse_worker_descriptions (topology_description);
-    }
 
     auto const startup_result
       ( fhg::drts::startup
@@ -315,6 +311,47 @@ namespace gspc
 
     if (!rif_entry_points.empty())
     {
+      if (resource_descriptions)
+      {
+        std::unordered_map<gspc::resource::Class, unsigned long> class_sizes;
+
+        resource_descriptions->for_each_node
+          ( [&class_sizes]
+            (Forest<std::uint64_t, Resource>::Node const& r)
+            {
+              if (class_sizes.count (r.second.resource_class))
+              {
+                class_sizes[r.second.resource_class]++;
+              }
+              else
+              {
+                class_sizes.emplace (r.second.resource_class, 1);
+              }
+            }
+          );
+
+        // create worker_descriptions
+        for ( auto const& class_and_size : class_sizes)
+        {
+          std::vector<std::string> capabilities;
+
+          for ( std::string const& cpb
+              : fhg::util::split<std::string, std::string> (class_and_size.first, '+')
+              )
+          {
+            capabilities.emplace_back (cpb);
+          }
+
+          worker_description description
+            ({ capabilities, class_and_size.second, 0, 0, boost::none, boost::none});
+          _worker_descriptions.emplace_back (description);
+        }
+      }
+      else
+      {
+        _worker_descriptions = parse_worker_descriptions (topology_description);
+      }
+
       std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
         const failures (add_worker_impl (_worker_descriptions, rif_entry_points, certificates));
 

@@ -205,6 +205,7 @@ namespace gspc
     using Forest<T, A>::upward_combine_transform;
     using Forest<T, A>::remove_root_if;
     using Forest<T, A>::unordered_transform;
+    using Forest<T, A>::for_each_node;
 
     template<typename Archive>
       void serialize (Archive&, unsigned int);
