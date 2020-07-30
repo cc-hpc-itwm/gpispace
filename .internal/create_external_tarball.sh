@@ -88,14 +88,10 @@ git rm -r \
     .internal \
     .gitlab-ci.yml \
     .mailmap \
-    doc/SDPA \
-    doc/meta \
     doc/intern \
-    doc/put_many \
     CHANGELOG.todo \
     playground \
-    tools \
-    meta/gspc-doc-request.txt
+    tools
 git submodule foreach --quiet 'rm $toplevel/$path/.git'
 rm -rf \
     .git \
