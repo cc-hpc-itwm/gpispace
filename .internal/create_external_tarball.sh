@@ -85,11 +85,11 @@ git apply external.patch
 # cleanup repo
 git rm -r \
     .ci \
-    .internal \
     .gitlab-ci.yml \
+    .internal \
     .mailmap \
-    doc/intern \
     CHANGELOG.todo \
+    doc/intern \
     playground \
     tools
 git submodule foreach --quiet 'rm $toplevel/$path/.git'
