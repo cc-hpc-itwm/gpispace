@@ -15,6 +15,7 @@
 #include <util-generic/split.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/printer/optional.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/format.hpp>
 #include <boost/test/data/test_case.hpp>
@@ -363,3 +364,73 @@ BOOST_DATA_TEST_CASE
       );
   }
 }
+
+BOOST_DATA_TEST_CASE
+  ( scoped_drts_with_resource_descriptions
+  , certificates_data
+  , certificates
+  )
+{
+  boost::program_options::options_description options_description;
+
+  options_description.add (gspc::options::installation());
+  options_description.add (gspc::options::scoped_rifd());
+  options_description.add (test::options::shared_directory());
+
+  boost::program_options::variables_map vm
+    ( test::parse_command_line
+        ( boost::unit_test::framework::master_test_suite().argc
+        , boost::unit_test::framework::master_test_suite().argv
+        , options_description
+        )
+    );
+
+  fhg::util::temporary_path const shared_directory
+    (test::shared_directory (vm) / "drts_scoped_drts");
+
+  test::scoped_nodefile_from_environment const nodefile_from_environment
+    (shared_directory, vm);
+
+  vm.notify();
+
+  gspc::installation const installation (vm);
+
+  gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
+                                        , gspc::rifd::hostnames {vm}
+                                        , gspc::rifd::port {vm}
+                                        , installation
+                                        );
+
+  using Resources = gspc::UniqueForest<gspc::Resource>;
+  using Children = std::unordered_set<std::uint64_t>;
+  Resources resources;
+
+  auto const num_sockets_per_node
+    (fhg::util::testing::random<unsigned int>{} (16, 2));
+  auto const num_cores_per_socket
+    (fhg::util::testing::random<unsigned int>{} (16, 2));
+
+  Children sockets;
+  for (unsigned int j {0}; j < num_sockets_per_node; ++j)
+  {
+    Children cores;
+    for (unsigned int k {0}; k < num_cores_per_socket; ++k)
+    {
+      cores.emplace (resources.insert ({"core"}, {}));
+    }
+
+    sockets.emplace (resources.insert ({"socket"},  cores));
+  }
+
+  resources.insert ({"node"}, sockets);
+
+  gspc::scoped_runtime_system const drts
+    ( vm
+    , installation
+    , resources
+    , scoped_rifds.entry_points()
+    , std::cerr
+    , certificates
+    );
+}
+
