@@ -38,7 +38,7 @@ After startup of the gspc-monitor, there is one window with two tabs,
 the "Execution Monitor" and the "Logging" window.
 
 <figure align="center">
-  <img src="gspc-monitor-overview.png" alt="Overview of the GPI-Space Monitor after startup">
+  <img src="gspc-monitor-overview.png" alt="Overview of the GPI-Space Monitor after startup. The window is split into three areas: on top there is a tab bar showing Execution Monitor and Logging tabs. On the right, there is a tool pane offering actions on the active tab, and on the left the active view is seen">
   <figcaption>
     <small><i>Overview of the GPI-Space Monitor after startup</i></small>
   </figcaption>
@@ -58,7 +58,7 @@ circular buffer style. The log may also be manually cleared by
 clicking `Clear` on the right hand bottom.
 
 <figure align="center">
-  <img src="gspc-monitor-logging.png" alt="Logging window of the GPI-Space Monitor">
+  <img src="gspc-monitor-logging.png" alt="Logging window of the GPI-Space Monitor. On the left, a table of message is seen with columns time, source and message. On the right, in the tool pane, thre are two groups: A filter to select the minimum severity of messages to be shown with a check box to drop messages that are filtered, and a second group with a 'follow' checkbox and a 'clear' button">
   <figcaption>
     <small><i>Logging window of the GPI-Space Monitor</i></small>
   </figcaption>
@@ -69,7 +69,7 @@ always show new messages. This can be disabled by unchecking the
 `follow` box above the `Clear` button.
 
 <figure align="center">
-  <img src="gspc-monitor-log-bottom.png" alt="<code>Clear</code> and <code>follow</code> controls">
+  <img src="gspc-monitor-log-bottom.png" alt="Clear and follow controls">
   <figcaption>
     <small><i><code>Clear</code> and <code>follow</code> controls</i></small>
   </figcaption>
@@ -82,7 +82,7 @@ serialization format, allowing to process the output with standard
 command line tools.
 
 <figure align="center">
-  <img src="gspc-monitor-log-save.png" alt="Saving the log window's contents to a file">
+  <img src="gspc-monitor-log-save.png" alt="The windows involved in saving the log window's contents to a file: on top, a file save dialog is shown, behind that the log window is visible. In the background, a terminal is showing the saved file's content">
   <figcaption>
     <small><i>Saving the log window's contents to a file</i></small>
   </figcaption>
@@ -98,7 +98,7 @@ and actions. The panel can be resized using the splitter and may be
 hidden.
 
 <figure align="center">
-  <img src="gspc-monitor-gantt.png" alt="Execution Monitor window of the GPI-Space Monitor">
+  <img src="gspc-monitor-gantt.png" alt="Execution Monitor window of the GPI-Space Monitor: On the left, there is a timeline of jobs running on workers. There is one row per worker or group of workers. In the leftmost column, the worker name is shown, the middle column shows a count of workers grouped by state, the biggest third column shows blocks in different colors, where colors represent states and the box size and position represents the position in time. In the tool pane on the right, there are three groups of controls: on top, there are buttons for adding, removing and clearing, below that there are two lists to select predicates to group by from, and on the bottom a legend mapping color to job state name is shown">
   <figcaption>
     <small><i>Execution Monitor window of the GPI-Space Monitor</i></small>
   </figcaption>
@@ -159,7 +159,7 @@ be configured by left, right or double clicking on their header,
 depending on column type.
 
 <figure align="center">
-  <img src="gspc-monitor-gantt-clear.png" alt="<code>Clear</code> button for Execution Monitor">
+  <img src="gspc-monitor-gantt-clear.png" alt="Clear button for Execution Monitor">
   <figcaption>
     <small><i><code>Clear</code> button for Execution Monitor</i></small>
   </figcaption>
@@ -178,14 +178,14 @@ independent of the "current state" column, by toggling
 execution monitor.
 
 <figure align="center">
-  <img src="gspc-monitor-gantt-header.png" alt="Closed and opened column header options for gantt column">
+  <img src="gspc-monitor-gantt-header.png" alt="Closed and opened column header options for gantt column: on top, in the closed version there is a linear timeline with timestamps and tics subdividing it. Hovering above, a mouse pointer indicating a double click is shown. Below, the column header options have been opened and is showing three controls, from left to right: A scrollbar showing the time position selection, with an option to always stick to the right, a checkbox to toggle merging group task boxes, and a edit to input the time frame duration to be shown.">
   <figcaption>
     <small><i>Closed and opened column header options for gantt column</i></small>
   </figcaption>
 </figure>
 
 <figure align="center">
-  <img src="gspc-monitor-gantt-nomerge.png" alt="Disabled merging of groups in gantt column">
+  <img src="gspc-monitor-gantt-nomerge.png" alt="The execution monitor, but with disabled merging of groups in gantt column: rows representing more than one worker are not showing boxes for tasks anymore, only the counts per state">
   <figcaption>
     <small><i>Disabled merging of groups in gantt column</i></small>
   </figcaption>
@@ -196,7 +196,7 @@ and double clicked to allow filtering by worker names by pretty
 forgiving regular expression style patterns.
 
 <figure align="center">
-  <img src="gspc-monitor-gantt-namefilter.png" alt="Execution Monitor entries filtered by worker name">
+  <img src="gspc-monitor-gantt-namefilter.png" alt="The execution monitor, but with entries filtered by worker name: The column header contains a text input box, where the user has entered -12. The workers shown below all contain -12 in the name.">
   <figcaption>
     <small><i>Execution Monitor entries filtered by worker name</i></small>
   </figcaption>
