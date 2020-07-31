@@ -57,6 +57,7 @@ mod_type =
   attribute function { xsd:string },
   attribute eureka-group { xsd:string }?,
   attribute pass_context { xsd:boolean }?,
+  attribute require_function_unloads_without_rest { xsd:boolean }?,
   attribute require_module_unloads_without_rest { xsd:boolean }?,
   attribute target { xsd:string }?
 type_map_type =

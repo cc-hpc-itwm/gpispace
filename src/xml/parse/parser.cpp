@@ -1514,6 +1514,12 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
+        const boost::optional<bool> require_function_unloads_without_rest
+          ( fhg::util::boost::fmap<std::string, bool>
+              ( fhg::util::read_bool
+              , optional (node, "require_function_unloads_without_rest")
+              )
+          );
         const boost::optional<bool> require_module_unloads_without_rest
           ( fhg::util::boost::fmap<std::string, bool>
               ( fhg::util::read_bool
@@ -1628,6 +1634,7 @@ namespace xml
           , cxxflags
           , pass_context
           , eureka_id
+          , require_function_unloads_without_rest.get_value_or (true)
           , require_module_unloads_without_rest.get_value_or (true)
           );
       }
