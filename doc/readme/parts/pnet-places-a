@@ -1,0 +1,2 @@
+    <place name="trigger" type="control"/>
+    <place name="computed_values" type="unsigned int"/>

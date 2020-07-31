@@ -1,0 +1,4 @@
+  gspc::workflow const workflow
+    (app_install_dir / "compute_and_aggregate.pnet");
+
+  gspc::client client (drts);

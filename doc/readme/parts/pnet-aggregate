@@ -1,0 +1,11 @@
+    <transition name="aggregate_value_sum">
+      <defun>
+        <in name="i" type="unsigned int"/>
+        <inout name="S" type="unsigned int"/>
+        <expression>
+          ${S} := ${S} + ${i}
+        </expression>
+      </defun>
+      <connect-in port="i" place="computed_values"/>
+      <connect-inout port="S" place="global_sum"/>
+    </transition>

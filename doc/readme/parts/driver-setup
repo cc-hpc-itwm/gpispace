@@ -1,0 +1,11 @@
+  boost::filesystem::path const app_install_dir (APP_INSTALL_DIR);
+  gspc::set_application_search_path (vm, app_install_dir / "lib");
+
+  gspc::installation const gspc_installation (GPISPACE_INSTALL_DIR);
+
+  gspc::scoped_rifds const rifds
+    ( gspc::rifd::strategy {vm}   // ssh or pbdsh
+    , gspc::rifd::hostnames {vm}  // a vector of host names
+    , gspc::rifd::port {vm}       // port for communication
+    , gspc_installation
+    );
