@@ -7,9 +7,6 @@ path chrpath/0.16/bin
 path cmake/3.13.5/bin
 path gcc/4.9.4/bin
 path qt/5.9.1/bin
-path asciidoc/8.6.9/bin
-path source-highlight/3.1.7/bin
-ld_library_path source-highlight/3.1.7/lib
 pkg_config_path gaspi/1.3.1+eth/lib64/pkgconfig
 pkg_config_path hwloc/1.10.1/lib/pkgconfig
 pkg_config_path libssh2/1.7.0+fpic/lib/pkgconfig
