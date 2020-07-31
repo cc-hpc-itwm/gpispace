@@ -142,3 +142,7 @@ set_property (TEST installed_headers_are_selfcontained
 set_property (TEST installed_headers_are_selfcontained
   APPEND PROPERTY REQUIRED_FILES ${FILES_REQUIRED_IN_INSTALLATION}
 )
+
+install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+  DESTINATION "share/gspc/"
+)
