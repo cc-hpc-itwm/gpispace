@@ -499,6 +499,8 @@ namespace fhg
           .get_value_or (0)
         , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::socket)
         , get_match<unsigned short> (cap_spec_match, cap_spec_regex_part::base_port)
+        , boost::none
+        , boost::none
         };
     }
 
