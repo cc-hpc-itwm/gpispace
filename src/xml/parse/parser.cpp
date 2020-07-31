@@ -1628,9 +1628,7 @@ namespace xml
           , cxxflags
           , pass_context
           , eureka_id
-          , require_module_unloads_without_rest
-          ? *require_module_unloads_without_rest
-          : true
+          , require_module_unloads_without_rest.get_value_or (true)
           );
       }
 
