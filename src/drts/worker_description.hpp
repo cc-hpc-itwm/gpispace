@@ -1,4 +1,8 @@
 #pragma once
+
+#include <drts/resource/ID.hpp>
+#include <rif/entry_point.hpp>
+
 #include <boost/optional.hpp>
 
 #include <string>
@@ -14,5 +18,7 @@ namespace gspc
     std::size_t shm_size;
     boost::optional<std::size_t> socket;
     boost::optional<unsigned short> base_port;
+    boost::optional<gspc::resource::ID> resource_id;
+    boost::optional<fhg::rif::entry_point> entry_point;
   };
 }

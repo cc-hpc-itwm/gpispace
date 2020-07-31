@@ -343,7 +343,7 @@ namespace gspc
           }
 
           worker_description description
-            ({ capabilities, class_and_size.second, 0, 0, boost::none, boost::none});
+            ({ capabilities, class_and_size.second, 0, 0, boost::none, boost::none, boost::none, boost::none});
           _worker_descriptions.emplace_back (description);
         }
       }
