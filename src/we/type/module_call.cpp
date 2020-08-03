@@ -67,6 +67,10 @@ namespace we
       }
     }
 
+    bool module_call_t::require_function_unloads_without_rest() const
+    {
+      return _require_function_unloads_without_rest;
+    }
     bool module_call_t::require_module_unloads_without_rest() const
     {
       return _require_module_unloads_without_rest;

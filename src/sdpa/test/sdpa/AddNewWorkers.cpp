@@ -45,6 +45,7 @@ we::type::activity_t net_with_n_children (unsigned int n)
           , std::list<we::type::memory_transfer>()
           , std::list<we::type::memory_transfer>()
           , true
+          , true
           )
       , boost::none
       , props
