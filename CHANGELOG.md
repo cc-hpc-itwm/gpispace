@@ -1,4 +1,4 @@
-# [20.07] - 2020-07-31
+# [20.08] - 2020-08-03
 
 ## Ability to override worker description per batch
 
