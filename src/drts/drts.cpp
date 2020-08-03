@@ -259,27 +259,47 @@ namespace gspc
 
     using Resources = Forest<resource::ID, resource::Class>;
     Resources resources;
+    using Worker_descriptions = Forest<resource::ID, worker_description>;
+    Worker_descriptions worker_descriptions;
 
     if (resource_descriptions)
     {
       // assemble forest and create worker descriptions
       remote_interface::ID next_remote_interface_id {0};
 
-      for ( std::size_t n (0)
-         ; n < rif_entry_points.size()
-         ; ++n, ++next_remote_interface_id
-         )
+      for (auto const& entry_point : rif_entry_points)
       {
         resource::ID next_resource_id {{next_remote_interface_id}};
 
-        resources.UNSAFE_merge
+        worker_descriptions.UNSAFE_merge
           ( resource_descriptions->unordered_transform
-              ( [&] (unique_forest::Node<Resource> const& r) -> Resources::Node
+              ( [&] (unique_forest::Node<Resource> const& r) -> Worker_descriptions::Node
                 {
-                  return {++next_resource_id, r.second.resource_class};
+                  std::vector<std::string> capabilities;
+                  for ( std::string const& cpb
+                      : fhg::util::split<std::string, std::string> (r.second.resource_class, '+')
+                      )
+                  {
+                    capabilities.emplace_back (cpb);
+                  }
+
+                  worker_description const description
+                    { capabilities
+                    , 1
+                    , 0
+                    , r.second.shm_size
+                    , boost::none
+                    , boost::none
+                    , ++next_resource_id
+                    , entry_point
+                    };
+
+                  return {next_resource_id, description};
                 }
               )
           );
+
+        ++next_remote_interface_id;
       }
     }
 
@@ -302,7 +322,18 @@ namespace gspc
           , _logging_rif_entry_point
           , default_log_receivers
           , certificates
-          , boost::make_optional (!!resource_descriptions, resources)
+          , boost::make_optional
+              ( !!resource_descriptions
+              , worker_descriptions.unordered_transform
+                ( [&] (Worker_descriptions::Node const& r) -> Resources::Node
+                  {
+                    return
+                      { r.first
+                      , fhg::util::join (r.second.capabilities, '+').string()
+                      };
+                  }
+                )
+              )
           )
       );
     _top_level_agent_host = startup_result.top_level_agent.first;
