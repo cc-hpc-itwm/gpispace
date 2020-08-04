@@ -126,6 +126,7 @@ extended_add_library (NAME pnet
             drts-context
             gpi-space-pc-client-static
             gpi-space-pc-segment
+            GPISpace::Installation
             Util::Generic
             Boost::date_time
             Boost::program_options
@@ -251,4 +252,12 @@ add_unit_test (NAME logging_tcp_endpoint
 install (FILES
   logging/tcp_endpoint.hpp
   DESTINATION include/logging/
+)
+
+extended_add_library (NAME Installation
+  NAMESPACE GPISpace
+  SOURCES "gspc/installation_path.cpp"
+  LIBRARIES Util::Generic
+            Boost::filesystem
+  TYPE STATIC
 )
