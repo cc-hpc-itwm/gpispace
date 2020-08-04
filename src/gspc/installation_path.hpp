@@ -13,7 +13,6 @@ namespace gspc
     boost::filesystem::path include() const;
     boost::filesystem::path lib() const;
     boost::filesystem::path boost_root() const;
-    boost::filesystem::path libexec_gspc() const;
     boost::filesystem::path agent() const;
     boost::filesystem::path drts_kernel() const;
     boost::filesystem::path vmem() const;

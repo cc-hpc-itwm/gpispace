@@ -24,24 +24,29 @@ namespace gspc
   {
     return *this / "external" / "boost";
   }
-  boost::filesystem::path installation_path::libexec_gspc() const
+
+  namespace
   {
-    return *this / "libexec" / "gspc";
+    boost::filesystem::path libexec_gspc (boost::filesystem::path const& root)
+    {
+      return root / "libexec" / "gspc";
+    }
   }
+
   boost::filesystem::path installation_path::agent() const
   {
-    return libexec_gspc() / "agent";
+    return libexec_gspc (*this) / "agent";
   }
   boost::filesystem::path installation_path::drts_kernel() const
   {
-    return libexec_gspc() / "drts-kernel";
+    return libexec_gspc (*this) / "drts-kernel";
   }
   boost::filesystem::path installation_path::vmem() const
   {
-    return libexec_gspc() / "gpi-space";
+    return libexec_gspc (*this) / "gpi-space";
   }
   boost::filesystem::path installation_path::logging_demultiplexer() const
   {
-    return libexec_gspc() / "gspc-logging-demultiplexer.exe";
+    return libexec_gspc (*this) / "gspc-logging-demultiplexer.exe";
   }
 }
