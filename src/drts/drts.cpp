@@ -14,18 +14,14 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/revision.hpp>
 #include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
-#include <util-generic/read_file.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-
-#include <boost/format.hpp>
 
 #include <ostream>
 #include <sstream>
@@ -37,30 +33,7 @@ namespace gspc
     (boost::filesystem::path const& gspc_home)
       : _gspc_home (boost::filesystem::canonical (gspc_home))
   {
-    boost::filesystem::path const path_revision (_gspc_home / "revision");
-
-    if (!boost::filesystem::exists (path_revision))
-    {
-      throw std::invalid_argument
-        (( boost::format ("GSPC revision mismatch: File '%1%' does not exist.")
-         % path_revision
-         ).str());
-    }
-
-    std::string const revision (fhg::util::read_file (path_revision));
-
-    if (revision != fhg::project_revision())
-    {
-      throw std::invalid_argument
-        (( boost::format ( "GSPC revision mismatch: Expected '%1%'"
-                         ", installation in '%2%' has version '%3%'"
-                         )
-         % fhg::project_revision()
-         % _gspc_home
-         % revision
-         ).str()
-        );
-    }
+    installation_path /*use_ctor_side_effect_for_validation*/ {_gspc_home};
   }
   installation::installation
     (boost::program_options::variables_map const& vm)

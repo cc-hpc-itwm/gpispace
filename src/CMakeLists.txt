@@ -291,6 +291,8 @@ extended_add_library (NAME Installation
   NAMESPACE GPISpace
   SOURCES "gspc/installation_path.cpp"
   LIBRARIES GPISpace::InstallationSentinel
+            fhg-revision
+            Util::Generic
             Boost::filesystem
   TYPE STATIC
 )
