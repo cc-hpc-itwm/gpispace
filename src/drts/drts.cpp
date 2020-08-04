@@ -204,21 +204,6 @@ namespace gspc
 
   namespace
   {
-    std::vector<worker_description> parse_worker_descriptions
-      (std::string const& descriptions)
-    {
-      std::vector<worker_description> worker_descriptions;
-      for ( std::string const& description
-          : fhg::util::split<std::string, std::string> (descriptions, ' ')
-          )
-      {
-        //! \todo configurable: default number of processes
-        worker_descriptions.emplace_back
-          (fhg::drts::parse_capability (1, description));
-      }
-      return worker_descriptions;
-    }
-
     void create_resource_forest_from_string_topology
       ( std::string const& string_topology
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
@@ -353,6 +338,11 @@ namespace gspc
         ++next_remote_interface_id;
       }
     }
+    else
+    {
+      create_resource_forest_from_string_topology
+        (topology_description, rif_entry_points, worker_descriptions);
+    }
 
     auto const startup_result
       ( fhg::drts::startup
@@ -393,49 +383,34 @@ namespace gspc
 
     if (!rif_entry_points.empty())
     {
-      if (resource_descriptions)
+      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>> failures;
+
+      for ( auto const& fail
+          : start_workers_with_resources
+            ( rif_entry_points
+            , _master_agent_name
+            , _master_agent_hostinfo
+            , worker_descriptions
+            , _processes_storage
+            , _gpi_socket
+            , _app_path
+            , _worker_env_copy_variable
+            , _worker_env_copy_current
+            , _worker_env_copy_file
+            , _worker_env_set_variable
+            , _installation_path
+            , _info_output
+            , FHG_UTIL_MAKE_OPTIONAL
+                ( _logging_rif_entry_point && _logging_rif_info
+                , std::make_pair
+                    (*_logging_rif_entry_point, _logging_rif_info->pid)
+                )
+            , certificates
+            ).second
+          )
       {
-        std::unordered_map<gspc::resource::Class, unsigned long> class_sizes;
-
-        resource_descriptions->for_each_node
-          ( [&class_sizes]
-            (Forest<std::uint64_t, Resource>::Node const& r)
-            {
-              if (class_sizes.count (r.second.resource_class))
-              {
-                class_sizes[r.second.resource_class]++;
-              }
-              else
-              {
-                class_sizes.emplace (r.second.resource_class, 1);
-              }
-            }
-          );
-
-        // create worker_descriptions
-        for ( auto const& class_and_size : class_sizes)
-        {
-          std::vector<std::string> capabilities;
-
-          for ( std::string const& cpb
-              : fhg::util::split<std::string, std::string> (class_and_size.first, '+')
-              )
-          {
-            capabilities.emplace_back (cpb);
-          }
-
-          worker_description description
-            ({ capabilities, class_and_size.second, 0, 0, boost::none, boost::none, boost::none, boost::none});
-          _worker_descriptions.emplace_back (description);
-        }
+        failures[fail.first].emplace_back (fail.second);
       }
-      else
-      {
-        _worker_descriptions = parse_worker_descriptions (topology_description);
-      }
-
-      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        const failures (add_worker_impl (_worker_descriptions, rif_entry_points, certificates));
 
       if (!failures.empty())
       {
