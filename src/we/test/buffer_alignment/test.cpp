@@ -78,8 +78,7 @@
     (workflow_dir / (std::string (#FILE) + ".xpnet")) << NET;            \
                                                                          \
   test::make_net_lib_install const make                                  \
-    ( installation                                                       \
-    , #FILE                                                              \
+    ( #FILE                                                              \
     , workflow_dir                                                       \
     , installation_dir                                                   \
     );                                                                   \

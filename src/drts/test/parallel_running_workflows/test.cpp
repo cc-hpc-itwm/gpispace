@@ -81,14 +81,12 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   boost::filesystem::path const filename_b (temporary_file_b);
 
   test::make_net_lib_install const make_wait_then_touch
-    ( installation
-    , "wait_then_touch"
+    ( "wait_then_touch"
     , test::source_directory (vm)
     , installation_dir
     );
   test::make_net_lib_install const make_touch_then_wait
-    ( installation
-    , "touch_then_wait"
+    ( "touch_then_wait"
     , test::source_directory (vm)
     , installation_dir
     );

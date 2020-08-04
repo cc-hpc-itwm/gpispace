@@ -69,15 +69,13 @@ BOOST_AUTO_TEST_CASE (we_eureka_random_test)
     (vm, installation, "work:4", rifds.entry_points());
 
   test::make_net_lib_install const with_mod
-    ( installation
-    , "find_eureka_with_mod"
+    ( "find_eureka_with_mod"
     , test::source_directory (vm)
     , installation_dir
     );
 
   test::make_net_lib_install const with_exp
-    ( installation
-    , "find_eureka_with_exp"
+    ( "find_eureka_with_exp"
     , test::source_directory (vm)
     , installation_dir
     );

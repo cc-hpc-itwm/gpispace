@@ -59,8 +59,7 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "input_is_copied_to_output_in_module_calls"
+    ( "input_is_copied_to_output_in_module_calls"
     , test::source_directory (vm)
     , installation_dir
     );

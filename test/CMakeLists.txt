@@ -57,6 +57,7 @@ extended_add_library (NAME test-utilities
   INCLUDE_DIRECTORIES PUBLIC "${CMAKE_SOURCE_DIR}"
                       PRIVATE "${CMAKE_BINARY_DIR}"
   LIBRARIES fhg-util
+            GPISpace::Installation
             Boost::program_options
             Boost::filesystem
             Util::Generic

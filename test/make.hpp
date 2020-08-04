@@ -1,7 +1,5 @@
 #pragma once
 
-#include <drts/drts.hpp>
-
 #include <util-generic/ostream/modifier.hpp>
 #include <util-generic/temporary_path.hpp>
 
@@ -100,8 +98,7 @@ namespace test
     friend class make_net;
     friend class make_net_lib_install;
 
-    make ( gspc::installation const& installation
-         , std::string const& main
+    make ( std::string const& main
          , boost::filesystem::path const& source_directory
          , boost::optional<boost::filesystem::path> const& lib_destdir
            = boost::none
@@ -121,11 +118,10 @@ namespace test
   class make_net : public make
   {
   public:
-    make_net ( gspc::installation const& installation
-             , std::string const& main
+    make_net ( std::string const& main
              , boost::filesystem::path const& source_directory
              )
-      : make (installation, main, source_directory)
+      : make (main, source_directory)
     {}
   };
 
@@ -133,13 +129,12 @@ namespace test
   {
   public:
     make_net_lib_install
-      ( gspc::installation const& installation
-      , std::string const& main
+      ( std::string const& main
       , boost::filesystem::path const& source_directory
       , boost::filesystem::path const& lib_destdir
       , option::options const& options = option::options()
       )
-        : make (installation, main, source_directory, lib_destdir, options)
+        : make (main, source_directory, lib_destdir, options)
     {}
   };
 }

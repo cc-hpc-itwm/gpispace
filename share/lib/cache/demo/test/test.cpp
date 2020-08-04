@@ -59,8 +59,7 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "demo"
+    ( "demo"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

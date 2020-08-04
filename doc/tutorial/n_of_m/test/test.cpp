@@ -60,8 +60,7 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "n_of_m"
+    ( "n_of_m"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

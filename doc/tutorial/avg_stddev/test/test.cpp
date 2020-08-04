@@ -76,8 +76,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   boost::filesystem::path const data_file (_data_file);
 
   test::make_net_lib_install const make
-    ( installation
-    , "avg_stddev"
+    ( "avg_stddev"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

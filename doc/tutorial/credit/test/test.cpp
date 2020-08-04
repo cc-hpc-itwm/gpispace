@@ -57,8 +57,7 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "work_and_wait"
+    ( "work_and_wait"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -117,8 +116,7 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait_credit)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "work_and_wait_credit"
+    ( "work_and_wait_credit"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

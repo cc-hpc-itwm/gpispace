@@ -58,8 +58,7 @@ BOOST_AUTO_TEST_CASE (share_selftest)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "selftest"
+    ( "selftest"
     , test::source_directory (vm)
     , installation_dir
     );

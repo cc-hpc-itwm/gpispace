@@ -61,8 +61,7 @@ namespace
     gspc::installation const installation (vm);
 
     test::make_net const make
-      ( installation
-      , main
+      ( main
       , test::source_directory (vm)
       );
 

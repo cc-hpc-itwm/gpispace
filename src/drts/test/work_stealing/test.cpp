@@ -80,8 +80,7 @@ BOOST_AUTO_TEST_CASE (steal_work)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , net
+    ( net
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

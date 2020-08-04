@@ -62,8 +62,7 @@ BOOST_AUTO_TEST_CASE (share_example_n_of_m)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "n_of_m"
+    ( "n_of_m"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

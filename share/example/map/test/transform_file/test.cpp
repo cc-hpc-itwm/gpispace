@@ -152,8 +152,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_transform_file)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "map"
+    ( "map"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

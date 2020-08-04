@@ -52,8 +52,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
   gspc::installation const installation (vm);
 
   test::make_net const make
-    ( installation
-    , "sequence"
+    ( "sequence"
     , test::source_directory (vm)
     );
 

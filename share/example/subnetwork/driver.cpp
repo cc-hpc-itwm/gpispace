@@ -92,8 +92,7 @@ BOOST_AUTO_TEST_CASE (share_example_subnetwork)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "process_all_blocks"
+    ( "process_all_blocks"
     , test::source_directory (vm)
     , installation_dir
     );

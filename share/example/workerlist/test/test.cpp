@@ -164,8 +164,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "workerlist"
+    ( "workerlist"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

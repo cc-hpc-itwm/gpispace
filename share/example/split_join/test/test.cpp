@@ -81,8 +81,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
   std::string const main (vm.at (option_main).as<validators::nonempty_string>());
 
   test::make_net const make
-    ( installation
-    , vm.at (option_main).as<validators::nonempty_string>()
+    ( vm.at (option_main).as<validators::nonempty_string>()
     , test::source_directory (vm)
     );
 

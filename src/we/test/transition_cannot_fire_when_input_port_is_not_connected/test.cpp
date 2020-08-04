@@ -52,8 +52,7 @@ BOOST_AUTO_TEST_CASE
   gspc::installation const installation (vm);
 
   test::make_net const make
-    ( installation
-    , "transition_with_unconnected_input_port"
+    ( "transition_with_unconnected_input_port"
     , test::source_directory (vm)
     );
 

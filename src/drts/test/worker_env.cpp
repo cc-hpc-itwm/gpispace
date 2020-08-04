@@ -77,8 +77,7 @@ namespace
       app_search_path
         = test::shared_directory (vm) / boost::filesystem::unique_path();
 
-      _make.emplace ( vm
-                    , "report_environment"
+      _make.emplace ( "report_environment"
                     , test::source_directory (vm) / "worker_env"
                     , app_search_path
                     );

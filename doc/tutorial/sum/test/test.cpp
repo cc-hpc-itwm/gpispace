@@ -96,8 +96,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
   gspc::installation const installation (vm);
 
   test::make_net const make
-    ( installation
-    , "sum_expr_many"
+    ( "sum_expr_many"
     , test::source_directory (vm)
     );
 
@@ -159,8 +158,7 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "sum_many"
+    ( "sum_many"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

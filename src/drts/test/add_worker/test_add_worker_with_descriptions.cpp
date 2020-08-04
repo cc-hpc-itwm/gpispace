@@ -118,8 +118,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "add_workers_with_different_descriptions"
+    ( "add_workers_with_different_descriptions"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

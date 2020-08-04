@@ -50,8 +50,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_atomic)
   gspc::installation const installation (vm);
 
   test::make_net const make
-    ( installation
-    , "atomic"
+    ( "atomic"
     , test::source_directory (vm)
     );
 

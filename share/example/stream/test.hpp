@@ -98,8 +98,7 @@ namespace share_example_stream_test
     gspc::installation const installation (vm);
 
     test::make_net_lib_install const make
-      ( installation
-      , workflow_name
+      ( workflow_name
       , test::source_directory (vm)
       , installation_dir
       , test::option::options()

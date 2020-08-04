@@ -84,8 +84,7 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "run_bunch_of_tasks"
+    ( "run_bunch_of_tasks"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()

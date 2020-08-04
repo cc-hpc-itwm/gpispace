@@ -90,8 +90,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
   gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
-    ( installation
-    , "add_worker"
+    ( "add_worker"
     , test::source_directory (vm)
     , installation_dir
     );
