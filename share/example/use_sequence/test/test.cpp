@@ -58,8 +58,6 @@ namespace
 
     vm.notify();
 
-    gspc::installation const installation (vm);
-
     test::make_net const make
       ( main
       , test::source_directory (vm)

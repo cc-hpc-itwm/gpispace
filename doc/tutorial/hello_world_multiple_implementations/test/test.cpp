@@ -84,8 +84,6 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
     , "Could not 'make hello_world_module'"
     );
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "hello_world_multiple_implementations"
     , test::source_directory (vm)

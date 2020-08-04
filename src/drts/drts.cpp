@@ -29,23 +29,6 @@
 
 namespace gspc
 {
-  installation::installation
-    (boost::filesystem::path const& gspc_home)
-      : _gspc_home (boost::filesystem::canonical (gspc_home))
-  {
-    if (_gspc_home != boost::filesystem::canonical (installation_path{}))
-    {
-      throw std::logic_error
-        ( "given gspc home that is not the same as the installation "
-          "libgspc.so is loaded from"
-        );
-    }
-  }
-  installation::installation
-    (boost::program_options::variables_map const& vm)
-      : installation (require_gspc_home (vm))
-  {}
-
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , std::string const& topology_description

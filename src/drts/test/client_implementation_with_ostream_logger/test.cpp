@@ -75,8 +75,6 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "client_implementation_with_ostream_logger"
     , test::source_directory (vm)

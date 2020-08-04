@@ -69,8 +69,6 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   fhg::util::temporary_file _data_file
     (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const data_file (_data_file);

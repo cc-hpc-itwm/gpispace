@@ -75,8 +75,6 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "many_ranges_in_memory_transfer"
     , test::source_directory (vm)

@@ -1,9 +1,7 @@
 fhg_add_test (NAME drts_installation
   SOURCES installation.cpp
   USE_BOOST
-  LIBRARIES gspc
-            GPISpace::Installation
-            Boost::program_options
+  LIBRARIES GPISpace::Installation
   REQUIRES_INSTALLATION
 )
 

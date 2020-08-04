@@ -72,8 +72,6 @@ BOOST_AUTO_TEST_CASE (remove_worker)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "remove_worker"
     , test::source_directory (vm)

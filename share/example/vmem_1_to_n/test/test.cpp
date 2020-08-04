@@ -73,8 +73,6 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "vmem_1_to_n"
     , test::source_directory (vm)

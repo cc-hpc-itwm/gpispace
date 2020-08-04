@@ -76,8 +76,6 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   std::string const main (vm.at (option_main).as<validators::nonempty_string>());
 
   test::make_net const make

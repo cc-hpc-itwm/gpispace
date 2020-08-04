@@ -55,8 +55,6 @@ BOOST_AUTO_TEST_CASE (plugin_Tunnel_subnetwork)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
     ("subnetwork", test::source_directory (vm));
 

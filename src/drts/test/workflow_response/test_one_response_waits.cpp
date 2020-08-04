@@ -91,8 +91,6 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "workflow_response_one_response_waits_while_others_are_made"
     , test::source_directory (vm)

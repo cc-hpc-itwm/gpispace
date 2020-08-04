@@ -52,8 +52,6 @@ BOOST_AUTO_TEST_CASE (we_put_many_decomposes_result_lists)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}

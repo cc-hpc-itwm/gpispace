@@ -59,8 +59,6 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "multiple_module_implementations"
     , test::source_directory (vm)

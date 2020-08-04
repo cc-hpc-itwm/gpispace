@@ -65,8 +65,6 @@ BOOST_AUTO_TEST_CASE (plugin_create_and_call_after_in_one_transition)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
     ( "create_and_call_after_in_one_transition"
     , test::source_directory (vm)

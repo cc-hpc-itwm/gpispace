@@ -87,8 +87,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "use_fixed_ports_for_agents_and_workers"
     , test::source_directory (vm)

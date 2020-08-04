@@ -46,8 +46,6 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
     ( "concurrent"
     , test::source_directory (vm)

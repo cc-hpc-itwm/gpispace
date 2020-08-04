@@ -81,8 +81,6 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "run_bunch_of_tasks_with_put_token"
     , test::source_directory (vm)

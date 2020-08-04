@@ -56,8 +56,6 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( main
     , test::source_directory (vm)

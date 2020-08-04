@@ -92,8 +92,6 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "workflow_response_fails_if_workflow_fails_after_requesting"
     , test::source_directory (vm)

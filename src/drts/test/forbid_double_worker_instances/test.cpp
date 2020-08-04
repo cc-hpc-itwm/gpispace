@@ -51,8 +51,6 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)

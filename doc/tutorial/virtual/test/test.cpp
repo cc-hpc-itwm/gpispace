@@ -54,8 +54,6 @@ BOOST_AUTO_TEST_CASE (tutorial_virtual)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "work_and_wait"
     , test::source_directory (vm)

@@ -91,8 +91,6 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
     ( "sum_expr_many"
     , test::source_directory (vm)
@@ -152,8 +150,6 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
      }
     , "Could not 'make sum_module'"
     );
-
-  gspc::installation const installation (vm);
 
   test::make_net_lib_install const make
     ( "sum_many"

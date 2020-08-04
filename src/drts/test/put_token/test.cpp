@@ -84,8 +84,6 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "wait_for_token_put"
     , test::source_directory (vm)

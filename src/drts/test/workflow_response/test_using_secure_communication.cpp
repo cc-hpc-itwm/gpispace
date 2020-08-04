@@ -93,8 +93,6 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( name
     , test::source_directory (vm)

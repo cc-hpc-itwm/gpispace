@@ -51,8 +51,6 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
                                         , gspc::rifd::hostnames {vm}
                                         , gspc::rifd::port {vm}
@@ -89,8 +87,6 @@ BOOST_DATA_TEST_CASE
     (shared_directory, vm);
 
   vm.notify();
-
-  gspc::installation const installation (vm);
 
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));
@@ -214,8 +210,6 @@ BOOST_DATA_TEST_CASE
     (shared_directory, vm);
 
   vm.notify();
-
-  gspc::installation const installation (vm);
 
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));

@@ -70,8 +70,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   fhg::util::temporary_file const temporary_file_a
     (shared_directory / boost::filesystem::unique_path());
   fhg::util::temporary_file const temporary_file_b

@@ -65,8 +65,6 @@ BOOST_AUTO_TEST_CASE (plugin_call_before_and_destroy_in_one_transition)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
     ( "call_before_and_destroy_in_one_transition"
     , test::source_directory (vm)

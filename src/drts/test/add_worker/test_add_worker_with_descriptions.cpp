@@ -115,8 +115,6 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "add_workers_with_different_descriptions"
     , test::source_directory (vm)

@@ -58,8 +58,6 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "pi"
     , test::source_directory (vm)

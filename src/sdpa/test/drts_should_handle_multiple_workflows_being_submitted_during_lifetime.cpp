@@ -65,8 +65,6 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "selftest"
     , test::source_directory (vm)

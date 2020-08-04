@@ -58,7 +58,6 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
   gspc::installation_path const gspc_home;
 
   test::make_net_lib_install const make

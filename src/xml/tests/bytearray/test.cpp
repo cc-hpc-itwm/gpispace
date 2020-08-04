@@ -55,8 +55,6 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( "bytearray"
     , test::source_directory (vm)

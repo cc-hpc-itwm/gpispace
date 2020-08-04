@@ -49,8 +49,6 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
     ( "sequence"
     , test::source_directory (vm)

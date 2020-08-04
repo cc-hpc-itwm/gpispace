@@ -6,12 +6,27 @@ system.
 
 This is an API change, requiring applications to
 
+- Remove the construction of a `gspc::installation` object.
 - Remove the `installation` argument from `gspc::scoped_rifd` or
   `gspc::rifds` constructors.
 - Remove the `installation` argument from
   `gspc::scoped_runtime_system` constructors.
 
 A diff usually looks like
+
+```diff
+-  gspc::installation const gspc_installation (GPISPACE_INSTALL_DIR);
+-
+```
+
+or
+
+```diff
+-  gspc::installation const gspc_installation (vm);
+-
+```
+
+and
 
 ```diff
    gspc::scoped_rifds const rifds
@@ -29,4 +44,5 @@ A diff usually looks like
      );
 ```
 
-but might slightly differ based on the overloads used.
+but might slightly differ based on the overloads used or the method
+used to determine the GPI-Space installation directory.

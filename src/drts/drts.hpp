@@ -49,21 +49,6 @@ namespace gspc
     boost::program_options::options_description virtual_memory();
   }
 
-  class installation
-  {
-  public:
-    installation (boost::filesystem::path const& gspc_home);
-    installation (boost::program_options::variables_map const& vm);
-
-    boost::filesystem::path const& gspc_home() const
-    {
-      return _gspc_home;
-    }
-
-  private:
-    boost::filesystem::path const _gspc_home;
-  };
-
   class scoped_runtime_system
   {
   public:

@@ -77,8 +77,6 @@ BOOST_AUTO_TEST_CASE (steal_work)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
     ( net
     , test::source_directory (vm)

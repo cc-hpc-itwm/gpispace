@@ -64,8 +64,6 @@ BOOST_AUTO_TEST_CASE (plugin_echo)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make ("echo", test::source_directory (vm));
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}

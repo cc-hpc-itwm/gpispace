@@ -415,8 +415,8 @@ The GPI-Space installation itself is self-contained and freely
 movable, so applications may copy it into their own installation
 directories, e.g. `libexec/bundle/gpispace`, and then at runtime use
 the executable's path (determined for example using `dladdr()`) and
-the knowledge of the relative path to construct a
-`gspc::installation`. The same method can also be used to avoid
+the knowledge of the relative path if they need something from the
+GPI-Space installation. The same method can also be used to avoid
 compiling `${APP_INSTALL_DIR}` into the binaries, to get the `.pnet`
 and module call library location.
 

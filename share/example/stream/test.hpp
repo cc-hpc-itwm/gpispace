@@ -95,8 +95,6 @@ namespace share_example_stream_test
 
     vm.notify();
 
-    gspc::installation const installation (vm);
-
     test::make_net_lib_install const make
       ( workflow_name
       , test::source_directory (vm)
