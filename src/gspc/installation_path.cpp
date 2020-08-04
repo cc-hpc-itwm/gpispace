@@ -11,10 +11,7 @@
 namespace gspc
 {
   installation_path::installation_path()
-    : installation_path (installation_prefix())
-  {}
-  installation_path::installation_path (boost::filesystem::path const& gspc_home)
-    : boost::filesystem::path (gspc_home)
+    : boost::filesystem::path (installation_prefix())
   {
     auto const path_revision (*this / "revision");
 

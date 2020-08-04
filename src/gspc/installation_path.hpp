@@ -8,7 +8,6 @@ namespace gspc
   {
   public:
     installation_path();
-    installation_path (boost::filesystem::path const& gspc_home);
 
     boost::filesystem::path include() const;
     boost::filesystem::path lib() const;
