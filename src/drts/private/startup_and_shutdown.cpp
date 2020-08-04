@@ -304,11 +304,11 @@ namespace fhg
         {
           try
           {
-            if (description.base_port)
+            if (description.port)
             {
               arguments.emplace_back ("--port");
               arguments.emplace_back
-                (std::to_string (*description.base_port + identity));
+                (std::to_string (*description.port + identity));
             }
 
             std::string const name
