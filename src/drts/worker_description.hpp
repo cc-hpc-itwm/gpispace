@@ -17,7 +17,7 @@ namespace gspc
     std::size_t max_nodes;
     std::size_t shm_size;
     boost::optional<std::size_t> socket;
-    boost::optional<unsigned short> base_port;
+    boost::optional<unsigned short> port;
     boost::optional<gspc::resource::ID> resource_id;
     boost::optional<fhg::rif::entry_point> entry_point;
   };
