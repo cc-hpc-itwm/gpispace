@@ -1,16 +1,8 @@
-
 fhg_add_test (NAME drts_installation
   SOURCES installation.cpp
   USE_BOOST
   LIBRARIES gspc
-            Boost::program_options
-  REQUIRES_INSTALLATION
-)
-fhg_add_test (NAME drts_installation_from_command_line
-  SOURCES installation_from_command_line.cpp
-  USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-  LIBRARIES gspc
+            GPISpace::Installation
             Boost::program_options
   REQUIRES_INSTALLATION
 )

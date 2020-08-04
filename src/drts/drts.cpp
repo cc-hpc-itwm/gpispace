@@ -33,7 +33,13 @@ namespace gspc
     (boost::filesystem::path const& gspc_home)
       : _gspc_home (boost::filesystem::canonical (gspc_home))
   {
-    installation_path /*use_ctor_side_effect_for_validation*/ {_gspc_home};
+    if (_gspc_home != boost::filesystem::canonical (installation_path{}))
+    {
+      throw std::logic_error
+        ( "given gspc home that is not the same as the installation "
+          "libgspc.so is loaded from"
+        );
+    }
   }
   installation::installation
     (boost::program_options::variables_map const& vm)
