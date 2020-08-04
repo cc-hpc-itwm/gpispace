@@ -1,8 +1,7 @@
 fhg_add_test (NAME drts_workflow_response_using_secure_communication
   SOURCES test_using_secure_communication.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "no"
@@ -21,8 +20,7 @@ fhg_add_test (NAME drts_workflow_response_using_secure_communication
 fhg_add_test (NAME drts_workflow_response_one_response_waits
   SOURCES test_one_response_waits.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "no"
@@ -39,8 +37,7 @@ fhg_add_test (NAME drts_workflow_response_one_response_waits
 fhg_add_test (NAME drts_workflow_response_workflow_response_fails
   SOURCES test_workflow_response_fails.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "no"
@@ -57,8 +54,7 @@ fhg_add_test (NAME drts_workflow_response_workflow_response_fails
 fhg_add_test (NAME drts_workflow_response_with_ssl_cert_using_secure_communication
   SOURCES test_using_secure_communication.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "yes"
@@ -77,8 +73,7 @@ fhg_add_test (NAME drts_workflow_response_with_ssl_cert_using_secure_communicati
 fhg_add_test (NAME drts_workflow_response_with_ssl_cert_one_response_waits
   SOURCES test_one_response_waits.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "yes"
@@ -95,8 +90,7 @@ fhg_add_test (NAME drts_workflow_response_with_ssl_cert_one_response_waits
 fhg_add_test (NAME drts_workflow_response_with_ssl_cert_workflow_response_fails
   SOURCES test_workflow_response_fails.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "yes"

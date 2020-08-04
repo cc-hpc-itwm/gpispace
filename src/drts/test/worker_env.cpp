@@ -66,7 +66,6 @@ namespace
         . options ( boost::program_options::options_description()
                   . add (test::options::source_directory())
                   . add (test::options::shared_directory())
-                  . add (gspc::options::installation())
                   )
         . allow_unregistered()
         . run()
@@ -144,7 +143,6 @@ BOOST_GLOBAL_FIXTURE (compile_pnet);
         , boost::program_options::options_description()                       \
         . add (test::options::source_directory())                             \
         . add (test::options::shared_directory())                             \
-        . add (gspc::options::installation())                                 \
         . add (gspc::options::drts())                                         \
         . add (gspc::options::scoped_rifd())                                  \
         )                                                                     \

@@ -45,7 +45,6 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()

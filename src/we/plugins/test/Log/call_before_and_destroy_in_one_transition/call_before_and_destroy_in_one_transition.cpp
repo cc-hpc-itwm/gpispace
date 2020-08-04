@@ -34,7 +34,6 @@ BOOST_AUTO_TEST_CASE (plugin_call_before_and_destroy_in_one_transition)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 

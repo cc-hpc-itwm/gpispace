@@ -4,8 +4,7 @@ math (EXPR num_slots "20")
 fhg_add_test (NAME share_example_stream_two_module_calls
   SOURCES stream.two_module_calls.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --num-slots ${num_slots}
@@ -25,8 +24,7 @@ fhg_add_test (NAME share_example_stream_two_module_calls
 fhg_add_test (NAME share_example_stream_one_module_call
   SOURCES stream.one_module_call.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --num-slots ${num_slots}

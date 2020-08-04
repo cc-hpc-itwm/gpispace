@@ -1,8 +1,7 @@
 fhg_add_test (NAME drts_add_worker
   SOURCES test_add_worker.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "no"
@@ -19,8 +18,7 @@ fhg_add_test (NAME drts_add_worker
 fhg_add_test (NAME drts_add_worker_with_ssl_cert
   SOURCES test_add_worker.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "yes"
@@ -37,8 +35,7 @@ fhg_add_test (NAME drts_add_worker_with_ssl_cert
 fhg_add_test (NAME drts_add_worker_with_descriptions
   SOURCES test_add_worker_with_descriptions.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "no"
@@ -55,8 +52,7 @@ fhg_add_test (NAME drts_add_worker_with_descriptions
 fhg_add_test (NAME drts_add_worker_with_ssl_cert_with_descriptions
   SOURCES test_add_worker_with_descriptions.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --rpc-lib "$<TARGET_FILE:RPC>"
        --ssl-cert "yes"

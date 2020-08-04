@@ -32,7 +32,6 @@
 #define START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET_GEN(FILE,NET) \
   boost::program_options::options_description options_description;       \
   options_description.add (test::options::shared_directory());           \
-  options_description.add (gspc::options::installation());               \
   options_description.add (gspc::options::drts());                       \
   options_description.add (gspc::options::scoped_rifd());                \
   options_description.add (gspc::options::virtual_memory());             \

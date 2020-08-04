@@ -33,7 +33,6 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 

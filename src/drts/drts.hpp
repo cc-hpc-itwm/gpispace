@@ -43,7 +43,6 @@ namespace gspc
   namespace options
   {
     boost::program_options::options_description logging();
-    boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description external_rifd();
     boost::program_options::options_description virtual_memory();
@@ -135,7 +134,4 @@ namespace gspc
   void set_application_search_path ( boost::program_options::variables_map&
                                    , boost::filesystem::path const&
                                    );
-  void set_gspc_home ( boost::program_options::variables_map&
-                     , boost::filesystem::path const&
-                     );
 }

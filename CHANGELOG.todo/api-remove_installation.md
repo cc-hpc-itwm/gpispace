@@ -11,24 +11,23 @@ This is an API change, requiring applications to
   `gspc::rifds` constructors.
 - Remove the `installation` argument from
   `gspc::scoped_runtime_system` constructors.
+- Maybe: Remove the `gspc::options::installation()`/`--gspc-home`
+  command line option.
 
 A diff usually looks like
 
 ```diff
--  gspc::installation const gspc_installation (GPISPACE_INSTALL_DIR);
--
-```
+-  options_description.add (gspc::options::installation());
 
-or
+   // ...
 
-```diff
+-  // maybe: gspc::set_gspc_home (vm, GPISPACE_INSTALL_DIR);
+
 -  gspc::installation const gspc_installation (vm);
--
-```
+-  // or: gspc::installation const gspc_installation (GPISPACE_INSTALL_DIR);
 
-and
+   // ...
 
-```diff
    gspc::scoped_rifds const rifds
      ( gspc::rifd::strategy {vm}
      , gspc::rifd::hostnames {vm}
@@ -45,4 +44,7 @@ and
 ```
 
 but might slightly differ based on the overloads used or the method
-used to determine the GPI-Space installation directory.
+used to determine the GPI-Space installation directory. If the command
+line option `gspc::options::installation()` was used without
+`gspc::set_gspc_home()`, wrapping scripts may also need to be updated
+to remove the `--gspc-home` argument.

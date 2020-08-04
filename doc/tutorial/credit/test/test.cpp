@@ -28,7 +28,6 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -84,7 +83,6 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait_credit)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 

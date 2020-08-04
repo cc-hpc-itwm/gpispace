@@ -69,8 +69,7 @@ extended_add_library (NAME test-utilities
 fhg_add_test (NAME many_ranges_in_memory_transfer
   SOURCES "many_ranges_in_memory_transfer/driver.cpp"
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/many_ranges_in_memory_transfer"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/many_ranges_in_memory_transfer"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --size-of-range 1000
@@ -89,8 +88,7 @@ fhg_add_test (NAME many_ranges_in_memory_transfer
 fhg_add_test (NAME many_ranges_in_memory_transfer_minimal
   SOURCES "many_ranges_in_memory_transfer/driver.cpp"
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/many_ranges_in_memory_transfer"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/many_ranges_in_memory_transfer"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --virtual-memory-startup-timeout 60
        --size-of-range 1

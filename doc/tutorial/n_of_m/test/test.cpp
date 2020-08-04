@@ -29,7 +29,6 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 

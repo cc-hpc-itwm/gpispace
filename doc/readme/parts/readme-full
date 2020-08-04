@@ -274,12 +274,11 @@ Input parameters required to set up the distributed cluster, such as
 the RIFD startup strategy, the nodefile path (listing of all hosts to
 use), etc., can be supplied to the startup binary as command line
 arguments. The `gspc::options::*` functions provide groups of options
-for `logging`, `scoped_rifd`, the `drts`, `virtual_memory` and the
-GPI-Space `installation`. These command line inputs can be parsed
-using Boost's Program Options library. User-defined values can also be
-defined via the same options options description to provide generic
-GPI-Space and application specific parameters in the same command
-line.
+for `logging`, `scoped_rifd`, the `drts` and `virtual_memory`. These
+command line inputs can be parsed using Boost's Program Options
+library. User-defined values can also be defined via the same options
+options description to provide generic GPI-Space and application
+specific parameters in the same command line.
 
 ```c++
 @@driver-skeleton@@

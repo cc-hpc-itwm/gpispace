@@ -21,8 +21,7 @@ function (test_Log case)
   fhg_add_test (NAME plugin_Log_${case}
     SOURCES test/Log/${case}/${case}.cpp
     USE_BOOST
-    ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-         --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/test/Log/${case}"
+    ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/test/Log/${case}"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
          --plugin-path "${CMAKE_INSTALL_PREFIX}/plugin/$<TARGET_FILE_NAME:Plugin::Log>"
     LIBRARIES gspc
@@ -42,8 +41,7 @@ function (test_Tunnel case)
   fhg_add_test (NAME plugin_Tunnel_${case}
     SOURCES test/Tunnel/${case}/${case}.cpp
     USE_BOOST
-    ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-         --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/test/Tunnel/${case}"
+    ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/test/Tunnel/${case}"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
          --plugin-path "${CMAKE_INSTALL_PREFIX}/plugin/$<TARGET_FILE_NAME:Plugin::Tunnel>"
     LIBRARIES gspc

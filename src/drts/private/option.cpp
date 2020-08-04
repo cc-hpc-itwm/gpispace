@@ -29,7 +29,6 @@ namespace gspc
       constexpr char const* const log_level {"log-level"};
 
       constexpr char const* const log_directory {"log-directory"};
-      constexpr char const* const gspc_home {"gspc-home"};
       constexpr char const* const nodefile {"nodefile"};
       constexpr char const* const application_search_path
         {"application-search-path"};
@@ -178,22 +177,6 @@ namespace gspc
         ;
 
       return logging;
-    }
-
-    boost::program_options::options_description installation()
-    {
-      boost::program_options::options_description
-        installation ("GSPC Installation");
-
-      installation.add_options()
-        ( name::gspc_home
-        , boost::program_options::value<validators::existing_directory>()
-        ->required()
-        , "gspc installation directory"
-        )
-        ;
-
-      return installation;
     }
 
     boost::program_options::options_description drts()
@@ -543,7 +526,6 @@ namespace gspc
   ACCESS_STRING (log_level, std::string)
 
   ACCESS_PATH (log_directory, validators::is_directory_if_exists)
-  ACCESS_PATH (gspc_home, validators::existing_directory)
   ACCESS_PATH (nodefile, validators::existing_path)
   ACCESS_PATH (application_search_path, validators::existing_directory)
   ACCESS_POSITIVE_INTEGRAL (agent_port, unsigned short)
