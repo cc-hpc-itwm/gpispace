@@ -6,6 +6,8 @@
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 
 #include <boost/noncopyable.hpp>
@@ -17,7 +19,7 @@
 
 namespace gspc
 {
-  class workflow : boost::noncopyable
+  class GSPC_DLLEXPORT workflow : boost::noncopyable
   {
   public:
     workflow (boost::filesystem::path workflow);
@@ -34,7 +36,7 @@ namespace gspc
     PIMPL (workflow);
   };
 
-  class client : boost::noncopyable
+  class GSPC_DLLEXPORT client : boost::noncopyable
   {
   public:
     client (scoped_runtime_system const&, Certificates const& = boost::none);

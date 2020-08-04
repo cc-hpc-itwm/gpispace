@@ -3,12 +3,13 @@
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/pimpl.hpp>
+#include <gspc/detail/dllexport.hpp>
 
 #include <string>
 
 namespace gspc
 {
-  class information_to_reattach
+  class GSPC_DLLEXPORT information_to_reattach
   {
   public:
     information_to_reattach (scoped_runtime_system const&);

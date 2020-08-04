@@ -6,6 +6,7 @@
 #include <drts/rifd_entry_points.hpp>
 
 #include <drts/pimpl.hpp>
+#include <gspc/detail/dllexport.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
@@ -29,13 +30,13 @@ namespace gspc
                     , rif_port = 1 << 2
                     };
 
-    boost::program_options::options_description scoped_rifd
+    GSPC_DLLEXPORT boost::program_options::options_description scoped_rifd
       (int = rifd::nodefile | rifd::rif_strategy | rifd::rif_port);
   }
 
   namespace rifd
   {
-    struct strategy
+    struct GSPC_DLLEXPORT strategy
     {
       strategy (boost::program_options::variables_map const&);
 
@@ -45,7 +46,7 @@ namespace gspc
       PIMPL (strategy);
     };
 
-    struct hostnames
+    struct GSPC_DLLEXPORT hostnames
     {
       hostnames (boost::program_options::variables_map const&);
       hostnames (std::vector<std::string> const&);
@@ -55,7 +56,7 @@ namespace gspc
 
       PIMPL (hostnames);
     };
-    struct hostname
+    struct GSPC_DLLEXPORT hostname
     {
       hostname (std::string const&);
 
@@ -64,7 +65,7 @@ namespace gspc
 
       PIMPL (hostname);
     };
-    struct port
+    struct GSPC_DLLEXPORT port
     {
       port (boost::program_options::variables_map const&);
 
@@ -75,7 +76,7 @@ namespace gspc
     };
   }
 
-  class rifds : boost::noncopyable
+  class GSPC_DLLEXPORT rifds : boost::noncopyable
   {
   public:
     rifds ( rifd::strategy const&
@@ -135,7 +136,7 @@ namespace gspc
     friend class scoped_rifds;
   };
 
-  class scoped_rifd : public rifds
+  class GSPC_DLLEXPORT scoped_rifd : public rifds
   {
   public:
     scoped_rifd ( rifd::strategy const&
@@ -148,7 +149,7 @@ namespace gspc
     rifd_entry_point entry_point() const;
   };
 
-  class scoped_rifds : public rifds
+  class GSPC_DLLEXPORT scoped_rifds : public rifds
   {
   public:
     using rifds::rifds;

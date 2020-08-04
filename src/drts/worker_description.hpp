@@ -1,4 +1,7 @@
 #pragma once
+
+#include <gspc/detail/dllexport.hpp>
+
 #include <boost/optional.hpp>
 
 #include <string>
@@ -6,7 +9,7 @@
 
 namespace gspc
 {
-  struct worker_description
+  struct GSPC_DLLEXPORT worker_description
   {
     std::vector<std::string> capabilities;
     std::size_t num_per_node;

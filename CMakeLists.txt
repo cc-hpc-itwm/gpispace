@@ -97,6 +97,7 @@ macro (fhg_add_runtime_executable)
   extended_add_executable (DONT_APPEND_EXE_SUFFIX INSTALL ${ARGN})
 endmacro()
 
+include_directories ("${CMAKE_SOURCE_DIR}/include")
 include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
 
@@ -145,4 +146,8 @@ set_property (TEST installed_headers_are_selfcontained
 
 install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
   DESTINATION "share/gspc/"
+)
+
+install (FILES "${CMAKE_SOURCE_DIR}/include/gspc/detail/dllexport.hpp"
+  DESTINATION "include/gspc/detail"
 )

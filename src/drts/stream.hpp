@@ -3,6 +3,7 @@
 #include <drts/drts.fwd.hpp>
 #include <drts/pimpl.hpp>
 #include <drts/virtual_memory.fwd.hpp>
+#include <gspc/detail/dllexport.hpp>
 
 #include <we/type/value.hpp>
 
@@ -12,10 +13,10 @@
 
 namespace gspc
 {
-  class stream
+  class GSPC_DLLEXPORT stream
   {
   public:
-    struct size_of_slot
+    struct GSPC_DLLEXPORT size_of_slot
     {
       explicit size_of_slot (std::size_t size)
         : _ (size)
@@ -28,7 +29,7 @@ namespace gspc
     private:
       const std::size_t _;
     };
-    struct number_of_slots
+    struct GSPC_DLLEXPORT number_of_slots
     {
       explicit number_of_slots (std::size_t count)
         : _ (count)

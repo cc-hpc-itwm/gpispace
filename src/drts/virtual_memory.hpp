@@ -4,6 +4,7 @@
 #include <drts/pimpl.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/stream.fwd.hpp>
+#include <gspc/detail/dllexport.hpp>
 
 #include <we/type/value.hpp>
 
@@ -17,7 +18,7 @@ namespace gspc
 
   namespace vmem
   {
-    struct gaspi_segment_description
+    struct GSPC_DLLEXPORT gaspi_segment_description
     {
       inline gaspi_segment_description
         ( std::size_t communication_buffer_size = 4 * (1 << 20)
@@ -27,7 +28,7 @@ namespace gspc
       std::size_t _communication_buffer_size;
       std::size_t _communication_buffer_count;
     };
-    struct beegfs_segment_description
+    struct GSPC_DLLEXPORT beegfs_segment_description
     {
       inline beegfs_segment_description (boost::filesystem::path);
 
@@ -35,7 +36,7 @@ namespace gspc
     };
   }
 
-  class vmem_allocation
+  class GSPC_DLLEXPORT vmem_allocation
   {
   private:
     friend class scoped_runtime_system;
