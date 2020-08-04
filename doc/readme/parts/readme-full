@@ -408,8 +408,8 @@ details on the monitor GUI.
 #### Deploying
 For the sake of brevity, this example hard-codes the paths to
 `${APP_INSTALL_DIR}` and `${GPISPACE_INSTALL_DIR}` via `-D` or
-`-Wl,-rpath` in the compilation step. Thus example is not movable and
-the GPI-Space installation it uses is not movable or replaceable
+`-Wl,-rpath` in the compilation step. Thus this example is not movable
+and the GPI-Space installation it uses is not movable or replaceable
 either, making it hard to ship an application to users.
 
 The GPI-Space installation itself is self-contained and freely
