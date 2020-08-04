@@ -93,7 +93,7 @@
                                  , gspc::rifd::port {vm}                      \
                                  );                                           \
   gspc::scoped_runtime_system const drts                                      \
-    (vm, vm, "worker:1x1", rifds.entry_points());                             \
+    (vm, "worker:1x1", rifds.entry_points());                                 \
   gspc::client client (drts)
 
 

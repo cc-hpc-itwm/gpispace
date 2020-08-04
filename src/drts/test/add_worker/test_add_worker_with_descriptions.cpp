@@ -168,7 +168,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
                           );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "", boost::none, master.entry_point(), std::cerr, certificates);
+    (vm, "", boost::none, master.entry_point(), std::cerr, certificates);
 
   std::set<std::string> expected_workers;
 

@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:4", rifds.entry_points());
+    (vm, "work:4", rifds.entry_points());
 
   long const num_id (6);
   long const multiplicity (4);

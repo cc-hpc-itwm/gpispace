@@ -8,6 +8,8 @@ This is an API change, requiring applications to
 
 - Remove the `installation` argument from `gspc::scoped_rifd` or
   `gspc::rifds` constructors.
+- Remove the `installation` argument from
+  `gspc::scoped_runtime_system` constructors.
 
 A diff usually looks like
 
@@ -18,4 +20,13 @@ A diff usually looks like
      , gspc::rifd::port {vm}
 -    , gspc_installation
      );
+
+   gspc::scoped_runtime_system drts
+     ( vm
+-    , gspc_installation
+     , topology_description
+     , rifds.entry_points()
+     );
 ```
+
+but might slightly differ based on the overloads used.

@@ -141,7 +141,7 @@ BOOST_AUTO_TEST_CASE (share_example_map_log)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology_description.str(), rifds.entry_points());
+    (vm, topology_description.str(), rifds.entry_points());
 
   gspc::vmem_allocation const allocation_input
     ( drts.alloc ( gspc::vmem::gaspi_segment_description()

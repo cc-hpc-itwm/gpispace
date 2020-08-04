@@ -114,7 +114,7 @@ BOOST_AUTO_TEST_CASE (steal_work)
   }
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology.str(), rifds.entry_points());
+    (vm, topology.str(), rifds.entry_points());
 
   long const num_tasks (6 * num_workers_of_a_type_per_host * hosts.size());
   auto worst_comp_time

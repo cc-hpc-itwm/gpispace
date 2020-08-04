@@ -106,7 +106,6 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
 
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "A:" + std::to_string (num_workers)
     , rifds.entry_points()
     );

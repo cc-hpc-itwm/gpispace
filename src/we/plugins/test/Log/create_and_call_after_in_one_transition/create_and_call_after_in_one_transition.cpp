@@ -77,7 +77,7 @@ BOOST_AUTO_TEST_CASE (plugin_create_and_call_after_in_one_transition)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
   pnet::type::value::value_type const plugin_path
     (vm["plugin-path"].as<std::string>());

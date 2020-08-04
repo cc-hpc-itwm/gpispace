@@ -101,7 +101,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
                           );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
+    (vm, "worker:2", rifds.entry_points(), std::cerr, certificates);
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts, &certificates]

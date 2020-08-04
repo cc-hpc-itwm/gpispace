@@ -99,7 +99,6 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
 
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "worker:1," + std::to_string (number_of_ranges * size_of_range)
     , rifds.entry_points()
     );

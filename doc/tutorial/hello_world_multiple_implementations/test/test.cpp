@@ -103,7 +103,7 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "cpu:1 gpu:1", rifds.entry_points());
+    (vm, "cpu:1 gpu:1", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run

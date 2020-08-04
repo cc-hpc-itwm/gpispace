@@ -84,7 +84,6 @@
                                                                          \
   gspc::scoped_runtime_system const drts                                 \
     ( vm                                                                 \
-    , installation                                                       \
     , "worker:1," + std::to_string (local_memory_size)                   \
     , rifds.entry_points()                                               \
     )

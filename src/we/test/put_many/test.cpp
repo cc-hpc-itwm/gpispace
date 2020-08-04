@@ -59,7 +59,7 @@ BOOST_AUTO_TEST_CASE (we_put_many_decomposes_result_lists)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
   test::make_net_lib_install const manual
     ( "manual"

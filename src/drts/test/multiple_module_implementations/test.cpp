@@ -86,7 +86,6 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "A:20 B:20 C:20"
     , rifds.entry_points()
     );

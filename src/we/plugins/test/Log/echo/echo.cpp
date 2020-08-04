@@ -73,7 +73,7 @@ BOOST_AUTO_TEST_CASE (plugin_echo)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
   fhg::util::testing::unique_random<long> unique_random_long;
 

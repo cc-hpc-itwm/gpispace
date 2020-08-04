@@ -5,7 +5,6 @@
 
   gspc::scoped_runtime_system drts
     ( vm                    // variables_map containing GPI-Space options
-    , gspc_installation
     , topology_description
     , rifds.entry_points()  // entry points to start agent and workers on
     );

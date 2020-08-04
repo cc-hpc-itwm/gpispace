@@ -65,7 +65,7 @@ BOOST_AUTO_TEST_CASE (plugin_Tunnel_subnetwork)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", rifds.entry_points());
+    (vm, "", rifds.entry_points());
 
   pnet::type::value::value_type const N
     (fhg::util::testing::random<unsigned long>{} (10000UL, 1UL));

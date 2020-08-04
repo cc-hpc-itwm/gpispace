@@ -93,7 +93,7 @@ BOOST_DATA_TEST_CASE
                                  );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
+    (vm, "worker:1", rifds.entry_points(), std::cerr, certificates);
 
   std::list<std::string> logged;
   fhg::logging::stream_receiver const log_receiver

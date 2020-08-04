@@ -58,7 +58,7 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", rifds.entry_points());
+    (vm, "", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run

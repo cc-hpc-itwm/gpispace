@@ -120,7 +120,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:4", rifds.entry_points());
+    (vm, "worker:4", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts)

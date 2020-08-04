@@ -31,7 +31,6 @@ namespace
 {
   void run_test ( unsigned long num_worker
                 , boost::program_options::variables_map const& vm
-                , gspc::installation const& installation
                 , test::make_net_lib_install const& make
                 , boost::filesystem::path const& shared_directory
                 )
@@ -42,7 +41,6 @@ namespace
                                    );
     gspc::scoped_runtime_system const drts
       ( vm
-      , installation
       , "worker:" + std::to_string (num_worker)
       , rifds.entry_points()
       );
@@ -169,7 +167,7 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
     , test::option::options()
     );
 
-  run_test (1, vm, installation, make, shared_directory);
-  run_test (2, vm, installation, make, shared_directory);
-  run_test (5, vm, installation, make, shared_directory);
+  run_test (1, vm, make, shared_directory);
+  run_test (2, vm, make, shared_directory);
+  run_test (5, vm, make, shared_directory);
 }

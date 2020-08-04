@@ -76,7 +76,6 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
                                  );
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "work:" + std::to_string (num_worker)
     , rifds.entry_points()
     );

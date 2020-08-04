@@ -61,7 +61,7 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_sequence)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
   long const n (5);
 

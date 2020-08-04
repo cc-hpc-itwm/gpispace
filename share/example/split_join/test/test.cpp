@@ -90,7 +90,7 @@ BOOST_AUTO_TEST_CASE (share_example_split_join)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:4", rifds.entry_points());
+    (vm, "work:4", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> input;
 

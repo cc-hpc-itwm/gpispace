@@ -110,7 +110,6 @@ BOOST_AUTO_TEST_CASE (share_example_subnetwork)
                                  );
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , str ( boost::format ("produce:2,%1% process:1,%2%")
           % (1 * block_size)
           % (2 * block_size)

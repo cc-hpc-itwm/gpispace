@@ -71,7 +71,7 @@ BOOST_AUTO_TEST_CASE (xml_transport_bytearray)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2", rifds.entry_points());
+    (vm, "work:2", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const input
     {{"point", point}};

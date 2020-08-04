@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "ping:1 pong:1", rifds.entry_points());
+    (vm, "ping:1 pong:1", rifds.entry_points());
 
   unsigned long const n (64);
 

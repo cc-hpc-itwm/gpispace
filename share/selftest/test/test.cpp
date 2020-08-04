@@ -68,7 +68,7 @@ BOOST_AUTO_TEST_CASE (share_selftest)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
     std::string const challenge (fhg::util::testing::random_string_without ("\"\\"));
 

@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (we_input_is_copied_to_output_in_module_calls)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const input
     {{"p", we::type::literal::control()}};

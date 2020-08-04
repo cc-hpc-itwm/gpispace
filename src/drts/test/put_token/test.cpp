@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE (wait_for_token_put)
                                                : gspc::testing::no_certs()
                           );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
+    (vm, "worker:2", rifds.entry_points(), std::cerr, certificates);
   gspc::client client (drts, certificates);
 
   gspc::workflow workflow (make.pnet());

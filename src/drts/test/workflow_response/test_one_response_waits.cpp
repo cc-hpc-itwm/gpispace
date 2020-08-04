@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                           );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
+    (vm, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 

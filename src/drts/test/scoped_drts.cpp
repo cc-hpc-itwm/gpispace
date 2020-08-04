@@ -59,7 +59,7 @@ BOOST_DATA_TEST_CASE
                                         );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifds.entry_points(), std::cerr, certificates);
+    (vm, "", scoped_rifds.entry_points(), std::cerr, certificates);
 }
 
 BOOST_DATA_TEST_CASE
@@ -106,7 +106,6 @@ BOOST_DATA_TEST_CASE
   {
     gspc::scoped_runtime_system const drts
       ( vm
-      , installation
       , "worker:1"
       , boost::none
       , master.entry_point()
@@ -238,7 +237,6 @@ BOOST_DATA_TEST_CASE
   {
     gspc::scoped_runtime_system const drts
       ( vm
-      , installation
       , worker + ":1"
       , scoped_rifds.entry_points()
       , master.entry_point()

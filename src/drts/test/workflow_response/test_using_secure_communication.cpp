@@ -122,7 +122,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
   std::string const topology (vm.at ("topology").as<std::string>());
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology, rifds.entry_points(), std::cerr, certificates);
+    (vm, topology, rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 

@@ -117,7 +117,7 @@ namespace share_example_stream_test
                                    , gspc::rifd::port {vm}
                                    );
     gspc::scoped_runtime_system const drts
-      (vm, installation, topology (size_slot), rifds.entry_points());
+      (vm, topology (size_slot), rifds.entry_points());
 
     gspc::vmem_allocation const allocation_buffer
       ( drts.alloc ( gspc::vmem::gaspi_segment_description()

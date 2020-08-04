@@ -137,7 +137,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
 
       drts = fhg::util::cxx14::make_unique<gspc::scoped_runtime_system>
                ( vm_with_ports
-               , installation
                , "worker:1/" + std::to_string (worker_port->release())
                , rifds.entry_points()
                );

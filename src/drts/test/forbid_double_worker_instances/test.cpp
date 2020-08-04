@@ -59,7 +59,7 @@ BOOST_DATA_TEST_CASE
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "test_worker:1", rifds.entry_points(), std::cerr, certificates);
+    (vm, "test_worker:1", rifds.entry_points(), std::cerr, certificates);
 
   std::unordered_map
     < gspc::rifd_entry_point

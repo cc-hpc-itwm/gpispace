@@ -69,7 +69,7 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:4", rifds.entry_points());
+    (vm, "work:4", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
@@ -127,7 +127,7 @@ BOOST_AUTO_TEST_CASE (tutorial_work_and_wait_credit)
                                  , gspc::rifd::port {vm}
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:4", rifds.entry_points());
+    (vm, "work:4", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
