@@ -302,6 +302,7 @@ BOOST_DATA_TEST_CASE
         ).str()
       );
 
+    /*
     std::string const entry_point_worker
       ([&info_output, &hosts, &entry_point_master, &worker]()
        {
@@ -339,6 +340,7 @@ BOOST_DATA_TEST_CASE
                      }
         )
       );
+    */
 
     BOOST_REQUIRE
       ( std::regex_match
