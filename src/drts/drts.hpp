@@ -50,6 +50,7 @@ namespace gspc
     GSPC_DLLEXPORT boost::program_options::options_description virtual_memory();
   }
 
+  // \todo use installation sentinel executable_path + relative instead
   class GSPC_DLLEXPORT installation
   {
   public:
@@ -155,6 +156,7 @@ namespace gspc
     ( boost::program_options::variables_map&
     , boost::filesystem::path const&
     );
+  // \todo use installation sentinel executable_path + relative instead
   GSPC_DLLEXPORT void set_gspc_home ( boost::program_options::variables_map&
                                     , boost::filesystem::path const&
                                     );
