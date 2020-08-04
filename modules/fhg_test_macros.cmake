@@ -124,7 +124,7 @@ endmacro()
 
 macro(FHG_ADD_TEST)
   set (options REQUIRES_INSTALLATION REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
-  set (one_value_options)
+  set (one_value_options NAME)
   set (multi_value_options LABELS ARGS)
   set (required_options)
   _parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
@@ -155,9 +155,16 @@ macro(FHG_ADD_TEST)
     endif()
   endif()
 
-  add_unit_test (${TEST_UNPARSED_ARGUMENTS}
+  add_unit_test (NAME ${TEST_NAME}
+    ${TEST_UNPARSED_ARGUMENTS}
     LABELS ${TEST_LABELS}
     ARGS ${TEST_ARGS}
     ${_fwd_args}
   )
+
+  if (TEST_REQUIRES_INSTALLATION)
+    set_tests_properties (${TEST_NAME} PROPERTIES ENVIRONMENT
+      "GSPC_TESTING_OVERRIDE_INSTALLATION_PREFIX=${CMAKE_INSTALL_PREFIX}"
+    )
+  endif()
 endmacro()
