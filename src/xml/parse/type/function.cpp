@@ -1,6 +1,3 @@
-
-#include <installation_path.hpp>
-
 #include <xml/parse/type/function.hpp>
 
 #include <xml/parse/type/expression.hpp>
@@ -14,6 +11,8 @@
 #include <xml/parse/util/weparse.hpp>
 
 #include <xml/parse/type/dumps.hpp>
+
+#include <gspc/installation_path.hpp>
 
 #include <fhg/util/boost/variant.hpp>
 #include <util-generic/first_then.hpp>
