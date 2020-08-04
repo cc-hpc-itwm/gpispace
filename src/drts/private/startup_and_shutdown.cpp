@@ -458,6 +458,278 @@ namespace fhg
       return results;
     }
 
+    std::pair< std::unordered_set<fhg::rif::entry_point>
+            , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+            > start_workers_with_resources
+      ( std::vector<fhg::rif::entry_point> const& entry_points
+      , std::string master_name
+      , fhg::drts::hostinfo_type master_hostinfo
+      , gspc::Forest<gspc::resource::ID, gspc::worker_description> const& descriptions
+      , fhg::drts::processes_storage& processes
+      , boost::optional<boost::filesystem::path> const& gpi_socket
+      , std::vector<boost::filesystem::path> const& app_path
+      , std::vector<std::string> const& worker_env_copy_variable
+      , bool worker_env_copy_current
+      , std::vector<boost::filesystem::path> const& worker_env_copy_file
+      , std::vector<std::string> const& worker_env_set_variable
+      , gspc::installation_path const& installation_path
+      , std::ostream& info_output
+      , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
+      , gspc::Certificates const& certificates
+      )
+    {
+      // prepare the rif connections
+      //! \todo let thread count be a parameter
+      fhg::util::scoped_boost_asio_io_service_with_threads io_service
+        (std::min (64UL, entry_points.size()));
+
+      std::unordered_map<rif::entry_point, rif::client> rif_connections;
+      util::nest_exceptions<std::runtime_error>
+        ( [&]
+          {
+            for (rif::entry_point const& entry_point : entry_points)
+            {
+              rif_connections.emplace
+                ( std::piecewise_construct
+                , std::forward_as_tuple (entry_point)
+                , std::forward_as_tuple (io_service, entry_point)
+                );
+             }
+          }
+         , "connecting to rif entry points"
+        );
+
+      // prepare futures for storing worker results
+      std::vector<std::tuple< fhg::rif::entry_point
+                            , std::future<fhg::rif::protocol::start_worker_result>
+                            , std::string
+                            >
+                 > futures;
+
+      std::unordered_map<fhg::rif::entry_point, std::vector<std::exception_ptr>>
+        exceptions;
+
+      auto const& build_arguments_and_start_worker
+        (
+          [&] (gspc::worker_description const& description)
+          {
+            auto const connection
+              (rif_connections.find (description.entry_point.get()));
+
+            std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
+            std::replace_if
+              (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
+
+            std::vector<std::string> arguments;
+
+            arguments.emplace_back ("--master");
+            arguments.emplace_back
+              (build_parent_with_hostinfo (master_name, master_hostinfo));
+
+            for (boost::filesystem::path const& path : app_path)
+            {
+              arguments.emplace_back ("--library-search-path");
+              arguments.emplace_back (path.string());
+            }
+
+            if (description.shm_size)
+            {
+              arguments.emplace_back ("--capability");
+              arguments.emplace_back ("GPI");
+              arguments.emplace_back ("--virtual-memory-socket");
+              arguments.emplace_back (gpi_socket.get().string());
+              arguments.emplace_back ("--shared-memory-size");
+              arguments.emplace_back (std::to_string (description.shm_size));
+            }
+
+            for (std::string const& capability : description.capabilities)
+            {
+              arguments.emplace_back ("--capability");
+              arguments.emplace_back (capability);
+            }
+
+            if (description.socket)
+            {
+              arguments.emplace_back ("--socket");
+              arguments.emplace_back (std::to_string (description.socket.get()));
+            }
+
+            if (certificates)
+            {
+              arguments.emplace_back ("--certificates");
+              arguments.emplace_back (certificates->string());
+            }
+
+            try
+            {
+              if (description.port)
+              {
+                arguments.emplace_back ("--port");
+                arguments.emplace_back (std::to_string (*description.port));
+              }
+
+              std::ostringstream osstr;
+              osstr << name_prefix + "-" + connection->first.string() + "-"
+                    << description.resource_id.get().id
+                    <<  ( description.socket
+                        ? ("." + std::to_string (description.socket.get()))
+                        : std::string()
+                        );
+
+              std::string const name (osstr.str());
+              std::string const storage_name ("drts-kernel-" + name);
+
+              {
+                boost::optional<pid_t> const mpid
+                  (processes.pidof (connection->first, storage_name));
+
+                if (!!mpid)
+                {
+                  throw std::logic_error
+                    ( "process with name '" + name + "' on entry point '"
+                    + connection->first.string() + "' already exists with pid "
+                    + std::to_string (*mpid)
+                    );
+                }
+              }
+
+              std::unordered_map<std::string, std::string> environment;
+
+              auto const& parse_and_add_definition
+                ( [&] (std::string const& definition)
+                  {
+                    auto const pos (definition.find ('='));
+                    assert (pos != std::string::npos && pos != 0);
+                    environment.emplace
+                      (definition.substr (0, pos), definition.substr (pos + 1));
+                  }
+                );
+
+              for (auto const& key : worker_env_copy_variable)
+              {
+                auto const value (fhg::util::getenv (key.c_str()));
+                if (!value)
+                {
+                  throw std::invalid_argument
+                    ( "requested to copy environment variable '" + key
+                    + "', but variable is not set"
+                    );
+                }
+                environment.emplace (key, *value);
+              }
+
+              if (worker_env_copy_current)
+              {
+                for (auto env (environ); *env; ++env)
+                {
+                  parse_and_add_definition (*env);
+                }
+              }
+
+              for (auto const& file : worker_env_copy_file)
+              {
+                for (auto const& definition : fhg::util::read_lines (file))
+                {
+                  parse_and_add_definition (definition);
+                }
+              }
+
+              for (auto const& definition : worker_env_set_variable)
+              {
+                parse_and_add_definition (definition);
+              }
+
+              info_output << "I: starting worker \"" << name
+                         << "\", with the resource id " << description.resource_id.get().id
+                         << ", " << description.shm_size << " SHM) and with parent "
+                         << master_name << " on rif entry point "
+                         << description.entry_point.get()
+                         << "\n";
+
+              futures.emplace_back
+                ( connection->first
+                , connection->second.start_worker
+                    ( name
+                    , installation_path.drts_kernel()
+                    , arguments
+                    , environment
+                    )
+                 , name
+                 );
+               }
+               catch (...)
+               {
+                 exceptions[connection->first].emplace_back
+                   (std::current_exception());
+               }
+           }
+        );
+
+      descriptions.for_each_node
+        ( [&] (gspc::Forest<gspc::resource::ID, gspc::worker_description>::Node const& r)
+          {
+            build_arguments_and_start_worker (r.second);
+          }
+        );
+
+      std::vector<fhg::logging::endpoint> log_emitters;
+
+      for (auto& future : futures)
+      {
+        try
+        {
+          auto const result (std::get<1> (future).get());
+
+          processes.store ( std::get<0> (future)
+                          , "drts-kernel-" + std::get<2> (future)
+                          , result.pid
+                          );
+
+          log_emitters.emplace_back
+            (std::move (result.logger_registration_endpoint));
+        }
+        catch (...)
+        {
+          exceptions[std::get<0> (future)].emplace_back
+            (std::current_exception());
+        }
+      }
+
+      std::pair< std::unordered_set<fhg::rif::entry_point>
+               , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
+               > results;
+
+      for (auto const& connection : rif_connections)
+      {
+        try
+        {
+          auto const it (exceptions.find ((connection.first)));
+          if (it == exceptions.end())
+          {
+            results.first.emplace (connection.first);
+          }
+          else
+          {
+            //! \todo return the individual exceptions
+            fhg::util::throw_collected_exceptions (it->second);
+          }
+        }
+        catch (...)
+        {
+          results.second.emplace (connection.first, std::current_exception());
+        }
+      }
+
+      if (top_level_log)
+      {
+        fhg::rif::client (io_service, top_level_log->first)
+          .add_emitter_to_logging_demultiplexer
+             (top_level_log->second, log_emitters).get();
+      }
+
+      return results;
+    }
+
     gspc::worker_description parse_capability
       (std::size_t def_num_proc, std::string const& cap_spec)
     {
