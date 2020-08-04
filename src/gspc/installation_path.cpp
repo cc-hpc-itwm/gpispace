@@ -1,12 +1,11 @@
 #include <gspc/installation_path.hpp>
 
-#include <util-generic/executable_path.hpp>
+#include <gspc/installation_sentinel.hpp>
 
 namespace gspc
 {
   installation_path::installation_path()
-    : boost::filesystem::path
-      (fhg::util::executable_path().parent_path().parent_path())
+    : installation_path (installation_prefix())
   {}
   installation_path::installation_path (boost::filesystem::path const& gspc_home)
     : boost::filesystem::path (gspc_home)

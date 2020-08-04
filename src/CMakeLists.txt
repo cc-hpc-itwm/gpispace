@@ -254,10 +254,43 @@ install (FILES
   DESTINATION include/logging/
 )
 
+set (_installation_sentinel_options)
+set (_installation_sentinel_subdir_count)
+if (INSTALL_DO_NOT_BUNDLE)
+  set (_installation_sentinel_options INSTALL INSTALL_DESTINATION "lib")
+  # the path is "$prefix/lib/libGPISpace-InstallationSentinel.so"
+  #                     ^   ^ = 2
+  set (_installation_sentinel_subdir_count 2)
+else()
+  # we don't install ourselves but rely on bundling (since this is
+  # easier than disabling bundling for a specific library, and this
+  # library *will* be bundled), so the
+  # path is "$prefix/libexec/bundle/lib/libGPISpace-InstallationSentinel.so"
+  #                 ^       ^      ^   ^ = 4
+  #! \note This relies on a path hardcoded in cmake/add_macros.cmake
+  #! within the macro _bundle_target, but that's unlikely to
+  #! change. The "better" solution would be adding blacklisting
+  #! support to that infrastructure and installing this target to a
+  #! specific location.
+  set (_installation_sentinel_subdir_count 4)
+endif()
+
+extended_add_library (NAME InstallationSentinel
+  NAMESPACE GPISpace
+  SOURCES "gspc/installation_sentinel.cpp"
+  LIBRARIES Util::Generic
+            Boost::filesystem
+  TYPE SHARED
+  VISIBILITY_HIDDEN
+  ${_installation_sentinel_options}
+  COMPILE_DEFINITIONS PRIVATE
+    "-DGPISPACE_INSTALLATION_SENTINEL_SUBDIR_COUNT=${_installation_sentinel_subdir_count}"
+)
+
 extended_add_library (NAME Installation
   NAMESPACE GPISpace
   SOURCES "gspc/installation_path.cpp"
-  LIBRARIES Util::Generic
+  LIBRARIES GPISpace::InstallationSentinel
             Boost::filesystem
   TYPE STATIC
 )
