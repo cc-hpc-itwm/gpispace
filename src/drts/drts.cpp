@@ -218,6 +218,57 @@ namespace gspc
       }
       return worker_descriptions;
     }
+
+    void create_resource_forest_from_string_topology
+      ( std::string const& string_topology
+      , std::vector<fhg::rif::entry_point> const& rif_entry_points
+      , Forest<resource::ID, worker_description>& worker_descriptions_forest
+      )
+    {
+      remote_interface::ID next_remote_interface_id {0};
+
+      for (auto const& entry_point : rif_entry_points)
+      {
+        resource::ID next_resource_id {{next_remote_interface_id}};
+
+        for ( std::string const& description
+            : fhg::util::split<std::string, std::string> (string_topology, ' ')
+            )
+        {
+          auto const class_description
+            (fhg::drts::parse_capability (1, description));
+
+          for ( unsigned int i {0}, k{0}
+              ; i < class_description.num_per_node
+              ; ++i, ++k
+              )
+          {
+            if ( class_description.max_nodes
+               && k >= class_description.max_nodes
+               )
+              { break; }
+
+            struct worker_description desc
+              { class_description.capabilities
+              , 1
+              , 0
+              , class_description.shm_size
+              , class_description.socket
+              , boost::make_optional<short unsigned int>
+                 ( !!class_description.port
+                 , class_description.port.get() + i
+                 )
+              , ++next_resource_id
+              , entry_point
+              };
+
+            worker_descriptions_forest.insert (next_resource_id, desc, {});
+          }
+        }
+
+        ++next_remote_interface_id;
+      }
+    }
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
