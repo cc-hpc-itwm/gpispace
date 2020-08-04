@@ -93,7 +93,7 @@ namespace gspc
   {}
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
-    , installation const& installation
+    , installation const&
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
@@ -101,7 +101,6 @@ namespace gspc
     , Certificates const& certificates
     )
       : _ (new implementation ( vm
-                              , installation
                               , topology_description
                               , entry_points
                               , master
@@ -141,7 +140,6 @@ namespace gspc
       , bool worker_env_copy_current
       , std::vector<boost::filesystem::path> worker_env_copy_file
       , std::vector<std::string> worker_env_set_variable
-      , gspc::installation_path installation_path
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
@@ -161,7 +159,7 @@ namespace gspc
     , _worker_env_copy_current (worker_env_copy_current)
     , _worker_env_copy_file (std::move (worker_env_copy_file))
     , _worker_env_set_variable (std::move (worker_env_set_variable))
-    , _installation_path (installation_path)
+    , _installation_path()
     , _logging_rif_entry_point (logging_rif_entry_point)
     , _worker_descriptions (worker_descriptions)
     , _processes_storage (_info_output)
@@ -322,7 +320,6 @@ namespace gspc
 
   scoped_runtime_system::implementation::implementation
     ( boost::program_options::variables_map const& vm
-    , installation const& installation
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
@@ -347,7 +344,6 @@ namespace gspc
           , get_worker_env_copy_current (vm).get_value_or (false)
           , get_worker_env_copy_file (vm).get_value_or ({})
           , get_worker_env_set_variable (vm).get_value_or ({})
-          , installation.gspc_home()
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
           , get_virtual_memory_port (vm)
