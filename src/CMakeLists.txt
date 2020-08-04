@@ -294,3 +294,6 @@ extended_add_library (NAME Installation
             Boost::filesystem
   TYPE STATIC
 )
+target_link_options (GPISpace-Installation INTERFACE
+  "LINKER:--exclude-libs,$<TARGET_LINKER_FILE_NAME:GPISpace::Installation>"
+)
