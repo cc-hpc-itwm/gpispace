@@ -118,7 +118,6 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
     (vm, installation, "worker:4", rifds.entry_points());

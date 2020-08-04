@@ -73,7 +73,6 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
     ( vm

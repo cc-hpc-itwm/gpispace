@@ -98,7 +98,6 @@ BOOST_AUTO_TEST_CASE (steal_work)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {vm}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::set<std::string> const capabilities {"A", "B", "C"};

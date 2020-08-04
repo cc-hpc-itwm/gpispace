@@ -112,7 +112,6 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());

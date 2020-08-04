@@ -111,7 +111,6 @@ BOOST_AUTO_TEST_CASE (response_fails_if_workflow_fails_after_requesting)
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()

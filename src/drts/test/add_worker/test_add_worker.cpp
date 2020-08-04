@@ -117,7 +117,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
       rifds.emplace_back ( gspc::rifd::strategy (vm)
                          , gspc::rifd::hostnames ({*host})
                          , gspc::rifd::port (vm)
-                         , installation
                          );
     }
   }
@@ -126,7 +125,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()

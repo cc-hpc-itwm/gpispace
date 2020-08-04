@@ -108,7 +108,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
     ( gspc::rifd::strategy (vm)
     , gspc::rifd::hostnames ({hosts.front()})
     , gspc::rifd::port (vm)
-    , installation
     );
 
   std::unique_ptr<gspc::scoped_runtime_system> drts;

@@ -56,7 +56,6 @@ BOOST_DATA_TEST_CASE
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   gspc::scoped_runtime_system drts

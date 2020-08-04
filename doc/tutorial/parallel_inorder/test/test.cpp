@@ -80,7 +80,6 @@ BOOST_AUTO_TEST_CASE (tutorial_parallel_inorder)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
     (vm, installation, "work:5", rifds.entry_points());

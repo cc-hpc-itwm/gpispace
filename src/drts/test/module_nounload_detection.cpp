@@ -91,7 +91,6 @@
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}                  \
                                  , gspc::rifd::hostnames {vm}                 \
                                  , gspc::rifd::port {vm}                      \
-                                 , vm                                         \
                                  );                                           \
   gspc::scoped_runtime_system const drts                                      \
     (vm, vm, "worker:1x1", rifds.entry_points());                             \

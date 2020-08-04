@@ -110,7 +110,6 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()

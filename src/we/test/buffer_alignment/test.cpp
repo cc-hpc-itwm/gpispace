@@ -67,7 +67,6 @@
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}             \
                                  , gspc::rifd::hostnames {vm}            \
                                  , gspc::rifd::port {vm}                 \
-                                 , installation                          \
                                  );                                      \
                                                                          \
   fhg::util::temporary_path const _workflow_dir                          \

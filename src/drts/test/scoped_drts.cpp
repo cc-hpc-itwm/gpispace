@@ -56,7 +56,6 @@ BOOST_DATA_TEST_CASE
   gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
                                         , gspc::rifd::hostnames {vm}
                                         , gspc::rifd::port {vm}
-                                        , installation
                                         );
 
   gspc::scoped_runtime_system const drts
@@ -100,7 +99,6 @@ BOOST_DATA_TEST_CASE
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::ostringstream info_output_stream;
@@ -227,13 +225,11 @@ BOOST_DATA_TEST_CASE
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
-    , installation
     );
   gspc::scoped_rifds const scoped_rifds
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {{hosts.begin(), std::next (hosts.begin())}}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::ostringstream info_output_stream;

@@ -80,7 +80,6 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {vm}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::set<std::string> const preferences {"A", "B", "C"};

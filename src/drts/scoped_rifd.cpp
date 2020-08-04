@@ -263,7 +263,6 @@ namespace gspc
 
   rifds::rifds ( rifd::strategy const& strategy
                , rifd::port const& port
-               , installation const&
                )
     : _ (new implementation (strategy, port))
   {}
@@ -353,10 +352,9 @@ namespace gspc
   scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
                            , rifd::hostname const& hostname
                            , rifd::port const& port
-                           , installation const& installation
                            , std::ostream& out
                            )
-    : rifds (strategy, port, installation)
+    : rifds (strategy, port)
   {
     auto const failed
       (bootstrap (std::vector<std::string> {hostname._->_}, out).second);
@@ -380,10 +378,9 @@ namespace gspc
   scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
                              , rifd::hostnames const& hostnames
                              , rifd::port const& port
-                             , installation const& installation
                              , std::ostream& out
                              )
-    : rifds (strategy, port, installation)
+    : rifds (strategy, port)
   {
     auto const failed (bootstrap (hostnames, out).second);
     if (!failed.empty())

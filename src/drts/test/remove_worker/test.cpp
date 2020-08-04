@@ -83,7 +83,6 @@ BOOST_AUTO_TEST_CASE (remove_worker)
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()

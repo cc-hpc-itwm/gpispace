@@ -287,9 +287,8 @@ line.
 
 ##### Setting up GPI-Space
 The first step in the startup binary is to setup the RIFD daemons with
-relevant information regarding the GPI-Space installation, the
-hostnames and port to use as well as the communication strategy to
-start up the distributed components.
+relevant information regarding the hostnames and port to use as well
+as the communication strategy to start up the distributed components.
 
 ```c++
 @@driver-setup@@

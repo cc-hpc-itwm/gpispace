@@ -102,7 +102,6 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {vm}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   gspc::scoped_runtime_system const drts

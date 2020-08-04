@@ -7,5 +7,4 @@
     ( gspc::rifd::strategy {vm}   // ssh or pbdsh
     , gspc::rifd::hostnames {vm}  // a vector of host names
     , gspc::rifd::port {vm}       // port for communication
-    , gspc_installation
     );
