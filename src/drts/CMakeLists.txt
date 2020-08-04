@@ -21,12 +21,18 @@ install (FILES
   DESTINATION include/drts/
 )
 
+extended_add_library (NAME options
+  NAMESPACE GPISpace
+  TYPE STATIC
+  SOURCES "private/option.cpp"
+  LIBRARIES Boost::program_options
+)
+
 extended_add_library (NAME gspc
   TYPE SHARED
   SOURCES "client.cpp"
           "drts.cpp"
           "information_to_reattach.cpp"
-          "private/option.cpp"
           "private/startup_and_shutdown.cpp"
           "rifd_entry_points.cpp"
           "scoped_rifd.cpp"
@@ -37,6 +43,7 @@ extended_add_library (NAME gspc
             rif-strategies
             gpi-space-pc-client-static
             gpi-space-pc-segment
+            GPISpace::options
             GPISpace::vmem
             fhg-revision
             Util::Generic
