@@ -47,23 +47,14 @@ struct wfe_task_t
   , FAILED
   };
 
-  std::string id;
   state_t state;
-  we::type::activity_t activity;
-  boost::optional<std::string> const target_impl;
   drts::worker::context context;
 
-  wfe_task_t ( std::string id_
-             , we::type::activity_t const& activity
-             , boost::optional<std::string> const& target_impl_
-             , std::string worker_name
+  wfe_task_t ( std::string worker_name
              , std::set<std::string> workers
              , fhg::logging::stream_emitter& logger
              )
-    : id (id_)
-    , state (PENDING)
-    , activity (activity)
-    , target_impl (target_impl_)
+    : state (PENDING)
     , context
       (drts::worker::context_constructor (worker_name, workers, logger))
   {}
@@ -424,11 +415,11 @@ catch (decltype (m_event_queue)::interrupted const&)
 }
 
 void DRTSImpl::emit_gantt
-  (wfe_task_t const& task, sdpa::daemon::NotificationEvent::state_t state)
+  (Job const& job, sdpa::daemon::NotificationEvent::state_t state)
 {
   _log_emitter.emit_message
     ( { sdpa::daemon::NotificationEvent
-          ({m_my_name}, task.id, state, task.activity.name()).encoded()
+          ({m_my_name}, job.id, state, job.activity.name()).encoded()
       , sdpa::daemon::gantt_log_category
       }
     );
@@ -482,10 +473,12 @@ try
     {
       job->result = we::type::activity_t();
 
-      wfe_task_t task
-        (job->id, job->activity, job->target_impl, m_my_name, job->workers, _log_emitter);
+      // Don't modify original to allow for re-execution.
+      we::type::activity_t activity (job->activity);
 
-      emit_gantt (task, sdpa::daemon::NotificationEvent::STATE_STARTED);
+      wfe_task_t task (m_my_name, job->workers, _log_emitter);
+
+      emit_gantt (*job, sdpa::daemon::NotificationEvent::STATE_STARTED);
 
       auto const generic_on_failure
         ( [&]
@@ -507,11 +500,11 @@ try
           _currently_executed_tasks.emplace (job->id, &task);
         }
 
-        task.activity.execute
+        activity.execute
           ( m_loader
           , _virtual_memory_api
           , _shared_memory
-          , task.target_impl
+          , job->target_impl
           , &task.context
           );
       }
@@ -543,29 +536,29 @@ try
       if (task.state == wfe_task_t::PENDING)
       {
         task.state = wfe_task_t::FINISHED;
-        job->result = std::move (task.activity);
+        job->result = std::move (activity);
       }
 
       if (wfe_task_t::FINISHED == task.state)
       {
-        _log_emitter.emit ( "task finished: " + task.id
+        _log_emitter.emit ( "task finished: " + job->id
                           , fhg::logging::legacy::category_level_trace
                           );
       }
       else if (wfe_task_t::FAILED == task.state)
       {
-        _log_emitter.emit ( "task failed: " + task.id + ": " + job->message
+        _log_emitter.emit ( "task failed: " + job->id + ": " + job->message
                           , fhg::logging::legacy::category_level_error
                           );
       }
       else if (wfe_task_t::CANCELED == task.state)
       {
-        _log_emitter.emit ( "task canceled: " + task.id
+        _log_emitter.emit ( "task canceled: " + job->id
                           , fhg::logging::legacy::category_level_info
                           );
       }
 
-      emit_gantt ( task
+      emit_gantt ( *job
                  , task.state == wfe_task_t::FINISHED ? sdpa::daemon::NotificationEvent::STATE_FINISHED
                  : task.state == wfe_task_t::CANCELED ? sdpa::daemon::NotificationEvent::STATE_CANCELED
                  : task.state == wfe_task_t::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::daemon::NotificationEvent::STATE_FAILED

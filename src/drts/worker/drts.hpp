@@ -132,7 +132,7 @@ private:
   we::loader::loader m_loader;
 
   fhg::logging::stream_emitter& _log_emitter;
-  void emit_gantt (wfe_task_t const&, Job const&, sdpa::daemon::NotificationEvent::state_t);
+  void emit_gantt (Job const&, sdpa::daemon::NotificationEvent::state_t);
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
   gspc::scoped_allocation /*const*/* _shared_memory;
