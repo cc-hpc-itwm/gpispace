@@ -125,15 +125,6 @@ namespace gspc
                       , rifd_entry_point_hash
                       >
       add_worker
-        ( rifd_entry_points const&
-        , Certificates const& certificates = boost::none
-        );
-
-    std::unordered_map< rifd_entry_point
-                      , std::list<std::exception_ptr>
-                      , rifd_entry_point_hash
-                      >
-      add_worker
         ( std::vector<worker_description> const&
         , rifd_entry_points const&
         , Certificates const& certificates = boost::none
