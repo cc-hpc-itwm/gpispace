@@ -257,6 +257,60 @@ namespace gspc
     }
   }
 
+  void scoped_runtime_system::implementation::started_runtime_system::create_resource_forest_from_worker_descriptions_array
+    ( std::vector<worker_description> const& descriptions
+    , std::vector<fhg::rif::entry_point> const& rif_entry_points
+    , Forest<resource::ID, worker_description>& worker_descriptions_forest
+    )
+  {
+    remote_interface::ID next_remote_interface_id
+      {_last_used_resource_ids.size()};
+
+    for (auto const& entry_point : rif_entry_points)
+    {
+      resource::ID next_resource_id
+        ( _last_used_resource_ids.count (entry_point)
+        ? _last_used_resource_ids.at (entry_point)
+        : next_remote_interface_id
+        );
+
+      for ( auto const description: descriptions)
+      {
+        for ( unsigned int i {0}, k{0}
+            ; i < description.num_per_node
+            ; ++i, ++k
+            )
+        {
+          if ( description.max_nodes
+             && k >= description.max_nodes
+             )
+            { break; }
+
+          struct worker_description desc
+            { description.capabilities
+            , 1
+            , 0
+            , description.shm_size
+            , description.socket
+            , boost::make_optional<short unsigned int>
+               ( !!description.port
+               , description.port.get() + i
+               )
+            , ++next_resource_id
+            , entry_point
+            };
+
+          worker_descriptions_forest.insert (next_resource_id, desc, {});
+        }
+
+        _last_used_resource_ids[entry_point] = next_resource_id;
+        ++next_remote_interface_id;
+      }
+
+      ++next_remote_interface_id;
+    }
+  }
+
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
       ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
