@@ -62,11 +62,13 @@ BOOST_DATA_TEST_CASE
   gspc::scoped_runtime_system drts
     (vm, installation, "test_worker:1", rifds.entry_points(), std::cerr, certificates);
 
+  gspc::worker_description description
+    {{"test_worker"}, 1, 0, 0, boost::none, boost::none, boost::none, boost::none};
   std::unordered_map
     < gspc::rifd_entry_point
     , std::list<std::exception_ptr>
     , gspc::rifd_entry_point_hash
-    > const errors (drts.add_worker (rifds.entry_points(), boost::none));
+    > const errors (drts.add_worker ({description}, rifds.entry_points(), boost::none));
 
   BOOST_REQUIRE_EQUAL (rifds.hosts().size(), errors.size());
 
