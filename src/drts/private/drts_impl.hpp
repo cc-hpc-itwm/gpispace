@@ -96,6 +96,12 @@ namespace gspc
         , Forest<resource::ID, worker_description>& worker_descriptions_forest
         );
 
+      void create_resource_forest_from_worker_descriptions_array
+        ( std::vector<worker_description> const& descriptions
+        , std::vector<fhg::rif::entry_point> const& rif_entry_points
+        , Forest<resource::ID, worker_description>& worker_descriptions_forest
+        );
+
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
       boost::optional<boost::filesystem::path> _gpi_socket;
