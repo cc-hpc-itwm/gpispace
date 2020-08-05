@@ -79,26 +79,6 @@ namespace fhg
 
     std::pair< std::unordered_set<fhg::rif::entry_point>
              , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
-             > start_workers_for
-      ( std::vector<fhg::rif::entry_point> const& entry_points
-      , std::string master_name
-      , fhg::drts::hostinfo_type master_hostinfo
-      , gspc::worker_description const& description
-      , fhg::drts::processes_storage& processes
-      , boost::optional<boost::filesystem::path> const& gpi_socket
-      , std::vector<boost::filesystem::path> const& app_path
-      , std::vector<std::string> const& worker_env_copy_variable
-      , bool worker_env_copy_current
-      , std::vector<boost::filesystem::path> const& worker_env_copy_file
-      , std::vector<std::string> const& worker_env_set_variable
-      , gspc::installation_path const&
-      , std::ostream& info_output
-      , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
-      , gspc::Certificates const& certificates
-      );
-
-    std::pair< std::unordered_set<fhg::rif::entry_point>
-             , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
              > start_workers_with_resources
       ( std::vector<fhg::rif::entry_point> const& entry_points
       , std::string master_name
