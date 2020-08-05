@@ -246,6 +246,9 @@ namespace gspc
 
           worker_descriptions_forest.insert (next_resource_id, desc, {});
         }
+
+        _last_used_resource_ids.emplace (entry_point, next_resource_id);
+        ++next_remote_interface_id;
       }
 
       ++next_remote_interface_id;
@@ -331,6 +334,7 @@ namespace gspc
               )
           );
 
+        _last_used_resource_ids.emplace (entry_point, next_resource_id);
         ++next_remote_interface_id;
       }
     }
