@@ -1,10 +1,12 @@
-# bernd.loerwald@itwm.fraunhofer.de
+find_package (OpenSSL REQUIRED)
 
 extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES Util::Generic ssl crypto
+  LIBRARIES Util::Generic
+            OpenSSL::SSL
+            OpenSSL::Crypto
 )
 add_subdirectory (fhgcom/tests)
 
@@ -60,7 +62,6 @@ extended_add_library (NAME pnet
           "we/type/signature/resolve.cpp"
           "we/type/signature/show.cpp"
           "we/type/signature/specialize.cpp"
-          "we/type/stencil_cache.cpp"
           "we/type/transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
@@ -132,8 +133,8 @@ extended_add_library (NAME pnet
             RPC
             ${CMAKE_DL_LIBS}
             rapidxml
-            ssl
-            crypto
+            OpenSSL::SSL
+            OpenSSL::Crypto
   COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
 )
 
@@ -153,8 +154,6 @@ add_subdirectory (sdpa)
 add_subdirectory (fhg)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
-
-add_subdirectory (gspc)
 
 extended_add_library (NAME logging
   NAMESPACE gspc

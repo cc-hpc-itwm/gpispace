@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/state.hpp>
 #include <xml/parse/error.hpp>
 

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <drts/drts.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>
@@ -156,11 +154,14 @@ namespace gspc
   }
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
-      ( boost::optional<unsigned short> const& orchestrator_port
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
+      , std::vector<std::string> worker_env_copy_variable
+      , bool worker_env_copy_current
+      , std::vector<boost::filesystem::path> worker_env_copy_file
+      , std::vector<std::string> worker_env_set_variable
       , gspc::installation_path installation_path
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
@@ -177,6 +178,10 @@ namespace gspc
     , _master (master)
     , _gpi_socket (gpi_socket)
     , _app_path (app_path)
+    , _worker_env_copy_variable (std::move (worker_env_copy_variable))
+    , _worker_env_copy_current (worker_env_copy_current)
+    , _worker_env_copy_file (std::move (worker_env_copy_file))
+    , _worker_env_set_variable (std::move (worker_env_set_variable))
     , _installation_path (installation_path)
     , _logging_rif_entry_point (logging_rif_entry_point)
     , _worker_descriptions (worker_descriptions)
@@ -186,8 +191,7 @@ namespace gspc
 
     auto const startup_result
       ( fhg::drts::startup
-          ( orchestrator_port
-          , agent_port
+          ( agent_port
           , gpi_enabled
           , _gpi_socket
           , _installation_path
@@ -206,8 +210,8 @@ namespace gspc
           , certificates
           )
       );
-    _orchestrator_host = startup_result.orchestrator.first;
-    _orchestrator_port = startup_result.orchestrator.second;
+    _top_level_agent_host = startup_result.top_level_agent.first;
+    _top_level_agent_port = startup_result.top_level_agent.second;
     _logging_rif_info = startup_result.top_level_logging_demultiplexer;
 
     if (!rif_entry_points.empty())
@@ -286,6 +290,10 @@ namespace gspc
               , _processes_storage
               , _gpi_socket
               , _app_path
+              , _worker_env_copy_variable
+              , _worker_env_copy_current
+              , _worker_env_copy_file
+              , _worker_env_set_variable
               , _installation_path
               , _info_output
               , FHG_UTIL_MAKE_OPTIONAL
@@ -350,13 +358,16 @@ namespace gspc
         : boost::none
         )
       , _started_runtime_system
-          ( get_orchestrator_port (vm)
-          , get_agent_port (vm)
+          ( get_agent_port (vm)
           , !!_virtual_memory_socket
           , _virtual_memory_socket
           , get_application_search_path (vm)
           ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
           : std::vector<boost::filesystem::path>()
+          , get_worker_env_copy_variable (vm).get_value_or ({})
+          , get_worker_env_copy_current (vm).get_value_or (false)
+          , get_worker_env_copy_file (vm).get_value_or ({})
+          , get_worker_env_set_variable (vm).get_value_or ({})
           , installation.gspc_home()
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)

@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <fhg/util/read_bool.hpp>
 
 #include <fhg/util/parse/position.hpp>

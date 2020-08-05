@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <drts/private/scoped_allocation.hpp>
 
 #include <fhg/util/thread/bounded_queue.hpp>

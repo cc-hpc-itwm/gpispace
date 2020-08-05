@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <drts/worker/drts.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>

@@ -1,0 +1,28 @@
+<defun name="use_fixed_ports_for_agents_and_workers">
+  <in name="start" type="bool" place="start"/>
+  <in name="port" type="unsigned int" place="port"/>
+  <out name="port_is_used" type="bool" place="port_is_used"/>
+
+  <net>
+    <place name="start" type="bool"/>
+    <place name="port" type="unsigned int"/>
+    <place name="port_is_used" type="bool"/>
+
+    <transition name="check_worker_is_using_the_assigned_port">
+      <defun>
+        <in name="start" type="bool"/>
+        <in name="port" type="unsigned int"/>
+        <out name="port_is_used" type="bool"/>
+        <module name="task" function="task (port, port_is_used)">
+          <cinclude href="util.hpp"/>
+          <code><![CDATA[
+            port_is_used = is_using_port ("drts-kernel", port);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="start" place="start"/>
+      <connect-read port="port" place="port"/>
+      <connect-out port="port_is_used" place="port_is_used"/>
+    </transition>
+  </net>
+</defun>

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <rif/entry_point.hpp>
@@ -21,9 +19,9 @@ namespace fhg
     namespace strategy
     {
       FHG_RPC_FUNCTION_DESCRIPTION ( bootstrap_callback
-                                   , void ( std::string // register_key
-                                          , std::string // hostname()
-                                          , entry_point
+                                   , void ( std::string register_key
+                                          , std::string hostname
+                                          , entry_point rif_entry_point
                                           )
                                    );
 

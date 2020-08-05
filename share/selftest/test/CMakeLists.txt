@@ -1,5 +1,3 @@
-# petry@itwm.fraunhofer.de
-
 fhg_add_test (NAME share_selftest
   SOURCES test.cpp
   USE_BOOST

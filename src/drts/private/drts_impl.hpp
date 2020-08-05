@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <drts/drts.hpp>
@@ -52,11 +50,14 @@ namespace gspc
 
     struct started_runtime_system
     {
-      started_runtime_system ( boost::optional<unsigned short> const& orchestrator_port
-                             , boost::optional<unsigned short> const& agent_port
+      started_runtime_system ( boost::optional<unsigned short> const& agent_port
                              , bool gpi_enabled
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
+                             , std::vector<std::string> worker_env_copy_variable
+                             , bool worker_env_copy_current
+                             , std::vector<boost::filesystem::path> worker_env_copy_file
+                             , std::vector<std::string> worker_env_set_variable
                              , installation_path
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
                              , std::vector<worker_description> worker_descriptions
@@ -95,6 +96,10 @@ namespace gspc
       fhg::rif::entry_point _master;
       boost::optional<boost::filesystem::path> _gpi_socket;
       std::vector<boost::filesystem::path> _app_path;
+      std::vector<std::string> _worker_env_copy_variable;
+      bool _worker_env_copy_current;
+      std::vector<boost::filesystem::path> _worker_env_copy_file;
+      std::vector<std::string> _worker_env_set_variable;
       installation_path _installation_path;
       boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
       boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
@@ -106,8 +111,8 @@ namespace gspc
       std::string _master_agent_name;
       fhg::drts::hostinfo_type _master_agent_hostinfo;
 
-      std::string _orchestrator_host;
-      unsigned short _orchestrator_port;
+      std::string _top_level_agent_host;
+      unsigned short _top_level_agent_port;
     } _started_runtime_system;
     fhg::logging::stream_emitter _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;

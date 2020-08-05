@@ -245,34 +245,9 @@ namespace utils
     static fhg::logging::stdout_sink _;
     return _;
   }
-  log_to_stdout::log_to_stdout (sdpa::daemon::GenericDaemon& component)
+  log_to_stdout::log_to_stdout (sdpa::daemon::Agent& component)
   {
     sink().add_emitters_blocking ({component.logger_registration_endpoint()});
-  }
-
-  orchestrator::orchestrator (fhg::com::Certificates const& certificates)
-    : _ ( random_peer_name(), "127.0.0.1"
-        , fhg::util::cxx14::make_unique<boost::asio::io_service>()
-        , boost::none
-        , sdpa::master_info_t()
-        , false
-        , certificates
-        )
-  {}
-
-  std::string orchestrator::name() const
-  {
-    return _.name();
-  }
-  fhg::com::host_t orchestrator::host() const
-  {
-    return fhg::com::host_t ( fhg::util::connectable_to_address_string
-                                (_.peer_local_endpoint().address())
-                            );
-  }
-  fhg::com::port_t orchestrator::port() const
-  {
-    return fhg::com::port_t (std::to_string (_.peer_local_endpoint().port()));
   }
 
   namespace
@@ -283,6 +258,16 @@ namespace utils
       return {master.host(), master.port()};
     }
   }
+
+  agent::agent (fhg::com::Certificates const& certificates)
+    :  _ ( random_peer_name(), "127.0.0.1"
+         , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+         , boost::none
+         , sdpa::master_info_t()
+         , true
+         , certificates
+         )
+  {}
 
   agent::agent ( sdpa::master_network_info master_network_info
                , fhg::com::Certificates const& certificates
@@ -297,12 +282,6 @@ namespace utils
   {}
 
   agent::agent ( basic_drts_component const& master
-               , fhg::com::Certificates const& certificates
-               )
-    : agent (make_master_network_info (master), certificates)
-  {}
-
-  agent::agent ( orchestrator const& master
                , fhg::com::Certificates const& certificates
                )
     : agent (make_master_network_info (master), certificates)
@@ -461,24 +440,6 @@ namespace utils
       , fhg::util::testing::random_string()
       );
   }
-  basic_drts_component::basic_drts_component
-      ( orchestrator const& master
-      , bool accept_workers
-      , fhg::com::Certificates const& certificates
-      )
-    : basic_drts_component (accept_workers, certificates)
-  {
-    _master = _network.connect_to (master.host(), master.port());
-
-    _network.perform<sdpa::events::WorkerRegistrationEvent>
-      ( _master.get()
-      , _name
-      , sdpa::capabilities_set_t{}
-      , fhg::util::testing::random<unsigned long>{}()
-      , accept_workers
-      , fhg::util::testing::random_string()
-      );
-  }
 
   basic_drts_component::basic_drts_component
       ( reused_component_name name
@@ -600,6 +561,17 @@ namespace utils
       , _announce_job (announce_job)
     {}
 
+    fake_drts_worker_notifying_module_call_submission
+      ::fake_drts_worker_notifying_module_call_submission
+        ( reused_component_name name
+        , std::function<void (std::string)> announce_job
+        , agent const& master
+        , fhg::com::Certificates const& certificates
+        )
+      : basic_drts_worker (std::move (name), master, certificates)
+      , _announce_job (announce_job)
+    {}
+
     void fake_drts_worker_notifying_module_call_submission
       ::handleSubmitJobEvent ( fhg::com::p2p::address_t const& source
                              , sdpa::events::SubmitJobEvent const* e
@@ -641,15 +613,6 @@ namespace utils
       delete_job (e->job_id());
     }
 
-    void fake_drts_worker_notifying_module_call_submission::finish
-      (std::string name)
-    {
-      auto const job (_jobs.at (name));
-
-      _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t());
-    }
-
     sdpa::job_id_t fake_drts_worker_notifying_module_call_submission::job_id
       (std::string name)
     {
@@ -687,6 +650,17 @@ namespace utils
           (announce_job, master_agent, certificates)
     {}
 
+    fake_drts_worker_waiting_for_finished_ack
+      ::fake_drts_worker_waiting_for_finished_ack
+        ( reused_component_name name
+        , std::function<void (std::string)> announce_job
+        , agent const& master_agent
+        , fhg::com::Certificates const& certificates
+        )
+      : fake_drts_worker_notifying_module_call_submission
+          (std::move (name), announce_job, master_agent, certificates)
+    {}
+
     void fake_drts_worker_waiting_for_finished_ack::handleJobFinishedAckEvent
       ( fhg::com::p2p::address_t const&
       , sdpa::events::JobFinishedAckEvent const* e
@@ -699,11 +673,12 @@ namespace utils
     void fake_drts_worker_waiting_for_finished_ack::finish_and_wait_for_ack
       (std::string name)
     {
-      auto const expected_id (_jobs.at (name)._id);
+      auto const job (_jobs.at (name));
 
-      finish (name);
+      _network.perform<sdpa::events::JobFinishedEvent>
+        (job._owner, job._id, we::type::activity_t());
 
-      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), expected_id);
+      BOOST_REQUIRE_EQUAL (_finished_ack.wait(), job._id);
     }
   }
 
@@ -729,37 +704,16 @@ namespace utils
         (announce_job, master, certificates)
   {}
 
-  fake_drts_worker_directly_finishing_jobs
-    ::fake_drts_worker_directly_finishing_jobs
-      ( agent const& master
-      , fhg::com::Certificates const& certificates
-      )
-    : no_thread::basic_drts_worker (master, certificates)
-  {}
-  fake_drts_worker_directly_finishing_jobs
-    ::fake_drts_worker_directly_finishing_jobs
+  fake_drts_worker_notifying_module_call_submission
+    ::fake_drts_worker_notifying_module_call_submission
       ( reused_component_name name
+      , std::function<void (std::string)> announce_job
       , agent const& master
       , fhg::com::Certificates const& certificates
       )
-    : no_thread::basic_drts_worker (std::move (name), master, certificates)
+    : no_thread::fake_drts_worker_notifying_module_call_submission
+        (std::move (name), announce_job, master, certificates)
   {}
-
-  void fake_drts_worker_directly_finishing_jobs::handleSubmitJobEvent
-    ( fhg::com::p2p::address_t const& source
-    , sdpa::events::SubmitJobEvent const* e
-    )
-  {
-    _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
-
-    _network.perform<sdpa::events::JobFinishedEvent>
-      (source, *e->job_id(), we::type::activity_t());
-  }
-  void fake_drts_worker_directly_finishing_jobs::handleJobFinishedAckEvent
-    (fhg::com::p2p::address_t const&, sdpa::events::JobFinishedAckEvent const*)
-  {
-    // can be ignored as we don't have any state
-  }
 
   fake_drts_worker_waiting_for_finished_ack
     ::fake_drts_worker_waiting_for_finished_ack
@@ -769,6 +723,17 @@ namespace utils
       )
   : no_thread::fake_drts_worker_waiting_for_finished_ack
       (std::move (announce_job), master_agent, certificates)
+  {}
+
+  fake_drts_worker_waiting_for_finished_ack
+    ::fake_drts_worker_waiting_for_finished_ack
+      ( reused_component_name name
+      , std::function<void (std::string)> announce_job
+      , agent const& master_agent
+      , fhg::com::Certificates const& certificates
+      )
+    : no_thread::fake_drts_worker_waiting_for_finished_ack
+        (std::move (name), announce_job, master_agent, certificates)
   {}
 
   fake_drts_worker_notifying_cancel::fake_drts_worker_notifying_cancel
@@ -838,11 +803,11 @@ namespace utils
     _announce_cancel (pEvt->job_id());
   }
 
-  client::client ( orchestrator const& orch
+  client::client ( agent const& master_agent
                  , fhg::com::Certificates const& certificates
                  )
-    : _ ( orch.host()
-        , orch.port()
+    : _ ( master_agent.host()
+        , master_agent.port()
         , fhg::util::cxx14::make_unique<boost::asio::io_service>()
         , certificates
         )
@@ -858,13 +823,6 @@ namespace utils
     return _.queryJob (id);
   }
 
-  sdpa::status::code client::wait_for_terminal_state_polling
-    (sdpa::job_id_t const& id)
-  {
-    sdpa::client::job_info_t UNUSED_job_info;
-    return _.wait_for_terminal_state_polling (id, UNUSED_job_info);
-  }
-
   sdpa::status::code client::wait_for_terminal_state (sdpa::job_id_t const& id)
   {
     sdpa::client::job_info_t UNUSED_job_info;
@@ -877,19 +835,10 @@ namespace utils
     return _.wait_for_terminal_state (id, job_info);
   }
 
-  sdpa::status::code client::wait_for_terminal_state_and_cleanup_polling
-    (sdpa::job_id_t const& id)
-  {
-    auto const ret (wait_for_terminal_state_polling (id));
-    retrieve_job_results (id);
-    delete_job (id);
-    return ret;
-  }
   sdpa::status::code client::wait_for_terminal_state_and_cleanup
     (sdpa::job_id_t const& id)
   {
     auto const ret (wait_for_terminal_state (id));
-    retrieve_job_results (id);
     delete_job (id);
     return ret;
   }
@@ -898,11 +847,6 @@ namespace utils
   {
     static fhg::util::testing::unique_random<std::string> discover_ids;
     return _.discoverJobStates (discover_ids(), id);
-  }
-
-  we::type::activity_t client::retrieve_job_results (sdpa::job_id_t const& id)
-  {
-    return _.retrieveResults (id);
   }
 
   void client::delete_job (sdpa::job_id_t const& id)
@@ -915,25 +859,13 @@ namespace utils
     return _.cancelJob (id);
   }
 
-  sdpa::status::code client::submit_job_and_wait_for_termination
-    ( we::type::activity_t workflow
-    , orchestrator const& orch
-    , fhg::com::Certificates const& certificates
-    )
-  {
-    client c (orch, certificates);
-
-    return c.wait_for_terminal_state_and_cleanup_polling
-      (c.submit_job (workflow));
-  }
-
   sdpa::status::code client::submit_job_and_wait_for_termination_as_subscriber
     ( we::type::activity_t workflow
-    , orchestrator const& orch
+    , agent const& master_agent
     , fhg::com::Certificates const& certificates
     )
   {
-    client c (orch, certificates);
+    client c (master_agent, certificates);
 
     return c.wait_for_terminal_state_and_cleanup (c.submit_job (workflow));
   }

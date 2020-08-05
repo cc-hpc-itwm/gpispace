@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #pragma once
 
 #include <fhg/util/num.hpp>

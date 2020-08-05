@@ -1,5 +1,3 @@
-# mirko.rahn@itwm.fraunhofer.de
-
 math (EXPR num_bytes "192 << 20")
 
 fhg_add_test (NAME share_example_vmem_1_to_n

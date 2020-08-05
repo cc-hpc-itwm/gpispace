@@ -1,8 +1,9 @@
 #include <rif/strategy/pbsdsh.hpp>
 
-#include <util-generic/blocked.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <util-generic/blocked.hpp>
 
 #include <boost/format.hpp>
 
@@ -20,43 +21,30 @@ namespace fhg
         {
           namespace option
           {
-            namespace validator = fhg::util::boost::program_options;
+            namespace po = fhg::util::boost::program_options;
 
-            constexpr char const* const block_size {"pbsdshs-at-once"};
-            constexpr char const* const block_size_description
-              {"how many PBSDSH connections to establish at once"};
-            using block_size_type = std::size_t;
-            using block_size_validator
-              = validator::positive_integral<std::size_t>;
-            constexpr block_size_type const block_size_default = 64;
+            po::option<std::size_t, po::positive_integral<std::size_t>>
+              const block_size { "pbsdshs-at-once"
+                               , "how many PBSDSH connections to establish at once"
+                               , 64
+                               };
           }
 
-          //! \todo use fhg::util::boost::program_options::generic
 #define EXTRACT_PARAMETERS(parameters_)                                 \
-          boost::program_options::options_description options;          \
-          options.add_options()                                         \
-            ( option::block_size                                        \
-            , boost::program_options::value<option::block_size_validator>() \
-              ->default_value (option::block_size_default)              \
-            , option::block_size_description                            \
-            )                                                           \
-            ;                                                           \
+          auto const vm ( option::po::options ("pbsdsh")                \
+                        . add (option::block_size)                      \
+                        . store_and_notify (parameters_)                \
+                        );                                              \
                                                                         \
-          boost::program_options::variables_map vm;                     \
-          boost::program_options::store                                 \
-            ( boost::program_options::command_line_parser (parameters)  \
-              .options (options).run()                                  \
-            , vm                                                        \
-            );                                                          \
-                                                                        \
-          boost::program_options::notify (vm);                          \
-                                                                        \
-          boost::optional<option::block_size_type> const block_size     \
-            ( vm.count (option::block_size)                             \
-            ? boost::optional<option::block_size_type>                  \
-                (vm.at (option::block_size).as<option::block_size_validator>()) \
-            : boost::none                                               \
-            )
+          auto const block_size (option::block_size.get_from (vm))
+
+          void do_pbsdsh
+            (std::string const& hostname, boost::format const& command)
+          {
+            //! \todo use torque's tm_spawn API directly to avoid system()
+            util::system_with_blocked_SIGCHLD
+              (str (boost::format ("pbsdsh -h %1% %2%") % hostname % command));
+          }
         }
 
         std::unordered_map<std::string, std::exception_ptr>
@@ -77,19 +65,19 @@ namespace fhg
             , [] (std::string const& hostname) { return hostname; }
             , [&] (std::string const& hostname)
               {
-                //! \todo use torque's tm_spawn API directly to avoid system()
-                util::system_with_blocked_SIGCHLD
-                  (( boost::format
-                     ( "pbsdsh -h %5% %1% %2% --register-host %3% --register-port %4%"
-                     " --register-key %5%"
-                     )
-                   % binary
-                   % (port ? "--port " + std::to_string (*port) : "")
-                   % register_host
-                   % register_port
-                   % hostname
-                   ).str()
-                  );
+                do_pbsdsh ( hostname
+                          , boost::format
+                              ( "%1%"
+                                "%2%"
+                                " --register-host %3% --register-port %4%"
+                                " --register-key %5%"
+                              )
+                          % binary
+                          % (port ? " --port " + std::to_string (*port) : "")
+                          % register_host
+                          % register_port
+                          % hostname
+                          );
               }
             ).second;
         }
@@ -112,11 +100,10 @@ namespace fhg
               }
             , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
               {
-                util::system_with_blocked_SIGCHLD
-                  (( boost::format ("/bin/kill -TERM %1%")
-                   % entry_point.second.pid
-                   ).str()
-                  );
+                do_pbsdsh ( entry_point.second.hostname
+                          , boost::format ("/bin/kill -TERM %1%")
+                          % entry_point.second.pid
+                          );
               }
             );
         }

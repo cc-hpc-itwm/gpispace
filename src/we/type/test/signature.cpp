@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <boost/test/unit_test.hpp>
 
 #include <we/type/signature.hpp>

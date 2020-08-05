@@ -1,5 +1,3 @@
-// alexander.petry@itwm.fraunhofer.de
-
 #include <drts/drts.hpp>
 #include <drts/stream.hpp>
 

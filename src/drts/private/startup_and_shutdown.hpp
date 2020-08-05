@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <drts/certificates.hpp>
@@ -22,10 +20,14 @@
 #include <boost/optional.hpp>
 
 #include <chrono>
+#include <cstddef>
+#include <exception>
 #include <mutex>
+#include <ostream>
 #include <string>
 #include <unordered_map>
 #include <unordered_set>
+#include <utility>
 #include <vector>
 
 namespace fhg
@@ -40,7 +42,6 @@ namespace fhg
     enum class component_type
     {
       vmem,
-      orchestrator,
       agent,
       worker,
       logging_demultiplexer,
@@ -83,6 +84,10 @@ namespace fhg
       , fhg::drts::processes_storage& processes
       , boost::optional<boost::filesystem::path> const& gpi_socket
       , std::vector<boost::filesystem::path> const& app_path
+      , std::vector<std::string> const& worker_env_copy_variable
+      , bool worker_env_copy_current
+      , std::vector<boost::filesystem::path> const& worker_env_copy_file
+      , std::vector<std::string> const& worker_env_set_variable
       , gspc::installation_path const&
       , std::ostream& info_output
       , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
@@ -91,14 +96,13 @@ namespace fhg
 
     struct startup_result
     {
-      hostinfo_type orchestrator;
+      hostinfo_type top_level_agent;
       boost::optional<rif::protocol::start_logging_demultiplexer_result>
         top_level_logging_demultiplexer;
     };
 
     startup_result startup
-      ( boost::optional<unsigned short> const& orchestrator_port
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const&

@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/multiplicated_column_proxy.hpp>
 
 #include <util/qt/scoped_disconnect.hpp>

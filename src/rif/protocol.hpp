@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #pragma once
 
 #include <rpc/function_description.hpp>
@@ -71,14 +69,6 @@ namespace fhg
       };
 
       FHG_RPC_FUNCTION_DESCRIPTION
-        ( start_orchestrator
-        , start_scheduler_result ( boost::filesystem::path exe
-                                 , gspc::Certificates certificates
-                                 , boost::optional<unsigned short> port
-                                 )
-        );
-
-      FHG_RPC_FUNCTION_DESCRIPTION
         ( start_vmem
         , pid_t ( boost::filesystem::path command
                 , boost::filesystem::path socket
@@ -95,7 +85,7 @@ namespace fhg
         ( start_agent
         , start_scheduler_result
             ( std::string name
-            , hostinfo_t parent
+            , boost::optional<hostinfo_t> parent
             , boost::optional<unsigned short> agent_port
             , boost::optional<boost::filesystem::path> gpi_socket
             , gspc::Certificates

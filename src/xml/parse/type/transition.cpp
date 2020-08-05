@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/type/transition.hpp>
 
 #include <xml/parse/state.hpp>

@@ -1,5 +1,3 @@
-// {rahn,loerwald}@itwm.fraunhofer.de
-
 #pragma once
 
 #include <we/type/activity.hpp>

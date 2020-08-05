@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <fhg/util/backtracing_exception.hpp>
 
 #ifndef NO_BACKTRACE

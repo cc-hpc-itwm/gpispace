@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <fhg/util/indenter.hpp>
 
 #include <iostream>

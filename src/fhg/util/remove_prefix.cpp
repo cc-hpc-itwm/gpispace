@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <fhg/util/remove_prefix.hpp>
 
 #include <boost/format.hpp>

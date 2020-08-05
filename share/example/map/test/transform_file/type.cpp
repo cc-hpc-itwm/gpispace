@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <map/test/transform_file/type.hpp>
 
 namespace transform_file

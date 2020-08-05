@@ -2,7 +2,7 @@
 
 #include <sdpa/client.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <sdpa/daemon/Agent.hpp>
 
 #include <fhgcom/peer.hpp>
 
@@ -62,26 +62,7 @@ namespace utils
   struct log_to_stdout
   {
     fhg::logging::stdout_sink& sink();
-    log_to_stdout (sdpa::daemon::GenericDaemon& component);
-  };
-
-  struct orchestrator
-  {
-    orchestrator (fhg::com::Certificates const&);
-
-    orchestrator() = delete;
-    orchestrator (orchestrator const&) = delete;
-    orchestrator (orchestrator&) = delete;
-    orchestrator& operator= (orchestrator const&) = delete;
-    orchestrator& operator= (orchestrator&) = delete;
-    ~orchestrator() = default;
-
-    sdpa::daemon::GenericDaemon _;
-    log_to_stdout _log_to_stdout = {_};
-
-    std::string name() const;
-    fhg::com::host_t host() const;
-    fhg::com::port_t port() const;
+    log_to_stdout (sdpa::daemon::Agent& component);
   };
 
   class basic_drts_component;
@@ -90,8 +71,8 @@ namespace utils
   {
     agent (sdpa::master_network_info, fhg::com::Certificates const&);
     agent (basic_drts_component const& master, fhg::com::Certificates const&);
-    agent (orchestrator const& master, fhg::com::Certificates const&);
     agent (agent const& master, fhg::com::Certificates const&);
+    agent (fhg::com::Certificates const&);
 
     agent ( agent const& master_0
           , agent const& master_1
@@ -105,7 +86,7 @@ namespace utils
     agent& operator= (agent&) = delete;
     ~agent() = default;
 
-    sdpa::daemon::GenericDaemon _;
+    sdpa::daemon::Agent _;
     log_to_stdout _log_to_stdout = {_};
 
     std::string name() const;
@@ -173,10 +154,6 @@ namespace utils
                          );
     basic_drts_component ( agent const& master
                          , CapabilityNames
-                         , bool accept_workers
-                         , fhg::com::Certificates const&
-                         );
-    basic_drts_component ( orchestrator const& master
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
@@ -254,6 +231,13 @@ namespace utils
         , fhg::com::Certificates const&
         );
 
+      fake_drts_worker_notifying_module_call_submission
+        ( reused_component_name name
+        , std::function<void (std::string)>
+        , agent const&
+        , fhg::com::Certificates const&
+        );
+
       virtual void handleSubmitJobEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::SubmitJobEvent const*
@@ -262,8 +246,6 @@ namespace utils
         ( fhg::com::p2p::address_t const&
         , sdpa::events::JobFinishedAckEvent const*
         ) override;
-
-      void finish (std::string name);
 
       sdpa::job_id_t job_id (std::string name);
 
@@ -294,6 +276,13 @@ namespace utils
     public:
       fake_drts_worker_waiting_for_finished_ack
         ( std::function<void (std::string)> announce_job
+        , agent const& master
+        , fhg::com::Certificates const&
+        );
+
+      fake_drts_worker_waiting_for_finished_ack
+        ( reused_component_name name
+        , std::function<void (std::string)> announce_job
         , agent const& master
         , fhg::com::Certificates const&
         );
@@ -332,29 +321,12 @@ namespace utils
       , fhg::com::Certificates const&
       );
 
-    basic_drts_component::event_thread_and_worker_join _ = {*this};
-  };
-
-  struct fake_drts_worker_directly_finishing_jobs final
-    : public no_thread::basic_drts_worker
-  {
-    fake_drts_worker_directly_finishing_jobs
-      ( agent const& master
-      , fhg::com::Certificates const&
-      );
-    fake_drts_worker_directly_finishing_jobs
-      ( reused_component_name
+    fake_drts_worker_notifying_module_call_submission
+      ( reused_component_name name
+      , std::function<void (std::string)> announce_job
       , agent const& master
       , fhg::com::Certificates const&
       );
-
-    virtual void handleSubmitJobEvent ( fhg::com::p2p::address_t const&
-                                      , sdpa::events::SubmitJobEvent const*
-                                      ) override;
-    virtual void handleJobFinishedAckEvent
-      ( fhg::com::p2p::address_t const&
-      , sdpa::events::JobFinishedAckEvent const*
-      ) override;
 
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
@@ -364,6 +336,13 @@ namespace utils
   {
     fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job
+      , agent const& master
+      , fhg::com::Certificates const&
+      );
+
+    fake_drts_worker_waiting_for_finished_ack
+      ( reused_component_name name
+      , std::function<void (std::string)> announce_job
       , agent const& master
       , fhg::com::Certificates const&
       );
@@ -419,7 +398,7 @@ namespace utils
 
   struct client : boost::noncopyable
   {
-    client (orchestrator const&, fhg::com::Certificates const&);
+    client (agent const&, fhg::com::Certificates const&);
 
     client() = delete;
     client (client const&) = delete;
@@ -432,20 +411,14 @@ namespace utils
 
     sdpa::status::code query_job_status (sdpa::job_id_t const&);
 
-    sdpa::status::code wait_for_terminal_state_polling (sdpa::job_id_t const&);
-
     sdpa::status::code wait_for_terminal_state (sdpa::job_id_t const&);
     sdpa::status::code wait_for_terminal_state
       (sdpa::job_id_t const&, sdpa::client::job_info_t& job_info);
 
-    sdpa::status::code wait_for_terminal_state_and_cleanup_polling
-      (sdpa::job_id_t const&);
     sdpa::status::code wait_for_terminal_state_and_cleanup
       (sdpa::job_id_t const&);
 
     sdpa::discovery_info_t discover (sdpa::job_id_t const&);
-
-    we::type::activity_t retrieve_job_results (sdpa::job_id_t const&);
 
     void delete_job (sdpa::job_id_t const&);
 
@@ -453,15 +426,9 @@ namespace utils
 
     sdpa::client::Client _;
 
-    static sdpa::status::code submit_job_and_wait_for_termination
-      ( we::type::activity_t
-      , orchestrator const&
-      , fhg::com::Certificates const&
-      );
-
     static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
       ( we::type::activity_t
-      , orchestrator const&
+      , agent const&
       , fhg::com::Certificates const&
       );
   };

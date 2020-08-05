@@ -102,7 +102,7 @@ BOOST_DATA_TEST_CASE
     ( drts.top_level_log_demultiplexer()
     , [&logged] (fhg::logging::message const& message)
       {
-        //! \note agent/orchestrator/worker do emit messages we do not want.
+        //! \note agent/worker do emit messages we do not want.
         if (message._category == fhg::logging::legacy::category_level_info)
         {
           logged.emplace_back (message._content);

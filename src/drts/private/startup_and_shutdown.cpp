@@ -7,6 +7,7 @@
 #include <fhg/util/starts_with.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/functor_visitor.hpp>
+#include <util-generic/getenv.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/make_optional.hpp>
@@ -34,18 +35,19 @@
 
 #include <algorithm>
 #include <atomic>
-#include <chrono>
-#include <fstream>
+#include <cassert>
 #include <functional>
 #include <future>
-#include <iostream>
+#include <iterator>
+#include <list>
+#include <memory>
 #include <numeric>
 #include <regex>
 #include <stdexcept>
-#include <string>
-#include <unordered_map>
-#include <utility>
-#include <vector>
+#include <tuple>
+#include <type_traits>
+
+#include <unistd.h>
 
 namespace fhg
 {
@@ -120,8 +122,8 @@ namespace
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
     , std::string const& name
-    , std::string const& parent_name
-    , fhg::drts::hostinfo_type const& parent_hostinfo
+    , boost::optional<std::string> const& parent_name
+    , boost::optional<fhg::drts::hostinfo_type> const& parent_hostinfo
     , boost::optional<unsigned short> const& agent_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , gspc::installation_path const& installation_path
@@ -132,8 +134,12 @@ namespace
     )
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
-                << rif_entry_point
-                << " with parent " << parent_name << "\n";
+                << rif_entry_point;
+    if (parent_name)
+    {
+      info_output << " with parent " << *parent_name;
+    }
+    info_output << "\n";
 
     auto const result
       ( rif_client.start_agent
@@ -175,6 +181,10 @@ namespace fhg
     , fhg::drts::processes_storage& processes
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
+    , std::vector<std::string> const& worker_env_copy_variable
+    , bool worker_env_copy_current
+    , std::vector<boost::filesystem::path> const& worker_env_copy_file
+    , std::vector<std::string> const& worker_env_set_variable
     , gspc::installation_path const& installation_path
     , std::ostream& info_output
     , boost::optional<std::pair<fhg::rif::entry_point, pid_t>> top_level_log
@@ -326,11 +336,50 @@ namespace fhg
             }
 
             std::unordered_map<std::string, std::string> environment;
-            environment.emplace
-              ( "LD_LIBRARY_PATH"
-              , (installation_path.lib()).string() + ":"
-              + (installation_path.libexec()).string()
+
+            auto const& parse_and_add_definition
+              ( [&] (std::string const& definition)
+                {
+                  auto const pos (definition.find ('='));
+                  assert (pos != std::string::npos && pos != 0);
+                  environment.emplace
+                    (definition.substr (0, pos), definition.substr (pos + 1));
+                }
               );
+
+            for (auto const& key : worker_env_copy_variable)
+            {
+              auto const value (fhg::util::getenv (key.c_str()));
+              if (!value)
+              {
+                throw std::invalid_argument
+                  ( "requested to copy environment variable '" + key
+                  + "', but variable is not set"
+                  );
+              }
+              environment.emplace (key, *value);
+            }
+
+            if (worker_env_copy_current)
+            {
+              for (auto env (environ); *env; ++env)
+              {
+                parse_and_add_definition (*env);
+              }
+            }
+
+            for (auto const& file : worker_env_copy_file)
+            {
+              for (auto const& definition : fhg::util::read_lines (file))
+              {
+                parse_and_add_definition (definition);
+              }
+            }
+
+            for (auto const& definition : worker_env_set_variable)
+            {
+              parse_and_add_definition (definition);
+            }
 
             futures.emplace_back
               ( connection.second
@@ -437,14 +486,6 @@ namespace fhg
           .get_value_or (def_num_proc)
         );
 
-      if (num_per_node == 0)
-      {
-        throw std::invalid_argument
-          ( "invalid number of workers per node in capability specification: "
-            "positive integer expected in " + cap_spec
-          );
-      }
-
       return
         { fhg::util::split<std::string, std::string, std::vector<std::string>>
             ( get_match<std::string>
@@ -483,8 +524,7 @@ namespace fhg
     }
 
     startup_result startup
-      ( boost::optional<unsigned short> const& orchestrator_port
-      , boost::optional<unsigned short> const& agent_port
+      ( boost::optional<unsigned short> const& agent_port
       , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
@@ -563,31 +603,6 @@ namespace fhg
             + " to connect to top level logging demultiplexer failed"
             );
         }
-      }
-
-      auto const orchestrator_startup_result
-        ( fhg::util::nest_exceptions<std::runtime_error>
-            ( [&]
-              {
-                return master_rif_client.start_orchestrator
-                  ( installation_path.orchestrator()
-                  , certificates
-                  , orchestrator_port
-                  ).get();
-              }
-              , "could not start orchestrator"
-              )
-        );
-
-      processes.store (master, "orchestrator", orchestrator_startup_result.pid);
-
-      if (logging_rif_client)
-      {
-        logging_rif_client->add_emitter_to_logging_demultiplexer
-          ( logging_rif_info->pid
-          , std::vector<fhg::logging::endpoint>
-              {orchestrator_startup_result.logger_registration_endpoint}
-          ).get();
       }
 
       std::list<std::pair<rif::client, rif::entry_point>> rif_connections;
@@ -699,8 +714,8 @@ namespace fhg
       master_agent_hostinfo = start_agent ( master
                                           , master_rif_client
                                           , master_agent_name
-                                          , "orchestrator"
-                                          , orchestrator_startup_result.hostinfo
+                                          , boost::none
+                                          , boost::none
                                           , agent_port
                                           , gpi_socket
                                           , installation_path
@@ -716,7 +731,7 @@ namespace fhg
                                           , certificates
                                           );
 
-      return {orchestrator_startup_result.hostinfo, logging_rif_info};
+      return {master_agent_hostinfo, logging_rif_info};
     }
 
     namespace
@@ -736,7 +751,6 @@ namespace fhg
         std::string const kind
           ( component == component_type::worker ? "drts-kernel"
           : component == component_type::agent ? "agent"
-          : component == component_type::orchestrator ? "orchestrator"
           : component == component_type::vmem ? "vmem"
           : component == component_type::logging_demultiplexer ? "logging-demultiplexer"
           : throw std::logic_error ("invalid enum value")
@@ -923,7 +937,6 @@ namespace fhg
         ( { component_type::worker
           , component_type::agent
           , component_type::vmem
-          , component_type::orchestrator
           , component_type::logging_demultiplexer
           }
         , [this] (component_type component)

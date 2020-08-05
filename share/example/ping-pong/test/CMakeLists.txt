@@ -1,5 +1,3 @@
-# alexander.petry@itwm.fraunhofer.de
-
 fhg_add_test (NAME share_example_ping-pong
   SOURCES test.cpp
   USE_BOOST

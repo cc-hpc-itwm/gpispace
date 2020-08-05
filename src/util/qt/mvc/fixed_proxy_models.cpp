@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <util/qt/mvc/fixed_proxy_models.hpp>
 
 namespace fhg

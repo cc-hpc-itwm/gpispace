@@ -46,7 +46,7 @@ fhg_add_test (NAME sdpa_CoallocationScheduler
 
 fhg_add_test (NAME sdpa_daemon_message_flow
   SOURCES daemon_message_flow.cpp
-  DESCRIPTION "Message flow between client/orchestrator/agent and children/parents"
+  DESCRIPTION "Message flow between client/agent and children/parents"
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa

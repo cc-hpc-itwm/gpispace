@@ -1,4 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
 //! \note This "test" does not test anything, but is a pressure-generator for sdpa-gui only.
 
 #include <logging/stream_emitter.hpp>

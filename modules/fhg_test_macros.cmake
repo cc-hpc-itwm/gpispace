@@ -28,7 +28,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/error.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/position.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/parse/require.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/gspc/stencil_cache/callback.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.ipp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/socket_endpoint.hpp"
@@ -72,7 +71,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/gpi-space"
-  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/orchestrator"
   #! \note This does not include bundled libraries!
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_load.so"

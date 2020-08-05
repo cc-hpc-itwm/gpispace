@@ -116,7 +116,7 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload)
   FHG_UTIL_TESTING_REQUIRE_EXCEPTION_MATCHING_REGEX
     ( std::runtime_error
     , "Job " + job_id + ": failed: error-message := "
-      "agent-.*-0: worker-.*-1: call to \'m::f\' failed: "
+      "worker-.*-1: call to \'m::f\' failed: "
     + we::loader::module_load_failed
         ( library
         , we::loader::module_does_not_unload (library, {library}).what()
@@ -136,8 +136,6 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload_can_be_allowed)
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
-  auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   auto const result (client.put_and_run (make.pnet(), {}));
 
@@ -155,8 +153,6 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
-  auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
 
@@ -165,7 +161,7 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
   FHG_UTIL_TESTING_REQUIRE_EXCEPTION_MATCHING_REGEX
     ( std::runtime_error
     , "Job " + job_id + ": failed: error-message := "
-      "agent-.*-0: worker-.*-1: call to \'m::f\' failed: "
+      "worker-.*-1: call to \'m::f\' failed: "
     + we::loader::function_does_not_unload ("m", "f", {to_load}).what()
     , std::regex::basic
     , client.wait_and_extract (job_id)
@@ -182,8 +178,6 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
-  auto const library
-    ((boost::filesystem::path (lib_install_directory) / "libm.so").string());
 
   auto const result (client.put_and_run (make.pnet(), {}));
 

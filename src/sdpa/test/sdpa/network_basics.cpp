@@ -134,29 +134,9 @@ namespace
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
 BOOST_DATA_TEST_CASE
-  (orchestrator_acknowledges_worker_registration, certificates_data, certificates)
-{
-  utils::orchestrator const orchestrator (certificates);
-
-  drts_component observer (certificates);
-
-  auto const addr (observer.connect_to (orchestrator));
-
-  observer.perform_WorkerRegistrationEvent (addr);
-
-  auto const response
-    (observer.worker_registration_responses.get());
-
-  BOOST_REQUIRE_EQUAL (response.first, addr);
-  BOOST_REQUIRE_NO_THROW (response.second.get());
-}
-
-BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
-BOOST_DATA_TEST_CASE
   (agent_acknowledges_worker_registration, certificates_data, certificates)
 {
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
   drts_component observer (certificates);
 
@@ -172,34 +152,9 @@ BOOST_DATA_TEST_CASE
 
 BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
 BOOST_DATA_TEST_CASE
-  (orchestrator_refuses_second_child_with_same_name, certificates_data, certificates)
-{
-  utils::orchestrator const orchestrator (certificates);
-
-  drts_component observer (certificates);
-
-  auto const addr (observer.connect_to (orchestrator));
-
-  observer.perform_WorkerRegistrationEvent (addr);
-  observer.worker_registration_responses.get();
-
-  observer.perform_WorkerRegistrationEvent (addr);
-
-  auto const response (observer.worker_registration_responses.get());
-
-  BOOST_REQUIRE_EQUAL (response.first, addr);
-  fhg::util::testing::require_exception
-    ( [&] { response.second.get(); }
-    , std::runtime_error ("worker '" + observer.name() + "' already exists")
-    );
-}
-
-BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
-BOOST_DATA_TEST_CASE
   (agent_refuses_second_child_with_same_name, certificates_data, certificates)
 {
-  utils::orchestrator const orchestrator (certificates);
-  utils::agent const agent (orchestrator, certificates);
+  utils::agent const agent (certificates);
 
   drts_component observer (certificates);
 

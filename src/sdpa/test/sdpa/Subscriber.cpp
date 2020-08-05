@@ -13,13 +13,22 @@
 BOOST_DATA_TEST_CASE
   (execute_workflow_with_subscribed_client, certificates_data, certificates)
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
-  const utils::fake_drts_worker_directly_finishing_jobs worker (agent, certificates);
+  const utils::agent agent (certificates);
+
+  fhg::util::thread::event<std::string> job_submitted;
+  utils::fake_drts_worker_waiting_for_finished_ack worker
+    ( [&job_submitted] (std::string s) { job_submitted.notify (s); }
+    , agent
+    , certificates
+    );
+
+  utils::client client (agent, certificates);
+  auto const job_id (client.submit_job (utils::module_call()));
+
+  worker.finish_and_wait_for_ack (job_submitted.wait());
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::module_call(), orchestrator, certificates)
+    ( client.wait_for_terminal_state_and_cleanup (job_id)
     , sdpa::status::FINISHED
     );
 }
@@ -30,17 +39,24 @@ BOOST_DATA_TEST_CASE
   , certificates
   )
 {
-  const utils::orchestrator orchestrator (certificates);
-  const utils::agent agent (orchestrator, certificates);
-  const utils::fake_drts_worker_directly_finishing_jobs worker (agent, certificates);
+  const utils::agent agent (certificates);
+
+  fhg::util::thread::event<std::string> job_submitted;
+  utils::fake_drts_worker_waiting_for_finished_ack worker
+    ( [&job_submitted] (std::string s) { job_submitted.notify (s); }
+    , agent
+    , certificates
+    );
 
   sdpa::job_id_t job_id_user;
   {
-    utils::client c (orchestrator, certificates);
+    utils::client c (agent, certificates);
     job_id_user = c.submit_job (utils::module_call());
   }
 
-  utils::client c (orchestrator, certificates);
+  worker.finish_and_wait_for_ack (job_submitted.wait());
+
+  utils::client c (agent, certificates);
   BOOST_REQUIRE_EQUAL
     ( c.wait_for_terminal_state_and_cleanup (job_id_user)
     , sdpa::status::FINISHED

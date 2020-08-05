@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/util/required.hpp>
 
 #include <xml/parse/error.hpp>

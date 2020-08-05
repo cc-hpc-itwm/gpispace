@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <boost/test/unit_test.hpp>
 
 #include <xml/parse/error.hpp>
@@ -325,8 +323,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_read, fixture)
     ( "connect_in_read_same.xpnet"
     , connect
     , "connect-read P <-> A (existing connection is connect-in)"
+    , 10, 7
     , 12, 7
-    , 14, 7
     );
 }
 
@@ -336,8 +334,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_in_in, fixture)
     ( "connect_in_in_same.xpnet"
     , connect
     , "connect-in P <-> A (existing connection is connect-in)"
-    , 13, 7
-    , 14, 7
+    , 11, 7
+    , 12, 7
     );
 }
 
@@ -347,8 +345,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_read_read, fixture)
     ( "connect_read_read_same.xpnet"
     , connect
     , "connect-read P <-> A (existing connection is connect-read)"
-    , 13, 7
-    , 14, 7
+    , 11, 7
+    , 12, 7
     );
 }
 
@@ -358,8 +356,8 @@ BOOST_FIXTURE_TEST_CASE (error_duplicate_connect_out_out, fixture)
     ( "connect_out_out_same.xpnet"
     , connect
     , "connect-out P <-> A (existing connection is connect-out)"
-    , 13, 7
-    , 14, 7
+    , 11, 7
+    , 12, 7
     );
 }
 

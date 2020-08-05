@@ -1,5 +1,3 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
 #include <xml/parse/util/valid_name.hpp>
 
 #include <xml/parse/error.hpp>

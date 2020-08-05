@@ -1,5 +1,4 @@
-// bernd.loerwald@itwm.fraunhofer.de
-
+#include <util-qt/compat.hpp>
 #include <util/qt/treeview_with_delete.hpp>
 
 #include <QKeyEvent>
@@ -66,7 +65,7 @@ namespace fhg
 
         for ( QPersistentModelIndex index
             : persisted ( indices_with_parent_in_set_removed
-                          (selectionModel()->selectedRows().toSet())
+                            (list_to_set (selectionModel()->selectedRows()))
                         )
             )
         {

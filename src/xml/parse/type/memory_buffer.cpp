@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <xml/parse/type/memory_buffer.hpp>
 
 #include <xml/parse/error.hpp>

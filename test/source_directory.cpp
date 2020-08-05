@@ -1,5 +1,3 @@
-// mirko.rahn@itwm.fraunhofer.de
-
 #include <test/source_directory.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>

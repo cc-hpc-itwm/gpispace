@@ -1,6 +1,6 @@
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 
-#include <sdpa/daemon/GenericDaemon.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 
 #include <boost/range/algorithm.hpp>
 
