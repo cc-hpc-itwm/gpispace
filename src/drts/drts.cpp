@@ -428,15 +428,6 @@ namespace gspc
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker
-      ( std::vector<fhg::rif::entry_point> const& entry_points
-      , Certificates const& certificates
-      )
-  {
-    return add_worker (_worker_descriptions, entry_points, certificates);
-  }
-
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-    scoped_runtime_system::implementation::started_runtime_system::add_worker
       ( std::vector<worker_description> const& worker_descriptions
       , std::vector<fhg::rif::entry_point> const& entry_points
       , Certificates const& certificates
@@ -590,13 +581,6 @@ namespace gspc
   }
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
-      (rifd_entry_points const& rifd_entry_points, Certificates const& certificates)
-  {
-    return _started_runtime_system.add_worker
-      (rifd_entry_points._->_entry_points, certificates);
-  }
-  std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-    scoped_runtime_system::implementation::add_worker
       ( std::vector<worker_description> const& descriptions
       , rifd_entry_points const& rifd_entry_points
       , Certificates const& certificates
@@ -642,20 +626,6 @@ namespace gspc
                                               ) const
   {
     return stream (*this, name, buffer, size_of_slot, on_slot_filled);
-  }
-
-  std::unordered_map< rifd_entry_point
-                    , std::list<std::exception_ptr>
-                    , rifd_entry_point_hash
-                    >
-    scoped_runtime_system::add_worker
-      (rifd_entry_points const& rifd_entry_points, Certificates const& certificates)
-  {
-    return add_worker
-      ( _->_started_runtime_system._worker_descriptions
-      , rifd_entry_points
-      , certificates
-      );
   }
 
   std::unordered_map< rifd_entry_point
