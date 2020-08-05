@@ -497,7 +497,7 @@ namespace gspc
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::started_runtime_system::add_worker_impl
-      ( std::vector<worker_description> const& worker_descriptions
+      ( std::vector<worker_description> const& descriptions
       , std::vector<fhg::rif::entry_point> const& entry_points
       , Certificates const& certificates
       )
@@ -505,37 +505,40 @@ namespace gspc
     std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
       failures;
 
-    for ( worker_description const& description
-        : worker_descriptions
-        )
-    {
-      for ( auto const& fail
-          : start_workers_for
-              ( entry_points
-              , _master_agent_name
-              , _master_agent_hostinfo
-              , description
-              , _processes_storage
-              , _gpi_socket
-              , _app_path
-              , _worker_env_copy_variable
-              , _worker_env_copy_current
-              , _worker_env_copy_file
-              , _worker_env_set_variable
-              , _installation_path
-              , _info_output
-              , FHG_UTIL_MAKE_OPTIONAL
-                  ( _logging_rif_entry_point && _logging_rif_info
-                  , std::make_pair
-                      (*_logging_rif_entry_point, _logging_rif_info->pid)
-                  )
-              , certificates
-              ).second
-          )
+    Forest<resource::ID, worker_description> worker_descriptions;
+
+    create_resource_forest_from_worker_descriptions_array
+      ( descriptions
+      , entry_points
+      , worker_descriptions
+      );
+
+    for ( auto const& fail
+        : start_workers_with_resources
+            ( entry_points
+            , _master_agent_name
+            , _master_agent_hostinfo
+            , worker_descriptions
+            , _processes_storage
+            , _gpi_socket
+            , _app_path
+            , _worker_env_copy_variable
+            , _worker_env_copy_current
+            , _worker_env_copy_file
+            , _worker_env_set_variable
+            , _installation_path
+            , _info_output
+            , FHG_UTIL_MAKE_OPTIONAL
+                ( _logging_rif_entry_point && _logging_rif_info
+                , std::make_pair
+                    (*_logging_rif_entry_point, _logging_rif_info->pid)
+                )
+            , certificates
+            ).second
+         )
       {
         failures[fail.first].emplace_back (fail.second);
       }
-    }
 
     return failures;
   }
