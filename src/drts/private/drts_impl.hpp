@@ -90,6 +90,12 @@ namespace gspc
                    >
         > remove_worker (std::vector<fhg::rif::entry_point> const&);
 
+      void create_resource_forest_from_string_topology
+        ( std::string const& string_topology
+        , std::vector<fhg::rif::entry_point> const& rif_entry_points
+        , Forest<resource::ID, worker_description>& worker_descriptions_forest
+        );
+
       std::ostream& _info_output;
       fhg::rif::entry_point _master;
       boost::optional<boost::filesystem::path> _gpi_socket;
