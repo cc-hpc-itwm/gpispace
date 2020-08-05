@@ -428,7 +428,7 @@ void DRTSImpl::emit_gantt
 {
   _log_emitter.emit_message
     ( { sdpa::daemon::NotificationEvent
-          ({m_my_name}, task.id, state, task.activity).encoded()
+          ({m_my_name}, task.id, state, task.activity.name()).encoded()
       , sdpa::daemon::gantt_log_category
       }
     );

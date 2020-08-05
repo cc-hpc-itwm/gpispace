@@ -28,11 +28,11 @@ namespace sdpa
       NotificationEvent ( const std::list<std::string>& components
                         , const std::string& activity_id
                         , const state_t& activity_state
-                        , const we::type::activity_t& activity
+                        , std::string activity_name
                         )
         : _components (components)
         , _activity_id (activity_id)
-        , _activity_name (activity.name())
+        , _activity_name (std::move (activity_name))
         , _activity_state (activity_state)
       {}
 

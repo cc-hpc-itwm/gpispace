@@ -31,20 +31,14 @@ struct activity
     : _id ((boost::format ("%1%") % ++id_counter).str())
     , _workers()
     , _state (NotificationEvent::STATE_STARTED)
-    , _act ( we::type::transition_t ( "activity-" + _id
-                                    , we::type::expression_t()
-                                    , boost::none
-                                    , we::type::property::type()
-                                    , we::priority_type()
-                                    )
-           )
+    , _name ("activity-" + _id)
   {
     _workers.push_back (worker);
   }
 
   void send_out_notification (fhg::logging::stream_emitter& emitter) const
   {
-    const NotificationEvent event (_workers, _id, _state, _act);
+    const NotificationEvent event (_workers, _id, _state, _name);
     emitter.emit_message ({event.encoded(), sdpa::daemon::gantt_log_category});
     static char const* arr[4] = { fhg::logging::legacy::category_level_trace
                                 , fhg::logging::legacy::category_level_info
@@ -80,7 +74,7 @@ struct activity
   std::string _id;
   std::list<std::string> _workers;
   sdpa::daemon::NotificationEvent::state_t _state;
-  we::type::activity_t _act;
+  std::string _name;
 };
 
 std::string worker_gen()

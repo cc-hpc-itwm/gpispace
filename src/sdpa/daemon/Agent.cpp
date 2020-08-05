@@ -386,7 +386,7 @@ namespace sdpa
                                    )
     {
       _log_emitter.emit_message
-        ( { NotificationEvent ({name()}, id, state, activity).encoded()
+        ( { NotificationEvent ({name()}, id, state, activity.name()).encoded()
           , gantt_log_category
           }
         );
