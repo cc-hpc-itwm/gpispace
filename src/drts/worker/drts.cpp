@@ -62,9 +62,9 @@ struct wfe_task_t
 
 DRTSImpl::mark_remaining_tasks_as_canceled_helper::~mark_remaining_tasks_as_canceled_helper()
 {
+  std::lock_guard<std::mutex> const jobs_lock (_jobs_guard);
   std::lock_guard<std::mutex> const currently_executed_tasks_lock
     (_currently_executed_tasks_mutex);
-  std::lock_guard<std::mutex> const jobs_lock (_jobs_guard);
 
   for (auto& task : _currently_executed_tasks | boost::adaptors::map_values)
   {
