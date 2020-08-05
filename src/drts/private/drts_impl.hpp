@@ -117,6 +117,7 @@ namespace gspc
 
       std::string _top_level_agent_host;
       unsigned short _top_level_agent_port;
+      std::unordered_map<fhg::rif::entry_point, resource::ID> _last_used_resource_ids;
     } _started_runtime_system;
     fhg::logging::stream_emitter _logger;
     std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
