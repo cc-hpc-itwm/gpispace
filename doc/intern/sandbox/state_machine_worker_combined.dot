@@ -1,0 +1,275 @@
+digraph {
+#	rankdir = LR;
+  overlap = scale;
+  splines = true;
+
+	node [shape = circle];
+  jfinished_tnone [label = "S/"]
+  jfinished_tfinished [label = "SS"]
+  jfinished_tfailed [label = "SF"]
+  jfinished_tcanceled [label = "SC"]
+  jfinished_tcanceled_shutdown [label = "SC'"]
+  jfinished_tpending [label = "SP"]
+
+  jfailed_tnone [label = "F/"]
+  jfailed_tfinished [label = "FS"]
+  jfailed_tfailed [label = "FF"]
+  jfailed_tcanceled [label = "FC"]
+  jfailed_tcanceled_shutdown [label = "FC'"]
+  jfailed_tpending [label = "FP"]
+
+  jcanceled_tnone [label = "C/"]
+  jcanceled_tfinished [label = "CS"]
+  jcanceled_tfailed [label = "CF"]
+  jcanceled_tcanceled [label = "CC"]
+  jcanceled_tcanceled_shutdown [label = "CC'"]
+  jcanceled_tpending [label = "CP"]
+
+  jcanceled_shutdown_tnone [label = "C'/"]
+  jcanceled_shutdown_tfinished [label = "C'S"]
+  jcanceled_shutdown_tfailed [label = "C'F"]
+  jcanceled_shutdown_tcanceled [label = "C'C"]
+  jcanceled_shutdown_tcanceled_shutdown [label = "C'C'"]
+  jcanceled_shutdown_tpending [label = "C'P"]
+
+  jpending_tnone [label = "P/"]
+  jpending_tfinished [label = "PS", color = red]
+  jpending_tfailed [label = "PF", color = red]
+  jpending_tcanceled [label = "PC", color = red]
+  jpending_tcanceled_shutdown [label = "PC'", color = red]
+  jpending_tpending [label = "PP", color = red]
+
+  jrunning_tnone [label = "R/"]
+  jrunning_tfinished [label = "RS"]
+  jrunning_tfailed [label = "RF"]
+  jrunning_tcanceled [label = "RC"]
+  jrunning_tcanceled_shutdown [label = "RC'"]
+  jrunning_tpending [label = "RP"]
+
+  jnone_tfinished [label = "/S"]
+  jnone_tfailed [label = "/F"]
+  jnone_tcanceled [label = "/C"]
+  jnone_tcanceled_shutdown [label = "/C'"]
+  jnone_tpending [label = "/P"]
+  ;
+
+  ### TASK tmp
+  jnone_tpending -> jnone_tfailed [ label = "any other exception" ];
+  jnone_tpending -> jnone_tcanceled [ label = "cancelled exception" ];
+  jnone_tpending -> jnone_tcanceled [ label = "agent cancel" ];
+  jnone_tpending -> jnone_tcanceled_shutdown [ label = "dtor" ];
+  jnone_tpending -> jnone_tfinished [ label = "jt end" ];
+  ### ---
+
+  jpending_tnone -> jrunning_tnone [ label = "jt start" ];
+  jrunning_tnone -> jrunning_tpending [ label = "non-atomic", fontcolor = red ];
+  jrunning_tpending -> jfinished_ [ label = "jt end, task S" ];
+  jrunning_tpending -> jcanceled_ [ label = "jt end, task C" ];
+  jrunning_tpending -> jcanceled_shutdown_ [ label = "jt end, task C'" ];
+  jrunning_tpending -> jfailed_ [ label = "jt end, task F" ];
+  jrunning_tpending -> jfailed_ [ label = "jt exception" ];
+
+  jpending_tnone -> jcanceled_tnone [ label = "agent cancel" ];
+  ## agent cancel any-non-pending x any
+  jcanceled_shutdown_tcanceled -> jcanceled_tcanceled [ label = "agent cancel" ];
+  jcanceled_shutdown_tcanceled_shutdown -> jcanceled_tcanceled_shutdown [ label = "agent cancel" ];
+  jcanceled_shutdown_tfailed -> jcanceled_tfailed [ label = "agent cancel" ];
+  jcanceled_shutdown_tfinished -> jcanceled_tfinished [ label = "agent cancel" ];
+  jcanceled_shutdown_tnone -> jcanceled_tnone [ label = "agent cancel" ];
+  jcanceled_shutdown_tpending -> jcanceled_tpending [ label = "agent cancel" ];
+  jcanceled_tcanceled -> jcanceled_tcanceled [ label = "agent cancel" ];
+  jcanceled_tcanceled_shutdown -> jcanceled_tcanceled_shutdown [ label = "agent cancel" ];
+  jcanceled_tfailed -> jcanceled_tfailed [ label = "agent cancel" ];
+  jcanceled_tfinished -> jcanceled_tfinished [ label = "agent cancel" ];
+  jcanceled_tnone -> jcanceled_tnone [ label = "agent cancel" ];
+  jcanceled_tpending -> jcanceled_tpending [ label = "agent cancel" ];
+  jfailed_tcanceled -> jcanceled_tcanceled [ label = "agent cancel" ];
+  jfailed_tcanceled_shutdown -> jcanceled_tcanceled_shutdown [ label = "agent cancel" ];
+  jfailed_tfailed -> jcanceled_tfailed [ label = "agent cancel" ];
+  jfailed_tfinished -> jcanceled_tfinished [ label = "agent cancel" ];
+  jfailed_tnone -> jcanceled_tnone [ label = "agent cancel" ];
+  jfailed_tpending -> jcanceled_tpending [ label = "agent cancel" ];
+  jfinished_tcanceled -> jcanceled_tcanceled [ label = "agent cancel" ];
+  jfinished_tcanceled_shutdown -> jcanceled_tcanceled_shutdown [ label = "agent cancel" ];
+  jfinished_tfailed -> jcanceled_tfailed [ label = "agent cancel" ];
+  jfinished_tfinished -> jcanceled_tfinished [ label = "agent cancel" ];
+  jfinished_tnone -> jcanceled_tnone [ label = "agent cancel" ];
+  jfinished_tpending -> jcanceled_tpending [ label = "agent cancel" ];
+  jrunning_tcanceled -> jcanceled_tcanceled [ label = "agent cancel" ];
+  jrunning_tcanceled_shutdown -> jcanceled_tcanceled_shutdown [ label = "agent cancel" ];
+  jrunning_tfailed -> jcanceled_tfailed [ label = "agent cancel" ];
+  jrunning_tfinished -> jcanceled_tfinished [ label = "agent cancel" ];
+  jrunning_tnone -> jcanceled_tnone [ label = "agent cancel" ];
+  jrunning_tpending -> jcanceled_tpending [ label = "agent cancel" ];
+  ## ---
+
+  jpending_tnone -> jcanceled_shutdown_tnone [ label = "dtor" ];
+  ## dtor cancel any-non-pending x any
+  jcanceled_shutdown_tcanceled -> jcanceled_shutdown_tcanceled [ label = "dtor" ];
+  jcanceled_shutdown_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "dtor" ];
+  jcanceled_shutdown_tfailed -> jcanceled_shutdown_tfailed [ label = "dtor" ];
+  jcanceled_shutdown_tfinished -> jcanceled_shutdown_tfinished [ label = "dtor" ];
+  jcanceled_shutdown_tnone -> jcanceled_shutdown_tnone [ label = "dtor" ];
+  jcanceled_shutdown_tpending -> jcanceled_shutdown_tpending [ label = "dtor" ];
+  jcanceled_tcanceled -> jcanceled_shutdown_tcanceled [ label = "dtor" ];
+  jcanceled_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "dtor" ];
+  jcanceled_tfailed -> jcanceled_shutdown_tfailed [ label = "dtor" ];
+  jcanceled_tfinished -> jcanceled_shutdown_tfinished [ label = "dtor" ];
+  jcanceled_tnone -> jcanceled_shutdown_tnone [ label = "dtor" ];
+  jcanceled_tpending -> jcanceled_shutdown_tpending [ label = "dtor" ];
+  jfailed_tcanceled -> jcanceled_shutdown_tcanceled [ label = "dtor" ];
+  jfailed_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "dtor" ];
+  jfailed_tfailed -> jcanceled_shutdown_tfailed [ label = "dtor" ];
+  jfailed_tfinished -> jcanceled_shutdown_tfinished [ label = "dtor" ];
+  jfailed_tnone -> jcanceled_shutdown_tnone [ label = "dtor" ];
+  jfailed_tpending -> jcanceled_shutdown_tpending [ label = "dtor" ];
+  jfinished_tcanceled -> jcanceled_shutdown_tcanceled [ label = "dtor" ];
+  jfinished_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "dtor" ];
+  jfinished_tfailed -> jcanceled_shutdown_tfailed [ label = "dtor" ];
+  jfinished_tfinished -> jcanceled_shutdown_tfinished [ label = "dtor" ];
+  jfinished_tnone -> jcanceled_shutdown_tnone [ label = "dtor" ];
+  jfinished_tpending -> jcanceled_shutdown_tpending [ label = "dtor" ];
+  jrunning_tcanceled -> jcanceled_shutdown_tcanceled [ label = "dtor" ];
+  jrunning_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "dtor" ];
+  jrunning_tfailed -> jcanceled_shutdown_tfailed [ label = "dtor" ];
+  jrunning_tfinished -> jcanceled_shutdown_tfinished [ label = "dtor" ];
+  jrunning_tnone -> jcanceled_shutdown_tnone [ label = "dtor" ];
+  jrunning_tpending -> jcanceled_shutdown_tpending [ label = "dtor" ];
+  ## ---
+
+  ## task started, job state not yet updated, any-non-pending x any-non-pending
+  jcanceled_shutdown_tpending -> jcanceled_shutdown_tcanceled [ label = "agent cancel" ];
+  jcanceled_shutdown_tpending -> jcanceled_shutdown_tcanceled [ label = "cancelled exception" ];
+  jcanceled_shutdown_tpending -> jcanceled_shutdown_tcanceled_shutdown [ label = "dtor" ];
+  jcanceled_shutdown_tpending -> jcanceled_shutdown_tfailed [ label = "any other exception" ];
+  jcanceled_shutdown_tpending -> jcanceled_shutdown_tfinished [ label = "jt end" ];
+  jcanceled_tpending -> jcanceled_tcanceled [ label = "agent cancel" ];
+  jcanceled_tpending -> jcanceled_tcanceled [ label = "cancelled exception" ];
+  jcanceled_tpending -> jcanceled_tcanceled_shutdown [ label = "dtor" ];
+  jcanceled_tpending -> jcanceled_tfailed [ label = "any other exception" ];
+  jcanceled_tpending -> jcanceled_tfinished [ label = "jt end" ];
+  jfailed_tpending -> jfailed_tcanceled [ label = "agent cancel" ];
+  jfailed_tpending -> jfailed_tcanceled [ label = "cancelled exception" ];
+  jfailed_tpending -> jfailed_tcanceled_shutdown [ label = "dtor" ];
+  jfailed_tpending -> jfailed_tfailed [ label = "any other exception" ];
+  jfailed_tpending -> jfailed_tfinished [ label = "jt end" ];
+  jfinished_tpending -> jfinished_tcanceled [ label = "agent cancel" ];
+  jfinished_tpending -> jfinished_tcanceled [ label = "cancelled exception" ];
+  jfinished_tpending -> jfinished_tcanceled_shutdown [ label = "dtor" ];
+  jfinished_tpending -> jfinished_tfailed [ label = "any other exception" ];
+  jfinished_tpending -> jfinished_tfinished [ label = "jt end" ];
+  jnone_tpending -> jnone_tcanceled [ label = "agent cancel" ];
+  jnone_tpending -> jnone_tcanceled [ label = "cancelled exception" ];
+  jnone_tpending -> jnone_tcanceled_shutdown [ label = "dtor" ];
+  jnone_tpending -> jnone_tfailed [ label = "any other exception" ];
+  jnone_tpending -> jnone_tfinished [ label = "jt end" ];
+  jrunning_tpending -> jrunning_tcanceled [ label = "agent cancel" ];
+  jrunning_tpending -> jrunning_tcanceled [ label = "cancelled exception" ];
+  jrunning_tpending -> jrunning_tcanceled_shutdown [ label = "dtor" ];
+  jrunning_tpending -> jrunning_tfailed [ label = "any other exception" ];
+  jrunning_tpending -> jrunning_tfinished [ label = "jt end" ];
+  ## ---
+
+  ## task ended, job state updating now, ignore old job state, any-non-pending x any-final
+  jfinished_tfinished -> jfinished_tfinished [ label = "jt end" ];
+  jfinished_tcanceled -> jcanceled_tcanceled [ label = "jt end" ];
+  jfinished_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "jt end" ];
+  jfinished_tfailed -> jfailed_tfailed [ label = "jt end" ];
+  jfailed_tfinished -> jfinished_tfinished [ label = "jt end" ];
+  jfailed_tcanceled -> jcanceled_tcanceled [ label = "jt end" ];
+  jfailed_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "jt end" ];
+  jfailed_tfailed -> jfailed_tfailed [ label = "jt end" ];
+  jcanceled_tfinished -> jfinished_tfinished [ label = "jt end" ];
+  jcanceled_tcanceled -> jcanceled_tcanceled [ label = "jt end" ];
+  jcanceled_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "jt end" ];
+  jcanceled_tfailed -> jfailed_tfailed [ label = "jt end" ];
+  jcanceled_shutdown_tfinished -> jfinished_tfinished [ label = "jt end" ];
+  jcanceled_shutdown_tcanceled -> jcanceled_tcanceled [ label = "jt end" ];
+  jcanceled_shutdown_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "jt end" ];
+  jcanceled_shutdown_tfailed -> jfailed_tfailed [ label = "jt end" ];
+  jrunning_tfinished -> jfinished_tfinished [ label = "jt end" ];
+  jrunning_tcanceled -> jcanceled_tcanceled [ label = "jt end" ];
+  jrunning_tcanceled_shutdown -> jcanceled_shutdown_tcanceled_shutdown [ label = "jt end" ];
+  jrunning_tfailed -> jfailed_tfailed [ label = "jt end" ];
+  ## ---
+
+  ## jt exception
+  jfinished_tfinished -> ex_jfailed_tfinished [ label = "jt exception" ]
+  jfailed_tfinished -> ex_jfailed_tfinished [ label = "jt exception" ]
+  jcanceled_tfinished -> ex_jfailed_tfinished [ label = "jt exception" ]
+  jcanceled_shutdown_tfinished -> ex_jfailed_tfinished [ label = "jt exception" ]
+  jrunning_tfinished -> ex_jrunning_tfinished [ label = "jt exception" ]
+  jfinished_tpending -> ex_jfailed_tpending [ label = "jt exception" ]
+  jfailed_tpending -> ex_jfailed_tpending [ label = "jt exception" ]
+  jcanceled_tpending -> ex_jfailed_tpending [ label = "jt exception" ]
+  jcanceled_shutdown_tpending -> ex_jfailed_tpending [ label = "jt exception" ]
+  jrunning_tpending -> ex_jrunning_tpending [ label = "jt exception" ]
+  jfinished_failed -> ex_jfailed_failed [ label = "jt exception" ]
+  jfailed_failed -> ex_jfailed_failed [ label = "jt exception" ]
+  jcanceled_failed -> ex_jfailed_failed [ label = "jt exception" ]
+  jcanceled_shutdown_failed -> ex_jfailed_failed [ label = "jt exception" ]
+  jrunning_failed -> ex_jrunning_failed [ label = "jt exception" ]
+  jfinished_tcanceled -> ex_jfailed_tcanceled [ label = "jt exception" ]
+  jfailed_tcanceled -> ex_jfailed_tcanceled [ label = "jt exception" ]
+  jcanceled_tcanceled -> ex_jfailed_tcanceled [ label = "jt exception" ]
+  jcanceled_shutdown_tcanceled -> ex_jfailed_tcanceled [ label = "jt exception" ]
+  jrunning_tcanceled -> ex_jrunning_tcanceled [ label = "jt exception" ]
+  jfinished_tcanceled_shutdown -> ex_jfailed_tcanceled_shutdown [ label = "jt exception" ]
+  jfailed_tcanceled_shutdown -> ex_jfailed_tcanceled_shutdown [ label = "jt exception" ]
+  jcanceled_tcanceled_shutdown -> ex_jfailed_tcanceled_shutdown [ label = "jt exception" ]
+  jcanceled_shutdown_tcanceled_shutdown -> ex_jfailed_tcanceled_shutdown [ label = "jt exception" ]
+  jrunning_tcanceled_shutdown -> ex_jrunning_tcanceled_shutdown [ label = "jt exception" ]
+  ## ---
+
+
+  jcanceled_ -> jfinished_ [ label = "jt end" ];
+  jcanceled_ -> jcanceled_ [ label = "jt end" ];
+  jcanceled_ -> jcanceled_shutdown_ [ label = "jt end" ];
+  jcanceled_ -> jfailed_ [ label = "jt end" ];
+  jcanceled_ -> jfailed_ [ label = "jt exception" ];
+
+  jcanceled_shutdown_ -> jfinished_ [ label = "jt end" ];
+  jcanceled_shutdown_ -> jcanceled_ [ label = "jt end" ];
+  jcanceled_shutdown_ -> jcanceled_shutdown_ [ label = "jt end" ];
+  jcanceled_shutdown_ -> jfailed_ [ label = "jt end" ];
+  jcanceled_shutdown_ -> jfailed_ [ label = "jt exception" ];
+}
+
+### try understanding the flow of possible transitions:
+
+digraph {
+#	rankdir = LR;
+  overlap = scale;
+  splines = true;
+
+	node [shape = circle];
+  start [label = ""]
+  submit [label = ""]
+  deny [label = "deny"]
+  queued [label = "queued"]
+  queued_but_canceled [label = "queued + canceled"]
+  running_but_canceled [label = "running + canceled"]
+  end [label = ""]
+  jfinished_tfailed [label = "SF"]
+  jfinished_tcanceled [label = "SC"]
+  jfinished_tcanceled_shutdown [label = "SC'"]
+  jfinished_tpending [label = "SP"];
+
+  start -> submit [label = "submit"]
+  submit -> deny [label = "submit: shutting down"]
+  submit -> "???" [label = "submit: already known"]
+  submit -> deny [label = "submit: backlog full"]
+  submit -> queued [label = "submit: success"]
+
+  queued -> queued_but_canceled [label = "cancel: was pending"]
+  running -> running_but_canceled [label = "cancel: was running"]
+  running -> running [label = "cancel: was failed"]
+  running -> running [label = "cancel: was canceled"]
+  running -> running [label = "cancel: was finished"]
+  running -> running [label = "cancel: was canceled_shutdown"]
+
+  queued_but_canceled -> queued_but_canceled [label = "cancel: was failed"]
+  queued_but_canceled -> queued_but_canceled [label = "cancel: was canceled"]
+  queued_but_canceled -> queued_but_canceled [label = "cancel: was finished"]
+  queued_but_canceled -> queued_but_canceled [label = "cancel: was canceled_shutdown"]
+}

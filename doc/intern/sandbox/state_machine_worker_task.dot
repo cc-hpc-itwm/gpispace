@@ -1,0 +1,21 @@
+digraph {
+	rankdir = LR;
+  overlap = scale;
+  splines = true;
+
+	node [shape = doublecircle];
+  finished [label = "S"]
+  failed [label = "F"]
+  canceled [label = "C"]
+  canceled_shutdown [label = "C'"];
+	node [shape = circle];
+  pending [label = "P"];
+
+  pending -> failed [ label = "any other exception" ];
+  pending -> canceled [ label = "cancelled exception" ];
+
+  pending -> canceled [ label = "agent cancel" ];
+  pending -> canceled_shutdown [ label = "dtor" ];
+
+  pending -> finished [ label = "jt end" ];
+}

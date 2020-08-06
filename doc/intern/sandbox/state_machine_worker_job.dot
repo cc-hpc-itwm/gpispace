@@ -1,0 +1,48 @@
+digraph {
+	rankdir = LR;
+  overlap = scale;
+  splines = true;
+
+	node [shape = doublecircle];
+  finished [label = "S"]
+  failed [label = "F"]
+  canceled [label = "C"]
+  canceled_shutdown [label = "C'"];
+	node [shape = circle];
+  pending [label = "P"]
+  running [label = "R"];
+
+  pending -> running [ label = "jt start" ];
+  running -> finished [ label = "jt end, task S" ];
+  running -> canceled [ label = "jt end, task C" ];
+  running -> canceled_shutdown [ label = "jt end, task C'" ];
+  running -> failed [ label = "jt end, task F" ];
+  running -> failed [ label = "jt exception" ];
+
+  pending -> canceled [ label = "agent cancel" ];
+  running -> canceled [ label = "agent cancel" ];
+  finished -> canceled [ label = "agent cancel" ];
+  canceled -> canceled [ label = "agent cancel" ];
+  canceled_shutdown -> canceled [ label = "agent cancel" ];
+  failed -> canceled [ label = "agent cancel" ];
+
+  finished -> canceled_shutdown [ label = "dtor" ];
+  failed -> canceled_shutdown [ label = "dtor" ];
+  canceled -> canceled_shutdown [ label = "dtor" ];
+  canceled_shutdown -> canceled_shutdown [ label = "dtor" ];
+  pending -> canceled_shutdown [ label = "dtor" ];
+  running -> canceled_shutdown [ label = "dtor" ];
+
+  canceled -> finished [ label = "jt end" ];
+  canceled -> canceled [ label = "jt end" ];
+  canceled -> canceled_shutdown [ label = "jt end" ];
+  canceled -> failed [ label = "jt end" ];
+  canceled -> failed [ label = "jt exception" ];
+
+  canceled_shutdown -> finished [ label = "jt end" ];
+  canceled_shutdown -> canceled [ label = "jt end" ];
+  canceled_shutdown -> canceled_shutdown [ label = "jt end" ];
+  canceled_shutdown -> failed [ label = "jt end" ];
+  canceled_shutdown -> failed [ label = "jt exception" ];
+
+}

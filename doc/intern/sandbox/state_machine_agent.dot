@@ -1,0 +1,40 @@
+digraph {
+	rankdir = LR;
+  overlap = scale;
+  splines = true;
+
+	node [shape = doublecircle];
+  finished [label = "S"]
+  failed [label = "F"]
+  canceled [label = "C"];
+	node [shape = circle];
+  pending [label = "P"]
+  running [label = "R"]
+  canceling [label = "c"];
+
+  pending -> canceling [ label = "begin_cancel" ];
+  pending -> running [ label = "dispatch" ];
+  pending -> failed [ label = "failed" ];
+  pending -> finished [ label = "finished" ];
+  pending -> pending [ label = "reschedule" ];
+
+  running -> canceling [ label = "begin_cancel" ];
+  running -> running [ label = "dispatch" ];
+  running -> failed [ label = "failed" ];
+  running -> finished [ label = "finished" ];
+  running -> pending [ label = "reschedule" ];
+
+  finished -> finished [ label = "finished" ];
+
+  failed -> failed [ label = "failed" ];
+
+  canceling -> canceling [ label = "begin_cancel" ];
+  canceling -> canceled [ label = "canceled" ];
+  canceling -> canceling [ label = "dispatch" ];
+  canceling -> canceled [ label = "failed" ];
+  canceling -> canceled [ label = "finished" ];
+
+  canceled -> canceled [ label = "canceled" ];
+  canceled -> canceled [ label = "failed" ];
+  canceled -> canceled [ label = "finished" ];
+}
