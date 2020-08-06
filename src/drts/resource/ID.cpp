@@ -1,20 +1,33 @@
 #include <drts/resource/ID.hpp>
 
+#include <string>
 #include <tuple>
 
 namespace gspc
 {
   namespace resource
   {
-    ID::ID (remote_interface::ID rif)
+    ID::ID (remote_interface::ID rif, std::uint64_t arg_id)
       : remote_interface (rif)
-      , id (0)
+      , id (arg_id)
+    {}
+
+    ID::ID (remote_interface::ID rif)
+      : ID (rif, 0)
     {}
 
     ID& ID::operator++()
     {
       ++id;
       return *this;
+    }
+
+    std::string ID::to_string() const
+    {
+      std::ostringstream osstr;
+      osstr << *this;
+
+      return osstr.str();
     }
 
     bool operator== (ID const& lhs, ID const& rhs)
@@ -24,7 +37,7 @@ namespace gspc
     }
     std::ostream& operator<< (std::ostream& os, ID const& x)
     {
-      return os << x.remote_interface << " resource " << x.id;
+      return os << x.remote_interface << ":" << x.id;
     }
   }
 }

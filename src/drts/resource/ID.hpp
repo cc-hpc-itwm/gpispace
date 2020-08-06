@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <ostream>
+#include <string>
 
 namespace gspc
 {
@@ -12,6 +13,7 @@ namespace gspc
   {
     struct ID
     {
+      ID (remote_interface::ID, std::uint64_t);
       ID (remote_interface::ID);
 
       remote_interface::ID remote_interface;
@@ -26,6 +28,8 @@ namespace gspc
 
       friend bool operator== (ID const& lhs, ID const& rhs);
       friend std::ostream& operator<< (std::ostream&, ID const&);
+
+      std::string to_string() const;
     };
   }
 }

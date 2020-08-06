@@ -18,7 +18,7 @@ namespace gspc
     }
     std::ostream& operator<< (std::ostream& os, ID const& x)
     {
-      return os << "remote_interface " << x.id;
+      return os << x.id;
     }
 
     bool operator== (ID const& lhs, ID const& rhs);
