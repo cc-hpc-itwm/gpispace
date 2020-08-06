@@ -1,4 +1,5 @@
 #include <drts/worker/drts.hpp>
+#include <drts/resource/ID.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
@@ -37,6 +38,7 @@ namespace
     constexpr char const* const socket {"socket"};
     constexpr char const* const master {"master"};
     constexpr char const* const certificates {"certificates"};
+    constexpr char const* const resource_id {"resource-ids"};
   }
 
   void set_numa_socket (std::size_t target_socket)
@@ -104,6 +106,31 @@ namespace
 
     hwloc_topology_destroy (topology);
   }
+
+  std::vector<gspc::resource::ID> parse_resource_ids (std::vector<std::string> const& resource_ids)
+  {
+    std::vector<gspc::resource::ID> res_ids;
+    for (auto const& resource_id_arg : resource_ids)
+    {
+      boost::tokenizer<boost::char_separator<char>> const tok
+        (resource_id_arg, boost::char_separator<char> (":"));
+
+      std::vector<std::string> const tokens (tok.begin(), tok.end());
+
+      if (tokens.size() != 2)
+      {
+        throw std::runtime_error
+          ("invalid resource id information: it has to be formatted as"
+           "'<remote_interface_id>:<resource_id>'"
+          );
+      }
+
+      gspc::resource::ID res_id {{std::stoull (tokens[0])}, std::stoull (tokens[1])};
+      res_ids.emplace_back (res_id);
+    }
+
+    return res_ids;
+  }
 }
 
 int main(int ac, char **av)
@@ -118,6 +145,7 @@ int main(int ac, char **av)
 
     std::string kernel_name;
     unsigned short comm_port;
+    std::vector<std::string> resource_ids;
 
     desc.add_options()
       ("name,n", po::value<std::string>(&kernel_name), "give the kernel a name")
@@ -160,6 +188,10 @@ int main(int ac, char **av)
       ( option_name::certificates
       , po::value<boost::filesystem::path>()
       , "folder containing SSL certificates"
+      )
+      ( option_name::resource_id
+      , po::value<std::vector<std::string>>(&resource_ids)->multitoken()
+      , "an array of resource ids encoded as strings of type '<remote_interface_id>:<resource_id>'"
       )
       ;
 
@@ -246,10 +278,13 @@ int main(int ac, char **av)
       certificates = vm.at (option_name::certificates).as<boost::filesystem::path>();
     }
 
+    auto const res_ids (parse_resource_ids (resource_ids));
+
     DRTSImpl const plugin
       ( request_stop
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , kernel_name
+      , res_ids
       , comm_port
       , virtual_memory_api.get()
       , shared_memory.get()

@@ -240,6 +240,14 @@ namespace fhg
             arguments.emplace_back
               (build_parent_with_hostinfo (master_name, master_hostinfo));
 
+            if (description.resource_id)
+            {
+              arguments.emplace_back ("--resource-id");
+              std::ostringstream osstr;
+              osstr << *description.resource_id;
+              arguments.emplace_back (osstr.str());
+            }
+
             for (boost::filesystem::path const& path : app_path)
             {
               arguments.emplace_back ("--library-search-path");
