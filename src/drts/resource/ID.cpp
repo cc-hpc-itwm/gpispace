@@ -6,9 +6,13 @@ namespace gspc
 {
   namespace resource
   {
-    ID::ID (remote_interface::ID rif)
+    ID::ID (remote_interface::ID rif, std::uint64_t arg_id)
       : remote_interface (rif)
-      , id (0)
+      , id (arg_id)
+    {}
+
+    ID::ID (remote_interface::ID rif)
+      : ID (rif, 0)
     {}
 
     ID& ID::operator++()

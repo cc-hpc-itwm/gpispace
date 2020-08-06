@@ -12,6 +12,7 @@ namespace gspc
   {
     struct ID
     {
+      ID (remote_interface::ID, std::uint64_t);
       ID (remote_interface::ID);
 
       remote_interface::ID remote_interface;
