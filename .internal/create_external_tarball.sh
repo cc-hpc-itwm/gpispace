@@ -106,6 +106,7 @@ rm -rf "${repodir}/doc/readme/parts"
 # cleanup repo
 git rm -r \
     .ci \
+    .docker \
     .gitlab-ci.yml \
     .internal \
     .mailmap \
