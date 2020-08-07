@@ -10,6 +10,7 @@
 
 #include <util-generic/threadsafe_queue.hpp>
 
+#include <drts/resource/ID.hpp>
 #include <sdpa/daemon/NotificationEvent.hpp>
 #include <sdpa/events/EventHandler.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -86,6 +87,7 @@ public:
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
+    , std::vector<gspc::resource::ID> const& resource_ids
     , unsigned short comm_port
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -125,6 +127,7 @@ private:
   bool m_shutting_down;
 
   std::string m_my_name;
+  std::vector<gspc::resource::ID> const _resource_ids;
 
   mutable std::mutex _currently_executed_tasks_mutex;
   std::map<std::string, wfe_task_t *> _currently_executed_tasks;

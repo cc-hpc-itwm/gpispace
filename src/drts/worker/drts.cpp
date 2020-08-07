@@ -105,6 +105,7 @@ DRTSImpl::DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
+    , std::vector<gspc::resource::ID> const& resource_ids
     , unsigned short comm_port
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
     , gspc::scoped_allocation /*const*/* shared_memory
@@ -118,6 +119,7 @@ DRTSImpl::DRTSImpl
   : _request_stop (request_stop)
   , m_shutting_down (false)
   , m_my_name (kernel_name)
+  , _resource_ids (resource_ids)
   , _currently_executed_tasks()
   , m_loader ({library_path.begin(), library_path.end()})
   , _log_emitter (log_emitter)
