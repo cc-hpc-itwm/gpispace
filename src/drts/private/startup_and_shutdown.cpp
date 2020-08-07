@@ -224,7 +224,9 @@ namespace fhg
 
       auto const& build_arguments_and_start_worker
         (
-          [&] (gspc::worker_description const& description)
+          [&] ( gspc::worker_description const& description
+              , std::vector<std::string> const& resource_ids
+              )
           {
             auto const connection
               (rif_connections.find (description.entry_point.get()));
@@ -238,6 +240,12 @@ namespace fhg
             arguments.emplace_back ("--master");
             arguments.emplace_back
               (build_parent_with_hostinfo (master_name, master_hostinfo));
+
+            arguments.emplace_back ("--resource-ids");
+            for (auto const& resource_id : resource_ids)
+            {
+              arguments.emplace_back (resource_id);
+            }
 
             for (boost::filesystem::path const& path : app_path)
             {
@@ -378,10 +386,21 @@ namespace fhg
            }
         );
 
-      descriptions.for_each_node
-        ( [&] (gspc::Forest<gspc::resource::ID, gspc::worker_description>::Node const& r)
+      descriptions.upward_combine_transform
+        ( [&]
+          ( gspc::Forest<gspc::resource::ID, gspc::worker_description>::Node const& node
+          , std::list<gspc::Forest<gspc::resource::ID, gspc::worker_description>::Node const*> const& children
+          )
           {
-            build_arguments_and_start_worker (r.second);
+            std::vector<std::string> resource_ids {node.first};
+            for (auto const& child : children)
+            {
+              resource_ids.emplace_back (child->first);
+            }
+
+            build_arguments_and_start_worker (node.second, resource_ids);
+
+            return node;
           }
         );
 
