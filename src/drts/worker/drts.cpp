@@ -161,6 +161,7 @@ DRTSImpl::DRTSImpl
       , (_shared_memory != nullptr) ? _shared_memory->size() : 0
       , false
       , fhg::util::hostname()
+      , _resource_ids
       );
   }
 

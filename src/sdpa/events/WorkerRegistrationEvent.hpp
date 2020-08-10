@@ -3,6 +3,7 @@
 #include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/capability.hpp>
 
+#include <drts/resource/ID.hpp>
 #include <boost/optional.hpp>
 
 namespace sdpa
@@ -20,6 +21,7 @@ namespace sdpa
         , const unsigned long allocated_shared_memory_size
         , bool children_allowed
         , const std::string& hostname
+        , std::vector<gspc::resource::ID> const& resource_ids
         )
           : MgmtEvent()
           , _name (name)
@@ -27,6 +29,7 @@ namespace sdpa
           , allocated_shared_memory_size_ (allocated_shared_memory_size)
           , children_allowed_(children_allowed)
           , hostname_(hostname)
+          , _resource_ids (resource_ids)
       {}
 
       std::string const& name() const
@@ -45,12 +48,17 @@ namespace sdpa
 
       const bool& children_allowed() const
       {
-	return children_allowed_;
+        return children_allowed_;
       }
 
       const unsigned long& allocated_shared_memory_size() const
       {
         return allocated_shared_memory_size_;
+      }
+
+      std::vector<gspc::resource::ID> const& resource_ids() const
+      {
+        return _resource_ids;
       }
 
       virtual void handleBy
@@ -65,6 +73,7 @@ namespace sdpa
       unsigned long allocated_shared_memory_size_;
       bool children_allowed_;
       std::string hostname_;
+      std::vector<gspc::resource::ID> _resource_ids;
     };
 
     SAVE_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -75,6 +84,7 @@ namespace sdpa
       SAVE_TO_ARCHIVE (e->allocated_shared_memory_size());
       SAVE_TO_ARCHIVE (e->children_allowed());
       SAVE_TO_ARCHIVE (e->hostname());
+      SAVE_TO_ARCHIVE (e->resource_ids());
     }
 
     LOAD_CONSTRUCT_DATA_DEF (WorkerRegistrationEvent, e)
@@ -85,12 +95,14 @@ namespace sdpa
       LOAD_FROM_ARCHIVE (unsigned long, allocated_shared_memory_size);
       LOAD_FROM_ARCHIVE (bool, children_allowed);
       LOAD_FROM_ARCHIVE (std::string, hostname);
+      LOAD_FROM_ARCHIVE (std::vector<gspc::resource::ID>, resource_ids);
 
       ::new (e) WorkerRegistrationEvent ( name
                                         , cpbset
                                         , allocated_shared_memory_size
                                         , children_allowed
                                         , hostname
+                                        , resource_ids
                                         );
     }
   }
