@@ -13,6 +13,7 @@ namespace sdpa
                    , unsigned long allocated_shared_memory_size
                    , const bool children_allowed
                    , const std::string& hostname
+                   , boost::optional<gspc::resource::ID> resource_id
                    )
       : _cost_assigned_jobs (0)
       , _capabilities (capabilities)
@@ -23,6 +24,7 @@ namespace sdpa
       , _last_time_idle (fhg::util::now())
       , reserved_ (false)
       , backlog_full_ (false)
+      , _resource_id (resource_id)
     {
       for (capability_t const& capability : capabilities)
       {

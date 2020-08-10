@@ -1,7 +1,6 @@
 #pragma once
+#include <drts/resource/ID.hpp>
 
-#include <list>
-#include <string>
 #include <sdpa/capability.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/SDPAEvent.hpp>
@@ -10,6 +9,9 @@
 
 #include <boost/optional.hpp>
 #include <boost/algorithm/string.hpp>
+
+#include <list>
+#include <string>
 
 namespace sdpa
 {
@@ -23,6 +25,7 @@ namespace sdpa
                       , unsigned long allocated_shared_memory_size
                       , const bool children_allowed
                       , const std::string& hostname
+                      , boost::optional<gspc::resource::ID> resource_id
                       );
 
       void assign (const job_id_t&, double);
@@ -66,6 +69,7 @@ namespace sdpa
 
       bool reserved_;
       bool backlog_full_;
+      boost::optional<gspc::resource::ID> _resource_id;
     };
   }
 }
