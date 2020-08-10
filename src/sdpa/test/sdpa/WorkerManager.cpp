@@ -41,6 +41,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -49,6 +50,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   worker_manager.addWorker ( worker_ids[2]
@@ -57,6 +59,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   BOOST_REQUIRE (worker_manager.hasWorker_INDICATES_A_RACE_TESTING_ONLY (worker_ids[0]));
@@ -75,6 +78,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -83,6 +87,7 @@ BOOST_AUTO_TEST_CASE (delete_worker)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   worker_manager.deleteWorker (worker_ids[1]);
@@ -109,6 +114,7 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   worker_manager.addWorker ( worker_ids[1]
@@ -117,6 +123,7 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   worker_manager.addWorker ( worker_ids[2]
@@ -125,6 +132,7 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   sdpa::capabilities_set_t acquired_capabilities;
@@ -144,6 +152,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
                            , fhg::util::testing::random<bool>{}()
                            , fhg::util::testing::random_string()
                            , fhg::util::testing::random_string()
+                           , {utils::random_resource_id()}
                            );
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -193,6 +202,7 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
                              , fhg::util::testing::random<bool>{}()
                              , fhg::util::testing::random_string()
                              , fhg::util::testing::random_string()
+                             , {utils::random_resource_id()}
                              );
 
     workers.emplace ( worker_ids[k]);
@@ -270,6 +280,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
                           , fhg::util::testing::random<bool>{}()
                           , fhg::util::testing::random_string()
                           , fhg::util::testing::random_string()
+                          , {utils::random_resource_id()}
                           );
                       }
                     );
