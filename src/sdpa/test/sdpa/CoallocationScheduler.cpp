@@ -429,12 +429,17 @@ namespace
                   , bool children_allowed = false
                   )
   {
+    std::vector<gspc::resource::ID> resource_ids;
+    if (!children_allowed)
+      { resource_ids.emplace_back (utils::random_resource_id()); }
+
     worker_manager.addWorker ( worker_id
                              , capabilities
                              , fhg::util::testing::random<unsigned long>{}()
                              , children_allowed
                              , fhg::util::testing::random<std::string>{}()
                              , fhg::util::testing::random<std::string>{}()
+                             , resource_ids
                              );
   }
 }
@@ -829,26 +834,26 @@ struct fixture_minimal_cost_assignment
       , _worker_manager
       )
   {
-    _worker_manager.addWorker ("worker_01", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_02", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_03", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_04", {}, random_ulong(), false, "node1", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_05", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_06", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_07", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_08", {}, random_ulong(), false, "node2", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_09", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_10", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_11", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_12", {}, random_ulong(), false, "node3", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_13", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_14", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_15", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_16", {}, random_ulong(), false, "node4", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_17", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_18", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_19", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
-    _worker_manager.addWorker ("worker_20", {}, random_ulong(), false, "node5", fhg::util::testing::random_string());
+    _worker_manager.addWorker ("worker_01", {}, random_ulong(), false, "node1", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_02", {}, random_ulong(), false, "node1", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_03", {}, random_ulong(), false, "node1", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_04", {}, random_ulong(), false, "node1", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_05", {}, random_ulong(), false, "node2", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_06", {}, random_ulong(), false, "node2", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_07", {}, random_ulong(), false, "node2", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_08", {}, random_ulong(), false, "node2", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_09", {}, random_ulong(), false, "node3", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_10", {}, random_ulong(), false, "node3", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_11", {}, random_ulong(), false, "node3", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_12", {}, random_ulong(), false, "node3", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_13", {}, random_ulong(), false, "node4", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_14", {}, random_ulong(), false, "node4", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_15", {}, random_ulong(), false, "node4", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_16", {}, random_ulong(), false, "node4", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_17", {}, random_ulong(), false, "node5", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_18", {}, random_ulong(), false, "node5", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_19", {}, random_ulong(), false, "node5", fhg::util::testing::random_string(), {utils::random_resource_id()});
+    _worker_manager.addWorker ("worker_20", {}, random_ulong(), false, "node5", fhg::util::testing::random_string(), {utils::random_resource_id()});
   }
 
   double max_value (const std::map<std::string, double>& map_cost)
@@ -962,7 +967,7 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
 
   for (sdpa::worker_id_t const& worker_id : worker_ids)
   {
-    _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, fhg::util::testing::random_string());
+    _worker_manager.addWorker (worker_id, {}, random_ulong(), false, worker_id, fhg::util::testing::random_string(), {utils::random_resource_id()});
   }
 
   const sdpa::job_id_t job_id (fhg::util::testing::random_string());
@@ -1090,7 +1095,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
 
   for (int i=0; i<n_workers;i++)
   {
-    _worker_manager.addWorker (worker_ids[i], {}, random_ulong(), false, host_ids[i], fhg::util::testing::random_string());
+    _worker_manager.addWorker (worker_ids[i], {}, random_ulong(), false, host_ids[i], fhg::util::testing::random_string(), {utils::random_resource_id()});
   }
 
   fhg::util::testing::unique_random<sdpa::job_id_t> job_ids;
@@ -1142,6 +1147,7 @@ BOOST_FIXTURE_TEST_CASE
                             , false
                             , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
+                            , {utils::random_resource_id()}
                             );
 
   add_and_enqueue_job
@@ -1174,6 +1180,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                             , false
                             , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
+                            , {utils::random_resource_id()}
                             );
 
   _worker_manager.addWorker ( "worker_1"
@@ -1182,6 +1189,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                             , false
                             , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
+                            , {utils::random_resource_id()}
                             );
 
 
@@ -1191,6 +1199,7 @@ BOOST_FIXTURE_TEST_CASE ( invariant_assignment_for_jobs_with_different_memory_re
                             , false
                             , fhg::util::testing::random_string()
                             , fhg::util::testing::random_string()
+                            , {utils::random_resource_id()}
                             );
 
   auto const job_id_0
@@ -1328,6 +1337,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                             , false
                             , name_node_0
                             , fhg::util::testing::random_string()
+                            , {utils::random_resource_id()}
                             );
 
   _worker_manager.addWorker ( name_worker_1
@@ -1336,6 +1346,7 @@ BOOST_FIXTURE_TEST_CASE ( assign_to_the_same_worker_if_the_total_cost_is_lower
                             , false
                             , name_node_1
                             , fhg::util::testing::random_string()
+                            , {utils::random_resource_id()}
                             );
 
   std::function<double (std::string const&)> const

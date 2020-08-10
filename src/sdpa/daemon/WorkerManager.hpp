@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drts/resource/ID.hpp>
+
 #include <sdpa/daemon/Worker.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
@@ -112,6 +114,7 @@ namespace sdpa
                      , const bool children_allowed
                      , const std::string& hostname
                      , const fhg::com::p2p::address_t& address
+                     , std::vector<gspc::resource::ID> const&
                      );
 
       void deleteWorker (const worker_id_t& workerId);

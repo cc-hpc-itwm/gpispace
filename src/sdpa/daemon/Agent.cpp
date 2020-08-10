@@ -502,7 +502,9 @@ namespace sdpa
         , workerCpbSet
         , event->allocated_shared_memory_size()
         , event->children_allowed()
-        , event->hostname(), source
+        , event->hostname()
+        , source
+        , event->resource_ids()
         );
 
       request_scheduling();

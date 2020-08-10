@@ -104,6 +104,7 @@ struct fixture_add_new_workers
                                 , false
                                 , fhg::util::testing::random_string()
                                 , fhg::util::testing::random_string()
+                                , {utils::random_resource_id()}
                                 );
     }
   }

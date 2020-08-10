@@ -179,6 +179,7 @@ namespace sdpa
                                   , const bool children_allowed
                                   , const std::string& hostname
                                   , const fhg::com::p2p::address_t& address
+                                  , std::vector<gspc::resource::ID> const&
                                   )
     {
       std::lock_guard<std::mutex> const _ (mtx_);
