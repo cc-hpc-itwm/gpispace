@@ -179,7 +179,7 @@ namespace sdpa
                                   , const bool children_allowed
                                   , const std::string& hostname
                                   , const fhg::com::p2p::address_t& address
-                                  , std::vector<gspc::resource::ID> const&
+                                  , std::vector<gspc::resource::ID> const& resource_ids
                                   )
     {
       std::lock_guard<std::mutex> const _ (mtx_);
@@ -194,6 +194,10 @@ namespace sdpa
                                                  , allocated_shared_memory_size
                                                  , children_allowed
                                                  , hostname
+                                                 , FHG_UTIL_MAKE_OPTIONAL
+                                                     ( !resource_ids.empty()
+                                                     , resource_ids.front()
+                                                     )
                                                  )
                                         );
 
