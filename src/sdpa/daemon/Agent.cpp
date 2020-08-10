@@ -1729,6 +1729,7 @@ namespace sdpa
       _that->sendEventToOther<events::WorkerRegistrationEvent>
         ( _address
         , _that->name(), capabilities, 0, true, fhg::util::hostname()
+        , std::vector<gspc::resource::ID> {}
         );
     }
 

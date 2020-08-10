@@ -13,6 +13,7 @@
 
 #include <algorithm>
 #include <cstddef>
+#include <cstdint>
 #include <fstream>
 #include <ios>
 #include <iterator>
@@ -45,6 +46,12 @@ namespace utils
     static std::size_t i (0);
     return std::to_string (i++);
 #endif
+  }
+
+  gspc::resource::ID random_resource_id()
+  {
+    static fhg::util::testing::unique_random<std::uint64_t> random_ids;
+    return {{0}, random_ids()};
   }
 
   //! \todo unify with test/layer
@@ -415,6 +422,10 @@ namespace utils
   {
     _master = _network.connect_to (master.host(), master.port());
 
+    std::vector<gspc::resource::ID> resource_ids;
+    if (!accept_workers)
+      { resource_ids.emplace_back (random_resource_id()); }
+
     _network.perform<sdpa::events::WorkerRegistrationEvent>
       ( _master.get()
       , _name
@@ -422,6 +433,7 @@ namespace utils
       , fhg::util::testing::random<unsigned long>{}()
       , accept_workers
       , fhg::util::testing::random_string()
+      , resource_ids
       );
   }
 
@@ -435,6 +447,10 @@ namespace utils
   {
     _master = _network.connect_to (master.host(), master.port());
 
+    std::vector<gspc::resource::ID> resource_ids;
+    if (!accept_workers)
+      { resource_ids.emplace_back (random_resource_id()); }
+
     _network.perform<sdpa::events::WorkerRegistrationEvent>
       ( _master.get()
       , _name
@@ -442,6 +458,7 @@ namespace utils
       , fhg::util::testing::random<unsigned long>{}()
       , accept_workers
       , fhg::util::testing::random_string()
+      , resource_ids
       );
   }
 
@@ -457,6 +474,10 @@ namespace utils
   {
     _master = _network.connect_to (master.host(), master.port());
 
+    std::vector<gspc::resource::ID> resource_ids;
+    if (!accept_workers)
+      { resource_ids.emplace_back (random_resource_id()); }
+
     _network.perform<sdpa::events::WorkerRegistrationEvent>
       ( _master.get()
       , _name
@@ -464,6 +485,7 @@ namespace utils
       , fhg::util::testing::random<unsigned long>{}()
       , accept_workers
       , fhg::util::testing::random_string()
+      , resource_ids
       );
   }
 

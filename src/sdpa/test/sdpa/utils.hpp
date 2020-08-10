@@ -1,5 +1,7 @@
 #pragma once
 
+#include <drts/resource/ID.hpp>
+
 #include <sdpa/client.hpp>
 #include <sdpa/com/NetworkStrategy.hpp>
 #include <sdpa/daemon/Agent.hpp>
@@ -47,6 +49,8 @@ namespace boost
 namespace utils
 {
   std::string random_peer_name();
+
+  gspc::resource::ID random_resource_id();
 
   //! \todo unify with test/layer
   we::type::activity_t module_call (std::string name);

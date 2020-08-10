@@ -1,3 +1,5 @@
+#include <drts/resource/ID.hpp>
+
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
@@ -103,6 +105,7 @@ namespace
       , fhg::util::testing::random<unsigned long>{}()
       , fhg::util::testing::random<bool>{}()
       , fhg::util::testing::random<std::string>{}()
+      , std::vector<gspc::resource::ID> {utils::random_resource_id()}
       );
   }
 
