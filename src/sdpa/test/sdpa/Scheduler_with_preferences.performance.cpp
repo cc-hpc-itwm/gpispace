@@ -1,4 +1,5 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/resource_manager/ResourceManager.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
@@ -56,7 +57,8 @@ namespace
 struct fixture_add_new_workers
 {
   fixture_add_new_workers()
-    : _worker_manager()
+    : _resource_manager()
+    , _worker_manager (_resource_manager)
     , _scheduler
        ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
                    , this
@@ -66,6 +68,7 @@ struct fixture_add_new_workers
        )
   {}
 
+  gspc::ResourceManager _resource_manager;
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
 

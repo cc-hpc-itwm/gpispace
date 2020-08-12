@@ -139,6 +139,10 @@ namespace sdpa
       return _implementation;
     }
 
+    WorkerManager::WorkerManager (gspc::ResourceManager& rm)
+      : _resource_manager (rm)
+    {}
+
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const
     {
       return worker_map_.at(worker)._hostname;
