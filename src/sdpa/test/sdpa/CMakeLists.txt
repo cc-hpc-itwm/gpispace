@@ -169,3 +169,12 @@ fhg_add_test (NAME sdpa_network_basics
             sdpa
             test-utilities
 )
+
+fhg_add_test (NAME ResourceManager
+  SOURCES ResourceManager.cpp
+  USE_BOOST
+  LIBRARIES GPISpace::SDPATestUtilities
+            sdpa
+            test-utilities
+)
+
