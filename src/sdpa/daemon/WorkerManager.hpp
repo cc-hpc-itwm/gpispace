@@ -3,6 +3,7 @@
 #include <drts/resource/ID.hpp>
 
 #include <sdpa/daemon/Worker.hpp>
+#include <sdpa/daemon/resource_manager/ResourceManager.hpp>
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 
@@ -57,6 +58,9 @@ namespace sdpa
     {
       typedef std::unordered_map<worker_id_t, Worker> worker_map_t;
       using worker_iterator = worker_map_t::iterator;
+
+    public:
+      WorkerManager (gspc::ResourceManager&);
 
     private:
       class WorkerEquivalenceClass
@@ -188,6 +192,7 @@ namespace sdpa
 
       mutable std::mutex mtx_;
       unsigned long _num_free_workers {0};
+      gspc::ResourceManager& _resource_manager;
     };
   }
 }

@@ -81,7 +81,7 @@ namespace sdpa
       , job_map_()
       , _cleanup_job_map_on_dtor_helper (job_map_)
       , _resource_manager()
-      , _worker_manager()
+      , _worker_manager (_resource_manager)
       , _scheduler ( [this] (job_id_t job_id)
                      {
                        return findJob (job_id)->requirements_and_preferences();

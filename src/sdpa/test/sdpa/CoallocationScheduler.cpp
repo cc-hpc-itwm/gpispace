@@ -1,4 +1,5 @@
 #include <sdpa/daemon/WorkerManager.hpp>
+#include <sdpa/daemon/resource_manager/ResourceManager.hpp>
 #include <sdpa/daemon/scheduler/CoallocationScheduler.hpp>
 #include <sdpa/test/sdpa/utils.hpp>
 #include <sdpa/types.hpp>
@@ -128,7 +129,8 @@ struct fixture_scheduler_and_requirements_and_preferences
   typedef std::set<sdpa::job_id_t> set_jobs_t;
 
   fixture_scheduler_and_requirements_and_preferences()
-    : _worker_manager()
+    : _resource_manager()
+    , _worker_manager (_resource_manager)
     , _scheduler
       ( std::bind ( &fixture_scheduler_and_requirements_and_preferences::requirements_and_preferences
                   , this
@@ -139,6 +141,7 @@ struct fixture_scheduler_and_requirements_and_preferences
     , _access_allocation_table (_scheduler)
   {}
 
+  gspc::ResourceManager _resource_manager;
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;
@@ -828,7 +831,8 @@ BOOST_FIXTURE_TEST_CASE
 struct fixture_minimal_cost_assignment
 {
   fixture_minimal_cost_assignment()
-  : _worker_manager()
+  : _resource_manager()
+  , _worker_manager (_resource_manager)
   , _scheduler
       ( [](const sdpa::job_id_t&) {return no_requirements_and_preferences();}
       , _worker_manager
@@ -867,6 +871,7 @@ struct fixture_minimal_cost_assignment
                             )->second;
   }
 
+  gspc::ResourceManager _resource_manager;
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
 };
@@ -949,7 +954,8 @@ BOOST_FIXTURE_TEST_CASE ( scheduling_with_data_locality_and_random_costs
                          }
                        );
 
-  sdpa::daemon::WorkerManager _worker_manager;
+  gspc::ResourceManager _resource_manager;
+  sdpa::daemon::WorkerManager _worker_manager (_resource_manager);
   sdpa::daemon::CoallocationScheduler
     _scheduler (  [&test_transfer_cost] (const sdpa::job_id_t&)
                   {
@@ -1077,7 +1083,8 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                          }
                        );
 
-  sdpa::daemon::WorkerManager _worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager _worker_manager (resource_manager);
   sdpa::daemon::CoallocationScheduler
     _scheduler ( [&test_transfer_cost, &_computational_cost] (const sdpa::job_id_t&)
                  {
@@ -1532,7 +1539,8 @@ BOOST_FIXTURE_TEST_CASE ( stealing_from_worker_does_not_free_it
 struct fixture_add_new_workers
 {
   fixture_add_new_workers()
-    : _worker_manager()
+    : _resource_manager()
+    , _worker_manager (_resource_manager)
     , _scheduler
        ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
                    , this
@@ -1543,6 +1551,7 @@ struct fixture_add_new_workers
     , _access_allocation_table (_scheduler)
   {}
 
+  gspc::ResourceManager _resource_manager;
   sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
   sdpa::daemon::access_allocation_table_TESTING_ONLY _access_allocation_table;

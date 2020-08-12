@@ -1,3 +1,4 @@
+#include <sdpa/daemon/resource_manager/ResourceManager.hpp>
 #include <sdpa/daemon/WorkerManager.hpp>
 
 #include <sdpa/test/sdpa/utils.hpp>
@@ -34,7 +35,8 @@ BOOST_AUTO_TEST_CASE (add_worker)
 {
   const std::vector<std::string> worker_ids (generate_worker_names (3));
 
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , fhg::util::testing::random<unsigned long>{}()
@@ -71,7 +73,8 @@ BOOST_AUTO_TEST_CASE (delete_worker)
 {
   const std::vector<std::string> worker_ids (generate_worker_names (3));
 
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , fhg::util::testing::random<unsigned long>{}()
@@ -107,7 +110,8 @@ BOOST_AUTO_TEST_CASE (get_capabilities)
 
   sdpa::capabilities_set_t::iterator it (expected_ccapabilities.begin());
 
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
   worker_manager.addWorker ( worker_ids[0]
                            , {*it++}
                            , fhg::util::testing::random<unsigned long>{}()
@@ -145,7 +149,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_worker)
 {
   const std::vector<std::string> worker_ids (generate_worker_names (1));
 
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
   worker_manager.addWorker ( worker_ids[0]
                            , {sdpa::capability_t ("A", worker_ids[0])}
                            , fhg::util::testing::random<unsigned long>{}()
@@ -190,7 +195,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
   const unsigned int N (10);
   const std::vector<std::string> worker_ids (generate_worker_names (N));
 
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
 
   sdpa::daemon::WorkerSet workers;
 
@@ -256,7 +262,8 @@ BOOST_AUTO_TEST_CASE (find_submitted_or_acknowledged_coallocated_workers)
 
 BOOST_AUTO_TEST_CASE (find_non_submitted_job)
 {
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
 
   const sdpa::job_id_t job_not_submitted (fhg::util::testing::random_string());
   std::unordered_set<sdpa::worker_id_t>  workers (worker_manager.findSubmOrAckWorkers (job_not_submitted));
@@ -266,7 +273,8 @@ BOOST_AUTO_TEST_CASE (find_non_submitted_job)
 BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
 {
   // <boilerplate>
-  sdpa::daemon::WorkerManager worker_manager;
+  gspc::ResourceManager resource_manager;
+  sdpa::daemon::WorkerManager worker_manager (resource_manager);
 
   std::unordered_map<sdpa::job_id_t, std::unique_ptr<sdpa::daemon::scheduler::Reservation>> reservations;
 
