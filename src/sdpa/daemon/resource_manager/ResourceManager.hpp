@@ -27,6 +27,7 @@ namespace gspc
     bool acquire (resource::ID const&);
     void release (resource::ID const&);
 
+    bool has_free_resources();
   private:
     std::mutex _resources_guard;
 
@@ -34,5 +35,7 @@ namespace gspc
     std::unordered_map<resource::ID, std::size_t> _resource_usage_by_id;
     std::unordered_map<resource::Class, std::unordered_set<resource::ID>>
       _available_resources_by_class;
+
+    unsigned long _num_resources = 0;
   };
 }
