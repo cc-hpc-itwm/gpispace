@@ -104,6 +104,8 @@ namespace sdpa
       };
 
     public:
+      gspc::ResourceManager& resource_manager();
+
       unsigned long num_free_workers() const;
 
       std::unordered_set<worker_id_t> findSubmOrAckWorkers

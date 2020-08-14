@@ -209,7 +209,7 @@ namespace sdpa
         (_worker_manager.num_free_workers());
 
       for ( auto it (_pending_jobs.begin())
-          ; num_free_workers_left > 0  && it != _pending_jobs.end()
+          ; it != _pending_jobs.end()
           ;
           )
       {
@@ -229,6 +229,8 @@ namespace sdpa
         {
           jobs_started.insert (job_id);
           it = _pending_jobs.erase (it);
+          if (!_worker_manager.resource_manager().has_free_resources())
+            { break; }
         }
         else
         {

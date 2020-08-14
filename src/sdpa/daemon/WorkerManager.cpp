@@ -990,5 +990,10 @@ namespace sdpa
       std::lock_guard<std::mutex> const _ (mtx_);
       return _num_free_workers;
     }
+
+    gspc::ResourceManager& WorkerManager::resource_manager()
+    {
+      return _resource_manager;
+    }
   }
 }

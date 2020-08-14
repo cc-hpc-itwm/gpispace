@@ -21,6 +21,8 @@ namespace gspc
 
     _resource_usage_by_id.emplace (resource_id, 0);
     _available_resources_by_class[resource_class].emplace (resource_id);
+
+    _num_resources++;
   }
 
   void ResourceManager::remove (resource::ID const& resource_id)
@@ -56,6 +58,8 @@ namespace gspc
             _available_resources_by_class.erase
               (available_resources_by_class);
           }
+
+          _num_resources--;
         }
       );
   }
@@ -155,5 +159,11 @@ namespace gspc
           }
         }
       );
+  }
+
+  bool ResourceManager::has_free_resources()
+  {
+    std::lock_guard<std::mutex> const resources_lock (_resources_guard);
+    return (_num_resources > 0 && !_available_resources_by_class.empty());
   }
 }
