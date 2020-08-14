@@ -4,6 +4,7 @@
 
 #include <fhg/assert.hpp>
 
+#include <util-generic/join.hpp>
 #include <util-generic/make_optional.hpp>
 
 #include <boost/range/adaptor/filtered.hpp>
@@ -16,7 +17,9 @@
 #include <cstddef>
 #include <iterator>
 #include <queue>
+#include <set>
 #include <stdexcept>
+#include <string>
 #include <tuple>
 #include <vector>
 
@@ -423,13 +426,30 @@ namespace sdpa
         )
     {
       std::lock_guard<std::mutex> const _(mtx_);
+      std::vector<gspc::resource::ID> acquired;
       bool const can_start
         ( std::all_of ( workers.begin()
                       , workers.end()
-                      , [this] (worker_id_t const& worker)
+                      , [this, &acquired] (worker_id_t const& worker_id)
                         {
-                          return worker_map_.count (worker)
-                            && !worker_map_.at (worker).isReserved();
+                          if ( !worker_map_.count (worker_id)
+                             || worker_map_.at (worker_id).isReserved()
+                             )
+                            { return false; }
+
+                          auto const worker (worker_map_.at (worker_id));
+                          if (worker.is_terminal())
+                          {
+                            if (_resource_manager.acquire (*worker._resource_id))
+                            {
+                              acquired.emplace_back (*worker._resource_id);
+                              return true;
+                            }
+
+                            return false;
+                          }
+
+                          return true;
                         }
                       )
         );
@@ -442,6 +462,13 @@ namespace sdpa
         }
 
         serve_job (workers, implementation, job_id);
+      }
+      else
+      {
+        for (auto const& resource : acquired)
+        {
+          _resource_manager.release (resource);
+        }
       }
 
       return std::make_pair (can_start, _num_free_workers);
@@ -547,6 +574,15 @@ namespace sdpa
       {
         auto& equivalence_class
           (worker_equiv_classes_.at (worker->second.capability_names_));
+
+        if ( worker->second.is_terminal()
+           && ( worker->second.submitted_.count (job_id)
+              || worker->second.acknowledged_.count (job_id)
+              )
+           )
+        {
+          _resource_manager.release (*worker->second._resource_id);
+        }
 
         if (worker->second.pending_.count (job_id))
         {
