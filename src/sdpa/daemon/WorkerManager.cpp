@@ -205,6 +205,19 @@ namespace sdpa
                                                  )
                                         );
 
+      if (!resource_ids.empty())
+      {
+        gspc::ResourceManager::Resources::Children children
+          (std::next (resource_ids.begin()), resource_ids.end());
+
+        _resource_manager.add
+          ( resource_ids.front()
+          , fhg::util::join<std::set<std::string>>
+              (result.first->second.capability_names_, '+').string()
+          , children
+          );
+      }
+
       worker_equiv_classes_[result.first->second.capability_names_].add_worker_entry (result.first);
 
       // allow to steal from itself
