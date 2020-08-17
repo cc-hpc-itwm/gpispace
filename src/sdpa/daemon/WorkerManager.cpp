@@ -413,8 +413,7 @@ namespace sdpa
       return Workers_and_implementation ({}, boost::none);
     }
 
-    std::pair<bool, unsigned long>
-      WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
+    bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
         ( job_id_t const& job_id
         , WorkerSet const& workers
         , Implementation const& implementation
@@ -471,7 +470,7 @@ namespace sdpa
         }
       }
 
-      return std::make_pair (can_start, _num_free_workers);
+      return can_start;
     }
 
     std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel
