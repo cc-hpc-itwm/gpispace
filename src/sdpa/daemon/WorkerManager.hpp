@@ -132,16 +132,15 @@ namespace sdpa
 
       void steal_work (std::function<scheduler::Reservation* (job_id_t const&)> reservation);
 
-      std::pair<bool, unsigned long>
-        submit_and_serve_if_can_start_job_INDICATES_A_RACE
-          ( job_id_t const&
-          , WorkerSet const&
-          , Implementation const&
-          , std::function<void ( WorkerSet const&
-                               , Implementation const&
-                               , const job_id_t&
-                               )> const& serve_job
-          );
+      bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
+        ( job_id_t const&
+        , WorkerSet const&
+        , Implementation const&
+        , std::function<void ( WorkerSet const&
+                             , Implementation const&
+                             , const job_id_t&
+                             )> const& serve_job
+        );
 
     std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
       ( worker_id_t const&

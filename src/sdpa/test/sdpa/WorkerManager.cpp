@@ -328,7 +328,7 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
                    , sdpa::job_id_t const&
                    )
                 {}
-              ).first
+              )
           );
       }
     );
