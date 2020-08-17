@@ -226,10 +226,7 @@ namespace sdpa
       // allow to steal from itself
       worker_equiv_classes_.at (result.first->second.capability_names_)
         ._stealing_allowed_classes.emplace (result.first->second.capability_names_);
-
-      _num_free_workers++;
     }
-
 
     void WorkerManager::deleteWorker (const worker_id_t& workerId)
     {
@@ -255,8 +252,6 @@ namespace sdpa
 
       worker_map_.erase (worker);
       worker_connections_.left.erase (workerId);
-
-      _num_free_workers--;
     }
 
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet) const
@@ -536,13 +531,6 @@ namespace sdpa
       equivalence_class.inc_running_jobs (1);
 
       equivalence_class._idle_workers.erase (worker->first);
-
-      // Update the counter only if the worker is terminal,
-      // i.e. it has no slaves. Submission to slave agents is always allowed.
-      if (worker->second.is_terminal())
-      {
-        _num_free_workers--;
-      }
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
@@ -599,13 +587,6 @@ namespace sdpa
            )
         {
           equivalence_class._idle_workers.emplace (worker->first);
-        }
-
-        // Update the counter only if the worker is terminal,
-        // i.e. it has no slaves. Submission to slave agents is always allowed.
-        if (worker->second.is_terminal())
-        {
-          _num_free_workers++;
         }
       }
     }
@@ -982,12 +963,6 @@ namespace sdpa
       }
 
       return jobs_to_reschedule;
-    }
-
-    unsigned long WorkerManager::num_free_workers() const
-    {
-      std::lock_guard<std::mutex> const _ (mtx_);
-      return _num_free_workers;
     }
 
     gspc::ResourceManager& WorkerManager::resource_manager()
