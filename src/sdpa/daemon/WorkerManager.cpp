@@ -969,5 +969,11 @@ namespace sdpa
     {
       return _resource_manager;
     }
+
+    bool WorkerManager::worker_has_running_tasks_TESTING_ONLY
+      (worker_id_t const& worker_id)
+    {
+      return worker_map_.at (worker_id).has_running_jobs();
+    }
   }
 }

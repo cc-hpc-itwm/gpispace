@@ -156,6 +156,8 @@ namespace sdpa
     bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
     void set_worker_backlog_full (const worker_id_t&, bool);
 
+    bool worker_has_running_tasks_TESTING_ONLY (worker_id_t const&);
+
     using worker_connections_t
       = boost::bimap < boost::bimaps::unordered_set_of<std::string>
                      , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
