@@ -20,6 +20,10 @@ namespace gspc
     {
       return os << x.id;
     }
+    bool operator< (ID const& lhs, ID const& rhs)
+    {
+      return lhs.id < rhs.id;
+    }
 
     bool operator== (ID const& lhs, ID const& rhs);
     std::ostream& operator<< (std::ostream&, ID const&);
