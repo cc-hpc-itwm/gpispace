@@ -12,6 +12,7 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <boost/bimap.hpp>
 #include <boost/iterator/transform_iterator.hpp>
 #include <boost/optional.hpp>
 #include <boost/optional/optional_io.hpp>
@@ -428,6 +429,23 @@ namespace
 
   void add_worker ( sdpa::daemon::WorkerManager& worker_manager
                   , sdpa::worker_id_t worker_id
+                  , sdpa::capabilities_set_t capabilities
+                  , std::vector<gspc::resource::ID> resource_ids
+                  , bool children_allowed
+                  )
+    {
+      worker_manager.addWorker ( worker_id
+                               , capabilities
+                               , fhg::util::testing::random<unsigned long>{}()
+                               , children_allowed
+                               , fhg::util::testing::random<std::string>{}()
+                               , fhg::util::testing::random<std::string>{}()
+                               , resource_ids
+                               );
+    }
+
+  void add_worker ( sdpa::daemon::WorkerManager& worker_manager
+                  , sdpa::worker_id_t worker_id
                   , sdpa::capabilities_set_t capabilities = {}
                   , bool children_allowed = false
                   )
@@ -436,14 +454,80 @@ namespace
     if (!children_allowed)
       { resource_ids.emplace_back (utils::random_resource_id()); }
 
-    worker_manager.addWorker ( worker_id
-                             , capabilities
-                             , fhg::util::testing::random<unsigned long>{}()
-                             , children_allowed
-                             , fhg::util::testing::random<std::string>{}()
-                             , fhg::util::testing::random<std::string>{}()
-                             , resource_ids
-                             );
+    add_worker
+      (worker_manager, worker_id, capabilities, resource_ids, children_allowed);
+  }
+
+  using Resources = gspc::Forest<gspc::resource::ID, gspc::resource::Class>;
+  using Children = std::unordered_set<gspc::resource::ID>;
+
+  Resources create_resource_forest
+   ( unsigned int num_nodes
+   , unsigned int num_sockets_per_node
+   , unsigned int num_cores_per_socket
+   )
+  {
+    Resources resources;
+    gspc::remote_interface::ID next_remote_interface_id {0};
+
+    for ( unsigned int i {0}
+        ; i < num_nodes
+        ; ++i, ++next_remote_interface_id
+        )
+    {
+      gspc::resource::ID next_resource_id (next_remote_interface_id);
+
+      Children sockets;
+      for (unsigned int j {0}; j < num_sockets_per_node; ++j)
+      {
+        Children cores;
+        for (unsigned int k {0}; k < num_cores_per_socket; ++k)
+        {
+          resources.insert (++next_resource_id, {"core"}, {});
+          cores.emplace (next_resource_id);
+        }
+
+        resources.insert (++next_resource_id, {"socket"},  cores);
+        sockets.emplace (next_resource_id);
+      }
+
+      resources.insert (++next_resource_id, {"node"}, sockets);
+    }
+
+    return resources;
+  }
+
+  boost::bimap<std::string, gspc::resource::ID> add_workers_with_resources
+    (sdpa::daemon::WorkerManager& worker_manager, Resources const& resources)
+  {
+    boost::bimap<std::string, gspc::resource::ID> workers_and_resources;
+    resources.upward_combine_transform
+      ( [&]
+        ( gspc::Forest<gspc::resource::ID, gspc::resource::Class>::Node const& node
+        , std::list<gspc::Forest<gspc::resource::ID, gspc::resource::Class>::Node const*> const& children
+        )
+        {
+          std::vector<gspc::resource::ID> resource_ids {node.first};
+          for (auto const& child : children)
+          {
+            resource_ids.emplace_back (child->first);
+          }
+
+          sdpa::worker_id_t const worker_id (utils::random_peer_name());
+          workers_and_resources.insert ({worker_id, node.first});
+          add_worker
+            ( worker_manager
+            , worker_id
+            , sdpa::capabilities_set_t {sdpa::capability_t (node.second, worker_id)}
+            , resource_ids
+            , false
+            );
+
+          return node;
+        }
+      );
+
+    return workers_and_resources;
   }
 }
 
@@ -2803,4 +2887,108 @@ BOOST_FIXTURE_TEST_CASE
 
   finish_tasks_assigned_to_worker_and_steal_work
     (worker_finishing_tasks_earlier, test_workers);
+}
+
+BOOST_FIXTURE_TEST_CASE
+  ( run_bunch_of_tasks_using_resource_hierarchies
+  , fixture_scheduler_and_requirements_and_preferences
+  )
+{
+  std::vector<std::string> resource_classes {"node", "socket", "core"};
+
+  auto const num_nodes
+    (fhg::util::testing::random<unsigned int>{} (16, 2));
+  auto const num_sockets_per_node
+    (fhg::util::testing::random<unsigned int>{} (16, 2));
+  auto const num_cores_per_socket
+    (fhg::util::testing::random<unsigned int>{} (16, 2));
+
+  unsigned int const n
+    (num_nodes * (1 + num_sockets_per_node * (1 + num_cores_per_socket)));
+  auto const num_tasks
+    (fhg::util::testing::random<unsigned int>{} ( 2*n, n));
+
+  Resources resources
+    ( create_resource_forest
+        (num_nodes, num_sockets_per_node, num_cores_per_socket)
+    );
+
+  auto const workers_and_resources
+    (add_workers_with_resources (_worker_manager, resources));
+
+  for (unsigned int i {0}; i < num_tasks; ++i)
+  {
+    add_and_enqueue_job
+      ( require
+          ( resource_classes.at
+              (fhg::util::testing::random<unsigned int>{} (2,0))
+          )
+      );
+  }
+
+  _scheduler.assignJobsToWorkers();
+  auto assignment (get_current_assignment());
+
+  std::vector<sdpa::job_id_t> running_tasks;
+  unsigned long num_tasks_started (0);
+  while (!assignment.empty())
+  {
+    std::set<sdpa::job_id_t> const tasks_started
+      ( _scheduler.start_pending_jobs
+          ( [&] ( sdpa::daemon::WorkerSet const&
+                , sdpa::daemon::Implementation const&
+                , sdpa::job_id_t const&
+                )
+            {
+              ++num_tasks_started;
+            }
+          )
+      );
+
+    running_tasks.insert
+      (running_tasks.begin(), tasks_started.begin(), tasks_started.end());
+
+    if (!running_tasks.empty())
+    {
+      auto const num_finishing_tasks
+        (fhg::util::testing::random<std::size_t>{} (running_tasks.size(), 1));
+
+      for (std::size_t k (0); k < num_finishing_tasks; k++)
+      {
+        auto const index
+          ( fhg::util::testing::random<unsigned int>{}
+              (running_tasks.size()-1, 0)
+          );
+
+        auto const task_id (running_tasks[index]);
+
+        for (auto const& worker_id : workers (task_id))
+        {
+          resources.down_up
+            ( workers_and_resources.left.at (worker_id)
+            , [&] (Resources::Node const& node)
+              {
+                BOOST_REQUIRE
+                  ( ( node.first == workers_and_resources.left.at (worker_id)
+                   && _worker_manager.worker_has_running_tasks_TESTING_ONLY
+                        (workers_and_resources.right.at (node.first))
+                   )
+                  || !_worker_manager.worker_has_running_tasks_TESTING_ONLY
+                       (workers_and_resources.right.at (node.first))
+                  );
+              }
+            );
+         }
+
+        _scheduler.releaseReservation (task_id);
+        running_tasks.erase (running_tasks.begin() + index);
+      }
+    }
+
+    _scheduler.assignJobsToWorkers();
+    _scheduler.steal_work();
+    assignment = get_current_assignment();
+  }
+
+  BOOST_REQUIRE_EQUAL (num_tasks_started, num_tasks);
 }
