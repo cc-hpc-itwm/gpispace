@@ -39,6 +39,12 @@ namespace gspc
     {
       return os << x.remote_interface << ":" << x.id;
     }
+
+    bool operator< (ID const& lhs, ID const& rhs)
+    {
+      return std::tie (lhs.remote_interface, lhs.id)
+        < std::tie (rhs.remote_interface, rhs.id);
+    }
   }
 }
 

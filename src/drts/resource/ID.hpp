@@ -28,6 +28,7 @@ namespace gspc
 
       friend bool operator== (ID const& lhs, ID const& rhs);
       friend std::ostream& operator<< (std::ostream&, ID const&);
+      friend bool operator< (ID const& lhs, ID const& rhs);
 
       std::string to_string() const;
     };
