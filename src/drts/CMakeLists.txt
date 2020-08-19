@@ -45,6 +45,13 @@ extended_add_library (NAME gspc
   INSTALL
 )
 
+extended_add_library (NAME resources
+  SOURCES "remote_interface/ID.cpp"
+          "resource/ID.cpp"
+          "Resource.cpp"
+  INSTALL
+)
+
 add_subdirectory (test/add_worker)
 add_subdirectory (test/remove_worker)
 add_subdirectory (test/parallel_running_workflows)
