@@ -1,9 +1,11 @@
 #pragma once
 
 #include <drts/certificates.hpp>
+#include <drts/Forest.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
 #include <drts/pimpl.hpp>
+#include <drts/Resource.hpp>
 #include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
 #include <drts/virtual_memory.fwd.hpp>
@@ -67,23 +69,49 @@ namespace gspc
   class scoped_runtime_system
   {
   public:
-    scoped_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
-                          , std::string const& topology_description
-                          , std::ostream& info_output = std::cerr
-                          , Certificates const& certificates = boost::none
-                          );
-    scoped_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
-                          , std::string const& topology_description
-                          , rifd_entry_points const& entry_points
-                          , std::ostream& info_output = std::cerr
-                          , Certificates const& certificates = boost::none
-                          );
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const&
       , std::string const& topology_description
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , UniqueForest<Resource> const& resource_descriptions
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , std::string const& topology_description
+      , rifd_entry_points const& entry_points
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , UniqueForest<Resource> const& resource_descriptions
+      , rifd_entry_points const& entry_points
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , std::string const& topology_description
+      , boost::optional<rifd_entry_points> const& entry_points
+      , rifd_entry_point const& master
+      , std::ostream& info_output = std::cerr
+      , Certificates const& certificates = boost::none
+      );
+    scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const&
+      , UniqueForest<Resource> const& resource_descriptions
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
       , std::ostream& info_output = std::cerr

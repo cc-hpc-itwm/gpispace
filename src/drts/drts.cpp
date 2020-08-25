@@ -84,6 +84,22 @@ namespace gspc
         )
   {}
   scoped_runtime_system::scoped_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , installation const& installation
+      , UniqueForest<Resource> const& resource_descriptions
+      , std::ostream& info_output
+      , Certificates const& certificates
+      )
+    : scoped_runtime_system
+        ( vm
+        , installation
+        , resource_descriptions
+        , require_rif_entry_points_file (vm)
+        , info_output
+        , certificates
+        )
+  {}
+  scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
     , std::string const& topology_description
@@ -95,6 +111,35 @@ namespace gspc
           ( vm
           , installation
           , topology_description
+          , entry_points
+          , [&entry_points]() -> rifd_entry_point
+            {
+              if (entry_points._->_entry_points.empty())
+              {
+                throw std::logic_error
+                  ("scoped_runtime_system: no entry_points given");
+              }
+
+              return { new rifd_entry_point::implementation
+                         (entry_points._->_entry_points.front())
+                     };
+            }()
+          , info_output
+          , certificates
+          )
+  {}
+  scoped_runtime_system::scoped_runtime_system
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
+    , UniqueForest<Resource> const& resource_descriptions
+    , rifd_entry_points const& entry_points
+    , std::ostream& info_output
+    , Certificates const& certificates
+    )
+      : scoped_runtime_system
+          ( vm
+          , installation
+          , resource_descriptions
           , entry_points
           , [&entry_points]() -> rifd_entry_point
             {
@@ -128,6 +173,28 @@ namespace gspc
                               , master
                               , info_output
                               , certificates
+                              , boost::none
+                              )
+          )
+  {}
+
+  scoped_runtime_system::scoped_runtime_system
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
+    , UniqueForest<Resource> const& resource_descriptions
+    , boost::optional<rifd_entry_points> const& entry_points
+    , rifd_entry_point const& master
+    , std::ostream& info_output
+    , Certificates const& certificates
+    )
+      : _ (new implementation ( vm
+                              , installation
+                              , ""
+                              , entry_points
+                              , master
+                              , info_output
+                              , certificates
+                              , resource_descriptions
                               )
           )
   {}
@@ -173,6 +240,8 @@ namespace gspc
       , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
+      , boost::optional<UniqueForest<Resource>> const&
+          //resource_descriptions
       )
     : _info_output (info_output)
     , _master (master)
@@ -349,6 +418,8 @@ namespace gspc
     , rifd_entry_point const& master
     , std::ostream& info_output
     , Certificates const& certificates
+    , boost::optional<UniqueForest<Resource>> const&
+        resource_descriptions
     )
       : _virtual_memory_socket (get_virtual_memory_socket (vm))
       , _virtual_memory_startup_timeout
@@ -382,6 +453,7 @@ namespace gspc
           , master._->_entry_point
           , extract_default_receivers (vm)
           , certificates
+          , resource_descriptions
           )
       , _logger()
       , _virtual_memory_api
