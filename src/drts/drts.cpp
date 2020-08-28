@@ -206,21 +206,6 @@ namespace gspc
 
   namespace
   {
-    std::vector<worker_description> parse_worker_descriptions
-      (std::string const& descriptions)
-    {
-      std::vector<worker_description> worker_descriptions;
-      for ( std::string const& description
-          : fhg::util::split<std::string, std::string> (descriptions, ' ')
-          )
-      {
-        //! \todo configurable: default number of processes
-        worker_descriptions.emplace_back
-          (fhg::drts::parse_capability (1, description));
-      }
-      return worker_descriptions;
-    }
-
     void create_resource_forest_from_string_topology
       ( std::string const& string_topology
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
