@@ -30,6 +30,14 @@ namespace gspc
     {
       return os << x.remote_interface << " resource " << x.id;
     }
+
+    ID::operator std::string() const
+    {
+      std::ostringstream osstr;
+      osstr << *this;
+
+      return osstr.str();
+    }
   }
 }
 
