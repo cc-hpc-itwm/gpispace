@@ -28,7 +28,7 @@ namespace gspc
     }
     std::ostream& operator<< (std::ostream& os, ID const& x)
     {
-      return os << x.remote_interface << " resource " << x.id;
+      return os << x.remote_interface << ":" << x.id;
     }
 
     ID::operator std::string() const
