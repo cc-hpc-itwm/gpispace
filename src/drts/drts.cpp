@@ -388,8 +388,34 @@ namespace gspc
 
     if (!rif_entry_points.empty())
     {
-      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
-        const failures (add_worker_impl (_worker_descriptions, rif_entry_points, certificates));
+      std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>> failures;
+
+      for ( auto const& fail
+          : start_workers_with_resources
+            ( rif_entry_points
+            , _master_agent_name
+            , _master_agent_hostinfo
+            , worker_descriptions
+            , _processes_storage
+            , _gpi_socket
+            , _app_path
+            , _worker_env_copy_variable
+            , _worker_env_copy_current
+            , _worker_env_copy_file
+            , _worker_env_set_variable
+            , _installation_path
+            , _info_output
+            , FHG_UTIL_MAKE_OPTIONAL
+                ( _logging_rif_entry_point && _logging_rif_info
+                , std::make_pair
+                    (*_logging_rif_entry_point, _logging_rif_info->pid)
+                )
+            , certificates
+            ).second
+          )
+      {
+        failures[fail.first].emplace_back (fail.second);
+      }
 
       if (!failures.empty())
       {
