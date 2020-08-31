@@ -114,7 +114,6 @@ namespace gspc
       boost::optional<fhg::rif::entry_point> _logging_rif_entry_point;
       boost::optional<fhg::rif::protocol::start_logging_demultiplexer_result>
         _logging_rif_info;
-      std::vector<worker_description> _worker_descriptions;
 
       fhg::drts::processes_storage _processes_storage;
 
