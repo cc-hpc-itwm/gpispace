@@ -252,6 +252,8 @@ namespace gspc
              )
             { break; }
 
+          std::ostringstream osstr;
+          osstr << entry_point;
           struct worker_description desc
             { description.capabilities
             , 1
@@ -262,7 +264,7 @@ namespace gspc
                ( !!description.port
                , description.port.get() + i
                )
-            , entry_point
+            , osstr.str()
             };
 
           worker_descriptions_forest.insert (++next_resource_id, desc, {});
@@ -339,6 +341,8 @@ namespace gspc
                     capabilities.emplace_back (cpb);
                   }
 
+                  std::ostringstream osstr;
+                  osstr << entry_point;
                   worker_description const description
                     { capabilities
                     , 1
@@ -346,7 +350,7 @@ namespace gspc
                     , r.second.shm_size
                     , boost::none
                     , boost::none
-                    , entry_point
+                    , osstr.str()
                     };
 
                   return {++next_resource_id, description};

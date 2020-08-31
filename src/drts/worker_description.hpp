@@ -1,7 +1,5 @@
 #pragma once
 
-#include <rif/entry_point.hpp>
-
 #include <boost/optional.hpp>
 
 #include <string>
@@ -17,6 +15,6 @@ namespace gspc
     std::size_t shm_size;
     boost::optional<std::size_t> socket;
     boost::optional<unsigned short> port;
-    boost::optional<fhg::rif::entry_point> entry_point;
+    boost::optional<std::string> entry_point;
   };
 }

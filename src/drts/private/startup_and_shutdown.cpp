@@ -235,8 +235,11 @@ namespace fhg
               , std::vector<std::string> const& resource_ids
               )
           {
+            fhg::rif::entry_point const entry_point
+              (description.entry_point.get());
+
             auto const connection
-              (rif_connections.find (description.entry_point.get()));
+              (rif_connections.find (entry_point));
 
             std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
             std::replace_if
