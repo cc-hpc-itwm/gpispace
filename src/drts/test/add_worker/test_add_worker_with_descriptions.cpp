@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
       (shared_directory, rifd, capabilities[k], expected_workers);
 
     gspc::worker_description const description
-      {{capabilities[k++]}, 1, 0, 0, boost::none, boost::none, boost::none, boost::none};
+      {{capabilities[k++]}, 1, 0, 0, boost::none, boost::none, boost::none};
     drts.add_worker ({description}, rifd.entry_points(), certificates);
   }
 

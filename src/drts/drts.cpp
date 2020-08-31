@@ -262,11 +262,10 @@ namespace gspc
                ( !!description.port
                , description.port.get() + i
                )
-            , ++next_resource_id
             , entry_point
             };
 
-          worker_descriptions_forest.insert (next_resource_id, desc, {});
+          worker_descriptions_forest.insert (++next_resource_id, desc, {});
         }
 
         _last_used_resource_ids[entry_point] = next_resource_id;
@@ -347,11 +346,10 @@ namespace gspc
                     , r.second.shm_size
                     , boost::none
                     , boost::none
-                    , ++next_resource_id
                     , entry_point
                     };
 
-                  return {next_resource_id, description};
+                  return {++next_resource_id, description};
                 }
               )
           );

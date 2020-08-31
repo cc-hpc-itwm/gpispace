@@ -178,7 +178,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                             );
 
       gspc::worker_description description
-        {{"worker"}, 1, 0, 0, boost::none, boost::none, boost::none, boost::none};
+        {{"worker"}, 1, 0, 0, boost::none, boost::none, boost::none};
       drts.add_worker ({description}, rifd.entry_points(), certificates);
 
       client.put_token (job_id, "trigger", we::type::literal::control());
