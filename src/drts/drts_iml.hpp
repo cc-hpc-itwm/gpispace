@@ -1,17 +1,34 @@
-#include <iml/client/iml.hpp>
-#include <iml/client/scoped_rifd.hpp>
-#include <iml/client/virtual_memory.hpp>
+// \todo Move to gspc/pnet/vmem.hpp.
 
-#include <iml/vmem/gaspi/pc/type/types.hpp>
-#include <iml/vmem/gaspi/pc/type/memory_location.hpp>
+#pragma once
 
 #include <we/type/value.hpp>
 
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+
 namespace gspc
 {
-  namespace iml
+  namespace pnet
   {
-    pnet::type::value::value_type remote_iml_gpi_global_memory_range
-      (gpi::pc::type::range_t range);
+    namespace vmem
+    {
+      //! Convert an IML memory allocation \a handle to a petri net
+      //! token usable for memory transfers.
+      ::pnet::type::value::value_type handle_to_value
+        (gpi::pc::type::handle_id_t handle);
+
+      //! Convert an IML memory \a range to a petri net token usable for
+      //! memory transfers.
+      ::pnet::type::value::value_type range_to_value
+        (gpi::pc::type::range_t range);
+
+      //! Convert a stream slot information to a petri net token.
+      ::pnet::type::value::value_type stream_slot_to_value
+        ( gpi::pc::type::range_t const& metadata
+        , gpi::pc::type::range_t const& data
+        , char flag
+        , std::size_t id
+        );
+    }
   }
 }

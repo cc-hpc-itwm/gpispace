@@ -84,10 +84,8 @@ BOOST_AUTO_TEST_CASE (iml_gaspi_vmem_allocation)
                     )
     );
 
-  pnet::type::value::value_type mem_range
-    ( gspc::iml::remote_iml_gpi_global_memory_range
-      (allocation_data.global_memory_range())
-    );
+  auto const mem_range
+    (gspc::pnet::vmem::range_to_value (allocation_data.global_memory_range()));
 
   pnet::type::value::structured_type range
     (boost::get<pnet::type::value::structured_type> (mem_range));

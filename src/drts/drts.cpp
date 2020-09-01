@@ -446,7 +446,7 @@ namespace gspc
     ( std::string const& name
     , gspc::vmem_allocation const& buffer
     , stream::size_of_slot const& size_of_slot
-    , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+    , std::function<void (::pnet::type::value::value_type const&)> on_slot_filled
     ) const
   {
     return _->_iml_rts->rts->create_stream
@@ -459,21 +459,9 @@ namespace gspc
                                , std::size_t const id
                                ) -> void
               {
-                pnet::type::value::value_type value;
-                pnet::type::value::poke
-                 ( "meta"
-                 , value
-                 , gspc::iml::remote_iml_gpi_global_memory_range (metadata)
-                 );
-                pnet::type::value::poke
-                 ( "data"
-                 , value
-                 , gspc::iml::remote_iml_gpi_global_memory_range (data)
-                 );
-                pnet::type::value::poke ("flag", value, flag);
-                pnet::type::value::poke ("id", value, id);
-
-                on_slot_filled (value);
+                on_slot_filled ( gspc::pnet::vmem::stream_slot_to_value
+                                   (metadata, data, flag, id)
+                               );
               }
            );
   }
