@@ -1,0 +1,34 @@
+#include <fhg/revision.hpp>
+
+#include <sstream>
+
+namespace fhg
+{
+  const char* project_version()
+  {
+    return "@PROJECT_VERSION@";
+  }
+
+  const char* project_revision()
+  {
+    return "@PROJECT_REVISION@";
+  }
+
+  std::string project_info (const std::string& head)
+  {
+    std::ostringstream s;
+
+    s << "GPI-Space - productive parallel programming and efficient execution"
+      << std::endl
+      << std::endl << "  * " << head << std::endl
+      << std::endl << "version:  " << project_version()
+      << std::endl << "revision: " << project_revision()
+      << std::endl << "contact:  @PROJECT_CONTACT@"
+      << std::endl
+      << std::endl << "Copyright 2009-2016 Fraunhofer ITWM"
+      << std::endl
+      ;
+
+    return s.str();
+  }
+}
