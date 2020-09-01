@@ -10,39 +10,39 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace util
   {
-    void system_with_blocked_SIGCHLD (std::string const& command)
+    namespace util
     {
-      struct scoped_SIGCHLD_block
+      void system_with_blocked_SIGCHLD (std::string const& command)
       {
-        scoped_SIGCHLD_block()
+        struct scoped_SIGCHLD_block
         {
-          sigset_t signals_to_block;
-          fhg::util::syscall::sigemptyset (&signals_to_block);
-          fhg::util::syscall::sigaddset (&signals_to_block, SIGCHLD);
-          fhg::util::syscall::pthread_sigmask
-            (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
-        }
-        ~scoped_SIGCHLD_block()
-        {
-          fhg::util::syscall::pthread_sigmask
-            (SIG_UNBLOCK, &_signals_to_restore, nullptr);
-        }
-        sigset_t _signals_to_restore;
-      } const signal_blocker;
+          scoped_SIGCHLD_block()
+          {
+            sigset_t signals_to_block;
+            fhg::util::syscall::sigemptyset (&signals_to_block);
+            fhg::util::syscall::sigaddset (&signals_to_block, SIGCHLD);
+            fhg::util::syscall::pthread_sigmask
+              (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
+          }
+          ~scoped_SIGCHLD_block()
+          {
+            fhg::util::syscall::pthread_sigmask
+              (SIG_UNBLOCK, &_signals_to_restore, nullptr);
+          }
+          sigset_t _signals_to_restore;
+        } const signal_blocker;
 
-      if (int ec = std::system (command.c_str()))
-      {
-        throw std::runtime_error
-          (( boost::format ("Could not run '%1%': error code '%2%'")
-           % command
-           % ec
-           ).str()
-          );
+        if (int ec = std::system (command.c_str()))
+        {
+          throw std::runtime_error
+            (( boost::format ("Could not run '%1%': error code '%2%'")
+             % command
+             % ec
+             ).str()
+            );
+        }
       }
     }
   }
-}
 }

@@ -49,10 +49,10 @@ namespace iml_client
   {
   public:
     scoped_iml_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
-                          , rifd_entry_points const& entry_points
-                          , std::ostream& info_output = std::cerr
-                          );
+                              , installation const&
+                              , rifd_entry_points const& entry_points
+                              , std::ostream& info_output = std::cerr
+                              );
     scoped_iml_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const&

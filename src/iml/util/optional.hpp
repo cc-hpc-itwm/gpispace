@@ -5,50 +5,50 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace util
   {
-    namespace boost
+    namespace util
     {
-      using namespace ::boost;
-      template<typename T, typename U>
-      boost::optional<U> fmap (U (*f)(const T &), const boost::optional<T>& m)
+      namespace boost
       {
-        if (m)
+        using namespace ::boost;
+        template<typename T, typename U>
+        boost::optional<U> fmap (U (*f)(const T &), const boost::optional<T>& m)
         {
-          return f (*m);
+          if (m)
+          {
+            return f (*m);
+          }
+          else
+          {
+            return boost::none;
+          }
         }
-        else
+
+        template<typename Exception, typename T, typename... Args>
+          T get_or_throw (boost::optional<T> const& optional, Args&&... args)
+        {
+          if (!optional)
+          {
+            throw Exception (args...);
+          }
+
+          return optional.get();
+        }
+
+        template<typename Fun, typename... Args>
+          boost::optional<typename std::result_of<Fun(Args...)>::type>
+            exception_is_none (Fun&& fun, Args&&... args)
+        try
+        {
+          return fun (std::forward<Args> (args)...);
+        }
+        catch (...)
         {
           return boost::none;
         }
       }
-
-      template<typename Exception, typename T, typename... Args>
-        T get_or_throw (boost::optional<T> const& optional, Args&&... args)
-      {
-        if (!optional)
-        {
-          throw Exception (args...);
-        }
-
-        return optional.get();
-      }
-
-      template<typename Fun, typename... Args>
-        boost::optional<typename std::result_of<Fun(Args...)>::type>
-          exception_is_none (Fun&& fun, Args&&... args)
-      try
-      {
-        return fun (std::forward<Args> (args)...);
-      }
-      catch (...)
-      {
-        return boost::none;
-      }
     }
   }
-}
 }
 
 namespace boost

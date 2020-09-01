@@ -11,8 +11,8 @@ namespace iml_test
   {
     iml_client::set_virtual_memory_socket
       ( vm
-                                    , boost::filesystem::temp_directory_path()
-                                    / boost::filesystem::unique_path()
-                                    );
+      , boost::filesystem::temp_directory_path()
+      / boost::filesystem::unique_path()
+      );
   }
 }

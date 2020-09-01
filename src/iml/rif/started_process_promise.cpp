@@ -13,81 +13,81 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace rif
   {
-    void started_process_promise::set_result
-      (std::vector<std::string> messages)
+    namespace rif
     {
-      send (true, messages);
-    }
-    void started_process_promise::set_exception
-      (std::exception_ptr exception)
-    {
-      send (false, fhg::util::serialization::exception::serialize (exception));
-    }
-
-    namespace
-    {
-      int parse_fd (int argc, char** argv)
+      void started_process_promise::set_result
+        (std::vector<std::string> messages)
       {
-        std::string const usage
-          (( boost::format ("Usage: %1% <pipefd> [args]...")
-           % fhg::util::executable_path()
-           ).str()
-          );
-
-        if (argc < 2)
-        {
-          throw std::invalid_argument (usage);
-        }
-
-        try
-        {
-          return std::stoi (argv[1]);
-        }
-        catch (...)
-        {
-          throw std::invalid_argument (usage);
-        }
+        send (true, messages);
       }
-    }
-
-    //! \todo This is not too nice. Better hard code a specific file
-    //! descriptor and ensure that one is used?
-    started_process_promise::started_process_promise
-        (int& argc, char**& argv)
-      : _original_argv (argv)
-      , _argc (argc)
-      , _argv (argv)
-      , _replacement_argv (argv, argv + argc)
-      , _startup_pipe_fd (parse_fd (argc, argv))
-    {
-      _replacement_argv.erase (std::next (_replacement_argv.begin()));
-      _argv = _replacement_argv.data();
-      --_argc;
-    }
-
-    started_process_promise::~started_process_promise()
-    {
-      _argv = _original_argv;
-      ++_argc;
-    }
-
-    template<typename T>
-      void started_process_promise::send (bool result, T const& data)
-    {
-      boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
-        stream (_startup_pipe_fd, boost::iostreams::close_handle);
-
+      void started_process_promise::set_exception
+        (std::exception_ptr exception)
       {
-        boost::archive::text_oarchive archive (stream);
-        archive & result;
-        archive & data;
+        send (false, fhg::util::serialization::exception::serialize (exception));
       }
 
-      stream << end_sentinel_value();
+      namespace
+      {
+        int parse_fd (int argc, char** argv)
+        {
+          std::string const usage
+            (( boost::format ("Usage: %1% <pipefd> [args]...")
+             % fhg::util::executable_path()
+             ).str()
+            );
+
+          if (argc < 2)
+          {
+            throw std::invalid_argument (usage);
+          }
+
+          try
+          {
+            return std::stoi (argv[1]);
+          }
+          catch (...)
+          {
+            throw std::invalid_argument (usage);
+          }
+        }
+      }
+
+      //! \todo This is not too nice. Better hard code a specific file
+      //! descriptor and ensure that one is used?
+      started_process_promise::started_process_promise
+          (int& argc, char**& argv)
+        : _original_argv (argv)
+        , _argc (argc)
+        , _argv (argv)
+        , _replacement_argv (argv, argv + argc)
+        , _startup_pipe_fd (parse_fd (argc, argv))
+      {
+        _replacement_argv.erase (std::next (_replacement_argv.begin()));
+        _argv = _replacement_argv.data();
+        --_argc;
+      }
+
+      started_process_promise::~started_process_promise()
+      {
+        _argv = _original_argv;
+        ++_argc;
+      }
+
+      template<typename T>
+        void started_process_promise::send (bool result, T const& data)
+      {
+        boost::iostreams::stream<boost::iostreams::file_descriptor_sink>
+          stream (_startup_pipe_fd, boost::iostreams::close_handle);
+
+        {
+          boost::archive::text_oarchive archive (stream);
+          archive & result;
+          archive & data;
+        }
+
+        stream << end_sentinel_value();
+      }
     }
   }
-}
 }

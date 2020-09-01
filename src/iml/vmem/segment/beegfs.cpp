@@ -12,74 +12,74 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace vmem
   {
-    namespace segment
+    namespace vmem
     {
-      namespace beegfs
+      namespace segment
       {
-        namespace
+        namespace beegfs
         {
-          boost::filesystem::path config_file (int fd)
+          namespace
           {
-            char* raw_path (nullptr);
-            if (!beegfs_getRuntimeConfigFile (fd, &raw_path))
+            boost::filesystem::path config_file (int fd)
             {
+              char* raw_path (nullptr);
+              if (!beegfs_getRuntimeConfigFile (fd, &raw_path))
+              {
+                throw std::runtime_error
+                  ( "unable to get config file: "
+                  + std::string (strerror (errno))
+                  );
+              }
+              boost::filesystem::path path (raw_path);
+              free (raw_path);
+              return path;
+            }
+            bool tuneUseGlobalFileLocks (int fd)
+            {
+              for ( std::string const& line
+                  : fhg::util::read_lines (beegfs::config_file (fd))
+                  )
+              {
+                if (line == "tuneUseGlobalFileLocks = 1")
+                {
+                  return true;
+                }
+                else if (line == "tuneUseGlobalFileLocks = 0")
+                {
+                  return false;
+                }
+              }
               throw std::runtime_error
-                ( "unable to get config file: "
-                + std::string (strerror (errno))
-                );
+                ("'tuneUseGlobalFileLocks = [01]' not found in BeeGFS config");
             }
-            boost::filesystem::path path (raw_path);
-            free (raw_path);
-            return path;
-          }
-          bool tuneUseGlobalFileLocks (int fd)
-          {
-            for ( std::string const& line
-                : fhg::util::read_lines (beegfs::config_file (fd))
-                )
+
+            void check_requirements (int fd)
             {
-              if (line == "tuneUseGlobalFileLocks = 1")
+              if (!beegfs_testIsBeeGFS (fd))
               {
-                return true;
+                throw std::runtime_error ("not a BeeGFS mountpoint");
               }
-              else if (line == "tuneUseGlobalFileLocks = 0")
+              if (!tuneUseGlobalFileLocks (fd))
               {
-                return false;
+                throw std::runtime_error
+                  ("'tuneUseGlobalFileLocks' required but disabled");
               }
             }
-            throw std::runtime_error
-              ("'tuneUseGlobalFileLocks = [01]' not found in BeeGFS config");
           }
 
-          void check_requirements (int fd)
+          void check_requirements (boost::filesystem::path const& path)
+          try
           {
-            if (!beegfs_testIsBeeGFS (fd))
-            {
-              throw std::runtime_error ("not a BeeGFS mountpoint");
-            }
-            if (!tuneUseGlobalFileLocks (fd))
-            {
-              throw std::runtime_error
-                ("'tuneUseGlobalFileLocks' required but disabled");
-            }
+            util::syscall::directory const directory (path);
+            check_requirements (directory.fd());
           }
-        }
-
-        void check_requirements (boost::filesystem::path const& path)
-        try
-        {
-          util::syscall::directory const directory (path);
-          check_requirements (directory.fd());
-        }
-        catch (...)
-        {
-          std::throw_with_nested (requirements_not_met (path));
+          catch (...)
+          {
+            std::throw_with_nested (requirements_not_met (path));
+          }
         }
       }
     }
   }
-}
 }

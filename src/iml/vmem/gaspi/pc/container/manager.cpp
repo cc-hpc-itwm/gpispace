@@ -118,17 +118,17 @@ namespace gpi
             }
           }
 
-            gpi::pc::type::process_id_t const id (++m_process_counter);
+          gpi::pc::type::process_id_t const id (++m_process_counter);
 
-            {
-              std::lock_guard<std::mutex> const _ (_mutex_processes);
+          {
+            std::lock_guard<std::mutex> const _ (_mutex_processes);
 
-              m_processes.emplace
-                ( id
-                , std::thread
-                    (&manager_t::process_communication_thread, this, id, cfd)
-                );
-            }
+            m_processes.emplace
+              ( id
+              , std::thread
+                  (&manager_t::process_communication_thread, this, id, cfd)
+              );
+          }
         }
       }
 

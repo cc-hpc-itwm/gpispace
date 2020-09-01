@@ -14,30 +14,30 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace rif
   {
-    namespace strategy
+    namespace rif
     {
-      namespace pbsdsh
+      namespace strategy
       {
-        std::unordered_map<std::string, std::exception_ptr>
-          bootstrap ( std::vector<std::string> const& hostnames
-                    , boost::optional<unsigned short> const& port
-                    , std::string const& register_host
-                    , unsigned short register_port
-                    , boost::filesystem::path const& binary
-                    , std::vector<std::string> const& parameters
-                    , std::ostream&
-                    );
-        std::pair < std::unordered_set<std::string>
-                  , std::unordered_map<std::string, std::exception_ptr>
-                  > teardown
+        namespace pbsdsh
+        {
+          std::unordered_map<std::string, std::exception_ptr>
+            bootstrap ( std::vector<std::string> const& hostnames
+                      , boost::optional<unsigned short> const& port
+                      , std::string const& register_host
+                      , unsigned short register_port
+                      , boost::filesystem::path const& binary
+                      , std::vector<std::string> const& parameters
+                      , std::ostream&
+                      );
+          std::pair < std::unordered_set<std::string>
+                    , std::unordered_map<std::string, std::exception_ptr>
+                    > teardown
             ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const&
-          , std::vector<std::string> const& parameters
-          );
+            , std::vector<std::string> const& parameters
+            );
+        }
       }
     }
   }
-}
 }

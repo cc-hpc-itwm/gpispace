@@ -10,21 +10,21 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace util
   {
-    bool read_bool (const std::string& _inp)
+    namespace util
     {
-      std::string inp;
+      bool read_bool (const std::string& _inp)
+      {
+        std::string inp;
 
-      std::transform ( _inp.begin(), _inp.end()
-                     , std::back_inserter (inp), tolower
-                     );
+        std::transform ( _inp.begin(), _inp.end()
+                       , std::back_inserter (inp), tolower
+                       );
 
-      parse::position_string pos (inp);
+        parse::position_string pos (inp);
 
-      return parse::require::boolean (pos);
+        return parse::require::boolean (pos);
+      }
     }
   }
-}
 }

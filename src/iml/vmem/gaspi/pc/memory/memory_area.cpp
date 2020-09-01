@@ -394,8 +394,8 @@ namespace gpi
         {
           throw std::runtime_error
             ( "handle still in use: handle = " + std::to_string (hdl)
-                       + " nref = " + std::to_string (desc.nref)
-                       );
+            + " nref = " + std::to_string (desc.nref)
+            );
         }
 
         iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));

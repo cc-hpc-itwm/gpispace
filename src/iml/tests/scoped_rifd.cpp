@@ -41,6 +41,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
     ( iml_client::iml_rifd::strategy {vm}
     , iml_client::iml_rifd::hostnames {vm}
     , iml_client::iml_rifd::port {vm}
-                                        , installation
-                                        );
+    , installation
+    );
 }

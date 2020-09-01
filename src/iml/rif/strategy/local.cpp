@@ -12,128 +12,128 @@ namespace fhg
 {
   namespace iml
   {
-  namespace rif
-  {
-    namespace strategy
+    namespace rif
     {
-      namespace local
+      namespace strategy
       {
-        namespace
+        namespace local
         {
-          void do_local (boost::format const& command)
+          namespace
           {
-            util::system_with_blocked_SIGCHLD (str (command));
-          }
-        }
-
-        std::unordered_map<std::string, std::exception_ptr>
-          bootstrap ( std::vector<std::string> const& all_hostnames
-                    , boost::optional<unsigned short> const& port
-                    , std::string const& register_host
-                    , unsigned short register_port
-                    , boost::filesystem::path const& binary
-                    , std::vector<std::string> const& parameters
-                    , std::ostream&
-                    )
-        {
-          if (!parameters.empty())
-          {
-            throw std::invalid_argument
-              ("rif-strategy 'local' does not accept parameters");
+            void do_local (boost::format const& command)
+            {
+              util::system_with_blocked_SIGCHLD (str (command));
+            }
           }
 
-          if (all_hostnames.size() != 1)
+          std::unordered_map<std::string, std::exception_ptr>
+            bootstrap ( std::vector<std::string> const& all_hostnames
+                      , boost::optional<unsigned short> const& port
+                      , std::string const& register_host
+                      , unsigned short register_port
+                      , boost::filesystem::path const& binary
+                      , std::vector<std::string> const& parameters
+                      , std::ostream&
+                      )
           {
-            throw std::invalid_argument
-              ( "rif-strategy 'local' expects exactly one host, got "
-              + std::to_string (all_hostnames.size())
-              );
+            if (!parameters.empty())
+            {
+              throw std::invalid_argument
+                ("rif-strategy 'local' does not accept parameters");
+            }
+
+            if (all_hostnames.size() != 1)
+            {
+              throw std::invalid_argument
+                ( "rif-strategy 'local' expects exactly one host, got "
+                + std::to_string (all_hostnames.size())
+                );
+            }
+
+            auto const localhost (fhg::util::hostname());
+            auto const& hostname (all_hostnames.front());
+            if (hostname != localhost)
+            {
+              throw std::invalid_argument
+                ( "local strategy used to bootstrap on non-localhost host: "
+                  "got=" + hostname + ", expected=" + localhost
+                );
+            }
+
+            try
+            {
+              do_local ( boost::format
+                           ( "%1%"
+                             "%2%"
+                             " --register-host %3% --register-port %4%"
+                             " --register-key %5%"
+                           )
+                       % binary
+                       % (port ? " --port " + std::to_string (*port) : "")
+                       % register_host
+                       % register_port
+                       % hostname
+                       );
+
+              return std::unordered_map<std::string, std::exception_ptr>{};
+            }
+            catch (...)
+            {
+              return {{hostname, std::current_exception()}};
+            }
           }
 
-          auto const localhost (fhg::util::hostname());
-          auto const& hostname (all_hostnames.front());
-          if (hostname != localhost)
+          std::pair < std::unordered_set<std::string>
+                    , std::unordered_map<std::string, std::exception_ptr>
+                    > teardown
+              ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const& all_entry_points
+              , std::vector<std::string> const& parameters
+              )
           {
-            throw std::invalid_argument
-              ( "local strategy used to bootstrap on non-localhost host: "
-                "got=" + hostname + ", expected=" + localhost
-              );
-          }
+            if (!parameters.empty())
+            {
+              throw std::invalid_argument
+                ("rif-strategy 'local' does not accept parameters");
+            }
 
-          try
-          {
-            do_local ( boost::format
-                         ( "%1%"
-                           "%2%"
-                           " --register-host %3% --register-port %4%"
-                           " --register-key %5%"
-                         )
-                     % binary
-                     % (port ? " --port " + std::to_string (*port) : "")
-                     % register_host
-                     % register_port
-                     % hostname
-                     );
+            if (all_entry_points.size() != 1)
+            {
+              throw std::invalid_argument
+                ( "rif-strategy 'local' expects exactly one entry_point, got "
+                + std::to_string (all_entry_points.size())
+                );
+            }
 
-            return std::unordered_map<std::string, std::exception_ptr>{};
-          }
-          catch (...)
-          {
-            return {{hostname, std::current_exception()}};
-          }
-        }
+            auto const localhost (fhg::util::hostname());
+            auto const& entry_point (*all_entry_points.begin());
+            auto const& hostname (entry_point.first);
+            if (hostname != localhost)
+            {
+              throw std::invalid_argument
+                ( "local strategy used to teardown on non-localhost host: "
+                  "got=" + hostname + ", expected=" + localhost
+                );
+            }
 
-        std::pair < std::unordered_set<std::string>
-                  , std::unordered_map<std::string, std::exception_ptr>
-                  > teardown
-            ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const& all_entry_points
-            , std::vector<std::string> const& parameters
-            )
-        {
-          if (!parameters.empty())
-          {
-            throw std::invalid_argument
-              ("rif-strategy 'local' does not accept parameters");
-          }
+            try
+            {
+              do_local ( boost::format ("/bin/kill -TERM %1%")
+                       % entry_point.second.pid
+                       );
 
-          if (all_entry_points.size() != 1)
-          {
-            throw std::invalid_argument
-              ( "rif-strategy 'local' expects exactly one entry_point, got "
-              + std::to_string (all_entry_points.size())
-              );
-          }
-
-          auto const localhost (fhg::util::hostname());
-          auto const& entry_point (*all_entry_points.begin());
-          auto const& hostname (entry_point.first);
-          if (hostname != localhost)
-          {
-            throw std::invalid_argument
-              ( "local strategy used to teardown on non-localhost host: "
-                "got=" + hostname + ", expected=" + localhost
-              );
-          }
-
-          try
-          {
-            do_local ( boost::format ("/bin/kill -TERM %1%")
-                     % entry_point.second.pid
-                     );
-
-            return { {hostname}
-                   , std::unordered_map<std::string, std::exception_ptr>{}
-                   };
-          }
-          catch (...)
-          {
-            return { std::unordered_set<std::string>{}
-                   , {{hostname, std::current_exception()}}
-                   };
+              return { {hostname}
+                     , std::unordered_map<std::string, std::exception_ptr>{}
+                     };
+            }
+            catch (...)
+            {
+              return { std::unordered_set<std::string>{}
+                     , {{hostname, std::current_exception()}}
+                     };
+            }
           }
         }
       }
     }
-  }
   }
 }

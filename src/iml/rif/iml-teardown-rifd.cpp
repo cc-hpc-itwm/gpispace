@@ -72,7 +72,7 @@ try
   {
     std::cerr << fhg::iml::project_info ( std::string (argv[0])
                                         + ": tear down the iml rif deamon"
-                                   ) << "\n";
+                                        ) << "\n";
     std::cerr << options_description << "\n";
     return 0;
   }

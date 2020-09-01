@@ -108,11 +108,11 @@ BOOST_AUTO_TEST_CASE (scoped_iml_rts_startup)
     BOOST_REQUIRE (startup_timeout != boost::none);
 
     BOOST_REQUIRE_EQUAL
-        ( info_output[1]
+      ( info_output[1]
       , ( boost::format ("I: starting VMEM on: %1%"
                         " with a timeout of %2%"
                         " seconds"
-        )
+                        )
         % *socket_path
         % *startup_timeout
         ).str()

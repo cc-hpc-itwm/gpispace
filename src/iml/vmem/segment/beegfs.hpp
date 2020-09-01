@@ -7,24 +7,24 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace vmem
   {
-    namespace segment
+    namespace vmem
     {
-      namespace beegfs
+      namespace segment
       {
-        struct requirements_not_met : std::runtime_error
+        namespace beegfs
         {
-          requirements_not_met (boost::filesystem::path const& path)
-            : std::runtime_error
-                ("BeeGFS segment requirements not met for " + path.string())
-          {}
-        };
+          struct requirements_not_met : std::runtime_error
+          {
+            requirements_not_met (boost::filesystem::path const& path)
+              : std::runtime_error
+                  ("BeeGFS segment requirements not met for " + path.string())
+            {}
+          };
 
-        void check_requirements (boost::filesystem::path const&);
+          void check_requirements (boost::filesystem::path const&);
+        }
       }
     }
   }
-}
 }

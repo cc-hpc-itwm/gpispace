@@ -669,14 +669,14 @@ namespace fhg
         {
           switch (component)
           {
-            case component_type::worker:
-              return "drts-kernel";
-            case component_type::agent:
-              return "agent";
-            case component_type::logging_demultiplexer:
-              return "logging-demultiplexer";
-            default:
-              throw std::logic_error ("invalid enum value");
+          case component_type::worker:
+            return "drts-kernel";
+          case component_type::agent:
+            return "agent";
+          case component_type::logging_demultiplexer:
+            return "logging-demultiplexer";
+          default:
+            throw std::logic_error ("invalid enum value");
           }
         }();
 

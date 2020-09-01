@@ -32,28 +32,28 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace rif
   {
-    namespace protocol
+    namespace rif
     {
-      FHG_RPC_FUNCTION_DESCRIPTION
-        ( kill
-        , std::unordered_map<pid_t, std::exception_ptr> (std::vector<pid_t>)
-        );
+      namespace protocol
+      {
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( kill
+          , std::unordered_map<pid_t, std::exception_ptr> (std::vector<pid_t>)
+          );
 
-      FHG_RPC_FUNCTION_DESCRIPTION
-        ( start_vmem
-        , pid_t ( boost::filesystem::path command
-                , boost::filesystem::path socket
-                , unsigned short gaspi_port
-                , std::chrono::seconds proc_init_timeout
-                , std::vector<std::string> nodes
-                , std::string gaspi_master
-                , std::size_t rank
+        FHG_RPC_FUNCTION_DESCRIPTION
+          ( start_vmem
+          , pid_t ( boost::filesystem::path command
+                  , boost::filesystem::path socket
+                  , unsigned short gaspi_port
+                  , std::chrono::seconds proc_init_timeout
+                  , std::vector<std::string> nodes
+                  , std::string gaspi_master
+                  , std::size_t rank
                   , fhg::iml::vmem::netdev_id netdev_id
-                )
-        );
+                  )
+          );
       }
     }
   }

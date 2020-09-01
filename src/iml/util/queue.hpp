@@ -9,51 +9,51 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace thread
   {
-    template<typename T>
-      class queue : public boost::noncopyable
+    namespace thread
     {
-    public:
-      typedef std::list<T> container_type;
-      typedef typename container_type::size_type size_type;
-
-      T get()
+      template<typename T>
+        class queue : public boost::noncopyable
       {
-        std::unique_lock<std::mutex> lock (m_mtx);
-        m_get_cond.wait (lock, [this] { return !m_container.empty(); });
+      public:
+        typedef std::list<T> container_type;
+        typedef typename container_type::size_type size_type;
 
-        T t (std::move (m_container.front()));
-        m_container.pop_front();
-        return t;
-      }
+        T get()
+        {
+          std::unique_lock<std::mutex> lock (m_mtx);
+          m_get_cond.wait (lock, [this] { return !m_container.empty(); });
 
-      template<class... Args> void put (Args&&... args)
-      {
-        std::unique_lock<std::mutex> const _ (m_mtx);
-        m_container.emplace_back (std::forward<Args> (args)...);
-        m_get_cond.notify_one();
-      }
+          T t (std::move (m_container.front()));
+          m_container.pop_front();
+          return t;
+        }
 
-      template<typename FwdIt> void put_many (FwdIt begin, FwdIt end)
-      {
-        std::unique_lock<std::mutex> const _ (m_mtx);
-        m_container.insert (m_container.end(), begin, end);
-        m_get_cond.notify_all();
-      }
+        template<class... Args> void put (Args&&... args)
+        {
+          std::unique_lock<std::mutex> const _ (m_mtx);
+          m_container.emplace_back (std::forward<Args> (args)...);
+          m_get_cond.notify_one();
+        }
 
-      void INDICATES_A_RACE_clear()
-      {
-        std::unique_lock<std::mutex> const _ (m_mtx);
-        m_container.clear();
-      }
-    private:
-      mutable std::mutex m_mtx;
-      std::condition_variable m_get_cond;
+        template<typename FwdIt> void put_many (FwdIt begin, FwdIt end)
+        {
+          std::unique_lock<std::mutex> const _ (m_mtx);
+          m_container.insert (m_container.end(), begin, end);
+          m_get_cond.notify_all();
+        }
 
-      container_type m_container;
-    };
+        void INDICATES_A_RACE_clear()
+        {
+          std::unique_lock<std::mutex> const _ (m_mtx);
+          m_container.clear();
+        }
+      private:
+        mutable std::mutex m_mtx;
+        std::condition_variable m_get_cond;
+
+        container_type m_container;
+      };
+    }
   }
-}
 }

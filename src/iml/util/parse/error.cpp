@@ -5,18 +5,18 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace util
   {
-    namespace parse
+    namespace util
     {
-      namespace error
+      namespace parse
       {
-        expected::expected (const std::string& what, const position& inp)
-          : generic (boost::format ("expected '%1%'") % what, inp)
-        {}
+        namespace error
+        {
+          expected::expected (const std::string& what, const position& inp)
+            : generic (boost::format ("expected '%1%'") % what, inp)
+          {}
+        }
       }
     }
   }
-}
 }

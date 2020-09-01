@@ -16,34 +16,34 @@
 
 namespace
 {
-void close_socket (const int fd)
-{
-  fhg::util::syscall::shutdown (fd, SHUT_RDWR);
-  fhg::util::syscall::close (fd);
-}
-
-int open_socket (std::string const & path)
-{
-  int const sfd = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
-
-  struct sockaddr_un addr;
-
-  memset (&addr, 0, sizeof(addr));
-  addr.sun_family = AF_UNIX;
-  strncpy (addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
-
-  try
+  void close_socket (const int fd)
   {
-    fhg::util::syscall::connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
-  }
-  catch (boost::system::system_error const& se)
-  {
-    close_socket (sfd);
-    return -se.code().value();
+    fhg::util::syscall::shutdown (fd, SHUT_RDWR);
+    fhg::util::syscall::close (fd);
   }
 
-  return sfd;
-}
+  int open_socket (std::string const & path)
+  {
+    int const sfd = fhg::util::syscall::socket (AF_UNIX, SOCK_STREAM, 0);
+
+    struct sockaddr_un addr;
+
+    memset (&addr, 0, sizeof(addr));
+    addr.sun_family = AF_UNIX;
+    strncpy (addr.sun_path, path.c_str(), sizeof(addr.sun_path) - 1);
+
+    try
+    {
+      fhg::util::syscall::connect (sfd, (struct sockaddr*)&addr, sizeof(struct sockaddr_un));
+    }
+    catch (boost::system::system_error const& se)
+    {
+      close_socket (sfd);
+      return -se.code().value();
+    }
+
+    return sfd;
+  }
 }
 
 namespace gpi
@@ -408,7 +408,7 @@ namespace gpi
             ( "Segment attached with id "
             + std::to_string (seg->id())
             + " already exists"
-                       );
+            );
         }
 
         fhg_assert (m_segments.find (seg->id()) == m_segments.end());
@@ -441,8 +441,8 @@ namespace gpi
         {
           throw std::runtime_error
             ( "could not unregister segment " + std::to_string (id)
-                       + ": " + fhg::util::current_exception_printer().string()
-                       );
+            + ": " + fhg::util::current_exception_printer().string()
+            );
         }
 
         // remove local

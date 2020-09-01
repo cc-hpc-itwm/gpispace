@@ -3,26 +3,26 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace util
   {
-    namespace parse
+    namespace util
     {
-      std::string until
-        (position& pos, std::function<bool (position const&)> const& p)
+      namespace parse
       {
-        std::string s;
-
-        while (!pos.end() && !p (pos))
+        std::string until
+          (position& pos, std::function<bool (position const&)> const& p)
         {
-          s += *pos;
+          std::string s;
 
-          ++pos;
+          while (!pos.end() && !p (pos))
+          {
+            s += *pos;
+
+            ++pos;
+          }
+
+          return s;
         }
-
-        return s;
       }
     }
   }
-}
 }

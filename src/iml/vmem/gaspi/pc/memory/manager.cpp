@@ -30,23 +30,23 @@ namespace gpi
                                , fhg::iml::vmem::gaspi_context& gaspi_context
                                , type::id_t owner
                                )
-      {
-        url_t url (url_s);
-
-        if (url.type() == "gaspi")
         {
+          url_t url (url_s);
+
+          if (url.type() == "gaspi")
+          {
             return gaspi_area_t::create
               (url_s, topology, handle_generator, gaspi_context, owner);
-        }
+          }
           else if (url.type() == "beegfs")
-        {
+          {
             return beegfs_area_t::create
               (url_s, topology, handle_generator, owner);
-        }
+          }
 
           throw std::runtime_error
             ("no memory type registered with: '" + url_s + "'");
-      }
+        }
       }
 
       manager_t::manager_t (fhg::iml::vmem::gaspi_context& gaspi_context)

@@ -14,46 +14,46 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace rif
   {
-    struct entry_point : public fhg::util::ostream::modifier
+    namespace rif
     {
-      std::string hostname;
-      unsigned short port;
-      pid_t pid;
-
-      //! \note Serialization only.
-      entry_point() = default;
-
-      entry_point (std::string const& hostname_, unsigned short port_, pid_t pid_)
-        : hostname (hostname_)
-        , port (port_)
-        , pid (pid_)
-      {}
-
-      entry_point (std::string const& input)
+      struct entry_point : public fhg::util::ostream::modifier
       {
-        std::istringstream iss (input);
-        if (!(iss >> hostname >> port >> pid))
+        std::string hostname;
+        unsigned short port;
+        pid_t pid;
+
+        //! \note Serialization only.
+        entry_point() = default;
+
+        entry_point (std::string const& hostname_, unsigned short port_, pid_t pid_)
+          : hostname (hostname_)
+          , port (port_)
+          , pid (pid_)
+        {}
+
+        entry_point (std::string const& input)
         {
-          throw std::runtime_error
-            ("parse error: expected 'host port pid': got '" + input + "'");
+          std::istringstream iss (input);
+          if (!(iss >> hostname >> port >> pid))
+          {
+            throw std::runtime_error
+              ("parse error: expected 'host port pid': got '" + input + "'");
+          }
         }
-      }
-      virtual std::ostream& operator() (std::ostream& os) const override
-      {
-        return os << hostname << ' ' << port << ' ' << pid;
-      }
+        virtual std::ostream& operator() (std::ostream& os) const override
+        {
+          return os << hostname << ' ' << port << ' ' << pid;
+        }
 
-      bool operator== (entry_point const& other) const
-      {
-        return std::tie (hostname, port, pid)
-          == std::tie (other.hostname, other.port, other.pid);
-      }
-    };
+        bool operator== (entry_point const& other) const
+        {
+          return std::tie (hostname, port, pid)
+            == std::tie (other.hostname, other.port, other.pid);
+        }
+      };
+    }
   }
-}
 }
 
 namespace std

@@ -154,15 +154,15 @@ namespace iml_client
 
       _on_slot_filled ( { _buffer._->_handle_id
                         , _offset_to_meta_data + slot
-                                , 1UL
+                        , 1UL
                         }
                       , { _buffer._->_handle_id
                         , slot * _size_of_slot
-                                                            , data.size()
+                        , data.size()
                         }
                       , flag[slot]
                       , _sequence_number++
-                              );
+                      );
     }
   };
 

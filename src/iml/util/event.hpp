@@ -8,68 +8,68 @@
 namespace fhg
 {
   namespace iml
-{
-  namespace util
   {
-    namespace thread
+    namespace util
     {
-      template <typename T = void> class event;
-
-      template <typename T>
-        class event : boost::noncopyable
+      namespace thread
       {
-        T _event;
-        bool _signalled {false};
-        mutable std::mutex _mutex;
-        mutable std::condition_variable _condition;
+        template <typename T = void> class event;
 
-      public:
-        T wait()
+        template <typename T>
+          class event : boost::noncopyable
         {
-          std::unique_lock<std::mutex> lock (_mutex);
+          T _event;
+          bool _signalled {false};
+          mutable std::mutex _mutex;
+          mutable std::condition_variable _condition;
 
-          _condition.wait (lock, [this] { return _signalled; });
-          _signalled = false;
+        public:
+          T wait()
+          {
+            std::unique_lock<std::mutex> lock (_mutex);
 
-          return std::move (_event);
-        }
+            _condition.wait (lock, [this] { return _signalled; });
+            _signalled = false;
 
-        void notify (T u)
+            return std::move (_event);
+          }
+
+          void notify (T u)
+          {
+            std::lock_guard<std::mutex> const _ (_mutex);
+
+            _event = std::move (u);
+
+            _signalled = true;
+            _condition.notify_one();
+          }
+        };
+
+        template<>
+          class event<void> : boost::noncopyable
         {
-          std::lock_guard<std::mutex> const _ (_mutex);
+          bool _signalled {false};
+          mutable std::mutex _mutex;
+          mutable std::condition_variable _condition;
 
-          _event = std::move (u);
+        public:
+          void wait()
+          {
+            std::unique_lock<std::mutex> lock (_mutex);
 
-          _signalled = true;
-          _condition.notify_one();
-        }
-      };
+            _condition.wait (lock, [this] { return _signalled; });
+            _signalled = false;
+          }
 
-      template<>
-        class event<void> : boost::noncopyable
-      {
-        bool _signalled {false};
-        mutable std::mutex _mutex;
-        mutable std::condition_variable _condition;
+          void notify()
+          {
+            std::lock_guard<std::mutex> const _ (_mutex);
 
-      public:
-        void wait()
-        {
-          std::unique_lock<std::mutex> lock (_mutex);
-
-          _condition.wait (lock, [this] { return _signalled; });
-          _signalled = false;
-        }
-
-        void notify()
-        {
-          std::lock_guard<std::mutex> const _ (_mutex);
-
-          _signalled = true;
-          _condition.notify_one();
-        }
-      };
+            _signalled = true;
+            _condition.notify_one();
+          }
+        };
+      }
     }
   }
-}
 }

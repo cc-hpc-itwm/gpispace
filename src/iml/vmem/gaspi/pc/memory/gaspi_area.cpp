@@ -295,8 +295,8 @@ namespace gpi
             {
               throw std::runtime_error 
                 ( "could not read from src area - premature "
-                            "end-of-file?"
-                          );
+                  "end-of-file?"
+                );
             }
 
             do_write_dma_and_wait_remote_written
@@ -352,8 +352,8 @@ namespace gpi
             {
               throw std::runtime_error 
                 ( "could not write to dst area - premature "
-                            "end-of-file?"
-                          );
+                  "end-of-file?"
+                );
               break;
             }
 

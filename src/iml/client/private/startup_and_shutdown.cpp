@@ -127,89 +127,89 @@ namespace fhg
         , "connecting to rif entry points"
         );
 
-        if (!vmem_startup_timeout)
-        {
-          throw std::invalid_argument
-            ("vmem startup timeout is required when gpi is enabled");
-        }
-        if (!vmem_port)
-        {
-          throw std::invalid_argument
-            ("vmem port is required when gpi is enabled");
-        }
-        if (!gpi_socket)
-        {
-          throw std::invalid_argument
-            ("vmem socket is required when gpi is enabled");
-        }
+      if (!vmem_startup_timeout)
+      {
+        throw std::invalid_argument
+          ("vmem startup timeout is required when gpi is enabled");
+      }
+      if (!vmem_port)
+      {
+        throw std::invalid_argument
+          ("vmem port is required when gpi is enabled");
+      }
+      if (!gpi_socket)
+      {
+        throw std::invalid_argument
+          ("vmem socket is required when gpi is enabled");
+      }
 
-        info_output << "I: starting VMEM on: " << gpi_socket.get()
-                    << " with a timeout of " << vmem_startup_timeout.get().count()
-                    << " seconds\n";
+      info_output << "I: starting VMEM on: " << gpi_socket.get()
+                  << " with a timeout of " << vmem_startup_timeout.get().count()
+                  << " seconds\n";
 
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
+      fhg::util::nest_exceptions<std::runtime_error>
+        ( [&]
+          {
             std::unordered_map<fhg::iml::rif::entry_point, std::future<pid_t>>
-                queued_start_requests;
+              queued_start_requests;
             std::unordered_map<fhg::iml::rif::entry_point, std::exception_ptr>
-                fails;
+              fails;
 
-              //! \note requires ranks to be matching index in hostnames!
-              std::size_t rank (0);
-              for (auto& connection : rif_connections)
+            //! \note requires ranks to be matching index in hostnames!
+            std::size_t rank (0);
+            for (auto& connection : rif_connections)
+            {
+              try
               {
-                try
-                {
-                  queued_start_requests.emplace
-                    ( connection.second
-                    , connection.first.start_vmem
-                        ( installation_path.vmem()
-                        , gpi_socket.get()
-                        , vmem_port.get()
-                        , vmem_startup_timeout.get()
-                        , hostnames
-                        , master.string()
-                        , rank++
-                        , vmem_netdev_id.get()
-                        )
-                    );
-                }
-                catch (...)
-                {
-                  fails.emplace (connection.second, std::current_exception());
-                }
-              }
-
-              for (auto& request : queued_start_requests)
-              {
-                try
-                {
-                  processes.store (request.first, "vmem", request.second.get());
-                }
-                catch (...)
-                {
-                  fails.emplace (request.first, std::current_exception());
-                }
-              }
-
-              if (!fails.empty())
-              {
-                fhg::util::throw_collected_exceptions
-                  ( fails
-                , [] (std::pair<fhg::iml::rif::entry_point, std::exception_ptr> const& fail)
-                    {
-                      return ( boost::format ("vmem startup failed %1%: %2%")
-                             % fail.first
-                             % fhg::util::exception_printer (fail.second)
-                             ).str();
-                    }
+                queued_start_requests.emplace
+                  ( connection.second
+                  , connection.first.start_vmem
+                      ( installation_path.vmem()
+                      , gpi_socket.get()
+                      , vmem_port.get()
+                      , vmem_startup_timeout.get()
+                      , hostnames
+                      , master.string()
+                      , rank++
+                      , vmem_netdev_id.get()
+                      )
                   );
               }
+              catch (...)
+              {
+                fails.emplace (connection.second, std::current_exception());
+              }
             }
-          , "could not start vmem"
-          );
-      }
+
+            for (auto& request : queued_start_requests)
+            {
+              try
+              {
+                processes.store (request.first, "vmem", request.second.get());
+              }
+              catch (...)
+              {
+                fails.emplace (request.first, std::current_exception());
+              }
+            }
+
+            if (!fails.empty())
+            {
+              fhg::util::throw_collected_exceptions
+                ( fails
+                , [] (std::pair<fhg::iml::rif::entry_point, std::exception_ptr> const& fail)
+                  {
+                    return ( boost::format ("vmem startup failed %1%: %2%")
+                           % fail.first
+                           % fhg::util::exception_printer (fail.second)
+                           ).str();
+                  }
+                );
+            }
+          }
+        , "could not start vmem"
+        );
+    }
 
     namespace
     {

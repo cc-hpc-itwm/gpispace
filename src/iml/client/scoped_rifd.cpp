@@ -137,12 +137,12 @@ namespace iml_client
                 , std::unordered_map<std::string, std::string>
                 > const boot
         ( fhg::iml::rif::strategy::bootstrap ( _strategy
-                                        , no_duplicates
-                                        , _port
+                                             , no_duplicates
+                                             , _port
                                              , _installation.iml_home()
-                                        , _parameters
-                                        , out
-                                        )
+                                             , _parameters
+                                             , out
+                                             )
         );
 
       std::unordered_map<std::string, std::string> const& real_hostname

@@ -77,10 +77,10 @@ namespace gpi
       {
         throw std::runtime_error
           ( "requested memory size ("
-                     + std::to_string (_per_node_size) + ") exceeds available"
-                     + " memory size ("
-                     + std::to_string (sys::get_avail_memory_size()) + ")"
-                     );
+          + std::to_string (_per_node_size) + ") exceeds available"
+          + " memory size ("
+          + std::to_string (sys::get_avail_memory_size()) + ")"
+          );
       }
 
       FAIL_ON_NON_ZERO ( gaspi_segment_create

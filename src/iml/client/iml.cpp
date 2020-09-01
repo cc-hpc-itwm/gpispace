@@ -65,8 +65,8 @@ namespace iml_client
   {}
 
   scoped_iml_runtime_system::scoped_iml_runtime_system
-      ( boost::program_options::variables_map const& vm
-      , installation const& installation
+    ( boost::program_options::variables_map const& vm
+    , installation const& installation
     , rifd_entry_points const& entry_points
     , std::ostream& info_output
     )
@@ -123,15 +123,15 @@ namespace iml_client
   {
     fhg::iml_drts::startup
       ( _gpi_socket
-          , _installation_path
+      , _installation_path
       , _processes_storage
-          , vmem_startup_timeout
-          , vmem_port
-          , vmem_netdev_id
-          , rif_entry_points
-          , _master
-          , _info_output
-          );
+      , vmem_startup_timeout
+      , vmem_port
+      , vmem_netdev_id
+      , rif_entry_points
+      , _master
+      , _info_output
+      );
   }
 
   scoped_iml_runtime_system::implementation::implementation
@@ -191,14 +191,14 @@ namespace iml_client
   stream scoped_iml_runtime_system::create_stream
     ( std::string const& name
     , iml_client::vmem_allocation const& buffer
-                                              , stream::size_of_slot const& size_of_slot
+    , stream::size_of_slot const& size_of_slot
     , std::function<void ( gpi::pc::type::range_t const meta
                          , gpi::pc::type::range_t const data
                          , char const flag
                          , std::size_t const id
                          )
                    > on_slot_filled
-                                              ) const
+    ) const
   {
     return stream (*this, name, buffer, size_of_slot, on_slot_filled);
   }
