@@ -1,27 +1,29 @@
-#include <drts/scoped_rifd.hpp>
+#include <iml/client/scoped_rifd.hpp>
 
-#include <drts/drts.hpp>
-#include <drts/private/pimpl.hpp>
-#include <drts/private/option.hpp>
-#include <drts/private/rifd_entry_points_impl.hpp>
+#include <iml/client/iml.hpp>
+#include <iml/client/private/pimpl.hpp>
+#include <iml/client/private/option.hpp>
+#include <iml/client/private/rifd_entry_points_impl.hpp>
 
 #include <util-generic/blocked.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <rif/client.hpp>
-#include <rif/strategy/meta.hpp>
+#include <iml/rif/client.hpp>
+#include <iml/rif/strategy/meta.hpp>
 
 #include <boost/format.hpp>
 #include <boost/range/adaptor/map.hpp>
 #include <boost/serialization/unordered_map.hpp>
 
+#include <iml/rif/client.hpp>
+
 #include <iterator>
 
-namespace gspc
+namespace iml_client
 {
-  namespace rifd
+  namespace iml_rifd
   {
     PIMPL_IMPLEMENTATION
       (strategy, std::pair<std::string, std::vector<std::string>>)
@@ -54,12 +56,12 @@ namespace gspc
   }
 
   using entry_point_by_host =
-    std::unordered_map<std::string, fhg::rif::entry_point>;
+    std::unordered_map<std::string, fhg::iml::rif::entry_point>;
 
   struct rifds::implementation
   {
-    implementation ( rifd::strategy const& strategy
-                   , rifd::port const& port
+    implementation ( iml_rifd::strategy const& strategy
+                   , iml_rifd::port const& port
                    , installation const& installation
                    )
       : _strategy (strategy._->_.first)
@@ -134,10 +136,10 @@ namespace gspc
                 , std::unordered_map<std::string, std::exception_ptr>
                 , std::unordered_map<std::string, std::string>
                 > const boot
-        ( fhg::rif::strategy::bootstrap ( _strategy
+        ( fhg::iml::rif::strategy::bootstrap ( _strategy
                                         , no_duplicates
                                         , _port
-                                        , _installation.gspc_home()
+                                             , _installation.iml_home()
                                         , _parameters
                                         , out
                                         )
@@ -174,7 +176,7 @@ namespace gspc
               > teardown (entry_point_by_host const entry_points)
     {
       auto const result
-        (fhg::rif::strategy::teardown (_strategy, entry_points, _parameters));
+        (fhg::iml::rif::strategy::teardown (_strategy, entry_points, _parameters));
 
       for (auto const& entry_point : entry_points)
       {
@@ -192,66 +194,6 @@ namespace gspc
       return teardown (_entry_points);
     }
 
-    std::pair< std::unordered_map<std::string, std::vector<std::string>>
-             , std::unordered_map<std::string, std::exception_ptr>
-             >
-      execute ( std::unordered_set<std::string> const& hostnames
-              , boost::filesystem::path const& command
-              , std::vector<std::string> const& arguments
-              , std::unordered_map<std::string, std::string> const& environment
-              ) const
-    {
-      std::pair< std::unordered_map<std::string, std::vector<std::string>>
-               , std::unordered_map<std::string, std::exception_ptr>
-               > results;
-
-      fhg::util::scoped_boost_asio_io_service_with_threads io_service (64);
-
-      std::list<fhg::rif::client> clients;
-      std::unordered_map<std::string, std::future<std::vector<std::string>>> futures;
-      for (std::string const& hostname : hostnames)
-      {
-        try
-        {
-          auto const pos (_entry_points.find (hostname));
-
-          if (pos == _entry_points.end())
-          {
-            throw std::invalid_argument
-              (( boost::format ("execute: unknown host '%1%'")
-               % hostname
-               ).str()
-              );
-          }
-
-          clients.emplace_back (io_service, pos->second);
-          futures.emplace
-            ( hostname
-            , clients.back().execute_and_get_startup_messages_and_wait
-                (command, arguments, environment)
-            );
-        }
-        catch (...)
-        {
-          results.second.emplace (hostname, std::current_exception());
-        }
-      }
-
-      for (auto& future : futures)
-      {
-        try
-        {
-          results.first.emplace (future.first, future.second.get());
-        }
-        catch (...)
-        {
-          results.second.emplace (future.first, std::current_exception());
-        }
-      }
-
-      return results;
-    }
-
     std::string _strategy;
     std::vector<std::string> _parameters;
     boost::optional<unsigned short> _port;
@@ -261,8 +203,8 @@ namespace gspc
     std::unordered_map<std::string, std::string> _real_hostnames;
   };
 
-  rifds::rifds ( rifd::strategy const& strategy
-               , rifd::port const& port
+  rifds::rifds ( iml_rifd::strategy const& strategy
+               , iml_rifd::port const& port
                , installation const& installation
                )
     : _ (new implementation (strategy, port, installation))
@@ -296,7 +238,7 @@ namespace gspc
            , std::pair< std::unordered_set<std::string>
                       , std::unordered_set<std::string>
                       >
-           > rifds::entry_points (rifd::hostnames const& hostnames) const
+           > rifds::entry_points (iml_rifd::hostnames const& hostnames) const
   {
     auto const entry_points (_->entry_points (hostnames._->_));
 
@@ -312,7 +254,7 @@ namespace gspc
   std::pair< rifd_entry_points
            , std::unordered_map<std::string, std::exception_ptr>
            >
-    rifds::bootstrap (rifd::hostnames const& hostnames, std::ostream& out)
+    rifds::bootstrap (iml_rifd::hostnames const& hostnames, std::ostream& out)
   {
     auto result (_->bootstrap (hostnames._->_, out));
 
@@ -324,7 +266,7 @@ namespace gspc
   std::pair < std::unordered_set<std::string>
             , std::unordered_map<std::string, std::exception_ptr>
             >
-    rifds::teardown (rifd::hostnames const& hostnames)
+    rifds::teardown (iml_rifd::hostnames const& hostnames)
   {
     return _->teardown (_->entry_points (hostnames._->_).first);
   }
@@ -337,22 +279,9 @@ namespace gspc
     return _->teardown();
   }
 
-  std::pair< std::unordered_map<std::string, std::vector<std::string>>
-           , std::unordered_map<std::string, std::exception_ptr>
-           >
-    rifds::execute
-      ( std::unordered_set<std::string> const& hostnames
-      , boost::filesystem::path const& command
-      , std::vector<std::string> const& arguments
-      , std::unordered_map<std::string, std::string> const& environment
-      ) const
-  {
-    return _->execute (hostnames, command, arguments, environment);
-  }
-
-  scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
-                           , rifd::hostname const& hostname
-                           , rifd::port const& port
+  scoped_rifd::scoped_rifd ( iml_rifd::strategy const& strategy
+                           , iml_rifd::hostname const& hostname
+                           , iml_rifd::port const& port
                            , installation const& installation
                            , std::ostream& out
                            )
@@ -377,9 +306,9 @@ namespace gspc
       (_->_entry_points.begin()->second);
   }
 
-  scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
-                             , rifd::hostnames const& hostnames
-                             , rifd::port const& port
+  scoped_rifds::scoped_rifds ( iml_rifd::strategy const& strategy
+                             , iml_rifd::hostnames const& hostnames
+                             , iml_rifd::port const& port
                              , installation const& installation
                              , std::ostream& out
                              )

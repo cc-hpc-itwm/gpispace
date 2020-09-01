@@ -6,6 +6,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace vmem
   {
     namespace segment
@@ -24,4 +26,5 @@ namespace fhg
       }
     }
   }
+}
 }

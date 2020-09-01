@@ -2,13 +2,13 @@
 
 #include <boost/filesystem.hpp>
 
-#include <gpi-space/pc/type/segment_type.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 
-#include <gpi-space/pc/global/itopology.hpp>
-#include <gpi-space/pc/memory/memory_area.hpp>
+#include <iml/vmem/gaspi/pc/global/itopology.hpp>
+#include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 #include <util-generic/filesystem_lock_directory.hpp>
-#include <fhg/util/thread/queue.hpp>
+#include <iml/util/queue.hpp>
 
 namespace gpi
 {
@@ -24,15 +24,13 @@ namespace gpi
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
-        static area_ptr_t create ( fhg::logging::stream_emitter&
-                                 , std::string const &url
+        static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , type::id_t owner
                                  );
 
-        beegfs_area_t ( fhg::logging::stream_emitter&
-                      , const gpi::pc::type::process_id_t creator
+        beegfs_area_t ( const gpi::pc::type::process_id_t creator
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
                       , const gpi::pc::type::flags_t flags
@@ -46,7 +44,7 @@ namespace gpi
         int get_type_id () const;
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
-        virtual gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
+        virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
 
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
@@ -83,7 +81,7 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
-        fhg::thread::queue<int> _fds;
+        fhg::iml::thread::queue<int> _fds;
         struct lock_file_helper : fhg::util::filesystem_lock_directory
         {
           lock_file_helper (beegfs_area_t&);

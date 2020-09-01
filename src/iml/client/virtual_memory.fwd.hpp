@@ -2,7 +2,7 @@
 
 #include <boost/variant.hpp>
 
-namespace gspc
+namespace iml_client
 {
   class vmem_allocation;
 

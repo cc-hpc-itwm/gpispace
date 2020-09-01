@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rif/entry_point.hpp>
+#include <iml/rif/entry_point.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
@@ -15,6 +15,8 @@
 
 namespace fhg
 {
+  namespace iml
+  {
   namespace rif
   {
     namespace strategy
@@ -33,10 +35,11 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-          ( std::unordered_map<std::string, fhg::rif::entry_point> const&
+          ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const&
           , std::vector<std::string> const& parameters
           );
       }
     }
+  }
   }
 }

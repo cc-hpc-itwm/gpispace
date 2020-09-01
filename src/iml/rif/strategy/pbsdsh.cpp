@@ -1,8 +1,8 @@
-#include <rif/strategy/pbsdsh.hpp>
+#include <iml/rif/strategy/pbsdsh.hpp>
 
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <iml/util/system_with_blocked_SIGCHLD.hpp>
 #include <util-generic/blocked.hpp>
 
 #include <boost/format.hpp>
@@ -10,6 +10,8 @@
 #include <stdexcept>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace rif
   {
@@ -59,7 +61,7 @@ namespace fhg
         {
           EXTRACT_PARAMETERS (parameters);
 
-          return util::blocked_async<std::string>
+            return fhg::util::blocked_async<std::string>
             ( all_hostnames
             , block_size
             , [] (std::string const& hostname) { return hostname; }
@@ -85,20 +87,20 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-            ( std::unordered_map<std::string, fhg::rif::entry_point> const& all_entry_points
+              ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const& all_entry_points
             , std::vector<std::string> const& parameters
             )
         {
           EXTRACT_PARAMETERS (parameters);
 
-          return util::blocked_async<std::string>
+            return fhg::util::blocked_async<std::string>
             ( all_entry_points
             , block_size
-            , [] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+              , [] (std::pair<std::string, fhg::iml::rif::entry_point> const& entry_point)
               {
                 return entry_point.first;
               }
-            , [&] (std::pair<std::string, fhg::rif::entry_point> const& entry_point)
+              , [&] (std::pair<std::string, fhg::iml::rif::entry_point> const& entry_point)
               {
                 do_pbsdsh ( entry_point.second.hostname
                           , boost::format ("/bin/kill -TERM %1%")
@@ -110,4 +112,5 @@ namespace fhg
       }
     }
   }
+}
 }

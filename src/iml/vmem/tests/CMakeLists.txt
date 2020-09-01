@@ -1,15 +1,21 @@
-fhg_add_test (NAME mmgr_dtmmgr
-  SOURCES dtmmgr.cpp
+fhg_add_test (NAME iml-vmem_netdev_id
+  SOURCES "netdev_id.cpp"
+  LIBRARIES IML::vmem-client
   USE_BOOST
-  LIBRARIES mmgr fhg-util
 )
-fhg_add_test (NAME mmgr_tmmgr
-  SOURCES tmmgr.cpp
+
+fhg_add_test (NAME iml-mmgr_dtmmgr
+  SOURCES "dtmmgr.cpp"
   USE_BOOST
-  LIBRARIES mmgr fhg-util
+  LIBRARIES IML::mmgr IML::fhg-util
 )
-fhg_add_test (NAME mmgr_perftmmgr
-  SOURCES perftmmgr.cpp
+fhg_add_test (NAME iml-mmgr_tmmgr
+  SOURCES "tmmgr.cpp"
+  USE_BOOST
+  LIBRARIES IML::mmgr IML::fhg-util
+)
+fhg_add_test (NAME iml-mmgr_perftmmgr
+  SOURCES "perftmmgr.cpp"
   USE_BOOST PERFORMANCE_TEST
-  LIBRARIES mmgr fhg-util
+  LIBRARIES IML::mmgr IML::fhg-util
 )

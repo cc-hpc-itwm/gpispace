@@ -13,17 +13,17 @@
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-#include <fhg/util/signal_handler_manager.hpp>
+#include <iml/util/signal_handler_manager.hpp>
 #include <util-generic/syscall.hpp>
-#include <fhg/util/thread/event.hpp>
+#include <iml/util/event.hpp>
 
-#include <gpi-space/gpi/gaspi.hpp>
-#include <gpi-space/pc/container/manager.hpp>
+#include <iml/vmem/gaspi/gpi/gaspi.hpp>
+#include <iml/vmem/gaspi/pc/container/manager.hpp>
 
-#include <rif/started_process_promise.hpp>
+#include <iml/rif/started_process_promise.hpp>
 
-#include <vmem/gaspi_context.hpp>
-#include <vmem/netdev_id.hpp>
+#include <iml/vmem/gaspi_context.hpp>
+#include <iml/vmem/netdev_id.hpp>
 
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
@@ -48,7 +48,7 @@ namespace
 
 int main (int argc, char** argv)
 {
-  fhg::rif::started_process_promise promise (argc, argv);
+  fhg::iml::rif::started_process_promise promise (argc, argv);
 
   try
   {
@@ -74,7 +74,7 @@ int main (int argc, char** argv)
       , "path to open communication socket"
       )
       ( option::netdev
-      , boost::program_options::value<fhg::vmem::netdev_id>()->required()
+      , boost::program_options::value<fhg::iml::vmem::netdev_id>()->required()
       , "the network device to use"
       )
       ;
@@ -104,11 +104,7 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
       );
 
-    fhg::logging::stream_emitter log_emitter;
-
-    fhg::util::signal_handler_manager signal_handler;
-    fhg::util::scoped_log_backtrace_and_exit_for_critical_errors const
-      crit_error_handler (signal_handler, log_emitter);
+    fhg::iml::util::signal_handler_manager signal_handler;
 
     //! \todo more than one thread, parameter
     fhg::util::scoped_boost_asio_io_service_with_threads
@@ -119,28 +115,27 @@ int main (int argc, char** argv)
             (topology_server_io_service)
       );
 
-    fhg::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
-    fhg::vmem::gaspi_context gaspi_context
+    fhg::iml::vmem::gaspi_timeout initialization_timeout (gpi_timeout);
+    fhg::iml::vmem::gaspi_context gaspi_context
       ( initialization_timeout
       , port
       , topology_rpc_server->local_endpoint().port()
-      , vm.at (option::netdev).as<fhg::vmem::netdev_id>()
+      , vm.at (option::netdev).as<fhg::iml::vmem::netdev_id>()
       );
 
     const gpi::pc::container::manager_t container_manager
-      ( log_emitter
-      , socket_path.string()
+      ( socket_path.string()
       , gaspi_context
       , std::move (topology_rpc_server)
       );
 
-    fhg::util::thread::event<> stop_requested;
+    fhg::iml::util::thread::event<> stop_requested;
     const std::function<void()> request_stop
-      (std::bind (&fhg::util::thread::event<>::notify, &stop_requested));
+      (std::bind (&fhg::iml::util::thread::event<>::notify, &stop_requested));
 
-    fhg::util::scoped_signal_handler const SIGTERM_handler
+    fhg::iml::util::scoped_signal_handler const SIGTERM_handler
       (signal_handler, SIGTERM, std::bind (request_stop));
-    fhg::util::scoped_signal_handler const SIGINT_handler
+    fhg::iml::util::scoped_signal_handler const SIGINT_handler
       (signal_handler, SIGINT, std::bind (request_stop));
 
     promise.set_result();

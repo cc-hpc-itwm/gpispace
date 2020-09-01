@@ -1,5 +1,7 @@
 namespace fhg
 {
+  namespace iml
+{
   namespace rif
   {
     template<typename... String>
@@ -8,4 +10,5 @@ namespace fhg
       return set_result (std::vector<std::string> {messages...});
     }
   }
+}
 }

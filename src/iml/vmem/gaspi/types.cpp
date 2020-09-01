@@ -1,4 +1,4 @@
-#include <gpi-space/types.hpp>
+#include <iml/vmem/gaspi/types.hpp>
 
 #include <GASPI.h>
 

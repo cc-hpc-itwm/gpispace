@@ -1,7 +1,7 @@
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <fhg/assert.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
+#include <iml/util/assert.hpp>
 
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 
 namespace gpi
 {

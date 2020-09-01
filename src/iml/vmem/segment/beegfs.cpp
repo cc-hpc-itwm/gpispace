@@ -1,4 +1,4 @@
-#include <vmem/segment/beegfs.hpp>
+#include <iml/vmem/segment/beegfs.hpp>
 
 #include <util-generic/read_lines.hpp>
 #include <util-generic/syscall/directory.hpp>
@@ -10,6 +10,8 @@
 #include <string>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace vmem
   {
@@ -79,4 +81,5 @@ namespace fhg
       }
     }
   }
+}
 }

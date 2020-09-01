@@ -23,7 +23,7 @@
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
 
 #include <logging/stream_emitter.hpp>
 

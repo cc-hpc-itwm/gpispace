@@ -1,4 +1,4 @@
-#include <rif/started_process_promise.hpp>
+#include <iml/rif/started_process_promise.hpp>
 
 #include <util-generic/executable_path.hpp>
 #include <util-generic/serialization/exception.hpp>
@@ -95,7 +95,7 @@ BOOST_AUTO_TEST_CASE (missing_special_argument_throws)
       {
         int argc (arguments.argc());
         char** argv (arguments.argv());
-        fhg::rif::started_process_promise promise (argc, argv);
+        fhg::iml::rif::started_process_promise promise (argc, argv);
       }
     , std::invalid_argument
         (( boost::format ("Usage: %1% <pipefd> [args]...")
@@ -117,7 +117,7 @@ BOOST_AUTO_TEST_CASE (only_special_argument_is_removed_and_restored)
     std::vector<char*> const expected {arguments.at (0), arguments.at (2)};
 
     {
-      fhg::rif::started_process_promise promise (argc, argv);
+      fhg::iml::rif::started_process_promise promise (argc, argv);
 
       BOOST_REQUIRE_EQUAL (argc, expected.size());
       BOOST_REQUIRE_EQUAL_COLLECTIONS
@@ -139,7 +139,7 @@ namespace
     std::vector<char> const buffer (read_from_fd (fd));
 
     std::string const sentinel
-      (fhg::rif::started_process_promise::end_sentinel_value());
+      (fhg::iml::rif::started_process_promise::end_sentinel_value());
 
     BOOST_REQUIRE_GT (buffer.size(), sentinel.size());
     BOOST_REQUIRE_EQUAL
@@ -163,7 +163,7 @@ BOOST_AUTO_TEST_CASE (setting_result_writes_something_ending_with_sentinel_value
   char** argv (arguments.argv());
 
   {
-    fhg::rif::started_process_promise promise (argc, argv);
+    fhg::iml::rif::started_process_promise promise (argc, argv);
     promise.set_result();
 
     check_something_with_sentinel_was_written (pipefd[0]);
@@ -182,7 +182,7 @@ BOOST_AUTO_TEST_CASE (setting_exception_writes_something_ending_with_sentinel_va
   char** argv (arguments.argv());
 
   {
-    fhg::rif::started_process_promise promise (argc, argv);
+    fhg::iml::rif::started_process_promise promise (argc, argv);
     promise.set_exception
       (std::make_exception_ptr (std::runtime_error ("foo")));
 
@@ -214,7 +214,7 @@ BOOST_DATA_TEST_CASE
   char** argv (arguments.argv());
 
   {
-    fhg::rif::started_process_promise promise (argc, argv);
+    fhg::iml::rif::started_process_promise promise (argc, argv);
     promise.set_result (messages);
 
     std::vector<char> const data (read_from_fd (pipefd[0]));
@@ -251,7 +251,7 @@ BOOST_AUTO_TEST_CASE_TEMPLATE
   char** argv (arguments.argv());
 
   {
-    fhg::rif::started_process_promise promise (argc, argv);
+    fhg::iml::rif::started_process_promise promise (argc, argv);
     promise.set_exception (std::make_exception_ptr (Exception (exception_arg)));
 
     std::vector<char> const data (read_from_fd (pipefd[0]));

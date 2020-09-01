@@ -5,7 +5,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-namespace test
+namespace iml_test
 {
   class scoped_nodefile_from_environment
   {

@@ -1,4 +1,4 @@
-#include <gpi-space/gpi/system.hpp>
+#include <iml/vmem/gaspi/gpi/system.hpp>
 
 #include <util-generic/syscall.hpp>
 

@@ -1,6 +1,6 @@
-#include <fhg/util/num.hpp>
-#include <fhg/util/parse/error.hpp>
-#include <fhg/util/parse/from_string.hpp>
+#include <iml/util/num.hpp>
+#include <iml/util/parse/error.hpp>
+#include <iml/util/parse/from_string.hpp>
 
 #include <util-generic/fallthrough.hpp>
 
@@ -9,6 +9,8 @@
 #include <iostream>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -317,12 +319,6 @@ namespace fhg
             return SIGNED (cast<unsigned long, unsigned int> (ul, pos));
           }
 
-        case 'f':
-        case 'F':
-          ++pos;
-
-          return SIGNED (cast<unsigned long, float> (ul, pos));
-
         default:
           if (!pos.end())
           {
@@ -368,4 +364,5 @@ namespace fhg
         (static_cast<std::size_t (*) (parse::position&)> (&read_size_t), input);
     }
   }
+}
 }

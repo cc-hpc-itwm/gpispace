@@ -1,4 +1,4 @@
-#include <gpi-space/pc/segment/segment.hpp>
+#include <iml/vmem/gaspi/pc/segment/segment.hpp>
 
 // needs linking with -lrt
 #include <sys/mman.h>
@@ -11,7 +11,7 @@
 
 #include <util-generic/syscall.hpp>
 
-#include <gpi-space/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 #include <boost/system/system_error.hpp>
 

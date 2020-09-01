@@ -1,8 +1,8 @@
-#include <vmem/netdev_id.hpp>
-
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
+
+#include <iml/vmem/netdev_id.hpp>
 
 namespace gspc
 {
@@ -54,10 +54,13 @@ namespace gspc
   //! \todo Let this be a `map<string, string>` for UX?
   ACCESS (worker_env_set_variable, std::vector<std::string>);
 
+  GET (remote_iml_vmem_socket, boost::filesystem::path);
+  REQUIRE (remote_iml_vmem_socket, boost::filesystem::path);
+
   ACCESS (virtual_memory_socket, boost::filesystem::path);
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
-  ACCESS (virtual_memory_netdev_id, fhg::vmem::netdev_id);
+  ACCESS (virtual_memory_netdev_id, fhg::iml::vmem::netdev_id);
 
   ACCESS (rif_entry_points_file, boost::filesystem::path);
   ACCESS (rif_port, unsigned short);

@@ -1,4 +1,4 @@
-#include <mmgr/tmmgr.hpp>
+#include <iml/vmem/tmmgr.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/set.hpp>
@@ -15,23 +15,23 @@ namespace
 {
   static std::size_t num_handles (1 << 18);
 
-  std::set<gspc::vmem::Handle_t> handles_random()
+  std::set<iml_client::vmem::Handle_t> handles_random()
   {
-    std::set<gspc::vmem::Handle_t> handles;
+    std::set<iml_client::vmem::Handle_t> handles;
 
     while (handles.size() < num_handles)
     {
-      handles.emplace (fhg::util::testing::random<gspc::vmem::Handle_t>{}());
+      handles.emplace (fhg::util::testing::random<iml_client::vmem::Handle_t>{}());
     }
 
     return handles;
   }
 
-  std::set<gspc::vmem::Handle_t> handles_sequence()
+  std::set<iml_client::vmem::Handle_t> handles_sequence()
   {
-    std::set<gspc::vmem::Handle_t> handles;
+    std::set<iml_client::vmem::Handle_t> handles;
 
-    for (gspc::vmem::Handle_t h (0); h < num_handles; ++h)
+    for (iml_client::vmem::Handle_t h (0); h < num_handles; ++h)
     {
       handles.insert (h);
     }
@@ -39,7 +39,7 @@ namespace
     return handles;
   }
 
-  std::vector<std::set<gspc::vmem::Handle_t>> handless()
+  std::vector<std::set<iml_client::vmem::Handle_t>> handless()
   {
     return {handles_random(), handles_sequence()};
   }
@@ -47,13 +47,13 @@ namespace
 
 BOOST_DATA_TEST_CASE (fill_clear, handless(), handles)
 {
-  gspc::vmem::tmmgr tmmgr (num_handles, 1);
+  iml_client::vmem::tmmgr tmmgr (num_handles, 1);
 
   auto const start (std::chrono::steady_clock::now());
 
   FHG_UTIL_TESTING_REQUIRE_MAXIMUM_RUNNING_TIME (std::chrono::seconds (1))
   {
-    for (gspc::vmem::Handle_t const& handle : handles)
+    for (iml_client::vmem::Handle_t const& handle : handles)
     {
       tmmgr.alloc (handle, 1);
     }
@@ -64,7 +64,7 @@ BOOST_DATA_TEST_CASE (fill_clear, handless(), handles)
         (std::chrono::steady_clock::now() - start)
     )
   {
-    for (gspc::vmem::Handle_t const& handle : handles)
+    for (iml_client::vmem::Handle_t const& handle : handles)
     {
       tmmgr.free (handle);
     }

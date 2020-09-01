@@ -1,4 +1,4 @@
-#include <gpi-space/pc/segment/segment.hpp>
+#include <iml/vmem/gaspi/pc/segment/segment.hpp>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/testing/flatten_nested_exceptions.hpp>

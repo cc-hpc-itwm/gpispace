@@ -1,4 +1,4 @@
-#include <rif/started_process_promise.hpp>
+#include <iml/rif/started_process_promise.hpp>
 
 #include <util-generic/executable_path.hpp>
 #include <util-generic/serialization/exception.hpp>
@@ -11,6 +11,8 @@
 #include <boost/serialization/vector.hpp>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace rif
   {
@@ -87,4 +89,5 @@ namespace fhg
       stream << end_sentinel_value();
     }
   }
+}
 }

@@ -1,15 +1,15 @@
+#include <iml/rif/entry_point.hpp>
 
-#include <rif/entry_point.hpp>
-
-#include <fhg/revision.hpp>
+#include <iml/revision.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
+
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/program_options/separated_argument_list_parser.hpp>
 #include <util-generic/read_lines.hpp>
 
-#include <rif/strategy/meta.hpp>
+#include <iml/rif/strategy/meta.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -35,7 +35,7 @@ int main (int argc, char** argv)
 try
 {
   std::vector<std::string> const strategies
-    {fhg::rif::strategy::available_strategies()};
+    {fhg::iml::rif::strategy::available_strategies()};
 
   boost::program_options::options_description options_description;
   options_description.add_options()
@@ -70,8 +70,8 @@ try
 
   if (vm.count ("help"))
   {
-    std::cerr << fhg::project_info ( std::string (argv[0])
-                                   + ": tear down the gspc rif deamon"
+    std::cerr << fhg::iml::project_info ( std::string (argv[0])
+                                        + ": tear down the iml rif deamon"
                                    ) << "\n";
     std::cerr << options_description << "\n";
     return 0;
@@ -92,7 +92,7 @@ try
       );
   }
 
-  std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
+  std::unordered_map<std::string, fhg::iml::rif::entry_point> entry_points;
 
   for ( std::string line
       : fhg::util::read_lines
@@ -114,7 +114,7 @@ try
   }
 
   auto const result
-    ( fhg::rif::strategy::teardown
+    ( fhg::iml::rif::strategy::teardown
         ( strategy
         , entry_points
         , vm.at (option::strategy_parameters)

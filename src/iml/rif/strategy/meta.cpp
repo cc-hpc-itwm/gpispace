@@ -1,13 +1,13 @@
-#include <rif/strategy/meta.hpp>
+#include <iml/rif/strategy/meta.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
-#include <rif/strategy/local.hpp>
-#include <rif/strategy/pbsdsh.hpp>
-#include <rif/strategy/ssh.hpp>
+#include <iml/rif/strategy/local.hpp>
+#include <iml/rif/strategy/pbsdsh.hpp>
+#include <iml/rif/strategy/ssh.hpp>
 
 #include <rpc/service_tcp_provider.hpp>
 #include <rpc/service_dispatcher.hpp>
@@ -26,6 +26,8 @@
 #include <utility>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace rif
   {
@@ -50,7 +52,7 @@ namespace fhg
               < std::pair < std::unordered_set<std::string>
                           , std::unordered_map<std::string, std::exception_ptr>
                           >
-                ( std::unordered_map<std::string, fhg::rif::entry_point> const&
+                  ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const&
                 , std::vector<std::string> const&
                 )
               > teardown;
@@ -97,14 +99,14 @@ namespace fhg
         }
       }
 
-      std::tuple < std::unordered_map<std::string, fhg::rif::entry_point>
+        std::tuple < std::unordered_map<std::string, fhg::iml::rif::entry_point>
                  , std::unordered_map<std::string, std::exception_ptr>
                  , std::unordered_map<std::string, std::string>
                  > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames_in
         , boost::optional<unsigned short> const& port
-        , boost::filesystem::path const& gspc_home
+          , boost::filesystem::path const& iml_home
         , std::vector<std::string> const& parameters
         , std::ostream& out
         )
@@ -115,7 +117,7 @@ namespace fhg
 
         std::mutex entry_points_guard;
         std::condition_variable entry_point_added;
-        std::unordered_map<std::string, fhg::rif::entry_point> entry_points;
+          std::unordered_map<std::string, fhg::iml::rif::entry_point> entry_points;
         std::unordered_map<std::string, std::string> real_hostnames;
 
         fhg::rpc::service_dispatcher service_dispatcher;
@@ -127,7 +129,7 @@ namespace fhg
               ]
                 ( std::string const& key
                 , std::string hostname
-                , fhg::rif::entry_point const& entry_point
+                , fhg::iml::rif::entry_point const& entry_point
                 )
               {
                 {
@@ -153,7 +155,7 @@ namespace fhg
               , port
               , fhg::util::connectable_to_address_string (local_endpoint.address())
               , local_endpoint.port()
-              , gspc_home / "bin" / "gspc-rifd"
+                , iml_home / "bin" / "iml-rifd"
               , parameters
               , out
               )
@@ -183,13 +185,14 @@ namespace fhg
                 , std::unordered_map<std::string, std::exception_ptr>
                 > teardown
         ( std::string const& strategy
-        , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+          , std::unordered_map<std::string, fhg::iml::rif::entry_point> const& entry_points
         , std::vector<std::string> const& parameters
         )
       {
         validate_strategy (strategy);
 
         return strategies.at (strategy).teardown (entry_points, parameters);
+        }
       }
     }
   }

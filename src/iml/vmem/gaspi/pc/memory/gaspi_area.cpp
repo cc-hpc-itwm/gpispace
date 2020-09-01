@@ -1,13 +1,13 @@
-#include <gpi-space/pc/memory/gaspi_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/gaspi_area.hpp>
 
 #include <utility>
 
-#include <fhg/assert.hpp>
-#include <gpi-space/gpi/gaspi.hpp>
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/global/topology.hpp>
+#include <iml/util/assert.hpp>
+#include <iml/vmem/gaspi/gpi/gaspi.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/global/topology.hpp>
 
-#include <gpi-space/pc/url.hpp>
+#include <iml/vmem/gaspi/pc/url.hpp>
 
 #include <util-generic/divru.hpp>
 #include <util-generic/print_exception.hpp>
@@ -25,20 +25,18 @@ namespace gpi
   {
     namespace memory
     {
-      gaspi_area_t::gaspi_area_t ( fhg::logging::stream_emitter& logger
-                                 , const gpi::pc::type::process_id_t creator
+      gaspi_area_t::gaspi_area_t ( const gpi::pc::type::process_id_t creator
                                  , const std::string & name
                                  , const gpi::pc::type::flags_t flags
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t& handle_generator
-                                 , fhg::vmem::gaspi_context& gaspi_context
-                                 , fhg::vmem::gaspi_timeout& time_left
+                                 , fhg::iml::vmem::gaspi_context& gaspi_context
+                                 , fhg::iml::vmem::gaspi_timeout& time_left
                                  , type::size_t per_node_size
                                  , type::size_t num_com_buffers
                                  , type::size_t com_buffer_size
                                  )
-        : area_t ( logger
-                 , gaspi_area_t::area_type
+        : area_t ( gaspi_area_t::area_type
                  , creator
                  , name
                  , per_node_size
@@ -46,7 +44,7 @@ namespace gpi
                  , handle_generator
                  )
         , _gaspi_context (gaspi_context)
-        , _gaspi (_gaspi_context, logger, per_node_size, time_left)
+        , _gaspi (_gaspi_context, per_node_size, time_left)
         , m_ptr (_gaspi.dma_ptr())
         , m_num_com_buffers (num_com_buffers)
         , m_com_buffer_size (com_buffer_size)
@@ -67,7 +65,7 @@ namespace gpi
           try
           {
             gpi::pc::type::handle_t com_hdl =
-              this->alloc ( GPI_PC_INVAL
+              this->alloc ( IML_GPI_PC_INVAL
                           , m_com_buffer_size
                           , hdl_name
                           , gpi::pc::F_EXCLUSIVE
@@ -85,37 +83,25 @@ namespace gpi
           }
           catch (...)
           {
-            _logger.emit ( "could not allocate communication buffer "
-                         + std::to_string (num_buffers_allocated + 1) + ": "
-                         + fhg::util::current_exception_printer().string()
-                         , fhg::logging::legacy::category_level_warn
-                         );
             break;
           }
         }
 
-        if (0 == num_buffers_allocated)
+        if (m_num_com_buffers != num_buffers_allocated)
         {
           throw std::runtime_error
-            ( std::string ("no communication buffer could be allocated:")
+            ( std::string ("not all communication buffers could be allocated:")
             + " com-size := " + boost::lexical_cast<std::string>(m_com_buffer_size)
             + " mem-size := " + boost::lexical_cast<std::string>(descriptor ().local_size)
             );
         }
-        else if (descriptor().avail == 0)
-        {
-          _logger.emit ( "communication buffers consumed all your precious "
-                         "memory, this might not be what you wanted!"
-                       , fhg::logging::legacy::category_level_warn
-                       );
-        }
       }
 
-      gspc::vmem::dtmmgr::Arena_t
+      iml_client::vmem::dtmmgr::Arena_t
       gaspi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
         return gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL)
-          ? gspc::vmem::dtmmgr::ARENA_UP : gspc::vmem::dtmmgr::ARENA_DOWN;
+          ? iml_client::vmem::dtmmgr::ARENA_UP : iml_client::vmem::dtmmgr::ARENA_DOWN;
       }
 
       void *
@@ -282,8 +268,7 @@ namespace gpi
         }
 
         static
-        void do_send ( fhg::logging::stream_emitter& logger
-                     , area_t & src_area
+        void do_send ( area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
                      , gaspi_area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
@@ -308,11 +293,10 @@ namespace gpi
 
             if (0 == read_bytes)
             {
-              logger.emit ( "could not read from src area - premature "
+              throw std::runtime_error 
+                ( "could not read from src area - premature "
                             "end-of-file?"
-                          , fhg::logging::legacy::category_level_warn
                           );
-              break;
             }
 
             do_write_dma_and_wait_remote_written
@@ -333,8 +317,7 @@ namespace gpi
         }
 
         static
-        void do_recv ( fhg::logging::stream_emitter& logger
-                     , area_t & dst_area
+        void do_recv ( area_t & dst_area
                      , gpi::pc::type::memory_location_t dst_loc
                      , gaspi_area_t & src_area
                      , gpi::pc::type::memory_location_t src_loc
@@ -367,9 +350,9 @@ namespace gpi
 
             if (written_bytes != buf.used ())
             {
-              logger.emit ( "could not write to dst area - premature "
+              throw std::runtime_error 
+                ( "could not write to dst area - premature "
                             "end-of-file?"
-                          , fhg::logging::legacy::category_level_warn
                           );
               break;
             }
@@ -393,8 +376,7 @@ namespace gpi
         return std::packaged_task<void()>
           ( [this, &src_area, src, dst, amount]
             {
-              helper::do_send ( _logger
-                              , src_area
+              helper::do_send ( src_area
                               , src
                               , *this
                               , dst
@@ -415,7 +397,6 @@ namespace gpi
       {
         return std::packaged_task<void()>
           ( std::bind ( &helper::do_recv
-                      , std::ref (_logger)
                       , std::ref (dst_area)
                       , dst
                       , std::ref (*this)
@@ -449,11 +430,10 @@ namespace gpi
       }
 
       area_ptr_t gaspi_area_t::create
-        ( fhg::logging::stream_emitter& logger
-        , std::string const &url_s
+        ( std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , fhg::vmem::gaspi_context& gaspi_context
+        , fhg::iml::vmem::gaspi_context& gaspi_context
         , type::id_t owner
         )
       {
@@ -471,9 +451,8 @@ namespace gpi
           );
 
         //! \todo get from user? use for other areas as well? remove?
-        fhg::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
-        gaspi_area_t * area = new gaspi_area_t ( logger
-                                               , owner
+        fhg::iml::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
+        gaspi_area_t * area = new gaspi_area_t ( owner
                                                , "GASPI"
                                                , gpi::pc::F_GLOBAL
                                                , topology

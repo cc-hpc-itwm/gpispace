@@ -61,6 +61,9 @@ namespace gspc
       constexpr char const* const rif_strategy {"rif-strategy"};
       constexpr char const* const rif_strategy_parameters
         {"rif-strategy-parameters"};
+
+      constexpr char const* const remote_iml_vmem_socket
+        {"remote-iml-vmem-socket"};
     }
 
     namespace validators
@@ -333,7 +336,7 @@ namespace gspc
         , "timeout in seconds for the virtual memory manager to connect and start up."
         )
         ( name::virtual_memory_netdev_id
-        , boost::program_options::value<fhg::vmem::netdev_id>()
+        , boost::program_options::value<fhg::iml::vmem::netdev_id>()
           ->default_value({})
         , "propose a network device ID to use ('auto' for automatic detection"
           ", or '0' or '1' to select a specific device)"
@@ -548,20 +551,24 @@ namespace gspc
   ACCESS_PATH (application_search_path, validators::existing_directory)
   ACCESS_POSITIVE_INTEGRAL (agent_port, unsigned short)
 
+  ACCESS_PATH ( remote_iml_vmem_socket
+              , validators::existing_path
+              )
+
   ACCESS_PATH ( virtual_memory_socket
               , validators::nonexisting_path_in_existing_directory
               )
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_port, unsigned short)
   ACCESS_POSITIVE_INTEGRAL (virtual_memory_startup_timeout, unsigned long)
-  SET (virtual_memory_netdev_id, fhg::vmem::netdev_id)
+  SET (virtual_memory_netdev_id, fhg::iml::vmem::netdev_id)
   {
-    set_as<fhg::vmem::netdev_id>
+    set_as<fhg::iml::vmem::netdev_id>
       (vm, name::virtual_memory_netdev_id, to_string (value));
   }
   GET_MAYBE
-    (virtual_memory_netdev_id, fhg::vmem::netdev_id, fhg::vmem::netdev_id)
+    (virtual_memory_netdev_id, fhg::iml::vmem::netdev_id, fhg::iml::vmem::netdev_id)
   REQUIRE
-    (virtual_memory_netdev_id, fhg::vmem::netdev_id, fhg::vmem::netdev_id)
+    (virtual_memory_netdev_id, fhg::iml::vmem::netdev_id, fhg::iml::vmem::netdev_id)
 
   ACCESS_PATH (rif_entry_points_file, validators::nonempty_file)
   ACCESS_POSITIVE_INTEGRAL (rif_port, unsigned short)

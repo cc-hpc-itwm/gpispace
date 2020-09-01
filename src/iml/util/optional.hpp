@@ -4,6 +4,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace util
   {
     namespace boost
@@ -46,6 +48,7 @@ namespace fhg
       }
     }
   }
+}
 }
 
 namespace boost

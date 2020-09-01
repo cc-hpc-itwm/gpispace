@@ -3,7 +3,7 @@
 #include <string>
 #include <ostream>
 
-#include <gpi-space/pc/url.hpp>
+#include <iml/vmem/gaspi/pc/url.hpp>
 #include <util-generic/first_then.hpp>
 
 namespace gpi

@@ -1,18 +1,18 @@
-#include <fhg/assert.hpp>
-#include <gpi-space/pc/url.hpp>
-#include <gpi-space/pc/url_io.hpp>
+#include <iml/util/assert.hpp>
+#include <iml/vmem/gaspi/pc/url.hpp>
+#include <iml/vmem/gaspi/pc/url_io.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
 
-#include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/memory/gaspi_area.hpp>
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/memory/manager.hpp>
-#include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/beegfs_area.hpp>
-#include <gpi-space/pc/memory/shm_area.hpp>
+#include <iml/vmem/gaspi/pc/global/topology.hpp>
+#include <iml/vmem/gaspi/pc/memory/gaspi_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
+#include <iml/vmem/gaspi/pc/memory/manager.hpp>
+#include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/shm_area.hpp>
 
 #include <string>
 
@@ -24,11 +24,10 @@ namespace gpi
     {
       namespace
       {
-        area_ptr_t create_area ( fhg::logging::stream_emitter& logger
-                               , std::string const &url_s
+        area_ptr_t create_area ( std::string const &url_s
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
-                               , fhg::vmem::gaspi_context& gaspi_context
+                               , fhg::iml::vmem::gaspi_context& gaspi_context
                                , type::id_t owner
                                )
       {
@@ -36,23 +35,22 @@ namespace gpi
 
         if (url.type() == "gaspi")
         {
-          return gaspi_area_t::create (logger, url_s, topology, handle_generator, gaspi_context, owner);
+            return gaspi_area_t::create
+              (url_s, topology, handle_generator, gaspi_context, owner);
         }
-
-        if (url.type() == "beegfs")
+          else if (url.type() == "beegfs")
         {
-          return beegfs_area_t::create (logger, url_s, topology, handle_generator, owner);
+            return beegfs_area_t::create
+              (url_s, topology, handle_generator, owner);
         }
 
-        throw std::runtime_error ("no memory type registered with: '" + url_s + "'");
+          throw std::runtime_error
+            ("no memory type registered with: '" + url_s + "'");
       }
       }
 
-      manager_t::manager_t ( fhg::logging::stream_emitter& logger
-                           , fhg::vmem::gaspi_context& gaspi_context
-                           )
-        : _logger (logger)
-        , _gaspi_context (gaspi_context)
+      manager_t::manager_t (fhg::iml::vmem::gaspi_context& gaspi_context)
+        : _gaspi_context (gaspi_context)
         , _next_memcpy_id (0)
         , _interrupt_task_queue (_tasks)
         , _handle_generator (gaspi_context.rank())
@@ -90,12 +88,7 @@ namespace gpi
           clear ();
         }
         catch (...)
-        {
-          _logger.emit ( "could not clear memory manager: "
-                       + fhg::util::current_exception_printer().string()
-                       , fhg::logging::legacy::category_level_error
-                       );
-        }
+        { }
       }
 
       void
@@ -180,10 +173,6 @@ namespace gpi
           //    and just give him the area_ptr
           area->garbage_collect ();
           m_areas.erase (area_it);
-
-          _logger.emit ( "memory removed: " + std::to_string (mem_id)
-                       , fhg::logging::legacy::category_level_trace
-                       );
         }
       }
 
@@ -478,7 +467,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (_logger, url, topology, _handle_generator, _gaspi_context, 0));
+        area_ptr_t area (create_area (url, topology, _handle_generator, _gaspi_context, 0));
         area->set_id (seg_id);
         add_area (area);
         return 0;
@@ -511,11 +500,7 @@ namespace gpi
                                }
                                catch (...)
                                {
-                                 _logger.emit
-                                   ( "additional error in cleanup: "
-                                   + fhg::util::current_exception_printer().string()
-                                   , fhg::logging::legacy::category_level_error
-                                   );
+                                 //! \note avoid abort
                                }
                              }
                            }
@@ -523,7 +508,7 @@ namespace gpi
 
         if (require_earlier_master_initialization)
         {
-          area_ptr_t area = create_area (_logger, url_s, topology, _handle_generator, _gaspi_context, proc_id);
+          area_ptr_t area = create_area (url_s, topology, _handle_generator, _gaspi_context, proc_id);
           area->set_id (id);
 
           add_area (area);
@@ -537,8 +522,7 @@ namespace gpi
                 ( std::launch::async
                 , [&]
                   {
-                    area_ptr_t area ( create_area ( _logger
-                                                  , url_s
+                    area_ptr_t area ( create_area ( url_s
                                                   , topology
                                                   , _handle_generator
                                                   , _gaspi_context

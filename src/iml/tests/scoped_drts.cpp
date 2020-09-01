@@ -1,42 +1,37 @@
-
 #include <boost/test/unit_test.hpp>
 
-#include <drts/drts.hpp>
-#include <drts/scoped_rifd.hpp>
+#include <iml/client/iml.hpp>
+#include <iml/client/scoped_rifd.hpp>
 
 #include <boost/program_options.hpp>
+#include <boost/format.hpp>
+#include <boost/optional/optional_io.hpp>
 
-#include <test/certificates_data.hpp>
-#include <test/parse_command_line.hpp>
-#include <test/scoped_nodefile_from_environment.hpp>
-#include <test/shared_directory.hpp>
+#include <iml/testing/parse_command_line.hpp>
+#include <iml/testing/scoped_nodefile_from_environment.hpp>
+#include <iml/testing/shared_directory.hpp>
+#include <iml/testing/virtual_memory_socket_name_for_localhost.hpp>
 
 #include <util-generic/read_lines.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 
-#include <boost/format.hpp>
-#include <boost/test/data/test_case.hpp>
-
 #include <regex>
 #include <sstream>
 #include <vector>
 
-BOOST_DATA_TEST_CASE
-  ( scoped_drts_empty_topology
-  , certificates_data
-  , certificates
-  )
+BOOST_AUTO_TEST_CASE (scoped_iml_rts_startup)
 {
   boost::program_options::options_description options_description;
 
-  options_description.add (gspc::options::installation());
-  options_description.add (gspc::options::scoped_rifd());
-  options_description.add (test::options::shared_directory());
+  options_description.add (iml_client::options::installation());
+  options_description.add (iml_client::options::scoped_rifd());
+  options_description.add (iml_client::options::virtual_memory());
+  options_description.add (iml_test::options::shared_directory());
 
   boost::program_options::variables_map vm
-    ( test::parse_command_line
+    ( iml_test::parse_command_line
         ( boost::unit_test::framework::master_test_suite().argc
         , boost::unit_test::framework::master_test_suite().argv
         , options_description
@@ -44,210 +39,34 @@ BOOST_DATA_TEST_CASE
     );
 
   fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "drts_scoped_drts");
+    (iml_test::shared_directory (vm) / "scoped_iml_rts");
 
-  test::scoped_nodefile_from_environment const nodefile_from_environment
+  iml_test::scoped_nodefile_from_environment const nodefile_from_environment
     (shared_directory, vm);
+  iml_test::set_iml_vmem_socket_path_for_localhost (vm);
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
-  gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
-                                        , gspc::rifd::hostnames {vm}
-                                        , gspc::rifd::port {vm}
-                                        , installation
-                                        );
-
-  gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifds.entry_points(), std::cerr, certificates);
-}
-
-BOOST_DATA_TEST_CASE
-  ( no_worker_started_on_master
-  , certificates_data
-  , certificates
-  )
-{
-  boost::program_options::options_description options_description;
-
-  options_description.add (gspc::options::installation());
-  options_description.add (gspc::options::scoped_rifd());
-  options_description.add (test::options::shared_directory());
-
-  boost::program_options::variables_map vm
-    ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
-        , options_description
-        )
-    );
-
-  fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "drts_scoped_drts");
-
-  test::scoped_nodefile_from_environment const nodefile_from_environment
-    (shared_directory, vm);
-
-  vm.notify();
-
-  gspc::installation const installation (vm);
+  iml_client::installation const installation (vm);
 
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));
 
-  gspc::scoped_rifd const master
-    ( gspc::rifd::strategy {vm}
-    , gspc::rifd::hostname {hosts.front()}
-    , gspc::rifd::port {vm}
+  iml_client::scoped_rifds const scoped_rifds
+    ( iml_client::iml_rifd::strategy {vm}
+    , iml_client::iml_rifd::hostnames {vm}
+    , iml_client::iml_rifd::port {vm}
     , installation
     );
 
   std::ostringstream info_output_stream;
 
   {
-    gspc::scoped_runtime_system const drts
+    iml_client::scoped_iml_runtime_system const iml_rts
       ( vm
       , installation
-      , "worker:1"
-      , boost::none
-      , master.entry_point()
-      , info_output_stream
-      , certificates
-      );
-  }
-
-  {
-    std::vector<std::string> const info_output
-      ( fhg::util::split<std::string, std::string, std::vector<std::string>>
-          (info_output_stream.str(), '\n')
-      );
-
-    BOOST_TEST_CONTEXT (info_output_stream.str())
-    BOOST_REQUIRE_EQUAL (info_output.size(), 6);
-
-    std::string const entry_point_master
-      ([&info_output, &hosts]()
-       {
-         std::smatch match;
-
-         BOOST_REQUIRE
-           ( std::regex_match
-             ( info_output[0]
-             , match
-             , std::regex
-               ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
-             )
-           );
-         BOOST_REQUIRE_EQUAL (match.size(), 3);
-         BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
-
-         return match[1].str();
-       }()
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[1]
-        , std::regex {"I: starting top level gspc logging demultiplexer on .*"}
-        )
-      );
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[2]
-        , std::regex {"   => accepting registration on 'TCP: <<.*>>'"}
-        )
-      );
-
-    BOOST_REQUIRE_EQUAL
-      ( info_output[3]
-      , ( boost::format ("I: starting agent: agent-%1%-0"
-                        " on rif entry point %1%"
-                        )
-        % entry_point_master
-        ).str()
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[4]
-        , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
-        )
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[5]
-        , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
-        )
-      );
-  }
-}
-
-BOOST_DATA_TEST_CASE
-  ( workers_are_started_on_non_master
-  , certificates_data
-  , certificates
-  )
-{
-  boost::program_options::options_description options_description;
-
-  options_description.add (gspc::options::installation());
-  options_description.add (gspc::options::scoped_rifd());
-  options_description.add (test::options::shared_directory());
-
-  boost::program_options::variables_map vm
-    ( test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
-        , options_description
-        )
-    );
-
-  fhg::util::temporary_path const shared_directory
-    (test::shared_directory (vm) / "drts_scoped_drts");
-
-  test::scoped_nodefile_from_environment const nodefile_from_environment
-    (shared_directory, vm);
-
-  vm.notify();
-
-  gspc::installation const installation (vm);
-
-  std::vector<std::string> const hosts
-    (fhg::util::read_lines (nodefile_from_environment.path()));
-
-  gspc::scoped_rifd const master
-    ( gspc::rifd::strategy {vm}
-    , gspc::rifd::hostname {hosts.front()}
-    , gspc::rifd::port {vm}
-    , installation
-    );
-  gspc::scoped_rifds const scoped_rifds
-    ( gspc::rifd::strategy {vm}
-    , gspc::rifd::hostnames {{hosts.begin(), std::next (hosts.begin())}}
-    , gspc::rifd::port {vm}
-    , installation
-    );
-
-  std::ostringstream info_output_stream;
-  std::string const worker ("WORKER");
-
-  {
-    gspc::scoped_runtime_system const drts
-      ( vm
-      , installation
-      , worker + ":1"
       , scoped_rifds.entry_points()
-      , master.entry_point()
       , info_output_stream
-      , certificates
       );
   }
 
@@ -256,9 +75,9 @@ BOOST_DATA_TEST_CASE
       ( fhg::util::split<std::string, std::string, std::vector<std::string>>
           (info_output_stream.str(), '\n')
       );
-
     BOOST_TEST_CONTEXT (info_output_stream.str())
-    BOOST_REQUIRE_EQUAL (info_output.size(), 8);
+
+    BOOST_REQUIRE_EQUAL (info_output.size(), 3);
 
     std::string const entry_point_master
       ([&info_output, &hosts]()
@@ -270,7 +89,7 @@ BOOST_DATA_TEST_CASE
              ( info_output[0]
              , match
              , std::regex
-               ("I: starting base sdpa components on ((.+) [0-9]+ [0-9]+)...")
+               ("I: starting IML components on ((.+) [0-9]+ [0-9]+)...")
              )
            );
          BOOST_REQUIRE_EQUAL (match.size(), 3);
@@ -280,80 +99,29 @@ BOOST_DATA_TEST_CASE
        }()
       );
 
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[1]
-        , std::regex {"I: starting top level gspc logging demultiplexer on .*"}
-        )
-      );
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[2]
-        , std::regex {"   => accepting registration on 'TCP: <<.*>>'"}
-        )
-      );
+    boost::optional<boost::filesystem::path> socket_path
+      = iml_client::get_virtual_memory_socket(vm);
+    BOOST_REQUIRE (socket_path != boost::none);
+
+    boost::optional<unsigned long> startup_timeout
+      = iml_client::get_virtual_memory_startup_timeout(vm);
+    BOOST_REQUIRE (startup_timeout != boost::none);
 
     BOOST_REQUIRE_EQUAL
-      ( info_output[3]
-      , ( boost::format ("I: starting agent: agent-%1%-0"
-                        " on rif entry point %1%"
-                        )
-        % entry_point_master
+        ( info_output[1]
+      , ( boost::format ("I: starting VMEM on: %1%"
+                        " with a timeout of %2%"
+                        " seconds"
+        )
+        % *socket_path
+        % *startup_timeout
         ).str()
       );
 
-    std::string const entry_point_worker
-      ([&info_output, &hosts, &entry_point_master, &worker]()
-       {
-         std::smatch match;
-
-         BOOST_REQUIRE
-           ( std::regex_match
-             ( info_output[4]
-             , match
-             , std::regex
-               ( ( boost::format ("I: starting %2% workers"
-                                 " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
-                                 " with parent agent-%1%-0"
-                                 " on rif entry point ((.+) [0-9]+ [0-9]+)"
-                                 )
-                 % entry_point_master
-                 % worker
-                 ).str()
-               )
-             )
-           );
-         BOOST_REQUIRE_EQUAL (match.size(), 3);
-         BOOST_REQUIRE_EQUAL (match[2].str(), hosts.front());
-
-         return match[1].str();
-       }()
-      );
-
     BOOST_REQUIRE
       ( std::regex_match
-        ( info_output[5]
-        , std::regex { ( boost::format ("terminating drts-kernel on %1%: [0-9]+")
-                       % entry_point_worker
-                       ).str()
-                     }
-        )
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[6]
-        , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_master
-                       ).str()
-                     }
-        )
-      );
-
-    BOOST_REQUIRE
-      ( std::regex_match
-        ( info_output[7]
-        , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
+        ( info_output[2]
+        , std::regex { ( boost::format ("terminating vmem on %1%: [0-9]+")
                        % entry_point_master
                        ).str()
                      }

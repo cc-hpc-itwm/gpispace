@@ -4,7 +4,7 @@
 
 #include <boost/filesystem/path.hpp>
 
-namespace gspc
+namespace iml_client
 {
   class installation_path : public boost::filesystem::path
   {
@@ -13,8 +13,8 @@ namespace gspc
       : boost::filesystem::path
         (fhg::util::executable_path().parent_path().parent_path())
     {}
-    installation_path (boost::filesystem::path const& gspc_home)
-      : boost::filesystem::path (gspc_home)
+    installation_path (boost::filesystem::path const& iml_home)
+      : boost::filesystem::path (iml_home)
     {}
 
     //! \todo configure
@@ -26,29 +26,13 @@ namespace gspc
     {
       return *this / "lib";
     }
-    boost::filesystem::path boost_root() const
+    boost::filesystem::path libexec() const
     {
-      return *this / "external" / "boost";
-    }
-    boost::filesystem::path libexec_gspc() const
-    {
-      return *this / "libexec" / "gspc";
-    }
-    boost::filesystem::path agent() const
-    {
-      return libexec_gspc() / "agent";
-    }
-    boost::filesystem::path drts_kernel() const
-    {
-      return libexec_gspc() / "drts-kernel";
+      return *this / "libexec" / "iml";
     }
     boost::filesystem::path vmem() const
     {
-      return libexec_gspc() / "gpi-space";
-    }
-    boost::filesystem::path logging_demultiplexer() const
-    {
-      return libexec_gspc() / "gspc-logging-demultiplexer.exe";
+      return libexec() / "iml-gpi-server";
     }
   };
 }

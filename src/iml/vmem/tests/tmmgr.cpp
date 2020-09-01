@@ -1,13 +1,13 @@
 #include <boost/test/unit_test.hpp>
 
-#include <mmgr/tmmgr.hpp>
+#include <iml/vmem/tmmgr.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
 #define REQUIRE_ALLOC_SUCCESS(h,s,o,g)                                  \
   {                                                                     \
-    std::pair<gspc::vmem::Offset_t, gspc::vmem::MemSize_t> const        \
+    std::pair<iml_client::vmem::Offset_t, iml_client::vmem::MemSize_t> const        \
       OffsetSize (tmmgr.alloc (h, s));                                  \
                                                                         \
     BOOST_REQUIRE_EQUAL (OffsetSize.first, o);                          \
@@ -16,7 +16,7 @@
 
 BOOST_AUTO_TEST_CASE (tmmgr)
 {
-  gspc::vmem::tmmgr tmmgr (45, 1);
+  iml_client::vmem::tmmgr tmmgr (45, 1);
 
   BOOST_REQUIRE_EQUAL (tmmgr.memsize(), 45);
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 45);
@@ -48,24 +48,24 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (11, 4); }
-    , gspc::vmem::error::alloc::duplicate_handle (11)
+    , iml_client::vmem::error::alloc::duplicate_handle (11)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (12, 4); }
-    , gspc::vmem::error::alloc::duplicate_handle (12)
+    , iml_client::vmem::error::alloc::duplicate_handle (12)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (13, 35); }
-    , gspc::vmem::error::alloc::insufficient_memory (13, 35, 35, 34)
+    , iml_client::vmem::error::alloc::insufficient_memory (13, 35, 35, 34)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (13, 34); }
-    , gspc::vmem::error::alloc::insufficient_contiguous_memory (13, 34, 34, 34)
+    , iml_client::vmem::error::alloc::insufficient_contiguous_memory (13, 34, 34, 34)
     );
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.free (13); }
-    , gspc::vmem::error::unknown_handle (13)
+    , iml_client::vmem::error::unknown_handle (13)
     );
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 34);
@@ -75,7 +75,7 @@ BOOST_AUTO_TEST_CASE (tmmgr)
 
 BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 {
-  gspc::vmem::tmmgr tmmgr (45, (1 << 4));
+  iml_client::vmem::tmmgr tmmgr (45, (1 << 4));
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 32);
   BOOST_REQUIRE_EQUAL (tmmgr.highwater(), 0);
@@ -100,27 +100,27 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (4, 1); }
-    , gspc::vmem::error::alloc::insufficient_memory (4, 1, 16, 0)
+    , iml_client::vmem::error::alloc::insufficient_memory (4, 1, 16, 0)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (5, 1); }
-    , gspc::vmem::error::alloc::insufficient_memory (5, 1, 16, 0)
+    , iml_client::vmem::error::alloc::insufficient_memory (5, 1, 16, 0)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (6, 1); }
-    , gspc::vmem::error::alloc::insufficient_memory (6, 1, 16, 0)
+    , iml_client::vmem::error::alloc::insufficient_memory (6, 1, 16, 0)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (7, 1); }
-    , gspc::vmem::error::alloc::insufficient_memory (7, 1, 16, 0)
+    , iml_client::vmem::error::alloc::insufficient_memory (7, 1, 16, 0)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (8, 1); }
-    , gspc::vmem::error::alloc::insufficient_memory (8, 1, 16, 0)
+    , iml_client::vmem::error::alloc::insufficient_memory (8, 1, 16, 0)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (9, 1); }
-    , gspc::vmem::error::alloc::insufficient_memory (9, 1, 16, 0)
+    , iml_client::vmem::error::alloc::insufficient_memory (9, 1, 16, 0)
     );
 
   BOOST_REQUIRE_EQUAL (tmmgr.memfree(), 0);
@@ -131,19 +131,19 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (0, 1); }
-    , gspc::vmem::error::alloc::duplicate_handle (0)
+    , iml_client::vmem::error::alloc::duplicate_handle (0)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (1, 1); }
-    , gspc::vmem::error::alloc::duplicate_handle (1)
+    , iml_client::vmem::error::alloc::duplicate_handle (1)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (2, 1); }
-    , gspc::vmem::error::alloc::duplicate_handle (2)
+    , iml_client::vmem::error::alloc::duplicate_handle (2)
     );
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.alloc (3, 1); }
-    , gspc::vmem::error::alloc::duplicate_handle (3)
+    , iml_client::vmem::error::alloc::duplicate_handle (3)
     );
 
   REQUIRE_ALLOC_SUCCESS (4, 1, 64, 16);
@@ -159,13 +159,13 @@ BOOST_AUTO_TEST_CASE (tmmgr_aligned)
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.resize (150); }
-    , gspc::vmem::error::resize::below_mem_used (150, 144, 992, 832)
+    , iml_client::vmem::error::resize::below_mem_used (150, 144, 992, 832)
     );
 
   tmmgr.free (0);
 
   fhg::util::testing::require_exception
     ( [&tmmgr]() { tmmgr.resize (150); }
-    , gspc::vmem::error::resize::below_high_water (150, 144, 160)
+    , iml_client::vmem::error::resize::below_high_water (150, 144, 160)
     );
 }

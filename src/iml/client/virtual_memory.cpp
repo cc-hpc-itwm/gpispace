@@ -1,21 +1,19 @@
-#include <drts/drts.hpp>
-#include <drts/virtual_memory.hpp>
+#include <iml/client/iml.hpp>
+#include <iml/client/virtual_memory.hpp>
 
-#include <drts/private/drts_impl.hpp>
-#include <drts/private/pimpl.hpp>
-#include <drts/private/scoped_allocation.hpp>
-#include <drts/private/virtual_memory_impl.hpp>
-
-#include <we/type/value/poke.hpp>
+#include <iml/client/private/iml_impl.hpp>
+#include <iml/client/private/pimpl.hpp>
+#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/private/virtual_memory_impl.hpp>
 
 #include <boost/format.hpp>
 
 #include <exception>
 #include <sstream>
 
-namespace gspc
+namespace iml_client
 {
-  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+  vmem_allocation::vmem_allocation ( scoped_iml_runtime_system const* const drts
                                    , vmem::segment_description segment_desc
                                    , unsigned long size
                                    , std::string const& description
@@ -24,7 +22,7 @@ namespace gspc
             (drts->_->_virtual_memory_api, segment_desc, size, description)
         )
   {}
-  vmem_allocation::vmem_allocation ( scoped_runtime_system const* const drts
+  vmem_allocation::vmem_allocation ( scoped_iml_runtime_system const* const drts
                                    , vmem::segment_description segment_desc
                                    , unsigned long size
                                    , std::string const& description
@@ -51,7 +49,12 @@ namespace gspc
   {
     return _->_size;
   }
-  pnet::type::value::value_type vmem_allocation::global_memory_range
+  std::unique_ptr<gpi::pc::client::api_t> const& vmem_allocation::api() const
+  {
+    return _->_api;
+  }
+
+  gpi::pc::type::range_t vmem_allocation::global_memory_range
     ( std::size_t const offset
     , std::size_t const size
     ) const
@@ -65,29 +68,14 @@ namespace gspc
         );
     }
 
-    pnet::type::value::value_type range;
-
-    {
-      // taken from gpi-space/pc/type/handle.hpp
-      std::ostringstream oss;
-
-      oss << "0x";
-      oss.flags (std::ios::hex);
-      oss.width (18);
-      oss.fill ('0');
-      oss << _->_handle_id;
-
-      pnet::type::value::poke (std::list<std::string> {"handle", "name"}, range, oss.str());
-    }
-    pnet::type::value::poke (std::list<std::string> {"offset"}, range, offset);
-    pnet::type::value::poke (std::list<std::string> {"size"}, range, size);
-
+    gpi::pc::type::range_t range (_->_handle_id, offset, size);
     return range;
   }
-  pnet::type::value::value_type vmem_allocation::global_memory_range() const
+  gpi::pc::type::range_t vmem_allocation::global_memory_range() const
   {
     return global_memory_range (0UL, _->_size);
   }
+
   vmem_allocation::vmem_allocation (vmem_allocation&& other)
     : _ (std::move (other._))
   {}

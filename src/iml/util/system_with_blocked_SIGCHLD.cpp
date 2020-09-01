@@ -1,4 +1,4 @@
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <iml/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <util-generic/syscall.hpp>
 
@@ -9,6 +9,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace util
   {
     void system_with_blocked_SIGCHLD (std::string const& command)
@@ -18,14 +20,14 @@ namespace fhg
         scoped_SIGCHLD_block()
         {
           sigset_t signals_to_block;
-          util::syscall::sigemptyset (&signals_to_block);
-          util::syscall::sigaddset (&signals_to_block, SIGCHLD);
-          util::syscall::pthread_sigmask
+          fhg::util::syscall::sigemptyset (&signals_to_block);
+          fhg::util::syscall::sigaddset (&signals_to_block, SIGCHLD);
+          fhg::util::syscall::pthread_sigmask
             (SIG_BLOCK, &signals_to_block, &_signals_to_restore);
         }
         ~scoped_SIGCHLD_block()
         {
-          util::syscall::pthread_sigmask
+          fhg::util::syscall::pthread_sigmask
             (SIG_UNBLOCK, &_signals_to_restore, nullptr);
         }
         sigset_t _signals_to_restore;
@@ -42,4 +44,5 @@ namespace fhg
       }
     }
   }
+}
 }

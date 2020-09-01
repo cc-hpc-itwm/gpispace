@@ -1,17 +1,16 @@
-#include <drts/drts.hpp>
-#include <drts/stream.hpp>
+#include <iml/client/iml.hpp>
+#include <iml/client/stream.hpp>
 
-#include <drts/client.fwd.hpp>
-#include <drts/drts.fwd.hpp>
-#include <drts/private/drts_impl.hpp>
-#include <drts/private/pimpl.hpp>
-#include <drts/private/virtual_memory_impl.hpp>
-#include <drts/virtual_memory.hpp>
+#include <iml/client/iml.fwd.hpp>
+#include <iml/client/private/iml_impl.hpp>
+#include <iml/client/private/pimpl.hpp>
+#include <iml/client/private/virtual_memory_impl.hpp>
+#include <iml/client/virtual_memory.hpp>
 
-#include <drts/private/scoped_allocation.hpp>
+#include <iml/client/scoped_allocation.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 #include <we/type/value/peek.hpp>
 #include <we/type/value/poke.hpp>
@@ -21,7 +20,7 @@
 #include <atomic>
 #include <unordered_set>
 
-namespace gspc
+namespace iml_client
 {
   struct stream::implementation
   {
@@ -40,12 +39,16 @@ namespace gspc
       return number_of_slots;
     }
 
-    implementation ( scoped_runtime_system const& drts
+    implementation ( scoped_iml_runtime_system const& drts
                    , std::string const& name
-                   , gspc::vmem_allocation const& buffer
+                   , iml_client::vmem_allocation const& buffer
                    , stream::size_of_slot const& size_of_slot
-                   , std::function<void (pnet::type::value::value_type const&)>
-                       on_slot_filled
+                   , std::function<void ( gpi::pc::type::range_t const metadata
+                                        , gpi::pc::type::range_t const data
+                                        , char const flag
+                                        , std::size_t const id
+                                        )
+                                  > on_slot_filled
                    )
       : _virtual_memory (drts._->_virtual_memory_api)
       , _on_slot_filled (on_slot_filled)
@@ -76,8 +79,13 @@ namespace gspc
     }
 
     std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
-    std::function<void (pnet::type::value::value_type const&)> _on_slot_filled;
-    gspc::vmem_allocation const& _buffer;
+    std::function<void ( gpi::pc::type::range_t const metadata
+                       , gpi::pc::type::range_t const data
+                       , char const flag
+                       , std::size_t const id
+                       )
+                 > _on_slot_filled;
+    iml_client::vmem_allocation const& _buffer;
     unsigned long const _size_of_slot;
     unsigned long const _number_of_slots;
     unsigned long const _offset_to_meta_data;
@@ -144,33 +152,30 @@ namespace gspc
         , data.size()
         );
 
-      pnet::type::value::value_type value;
-      pnet::type::value::poke ( "meta"
-                              , value
-                              , _buffer.global_memory_range
-                                ( _offset_to_meta_data + slot
+      _on_slot_filled ( { _buffer._->_handle_id
+                        , _offset_to_meta_data + slot
                                 , 1UL
-                                )
-                              );
-      pnet::type::value::poke ( "data"
-                              , value
-                              , _buffer.global_memory_range ( slot * _size_of_slot
+                        }
+                      , { _buffer._->_handle_id
+                        , slot * _size_of_slot
                                                             , data.size()
-                                                            )
+                        }
+                      , flag[slot]
+                      , _sequence_number++
                               );
-      pnet::type::value::poke ("flag", value, flag[slot]);
-      pnet::type::value::poke ("id", value, _sequence_number++);
-
-      _on_slot_filled (value);
     }
   };
 
-  stream::stream ( scoped_runtime_system const& drts
+  stream::stream ( scoped_iml_runtime_system const& drts
                  , std::string const& name
-                 , gspc::vmem_allocation const& buffer
+                 , iml_client::vmem_allocation const& buffer
                  , stream::size_of_slot const& size_of_slot
-                 , std::function<void (pnet::type::value::value_type const&)>
-                     on_slot_filled
+                 , std::function<void ( gpi::pc::type::range_t const metadata
+                                      , gpi::pc::type::range_t const data
+                                      , char const flag
+                                      , std::size_t const id
+                                      )
+                                > on_slot_filled
                  )
     : _ (new implementation ( drts
                             , name

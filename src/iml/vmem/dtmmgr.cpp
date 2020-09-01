@@ -1,8 +1,8 @@
-#include <mmgr/dtmmgr.hpp>
+#include <iml/vmem/dtmmgr.hpp>
 
-#include <fhg/assert.hpp>
+#include <iml/util/assert.hpp>
 
-namespace gspc
+namespace iml_client
 {
   namespace vmem
   {

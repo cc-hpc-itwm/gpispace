@@ -1,23 +1,22 @@
-#include <drts/rifd_entry_points.hpp>
-
-#include <rif/entry_point.hpp>
+#include <iml/client/rifd_entry_points.hpp>
+#include <iml/rif/entry_point.hpp>
 
 #include <vector>
 
-namespace gspc
+namespace iml_client
 {
   struct rifd_entry_points::implementation
   {
-    implementation (std::vector<fhg::rif::entry_point> const& entry_points)
+    implementation (std::vector<fhg::iml::rif::entry_point> const& entry_points)
       : _entry_points (entry_points)
     {}
 
-    std::vector<fhg::rif::entry_point> _entry_points;
+    std::vector<fhg::iml::rif::entry_point> _entry_points;
   };
 
   struct rifd_entry_point::implementation
   {
-    implementation (fhg::rif::entry_point const& entry_point)
+    implementation (fhg::iml::rif::entry_point const& entry_point)
       : _entry_point (entry_point)
     {}
     std::string const& hostname() const
@@ -25,6 +24,6 @@ namespace gspc
       return _entry_point.hostname;
     }
 
-    fhg::rif::entry_point _entry_point;
+    fhg::iml::rif::entry_point _entry_point;
   };
 }

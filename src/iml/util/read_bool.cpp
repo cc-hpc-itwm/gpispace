@@ -1,13 +1,15 @@
-#include <fhg/util/read_bool.hpp>
+#include <iml/util/read_bool.hpp>
 
-#include <fhg/util/parse/position.hpp>
-#include <fhg/util/parse/require.hpp>
+#include <iml/util/parse/position.hpp>
+#include <iml/util/parse/require.hpp>
 
 #include <algorithm>
 #include <iterator>
 #include <stdexcept>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -24,4 +26,5 @@ namespace fhg
       return parse::require::boolean (pos);
     }
   }
+}
 }

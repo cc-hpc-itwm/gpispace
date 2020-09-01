@@ -1,16 +1,16 @@
 #pragma once
 
-#include <gpi-space/gpi/gaspi.hpp>
+#include <iml/vmem/gaspi/gpi/gaspi.hpp>
 
-#include <gpi-space/pc/type/segment_type.hpp>
-#include <gpi-space/pc/memory/memory_area.hpp>
-#include <gpi-space/pc/memory/handle_buffer.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
+#include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_buffer.hpp>
 
-#include <gpi-space/pc/global/itopology.hpp>
+#include <iml/vmem/gaspi/pc/global/itopology.hpp>
 
-#include <vmem/gaspi_context.hpp>
+#include <iml/vmem/gaspi_context.hpp>
 
-#include <fhg/util/thread/queue.hpp>
+#include <iml/util/queue.hpp>
 
 namespace gpi
 {
@@ -27,32 +27,30 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GASPI;
 
-        typedef fhg::thread::queue<handle_buffer_t> handle_pool_t;
+        typedef fhg::iml::thread::queue<handle_buffer_t> handle_pool_t;
 
-        static area_ptr_t create ( fhg::logging::stream_emitter&
-                                 , std::string const &url
+        static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , fhg::vmem::gaspi_context&
+                                 , fhg::iml::vmem::gaspi_context&
                                  , type::id_t owner
                                  );
 
       protected:
-        gaspi_area_t ( fhg::logging::stream_emitter&
-                     , const gpi::pc::type::process_id_t creator
+        gaspi_area_t ( const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::flags_t flags
                      , gpi::pc::global::itopology_t & topology
                      , handle_generator_t&
-                     , fhg::vmem::gaspi_context&
-                     , fhg::vmem::gaspi_timeout&
+                     , fhg::iml::vmem::gaspi_context&
+                     , fhg::iml::vmem::gaspi_timeout&
                      , type::size_t memory_size
                      , type::size_t num_com_buffers
                      , type::size_t com_buffer_size
                      );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
-        virtual gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
+        virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
 
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
         virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
@@ -92,7 +90,7 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
-        fhg::vmem::gaspi_context& _gaspi_context;
+        fhg::iml::vmem::gaspi_context& _gaspi_context;
         api::gaspi_t _gaspi;
 
         void * m_ptr;

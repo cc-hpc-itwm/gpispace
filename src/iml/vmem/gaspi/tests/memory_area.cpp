@@ -1,8 +1,8 @@
-#include <gpi-space/pc/memory/shm_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/shm_area.hpp>
 
-#include <gpi-space/pc/memory/handle_generator.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
+#include <iml/vmem/gaspi/pc/segment/segment.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
@@ -19,9 +19,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
                                    , 2048
                                    );
   segm.create ();
-  fhg::logging::stream_emitter logger;
-  gpi::pc::memory::shm_area_t area ( logger
-                                   , 0
+  gpi::pc::memory::shm_area_t area ( 0
                                    , "memory_area_alloc_free_test"
                                    , 2048
                                    , handle_generator

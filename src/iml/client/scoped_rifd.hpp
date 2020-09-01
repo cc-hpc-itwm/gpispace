@@ -1,11 +1,11 @@
 #pragma once
 
-#include <drts/scoped_rifd.fwd.hpp>
+#include <iml/client/scoped_rifd.fwd.hpp>
 
-#include <drts/drts.fwd.hpp>
-#include <drts/rifd_entry_points.hpp>
+#include <iml/client/iml.fwd.hpp>
+#include <iml/client/rifd_entry_points.hpp>
 
-#include <drts/pimpl.hpp>
+#include <iml/client/iml.pimpl.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
@@ -20,7 +20,7 @@
 #include <unordered_set>
 #include <vector>
 
-namespace gspc
+namespace iml_client
 {
   namespace options
   {
@@ -33,14 +33,14 @@ namespace gspc
       (int = rifd::nodefile | rifd::rif_strategy | rifd::rif_port);
   }
 
-  namespace rifd
+  namespace iml_rifd
   {
     struct strategy
     {
       strategy (boost::program_options::variables_map const&);
 
     private:
-      friend class ::gspc::rifds;
+      friend class ::iml_client::rifds;
 
       PIMPL (strategy);
     };
@@ -51,7 +51,7 @@ namespace gspc
       hostnames (std::vector<std::string> const&);
 
     private:
-      friend class ::gspc::rifds;
+      friend class ::iml_client::rifds;
 
       PIMPL (hostnames);
     };
@@ -60,7 +60,7 @@ namespace gspc
       hostname (std::string const&);
 
     private:
-      friend class ::gspc::scoped_rifd;
+      friend class ::iml_client::scoped_rifd;
 
       PIMPL (hostname);
     };
@@ -69,7 +69,7 @@ namespace gspc
       port (boost::program_options::variables_map const&);
 
     private:
-      friend class ::gspc::rifds;
+      friend class ::iml_client::rifds;
 
       PIMPL (port);
     };
@@ -78,8 +78,8 @@ namespace gspc
   class rifds : boost::noncopyable
   {
   public:
-    rifds ( rifd::strategy const&
-          , rifd::port const&
+    rifds ( iml_rifd::strategy const&
+          , iml_rifd::port const&
           , installation const&
           );
 
@@ -89,18 +89,18 @@ namespace gspc
                         , std::unordered_set<std::string> // unknown
                         >
              >
-      entry_points (rifd::hostnames const&) const;
+      entry_points (iml_rifd::hostnames const&) const;
     rifd_entry_points entry_points() const;
 
     std::pair< rifd_entry_points
              , std::unordered_map<std::string, std::exception_ptr>
              >
-      bootstrap (rifd::hostnames const&, std::ostream& = std::cout);
+      bootstrap (iml_rifd::hostnames const&, std::ostream& = std::cout);
 
     std::pair < std::unordered_set<std::string>
               , std::unordered_map<std::string, std::exception_ptr>
               >
-      teardown (rifd::hostnames const&);
+      teardown (iml_rifd::hostnames const&);
 
     std::pair < std::unordered_set<std::string>
               , std::unordered_map<std::string, std::exception_ptr>
@@ -117,17 +117,6 @@ namespace gspc
               >
       teardown();
 
-    std::pair< std::unordered_map<std::string, std::vector<std::string>>
-             , std::unordered_map<std::string, std::exception_ptr>
-             >
-      execute ( std::unordered_set<std::string> const& hostnames
-              , boost::filesystem::path const& command
-              , std::vector<std::string> const& arguments
-                  = {}
-              , std::unordered_map<std::string, std::string> const& environment
-                  = std::unordered_map<std::string, std::string> {}
-              ) const;
-
     PIMPL (rifds);
 
   private:
@@ -138,9 +127,9 @@ namespace gspc
   class scoped_rifd : public rifds
   {
   public:
-    scoped_rifd ( rifd::strategy const&
-                , rifd::hostname const&
-                , rifd::port const&
+    scoped_rifd ( iml_rifd::strategy const&
+                , iml_rifd::hostname const&
+                , iml_rifd::port const&
                 , installation const&
                 , std::ostream& = std::cout
                 );
@@ -152,9 +141,9 @@ namespace gspc
   {
   public:
     using rifds::rifds;
-    scoped_rifds ( rifd::strategy const&
-                 , rifd::hostnames const&
-                 , rifd::port const&
+    scoped_rifds ( iml_rifd::strategy const&
+                 , iml_rifd::hostnames const&
+                 , iml_rifd::port const&
                  , installation const&
                  , std::ostream& = std::cout
                  );

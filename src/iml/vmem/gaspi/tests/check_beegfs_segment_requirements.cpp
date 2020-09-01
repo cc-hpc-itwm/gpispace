@@ -1,4 +1,4 @@
-#include <vmem/segment/beegfs.hpp>
+#include <iml/vmem/segment/beegfs.hpp>
 
 #include <util-generic/print_exception.hpp>
 
@@ -15,7 +15,7 @@ try
     throw std::invalid_argument ("no directory given");
   }
 
-  fhg::vmem::segment::beegfs::check_requirements (argv[1]);
+  fhg::iml::vmem::segment::beegfs::check_requirements (argv[1]);
 
   return 0;
 }

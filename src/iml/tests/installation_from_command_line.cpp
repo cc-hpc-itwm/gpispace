@@ -1,7 +1,7 @@
 
 #include <boost/test/unit_test.hpp>
 
-#include <drts/drts.hpp>
+#include <iml/client/iml.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -9,7 +9,7 @@ BOOST_AUTO_TEST_CASE (installation_from_command_line)
 {
   boost::program_options::options_description options_description;
 
-  options_description.add (gspc::options::installation());
+  options_description.add (iml_client::options::installation());
 
   boost::program_options::variables_map vm;
   boost::program_options::store
@@ -22,5 +22,5 @@ BOOST_AUTO_TEST_CASE (installation_from_command_line)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
+  iml_client::installation const installation (vm);
 }

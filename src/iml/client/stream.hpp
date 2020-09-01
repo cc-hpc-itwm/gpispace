@@ -1,16 +1,16 @@
 #pragma once
 
-#include <drts/drts.fwd.hpp>
-#include <drts/pimpl.hpp>
-#include <drts/virtual_memory.fwd.hpp>
+#include <iml/client/iml.fwd.hpp>
+#include <iml/client/iml.pimpl.hpp>
+#include <iml/client/virtual_memory.fwd.hpp>
 
-#include <we/type/value.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <functional>
 #include <string>
 #include <utility>
 
-namespace gspc
+namespace iml_client
 {
   class stream
   {
@@ -43,14 +43,18 @@ namespace gspc
     };
 
   private:
-    friend class scoped_runtime_system;
+    friend class scoped_iml_runtime_system;
 
-    stream ( scoped_runtime_system const&
+    stream ( scoped_iml_runtime_system const&
            , std::string const& name
-           , gspc::vmem_allocation const& buffer
+           , iml_client::vmem_allocation const& buffer
            , size_of_slot const&
-           , std::function<void (pnet::type::value::value_type const&)>
-               on_slot_filled
+           , std::function<void ( gpi::pc::type::range_t const metadata
+                                , gpi::pc::type::range_t const data
+                                , char const flag
+                                , std::size_t const id
+                                )
+                          > on_slot_filled
            );
   public:
     void write (std::string const&);

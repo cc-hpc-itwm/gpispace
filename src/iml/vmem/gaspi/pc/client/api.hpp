@@ -1,14 +1,10 @@
 #pragma once
 
-#include <logging/stream_emitter.hpp>
-
-#include <gpi-space/pc/proto/message.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/memory_location.hpp>
-
-#include <we/type/range.hpp>
+#include <iml/vmem/gaspi/pc/proto/message.hpp>
+#include <iml/vmem/gaspi/pc/segment/segment.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/type/memory_location.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
@@ -32,7 +28,7 @@ namespace gpi
         typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
         typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
 
-        api_t (fhg::logging::stream_emitter&, std::string const & path);
+        api_t (std::string const & path);
 
         ~api_t ();
 
@@ -69,10 +65,10 @@ namespace gpi
         }
 
         std::function<double (std::string const&)>
-        transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const&);
+        transfer_costs (std::list<gpi::pc::type::memory_region_t> const&);
 
         std::map<std::string, double>
-        transfer_costs (std::list<gpi::pc::type::memory_region_t> const&);
+        transfer_costs_all_hosts (std::list<gpi::pc::type::memory_region_t> const&);
 
         void * ptr(const gpi::pc::type::handle_t h);
 
@@ -94,7 +90,6 @@ namespace gpi
 
         gpi::pc::proto::message_t communicate (gpi::pc::proto::message_t const &);
 
-        fhg::logging::stream_emitter& _logger;
         mutable mutex_type m_mutex;
         int m_socket;
         segment_map_t m_segments;

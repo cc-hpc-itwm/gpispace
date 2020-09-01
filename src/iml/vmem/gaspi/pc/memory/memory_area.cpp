@@ -1,15 +1,15 @@
-#include <gpi-space/pc/memory/memory_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 #include <stack>
 
-#include <fhg/assert.hpp>
+#include <iml/util/assert.hpp>
 
 #include <boost/format.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 #include <util-generic/unreachable.hpp>
 
@@ -23,16 +23,14 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( fhg::logging::stream_emitter& logger
-                     , const gpi::pc::type::segment::segment_type type
+      area_t::area_t ( const gpi::pc::type::segment::segment_type type
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::flags_t flags
                      , handle_generator_t& handle_generator
                      )
-        : _logger (logger)
-        , m_descriptor ( GPI_PC_INVAL
+        : m_descriptor ( IML_GPI_PC_INVAL
                        , type
                        , creator
                        , name
@@ -47,7 +45,7 @@ namespace gpi
 
       void area_t::reinit ()
       {
-        m_mmgr = gspc::vmem::dtmmgr (m_descriptor.local_size, 1);
+        m_mmgr = iml_client::vmem::dtmmgr (m_descriptor.local_size, 1);
 
         update_descriptor_from_mmgr ();
       }
@@ -221,7 +219,7 @@ namespace gpi
         hdl.local_size = local_size;
         hdl.name = name;
         hdl.offset = offset;
-        hdl.creator = GPI_PC_INVAL;
+        hdl.creator = IML_GPI_PC_INVAL;
         hdl.flags = gpi::pc::F_GLOBAL;
 
         internal_alloc (hdl);
@@ -281,8 +279,8 @@ namespace gpi
       {
         m_descriptor.avail = m_mmgr.memfree();
         m_descriptor.allocs =
-            m_mmgr.numhandle (gspc::vmem::dtmmgr::ARENA_UP)
-          + m_mmgr.numhandle (gspc::vmem::dtmmgr::ARENA_DOWN);
+            m_mmgr.numhandle (iml_client::vmem::dtmmgr::ARENA_UP)
+          + m_mmgr.numhandle (iml_client::vmem::dtmmgr::ARENA_DOWN);
         // dtmmgr_numalloc -> total allocs
         // dtmmgr_numfree -> total frees
         m_descriptor.ts.touch();
@@ -300,13 +298,13 @@ namespace gpi
             );
         }
 
-        gspc::vmem::dtmmgr::Arena_t arena = grow_direction(hdl.flags);
+        iml_client::vmem::dtmmgr::Arena_t arena = grow_direction(hdl.flags);
 
         try
         {
           hdl.offset = m_mmgr.alloc (hdl.id, arena, hdl.local_size).first;
         }
-        catch (gspc::vmem::error::alloc::insufficient_contiguous_memory const&)
+        catch (iml_client::vmem::error::alloc::insufficient_contiguous_memory const&)
         {
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
@@ -315,7 +313,7 @@ namespace gpi
             + " avail = " + std::to_string (m_descriptor.avail)
             );
         }
-        catch (gspc::vmem::error::alloc::insufficient_memory const&)
+        catch (iml_client::vmem::error::alloc::insufficient_memory const&)
         {
           throw std::runtime_error
             ( "not enough memory: requested_size = "
@@ -324,7 +322,7 @@ namespace gpi
             + " avail = " + std::to_string (m_descriptor.avail)
             );
         }
-        catch (gspc::vmem::error::alloc::duplicate_handle const&)
+        catch (iml_client::vmem::error::alloc::duplicate_handle const&)
         {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
@@ -364,7 +362,7 @@ namespace gpi
             );
         }
 
-        gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+        iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
 
         m_mmgr.free (hdl, arena);
         m_handles.erase (hdl);
@@ -394,13 +392,13 @@ namespace gpi
         const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
         if (desc.nref)
         {
-          _logger.emit ( "handle still in use: handle = " + std::to_string (hdl)
+          throw std::runtime_error
+            ( "handle still in use: handle = " + std::to_string (hdl)
                        + " nref = " + std::to_string (desc.nref)
-                       , fhg::logging::legacy::category_level_warn
                        );
         }
 
-        gspc::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
+        iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
 
         m_mmgr.free (hdl, arena);
         m_handles.erase (hdl);

@@ -1,18 +1,18 @@
+#include <iml/rif/entry_point.hpp>
 
-#include <rif/entry_point.hpp>
-
-#include <fhg/revision.hpp>
+#include <iml/revision.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
+
 #include <util-generic/executable_path.hpp>
 #include <util-generic/join.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/program_options/separated_argument_list_parser.hpp>
 #include <util-generic/read_lines.hpp>
 
-#include <rif/strategy/meta.hpp>
+#include <iml/rif/strategy/meta.hpp>
 
 #include <boost/program_options.hpp>
 
@@ -39,7 +39,7 @@ int main (int argc, char** argv)
 try
 {
   std::vector<std::string> const strategies
-    {fhg::rif::strategy::available_strategies()};
+    {fhg::iml::rif::strategy::available_strategies()};
 
   boost::program_options::options_description options_description;
   options_description.add_options()
@@ -79,8 +79,8 @@ try
 
   if (vm.count ("help"))
   {
-    std::cerr << fhg::project_info ( std::string (argv[0])
-                                   + ": bootstrap the gspc rif deamon"
+    std::cerr << fhg::iml::project_info ( std::string (argv[0])
+                                   + ": bootstrap the iml rif deamon"
                                    ) << "\n";
     std::cerr << options_description << "\n";
     return 0;
@@ -102,7 +102,7 @@ try
   }
 
   auto const result
-    (fhg::rif::strategy::bootstrap
+    (fhg::iml::rif::strategy::bootstrap
           ( strategy
           , fhg::util::read_lines
               ( vm.at (option::hostfile)

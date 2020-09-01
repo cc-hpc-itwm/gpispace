@@ -29,7 +29,23 @@ namespace gpi
       typedef std::string path_t;
       typedef std::string name_t;
 
-#define GPI_PC_INVAL (::gpi::pc::type::id_t)(-1)
+      struct range_t
+      {
+        handle_id_t handle;
+        offset_t offset;
+        size_t size;
+
+        range_t ( handle_id_t handle_
+                , offset_t offset_
+                , size_t size_
+                )
+          : handle (handle_)
+          , offset (offset_)
+          , size (size_)
+        {}
+      };
+
+#define IML_GPI_PC_INVAL (::gpi::pc::type::id_t)(-1)
     }
   }
 

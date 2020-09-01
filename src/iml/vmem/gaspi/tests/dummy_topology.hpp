@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gpi-space/pc/global/itopology.hpp>
+#include <iml/vmem/gaspi/pc/global/itopology.hpp>
 
 namespace gpi
 {

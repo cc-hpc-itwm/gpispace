@@ -1,8 +1,8 @@
 #pragma once
 
-#include <gpi-space/types.hpp>
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/types.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 namespace gpi
 {

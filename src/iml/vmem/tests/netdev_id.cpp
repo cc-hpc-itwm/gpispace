@@ -1,4 +1,4 @@
-#include <vmem/netdev_id.hpp>
+#include <iml/vmem/netdev_id.hpp>
 
 #include <GASPI.h>
 
@@ -16,6 +16,8 @@
 #include <unordered_set>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace vmem
   {
@@ -157,4 +159,5 @@ namespace fhg
       BOOST_REQUIRE_EQUAL (gaspi_config_set (config), GASPI_ERR_CONFIG);
     }
   }
+}
 }

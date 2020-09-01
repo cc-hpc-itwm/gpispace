@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rif/entry_point.hpp>
+#include <iml/rif/entry_point.hpp>
 #include <rpc/function_description.hpp>
 
 #include <string>
@@ -13,6 +13,8 @@
 #include <unordered_set>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace rif
   {
@@ -27,14 +29,14 @@ namespace fhg
 
       std::vector<std::string> available_strategies();
 
-      std::tuple < std::unordered_map<std::string, fhg::rif::entry_point>
+        std::tuple < std::unordered_map<std::string, fhg::iml::rif::entry_point>
                  , std::unordered_map<std::string, std::exception_ptr>
                  , std::unordered_map<std::string, std::string>
                  > bootstrap
         ( std::string const& strategy
         , std::vector<std::string> const& hostnames
         , boost::optional<unsigned short> const& port
-        , boost::filesystem::path const& gspc_home
+          , boost::filesystem::path const& iml_home
         , std::vector<std::string> const& parameters
         , std::ostream&
         );
@@ -42,9 +44,10 @@ namespace fhg
                 , std::unordered_map<std::string, std::exception_ptr>
                 > teardown
         ( std::string const& strategy
-        , std::unordered_map<std::string, fhg::rif::entry_point> const& entry_points
+          , std::unordered_map<std::string, fhg::iml::rif::entry_point> const& entry_points
         , std::vector<std::string> const& parameters
         );
     }
   }
+}
 }

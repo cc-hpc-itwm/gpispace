@@ -1,6 +1,6 @@
 #pragma once
 
-#include <rif/entry_point.hpp>
+#include <iml/rif/entry_point.hpp>
 
 #include <string>
 #include <vector>
@@ -12,6 +12,8 @@
 #include <unordered_set>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace rif
   {
@@ -31,10 +33,11 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-          ( std::unordered_map<std::string, fhg::rif::entry_point> const&
+            ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const&
           , std::vector<std::string> const& parameters
           );
       }
     }
   }
+}
 }

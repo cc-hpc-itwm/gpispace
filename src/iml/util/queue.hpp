@@ -8,6 +8,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace thread
   {
     template<typename T>
@@ -53,4 +55,5 @@ namespace fhg
       container_type m_container;
     };
   }
+}
 }

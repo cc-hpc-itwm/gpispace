@@ -1,11 +1,11 @@
 #pragma once
 
-#include <drts/rifd_entry_points.fwd.hpp>
-#include <drts/pimpl.hpp>
+#include <iml/client/rifd_entry_points.fwd.hpp>
+#include <iml/client/iml.pimpl.hpp>
 
 #include <boost/filesystem/path.hpp>
 
-namespace gspc
+namespace iml_client
 {
   class rifd_entry_points
   {
@@ -19,7 +19,7 @@ namespace gspc
   private:
     friend class rifds;
     friend class scoped_rifds;
-    friend class scoped_runtime_system;
+    friend class scoped_iml_runtime_system;
 
     PIMPL (rifd_entry_points);
 
@@ -39,7 +39,7 @@ namespace gspc
 
   private:
     friend class scoped_rifd;
-    friend class scoped_runtime_system;
+    friend class scoped_iml_runtime_system;
 
     rifd_entry_point (rifd_entry_point const&) = delete;
     rifd_entry_point& operator= (rifd_entry_point&&) = delete;

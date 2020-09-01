@@ -7,7 +7,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/vector.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 namespace gpi
 {

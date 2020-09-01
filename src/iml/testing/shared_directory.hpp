@@ -3,7 +3,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/program_options.hpp>
 
-namespace test
+namespace iml_test
 {
   namespace options
   {

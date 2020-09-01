@@ -1,12 +1,14 @@
 #pragma once
 
-#include <fhg/util/parse/position.hpp>
+#include <iml/util/parse/position.hpp>
 
 #include <functional>
 #include <string>
 #include <stdexcept>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -30,4 +32,5 @@ namespace fhg
       }
     }
   }
+}
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <logging/stream_emitter.hpp>
-
 #include <functional>
 
 #include <mutex>
@@ -11,6 +9,8 @@
 #include <signal.h>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -42,18 +42,6 @@ namespace fhg
       int _sig_num;
       signal_handler_manager::functions::iterator _it;
     };
-
-    struct scoped_log_backtrace_and_exit_for_critical_errors
-    {
-      scoped_log_backtrace_and_exit_for_critical_errors
-        (signal_handler_manager&, fhg::logging::stream_emitter&);
-
-    private:
-      std::function<void (int, siginfo_t*, void*)> const _handler;
-      scoped_signal_handler const _segv;
-      scoped_signal_handler const _bus;
-      scoped_signal_handler const _abrt;
-      scoped_signal_handler const _fpe;
-    };
+    }
   }
 }

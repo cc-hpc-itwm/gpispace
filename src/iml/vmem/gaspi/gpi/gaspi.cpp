@@ -1,9 +1,9 @@
-#include <gpi-space/gpi/gaspi.hpp>
+#include <iml/vmem/gaspi/gpi/gaspi.hpp>
 
-#include <fhg/assert.hpp>
+#include <iml/util/assert.hpp>
 
-#include <gpi-space/exception.hpp>
-#include <gpi-space/gpi/system.hpp>
+#include <iml/vmem/gaspi/exception.hpp>
+#include <iml/vmem/gaspi/gpi/system.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/divru.hpp>
@@ -51,13 +51,11 @@ namespace gpi
       fail_on_non_zero(#F, F, Args)
     }
 
-    gaspi_t::gaspi_t ( fhg::vmem::gaspi_context& gaspi_context
-                     , fhg::logging::stream_emitter& logger
+    gaspi_t::gaspi_t ( fhg::iml::vmem::gaspi_context& gaspi_context
                      , const unsigned long long per_node_size
-                     , fhg::vmem::gaspi_timeout& time_left
+                     , fhg::iml::vmem::gaspi_timeout& time_left
                      )
       : _gaspi_context (gaspi_context)
-      , _logger (logger)
       , _per_node_size (per_node_size)
       , m_dma (nullptr)
       , _segment_id (gaspi_context)
@@ -77,11 +75,11 @@ namespace gpi
       }
       else if (sys::get_avail_memory_size() < _per_node_size)
       {
-        _logger.emit ( "requested memory size ("
+        throw std::runtime_error
+          ( "requested memory size ("
                      + std::to_string (_per_node_size) + ") exceeds available"
                      + " memory size ("
                      + std::to_string (sys::get_avail_memory_size()) + ")"
-                     , fhg::logging::legacy::category_level_warn
                      );
       }
 

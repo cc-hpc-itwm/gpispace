@@ -1,9 +1,9 @@
-#include <gpi-space/pc/client/api.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
 
-#include <gpi-space/pc/proto/message.hpp>
-#include <gpi-space/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/proto/message.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
-#include <fhg/assert.hpp>
+#include <iml/util/assert.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
@@ -52,11 +52,8 @@ namespace gpi
   {
     namespace client
     {
-      api_t::api_t ( fhg::logging::stream_emitter& logger
-                   , std::string const & path
-                   )
-        : _logger (logger)
-        , m_socket (open_socket (path))
+      api_t::api_t (std::string const & path)
+        : m_socket (open_socket (path))
       {}
 
       api_t::~api_t ()
@@ -206,30 +203,10 @@ namespace gpi
         }
       }
 
-      namespace
-      {
-        gpi::pc::type::handle_id_t
-        we_global_range_handle_name_to_handle (we::global::handle const& handle)
-        {
-          return std::stoul (handle.name(), nullptr, 16);
-        }
-      }
-
       std::function<double (std::string const&)>
-      api_t::transfer_costs (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
+      api_t::transfer_costs (std::list<gpi::pc::type::memory_region_t> const& regions)
       {
-        std::list<gpi::pc::type::memory_region_t> regions;
-        for (we::global::range const& range : transfers | boost::adaptors::map_values)
-        {
-          regions.emplace_back
-            ( gpi::pc::type::memory_location_t ( we_global_range_handle_name_to_handle (range.handle())
-                                               , range.offset()
-                                               )
-            , range.size()
-            );
-        }
-
-        const std::map<std::string, double> costs (transfer_costs (regions));
+        const std::map<std::string, double> costs (transfer_costs_all_hosts (regions));
         return [costs] (std::string const& host) -> double
         {
           return costs.at (host);
@@ -237,7 +214,7 @@ namespace gpi
       }
 
       std::map<std::string, double>
-      api_t::transfer_costs (std::list<gpi::pc::type::memory_region_t> const& transfers)
+      api_t::transfer_costs_all_hosts (std::list<gpi::pc::type::memory_region_t> const& transfers)
       {
         proto::message_t const reply
           (communicate
@@ -427,12 +404,11 @@ namespace gpi
 
         if (m_segments.find (seg->id()) != m_segments.end())
         {
-          _logger.emit ( "INCONSISTENCY: There is already a segment attached "
-                         "with id " + std::to_string (seg->id())
-                       , fhg::logging::legacy::category_level_warn
+          throw std::logic_error
+            ( "Segment attached with id "
+            + std::to_string (seg->id())
+            + " already exists"
                        );
-
-          m_segments.erase(seg->id());
         }
 
         fhg_assert (m_segments.find (seg->id()) == m_segments.end());
@@ -463,9 +439,9 @@ namespace gpi
         }
         catch (...)
         {
-          _logger.emit ( "could not unregister segment " + std::to_string (id)
+          throw std::runtime_error
+            ( "could not unregister segment " + std::to_string (id)
                        + ": " + fhg::util::current_exception_printer().string()
-                       , fhg::logging::legacy::category_level_error
                        );
         }
 

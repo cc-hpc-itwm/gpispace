@@ -3,14 +3,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
-#include <logging/stream_emitter.hpp>
-
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/memory/memory_area.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
 
-#include <vmem/gaspi_context.hpp>
+#include <iml/vmem/gaspi_context.hpp>
 
 #include <boost/thread/scoped_thread.hpp>
 
@@ -35,7 +33,7 @@ namespace gpi
       public:
         typedef boost::shared_ptr<area_t> area_ptr;
 
-        manager_t (fhg::logging::stream_emitter&, fhg::vmem::gaspi_context&);
+        manager_t (fhg::iml::vmem::gaspi_context&);
         ~manager_t ();
 
         void clear ();
@@ -131,11 +129,10 @@ namespace gpi
         void del_handle (const gpi::pc::type::handle_t);
         void unregister_memory (const gpi::pc::type::segment_id_t);
 
-        fhg::logging::stream_emitter& _logger;
         mutable mutex_type m_mutex;
         area_map_t m_areas;
         handle_to_segment_t m_handle_to_segment;
-        fhg::vmem::gaspi_context& _gaspi_context;
+        fhg::iml::vmem::gaspi_context& _gaspi_context;
 
         std::mutex _memcpy_task_guard;
         std::size_t _next_memcpy_id;

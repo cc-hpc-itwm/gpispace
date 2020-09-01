@@ -1,6 +1,6 @@
-#include <gpi-space/pc/memory/handle_generator.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 

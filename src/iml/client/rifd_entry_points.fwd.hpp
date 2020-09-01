@@ -1,6 +1,6 @@
 #pragma once
 
-namespace gspc
+namespace iml_client
 {
   class rifd_entry_points;
 }

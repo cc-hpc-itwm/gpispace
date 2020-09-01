@@ -1,10 +1,8 @@
 #pragma once
 
-#include <logging/stream_emitter.hpp>
-
-#include <gpi-space/pc/global/topology.hpp>
-#include <gpi-space/pc/memory/manager.hpp>
-#include <gpi-space/pc/type/typedefs.hpp>
+#include <iml/vmem/gaspi/pc/global/topology.hpp>
+#include <iml/vmem/gaspi/pc/memory/manager.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <boost/noncopyable.hpp>
 
@@ -25,9 +23,8 @@ namespace gpi
       class manager_t : boost::noncopyable
       {
       public:
-        manager_t ( fhg::logging::stream_emitter&
-                  , std::string const & p
-                  , fhg::vmem::gaspi_context&
+        manager_t ( std::string const & p
+                  , fhg::iml::vmem::gaspi_context&
                   , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> topology_rpc_server
                   );
 
@@ -40,7 +37,6 @@ namespace gpi
         void close_socket (const int fd);
         void safe_unlink(std::string const & path);
 
-        fhg::logging::stream_emitter& _logger;
         std::string m_path;
         int m_socket;
         bool m_stopping;

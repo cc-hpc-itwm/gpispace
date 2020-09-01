@@ -1,17 +1,17 @@
-#include <drts/rifd_entry_points.hpp>
+#include <iml/client/rifd_entry_points.hpp>
 
-#include <drts/private/pimpl.hpp>
-#include <drts/private/rifd_entry_points_impl.hpp>
+#include <iml/client/private/pimpl.hpp>
+#include <iml/client/private/rifd_entry_points_impl.hpp>
 
 #include <util-generic/read_lines.hpp>
 
 #include <fstream>
 
-namespace gspc
+namespace iml_client
 {
   namespace
   {
-    std::vector<fhg::rif::entry_point> parse (boost::filesystem::path const& path)
+    std::vector<fhg::iml::rif::entry_point> parse (boost::filesystem::path const& path)
     {
       std::vector<std::string> const lines (fhg::util::read_lines (path));
       return {lines.begin(), lines.end()};
@@ -37,7 +37,7 @@ namespace gspc
     {
       throw std::runtime_error ("unable to open file " + path.string());
     }
-    for (fhg::rif::entry_point const& entry_point : _->_entry_points)
+    for (fhg::iml::rif::entry_point const& entry_point : _->_entry_points)
     {
       if (!(file << entry_point << '\n'))
       {
@@ -63,7 +63,7 @@ namespace gspc
   std::size_t rifd_entry_point_hash::operator()
     (rifd_entry_point const& ep) const
   {
-    return std::hash<fhg::rif::entry_point>() (ep._->_entry_point);
+    return std::hash<fhg::iml::rif::entry_point>() (ep._->_entry_point);
   }
   bool operator== (rifd_entry_point const& lhs, rifd_entry_point const& rhs)
   {

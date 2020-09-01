@@ -1,14 +1,12 @@
 #pragma once
 
-#include <logging/stream_emitter.hpp>
-
-#include <gpi-space/types.hpp>
+#include <iml/vmem/gaspi/types.hpp>
 
 #include <util-generic/finally.hpp>
 
-#include <vmem/gaspi_context.hpp>
+#include <iml/vmem/gaspi_context.hpp>
 
-#include <fhg/util/thread/queue.hpp>
+#include <iml/util/queue.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -29,10 +27,9 @@ namespace gpi
     class gaspi_t : boost::noncopyable
     {
     public:
-      gaspi_t ( fhg::vmem::gaspi_context&
-              , fhg::logging::stream_emitter&
+      gaspi_t ( fhg::iml::vmem::gaspi_context&
               , const unsigned long long per_node_size
-              , fhg::vmem::gaspi_timeout&
+              , fhg::iml::vmem::gaspi_timeout&
               );
       ~gaspi_t();
 
@@ -69,12 +66,11 @@ namespace gpi
       template<std::size_t queue_entry_count, typename Fun, typename... Args>
         queue_desc_t queued_operation (Fun&&, Args&&...);
 
-      fhg::vmem::gaspi_context& _gaspi_context;
+      fhg::iml::vmem::gaspi_context& _gaspi_context;
 
-      fhg::logging::stream_emitter& _logger;
       size_t _per_node_size;
       void *m_dma;
-      fhg::vmem::gaspi_context::reserved_segment_id _segment_id;
+      fhg::iml::vmem::gaspi_context::reserved_segment_id _segment_id;
       gpi::size_t _max_transfer_size;
 
       std::vector<std::string> m_rank_to_hostname;
@@ -124,7 +120,7 @@ namespace gpi
 
       std::mutex _notification_guard;
 
-      fhg::thread::queue<notification_t> _write_ids;
+      fhg::iml::thread::queue<notification_t> _write_ids;
       notification_t next_write_id();
 
       notification_id_t _notification_ids_per_node;
@@ -141,7 +137,7 @@ namespace gpi
       notification_id_t corresponding_local_pong_id
         (notification_id_t ping_id) const;
 
-      std::unordered_map<rank_t, fhg::thread::queue<notification_id_t>>
+      std::unordered_map<rank_t, fhg::iml::thread::queue<notification_id_t>>
         _ping_ids;
       notification_id_t next_ping_id (rank_t);
 

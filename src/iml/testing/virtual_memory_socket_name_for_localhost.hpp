@@ -2,8 +2,8 @@
 
 #include <boost/program_options.hpp>
 
-namespace test
+namespace iml_test
 {
-  void set_virtual_memory_socket_name_for_localhost
+  void set_iml_vmem_socket_path_for_localhost
     (boost::program_options::variables_map&);
 }

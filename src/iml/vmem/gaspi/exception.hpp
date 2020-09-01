@@ -3,7 +3,7 @@
 #include <stdexcept>
 #include <boost/lexical_cast.hpp>
 
-#include <gpi-space/types.hpp>
+#include <iml/vmem/gaspi/types.hpp>
 
 #include <string>
 

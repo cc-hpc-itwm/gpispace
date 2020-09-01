@@ -1,10 +1,12 @@
-#include <vmem/netdev_id.hpp>
+#include <iml/vmem/netdev_id.hpp>
 
 #include <fhg/util/boost/program_options/validators.hpp>
 
 #include <boost/program_options/errors.hpp>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace vmem
   {
@@ -38,4 +40,5 @@ namespace fhg
       fhg::util::boost::program_options::validate<netdev_id> (v, values);
     }
   }
+}
 }

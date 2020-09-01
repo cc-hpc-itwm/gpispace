@@ -6,7 +6,6 @@ fhg_add_runtime_executable (NAME gspc-rifd
   LIBRARIES RPC
             fhg-util
             gspc::logging
-            GPISpace::vmem
             Util::Generic
             Boost::filesystem
             Boost::iostreams

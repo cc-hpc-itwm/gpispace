@@ -7,8 +7,8 @@
 // serialization
 #include <boost/serialization/nvp.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 namespace gpi
 {

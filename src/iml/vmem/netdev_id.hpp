@@ -1,6 +1,6 @@
 #pragma once
 
-#include <gpi-space/types.hpp>
+#include <iml/vmem/gaspi/types.hpp>
 
 #include <boost/any.hpp>
 
@@ -9,6 +9,8 @@
 #include <vector>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace vmem
   {
@@ -39,5 +41,6 @@ namespace fhg
     };
   }
 }
+}
 
-#include <vmem/netdev_id.ipp>
+#include <iml/vmem/netdev_id.ipp>

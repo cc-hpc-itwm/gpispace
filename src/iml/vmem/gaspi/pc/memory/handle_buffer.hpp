@@ -2,7 +2,7 @@
 
 #include <unistd.h> // size_t
 
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 namespace gpi
 {

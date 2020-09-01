@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <unordered_set>
 
-namespace gspc
+namespace iml_client
 {
   namespace vmem
   {

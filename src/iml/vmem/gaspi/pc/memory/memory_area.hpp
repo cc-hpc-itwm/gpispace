@@ -1,22 +1,20 @@
 #pragma once
 
-#include <mmgr/dtmmgr.hpp>
+#include <iml/vmem/dtmmgr.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/shared_ptr.hpp>
 
-#include <logging/stream_emitter.hpp>
+#include <iml/vmem/gaspi/types.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/memory_location.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/type/handle_descriptor.hpp>
 
-#include <gpi-space/types.hpp>
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/handle.hpp>
-#include <gpi-space/pc/type/memory_location.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
-#include <gpi-space/pc/type/handle_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
-#include <gpi-space/pc/memory/handle_generator.hpp>
-
-#include <fhg/util/thread/queue.hpp>
+#include <iml/util/queue.hpp>
 
 #include <future>
 #include <mutex>
@@ -138,8 +136,7 @@ namespace gpi
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( fhg::logging::stream_emitter&
-               , const gpi::pc::type::segment::segment_type type
+        area_t ( const gpi::pc::type::segment::segment_type type
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
                , const gpi::pc::type::size_t size
@@ -153,7 +150,7 @@ namespace gpi
 
         /* hook functions that need to be overridded by specific segments */
         virtual
-        gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
+        iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
 
         virtual
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
@@ -211,13 +208,10 @@ namespace gpi
 
         void internal_alloc (gpi::pc::type::handle::descriptor_t &);
 
-      protected:
-        fhg::logging::stream_emitter& _logger;
-
       private:
         mutable mutex_type m_mutex;
         gpi::pc::type::segment::descriptor_t m_descriptor;
-        gspc::vmem::dtmmgr m_mmgr;
+        iml_client::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
         process_ids_t m_attached_processes;
 

@@ -1,8 +1,8 @@
-#include <test/shared_directory.hpp>
+#include <iml/testing/shared_directory.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 
-namespace test
+namespace iml_test
 {
   namespace validators = fhg::util::boost::program_options;
 
@@ -12,7 +12,7 @@ namespace test
     {
       namespace
       {
-        constexpr char const* const shared_directory {"shared-directory"};
+        constexpr char const* const shared_directory {"iml-shared-directory"};
       }
     }
 

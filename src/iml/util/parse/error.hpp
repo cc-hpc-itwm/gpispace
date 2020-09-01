@@ -2,11 +2,13 @@
 
 #include <stdexcept>
 
-#include <fhg/util/parse/position.hpp>
+#include <iml/util/parse/position.hpp>
 
 #include <boost/format.hpp>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -61,4 +63,5 @@ namespace fhg
       }
     }
   }
+}
 }

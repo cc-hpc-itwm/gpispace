@@ -7,6 +7,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace rif
   {
     //! \note child shall not exit with >= 240: used for execve-error handling
@@ -20,4 +22,5 @@ namespace fhg
       , std::unordered_map<std::string, std::string> environment
       );
   }
+}
 }

@@ -4,9 +4,9 @@
 
 #include <boost/noncopyable.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 #include <atomic>
 

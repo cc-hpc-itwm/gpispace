@@ -4,13 +4,14 @@
 #include <drts/private/pimpl.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
-
-#include <drts/stream.hpp>
-#include <drts/virtual_memory.hpp>
+#include <drts/drts_iml.hpp>
 
 #include <we/type/activity.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/poke.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
+#include <iml/client/iml.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
 
 #include <sdpa/client.hpp>
 
@@ -155,7 +156,6 @@ namespace gspc
 
   scoped_runtime_system::implementation::started_runtime_system::started_runtime_system
       ( boost::optional<unsigned short> const& agent_port
-      , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , std::vector<boost::filesystem::path> app_path
       , std::vector<std::string> worker_env_copy_variable
@@ -163,10 +163,7 @@ namespace gspc
       , std::vector<boost::filesystem::path> worker_env_copy_file
       , std::vector<std::string> worker_env_set_variable
       , gspc::installation_path installation_path
-      , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
-      , boost::optional<unsigned short> vmem_port
-      , boost::optional<fhg::vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , std::ostream& info_output
@@ -192,13 +189,9 @@ namespace gspc
     auto const startup_result
       ( fhg::drts::startup
           ( agent_port
-          , gpi_enabled
           , _gpi_socket
           , _installation_path
           , signal_handler_manager
-          , vmem_startup_timeout
-          , vmem_port
-          , vmem_netdev_id
           , rif_entry_points
           , _master
           , _processes_storage
@@ -350,29 +343,29 @@ namespace gspc
     , std::ostream& info_output
     , Certificates const& certificates
     )
-      : _virtual_memory_socket (get_virtual_memory_socket (vm))
-      , _virtual_memory_startup_timeout
-        ( get_virtual_memory_startup_timeout (vm)
-        ? boost::make_optional
-          (std::chrono::seconds (get_virtual_memory_startup_timeout (vm).get()))
-        : boost::none
+      : _virtual_memory_socket
+        ( get_virtual_memory_socket (vm)
+        ? get_virtual_memory_socket (vm)
+        : get_remote_iml_vmem_socket (vm)
         )
+      , _iml_rts ( FHG_UTIL_MAKE_OPTIONAL
+                     ( !!get_virtual_memory_socket (vm)
+                     , iml_runtime_system {vm, info_output}
+                     )
+                 )
       , _started_runtime_system
           ( get_agent_port (vm)
-          , !!_virtual_memory_socket
           , _virtual_memory_socket
           , get_application_search_path (vm)
-          ? std::vector<boost::filesystem::path> ({boost::filesystem::canonical (get_application_search_path (vm).get())})
+          ? std::vector<boost::filesystem::path>
+            ({boost::filesystem::canonical (get_application_search_path (vm).get())})
           : std::vector<boost::filesystem::path>()
           , get_worker_env_copy_variable (vm).get_value_or ({})
           , get_worker_env_copy_current (vm).get_value_or (false)
           , get_worker_env_copy_file (vm).get_value_or ({})
           , get_worker_env_set_variable (vm).get_value_or ({})
           , installation.gspc_home()
-          , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
-          , get_virtual_memory_port (vm)
-          , get_virtual_memory_netdev_id (vm)
           , !entry_points
             ? decltype (entry_points->_->_entry_points) {}
             : entry_points->_->_entry_points
@@ -387,7 +380,7 @@ namespace gspc
       , _virtual_memory_api
         ( _virtual_memory_socket
         ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-            (_logger, _virtual_memory_socket->string())
+            (_virtual_memory_socket->string())
         : nullptr
         )
   {
@@ -402,6 +395,7 @@ namespace gspc
         ("--log-level given but currently not supported");
     }
   }
+
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
     scoped_runtime_system::implementation::add_worker
       (rifd_entry_points const& rifd_entry_points, Certificates const& certificates)
@@ -437,7 +431,7 @@ namespace gspc
     , std::string const& name
     ) const
   {
-    return vmem_allocation (this, segment_description, size, name);
+    return _->_iml_rts->rts->alloc (segment_description, size, name);
   }
   vmem_allocation scoped_runtime_system::alloc_and_fill
     ( vmem::segment_description segment_description
@@ -446,16 +440,42 @@ namespace gspc
     , char const* const data
     ) const
   {
-    return vmem_allocation (this, segment_description, size, name, data);
+    return _->_iml_rts->rts->alloc_and_fill (segment_description, size, name, data);
   }
-
-  stream scoped_runtime_system::create_stream ( std::string const& name
-                                              , gspc::vmem_allocation const& buffer
-                                              , stream::size_of_slot const& size_of_slot
-                                              , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
-                                              ) const
+  stream scoped_runtime_system::create_stream
+    ( std::string const& name
+    , gspc::vmem_allocation const& buffer
+    , stream::size_of_slot const& size_of_slot
+    , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
+    ) const
   {
-    return stream (*this, name, buffer, size_of_slot, on_slot_filled);
+    return _->_iml_rts->rts->create_stream
+            ( name
+            , buffer.iml_allocation()
+            , size_of_slot
+            , [on_slot_filled] ( gpi::pc::type::range_t const metadata
+                               , gpi::pc::type::range_t const data
+                               , char const flag
+                               , std::size_t const id
+                               ) -> void
+              {
+                pnet::type::value::value_type value;
+                pnet::type::value::poke
+                 ( "meta"
+                 , value
+                 , gspc::iml::remote_iml_gpi_global_memory_range (metadata)
+                 );
+                pnet::type::value::poke
+                 ( "data"
+                 , value
+                 , gspc::iml::remote_iml_gpi_global_memory_range (data)
+                 );
+                pnet::type::value::poke ("flag", value, flag);
+                pnet::type::value::poke ("id", value, id);
+
+                on_slot_filled (value);
+              }
+           );
   }
 
   std::unordered_map< rifd_entry_point
@@ -537,4 +557,52 @@ namespace gspc
     }
     return _->_started_runtime_system._logging_rif_info->sink_endpoint;
   }
+
+  namespace
+  {
+    std::unique_ptr<iml_client::scoped_rifds> make_iml_scoped_rifds
+      (boost::program_options::variables_map vm)
+    {
+      boost::program_options::variables_map iml_vm;
+
+      iml_client::set_rif_strategy
+        (iml_vm, require_rif_strategy (vm));
+      iml_client::set_rif_strategy_parameters
+        (iml_vm, require_rif_strategy_parameters (vm));
+      iml_client::set_nodefile (iml_vm, require_nodefile (vm));
+
+      return fhg::util::cxx14::make_unique<iml_client::scoped_rifds>
+        (iml_vm, iml_vm, iml_vm, *get_gspc_home (vm));
+    }
+
+    std::unique_ptr<iml_client::scoped_iml_runtime_system> make_iml_rts
+      ( boost::program_options::variables_map const& vm
+      , std::ostream& info_output
+      , iml_client::scoped_rifds const& rifds
+      )
+    {
+      boost::program_options::variables_map iml_vm;
+
+      iml_client::set_virtual_memory_socket
+        (iml_vm, require_virtual_memory_socket (vm));
+      iml_client::set_virtual_memory_port
+        (iml_vm, require_virtual_memory_port (vm));
+      iml_client::set_virtual_memory_startup_timeout
+        (iml_vm, require_virtual_memory_startup_timeout (vm));
+      iml_client::set_virtual_memory_netdev_id
+        (iml_vm, require_virtual_memory_netdev_id (vm));
+      iml_client::set_nodefile (iml_vm, require_nodefile (vm));
+
+      return fhg::util::cxx14::make_unique<iml_client::scoped_iml_runtime_system>
+        (iml_vm, *get_gspc_home (vm), rifds.entry_points(), info_output);
+    }
+  }
+
+  iml_runtime_system::iml_runtime_system
+      ( boost::program_options::variables_map const& vm
+      , std::ostream& info_output
+      )
+    : rifds (make_iml_scoped_rifds (vm))
+    , rts (make_iml_rts (vm, info_output, *rifds))
+  {}
 }

@@ -3,8 +3,8 @@
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 
-namespace gspc
+namespace iml_client
 {
   class installation;
-  class scoped_runtime_system;
+  class scoped_iml_runtime_system;
 }

@@ -1,6 +1,6 @@
-#include <gpi-space/pc/global/topology.hpp>
+#include <iml/vmem/gaspi/pc/global/topology.hpp>
 
-#include <gpi-space/pc/memory/manager.hpp>
+#include <iml/vmem/gaspi/pc/memory/manager.hpp>
 
 #include <rpc/remote_function.hpp>
 
@@ -15,7 +15,7 @@ namespace gpi
     namespace global
     {
       topology_t::topology_t ( memory::manager_t& memory_manager
-                             , fhg::vmem::gaspi_context& gaspi_context
+                             , fhg::iml::vmem::gaspi_context& gaspi_context
                              , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher> server
                              )
         : _gaspi_context (gaspi_context)

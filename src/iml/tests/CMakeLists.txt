@@ -1,87 +1,58 @@
-
-fhg_add_test (NAME drts_installation
+fhg_add_test (NAME iml_installation
   SOURCES installation.cpp
   USE_BOOST
-  LIBRARIES gspc
+  LIBRARIES IML::client
             Boost::program_options
   REQUIRES_INSTALLATION
 )
-fhg_add_test (NAME drts_installation_from_command_line
+
+fhg_add_test (NAME iml_installation_from_command_line
   SOURCES installation_from_command_line.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-  LIBRARIES gspc
+  ARGS --iml-home "${CMAKE_INSTALL_PREFIX}"
+  LIBRARIES IML::client
             Boost::program_options
   REQUIRES_INSTALLATION
 )
 
-fhg_add_test (NAME drts_context
-  SOURCES context.cpp
+fhg_add_test (NAME iml_scoped_rifd
+  SOURCES "scoped_rifd.cpp"
   USE_BOOST
-  LIBRARIES gspc
-)
-
-fhg_add_test (NAME scoped_rifd
-  SOURCES scoped_rifd.cpp
-  USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  LIBRARIES gspc
-            test-utilities
+  ARGS --iml-home "${CMAKE_INSTALL_PREFIX}"
+       --iml-shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+  LIBRARIES IML::client
+            IML::test-utilities
             Boost::program_options
   REQUIRES_INSTALLATION
-  START_SCOPED_RIF
+  START_IML_SCOPED_RIF
 )
 
-fhg_add_test (NAME scoped_drts
-  SOURCES scoped_drts.cpp
+fhg_add_test (NAME iml_scoped_drts
+  SOURCES "scoped_drts.cpp"
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  LIBRARIES gspc
-            test-utilities
+  ARGS --iml-home "${CMAKE_INSTALL_PREFIX}"
+       --iml-shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --iml-vmem-startup-timeout 60
+  LIBRARIES IML::client
+            IML::test-utilities
             Boost::program_options
-  REQUIRES_INSTALLATION
-  START_SCOPED_RIF
-)
-
-extended_add_library (NAME module_nounload_detection-empty
-  SOURCES "module_nounload_detection/empty.cpp"
-  TYPE SHARED
-)
-
-fhg_add_test (NAME module_nounload_detection
-  SOURCES "module_nounload_detection.cpp"
-  USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  LIBRARIES gspc
-            test-utilities
-            Util::Generic
             Boost::filesystem
-            Boost::program_options
-  COMPILE_DEFINITIONS
-    PRIVATE "LIBRARY_TO_LOAD=\"$<TARGET_FILE:module_nounload_detection-empty>\""
   REQUIRES_INSTALLATION
-  START_SCOPED_RIF
-  DEPENDS module_nounload_detection-empty
+  REQUIRES_IML
+  START_IML_SCOPED_RIF
 )
 
-fhg_add_test (NAME worker_env
-  SOURCES "worker_env.cpp"
+fhg_add_test (NAME iml_standalone_put_get
+  SOURCES "standalone_put_get.cpp"
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
-  LIBRARIES gspc
-            test-utilities
-            Util::Generic
-            Boost::filesystem
+  ARGS --iml-home "${CMAKE_INSTALL_PREFIX}"
+       --iml-shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+       --iml-vmem-startup-timeout 60
+  LIBRARIES IML::client
+            IML::test-utilities
             Boost::program_options
+            Boost::filesystem
   REQUIRES_INSTALLATION
-  START_SCOPED_RIF
+  REQUIRES_IML
+  START_IML_SCOPED_RIF
 )
-
-add_subdirectory (client_implementation_with_ostream_logger)
-add_subdirectory (scoped_rifd_execute)

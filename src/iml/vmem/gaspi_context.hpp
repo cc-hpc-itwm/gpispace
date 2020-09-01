@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gpi-space/types.hpp>
-#include <vmem/netdev_id.hpp>
+#include <iml/vmem/gaspi/types.hpp>
+#include <iml/vmem/netdev_id.hpp>
 
 #include <chrono>
 #include <mutex>
@@ -10,6 +10,8 @@
 #include <vector>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace vmem
   {
@@ -74,4 +76,5 @@ namespace fhg
       std::unordered_set<gpi::segment_id_t> _segment_ids;
     };
   }
+}
 }

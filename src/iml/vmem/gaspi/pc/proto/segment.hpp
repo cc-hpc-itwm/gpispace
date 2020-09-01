@@ -2,13 +2,12 @@
 
 #include <boost/variant.hpp>
 
-// serialization
 #include <boost/serialization/nvp.hpp>
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 
 namespace gpi
 {

@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gpi-space/pc/global/itopology.hpp>
-#include <gpi-space/pc/memory/manager.hpp>
+#include <iml/vmem/gaspi/pc/global/itopology.hpp>
+#include <iml/vmem/gaspi/pc/memory/manager.hpp>
 
 #include <rpc/function_description.hpp>
 #include <rpc/remote_tcp_endpoint.hpp>
@@ -11,7 +11,7 @@
 
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 
-#include <vmem/gaspi_context.hpp>
+#include <iml/vmem/gaspi_context.hpp>
 
 #include <boost/noncopyable.hpp>
 
@@ -30,7 +30,7 @@ namespace gpi
       {
       public:
         topology_t ( memory::manager_t& memory_manager
-                   , fhg::vmem::gaspi_context&
+                   , fhg::iml::vmem::gaspi_context&
                    , std::unique_ptr<fhg::rpc::service_tcp_provider_with_deferred_dispatcher>
                    );
 
@@ -55,7 +55,7 @@ namespace gpi
       private:
         mutable std::mutex m_global_alloc_mutex;
 
-        fhg::vmem::gaspi_context& _gaspi_context;
+        fhg::iml::vmem::gaspi_context& _gaspi_context;
 
         FHG_RPC_FUNCTION_DESCRIPTION ( alloc_desc
                                      , void ( type::segment_id_t

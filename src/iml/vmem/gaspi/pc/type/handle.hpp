@@ -6,7 +6,7 @@
 #include <boost/lexical_cast.hpp>
 #include <boost/serialization/nvp.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <functional>
 

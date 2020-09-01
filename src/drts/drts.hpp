@@ -6,7 +6,7 @@
 #include <drts/pimpl.hpp>
 #include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
-#include <drts/virtual_memory.fwd.hpp>
+#include <drts/virtual_memory.hpp>
 #include <drts/worker_description.hpp>
 
 #include <logging/endpoint.hpp>
@@ -27,17 +27,6 @@
 #include <utility>
 #include <vector>
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace client
-    {
-      class api_t;
-    }
-  }
-}
-
 namespace gspc
 {
   namespace options
@@ -46,6 +35,7 @@ namespace gspc
     boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description external_rifd();
+    boost::program_options::options_description remote_iml();
     boost::program_options::options_description virtual_memory();
   }
 
@@ -143,9 +133,7 @@ namespace gspc
     scoped_runtime_system& operator= (scoped_runtime_system&&) = delete;
 
   private:
-    friend class vmem_allocation;
     friend class information_to_reattach;
-    friend class stream;
 
     PIMPL (scoped_runtime_system);
   };
@@ -156,4 +144,8 @@ namespace gspc
   void set_gspc_home ( boost::program_options::variables_map&
                      , boost::filesystem::path const&
                      );
+
+  void set_remote_iml_vmem_socket ( boost::program_options::variables_map&
+                                  , boost::filesystem::path const&
+                                  );
 }

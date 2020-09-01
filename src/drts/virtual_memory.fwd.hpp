@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/variant.hpp>
+#include <iml/client/virtual_memory.fwd.hpp>
 
 namespace gspc
 {
@@ -8,10 +8,9 @@ namespace gspc
 
   namespace vmem
   {
-    struct gaspi_segment_description;
-    struct beegfs_segment_description;
-    using segment_description = boost::variant < gaspi_segment_description
-                                               , beegfs_segment_description
-                                               >;
+    using beegfs_segment_description = iml_client::vmem::beegfs_segment_description;
+    using gaspi_segment_description = iml_client::vmem::gaspi_segment_description;
+
+    using segment_description = iml_client::vmem::segment_description;
   }
 }

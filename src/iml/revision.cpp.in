@@ -1,8 +1,10 @@
-#include <fhg/revision.hpp>
+#include <iml/revision.hpp>
 
 #include <sstream>
 
 namespace fhg
+{
+  namespace iml
 {
   const char* project_version()
   {
@@ -25,10 +27,11 @@ namespace fhg
       << std::endl << "revision: " << project_revision()
       << std::endl << "contact:  @PROJECT_CONTACT@"
       << std::endl
-      << std::endl << "Copyright 2009-2016 Fraunhofer ITWM"
+        << std::endl << "Copyright 2009-2020 Fraunhofer ITWM"
       << std::endl
       ;
 
     return s.str();
   }
+}
 }

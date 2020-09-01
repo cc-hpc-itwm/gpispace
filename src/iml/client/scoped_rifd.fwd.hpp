@@ -1,8 +1,8 @@
 #pragma once
 
-namespace gspc
+namespace iml_client
 {
-  namespace rifd
+  namespace iml_rifd
   {
     struct strategy;
     struct hostnames;

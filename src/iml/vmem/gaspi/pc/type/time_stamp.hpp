@@ -3,10 +3,9 @@
 #include <time.h>
 #include <sys/time.h>
 
-// serialization
 #include <boost/serialization/nvp.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 namespace boost
 {

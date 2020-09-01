@@ -1,8 +1,10 @@
-#include <fhg/util/parse/error.hpp>
+#include <iml/util/parse/error.hpp>
 
 #include <sstream>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -16,4 +18,5 @@ namespace fhg
       }
     }
   }
+}
 }

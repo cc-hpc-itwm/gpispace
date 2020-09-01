@@ -6,6 +6,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace rif
   {
     struct started_process_promise
@@ -32,5 +34,6 @@ namespace fhg
     };
   }
 }
+}
 
-#include <rif/started_process_promise.ipp>
+#include <iml/rif/started_process_promise.ipp>

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
+#include <iml/vmem/gaspi/pc/segment/segment.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
-namespace gspc
+namespace iml_client
 {
   class scoped_allocation
   {

@@ -1,66 +1,80 @@
-extended_add_library (NAME gpi-space-gpiapi
+install (FILES
+  pc/type/types.hpp
+  pc/type/handle.hpp
+  pc/type/memory_location.hpp
+  DESTINATION include/iml/vmem/gaspi/pc/type/
+)
+
+install (FILES
+  types.hpp
+  DESTINATION include/iml/vmem/gaspi/
+)
+
+extended_add_library (NAME vmem-gpiapi
+  NAMESPACE IML
   SOURCES "gpi/system.cpp"
           "gpi/gaspi.cpp"
   LIBRARIES GASPI::static
-            gspc::logging
             Util::Generic
-            GPISpace::vmem
+            IML::vmem-client
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi-space-pc-client-static
+extended_add_library (NAME vmem-pc-client-static
+  NAMESPACE IML
   SOURCES "pc/client/api.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi-space-pc-segment
+extended_add_library (NAME vmem-pc-segment
+  NAMESPACE IML
   SOURCES "pc/segment/segment.cpp"
   LIBRARIES "${LIBRT_SHARED_LIBRARY}"
             Util::Generic
-            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi-space-pc-memory
+extended_add_library (NAME vmem-pc-memory
+  NAMESPACE IML
   SOURCES "pc/memory/memory_area.cpp"
           "pc/memory/handle_generator.cpp"
           "pc/memory/manager.cpp"
           "pc/memory/gaspi_area.cpp"
           "pc/memory/shm_area.cpp"
           "pc/memory/beegfs_area.cpp"
-  LIBRARIES gpi-space-pc-segment
-            gspc::logging
-            mmgr
-            gpi-space_url
+  LIBRARIES IML::vmem-pc-segment
+            IML::mmgr
+            IML::vmem_url
             Util::Generic
-            gpi-space-gpiapi
+            IML::vmem-gpiapi
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi-space-pc-container
+extended_add_library (NAME vmem-pc-container
+  NAMESPACE IML
   SOURCES "pc/container/manager.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi-space-pc-global
+extended_add_library (NAME vmem-pc-global
+  NAMESPACE IML
   SOURCES "pc/global/topology.cpp"
   LIBRARIES Util::Generic RPC
-            gspc::logging
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi-space_url
+extended_add_library (NAME vmem_url
+  NAMESPACE IML
   SOURCES "pc/url.cpp"
-  LIBRARIES fhg-util
+  LIBRARIES IML::fhg-util
 )
 
 extended_add_library (NAME gpi_type_check
+  NAMESPACE IML
   SOURCES "types.cpp"
-  LIBRARIES gpi-space-gpiapi
+  LIBRARIES IML::vmem-gpiapi
 )
 
 add_subdirectory (pc/test)

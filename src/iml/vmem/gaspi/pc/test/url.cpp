@@ -1,9 +1,9 @@
 #include <boost/test/unit_test.hpp>
 
-#include <gpi-space/pc/url.hpp>
-#include <gpi-space/pc/url_io.hpp>
+#include <iml/vmem/gaspi/pc/url.hpp>
+#include <iml/vmem/gaspi/pc/url_io.hpp>
 
-#include <fhg/util/parse/error.hpp>
+#include <iml/util/parse/error.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/printer/optional.hpp>
@@ -35,12 +35,12 @@ BOOST_AUTO_TEST_CASE (test_url_ctor)
 
 namespace
 {
-  fhg::util::parse::position_string make_position
+  fhg::iml::util::parse::position_string make_position
     ( std::string const& input
     , std::size_t offset
     )
   {
-    fhg::util::parse::position_string pos (input);
+    fhg::iml::util::parse::position_string pos (input);
     pos.advance (offset);
     return pos;
   }
@@ -55,7 +55,7 @@ namespace
         {
           gpi::pc::url_t {input};
         }
-      , fhg::util::parse::error::generic
+      , fhg::iml::util::parse::error::generic
           (message, make_position (input, error_position))
       );
   }
@@ -69,7 +69,7 @@ namespace
         {
           gpi::pc::url_t {input};
         }
-      , fhg::util::parse::error::expected
+      , fhg::iml::util::parse::error::expected
           (expectation, make_position (input, error_position))
       );
   }

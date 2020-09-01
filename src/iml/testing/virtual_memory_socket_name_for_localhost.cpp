@@ -1,13 +1,16 @@
-#include <test/virtual_memory_socket_name_for_localhost.hpp>
+#include <iml/testing/virtual_memory_socket_name_for_localhost.hpp>
 
-#include <drts/private/option.hpp>
+#include <iml/client/iml.hpp>
 
-namespace test
+#include <boost/filesystem/operations.hpp>
+
+namespace iml_test
 {
-  void set_virtual_memory_socket_name_for_localhost
+  void set_iml_vmem_socket_path_for_localhost
     (boost::program_options::variables_map& vm)
   {
-    gspc::set_virtual_memory_socket ( vm
+    iml_client::set_virtual_memory_socket
+      ( vm
                                     , boost::filesystem::temp_directory_path()
                                     / boost::filesystem::unique_path()
                                     );

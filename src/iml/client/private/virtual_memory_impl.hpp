@@ -1,11 +1,11 @@
 #pragma once
 
-#include <drts/virtual_memory.hpp>
+#include <iml/client/virtual_memory.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-#include <gpi-space/pc/segment/segment.hpp>
-#include <gpi-space/pc/type/flags.hpp>
-#include <gpi-space/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
+#include <iml/vmem/gaspi/pc/segment/segment.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
 
@@ -15,7 +15,7 @@
 #include <memory>
 #include <string>
 
-namespace gspc
+namespace iml_client
 {
   namespace
   {

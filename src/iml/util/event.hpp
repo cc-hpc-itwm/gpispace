@@ -7,6 +7,8 @@
 
 namespace fhg
 {
+  namespace iml
+{
   namespace util
   {
     namespace thread
@@ -69,4 +71,5 @@ namespace fhg
       };
     }
   }
+}
 }

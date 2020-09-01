@@ -1,4 +1,3 @@
-
 /* double table for two arenas, a global, growing upwards and a local
    growing downwards
 
@@ -7,10 +6,10 @@
 
 #pragma once
 
-#include <mmgr/tmmgr.hpp>
+#include <iml/vmem/tmmgr.hpp>
 #include <array>
 
-namespace gspc
+namespace iml_client
 {
   namespace vmem
   {

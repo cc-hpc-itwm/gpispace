@@ -1,4 +1,7 @@
-#include <gpi-space/pc/memory/beegfs_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
+
+#include <iml/util/read_bool.hpp>
+#include <iml/util/optional.hpp>
 
 #include <cerrno>
 #include <sys/types.h>
@@ -7,19 +10,18 @@
 #include <stdio.h>
 #include <cstring>
 
-#include <gpi-space/pc/url.hpp>
+#include <iml/vmem/gaspi/pc/url.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
 #include <util-generic/print_exception.hpp>
-#include <fhg/util/boost/optional.hpp>
-#include <fhg/util/read_bool.hpp>
+#include <boost/optional.hpp>
 #include <util-generic/read_file.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/unused.hpp>
 #include <util-generic/write_file.hpp>
 
-#include <vmem/segment/beegfs.hpp>
+#include <iml/vmem/segment/beegfs.hpp>
 
 #include <boost/archive/text_iarchive.hpp>
 #include <boost/archive/text_oarchive.hpp>
@@ -28,7 +30,7 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-#include <gpi-space/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 namespace gpi
 {
@@ -112,16 +114,14 @@ namespace gpi
         };
       }
 
-      beegfs_area_t::beegfs_area_t ( fhg::logging::stream_emitter& logger
-                                   , const gpi::pc::type::process_id_t creator
+      beegfs_area_t::beegfs_area_t ( const gpi::pc::type::process_id_t creator
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
                                    , const gpi::pc::type::flags_t flags
                                    , gpi::pc::global::itopology_t & topology
                                    , handle_generator_t& handle_generator
                                    )
-        : area_t ( logger
-                 , beegfs_area_t::area_type
+        : area_t ( beegfs_area_t::area_type
                  , creator
                  , path.string ()
                  , size
@@ -150,11 +150,7 @@ namespace gpi
           close();
         }
         catch (...)
-        {
-          _logger.emit ( fhg::util::current_exception_printer().string()
-                       , fhg::logging::legacy::category_level_error
-                       );
-        }
+        { }
       }
 
       std::string beegfs_area_t::version_string() const
@@ -241,11 +237,11 @@ namespace gpi
 
         //! \todo move in front of creation even by checking first
         //! existing parent path
-        fhg::vmem::segment::beegfs::check_requirements (m_path);
+        fhg::iml::vmem::segment::beegfs::check_requirements (m_path);
 
         {
           boost::optional<std::string> const found_version
-            ( fhg::util::boost::exception_is_none
+            ( fhg::iml::util::boost::exception_is_none
                 ( &fhg::util::read_file<std::string>
                 , detail::version_path (m_path)
                 )
@@ -294,11 +290,6 @@ namespace gpi
             (fhg::util::syscall::open (data_path.string().c_str(), O_RDWR));
         }
 
-        _logger.emit ( "BEEGFS memory created: path: " + m_path.string()
-                     + " size: " + std::to_string (size())
-                     , fhg::logging::legacy::category_level_trace
-                     );
-
         succeeded = true;
       }
 
@@ -315,11 +306,11 @@ namespace gpi
         }
       }
 
-      gspc::vmem::dtmmgr::Arena_t
+      iml_client::vmem::dtmmgr::Arena_t
       beegfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
         // we do not support multiple arenas in this memory type
-        return gspc::vmem::dtmmgr::ARENA_UP;
+        return iml_client::vmem::dtmmgr::ARENA_UP;
       }
 
       void *
@@ -423,8 +414,7 @@ namespace gpi
       }
 
       area_ptr_t beegfs_area_t::create
-        ( fhg::logging::stream_emitter& logger
-        , std::string const &url_s
+        ( std::string const &url_s
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , type::id_t owner
@@ -433,7 +423,7 @@ namespace gpi
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
-        if (    fhg::util::read_bool (url.get ("exclusive").get_value_or ("false")))
+        if (fhg::iml::util::read_bool (url.get ("exclusive").get_value_or ("false")))
         {
           gpi::flag::set (flags, F_EXCLUSIVE);
         }
@@ -441,8 +431,7 @@ namespace gpi
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
 
-        area_ptr_t area (new beegfs_area_t ( logger
-                                           , owner
+        area_ptr_t area (new beegfs_area_t ( owner
                                            , url.path()
                                            , size
                                            , flags | F_GLOBAL

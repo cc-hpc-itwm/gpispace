@@ -1,5 +1,7 @@
 namespace fhg
 {
+  namespace iml
+{
   namespace vmem
   {
     template<typename Archive>
@@ -8,4 +10,5 @@ namespace fhg
       ar & value;
     }
   }
+}
 }

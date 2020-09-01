@@ -1,6 +1,6 @@
 #pragma once
 
-namespace gspc
+namespace iml_client
 {
   class stream;
 }

@@ -1,10 +1,12 @@
 #pragma once
 
-#include <fhg/util/parse/position.hpp>
+#include <iml/util/parse/position.hpp>
 
 #include <boost/variant.hpp>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace util
   {
@@ -29,4 +31,5 @@ namespace fhg
     int read_int (std::string const&);
     std::size_t read_size_t (std::string const&);
   }
+}
 }

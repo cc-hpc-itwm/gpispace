@@ -3,7 +3,7 @@
 #include <string>
 #include <boost/noncopyable.hpp>
 
-#include <gpi-space/pc/type/segment_descriptor.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 
 namespace gpi
 {

@@ -9,10 +9,10 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>
 
-#include <gpi-space/pc/type/typedefs.hpp>
-#include <gpi-space/pc/proto/error.hpp>
-#include <gpi-space/pc/proto/memory.hpp>
-#include <gpi-space/pc/proto/segment.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/proto/error.hpp>
+#include <iml/vmem/gaspi/pc/proto/memory.hpp>
+#include <iml/vmem/gaspi/pc/proto/segment.hpp>
 
 namespace gpi
 {

@@ -1,4 +1,4 @@
-#include <gpi-space/pc/memory/shm_area.hpp>
+#include <iml/vmem/gaspi/pc/memory/shm_area.hpp>
 
 #include <sys/mman.h>
 #include <sys/stat.h>
@@ -6,8 +6,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <gpi-space/pc/url.hpp>
-#include <fhg/util/read_bool.hpp>
+#include <iml/vmem/gaspi/pc/url.hpp>
 
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
@@ -15,7 +14,7 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <gpi-space/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 namespace gpi
 {
@@ -96,14 +95,12 @@ namespace gpi
         }
       }
 
-      shm_area_t::shm_area_t ( fhg::logging::stream_emitter& logger
-                             , const gpi::pc::type::process_id_t creator
+      shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
                              , type::name_t const& name
                              , const gpi::pc::type::size_t user_size
                              , handle_generator_t& handle_generator
                              )
-        : area_t ( logger
-                 , shm_area_t::area_type
+        : area_t ( shm_area_t::area_type
                  , creator
                  , name
                  , user_size
@@ -148,14 +145,7 @@ namespace gpi
           detail::unlink (m_path);
         }
         catch (...)
-        {
-          _logger.emit ( "error in ~shm_area_t: id = "
-                       + std::to_string (descriptor().id)
-                       + " path = " + m_path + " error = "
-                       + fhg::util::current_exception_printer().string()
-                       , fhg::logging::legacy::category_level_error
-                       );
-        }
+        { }
       }
 
       void*
@@ -167,10 +157,10 @@ namespace gpi
           : nullptr;
       }
 
-      gspc::vmem::dtmmgr::Arena_t
+      iml_client::vmem::dtmmgr::Arena_t
       shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
       {
-        return gspc::vmem::dtmmgr::ARENA_UP;
+        return iml_client::vmem::dtmmgr::ARENA_UP;
       }
 
       bool

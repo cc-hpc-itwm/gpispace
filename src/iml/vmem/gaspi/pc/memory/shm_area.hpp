@@ -1,7 +1,7 @@
 #pragma once
 
-#include <gpi-space/pc/type/segment_type.hpp>
-#include <gpi-space/pc/memory/memory_area.hpp>
+#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
+#include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 namespace gpi
 {
@@ -14,8 +14,7 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
 
-        shm_area_t ( fhg::logging::stream_emitter&
-                   , const gpi::pc::type::process_id_t creator
+        shm_area_t ( const gpi::pc::type::process_id_t creator
                    , type::name_t const&
                    , const gpi::pc::type::size_t size
                    , handle_generator_t&
@@ -23,7 +22,7 @@ namespace gpi
 
         ~shm_area_t ();
       protected:
-        virtual gspc::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
+        virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
         int get_type_id () const;
 
         virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override{}

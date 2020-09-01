@@ -1,6 +1,6 @@
-#include <rif/strategy/local.hpp>
+#include <iml/rif/strategy/local.hpp>
 
-#include <fhg/util/system_with_blocked_SIGCHLD.hpp>
+#include <iml/util/system_with_blocked_SIGCHLD.hpp>
 #include <util-generic/blocked.hpp>
 #include <util-generic/hostname.hpp>
 
@@ -10,6 +10,8 @@
 
 namespace fhg
 {
+  namespace iml
+  {
   namespace rif
   {
     namespace strategy
@@ -48,7 +50,7 @@ namespace fhg
               );
           }
 
-          auto const localhost (util::hostname());
+          auto const localhost (fhg::util::hostname());
           auto const& hostname (all_hostnames.front());
           if (hostname != localhost)
           {
@@ -84,7 +86,7 @@ namespace fhg
         std::pair < std::unordered_set<std::string>
                   , std::unordered_map<std::string, std::exception_ptr>
                   > teardown
-            ( std::unordered_map<std::string, fhg::rif::entry_point> const& all_entry_points
+            ( std::unordered_map<std::string, fhg::iml::rif::entry_point> const& all_entry_points
             , std::vector<std::string> const& parameters
             )
         {
@@ -102,7 +104,7 @@ namespace fhg
               );
           }
 
-          auto const localhost (util::hostname());
+          auto const localhost (fhg::util::hostname());
           auto const& entry_point (*all_entry_points.begin());
           auto const& hostname (entry_point.first);
           if (hostname != localhost)
@@ -132,5 +134,6 @@ namespace fhg
         }
       }
     }
+  }
   }
 }

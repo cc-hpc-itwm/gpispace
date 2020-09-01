@@ -1,6 +1,6 @@
-#include <gpi-space/gpi/gaspi.hpp>
+#include <iml/vmem/gaspi/gpi/gaspi.hpp>
 
-#include <gpi-space/exception.hpp>
+#include <iml/vmem/gaspi/exception.hpp>
 
 #include <util-generic/hostname.hpp>
 
@@ -12,6 +12,8 @@
 #include <unordered_set>
 
 namespace fhg
+{
+  namespace iml
 {
   namespace vmem
   {
@@ -211,4 +213,5 @@ namespace fhg
 
 #undef FAIL_ON_NON_ZERO
   }
+}
 }

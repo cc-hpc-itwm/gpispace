@@ -1,6 +1,8 @@
 #pragma once
 
+#include <iml/client/stream.fwd.hpp>
+
 namespace gspc
 {
-  class stream;
+  using stream = iml_client::stream;
 }
