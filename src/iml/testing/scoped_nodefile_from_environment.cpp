@@ -19,12 +19,22 @@ namespace iml_test
     )
       : _temporary_file (shared_directory / boost::filesystem::unique_path())
   {
-    boost::optional<const char*> const iml_nodefile_for_tests
+    boost::optional<const char*> iml_nodefile_for_tests
       (fhg::util::getenv ("IML_NODEFILE_FOR_TESTS"));
     if (!iml_nodefile_for_tests)
     {
-      throw std::runtime_error
-        ("Environment variable IML_NODEFILE_FOR_TESTS is not set");
+      // \todo Remove automatic fallback once standalone. Convenience
+      // for transition period only. Once moved out this automatic
+      // setting should be done on the GPISpace-side test level: A
+      // test that uses IML shall set that variable.
+      boost::optional<const char*> const gspc_nodefile_for_tests
+        (fhg::util::getenv ("GSPC_NODEFILE_FOR_TESTS"));
+      if (!gspc_nodefile_for_tests)
+      {
+        throw std::runtime_error
+          ("Environment variable IML_NODEFILE_FOR_TESTS is not set");
+      }
+      iml_nodefile_for_tests = gspc_nodefile_for_tests;
     }
 
     boost::filesystem::path const iml_nodefile_for_tests_path

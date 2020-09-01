@@ -78,8 +78,8 @@
 # every env_$x shall:
 # - variable environment_key: a globally unique key for this
 #   environment in .ci/env/*.cmake
-# - variable GSPC_NODEFILE_FOR_TESTS and IML_NODEFILE_FOR_TESTS: a
-#   file containing hosts to use for testing
+# - variable GSPC_NODEFILE_FOR_TESTS: a file containing hosts to use
+#   for testing
 # - variable or before_script export `gspc_parallel_test_and_build_jobs`
 # - if using docker:
 #   - variable docker_image: the tagged image in the registry
@@ -128,7 +128,6 @@
            .gitmodules
     - git submodule update --init --recursive
     - export GSPC_NODEFILE_FOR_TESTS="${CI_PROJECT_DIR}/nodefile_for_tests"
-    - export IML_NODEFILE_FOR_TESTS="${GSPC_NODEFILE_FOR_TESTS}"
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
     # todo: move into add_test macro by wrapping tests with a script
     # that kills even within a run
@@ -139,7 +138,6 @@
     environment_key: "centos6-devtoolset8"
     docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
     GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
-    IML_NODEFILE_FOR_TESTS: "/etc/hostname"
     GIT_SUBMODULE_STRATEGY: recursive
   image: ${docker_image}
   tags:
@@ -152,7 +150,6 @@
     environment_key: "centos7-devtoolset8"
     docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
     GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
-    IML_NODEFILE_FOR_TESTS: "/etc/hostname"
     GIT_SUBMODULE_STRATEGY: recursive
   image: ${docker_image}
   tags:
