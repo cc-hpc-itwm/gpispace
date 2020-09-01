@@ -85,4 +85,10 @@ fhg_add_test (NAME worker_env
 
 add_subdirectory (client_implementation_with_ostream_logger)
 add_subdirectory (scoped_rifd_execute)
-add_subdirectory (iml)
+
+fhg_add_test (NAME iml_to_pnet_value_wrappers
+  SOURCES "iml_to_pnet_value_wrappers.cpp"
+  USE_BOOST
+  LIBRARIES gspc
+            Util::Generic
+)
