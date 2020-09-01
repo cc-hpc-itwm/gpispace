@@ -2,6 +2,7 @@
 #include <boost/test/unit_test.hpp>
 
 #include <drts/drts.hpp>
+#include <drts/ResourceGraph.hpp>
 #include <drts/scoped_rifd.hpp>
 
 #include <boost/program_options.hpp>
@@ -401,9 +402,8 @@ BOOST_DATA_TEST_CASE
                                         , installation
                                         );
 
-  using Resources = gspc::UniqueForest<gspc::Resource>;
   using Children = std::unordered_set<std::uint64_t>;
-  Resources resources;
+  gspc::ResourceGraph resources;
 
   auto const num_sockets_per_node
     (fhg::util::testing::random<unsigned int>{} (16, 2));

@@ -1,7 +1,9 @@
 #pragma once
 
 #include <drts/drts.hpp>
+#include <drts/Forest.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
+#include <drts/Resource.hpp>
 
 #include <logging/stream_emitter.hpp>
 

@@ -1,9 +1,11 @@
 #include <drts/drts.hpp>
+#include <drts/Forest.hpp>
 #include <drts/private/drts_impl.hpp>
 #include <drts/private/option.hpp>
 #include <drts/private/pimpl.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
+#include <drts/Resource.hpp>
 
 #include <drts/resource/Class.hpp>
 #include <drts/resource/ID.hpp>
@@ -88,7 +90,7 @@ namespace gspc
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm
       , installation const& installation
-      , UniqueForest<Resource> const& resource_descriptions
+      , ResourceGraph const& resource_descriptions
       , std::ostream& info_output
       , Certificates const& certificates
       )
@@ -133,7 +135,7 @@ namespace gspc
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
-    , UniqueForest<Resource> const& resource_descriptions
+    , ResourceGraph const& resource_descriptions
     , rifd_entry_points const& entry_points
     , std::ostream& info_output
     , Certificates const& certificates
@@ -183,7 +185,7 @@ namespace gspc
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
     , installation const& installation
-    , UniqueForest<Resource> const& resource_descriptions
+    , ResourceGraph const& resource_descriptions
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
     , std::ostream& info_output
@@ -196,7 +198,8 @@ namespace gspc
                               , master
                               , info_output
                               , certificates
-                              , resource_descriptions
+                              , *static_cast<UniqueForest<Resource>*>
+                                  (resource_descriptions._implementation)
                               )
           )
   {}

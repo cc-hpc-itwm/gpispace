@@ -7,6 +7,7 @@ install (FILES
   drts.fwd.hpp
   drts.hpp
   pimpl.hpp
+  ResourceGraph.hpp
   rifd_entry_points.fwd.hpp
   rifd_entry_points.hpp
   scoped_rifd.fwd.hpp
@@ -28,6 +29,7 @@ extended_add_library (NAME gspc
           "information_to_reattach.cpp"
           "private/option.cpp"
           "private/startup_and_shutdown.cpp"
+          "ResourceGraph.cpp"
           "rifd_entry_points.cpp"
           "scoped_rifd.cpp"
           "stream.cpp"
