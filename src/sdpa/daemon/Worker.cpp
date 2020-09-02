@@ -30,6 +30,11 @@ namespace sdpa
       }
     }
 
+    bool Worker::is_terminal() const
+    {
+      return !_children_allowed;
+    }
+
     bool Worker::has_pending_jobs() const
     {
       return !pending_.empty();

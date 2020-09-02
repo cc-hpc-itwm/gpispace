@@ -564,6 +564,7 @@ namespace xml
                                 , std::move (memory_buffers)
                                 , std::move (memory_gets)
                                 , std::move (memory_puts)
+                                , mod.require_function_unloads_without_rest()
                                 , mod.require_module_unloads_without_rest()
                                 );
         }

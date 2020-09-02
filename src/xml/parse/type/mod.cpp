@@ -33,6 +33,7 @@ namespace xml
         , const std::list<std::string>& cxxflags
         , const boost::optional<bool> &pass_context
         , const boost::optional<we::type::eureka_id_type>& eureka_id
+        , bool require_function_unloads_without_rest
         , bool require_module_unloads_without_rest
         )
         : with_position_of_definition (pod)
@@ -50,6 +51,8 @@ namespace xml
         , _cxxflags (cxxflags)
         , _pass_context (pass_context)
         , _eureka_id (eureka_id)
+        , _require_function_unloads_without_rest
+            (require_function_unloads_without_rest)
         , _require_module_unloads_without_rest
             (require_module_unloads_without_rest)
       {
@@ -121,6 +124,10 @@ namespace xml
       {
         return _eureka_id;
       }
+      bool module_type::require_function_unloads_without_rest() const
+      {
+        return _require_function_unloads_without_rest;
+      }
       bool module_type::require_module_unloads_without_rest() const
       {
         return _require_module_unloads_without_rest;
@@ -178,6 +185,9 @@ namespace xml
           s.open ("module");
           s.attr ("name", m.name());
           s.attr ("function", dump_fun (m));
+          s.attr ( "require_function_unloads_without_rest"
+                 , m.require_function_unloads_without_rest()
+                 );
           s.attr ( "require_module_unloads_without_rest"
                  , m.require_module_unloads_without_rest()
                  );

@@ -1,0 +1,11 @@
+  // define topology for GPI-Space: workers_per_node workers with
+  // capability/name "worker" per host.
+  std::string const topology_description
+    ("worker:" + std::to_string (workers_per_node));
+
+  gspc::scoped_runtime_system drts
+    ( vm                    // variables_map containing GPI-Space options
+    , gspc_installation
+    , topology_description
+    , rifds.entry_points()  // entry points to start agent and workers on
+    );

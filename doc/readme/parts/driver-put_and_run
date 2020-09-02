@@ -1,0 +1,10 @@
+  std::multimap<std::string, pnet::type::value::value_type> values_on_ports;
+
+  // put N values onto place "trigger" via input port "task_trigger"
+  // to trigger N "compute" tasks
+  for (int i (0); i < N; ++i) {
+    values_on_ports.emplace ("task_trigger", we::type::literal::control{});
+  }
+
+  auto const results
+    (gspc::client (drts).put_and_run (workflow, values_on_ports));

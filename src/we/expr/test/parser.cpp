@@ -1271,6 +1271,24 @@ namespace
   }
 }
 
+BOOST_AUTO_TEST_CASE (integral_followed_by_f_is_parsed_as_float)
+{
+  require_evaluating_to ("0f", 0.f);
+  require_evaluating_to ("-1f", -1.f);
+  require_evaluating_to ("1f", 1.f);
+  require_evaluating_to ("42f", 42.f);
+
+  auto random_int (fhg::util::testing::random<int>{});
+
+  for (int i (0); i < 100; ++i)
+  {
+    auto const x (random_int());
+
+    require_evaluating_to
+      (str (boost::format ("%1%f") % x), static_cast<float> (x));
+  }
+}
+
 BOOST_AUTO_TEST_CASE (tokens_cast)
 {
   check_token_cast<int> ("int");

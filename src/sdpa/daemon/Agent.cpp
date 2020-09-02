@@ -87,7 +87,7 @@ namespace sdpa
                      }
                    , _worker_manager
                    )
-      , _scheduling_thread_mutex()
+      , _cancel_mutex()
       , _scheduling_requested_guard()
       , _scheduling_requested_condition()
       , _scheduling_requested (false)
@@ -575,6 +575,7 @@ namespace sdpa
               }
             }
 
+            std::lock_guard<std::mutex> const _ (_cancel_mutex);
             _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
               ( as_worker.get()->second
               , [this] (job_id_t const& job)
@@ -653,7 +654,7 @@ namespace sdpa
     void Agent::cancel_worker_handled_job
       (we::layer::id_type const& job_id)
     {
-      std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
+      std::lock_guard<std::mutex> const _ (_cancel_mutex);
 
       Job* const pJob (findJob (job_id));
       if (!pJob)
@@ -694,6 +695,7 @@ namespace sdpa
 
         _scheduler.delete_job (job_id);
         _scheduler.releaseReservation (job_id);
+        _scheduler.delete_pending_job (job_id);
 
         if (!boost::get<job_source_client> (&pJob->source()))
         {
@@ -703,8 +705,8 @@ namespace sdpa
     }
 
     void Agent::finished ( const we::layer::id_type& id
-                                 , const we::type::activity_t& result
-                                 )
+                         , const we::type::activity_t& result
+                         )
     {
       Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
 
@@ -724,8 +726,8 @@ namespace sdpa
     }
 
     void Agent::failed ( const we::layer::id_type& id
-                               , std::string const & reason
-                               )
+                       , std::string const & reason
+                       )
     {
       Job* const pJob (require_job (id, "got failed message for old/unknown Job " + id));
 
@@ -1612,7 +1614,7 @@ namespace sdpa
           _scheduling_requested = false;
         }
 
-        std::lock_guard<std::mutex> const _ (_scheduling_thread_mutex);
+        std::lock_guard<std::mutex> const _ (_cancel_mutex);
 
         _scheduler.assignJobsToWorkers();
         _scheduler.steal_work();

@@ -311,7 +311,9 @@ namespace we
           (module_call.function(), context, input, out, pointers);
         auto const after (fhg::util::currently_loaded_libraries());
 
-        if (before != after)
+        if ( module_call.require_function_unloads_without_rest()
+           && before != after
+           )
         {
           throw function_does_not_unload
             (module_call.module(), module_call.function(), before, after);

@@ -1,2 +1,0 @@
-ctest --output-on-failure --timeout 180 --schedule-random \
-  -L "requires_vmem"

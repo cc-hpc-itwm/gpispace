@@ -82,17 +82,36 @@ cmake \
     -P .internal/external.cmake
 git apply external.patch
 
+# patch doc/readme/ to be assembled in-tarball
+cp "${repodir}/.internal/external/doc/readme/CMakeLists.txt" \
+   "${repodir}/doc/readme/CMakeLists.txt"
+"${repodir}/doc/readme/configure.sh" \
+  "${repodir}/doc/readme/parts" \
+  "${repodir}/doc/readme/parts/readme-full" \
+  "${repodir}/doc/readme/getting_started.md"
+"${repodir}/doc/readme/configure.sh" \
+  "${repodir}/doc/readme/parts" \
+  "${repodir}/doc/readme/parts/driver-full" \
+  "${repodir}/doc/readme/run.cpp"
+"${repodir}/doc/readme/configure.sh" \
+  "${repodir}/doc/readme/parts" \
+  "${repodir}/doc/readme/parts/script-full" \
+  "${repodir}/doc/readme/build.sh"
+"${repodir}/doc/readme/configure.sh" \
+  "${repodir}/doc/readme/parts" \
+  "${repodir}/doc/readme/parts/pnet-full" \
+  "${repodir}/doc/readme/compute_and_aggregate.xpnet"
+rm -rf "${repodir}/doc/readme/parts"
+
 # cleanup repo
 git rm -r \
     .ci \
-    .internal \
+    .docker \
     .gitlab-ci.yml \
+    .internal \
     .mailmap \
-    doc/SDPA \
-    doc/meta \
-    doc/intern \
-    doc/put_many \
     CHANGELOG.todo \
+    doc/intern \
     playground \
     tools
 git submodule foreach --quiet 'rm $toplevel/$path/.git'

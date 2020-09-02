@@ -1,0 +1,11 @@
+hostname > nodefile
+# or to test in a cluster allocation, for `--nodefile` below, use
+# Slurm: "$(generate_pbs_nodefile)"
+# PBS/Torque: "${PBS_NODEFILE}"
+
+"${APP_INSTALL_DIR}/bin/compute_and_aggregate"                    \
+  --rif-strategy ssh                                              \
+  --nodefile "${PWD}/nodefile"                                    \
+  ${LOG_PORT:+--log-host ${HOSTNAME} --log-port ${LOG_PORT}}      \
+  --N 20                                                          \
+  --workers-per-node 4

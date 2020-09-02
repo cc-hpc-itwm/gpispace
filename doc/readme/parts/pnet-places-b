@@ -1,0 +1,3 @@
+    <place name="global_sum" type="unsigned int">
+      <token><value>0U</value></token>
+    </place>
