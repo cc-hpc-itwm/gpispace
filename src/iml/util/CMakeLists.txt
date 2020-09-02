@@ -1,7 +1,6 @@
 extended_add_library (NAME fhg-util
   NAMESPACE IML
-  SOURCES "read_bool.cpp"
-          "num.cpp"
+  SOURCES "num.cpp"
 
           "parse/position.cpp"
           "parse/error.cpp"

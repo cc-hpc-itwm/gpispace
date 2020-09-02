@@ -1,7 +1,5 @@
 #include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
 
-#include <iml/util/read_bool.hpp>
-
 #include <cerrno>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -429,11 +427,6 @@ namespace gpi
       {
         url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
-
-        if (fhg::iml::util::read_bool (url.get ("exclusive").get_value_or ("false")))
-        {
-          gpi::flag::set (flags, F_EXCLUSIVE);
-        }
 
         gpi::pc::type::size_t size =
           boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
