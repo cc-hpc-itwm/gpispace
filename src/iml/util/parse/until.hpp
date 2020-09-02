@@ -3,6 +3,7 @@
 #include <iml/util/parse/position.hpp>
 
 #include <functional>
+#include <string>
 
 namespace fhg
 {

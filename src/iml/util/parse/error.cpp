@@ -1,7 +1,5 @@
 #include <iml/util/parse/error.hpp>
 
-#include <sstream>
-
 namespace fhg
 {
   namespace iml

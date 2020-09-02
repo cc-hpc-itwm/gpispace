@@ -1,8 +1,8 @@
 #pragma once
 
+#include <cstddef>
 #include <iterator>
 #include <string>
-#include <vector>
 
 namespace fhg
 {
@@ -71,52 +71,6 @@ namespace fhg
           std::string::const_iterator _pos;
           const std::string::const_iterator _begin;
           const std::string::const_iterator _end;
-        };
-
-        class position_vector_of_char : public position
-        {
-        public:
-          position_vector_of_char (const std::vector<char> &);
-          position_vector_of_char ( const std::vector<char>::const_iterator &begin
-                                  , const std::vector<char>::const_iterator &end
-                                  );
-
-          virtual char operator*() const override
-          {
-            return *_pos;
-          }
-          virtual void operator++() override
-          {
-            ++_k;
-            ++_pos;
-          }
-          virtual void advance (std::size_t d) override
-          {
-            _k += d;
-            std::advance (_pos, d);
-          }
-          virtual bool end() const override
-          {
-            return _pos == _end;
-          }
-          virtual std::size_t eaten() const override
-          {
-            return _k;
-          }
-          virtual std::string eat (std::size_t n) override
-          {
-            std::string const ret (_pos, _pos + n);
-            advance (n);
-            return ret;
-          }
-
-          virtual std::string error_message (const std::string&) const override;
-
-        private:
-          std::size_t _k;
-          std::vector<char>::const_iterator _pos;
-          const std::vector<char>::const_iterator _begin;
-          const std::vector<char>::const_iterator _end;
         };
       }
     }
