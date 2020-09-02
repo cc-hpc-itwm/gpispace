@@ -13,9 +13,7 @@
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
-#include <iml/util/signal_handler_manager.hpp>
 #include <util-generic/syscall.hpp>
-#include <iml/util/event.hpp>
 
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
 #include <iml/vmem/gaspi/pc/container/manager.hpp>
@@ -25,6 +23,10 @@
 #include <iml/vmem/gaspi_context.hpp>
 #include <iml/vmem/netdev_id.hpp>
 
+#include <util-generic/syscall.hpp>
+#include <util-generic/syscall/process_signal_block.hpp>
+#include <util-generic/syscall/signal_set.hpp>
+
 #include <boost/asio/io_service.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
@@ -33,7 +35,10 @@
 #include <boost/thread/scoped_thread.hpp>
 
 #include <chrono>
-#include <memory>
+#include <cstddef>
+#include <exception>
+#include <stdexcept>
+#include <utility>
 
 namespace
 {
@@ -49,6 +54,19 @@ namespace
 int main (int argc, char** argv)
 {
   fhg::iml::rif::started_process_promise promise (argc, argv);
+
+  // \todo Move to util-generic and use in other server
+  // processes. Copy of this exists in gspc-logging-*.
+  struct
+  {
+    fhg::util::syscall::signal_set const signals = {SIGINT, SIGTERM};
+    fhg::util::syscall::process_signal_block const signal_block = {signals};
+
+    void wait() const
+    {
+      fhg::util::syscall::sigwaitinfo (&signals._, nullptr);
+    }
+  } const stop_requested;
 
   try
   {
@@ -104,8 +122,6 @@ int main (int argc, char** argv)
         .as<fhg::util::boost::program_options::positive_integral<unsigned short>>()
       );
 
-    fhg::iml::util::signal_handler_manager signal_handler;
-
     //! \todo more than one thread, parameter
     fhg::util::scoped_boost_asio_io_service_with_threads
       topology_server_io_service (8);
@@ -128,15 +144,6 @@ int main (int argc, char** argv)
       , gaspi_context
       , std::move (topology_rpc_server)
       );
-
-    fhg::iml::util::thread::event<> stop_requested;
-    const std::function<void()> request_stop
-      (std::bind (&fhg::iml::util::thread::event<>::notify, &stop_requested));
-
-    fhg::iml::util::scoped_signal_handler const SIGTERM_handler
-      (signal_handler, SIGTERM, std::bind (request_stop));
-    fhg::iml::util::scoped_signal_handler const SIGINT_handler
-      (signal_handler, SIGINT, std::bind (request_stop));
 
     promise.set_result();
 

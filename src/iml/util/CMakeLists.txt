@@ -8,7 +8,6 @@ extended_add_library (NAME fhg-util
           "parse/until.cpp"
 
           "system_with_blocked_SIGCHLD.cpp"
-          "signal_handler_manager.cpp"
 
   LIBRARIES Util::Generic
             Boost::thread
