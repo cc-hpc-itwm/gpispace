@@ -8,7 +8,7 @@
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 #include <util-generic/filesystem_lock_directory.hpp>
-#include <iml/util/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 namespace gpi
 {
@@ -81,7 +81,7 @@ namespace gpi
                                   , const gpi::rank_t
                                   ) const override;
 
-        fhg::iml::thread::queue<int> _fds;
+        fhg::util::threadsafe_queue<int> _fds;
         struct lock_file_helper : fhg::util::filesystem_lock_directory
         {
           lock_file_helper (beegfs_area_t&);

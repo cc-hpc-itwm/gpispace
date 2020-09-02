@@ -10,7 +10,7 @@
 
 #include <iml/vmem/gaspi_context.hpp>
 
-#include <iml/util/queue.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 namespace gpi
 {
@@ -27,7 +27,7 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GASPI;
 
-        typedef fhg::iml::thread::queue<handle_buffer_t> handle_pool_t;
+        typedef fhg::util::threadsafe_queue<handle_buffer_t> handle_pool_t;
 
         static area_ptr_t create ( std::string const &url
                                  , gpi::pc::global::itopology_t & topology

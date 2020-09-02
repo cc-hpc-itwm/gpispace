@@ -2,11 +2,10 @@
 
 #include <iml/vmem/gaspi/types.hpp>
 
-#include <util-generic/finally.hpp>
-
 #include <iml/vmem/gaspi_context.hpp>
 
-#include <iml/util/queue.hpp>
+#include <util-generic/finally.hpp>
+#include <util-generic/threadsafe_queue.hpp>
 
 #include <boost/noncopyable.hpp>
 #include <boost/thread/scoped_thread.hpp>
@@ -120,7 +119,7 @@ namespace gpi
 
       std::mutex _notification_guard;
 
-      fhg::iml::thread::queue<notification_t> _write_ids;
+      fhg::util::threadsafe_queue<notification_t> _write_ids;
       notification_t next_write_id();
 
       notification_id_t _notification_ids_per_node;
@@ -137,7 +136,7 @@ namespace gpi
       notification_id_t corresponding_local_pong_id
         (notification_id_t ping_id) const;
 
-      std::unordered_map<rank_t, fhg::iml::thread::queue<notification_id_t>>
+      std::unordered_map<rank_t, fhg::util::threadsafe_queue<notification_id_t>>
         _ping_ids;
       notification_id_t next_ping_id (rank_t);
 

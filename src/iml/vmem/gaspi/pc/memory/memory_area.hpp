@@ -14,8 +14,6 @@
 
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
-#include <iml/util/queue.hpp>
-
 #include <future>
 #include <mutex>
 #include <unordered_map>
