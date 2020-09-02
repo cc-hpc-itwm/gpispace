@@ -418,7 +418,7 @@ directories, e.g. `libexec/bundle/gpispace`, and then at runtime use
 the executable's path (determined for example using `dladdr()`) and
 the knowledge of the relative path to construct a
 `gspc::installation`. The same method can also be used to avoid
-compiling `${ALL_INSTALL_DIR}` into the binaries, to get the `.pnet`
+compiling `${APP_INSTALL_DIR}` into the binaries, to get the `.pnet`
 and module call library location.
 
 The libraries and executables built want to change the `-rpath` which
