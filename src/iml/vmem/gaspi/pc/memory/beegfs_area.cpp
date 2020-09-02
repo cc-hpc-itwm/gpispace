@@ -1,7 +1,6 @@
 #include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
 
 #include <iml/util/read_bool.hpp>
-#include <iml/util/optional.hpp>
 
 #include <cerrno>
 #include <sys/types.h>
@@ -240,11 +239,19 @@ namespace gpi
         fhg::iml::vmem::segment::beegfs::check_requirements (m_path);
 
         {
-          boost::optional<std::string> const found_version
-            ( fhg::iml::util::boost::exception_is_none
-                ( &fhg::util::read_file<std::string>
-                , detail::version_path (m_path)
-                )
+          auto const found_version
+            ( [&]() -> boost::optional<std::string>
+              {
+                try
+                {
+                  return fhg::util::read_file<std::string>
+                    (detail::version_path (m_path));
+                }
+                catch (...)
+                {
+                  return boost::none;
+                }
+              }()
             );
 
           if (!!found_version && found_version.get() != version_string())
