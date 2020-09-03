@@ -394,6 +394,13 @@ namespace gspc
       throw std::invalid_argument
         ("--log-level given but currently not supported");
     }
+    if (get_virtual_memory_socket (vm) && get_remote_iml_vmem_socket (vm))
+    {
+      throw std::invalid_argument
+        ( "--virtual-memory-socket and --remote-iml-vmem-socket can't be "
+          "given at the same time"
+        );
+    }
   }
 
   std::unordered_map<fhg::rif::entry_point, std::list<std::exception_ptr>>
