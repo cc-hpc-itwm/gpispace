@@ -25,6 +25,8 @@ testlog="${workdir}/test_$(date '+%F_%H-%M').log"
 branch="${1}"
 tmpdir="$(readlink -f "${2:-${workdir}/tmp}")"
 
+output_file="${workdir}/gpispace-${branch}.tar.gz"
+
 # determine number of processes to use
 procs="${NUM_PROCS:-$(nproc)}"
 
@@ -33,6 +35,12 @@ if [ -d "${tmpdir}" ]
 then
     echo "FAILURE: Temporary folder '${tmpdir}' already exists!!!"
     exit 1
+fi
+
+if test -e "${workdir}/gpispace-${branch}.tar.gz"
+then
+  echo "FAILURE: output file ('${output_file}') already exists." >&2
+  exit 2
 fi
 
 # directories
@@ -47,7 +55,7 @@ function package_and_cleanup()
 {
     if "${success}"
     then
-        tar -czf "${workdir}/gpispace-${branch}.tar.gz" -C "${tmpdir}" gpispace
+        tar -czf "${output_file}" -C "${tmpdir}" gpispace
         rm "${testlog}"
         echo "SUCCESS"
     else
