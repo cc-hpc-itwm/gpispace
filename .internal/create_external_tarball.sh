@@ -41,7 +41,7 @@ fi
 
 # directories
 repodir="${tmpdir}/gpispace/${branch}"
-builddir="${repodir}/build"
+builddir="${tmpdir}/build"
 installdir="${builddir}/install"
 testdir="${builddir}/test-dir"
 
@@ -51,7 +51,7 @@ function package_and_cleanup()
 {
     if ${success}
     then
-        tar --exclude ${builddir} -czf ${workdir}/gpispace-${branch}.tar.gz -C ${tmpdir} gpispace
+        tar -czf ${workdir}/gpispace-${branch}.tar.gz -C ${tmpdir} gpispace
         rm ${testlog}
         echo "SUCCESS"
     else
@@ -211,7 +211,7 @@ cmake -DCMAKE_BUILD_TYPE:STRING=Release \
     -DSHARED_DIRECTORY_FOR_TESTS:PATH="${testdir}" \
     -DTESTING_RIF_STRATEGY:STRING="ssh" \
     -DFHG_ASSERT_MODE:BOOL=1 \
-    ..
+    "${repodir}"
 
 # build
 cmake --build . -- -j ${procs}
