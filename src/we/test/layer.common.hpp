@@ -40,6 +40,7 @@ namespace
         , std::list<we::type::memory_transfer>()
         , std::list<we::type::memory_transfer>()
         , true
+        , true
         )
       , boost::none
       , we::type::property::type()

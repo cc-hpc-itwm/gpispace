@@ -301,15 +301,15 @@ BOOST_AUTO_TEST_CASE (issue_675_reference_to_popped_queue_element)
         add_pending_job (worker_id, job_id, cost, allowed_to_be_stolen);
         BOOST_REQUIRE
           ( worker_manager.submit_and_serve_if_can_start_job_INDICATES_A_RACE
-            ( job_id
-            , {worker_id}
-            , boost::none
-            , [] ( sdpa::daemon::WorkerSet const&
-                 , sdpa::daemon::Implementation const&
-                 , sdpa::job_id_t const&
-                 )
-              {}
-            )
+              ( job_id
+              , {worker_id}
+              , boost::none
+              , [] ( sdpa::daemon::WorkerSet const&
+                   , sdpa::daemon::Implementation const&
+                   , sdpa::job_id_t const&
+                   )
+                {}
+              ).first
           );
       }
     );

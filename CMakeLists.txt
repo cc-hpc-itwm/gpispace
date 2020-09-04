@@ -66,7 +66,7 @@ add_definitions (-DBOOST_THREAD_THROW_IF_PRECONDITION_NOT_SATISFIED)
 add_definitions ("-DBOOST_MPL_CFG_NO_PREPROCESSED_HEADERS")
 add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
-require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.2)
+require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.4)
 
 find_boost (1.59 REQUIRED QUIET COMPONENTS
   chrono
@@ -141,4 +141,8 @@ set_property (TEST installed_headers_are_selfcontained
 )
 set_property (TEST installed_headers_are_selfcontained
   APPEND PROPERTY REQUIRED_FILES ${FILES_REQUIRED_IN_INSTALLATION}
+)
+
+install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+  DESTINATION "share/gspc/"
 )

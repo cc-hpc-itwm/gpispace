@@ -29,6 +29,7 @@ namespace sdpa
       void submit(const job_id_t&);
 
       void acknowledge(const job_id_t&);
+      bool is_terminal() const;
 
       // capabilities
       bool addCapabilities(const capabilities_set_t& cpbset);

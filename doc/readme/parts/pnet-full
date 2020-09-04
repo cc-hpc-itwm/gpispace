@@ -1,0 +1,15 @@
+<defun name="compute_and_aggregate">
+  <in name="task_trigger" type="control" place="trigger"/>
+  <out name="aggregated_value" type="unsigned int" place="global_sum"/>
+
+  <net>
+
+@@pnet-places-a@@
+@@pnet-places-b@@
+
+@@pnet-compute@@
+
+@@pnet-aggregate@@
+
+  </net>
+</defun>

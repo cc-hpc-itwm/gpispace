@@ -26,6 +26,7 @@ namespace sdpa
 
       // -- used by daemon
       bool delete_job (const sdpa::job_id_t&);
+      void delete_pending_job (const sdpa::job_id_t&);
 
       void store_result (worker_id_t const&, job_id_t const&, terminal_state);
       boost::optional<job_result_type>
@@ -89,6 +90,7 @@ namespace sdpa
       using allocation_table_t
         = std::unordered_map<job_id_t, std::unique_ptr<scheduler::Reservation>>;
       allocation_table_t allocation_table_;
+
       std::unordered_set<job_id_t> _pending_jobs;
 
       friend class access_allocation_table_TESTING_ONLY;

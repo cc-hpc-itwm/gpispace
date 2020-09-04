@@ -98,6 +98,8 @@ namespace sdpa
       };
 
     public:
+      unsigned long num_free_workers() const;
+
       std::unordered_set<worker_id_t> findSubmOrAckWorkers
         (const sdpa::job_id_t& job_id) const;
 
@@ -121,15 +123,16 @@ namespace sdpa
 
       void steal_work (std::function<scheduler::Reservation* (job_id_t const&)> reservation);
 
-    bool submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const&
-      , WorkerSet const&
-      , Implementation const&
-      , std::function<void ( WorkerSet const&
-                           , Implementation const&
-                           , const job_id_t&
-                           )> const& serve_job
-      );
+      std::pair<bool, unsigned long>
+        submit_and_serve_if_can_start_job_INDICATES_A_RACE
+          ( job_id_t const&
+          , WorkerSet const&
+          , Implementation const&
+          , std::function<void ( WorkerSet const&
+                               , Implementation const&
+                               , const job_id_t&
+                               )> const& serve_job
+          );
 
     std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
       ( worker_id_t const&
@@ -181,6 +184,7 @@ namespace sdpa
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
 
       mutable std::mutex mtx_;
+      unsigned long _num_free_workers {0};
     };
   }
 }

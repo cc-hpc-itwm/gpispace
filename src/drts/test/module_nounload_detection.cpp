@@ -168,6 +168,26 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
     );
 }
 
+BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload_allowed)
+{
+  COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
+
+  test::make_net_lib_install const make
+    ( vm
+    , "module_that_loads_library_that_doesnt_unload_and_allowed_to_have_rest"
+    , test::source_directory (vm) / "module_nounload_detection"
+    , lib_install_directory
+    );
+
+  boost::filesystem::path const to_load (LIBRARY_TO_LOAD);
+
+  auto const result
+    (client.put_and_run (make.pnet(), {{"path", to_load.string()}}));
+
+  BOOST_REQUIRE_EQUAL (result.size(), 1);
+  BOOST_REQUIRE_EQUAL (result.count ("done"), 1);
+}
+
 BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
 {
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;

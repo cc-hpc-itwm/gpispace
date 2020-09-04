@@ -201,6 +201,8 @@ namespace sdpa
       // allow to steal from itself
       worker_equiv_classes_.at (result.first->second.capability_names_)
         ._stealing_allowed_classes.emplace (result.first->second.capability_names_);
+
+      _num_free_workers++;
     }
 
 
@@ -228,6 +230,8 @@ namespace sdpa
 
       worker_map_.erase (worker);
       worker_connections_.left.erase (workerId);
+
+      _num_free_workers--;
     }
 
     void WorkerManager::getCapabilities (sdpa::capabilities_set_t& agentCpbSet) const
@@ -384,16 +388,17 @@ namespace sdpa
       return Workers_and_implementation ({}, boost::none);
     }
 
-    bool WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
-      ( job_id_t const& job_id
-      , WorkerSet const& workers
-      , Implementation const& implementation
-      , std::function<void ( WorkerSet const&
-                           , Implementation const&
-                           , const job_id_t&
-                           )
-                     > const& serve_job
-      )
+    std::pair<bool, unsigned long>
+      WorkerManager::submit_and_serve_if_can_start_job_INDICATES_A_RACE
+        ( job_id_t const& job_id
+        , WorkerSet const& workers
+        , Implementation const& implementation
+        , std::function<void ( WorkerSet const&
+                             , Implementation const&
+                             , const job_id_t&
+                             )
+                       > const& serve_job
+        )
     {
       std::lock_guard<std::mutex> const _(mtx_);
       bool const can_start
@@ -417,7 +422,7 @@ namespace sdpa
         serve_job (workers, implementation, job_id);
       }
 
-      return can_start;
+      return std::make_pair (can_start, _num_free_workers);
     }
 
     std::unordered_set<worker_id_t> WorkerManager::workers_to_send_cancel
@@ -483,6 +488,13 @@ namespace sdpa
       equivalence_class.inc_running_jobs (1);
 
       equivalence_class._idle_workers.erase (worker->first);
+
+      // Update the counter only if the worker is terminal,
+      // i.e. it has no slaves. Submission to slave agents is always allowed.
+      if (worker->second.is_terminal())
+      {
+        _num_free_workers--;
+      }
     }
 
     void WorkerManager::acknowledge_job_sent_to_worker ( const job_id_t& job_id
@@ -530,6 +542,13 @@ namespace sdpa
            )
         {
           equivalence_class._idle_workers.emplace (worker->first);
+        }
+
+        // Update the counter only if the worker is terminal,
+        // i.e. it has no slaves. Submission to slave agents is always allowed.
+        if (worker->second.is_terminal())
+        {
+          _num_free_workers++;
         }
       }
     }
@@ -906,6 +925,12 @@ namespace sdpa
       }
 
       return jobs_to_reschedule;
+    }
+
+    unsigned long WorkerManager::num_free_workers() const
+    {
+      std::lock_guard<std::mutex> const _ (mtx_);
+      return _num_free_workers;
     }
   }
 }

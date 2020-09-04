@@ -81,7 +81,7 @@ namespace
       multi_mod.emplace
         ( target
         , we::type::module_call_t
-            (random_string(), random_string(), buffers{}, {}, {}, true)
+            (random_string(), random_string(), buffers{}, {}, {}, true, true)
         );
     }
 

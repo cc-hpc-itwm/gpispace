@@ -985,10 +985,17 @@ namespace xml
           , properties                                                     \
           }
 
-        return !!function ? TRANSITION (function.get())
-          : !!use ? TRANSITION (use.get())
-          : throw std::logic_error ("transition requires function or use")
-          ;
+        if (!!function)
+        {
+          return TRANSITION (function.get());
+        }
+        
+        if (!!use)
+        {
+          return TRANSITION (use.get());
+        }
+
+        throw std::logic_error("transition requires function or use");
 
 #undef TRANSITION
       }
@@ -1507,6 +1514,12 @@ namespace xml
         const boost::optional<bool> pass_context
           (fhg::util::boost::fmap<std::string, bool>
           (fhg::util::read_bool, optional (node, "pass_context")));
+        const boost::optional<bool> require_function_unloads_without_rest
+          ( fhg::util::boost::fmap<std::string, bool>
+              ( fhg::util::read_bool
+              , optional (node, "require_function_unloads_without_rest")
+              )
+          );
         const boost::optional<bool> require_module_unloads_without_rest
           ( fhg::util::boost::fmap<std::string, bool>
               ( fhg::util::read_bool
@@ -1621,9 +1634,8 @@ namespace xml
           , cxxflags
           , pass_context
           , eureka_id
-          , require_module_unloads_without_rest
-          ? *require_module_unloads_without_rest
-          : true
+          , require_function_unloads_without_rest.get_value_or (true)
+          , require_module_unloads_without_rest.get_value_or (true)
           );
       }
 
@@ -2033,11 +2045,27 @@ namespace xml
           , properties                          \
           }
 
-        return !!expression ? FUNCTION (*expression)
-          : !!multi_module.modules().size() ? FUNCTION (multi_module)
-          : !!module ? FUNCTION (*module)
-          : !!net ? FUNCTION (*net)
-          : throw std::logic_error ("missing function content");
+        if (!!expression)
+        {
+          return FUNCTION (*expression);
+        }
+
+        if (!!multi_module.modules().size())
+        {
+          return FUNCTION (multi_module);
+        }
+
+        if (!!module)
+        {
+          return FUNCTION (*module);
+        }
+
+        if (!!net)
+        {
+          return FUNCTION (*net);
+        }
+
+        throw std::logic_error ("missing function content");
 
 #undef FUNCTION
       }

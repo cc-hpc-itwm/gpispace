@@ -20,6 +20,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_sizes_no_buffers)
     , {}
     , {}
     , true
+    , true
     );
 
   BOOST_REQUIRE (module_call.memory_buffer_sizes ({}).empty());
@@ -99,6 +100,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_default_alignments)
     , {}
     , {}
     , true
+    , true
     );
 
   BOOST_REQUIRE (equal (module_call.memory_buffer_sizes (context), expected));
@@ -151,6 +153,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_and_alignments)
     , std::move (memory_buffers)
     , {}
     , {}
+    , true
     , true
     );
 

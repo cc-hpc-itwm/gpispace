@@ -20,6 +20,7 @@
 #include <functional>
 #include <list>
 #include <memory>
+#include <mutex>
 #include <string>
 
 namespace
@@ -77,7 +78,7 @@ namespace
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
         (announce_job, master, certificates)
       , _reply (reply)
-      , _received_discover_request (false)
+      , _received_discovery_request_and_sent_reply (false)
     {}
 
     virtual void handleDiscoverJobStatesEvent
@@ -85,6 +86,7 @@ namespace
       , const sdpa::events::DiscoverJobStatesEvent* e
       ) override
     {
+      std::lock_guard<std::mutex> lock (_mtx_discover);
       _network.perform<sdpa::events::DiscoverJobStatesReplyEvent>
         ( source
         , e->discover_id()
@@ -92,17 +94,19 @@ namespace
             (e->job_id(), _reply, sdpa::discovery_info_set_t())
         );
 
-      _received_discover_request = true;
+      _received_discovery_request_and_sent_reply = true;
     }
 
-    bool received_discover_request()
+    bool received_discovery_request_and_sent_reply()
     {
-      return _received_discover_request;
+      std::lock_guard<std::mutex> lock (_mtx_discover);
+      return _received_discovery_request_and_sent_reply;
     }
 
   private:
     sdpa::status::code _reply;
-    bool _received_discover_request;
+    bool _received_discovery_request_and_sent_reply;
+    std::mutex _mtx_discover;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
@@ -142,7 +146,7 @@ BOOST_DATA_TEST_CASE ( discover_worker_job_status
   // from the worker and didn't update its state to RUNNING,
   // id doesn't forward the discovery request to the worker,
   // reporting the status PENDING
-  while (!worker.received_discover_request())
+  while (!worker.received_discovery_request_and_sent_reply())
   {
     REQUIRE_ONE_LEAF_WITH_STATUS (discovery_result, sdpa::status::PENDING);
     discovery_result = client.discover (job_id);
@@ -171,10 +175,16 @@ BOOST_DATA_TEST_CASE
 
   utils::client client (agent, certificates);
 
-  REQUIRE_ONE_LEAF_WITH_STATUS
-    ( client.discover (client.submit_job (utils::module_call()))
-    , sdpa::status::PENDING
-    );
+  auto const job_id (client.submit_job (utils::module_call()));
+  auto discovery_info (client.discover (job_id));
+
+  while (max_depth (discovery_info) == 1)
+  {
+    BOOST_REQUIRE_EQUAL (discovery_info.state(), boost::none);
+    discovery_info = client.discover (job_id);
+  }
+
+  REQUIRE_ONE_LEAF_WITH_STATUS (discovery_info, sdpa::status::PENDING);
 }
 
 namespace
@@ -245,7 +255,7 @@ BOOST_DATA_TEST_CASE
   // from the worker and didn't update its state to RUNNING,
   // id doesn't forward the discovery request to the worker,
   // reporting the status PENDING
-  while (!worker.received_discover_request())
+  while (!worker.received_discovery_request_and_sent_reply())
   {
     REQUIRE_ONE_LEAF_WITH_STATUS (info, sdpa::status::PENDING);
     info = client.discover (job_id);

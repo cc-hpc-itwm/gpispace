@@ -1,67 +1,266 @@
-before_script:
-  - set -euo pipefail
-  - ci_scripts_dir="${PWD}/.ci"
-  - source "${ci_scripts_dir}/env/${HOSTNAME}"
+"centos6: container setup":
+  extends:
+    - .env_centos6_devtoolset8
+    - .job_docker_setup
 
-  - git submodule update --init --recursive
+"centos7: container setup":
+  extends:
+    - .env_centos7_devtoolset8
+    - .job_docker_setup
 
-  - source "${ci_scripts_dir}/jobs/before"
+"centos5.7: build":
+  extends:
+    - .env_centos57_gcc494
+    - .job_build
 
-build (centos 5.7):
+"centos6: build":
+  extends:
+    - .env_centos6_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_build
+
+"centos7: build":
+  extends:
+    - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_build
+
+"centos5.7: tests":
+  extends:
+    - .env_centos57_gcc494
+    - .job_test
+
+"centos6: tests":
+  extends:
+    - .env_centos6_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test
+
+"centos7: tests":
+  extends:
+    - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test
+
+# todo: "centos5.7: virtual memory tests"? needs infiniband or
+# gpi2+eth compatibility (requires higher kernel version)
+
+"centos6: virtual memory tests":
+  extends:
+    - .env_centos6_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test_vmem
+
+"centos7: virtual memory tests":
+  extends:
+    - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test_vmem
+
+"centos5.7: performance tests":
+  extends:
+    - .env_centos57_gcc494
+    - .job_test_performance
+
+"centos6: performance tests":
+  extends:
+    - .env_centos6_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test_performance
+
+"centos7: performance tests":
+  extends:
+    - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test_performance
+
+# Environments:
+# every env_$x shall:
+# - variable environment_key: a globally unique key for this
+#   environment in .ci/env/*.cmake
+# - variable GSPC_NODEFILE_FOR_TESTS: a file containing hosts to use
+#   for testing
+# - variable or before_script export `gspc_parallel_test_and_build_jobs`
+# - if using docker:
+#   - variable docker_image: the tagged image in the registry
+#   - let docker use given image on a valid runner
+#   else:
+#   - specify tags to select a matching runner
+# - ensure the repository is checked out including submodules
+
+# note: GPI-Space tests fork a lot, which in default docker
+# configurations often is slow due to the default ulimits for nofiles
+# and nproc being unlimited. When adding a runner or changing the tag
+# required, make sure the new runner does not have that same
+# issue. dockerd config should specify default_ulimits that are saner
+# than unlimited, e.g. nofiles=1024 and nproc=65335.
+# Additionally, virtual memory uses shm_open() which on Linux defaults
+# to using /dev/shm, which by default docker gives 64MB to. This can
+# be configured in the dockerd config globally, or in the gitlab
+# runner config.
+# Example configuration of `docker06`:
+#   root@n06:~# tail -n 14 /etc/docker/daemon.json | head -n 13
+#     "default-shm-size": "64G",
+#     "default-ulimits": {
+#       "nofile": {
+#         "Name": "nofile",
+#         "Hard": 1024,
+#         "Soft": 1024
+#       },
+#       "nproc": {
+#         "Name": "nproc",
+#         "Soft": 65536,
+#         "Hard": 65536
+#       }
+#     }
+
+.env_centos57_gcc494:
+  variables:
+    environment_key: "centos57-gcc494"
+    GIT_SUBMODULE_STRATEGY: none
+  tags:
+    - centos-5.7
+  before_script:
+    - set -euo pipefail
+    - source "${CI_PROJECT_DIR}/.ci/env/${HOSTNAME}"
+    # curl is too old and cloning fails via http, so enforce ssh
+    - sed -i'' -e 's,url = ../../,url = git@gitlab.hpc.devnet.itwm.fhg.de:,'
+           .gitmodules
+    - git submodule update --init --recursive
+    - export GSPC_NODEFILE_FOR_TESTS="${CI_PROJECT_DIR}/nodefile_for_tests"
+    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
+    # todo: move into add_test macro by wrapping tests with a script
+    # that kills even within a run
+    - trap "killall -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
+
+.env_centos6_devtoolset8:
+  variables:
+    environment_key: "centos6-devtoolset8"
+    docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
+    GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
+    GIT_SUBMODULE_STRATEGY: recursive
+  image: ${docker_image}
+  tags:
+    - docker06
+  before_script:
+    - export gspc_parallel_test_and_build_jobs=$(nproc)
+
+.env_centos7_devtoolset8:
+  variables:
+    environment_key: "centos7-devtoolset8"
+    docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
+    GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
+    GIT_SUBMODULE_STRATEGY: recursive
+  image: ${docker_image}
+  tags:
+    - docker06
+  before_script:
+    - export gspc_parallel_test_and_build_jobs=$(nproc)
+
+# Script Snippets:
+# assemble job scripts using these for sake of consistency.
+# todo: combine silent cases somehow?
+
+.script_configure: &script_configure
+  - cmake -C "${CI_PROJECT_DIR}/.ci/env/${environment_key}.cmake"
+          -B "${CI_PROJECT_DIR}/build/"
+          -S "${CI_PROJECT_DIR}/"
+.script_configure_silent: &script_configure_silent
+  - cmake -C "${CI_PROJECT_DIR}/.ci/env/${environment_key}.cmake"
+          -B "${CI_PROJECT_DIR}/build/"
+          -S "${CI_PROJECT_DIR}/" >/dev/null
+.script_build: &script_build
+  - cmake --build "${CI_PROJECT_DIR}/build/"
+          -j ${gspc_parallel_test_and_build_jobs}
+  - cmake --build "${CI_PROJECT_DIR}/build/"
+          --target install >/dev/null
+.script_build_silent: &script_build_silent
+  - cmake --build ${CI_PROJECT_DIR}/build
+          -j ${gspc_parallel_test_and_build_jobs} >/dev/null
+  - cmake --build "${CI_PROJECT_DIR}/build/"
+          --target install >/dev/null
+.script_test: &script_test
+  - cd "${CI_PROJECT_DIR}/build/" &&
+    ctest --output-on-failure
+          --timeout 240
+          --schedule-random
+          -LE "performance_test|requires_vmem"
+          -j ${gspc_parallel_test_and_build_jobs}
+.script_test_performance: &script_test_performance
+  - cd "${CI_PROJECT_DIR}/build/" &&
+    ctest --output-on-failure
+          --timeout 240
+          --schedule-random
+          -L "performance_test"
+.script_test_vmem: &script_test_vmem
+  - cd "${CI_PROJECT_DIR}/build/" &&
+    ctest --output-on-failure
+          --timeout 240
+          --schedule-random
+          -L "requires_vmem"
+
+# Job Building Blocks:
+# define what a job does using these.
+# note: any job shall have at most one `.job_` as they overwrite `script:`.
+
+# Use a ccache stored in gitlab's cache.
+# the cache is specific to the environment used to avoid conflicts.
+.use_gitlab_backed_ccache:
+  variables:
+    CCACHE_DIR: "${CI_PROJECT_DIR}/ccache"
+    CCACHE_SLOPPINESS: "time_macros,file_macro"
+    CMAKE_C_COMPILER_LAUNCHER: "ccache"
+    CMAKE_CXX_COMPILER_LAUNCHER: "ccache"
+  cache:
+    key: "${environment_key}"
+    paths:
+      - ${CCACHE_DIR}
+
+.job_build:
   stage: build
   script:
-    - source "${ci_scripts_dir}/jobs/build"
-  tags:
-    - centos-5.7
+    - *script_configure
+    - *script_build
 
-build (centos 6.5):
-  stage: build
-  script:
-    - source "${ci_scripts_dir}/jobs/build"
-  tags:
-    - centos-6.5
-
-tests (centos 5.7):
+.job_test:
   stage: test
   script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/test"
-  tags:
-    - centos-5.7
+    - *script_configure_silent
+    - *script_build_silent
+    - *script_test
 
-tests (centos 6.5):
+.job_test_performance:
   stage: test
   script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/test"
-  tags:
-    - centos-6.5
-
-#! \todo add virtual memory tests on centos 5.7: needs infiniband or
-#        gpi2+eth (requires higher kernel version)
-
-virtual memory tests (centos 6.5):
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/virtual_memory_test"
-  tags:
-    - centos-6.5
-
-performance tests (centos 5.7):
-  stage: test
-  script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/performance_test"
+    - *script_configure_silent
+    - *script_build_silent
+    - *script_test_performance
   allow_failure: true
-  tags:
-    - centos-5.7
 
-performance tests (centos 6.5):
+.job_test_vmem:
   stage: test
   script:
-    - source "${ci_scripts_dir}/jobs/test.common"
-    - source "${ci_scripts_dir}/jobs/performance_test"
-  allow_failure: true
+    - *script_configure_silent
+    - *script_build_silent
+    - *script_test_vmem
+
+# Build the image described in the environment for later use.
+# note: Requires a runner that can `docker build`, which when using
+# docker means the runner has to be in priviledged mode to allow for
+# docker-in-docker, and the docker daemon has to be exposed.
+.job_docker_setup:
+  stage: pre-build
+  image: docker:latest
+  variables:
+    DOCKER_HOST: "tcp://10.108.0.1:2375"
+    GIT_SUBMODULE_STRATEGY: none
   tags:
-    - centos-6.5
+    - docker08
+  script:
+    - docker build --pull -t "${docker_image}" ".docker/${environment_key}"
+    - docker push "${docker_image}"
+
+stages:
+  - pre-build
+  - build
+  - test
