@@ -12,8 +12,8 @@ then
     exit 0
 elif [ "${#}" -gt 3 ]
 then
-    echo "Too many arguments!"
-    echo "${usage}"
+    echo "Too many arguments!" >&2
+    echo "${usage}" >&2
     exit 1
 fi
 
@@ -32,7 +32,7 @@ procs="${NUM_PROCS:-$(nproc)}"
 # verify that the temporary folder does not exist
 if [ -d "${tmpdir}" ]
 then
-    echo "FAILURE: Temporary folder '${tmpdir}' already exists!!!"
+    echo "FAILURE: Temporary folder '${tmpdir}' already exists!!!" >&2
     exit 1
 fi
 
