@@ -9,10 +9,11 @@ better.
 
 * How to contribute
 
-For contributions other than modifications of the source code you can
-use the existing ticketing system from the Fraunhofer ITWM. Just drop
-us an email at gpispace-support@itwm.fraunhofer.de. Otherwise, using
-Github issues is also an alternative.
+For contributions other than modifications of the source code, as for
+example the suggestion of a feature or enhancement, you can use the
+existing ticketing system from the Fraunhofer ITWM. Just drop us an
+email at gpispace-support@itwm.fraunhofer.de. Otherwise, using Github
+issues is also an alternative.
 
 For modifications in the source tree we kindly ask you to sign a
 Contributor License Agreement (CLA). Again, just contact us at
@@ -40,5 +41,3 @@ least the following points:
 - What steps were performed until you have seen the issue
 
 - What did you expect to see and what have you seen instead
-
-* How to suggest a feature or enhancement
