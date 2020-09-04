@@ -22,18 +22,14 @@ workdir="$(pwd)"
 testlog="${workdir}/test_$(date '+%F_%H-%M').log"
 
 # assign command line parameters and define default values
-branch=${1}
-tmpdir=${2:-${workdir}/tmp}
+branch="${1}"
+tmpdir="${2:-${workdir}/tmp}"
 
 # determine number of processes to use
-procs=$(nproc)
-if ! [ -z ${NUM_PROCS+x} ]
-then
-    procs=${NUM_PROCS}
-fi
+procs="${NUM_PROCS:-$(nproc)}"
 
 # verify that the temporary folder does not exist
-if [ -d ${tmpdir} ]
+if [ -d "${tmpdir}" ]
 then
     echo "FAILURE: Temporary folder '${tmpdir}' already exists!!!"
     exit 1
@@ -49,36 +45,36 @@ testdir="${builddir}/test-dir"
 success=false
 function package_and_cleanup()
 {
-    if ${success}
+    if "${success}"
     then
-        tar -czf ${workdir}/gpispace-${branch}.tar.gz -C ${tmpdir} gpispace
-        rm ${testlog}
+        tar -czf "${workdir}/gpispace-${branch}.tar.gz" -C "${tmpdir}" gpispace
+        rm "${testlog}"
         echo "SUCCESS"
     else
         echo "ABORTED"
     fi
 
-    killall -u $(id -un) -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true
+    killall -u "$(id -un)" -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true
     rm -rf "${tmpdir}"
 }
 
 trap package_and_cleanup EXIT
 
 # create temporary directory
-mkdir -p ${repodir}
-cd ${repodir}
+mkdir -p "${repodir}"
+cd "${repodir}"
 
 # clone git repo
 git clone \
     --recurse-submodules \
     -j8 \
-    --branch ${branch} \
+    --branch "${branch}" \
     git@gitlab.hpc.devnet.itwm.fhg.de:top/gpispace.git \
-    ${repodir}
+    "${repodir}"
 
 # patch sources for external tarball
 cmake \
-    -D BRANCH=${branch} \
+    -D BRANCH="${branch}" \
     -P .internal/external.cmake
 git apply external.patch
 
@@ -119,7 +115,7 @@ git rm -r \
     src/sdpa/test/sdpa/Scheduler.performance.*.DAT \
     tools
 git submodule foreach 'git rm -r .ci .gitlab-ci.yml || true'
-git submodule foreach --quiet 'rm $toplevel/$path/.git'
+git submodule foreach --quiet 'rm "${toplevel}/${path}/.git"'
 rm -rf \
     .git \
     .gitmodules \
@@ -186,12 +182,12 @@ function add_license_header_comment()
        FNR != 1 {
          print
        }' "${file}" | sponge "${file}"
-  done < <(find * \
+  done < <(find ./* \
                 -regextype posix-extended \
                 -regex "${pattern}" \
-                -and -not -path 'external/beegfs-client-devel*' \
-                -and -not -path 'external/rapidxml*' \
-                -and -not -path 'src/xml/tests/xpnets*.xpnet' \
+                -and -not -path './external/beegfs-client-devel*' \
+                -and -not -path './external/rapidxml*' \
+                -and -not -path './src/xml/tests/xpnets*.xpnet' \
                 -type f \
           )
 }
@@ -202,8 +198,8 @@ add_license_header_comment 'xml' '.*\.(xpnet(.in|)|xml|xsd)'
 add_license_header_comment 'man' 'share/man/.*\.[0-9].*'
 
 # build & test
-mkdir -p ${testdir}
-cd ${builddir}
+mkdir -p "${testdir}"
+cd "${builddir}"
 
 # configure
 cmake -DCMAKE_BUILD_TYPE:STRING=Release \
@@ -214,7 +210,7 @@ cmake -DCMAKE_BUILD_TYPE:STRING=Release \
     "${repodir}"
 
 # build
-cmake --build . -- -j ${procs}
+cmake --build . -- -j "${procs}"
 
 # install
 cmake --install .
@@ -228,9 +224,9 @@ function run_tests()
         --timeout 180 \
         --schedule-random \
         -LE "performance_test" \
-        -j ${procs} \
+        -j "${procs}" \
         -VV \
-        --output-log ${testlog}
+        --output-log "${testlog}"
 }
 GSPC_NODEFILE_FOR_TESTS="${builddir}/nodefile" run_tests
 
