@@ -3,14 +3,14 @@
 set -euo pipefail
 
 # set help message
-usage="usage: [NUM_PROCS=<num-procs>] create_external_tarball.sh <branch> [<tmp-dir>]"
+usage="usage: [NUM_PROCS=<num-procs>] create_external_tarball.sh <branch> [<tmp-dir>] [<output-file>]"
 
 # show help message if no arguments are given or too many
 if [ "${#}" == 0 ]
 then
     echo "${usage}"
     exit 0
-elif [ "${#}" -gt 2 ]
+elif [ "${#}" -gt 3 ]
 then
     echo "Too many arguments!"
     echo "${usage}"
@@ -24,8 +24,7 @@ testlog="${workdir}/test_$(date '+%F_%H-%M').log"
 # assign command line parameters and define default values
 branch="${1}"
 tmpdir="$(readlink -f "${2:-${workdir}/tmp}")"
-
-output_file="${workdir}/gpispace-${branch}.tar.gz"
+output_file="${3:-${workdir}/gpispace-${branch}.tar.gz}"
 
 # determine number of processes to use
 procs="${NUM_PROCS:-$(nproc)}"
