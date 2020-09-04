@@ -1,0 +1,21 @@
+situation/goal: process a file in parallel (no vmem, just multiple calcs working on a subrange of the input file)
+
+run:
+  make
+  make -C src
+  ./src/gen.bin > dat #### todo: defaults!
+  make run
+output:
+  same as from gen.bin?
+
+how:
+* get total size
+* produce size/blocksize work packages with offset + size
+* calc (package) -> partial_result
+* reduce (partial_result, state) -> state, counting remaining packages
+* terminate if remaining packages = 0
+
+todo: simplify calc, not loading threaded?
+todo: simplify config, having size_chunk == size_buffer? different sizes don't seem to make much sense anyhow
+todo: execution hangs if file data could not be opened.
+todo: defaults in makefile are different from defaults for generator

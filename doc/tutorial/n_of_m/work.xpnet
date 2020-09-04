@@ -1,0 +1,54 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<template name="work_n_of_m">
+  <template-parameter type="T"/>
+  <defun>
+    <in name="i" type="long_with_credit" place="i"/>
+    <out name="o" type="long_with_credit" place="o"/>
+    <tunnel name="n" type="long" place="n"/>
+    <tunnel name="config" type="T" place="config"/>
+
+    <net>
+      <place name="i" type="long_with_credit"/>
+      <place name="o" type="long_with_credit"/>
+      <place name="n" type="long" virtual="true"/>
+      <place name="config" type="T" virtual="true"/>
+
+      <transition name="work">
+        <defun>
+          <inout name="v" type="long_with_credit"/>
+          <in name="n" type="long"/>
+          <in name="config" type="T"/>
+          <module name="work" function="work (v, n, config)">
+            <cinclude href="iostream"/>
+            <code><![CDATA[
+            std::cout << "### work " << v.id << " of [0.." << n << ")"
+                      << " credit " << v.credit
+                      << " config " << config
+                      << '\n';
+            ]]></code>
+          </module>
+        </defun>
+        <connect-read port="config" place="config"/>
+        <connect-read port="n" place="n"/>
+        <connect-in port="v" place="i"/>
+        <connect-out port="v" place="o"/>
+      </transition>
+    </net>
+
+  </defun>
+</template>

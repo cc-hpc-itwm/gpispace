@@ -1,0 +1,56 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="put_many_manual">
+  <in name="N" type="unsigned long" place="N"/>
+  <out name="S" type="unsigned long" place="S"/>
+  <net>
+    <place name="N" type="unsigned long"/>
+    <place name="S" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+
+    <place name="i" type="unsigned long"/>
+    <transition name="generate">
+      <defun>
+        <in name="N" type="unsigned long"/>
+        <out name="out" type="list"/>
+        <module name="automatic" function="generate (N, out)">
+          <cinclude href="numeric"/>
+          <code><![CDATA[
+          out.resize (N);
+          std::iota (out.begin(), out.end(), 0UL);
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-in port="N" place="N"/>
+      <connect-out-many port="out" place="i"/>
+    </transition>
+
+    <transition name="sum">
+      <defun>
+        <in name="i" type="unsigned long"/>
+        <inout name="S" type="unsigned long"/>
+        <expression>
+          ${S} := ${S} + ${i}
+        </expression>
+      </defun>
+      <connect-in port="i" place="i"/>
+      <connect-inout port="S" place="S"/>
+    </transition>
+  </net>
+</defun>

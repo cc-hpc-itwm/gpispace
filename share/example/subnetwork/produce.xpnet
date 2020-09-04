@@ -1,0 +1,54 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun>
+  <require key="produce" mandatory="true"/>
+  <in name="memory" type="global_memory_range"/>
+  <in name="block_size" type="unsigned long"/>
+  <in name="tag" type="unsigned long"/>
+  <inout name="block" type="block"/>
+  <memory-buffer name="buffer">
+    <size>
+      ${block_size}
+    </size>
+  </memory-buffer>
+  <memory-put not-modified-in-module-call="true">
+    <local>
+      ${range.buffer} := "buffer";
+      ${range.offset} := 0UL;
+      ${range.size} := ${block_size};
+      stack_push (List(), ${range})
+    </local>
+    <global>
+      ${range.handle} := ${memory.handle};
+      ${range.offset} := (2UL * ${block.slot} + ${tag}) * ${block_size};
+      ${range.size} := ${block_size};
+      stack_push (List(), ${range})
+    </global>
+  </memory-put>
+  <module name="subnetwork" function="produce (buffer, tag, block, block_size)">
+    <cinclude href="numeric"/>
+    <code><![CDATA[
+    using T = unsigned long;
+
+    auto const count (block_size / sizeof (T));
+
+    auto data (static_cast<T*> (buffer));
+
+    std::iota (data, data + count, block.id + tag);
+    ]]></code>
+  </module>
+</defun>

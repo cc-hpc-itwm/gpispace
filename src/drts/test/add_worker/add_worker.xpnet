@@ -1,0 +1,109 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="test_add_worker">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+  <in name="address" type="string" place="address"/>
+  <in name="port" type="unsigned int" place="port"/>
+  <in name="wait" type="unsigned int" place="wait"/>
+  <out name="done" type="control" place="done"/>
+  <net>
+    <place name="trigger" type="control" put_token="true"/>
+    <place name="address" type="string"/>
+    <place name="port" type="unsigned int"/>
+    <place name="wait" type="unsigned int"/>
+    <place name="done" type="control"/>
+
+    <transition name="connect_and_wait_for_disconnect">
+      <defun>
+        <inout name="trigger" type="control"/>
+        <in name="address" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <module name="test_add_worker"
+                function="connect_and_wait (address, port)">
+          <cinclude href="boost/asio/connect.hpp"/>
+          <cinclude href="boost/asio/io_service.hpp"/>
+          <cinclude href="boost/asio/ip/tcp.hpp"/>
+          <cinclude href="vector"/>
+          <cxx flag="--std=c++11"/>
+          <code><![CDATA[
+          boost::asio::io_service io_service;
+          boost::asio::io_service::work io_service_work (io_service);
+          boost::asio::ip::tcp::socket socket (io_service);
+
+          boost::asio::connect
+            ( socket
+            , boost::asio::ip::tcp::resolver (io_service)
+            . resolve ({ address
+                       , std::to_string (port)
+                       , boost::asio::ip::tcp::resolver::query::flags()
+                       }
+                      )
+            );
+
+          std::vector<char> data (1 << 10);
+          boost::system::error_code ec;
+          socket.receive
+            (boost::asio::buffer (data.data(), data.size()), 0, ec);
+
+          if (ec != boost::asio::error::eof)
+          {
+            throw boost::system::system_error (ec);
+          }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-read port="address" place="address"/>
+      <connect-read port="port" place="port"/>
+      <connect-in port="trigger" place="trigger"/>
+      <connect-out port="trigger" place="result"/>
+    </transition>
+
+    <place name="result" type="control"/>
+
+    <transition name="take_result">
+      <defun>
+        <in name="result" type="control"/>
+        <inout name="wait" type="unsigned int"/>
+        <expression>
+          ${wait} := ${wait} - 1U;
+        </expression>
+      </defun>
+      <condition>
+        ${wait} :gt: 0U
+      </condition>
+      <connect-in port="result" place="result"/>
+      <connect-inout port="wait" place="wait"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <in name="wait" type="unsigned int"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := [];
+        </expression>
+      </defun>
+      <condition>
+        ${wait} :le: 0U
+      </condition>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

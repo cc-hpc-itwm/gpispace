@@ -1,0 +1,86 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="template">
+<net>
+  <place name="x" type="long"/>
+  <place name="y" type="double"/>
+  <place name="z" type="string"/>
+  <place name="pair" type="pair_pair"/>
+
+  <include-template href="template_pair_pair.xml"/>
+
+  <specialize name="make_pair_pair" use="pair_pair">
+    <type-map replace="T" with="long"/>
+    <type-map replace="U" with="double"/>
+    <type-map replace="V" with="string"/>
+    <type-map replace="PAIR_PAIR" with="pair_pair"/>
+    <type-get name="pair_pair"/>
+  </specialize>
+
+  <transition name="make_pair_pair2" inline="true">
+    <use name="make_pair_pair"/>
+    <connect-in port="tag" place="x"/>
+    <connect-in port="first" place="y"/>
+    <connect-in port="second" place="z"/>
+    <connect-out port="pair_pair" place="pair"/>
+  </transition>
+
+  <include-template href="dup.xml"/>
+
+  <specialize name="dup_long" use="dup">
+    <type-map replace="T" with="long"/>
+  </specialize>
+
+  <place name="x1" type="long"/>
+  <place name="x2" type="long"/>
+
+  <transition name="dup_x" inline="true">
+    <use name="dup_long"/>
+    <connect-in port="in" place="x"/>
+    <connect-out port="one" place="x1"/>
+    <connect-out port="two" place="x2"/>
+  </transition>
+
+  <specialize name="dup_string" use="dup">
+    <type-map replace="T" with="string"/>
+  </specialize>
+
+  <place name="z1" type="string"/>
+  <place name="z2" type="string"/>
+
+  <transition name="dup_z" inline="true">
+    <use name="dup_string"/>
+    <connect-in port="in" place="z"/>
+    <connect-out port="one" place="z1"/>
+    <connect-out port="two" place="z2"/>
+  </transition>
+
+  <specialize name="dup_pairpair" use="dup">
+    <type-map replace="T" with="pair_pair"/>
+  </specialize>
+
+  <place name="pair1" type="pair_pair"/>
+  <place name="pair2" type="pair_pair"/>
+
+  <transition name="dup_pair" inline="true">
+    <use name="dup_pairpair"/>
+    <connect-in port="in" place="pair"/>
+    <connect-out port="one" place="pair1"/>
+    <connect-out port="two" place="pair2"/>
+  </transition>
+</net>
+</defun>

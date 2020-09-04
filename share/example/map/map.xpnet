@@ -1,0 +1,614 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="map">
+  <include-structs href="memory/global/range.xpnet"/>
+
+  <in name="input" type="global_memory_range" place="input"/>
+  <in name="output" type="global_memory_range" place="output"/>
+  <in name="num_block" type="unsigned long" place="num_block"/>
+  <in name="size_block" type="unsigned long" place="size_block"/>
+  <in name="user_data" type="bytearray" place="user_data"/>
+  <in name="implementation" type="string" place="implementation"/>
+
+  <out name="done" type="control" place="done"/>
+
+  <!--
+  <precondition>
+    parameter.size_block :le: parameter.input.size
+  </precondition>
+
+  <precondition>
+    parameter.size_block :le: parameter.output.size
+  </precondition>
+  -->
+
+  <net>
+    <place name="input" type="global_memory_range"/>
+    <place name="output" type="global_memory_range"/>
+    <place name="num_block" type="unsigned long"/>
+    <place name="size_block" type="unsigned long"/>
+    <place name="done" type="control"/>
+    <place name="user_data" type="bytearray"/>
+    <place name="implementation" type="string"/>
+
+    <struct name="slot_generator_state">
+      <field name="range" type="global_memory_range"/>
+      <field name="offset" type="unsigned long"/>
+      <field name="slot_size" type="unsigned long"/>
+      <field name="num" type="unsigned long"/>
+    </struct>
+
+    <struct name="id_generator_state">
+      <field name="id" type="unsigned long"/>
+      <field name="max" type="unsigned long"/>
+    </struct>
+
+    <transition name="initialize">
+      <defun>
+        <in name="input" type="global_memory_range"/>
+        <in name="output" type="global_memory_range"/>
+        <in name="num_block" type="unsigned long"/>
+        <in name="size_block" type="unsigned long"/>
+        <out name="state_input_slot_generator" type="slot_generator_state"/>
+        <out name="state_output_slot_generator" type="slot_generator_state"/>
+        <out name="state_id_generator" type="id_generator_state"/>
+        <out name="wait" type="unsigned long"/>
+        <expression>
+          ${state_input_slot_generator.range} := ${input};
+          ${state_input_slot_generator.offset} := ${input.offset};
+          ${state_input_slot_generator.slot_size} := ${size_block};
+          ${state_input_slot_generator.num} := ${num_block};
+
+          ${state_output_slot_generator.range} := ${output};
+          ${state_output_slot_generator.offset} := ${output.offset};
+          ${state_output_slot_generator.slot_size} := ${size_block};
+          ${state_output_slot_generator.num} := ${num_block};
+
+          ${state_id_generator.id} := 0UL;
+          ${state_id_generator.max} := ${num_block};
+
+          ${wait} := ${state_id_generator.max};
+        </expression>
+      </defun>
+      <connect-in port="input" place="input"/>
+      <connect-in port="output" place="output"/>
+      <connect-in port="num_block" place="num_block"/>
+      <connect-in port="size_block" place="size_block"/>
+      <connect-out port="state_input_slot_generator"
+                   place="state_input_slot_generator"/>
+      <connect-out port="state_output_slot_generator"
+                   place="state_output_slot_generator"/>
+      <connect-out port="state_id_generator" place="state_id_generator"/>
+      <connect-out port="wait" place="wait"/>
+    </transition>
+
+    <place name="state_input_slot_generator" type="slot_generator_state"/>
+    <place name="state_output_slot_generator" type="slot_generator_state"/>
+    <place name="state_id_generator" type="id_generator_state"/>
+    <place name="wait" type="unsigned long"/>
+
+    <place name="slot_input" type="global_memory_range"/>
+    <place name="slot_output" type="global_memory_range"/>
+
+    <place name="num_input_slot" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="num_output_slot" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+
+    <place name="done_generate_input_slot" type="control"/>
+    <place name="done_generate_output_slot" type="control"/>
+
+    <transition name="generate_input_slot">
+      <defun>
+        <inout name="state" type="slot_generator_state"/>
+        <inout name="num" type="unsigned long"/>
+        <out name="slot" type="global_memory_range"/>
+        <expression>
+          ${slot.handle} := ${state.range.handle};
+          ${slot.offset} := ${state.offset};
+          ${slot.size} := ${state.slot_size};
+
+          ${state.offset} := ${state.offset} + ${state.slot_size};
+
+          ${num} := ${num} + 1UL;
+        </expression>
+      </defun>
+      <condition>
+        (${state.offset} + ${state.slot_size})
+        :le:
+        (${state.range.offset} + ${state.range.size})
+      </condition>
+      <condition>
+        ${num} :lt: ${state.num}
+      </condition>
+      <connect-inout port="state" place="state_input_slot_generator"/>
+      <connect-out port="slot" place="slot_input"/>
+      <connect-inout port="num" place="num_input_slot"/>
+    </transition>
+
+    <transition name="done_generate_input_slot">
+      <defun>
+        <in name="state" type="slot_generator_state"/>
+        <in name="num" type="unsigned long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <condition>
+        ( (${state.offset} + ${state.slot_size})
+          :gt:
+          (${state.range.offset} + ${state.range.size})
+        )
+        ||
+        (${num} :ge: ${state.num})
+      </condition>
+      <connect-in port="state" place="state_input_slot_generator"/>
+      <connect-read port="num" place="num_output_slot"/>
+      <connect-out port="done" place="done_generate_input_slot"/>
+    </transition>
+
+    <transition name="generate_output_slot">
+      <defun>
+        <inout name="state" type="slot_generator_state"/>
+        <inout name="num" type="unsigned long"/>
+        <out name="slot" type="global_memory_range"/>
+        <expression>
+          ${slot.handle} := ${state.range.handle};
+          ${slot.offset} := ${state.offset};
+          ${slot.size} := ${state.slot_size};
+
+          ${state.offset} := ${state.offset} + ${state.slot_size};
+
+          ${num} := ${num} + 1UL;
+        </expression>
+      </defun>
+      <condition>
+        (${state.offset} + ${state.slot_size})
+        :le:
+        (${state.range.offset} + ${state.range.size})
+      </condition>
+      <condition>
+        ${num} :lt: ${state.num}
+      </condition>
+      <connect-inout port="state" place="state_output_slot_generator"/>
+      <connect-out port="slot" place="slot_output"/>
+      <connect-inout port="num" place="num_output_slot"/>
+    </transition>
+
+    <transition name="done_generate_output_slot">
+      <defun>
+        <in name="state" type="slot_generator_state"/>
+        <in name="num" type="unsigned long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <condition>
+        ( (${state.offset} + ${state.slot_size})
+          :gt:
+          (${state.range.offset} + ${state.range.size})
+        )
+        ||
+        (${num} :ge: ${state.num})
+      </condition>
+      <connect-in port="state" place="state_output_slot_generator"/>
+      <connect-read port="num" place="num_output_slot"/>
+      <connect-out port="done" place="done_generate_output_slot"/>
+    </transition>
+
+    <struct name="block_with_slot">
+      <field name="slot" type="global_memory_range"/>
+      <field name="block" type="unsigned long"/>
+    </struct>
+
+    <transition name="generate_id">
+      <defun>
+        <inout name="state" type="id_generator_state"/>
+        <in name="slot" type="global_memory_range"/>
+        <out name="block_with_slot" type="block_with_slot"/>
+        <expression>
+          ${block_with_slot.slot} := ${slot};
+          ${block_with_slot.block} := ${state.id};
+
+          ${state.id} := ${state.id} + 1UL;
+        </expression>
+      </defun>
+      <condition>
+        ${state.id} :lt: ${state.max}
+      </condition>
+      <connect-inout port="state" place="state_id_generator"/>
+      <connect-in port="slot" place="slot_input"/>
+      <connect-out port="block_with_slot" place="empty"/>
+    </transition>
+
+    <transition name="done_generate_id">
+      <defun>
+        <in name="state" type="id_generator_state"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${state.id} :ge: ${state.max}
+      </condition>
+      <connect-in port="state" place="state_id_generator"/>
+    </transition>
+
+    <place name="empty" type="block_with_slot"/>
+
+    <transition name="produce">
+      <defun>
+        <inout name="block_with_slot" type="block_with_slot"/>
+        <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
+        <memory-buffer name="data">
+          <size>
+            ${block_with_slot.slot.size}
+          </size>
+        </memory-buffer>
+        <memory-put not-modified-in-module-call="true">
+          <global>
+            stack_push (List(), ${block_with_slot.slot})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${block_with_slot.slot.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-put>
+        <module name="map" function="produce ( user_data
+                                             , implementation
+                                             , block_with_slot
+                                             , data
+                                             )"
+        >
+          <cinclude href="interface.hpp"/>
+          <cinclude href="fhg/util/dl.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_dlhandle (implementation)
+              .sym<decltype (map_produce)> ("map_produce")
+                ( user_data
+                , std::make_pair (data, block_with_slot.slot.size)
+                , block_with_slot.block
+                );
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="block_with_slot" place="empty"/>
+      <connect-out port="block_with_slot" place="produced"/>
+      <connect-read port="user_data" place="user_data"/>
+      <connect-read port="implementation" place="implementation"/>
+    </transition>
+
+    <place name="produced" type="block_with_slot"/>
+
+    <struct name="work_package">
+      <field name="slot_input" type="global_memory_range"/>
+      <field name="slot_output" type="global_memory_range"/>
+      <field name="block" type="unsigned long"/>
+    </struct>
+
+    <transition name="bundle_work_package">
+      <defun>
+        <in name="block_with_slot" type="block_with_slot"/>
+        <in name="output_slot" type="global_memory_range"/>
+        <out name="work_package" type="work_package"/>
+        <expression>
+          ${work_package.slot_input} := ${block_with_slot.slot};
+          ${work_package.slot_output} := ${output_slot};
+          ${work_package.block} := ${block_with_slot.block};
+        </expression>
+      </defun>
+      <connect-in port="block_with_slot" place="produced"/>
+      <connect-in port="output_slot" place="slot_output"/>
+      <connect-out port="work_package" place="package_produced"/>
+    </transition>
+
+    <place name="package_produced" type="work_package"/>
+
+    <transition name="process">
+      <defun>
+        <inout name="package" type="work_package"/>
+        <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
+        <memory-buffer name="input" read-only="true">
+          <size>
+            ${package.slot_input.size}
+          </size>
+        </memory-buffer>
+        <memory-buffer name="output">
+          <size>
+            ${package.slot_output.size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${package.slot_input})
+          </global>
+          <local>
+            ${range.buffer} := "input";
+            ${range.offset} := 0UL;
+            ${range.size} := ${package.slot_input.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <memory-put not-modified-in-module-call="true">
+          <global>
+            stack_push (List(), ${package.slot_output})
+          </global>
+          <local>
+            ${range.buffer} := "output";
+            ${range.offset} := 0UL;
+            ${range.size} := ${package.slot_output.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-put>
+        <module name="map" function="process ( user_data
+                                             , implementation
+                                             , package
+                                             , input
+                                             , output
+                                             )"
+        >
+          <cinclude href="interface.hpp"/>
+          <cinclude href="fhg/util/dl.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_dlhandle (implementation)
+              .sym<decltype (map_process)> ("map_process")
+                ( user_data
+                , std::make_pair (input, package.slot_input.size)
+                , std::make_pair (output, package.slot_output.size)
+                );
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="package" place="package_produced"/>
+      <connect-out port="package" place="package_processed"/>
+      <connect-read port="user_data" place="user_data"/>
+      <connect-read port="implementation" place="implementation"/>
+    </transition>
+
+    <place name="package_processed" type="work_package"/>
+
+    <transition name="unbundle_work_package">
+      <defun>
+        <out name="block_with_slot" type="block_with_slot"/>
+        <out name="input_slot" type="global_memory_range"/>
+        <in name="work_package" type="work_package"/>
+        <expression>
+          ${input_slot} := ${work_package.slot_input};
+          ${block_with_slot.slot} := ${work_package.slot_output};
+          ${block_with_slot.block} := ${work_package.block};
+        </expression>
+      </defun>
+      <connect-out port="block_with_slot" place="processed"/>
+      <connect-out port="input_slot" place="slot_input"/>
+      <connect-in port="work_package" place="package_processed"/>
+    </transition>
+
+    <place name="processed" type="block_with_slot"/>
+
+    <transition name="consume">
+      <defun>
+        <inout name="block_with_slot" type="block_with_slot"/>
+        <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
+        <memory-buffer name="data" read-only="true">
+          <size>
+            ${block_with_slot.slot.size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${block_with_slot.slot})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${block_with_slot.slot.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <module name="map" function="consume ( user_data
+                                             , implementation
+                                             , block_with_slot
+                                             , data
+                                             )"
+        >
+          <cinclude href="interface.hpp"/>
+          <cinclude href="fhg/util/dl.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_dlhandle (implementation)
+              .sym<decltype (map_consume)> ("map_consume")
+                ( user_data
+                , std::make_pair (data, block_with_slot.slot.size)
+                , block_with_slot.block
+                );
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="block_with_slot" place="processed"/>
+      <connect-out port="block_with_slot" place="consumed"/>
+      <connect-read port="user_data" place="user_data"/>
+      <connect-read port="implementation" place="implementation"/>
+    </transition>
+
+    <place name="consumed" type="block_with_slot"/>
+
+    <transition name="split_block_and_slot">
+      <defun>
+        <in name="block_and_slot" type="block_with_slot"/>
+        <out name="block" type="unsigned long"/>
+        <out name="slot" type="global_memory_range"/>
+        <expression>
+          ${block} := ${block_and_slot.block};
+          ${slot} := ${block_and_slot.slot};
+        </expression>
+      </defun>
+      <connect-in port="block_and_slot" place="consumed"/>
+      <connect-out port="block" place="id_done"/>
+      <connect-out port="slot" place="slot_output"/>
+    </transition>
+
+    <place name="id_done" type="unsigned long"/>
+
+    <transition name="id_done">
+      <defun>
+        <inout name="wait" type="unsigned long"/>
+        <in name="id" type="unsigned long"/>
+        <!--
+        <precondition>${wait} :gt: 0UL</precondition>
+        -->
+        <expression>
+          ${wait} := ${wait} - 1UL;
+        </expression>
+      </defun>
+      <connect-inout port="wait" place="wait"/>
+      <connect-in port="id" place="id_done"/>
+    </transition>
+
+    <transition name="ids_done">
+      <defun>
+        <in name="wait" type="unsigned long"/>
+        <out name="ids_done" type="control"/>
+        <expression>
+          ${ids_done} := []
+        </expression>
+      </defun>
+      <condition>
+        ${wait} :eq: 0UL
+      </condition>
+      <connect-in port="wait" place="wait"/>
+      <connect-out port="ids_done" place="ids_done"/>
+    </transition>
+
+    <place name="ids_done" type="control"/>
+
+    <transition name="all_done">
+      <defun>
+        <inout name="done_generate_input_slot" type="control"/>
+        <inout name="done_generate_output_slot" type="control"/>
+        <in name="ids_done" type="control"/>
+        <expression/>
+      </defun>
+      <connect-in port="done_generate_input_slot"
+                  place="done_generate_input_slot"/>
+      <connect-in port="done_generate_output_slot"
+                  place="done_generate_output_slot"/>
+      <connect-in port="ids_done" place="ids_done"/>
+      <connect-out port="done_generate_input_slot"
+                   place="cleanup_generate_input_slot"/>
+      <connect-out port="done_generate_output_slot"
+                   place="cleanup_generate_output_slot"/>
+    </transition>
+
+    <place name="cleanup_generate_output_slot" type="control"/>
+    <place name="cleanup_generate_input_slot" type="control"/>
+
+    <transition name="remove_input_slot">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="slot" type="global_memory_range"/>
+        <inout name="num" type="unsigned long"/>
+        <!--
+        <precondition>
+          ${num} :gt: 0UL
+        </precondition>
+        -->
+        <expression>
+          ${num} := ${num} - 1UL;
+        </expression>
+      </defun>
+      <connect-read port="trigger" place="cleanup_generate_input_slot"/>
+      <connect-in port="slot" place="slot_input"/>
+      <connect-inout port="num" place="num_input_slot"/>
+    </transition>
+
+    <transition name="remove_output_slot">
+      <defun>
+        <in name="trigger" type="control"/>
+        <in name="slot" type="global_memory_range"/>
+        <inout name="num" type="unsigned long"/>
+        <!--
+        <precondition>
+          ${num} :gt: 0UL
+        </precondition>
+        -->
+        <expression>
+          ${num} := ${num} - 1UL;
+        </expression>
+      </defun>
+      <connect-read port="trigger" place="cleanup_generate_output_slot"/>
+      <connect-in port="slot" place="slot_output"/>
+      <connect-inout port="num" place="num_output_slot"/>
+    </transition>
+
+    <transition name="removed_input_slots">
+      <defun>
+        <inout name="trigger" type="control"/>
+        <in name="num" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${num} :eq: 0UL
+      </condition>
+      <connect-in port="trigger" place="cleanup_generate_input_slot"/>
+      <connect-read port="num" place="num_input_slot"/>
+      <connect-out port="trigger" place="removed_input_slots"/>
+    </transition>
+
+    <place name="removed_input_slots" type="control"/>
+
+    <transition name="removed_output_slots">
+      <defun>
+        <inout name="trigger" type="control"/>
+        <in name="num" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${num} :eq: 0UL
+      </condition>
+      <connect-in port="trigger" place="cleanup_generate_output_slot"/>
+      <connect-read port="num" place="num_output_slot"/>
+      <connect-out port="trigger" place="removed_output_slots"/>
+    </transition>
+
+    <place name="removed_output_slots" type="control"/>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="removed_input_slots" type="control"/>
+        <in name="removed_output_slots" type="control"/>
+        <in name="user_data" type="bytearray"/>
+        <in name="implementation" type="string"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <connect-in port="removed_input_slots" place="removed_input_slots"/>
+      <connect-in port="removed_output_slots" place="removed_output_slots"/>
+      <connect-in port="user_data" place="user_data"/>
+      <connect-in port="implementation" place="implementation"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+  </net>
+</defun>

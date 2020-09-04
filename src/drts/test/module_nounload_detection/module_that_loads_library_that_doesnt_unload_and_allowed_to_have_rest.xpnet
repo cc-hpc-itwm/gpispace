@@ -1,0 +1,46 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="top">
+  <in name="path" type="string" place="path"/>
+  <out name="done" type="control" place="done"/>
+  <net>
+    <place name="path" type="string"/>
+    <place name="done" type="control"/>
+
+    <transition name="t">
+      <defun>
+        <in name="path" type="string"/>
+        <out name="done" type="control"/>
+        <module name="m" function="done f (path)"
+                require_function_unloads_without_rest="false">
+          <cinclude href="dlfcn.h"/>
+          <cinclude href="stdexcept"/>
+          <ld flag="-ldl"/>
+          <code>
+            if (!dlopen (path.c_str(), RTLD_NOW | RTLD_NODELETE))
+            {
+              throw std::runtime_error ("failed to dlopen");
+            }
+            return {};
+          </code>
+        </module>
+      </defun>
+      <connect-in place="path" port="path"/>
+      <connect-out place="done" port="done"/>
+    </transition>
+  </net>
+</defun>

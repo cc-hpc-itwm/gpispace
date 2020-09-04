@@ -1,0 +1,151 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun>
+  <in name="N" type="long" place="Nin"/>
+  <in name="config" type="config" place="config"/>
+  <in name="trigger" type="long" place="id"/>
+  <in name="memory" type="global_memory_range" place="memory"/>
+  <out name="done" type="control" place="out"/>
+
+  <net>
+    <place name="memory" type="global_memory_range"/>
+    <place name="Nin" type="long"/>
+
+    <transition name="scatter_N" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="Nin"/>
+      <connect-out port="one" place="N"/>
+      <connect-out port="two" place="wait"/>
+    </transition>
+
+    <place name="id" type="long"/>
+    <place name="N" type="long"/>
+    <place name="wait" type="long"/>
+    <place name="pending" type="long"/>
+    <place name="config" type="config"/>
+    <place name="done" type="control"/>
+    <place name="out" type="control"/>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in place="N" port="amount"/>
+      <connect-out port="out" place="pending"/>
+    </transition>
+
+    <transition name="run">
+      <defun>
+        <in name="id" type="long"/>
+        <in name="i" type="long"/>
+        <in name="config" type="config"/>
+        <in name="memory" type="global_memory_range"/>
+        <out name="done" type="control"/>
+        <memory-buffer name="data">
+          <size>
+            ${memory.size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${memory})
+          </global>
+          <local>
+            ${range.buffer} := "data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${memory.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <module name="vmem_1_to_n"
+                function="done run (config, id, i, data, memory)"
+        >
+          <cinclude href="stdexcept"/>
+          <cinclude href="string.h"/>
+          <cinclude href="boost/random.hpp"/>
+          <cinclude href="limits"/>
+          <cinclude href="sstream"/>
+          <code><![CDATA[
+            std::cout << "run (" << id << ", " << i << ")" << '\n';
+
+            unsigned long const num_long (memory.size / sizeof (long));
+
+            std::cout << "verifiying " << num_long
+                      << " values with seed " << config.seed << '\n';
+
+            long* a (static_cast<long*> (data));
+
+            boost::uniform_int<long> rand ( std::numeric_limits<long>::min()
+                                          , std::numeric_limits<long>::max()
+                                          );
+
+            boost::mt19937 engine (config.seed);
+
+            for (unsigned long k (0); k < num_long; ++k, ++a)
+            {
+              const long v (rand(engine));
+
+              if (*a != v)
+              {
+                std::ostringstream s;
+
+                s << "BUMMER! wrong value read"
+                  << " expected in slot " << k << " the value " << v
+                  << " but got the value " << *a
+                  ;
+
+                throw std::runtime_error (s.str());
+              }
+            }
+
+            return we::type::literal::control();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="i" place="pending"/>
+      <connect-read port="id" place="id"/>
+      <connect-read port="config" place="config"/>
+      <connect-read port="memory" place="memory"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <transition name="wait">
+      <use name="wait_control"/>
+      <connect-in port="trigger" place="done"/>
+      <connect-out port="done" place="all_done"/>
+      <place-map real="wait" virtual="wait"/>
+    </transition>
+
+    <place name="all_done" type="control"/>
+
+    <transition name="cleanup">
+      <defun>
+        <in name="config" type="config"/>
+        <in name="memory" type="global_memory_range"/>
+        <in name="id" type="long"/>
+        <in name="trigger" type="control"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <connect-in port="config" place="config"/>
+      <connect-in port="memory" place="memory"/>
+      <connect-in port="id" place="id"/>
+      <connect-in port="trigger" place="all_done"/>
+      <connect-out port="done" place="out"/>
+    </transition>
+  </net>
+</defun>

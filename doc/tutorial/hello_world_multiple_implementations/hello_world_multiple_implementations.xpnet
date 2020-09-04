@@ -1,0 +1,64 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="hello_many_pref_list">
+
+  <in name="in" type="control" place="in"/>
+  <out name="out" type="string" place="out"/>
+
+  <net>
+
+    <place name="in" type="control"/>
+    <place name="out" type="string"/>
+
+    <transition name="hello">
+      <defun>
+
+        <preferences>
+          <target>gpu</target>
+          <target>cpu</target>
+        </preferences>
+
+        <in name="in" type="control"/>
+        <out name="out" type="string"/>
+        <module name="hello_world_pref_list" function="out one_call_to_hello_world()" target="cpu">
+          <cinclude href="hello_world.hpp"/> <!-- cpp library -->
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+          std::cout << "Hello world...[impl=CPU]" << std::endl;
+          return impl_hello_world_cpu();
+          ]]></code>
+        </module>
+
+        <module name="hello_world_pref_list" function="out one_call_to_hello_world()" target="gpu">
+          <cinclude href="hello_world.hpp"/> <!-- cpp library -->
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+          std::cout << "Hello world...[impl=GPU]" << std::endl;
+          return impl_hello_world_gpu();
+          ]]></code>
+        </module>
+
+      </defun>
+
+      <connect-in port="in" place="in"/>
+      <connect-out port="out" place="out"/>
+
+    </transition>
+
+  </net>
+
+</defun>

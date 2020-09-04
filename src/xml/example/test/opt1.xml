@@ -1,0 +1,36 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="opt">
+  <in name="N" type="long" place="in"/>
+  <out name="N" type="long" place="out"/>
+  <net>
+    <place name="in" type="long"/>
+    <place name="out" type="long"/>
+    <place name="l" type="control"/>
+    <transition name="run">
+      <defun>
+        <in name="x" type="long"/>
+        <out name="x" type="long"/>
+        <out name="trigger" type="control"/>
+        <expression>${trigger} := []</expression>
+      </defun>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="out"/>
+      <connect-out port="trigger" place="l"/>
+    </transition>
+  </net>
+</defun>

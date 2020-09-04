@@ -1,0 +1,67 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun>
+  <in name="amount" type="long" place="N"/>
+  <out name="out" type="control" place="id"/>
+
+  <net>
+    <struct name="state">
+      <field name="id" type="long"/>
+      <field name="max" type="long"/>
+    </struct>
+
+    <place name="N" type="long"/>
+    <place name="state" type="state"/>
+    <place name="id" type="control"/>
+
+    <transition name="init">
+      <defun>
+        <in name="N" type="long"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.id} := 0L; ${state.max} := ${N}
+        </expression>
+      </defun>
+      <connect-in place="N" port="N"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <expression></expression>
+        <condition>${state.id} :ge: ${state.max}</condition>
+      </defun>
+      <connect-in place="state" port="state"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="id" type="control"/>
+        <expression>
+          ${id} := []; ${state.id} := ${state.id} + 1L
+        </expression>
+        <condition>${state.id} :lt: ${state.max}</condition>
+      </defun>
+      <connect-in place="state" port="state"/>
+      <connect-out place="state" port="state"/>
+      <connect-out place="id" port="id"/>
+    </transition>
+  </net>
+</defun>

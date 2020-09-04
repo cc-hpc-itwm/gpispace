@@ -1,0 +1,178 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="join_exp">
+  <in name="l" type="long" place="in_A_1"/>
+  <in name="d" type="long" place="in_A_2"/>
+  <out name="d" type="long" place="d"/>
+
+  <net>
+
+  <struct name="struct">
+    <field name="f1" type="long"/>
+    <field name="f2" type="long"/>
+    <field name="f3" type="long"/>
+  </struct>
+
+  <place name="in_A_1" type="long"/>
+  <place name="in_A_2" type="long"/>
+
+  <transition name="exp_A">
+    <defun>
+      <in name="l" type="long"/>
+      <in name="d" type="long"/>
+      <out name="s" type="struct"/>
+      <out name="t" type="struct"/>
+      <out name="l" type="long"/>
+      <expression>
+        ${s.f3} := ${d} div 8;
+        ${tmp} := ${s.f3} + 2L;
+        ${s.f1} := ${tmp} * ${l};
+        ${s.f2} := ${s.f1} + 3L * ${l};
+        ${t} := ${s};
+        ${t.f3} := 0L;
+      </expression>
+    </defun>
+    <connect-in port="l" place="in_A_1"/>
+    <connect-in port="d" place="in_A_2"/>
+    <connect-out port="s" place="out_A_1"/>
+    <connect-out port="t" place="out_A_2"/>
+    <connect-out port="l" place="out_A_3"/>
+  </transition>
+
+  <place name="out_A_1" type="struct"/>
+  <place name="out_A_2" type="struct"/>
+  <place name="out_A_3" type="long"/>
+
+  <transition name="exp_B">
+    <defun>
+      <in name="state" type="struct"/>
+      <in name="i" type="long"/>
+      <out name="l" type="long"/>
+      <expression>
+        ${l} := ${i} * ${state.f3};
+      </expression>
+    </defun>
+    <connect-in port="state" place="out_A_1"/>
+    <connect-read port="i" place="out_A_3"/>
+    <connect-out port="l" place="out_B_1"/>
+  </transition>
+
+  <place name="out_B_1" type="long"/>
+
+  <struct name="state">
+    <field name="i" type="long"/>
+    <field name="m" type="long"/>
+  </struct>
+
+  <transition name="exp_C">
+    <defun>
+      <in name="s" type="struct"/>
+      <in name="i" type="long"/>
+      <out name="state" type="state"/>
+      <expression>
+        ${state.i} := ${i};
+        ${state.m} := ${s.f2};
+      </expression>
+    </defun>
+    <connect-in port="s" place="out_A_2"/>
+    <connect-read port="i" place="out_A_3"/>
+    <connect-out port="state" place="out_C_1"/>
+  </transition>
+
+  <place name="out_C_1" type="state"/>
+
+  <transition name="exp_D">
+    <defun>
+      <in name="state" type="state"/>
+      <in name="d" type="long"/>
+      <out name="d" type="long"/>
+      <expression>
+        ${d} := ${d} + ${state.m};
+      </expression>
+    </defun>
+    <connect-in port="state" place="out_C_1"/>
+    <connect-in port="d" place="out_B_1"/>
+    <connect-out port="d" place="d"/>
+  </transition>
+
+  <place name="d" type="long"/>
+
+  <place name="cin" type="long"/>
+  <place name="cread" type="long"/>
+  <place name="triggA" type="control"/>
+  <place name="triggB" type="control"/>
+  <place name="triggT" type="control"/>
+  <place name="resA" type="long"/>
+  <place name="resB" type="long"/>
+  <place name="t" type="long"/>
+  <transition name="init">
+    <defun>
+      <in name="c" type="long"/>
+      <out name="c" type="long"/>
+      <out name="t" type="control"/>
+      <expression>${t}:=[]</expression>
+    </defun>
+    <connect-in port="c" place="cin"/>
+    <connect-out port="c" place="cread"/>
+    <connect-out port="t" place="triggT"/>
+  </transition>
+  <transition name="dup">
+    <defun>
+      <in name="x" type="control"/>
+      <out name="a" type="control"/>
+      <out name="b" type="control"/>
+      <expression>${a}:=${x}; ${b}:=${x}</expression>
+    </defun>
+    <connect-in port="x" place="triggT"/>
+    <connect-out port="a" place="triggA"/>
+    <connect-out port="b" place="triggB"/>
+  </transition>
+  <transition name="A">
+    <defun>
+      <in name="trigger" type="control"/>
+      <in name="x" type="long"/>
+      <out name="N" type="long"/>
+      <expression>${N}:=2*${x}</expression>
+    </defun>
+    <connect-in port="trigger" place="triggA"/>
+    <connect-read port="x" place="cread"/>
+    <connect-out port="N" place="resA"/>
+  </transition>
+  <transition name="B">
+    <defun>
+      <in name="trigger" type="control"/>
+      <in name="t" type="long"/>
+      <in name="x" type="long"/>
+      <out name="N" type="long"/>
+      <expression>${N}:=${t}*${x}</expression>
+    </defun>
+    <connect-in port="trigger" place="triggB"/>
+    <connect-read port="x" place="cread"/>
+    <connect-read port="t" place="t"/>
+    <connect-out port="N" place="resB"/>
+  </transition>
+  <transition name="consume">
+    <defun>
+      <in name="a" type="long"/>
+      <in name="b" type="long"/>
+      <module name="mod" function="fun"/>
+    </defun>
+    <connect-in port="a" place="resA"/>
+    <connect-in port="b" place="resB"/>
+  </transition>
+  </net>
+</defun>

@@ -1,0 +1,48 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun>
+  <include-structs href="work_package.xpnet"/>
+
+  <in name="work_package" type="work_package"/>
+  <memory-buffer name="ptr_flag">
+    <size>
+      ${work_package.meta.size}
+    </size>
+  </memory-buffer>
+  <memory-put not-modified-in-module-call="true">
+    <global>
+      stack_push (List(), ${work_package.meta})
+    </global>
+    <local>
+      ${range.buffer} := "ptr_flag";
+      ${range.offset} := 0UL;
+      ${range.size} := ${work_package.meta.size};
+      stack_push (List(), ${range})
+    </local>
+  </memory-put>
+  <module name="stream"
+          function="free (work_package, ptr_flag)">
+    <cinclude href="drts/stream.hpp"/>
+    <cxx flag="--std=c++11"/>
+    <ld flag="-lgspc"/>
+    <code><![CDATA[
+      gspc::stream::mark_free ( work_package.flag
+                              , {ptr_flag, work_package.meta.size}
+                              );
+    ]]></code>
+  </module>
+</defun>

@@ -1,0 +1,109 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="generate">
+  <struct name="point">
+    <field name="x" type="double"/>
+    <field name="y" type="double"/>
+  </struct>
+
+  <struct name="vector">
+    <field name="start" type="point"/>
+    <field name="end" type="point"/>
+  </struct>
+
+  <net>
+
+    <transition name="rotate">
+      <defun>
+        <in name="deg" type="double"/>
+        <in name="point" type="point"/>
+        <out name="point" type="point"/>
+
+        <module name="point" function="rotate (point, deg)"/>
+      </defun>
+    </transition>
+
+    <transition name="out">
+      <defun>
+        <in name="in" type="long"/>
+        <out name="out" type="long"/>
+        <module name="mod" function="fout (in, out)"/>
+      </defun>
+    </transition>
+
+    <transition name="outreturn">
+      <defun>
+        <in name="in" type="long"/>
+        <out name="out" type="long"/>
+        <module name="mod" function="out foutreturn (in)"/>
+      </defun>
+    </transition>
+
+    <transition name="inout">
+      <defun>
+        <in name="in" type="long"/>
+        <in name="inout" type="long"/>
+        <out name="inout" type="long"/>
+        <inout name="inout2" type="control"/>
+        <module name="mod" function="finout (in, inout)"/>
+      </defun>
+      <connect-inout port="inout2" place="inout2"/>
+    </transition>
+
+    <place name="inout2" type="control"/>
+
+    <transition name="inoutreturn">
+      <defun>
+        <in name="in" type="long"/>
+        <in name="inout" type="long"/>
+        <out name="inout" type="long"/>
+        <module name="mod" function="inout finoutreturn (in, inout)"/>
+      </defun>
+    </transition>
+
+    <transition name="types">
+      <defun>
+        <in name="p_control" type="control"/>
+        <in name="p_bool" type="bool"/>
+        <in name="p_long" type="long"/>
+        <in name="p_double" type="double"/>
+        <in name="p_char" type="char"/>
+        <in name="p_string" type="string"/>
+        <in name="p_bitset" type="bitset"/>
+        <in name="p_stack" type="stack"/>
+        <in name="p_stack2" type="stack"/>
+        <in name="p_map" type="map"/>
+        <in name="p_set" type="set"/>
+
+        <out name="p_control" type="control"/>
+        <out name="p_bool" type="bool"/>
+        <out name="p_long" type="long"/>
+        <out name="p_double" type="double"/>
+        <out name="p_char" type="char"/>
+        <out name="p_string" type="string"/>
+        <out name="p_bitset" type="bitset"/>
+        <out name="p_stack" type="stack"/>
+        <out name="p_stack2" type="stack"/>
+
+        <module name="mm"
+                function="p_control fun (p_control,p_bool,p_long,p_double,p_char,p_string,p_bitset,p_stack,p_stack2,p_map,p_set)"
+        />
+      </defun>
+    </transition>
+
+  </net>
+</defun>

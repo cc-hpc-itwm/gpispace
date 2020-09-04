@@ -1,0 +1,178 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="stream_two_module_calls">
+  <include-structs href="stream/work_package.xpnet"/>
+
+  <struct name="work_package_with_timestamp_and_id">
+    <field name="work_package" type="work_package"/>
+    <field name="id" type="unsigned long"/>
+    <field name="produced" type="long"/>
+  </struct>
+
+  <include-structs href="statistics.xpnet"/>
+
+  <in name="rounds" type="unsigned long" place="rounds"/>
+
+  <out name="done" type="control" place="done"/>
+  <out name="statistic" type="Statistic" place="statistic"/>
+  <out name="packages" type="string" place="packages"/>
+
+  <net>
+    <place name="done" type="control"/>
+    <place name="statistic" type="Statistic"/>
+    <place name="packages" type="string"/>
+    <place name="rounds" type="unsigned long"/>
+
+    <place name="stop" type="control" put_token="true"/>
+
+    <transition name="done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <inout name="trigger" type="control"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :ge: ${rounds}
+        </condition>
+      </defun>
+      <connect-in port="trigger" place="stop"/>
+      <connect-out port="trigger" place="done"/>
+      <connect-in port="rounds" place="rounds"/>
+      <connect-read port="statistic" place="statistic"/>
+    </transition>
+    <transition name="not_done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :lt: ${rounds}
+        </condition>
+      </defun>
+      <connect-read port="rounds" place="rounds"/>
+      <connect-in port="statistic" place="statistic"/>
+    </transition>
+
+    <place name="work_package" type="work_package" put_token="true"/>
+
+    <transition name="process">
+      <defun>
+        <require key="process" mandatory="true"/>
+        <in name="work_package" type="work_package"/>
+        <out name="work_package_processed"
+             type="work_package_with_timestamp_and_id"/>
+        <memory-buffer name="ptr_data" read-only="true">
+          <size>
+            ${work_package.data.size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${work_package.data})
+          </global>
+          <local>
+            ${range.buffer} := "ptr_data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${work_package.data.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+        <module name="stream"
+                function="process ( work_package
+                                  , ptr_data
+                                  , work_package_processed
+                                  )">
+          <cinclude href="process.hpp"/>
+          <cxx flag="--std=c++11"/>
+          <ld flag="-lgspc"/>
+          <code><![CDATA[
+          std::pair< unsigned long
+                   , std::chrono::high_resolution_clock::rep
+                   > const content_of_package
+            ( share_example_stream::process ({ptr_data, work_package.data.size})
+            );
+
+          work_package_processed.work_package = work_package;
+          work_package_processed.id = content_of_package.first;
+          work_package_processed.produced = content_of_package.second;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="work_package" place="work_package"/>
+      <connect-out port="work_package_processed"
+                   place="work_package_processed"/>
+    </transition>
+
+    <place name="work_package_processed"
+           type="work_package_with_timestamp_and_id"/>
+
+    <transition name="collect_round_trip_time">
+      <require key="mark_free" mandatory="true"/>
+      <defun>
+        <in name="work_package_with_timestamp_and_id"
+            type="work_package_with_timestamp_and_id"/>
+        <out name="work_package" type="work_package"/>
+        <out name="statistic" type="Statistic"/>
+        <out name="package" type="string"/>
+        <module name="stream"
+                function="collect_round_trip_time
+                            ( work_package_with_timestamp_and_id
+                            , work_package
+                            , statistic
+                            , package
+                            )">
+          <cinclude href="statistic.hpp"/>
+          <cxx flag="--std=c++11"/>
+          <ld flag="-lgspc"/>
+          <code><![CDATA[
+            static fhg::util::statistic delta ("mark_free: delta");
+            delta.tick
+              (delta.now() - work_package_with_timestamp_and_id.produced);
+
+            work_package = work_package_with_timestamp_and_id.work_package;
+
+            statistic.min = delta.min();
+            statistic.max = delta.max();
+            statistic.sum = delta.sum();
+            statistic.sqsum = delta.sqsum();
+            statistic.count = work_package_with_timestamp_and_id.id;
+
+            package =
+             std::to_string (work_package_with_timestamp_and_id.id)
+             + " "
+             + std::to_string (work_package_with_timestamp_and_id.produced);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="work_package_with_timestamp_and_id"
+                  place="work_package_processed"/>
+      <connect-out port="work_package"
+                   place="work_package_to_mark_free"/>
+      <connect-out port="statistic" place="statistic"/>
+      <connect-out port="package" place="packages"/>
+    </transition>
+
+    <place name="work_package_to_mark_free" type="work_package"/>
+
+    <transition name="mark_free">
+      <require key="mark_free" mandatory="true"/>
+      <include-function href="stream/mark_free.xpnet"/>
+      <connect-in port="work_package"
+                  place="work_package_to_mark_free"/>
+    </transition>
+  </net>
+</defun>

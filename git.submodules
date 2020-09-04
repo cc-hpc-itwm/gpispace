@@ -1,0 +1,5 @@
+fhg_util/boost_program_options 56fe8ee0f0350ea9a40e0e020127ee83520e254b
+shared/cmake 24f546c9dc7c87a0640f6bcc7a5cc26337f49dd1
+shared/rpc 011e14e272aa0b50158ffff85ae8c96dcca0b18c
+shared/util-generic 05fce81f68bb1113d19fa46081b6aee505a64cb1
+shared/util-qt5 4b9655efc02a82f3ca8a22688097ab81cab90733

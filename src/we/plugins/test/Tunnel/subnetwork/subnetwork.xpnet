@@ -1,0 +1,185 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="subnetwork">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+
+  <in name="plugin_path" type="string" place="plugin_path"/>
+  <in name="N" type="unsigned long" place="N"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+    <place name="plugin_path" type="string"/>
+    <place name="N" type="unsigned long"/>
+    <place name="done" type="control"/>
+
+    <place name="i" type="unsigned long" put_token="true">
+      <token><value>0UL</value></token>
+    </place>
+
+    <transition name="create_plugin">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="create"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_path" type="string"/>
+        <out name="plugin_id" type="unsigned long"/>
+        <expression>
+          ${plugin.Tunnel.place_name} := "i";
+          ${plugin.Tunnel.context_key} := "next";
+        </expression>
+      </defun>
+      <connect-in port="plugin_path" place="plugin_path"/>
+      <connect-out port="plugin_id" place="plugin_id"/>
+    </transition>
+
+    <place name="plugin_id" type="unsigned long"/>
+
+    <transition name="subnetwork" inline="false">
+      <defun>
+        <in name="plugin_id" type="unsigned long" place="plugin_id"/>
+        <in name="N" type="unsigned long" place="N"/>
+        <in name="i" type="unsigned long" place="i"/>
+        <out name="o" type="unsigned long" place="o"/>
+        <net>
+          <place name="plugin_id" type="unsigned long"/>
+          <place name="N" type="unsigned long"/>
+          <place name="i" type="unsigned long"/>
+          <place name="o" type="unsigned long"/>
+
+          <transition name="consume_and_produce">
+            <defun>
+              <properties name="gspc">
+                <properties name="we">
+                  <properties name="plugin">
+                    <property key="call_after_eval">
+                      "stack_push (List(), ${plugin_id})"
+                    </property>
+                  </properties>
+                </properties>
+              </properties>
+              <in name="plugin_id" type="unsigned long"/>
+              <in name="N" type="unsigned long"/>
+              <inout name="value" type="unsigned long"/>
+              <expression>
+                ${next} := ${value} + 1UL;
+              </expression>
+            </defun>
+            <condition>
+              (${value} + 1UL) :lt: ${N}
+            </condition>
+            <connect-in port="plugin_id" place="plugin_id"/>
+            <connect-in port="N" place="N"/>
+            <connect-in port="value" place="i"/>
+            <connect-out port="value" place="o"/>
+          </transition>
+
+          <transition name="just_consume">
+            <defun>
+              <in name="plugin_id" type="unsigned long"/>
+              <in name="N" type="unsigned long"/>
+              <inout name="value" type="unsigned long"/>
+              <expression/>
+            </defun>
+            <condition>
+              (${value} + 1UL) :eq: ${N}
+            </condition>
+            <connect-in port="plugin_id" place="plugin_id"/>
+            <connect-in port="N" place="N"/>
+            <connect-in port="value" place="i"/>
+            <connect-out port="value" place="o"/>
+          </transition>
+        </net>
+      </defun>
+      <connect-read port="plugin_id" place="plugin_id"/>
+      <connect-read port="N" place="N"/>
+      <connect-in port="i" place="i"/>
+      <connect-out port="o" place="o"/>
+    </transition>
+
+    <place name="o" type="unsigned long"/>
+
+    <place name="seen" type="bitset">
+      <token><value>{}</value></token>
+    </place>
+
+    <transition name="mark_seen">
+      <defun>
+        <inout name="seen" type="bitset"/>
+        <in name="N" type="unsigned long"/>
+        <in name="value" type="unsigned long"/>
+        <expression>
+          ${seen} := bitset_insert (${seen}, ${value})
+        </expression>
+      </defun>
+      <condition>
+        bitset_count (${seen}) :lt: ${N}
+      </condition>
+      <condition>
+        ${value} :lt: ${N}
+      </condition>
+      <condition>
+        !bitset_is_element (${seen}, ${value})
+      </condition>
+      <connect-inout port="seen" place="seen"/>
+      <connect-read port="N" place="N"/>
+      <connect-in port="value" place="o"/>
+    </transition>
+
+    <transition name="done">
+      <defun>
+        <inout name="plugin_id" type="unsigned long"/>
+        <in name="N" type="unsigned long"/>
+        <in name="seen" type="bitset"/>
+        <expression/>
+      </defun>
+      <condition>
+        bitset_count (${seen}) :eq: ${N}
+      </condition>
+      <connect-in port="plugin_id" place="plugin_id"/>
+      <connect-in port="N" place="N"/>
+      <connect-in port="seen" place="seen"/>
+      <connect-out port="plugin_id" place="please_destroy"/>
+    </transition>
+
+    <place name="please_destroy" type="unsigned long"/>
+
+    <transition name="destroy">
+      <defun>
+        <properties name="gspc">
+          <properties name="we">
+            <properties name="plugin">
+              <property key="destroy"/>
+            </properties>
+          </properties>
+        </properties>
+        <in name="plugin_id" type="unsigned long"/>
+        <out name="done" type="control"/>
+        <expression>
+          ${done} := []
+        </expression>
+      </defun>
+      <connect-in port="plugin_id" place="please_destroy"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

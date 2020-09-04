@@ -1,0 +1,149 @@
+// This file is part of GPI-Space.
+// Copyright (C) 2020 Fraunhofer ITWM
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#include <we/type/signature/resolve.hpp>
+#include <we/type/signature/is_literal.hpp>
+#include <we/type/value/path/append.hpp>
+
+#include <we/exception.hpp>
+
+namespace pnet
+{
+  namespace type
+  {
+    namespace signature
+    {
+      namespace
+      {
+        using type::value::path::append;
+
+        signature_type get ( const resolver_type& resolver
+                           , const std::list<std::string>& path
+                           , const std::string& s
+                           )
+        {
+          const boost::optional<signature_type> signature (resolver (s));
+
+          if (!signature)
+          {
+            throw exception::could_not_resolve (s, path);
+          }
+
+          return *signature;
+        }
+
+        class resolve_structured : public boost::static_visitor<structured_type>
+        {
+        public:
+          resolve_structured (const resolver_type&, std::list<std::string>&);
+          structured_type operator() (const structured_type&) const;
+
+        private:
+          const resolver_type& _resolver;
+          std::list<std::string>& _path;
+        };
+
+        class mk_field : public boost::static_visitor<field_type>
+        {
+        public:
+          mk_field (const std::string& name)
+            : _name (name)
+          {}
+          field_type operator() (const std::string& t) const
+          {
+            return std::make_pair (_name, t);
+          }
+          field_type operator() (const structured_type& s) const
+          {
+            return structured_type (std::make_pair (_name, s.second));
+          }
+        private:
+          const std::string& _name;
+        };
+
+        class resolve_field : public boost::static_visitor<field_type>
+        {
+        public:
+          resolve_field ( const resolver_type& resolver
+                        , std::list<std::string>& path
+                        )
+            : _resolver (resolver)
+            , _path (path)
+          {}
+          field_type operator()
+            (const std::pair<std::string, std::string>& f) const
+          {
+            if (is_literal (f.second))
+            {
+              return field_type (f);
+            }
+
+            const signature_type s (get ( _resolver
+                                        , append (_path, f.first)
+                                        , f.second
+                                        )
+                                   );
+
+            return boost::apply_visitor (mk_field (f.first), s);
+          }
+          field_type operator () (const structured_type& s) const
+          {
+            return resolve_structured (_resolver, _path) (s);
+          }
+
+        private:
+          const resolver_type& _resolver;
+          std::list<std::string>& _path;
+        };
+
+        resolve_structured::resolve_structured
+          ( const resolver_type& resolver
+          , std::list<std::string>& path
+          )
+          : _resolver (resolver)
+          , _path (path)
+        {}
+        structured_type resolve_structured::operator()
+          (const structured_type& s) const
+        {
+          structure_type l;
+
+          for (const field_type& f : s.second)
+          {
+            l.push_back
+              (boost::apply_visitor (resolve_field ( _resolver
+                                                   , append (_path, s.first)
+                                                   )
+                                    , f
+                                    )
+              );
+          }
+
+          return std::make_pair (s.first, l);
+        }
+      }
+
+      signature_type resolve ( const structured_type& signature
+                             , const resolver_type& resolver
+                             )
+      {
+        std::list<std::string> path;
+
+        return resolve_structured (resolver, path) (signature);
+      }
+    }
+  }
+}

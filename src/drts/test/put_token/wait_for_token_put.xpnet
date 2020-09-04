@@ -1,0 +1,74 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="wait_for_token_put">
+  <in name="in" type="string" place="in"/>
+  <out name="good" type="string" place="good"/>
+  <out name="bad" type="string" place="bad"/>
+  <in name="register_host" place="register_host" type="string"/>
+  <in name="register_port" place="register_port" type="unsigned int"/>
+  <net>
+    <place name="in" type="string" put_token="true"/>
+    <place name="good" type="string"/>
+    <place name="bad" type="string"/>
+
+    <transition name="good">
+      <defun>
+        <inout name="x" type="string"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${x} :eq: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="good"/>
+    </transition>
+
+    <transition name="bad">
+      <defun>
+        <inout name="x" type="string"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${x} :ne: "good"
+      </condition>
+      <connect-in port="x" place="in"/>
+      <connect-out port="x" place="bad"/>
+    </transition>
+
+    <place name="register_host" type="string"/>
+    <place name="register_port" type="unsigned int"/>
+    <transition name="register">
+      <defun>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <module name="workflow_response" function="notify_running (host, port)">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_start_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="host" place="register_host"/>
+      <connect-in port="port" place="register_port"/>
+    </transition>
+  </net>
+</defun>

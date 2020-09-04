@@ -1,0 +1,15 @@
+<defun name="f">
+  <net>
+    <transition name="t">
+      <defun>
+        <tunnel name="v" type="t" place="p"/>
+        <net>
+          <place name="v" type="t"/>
+        </net>
+      </defun>
+      <place-map virtual="v" real="r"/>
+      <place-map virtual="v" real="r"/>
+    </transition>
+    <place name="r" type="t"/>
+  </net>
+</defun>

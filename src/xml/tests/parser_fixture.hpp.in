@@ -1,0 +1,85 @@
+// This file is part of GPI-Space.
+// Copyright (C) 2020 Fraunhofer ITWM
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#pragma once
+
+#include <xml/parse/parser.hpp>
+#include <xml/parse/state.hpp>
+
+#include <we/type/activity.hpp>
+#include <we/type/net.hpp>
+
+#include <util-generic/testing/printer/generic.hpp>
+#include <util-generic/read_file.hpp>
+
+#include <boost/filesystem.hpp>
+#include <boost/optional.hpp>
+#include <boost/test/unit_test.hpp>
+
+FHG_BOOST_TEST_LOG_VALUE_PRINTER (we::type::activity_t, os, activity)
+{
+  os << activity.to_string();
+}
+
+namespace
+{
+  struct parser_fixture
+  {
+    parser_fixture()
+      : state()
+      , function (boost::none)
+    {
+      path_to_xpnets = "@XML_PARSE_TEST_XPNETS_DIR@";
+    }
+
+    void parse (const boost::filesystem::path& path)
+    {
+      set_parse_input (path);
+      parse();
+    }
+
+    void set_parse_input (const boost::filesystem::path& path)
+    {
+      xpnet = path_to_xpnets / path;
+    }
+    void parse()
+    {
+      function = ::xml::parse::just_parse (state, xpnet.string());
+    }
+
+    void post_processing_passes()
+    {
+      ::xml::parse::post_processing_passes (*function, &state);
+    }
+
+    void dump_xml()
+    {
+      ::xml::parse::dump_xml (*function, state);
+    }
+
+    ::we::type::activity_t xml_to_we()
+    {
+      return ::we::type::activity_t
+        {::xml::parse::xml_to_we (*function, state)};
+    }
+
+    ::xml::parse::state::type state;
+    boost::optional< ::xml::parse::type::function_type> function;
+
+    boost::filesystem::path xpnet;
+    boost::filesystem::path path_to_xpnets;
+  };
+}

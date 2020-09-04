@@ -1,0 +1,55 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun>
+  <in name="filename_a" type="string"/>
+  <in name="filename_b" type="string"/>
+  <in name="timeout_in_seconds" type="unsigned int"/>
+  <out name="a_existed" type="bool"/>
+  <module name="wait_then_touch"
+          function="a_existed wait_then_touch ( filename_a
+                                              , filename_b
+                                              , timeout_in_seconds
+                                              )">
+    <cinclude href="boost/filesystem.hpp"/>
+    <cinclude href="chrono"/>
+    <cinclude href="fstream"/>
+    <cinclude href="thread"/>
+    <cxx flag="--std=c++11"/>
+    <code><![CDATA[
+      std::chrono::steady_clock::time_point const until
+        ( std::chrono::steady_clock::now()
+        + std::chrono::seconds (timeout_in_seconds)
+        );
+
+      while (std::chrono::steady_clock::now() < until)
+      {
+        if (boost::filesystem::exists (filename_a))
+        {
+          break;
+        }
+
+        std::this_thread::sleep_for (std::chrono::milliseconds (200));
+      }
+
+      bool const a_existed (boost::filesystem::exists (filename_a));
+
+      std::ofstream {filename_b};
+
+      return a_existed;
+    ]]></code>
+  </module>
+</defun>

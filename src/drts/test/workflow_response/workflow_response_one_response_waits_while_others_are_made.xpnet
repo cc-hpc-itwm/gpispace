@@ -1,0 +1,113 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="workflow_response">
+  <inout name="state" type="unsigned long" place="state"/>
+  <out name="done" type="control" place="done_done"/>
+  <in name="register_host" place="register_host" type="string"/>
+  <in name="register_port" place="register_port" type="unsigned int"/>
+  <net>
+    <struct name="value_and_response_id">
+      <field name="value" type="unsigned long"/>
+      <field name="response_id" type="string"/>
+    </struct>
+
+    <place name="state" type="unsigned long"/>
+    <place name="get_and_update_state_trigger" type="value_and_response_id" put_token="true"/>
+
+    <transition name="get_and_update_state">
+      <defun>
+        <inout name="state" type="unsigned long"/>
+        <in name="trigger" type="value_and_response_id"/>
+        <out name="response" type="unsigned long"/>
+        <expression>
+          ${response} := ${state};
+          ${state} := ${state} + ${trigger.value};
+        </expression>
+      </defun>
+      <connect-inout port="state" place="state"/>
+      <connect-in port="trigger" place="get_and_update_state_trigger"/>
+      <connect-response port="response" to="trigger"/>
+    </transition>
+
+    <place name="random_module_call_trigger" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="random_module_call">
+      <defun>
+        <require key="work" mandatory="true"/>
+        <inout name="trigger" type="control"/>
+        <module name="workflow_response" function="random_call()">
+          <cinclude href="chrono"/>
+          <cinclude href="random"/>
+          <cinclude href="thread"/>
+          <cxx flag="--std=c++11"/>
+          <code><![CDATA[
+            // This is the random duration which the test spins on
+            // get_and_update_state_trigger.
+            std::uniform_int_distribution<> dist (200, 2500);
+
+            std::random_device eng;
+            std::this_thread::sleep_for
+              (std::chrono::milliseconds (dist (eng)));
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="trigger" place="random_module_call_trigger"/>
+      <connect-out port="trigger" place="done"/>
+    </transition>
+
+    <place name="done" type="control"/>
+
+    <place name="check_done_trigger" type="value_and_response_id" put_token="true"/>
+
+    <transition name="check_done">
+      <defun>
+        <inout name="done" type="control"/>
+        <in name="trigger" type="value_and_response_id"/>
+        <expression/>
+      </defun>
+      <connect-in port="done" place="done"/>
+      <connect-in port="trigger" place="check_done_trigger"/>
+      <connect-response port="done" to="trigger"/>
+    </transition>
+
+    <place name="done_done" type="control" put_token="true"/>
+
+    <place name="register_host" type="string"/>
+    <place name="register_port" type="unsigned int"/>
+    <transition name="register">
+      <defun>
+        <in name="host" type="string"/>
+        <in name="port" type="unsigned int"/>
+        <module name="workflow_response" function="notify_running (host, port)">
+          <cinclude href="rpc/remote_function.hpp"/>
+          <cinclude href="rpc/remote_tcp_endpoint.hpp"/>
+          <cinclude href="test_start_callback.hpp"/>
+          <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
+          <code><![CDATA[
+            fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
+            fhg::rpc::remote_tcp_endpoint endpoint (io_service, host, port);
+            fhg::rpc::sync_remote_function<protocol::callback> {endpoint}();
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="host" place="register_host"/>
+      <connect-in port="port" place="register_port"/>
+    </transition>
+  </net>
+</defun>

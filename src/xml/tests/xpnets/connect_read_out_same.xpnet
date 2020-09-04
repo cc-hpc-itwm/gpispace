@@ -1,0 +1,14 @@
+<defun>
+  <net>
+    <place name="P" type="t"/>
+    <transition name="foo">
+      <defun>
+        <in name="A" type="t"/>
+        <out name="A" type="t"/>
+        <expression/>
+      </defun>
+      <connect-read port="A" place="P"/>
+      <connect-out port="A" place="P"/>
+    </transition>
+  </net>
+</defun>

@@ -1,0 +1,98 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="sequence_bounded">
+  <in name="amount" type="long" place="N"/>
+  <out name="out" type="long" place="id"/>
+  <tunnel name="credit" type="control" place="credit"/>
+  <net>
+    <struct name="state">
+      <field name="id" type="long"/>
+      <field name="max" type="long"/>
+    </struct>
+
+    <place name="N" type="long"/>
+    <place name="state" type="state"/>
+    <place name="id" type="long"/>
+    <place name="credit" type="control" virtual="true"/>
+    <place name="check_break" type="state"/>
+    <place name="credit_check_break" type="control">
+      <token><value>[]</value></token>
+    </place>
+
+    <transition name="init">
+      <defun>
+        <in name="N" type="long"/>
+        <in name="credit_check_break" type="control"/>
+        <out name="state" type="state"/>
+        <expression>
+          ${state.id} := 0L; ${state.max} := ${N}
+        </expression>
+      </defun>
+      <connect-in place="N" port="N"/>
+      <connect-in port="credit_check_break" place="credit_check_break"/>
+      <connect-out port="state" place="check_break"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="credit_check_break" type="control"/>
+        <expression>
+          ${credit_check_break} := []
+        </expression>
+        <condition>${state.id} :ge: ${state.max}</condition>
+      </defun>
+      <connect-in place="check_break" port="state"/>
+      <connect-out port="credit_check_break" place="credit_check_break"/>
+    </transition>
+
+    <transition name="not_break">
+      <defun>
+        <in name="state" type="state"/>
+        <out name="state" type="state"/>
+        <out name="credit_check_break" type="control"/>
+        <expression>
+          ${credit_check_break} := []
+        </expression>
+        <condition>
+          ${state.id} :lt: ${state.max}
+        </condition>
+      </defun>
+      <connect-in place="check_break" port="state"/>
+      <connect-out place="state" port="state"/>
+      <connect-out port="credit_check_break" place="credit_check_break"/>
+    </transition>
+
+    <transition name="step">
+      <defun>
+        <in name="state" type="state"/>
+        <in name="credit" type="control"/>
+        <in name="credit_check_break" type="control"/>
+        <out name="state" type="state"/>
+        <out name="id" type="long"/>
+        <expression>
+          ${id} := ${state.id}; ${state.id} := ${state.id} + 1L
+        </expression>
+      </defun>
+      <connect-in place="state" port="state"/>
+      <connect-in place="credit" port="credit"/>
+      <connect-in port="credit_check_break" place="credit_check_break"/>
+      <connect-out place="check_break" port="state"/>
+      <connect-out place="id" port="id"/>
+    </transition>
+  </net>
+</defun>

@@ -1,0 +1,612 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="test_simple_pipe_elimination">
+  <net>
+    <transition name="border_double_in_L_pre_post_R_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <in name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_double_out_L_pre_post_R_post">
+      <defun>
+        <out name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- ***** -->
+    <transition name="border_L_pre_post_R_pre_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_pre_post_R_pre">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_pre_post_R_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_pre_post_R">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- ***** -->
+    <transition name="border_L_post_R_pre_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_post_R_pre">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_post_R_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_post_R">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- ***** -->
+    <transition name="border_L_pre_R_pre_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_pre_R_pre">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_pre_R_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_pre_R">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- ***** -->
+    <transition name="border_L_R_pre_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_R_pre">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_R_post">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="border_L_R">
+      <defun>
+        <in name="L" type="control" place="L"/>
+        <out name="R" type="control" place="R"/>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <!-- **** -->
+    <transition name="L_pre_post_R_pre_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_pre_post_R_pre">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_pre_post_R_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_pre_post_R">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <transition name="L_pre_R_pre_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_pre_R_pre">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_pre_R_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_pre_R">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="preL_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+          <transition name="preL_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="L"/></transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <transition name="L_post_R_pre_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_post_R_pre">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_post_R_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_post_R">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+          <transition name="postL_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+          <transition name="postL_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="L"/></transition>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <!-- **** -->
+    <transition name="L_R_pre_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_R_pre">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+          <transition name="preR_a"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+          <transition name="preR_b"><include-function href="simple_pipe_elimination.pre.xml"/><connect-out port="out" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_R_post">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+          <transition name="postR_a"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+          <transition name="postR_b"><include-function href="simple_pipe_elimination.post.xml"/><connect-in port="in" place="R"/></transition>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+
+    <transition name="L_R">
+      <defun>
+        <net>
+          <place name="L" type="control"/>
+
+          <place name="R" type="control"/>
+
+          <transition name="simple"><include-function href="simple_pipe_elimination.simple.xml"/><connect-in port="L" place="L"/><connect-out port="L" place="R"/></transition>
+        </net>
+      </defun>
+    </transition>
+  </net>
+</defun>

@@ -1,0 +1,153 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="stream_one_module_call">
+  <include-structs href="stream/work_package.xpnet"/>
+
+  <struct name="work_package_with_timestamp">
+    <field name="work_package" type="work_package"/>
+    <field name="produced" type="long"/>
+  </struct>
+
+  <include-structs href="statistics.xpnet"/>
+
+  <in name="rounds" type="unsigned long" place="rounds"/>
+
+  <out name="done" type="control" place="done"/>
+  <out name="statistic" type="Statistic" place="statistic"/>
+  <out name="packages" type="string" place="packages"/>
+
+  <net>
+    <place name="done" type="control"/>
+    <place name="statistic" type="Statistic"/>
+    <place name="packages" type="string"/>
+    <place name="rounds" type="unsigned long"/>
+
+    <place name="stop" type="control" put_token="true"/>
+
+    <transition name="done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <inout name="trigger" type="control"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :ge: ${rounds}
+        </condition>
+      </defun>
+      <connect-in port="trigger" place="stop"/>
+      <connect-out port="trigger" place="done"/>
+      <connect-in port="rounds" place="rounds"/>
+      <connect-read port="statistic" place="statistic"/>
+    </transition>
+    <transition name="not_done">
+      <defun>
+        <in name="rounds" type="unsigned long"/>
+        <in name="statistic" type="Statistic"/>
+        <expression/>
+        <condition>
+          ${statistic.count} + 1UL :lt: ${rounds}
+        </condition>
+      </defun>
+      <connect-read port="rounds" place="rounds"/>
+      <connect-in port="statistic" place="statistic"/>
+    </transition>
+
+    <place name="work_package" type="work_package" put_token="true"/>
+
+    <transition name="process_and_mark_free">
+      <defun>
+        <require key="process_and_mark_free" mandatory="true"/>
+        <in name="work_package" type="work_package"/>
+        <out name="statistic" type="Statistic"/>
+        <out name="package" type="string"/>
+        <memory-buffer name="ptr_data" read-only="true">
+          <size>
+            ${work_package.data.size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <global>
+            stack_push (List(), ${work_package.data})
+          </global>
+          <local>
+            ${range.buffer} := "ptr_data";
+            ${range.offset} := 0UL;
+            ${range.size} := ${work_package.data.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-get>
+
+        <memory-buffer name="ptr_flag">
+          <size>
+            ${work_package.meta.size}
+          </size>
+        </memory-buffer>
+        <memory-put not-modified-in-module-call="true">
+          <global>
+            stack_push (List(), ${work_package.meta})
+          </global>
+          <local>
+            ${range.buffer} := "ptr_flag";
+            ${range.offset} := 0UL;
+            ${range.size} := ${work_package.meta.size};
+            stack_push (List(), ${range})
+          </local>
+        </memory-put>
+        <module name="stream"
+                function="process ( work_package
+                                  , ptr_data
+                                  , ptr_flag
+                                  , statistic
+                                  , package
+                                  )">
+          <cinclude href="drts/stream.hpp"/>
+          <cinclude href="process.hpp"/>
+          <cinclude href="statistic.hpp"/>
+          <cxx flag="--std=c++11"/>
+          <ld flag="-lgspc"/>
+          <code><![CDATA[
+          static fhg::util::statistic delta ("mark_free: delta");
+
+          std::pair< unsigned long
+                   , std::chrono::high_resolution_clock::rep
+                   > const content_of_package
+            ( share_example_stream::process ({ptr_data, work_package.data.size})
+            );
+
+          gspc::stream::mark_free
+            (work_package.flag, {ptr_flag, work_package.meta.size});
+
+          delta.tick (delta.now() - content_of_package.second);
+
+          statistic.min = delta.min();
+          statistic.max = delta.max();
+          statistic.sum = delta.sum();
+          statistic.sqsum = delta.sqsum();
+          statistic.count = content_of_package.first;
+
+          package = std::to_string (content_of_package.first)
+                  + " "
+                  + std::to_string (content_of_package.second);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="work_package" place="work_package"/>
+      <connect-out port="statistic" place="statistic"/>
+      <connect-out port="package" place="packages"/>
+    </transition>
+  </net>
+</defun>

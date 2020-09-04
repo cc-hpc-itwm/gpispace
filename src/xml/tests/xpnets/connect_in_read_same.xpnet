@@ -1,0 +1,15 @@
+<defun>
+  <net>
+    <place name="P" type="t"/>
+    <transition name="foo">
+      <defun>
+        <in name="A" type="t"/>
+        <out name="A" type="t"/>
+        <expression/>
+      </defun>
+      <connect-in port="A" place="P"/>
+      <!-- Should throw: duplicate connection-->
+      <connect-read port="A" place="P"/>
+    </transition>
+  </net>
+</defun>

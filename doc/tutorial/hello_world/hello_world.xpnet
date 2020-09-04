@@ -1,0 +1,47 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="hello_world">
+
+  <in name="in" type="control"/>
+  <out name="out" type="control"/>
+
+  <module name="hello_world" function="out call_hello_world()">
+
+    <cinclude href="hello_world.hpp"/> <!-- cpp library -->
+
+    <cinclude href="hello2.h"/>        <!-- c library -->
+
+    <cinclude href="hello_util.h"/>    <!-- shared object -->
+    <ld flag="-lhello_util"/>
+    <ld flag="-Wl,-rpath='$$ORIGIN'"/>
+
+    <cinclude href="iostream"/>
+
+    <code><![CDATA[
+      std::cout << "*** Calling 3 versions of hello..." << std::endl;
+
+      impl_hello_world();
+      ::hello_world();
+      hello_util();
+
+      std::cout << "*** ...[done]" << std::endl;
+
+      return we::type::literal::control();
+    ]]></code>
+  </module>
+
+</defun>

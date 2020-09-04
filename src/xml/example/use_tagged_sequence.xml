@@ -1,0 +1,64 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="use_tagged_sequence">
+  <struct name="p">
+   <field name="i" type="long"/>
+   <field name="t" type="string"/>
+  </struct>
+
+  <in name="N" type="long" place="N"/>
+  <in name="tag" type="string" place="tag"/>
+  <out name="p" type="p" place="p"/>
+
+  <net>
+    <place name="N" type="long"/>
+    <place name="tag" type="string"/>
+    <place name="pair" type="pair_string_long"/>
+    <place name="p" type="p"/>
+
+    <include-template href="tagged_sequence.xml"/>
+
+    <specialize name="f_use_tag" use="tagged_sequence">
+      <type-map replace="T" with="string"/>
+      <type-map replace="PAIR" with="pair_string_long"/>
+      <type-get name="pair_string_long"/>
+    </specialize>
+
+    <transition name="use_tag" inline="true">
+      <properties name="synthesize">
+        <property key="unfold" value="true"/>
+      </properties>
+      <use name="f_use_tag"/>
+      <connect-in port="tag" place="tag"/>
+      <connect-in port="amount" place="N"/>
+      <connect-out port="pair" place="pair"/>
+    </transition>
+
+    <transition name="translate">
+      <defun>
+        <in name="pair" type="pair_string_long"/>
+        <out name="p" type="p"/>
+        <expression>
+          ${p.i} := ${pair.id};
+          ${p.t} := ${pair.tag};
+        </expression>
+      </defun>
+      <connect-in port="pair" place="pair"/>
+      <connect-out port="p" place="p"/>
+    </transition>
+  </net>
+</defun>

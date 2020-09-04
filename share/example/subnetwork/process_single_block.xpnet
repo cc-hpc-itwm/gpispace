@@ -1,0 +1,186 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun>
+  <in name="memory" type="global_memory_range" place="memory"/>
+  <in name="block_size" type="unsigned long" place="block_size"/>
+  <in name="block_ready" type="block" place="block_ready"/>
+  <out name="block_done" type="block" place="block_done"/>
+
+  <net>
+    <place name="memory" type="global_memory_range"/>
+    <place name="block_size" type="unsigned long"/>
+    <place name="block_ready" type="block"/>
+    <place name="block_done" type="block"/>
+
+    <transition name="scatter_block">
+      <defun>
+        <in name="block" type="block"/>
+        <out name="l" type="block"/>
+        <out name="r" type="block"/>
+        <expression>
+          ${l} := ${r} := ${block}
+        </expression>
+      </defun>
+      <connect-in port="block" place="block_ready"/>
+      <connect-out port="l" place="block_ready_L"/>
+      <connect-out port="r" place="block_ready_R"/>
+    </transition>
+
+    <place name="block_ready_L" type="block"/>
+    <place name="block_ready_R" type="block"/>
+
+    <place name="tag_L" type="unsigned long">
+      <token><value>0UL</value></token>
+    </place>
+    <place name="tag_R" type="unsigned long">
+      <token><value>1UL</value></token>
+    </place>
+
+    <transition name="produceL">
+      <include-function href="produce.xpnet"/>
+      <connect-read port="memory" place="memory"/>
+      <connect-read port="block_size" place="block_size"/>
+      <connect-read port="tag" place="tag_L"/>
+      <connect-in port="block" place="block_ready_L"/>
+      <connect-out port="block" place="block_produced_L"/>
+    </transition>
+
+    <transition name="produceR">
+      <include-function href="produce.xpnet"/>
+      <connect-read port="memory" place="memory"/>
+      <connect-read port="block_size" place="block_size"/>
+      <connect-read port="tag" place="tag_R"/>
+      <connect-in port="block" place="block_ready_R"/>
+      <connect-out port="block" place="block_produced_R"/>
+    </transition>
+
+    <place name="block_produced_L" type="block"/>
+    <place name="block_produced_R" type="block"/>
+
+    <transition name="process">
+      <defun>
+        <require key="process" mandatory="true"/>
+        <in name="memory" type="global_memory_range"/>
+        <in name="block_size" type="unsigned long"/>
+        <in name="block_L" type="block"/>
+        <in name="block_R" type="block"/>
+        <in name="tag_L" type="unsigned long"/>
+        <in name="tag_R" type="unsigned long"/>
+        <out name="block" type="block"/>
+        <memory-buffer name="buffer_L">
+          <size>
+            ${block_size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <local>
+            ${range.buffer} := "buffer_L";
+            ${range.offset} := 0UL;
+            ${range.size} := ${block_size};
+            stack_push (List(), ${range})
+          </local>
+          <global>
+            ${range.handle} := ${memory.handle};
+            ${range.offset} := (2UL * ${block_L.slot} + ${tag_L}) * ${block_size};
+            ${range.size} := ${block_size};
+            stack_push (List(), ${range})
+          </global>
+        </memory-get>
+        <memory-buffer name="buffer_R">
+          <size>
+            ${block_size}
+          </size>
+        </memory-buffer>
+        <memory-get>
+          <local>
+            ${range.buffer} := "buffer_R";
+            ${range.offset} := 0UL;
+            ${range.size} := ${block_size};
+            stack_push (List(), ${range})
+          </local>
+          <global>
+            ${range.handle} := ${memory.handle};
+            ${range.offset} := (2UL * ${block_R.slot} + ${tag_R}) * ${block_size};
+            ${range.size} := ${block_size};
+            stack_push (List(), ${range})
+          </global>
+        </memory-get>
+        <module name="subnetwork"
+                function="block process ( buffer_L, buffer_R
+                                        , tag_L, tag_R
+                                        , block_L, block_R
+                                        , block_size
+                                        )
+                         "
+        >
+          <cinclude href="stdexcept"/>
+          <cinclude href="sstream"/>
+          <code><![CDATA[
+          if (! (block_L == block_R))
+          {
+            std::ostringstream oss;
+            oss << "blocks differ: '" << block_L << "' != '" << block_R << "'";
+
+            throw std::runtime_error (oss.str());
+          }
+
+          using T = unsigned long;
+
+          auto const count (block_size / sizeof (T));
+          auto data_L (static_cast<T const*> (buffer_L));
+          auto data_R (static_cast<T const*> (buffer_R));
+
+          for (std::size_t i (0); i < count; ++i)
+          {
+            if (  data_L[i] != block_L.id + tag_L + i
+               || data_R[i] != block_R.id + tag_R + i
+               )
+            {
+              std::ostringstream oss;
+              oss << "wrong data in block " << block_L
+                  << " at position " << i
+                  << " expected "
+                  << block_L.id << " + " << tag_L << " + " << i
+                  << " = " << (block_L.id + tag_L + i)
+                  << " and "
+                  << block_R.id << " + " << tag_R << " + " << i
+                  << " = " << (block_R.id + tag_R + i)
+                  << " but got "
+                  << data_L[i]
+                  << " and "
+                  << data_R[i]
+                  ;
+
+              throw std::runtime_error (oss.str());
+            }
+          }
+
+          return block_L;
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-read port="memory" place="memory"/>
+      <connect-read port="block_size" place="block_size"/>
+      <connect-read port="tag_L" place="tag_L"/>
+      <connect-read port="tag_R" place="tag_R"/>
+      <connect-in port="block_L" place="block_produced_L"/>
+      <connect-in port="block_R" place="block_produced_R"/>
+      <connect-out port="block" place="block_done"/>
+    </transition>
+  </net>
+</defun>

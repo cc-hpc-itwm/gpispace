@@ -1,0 +1,5 @@
+<defun>
+  <net>
+    <place name="v" type="control" virtual="true"/>
+  </net>
+</defun>

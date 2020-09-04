@@ -1,0 +1,75 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="join">
+  <tunnel name="N" type="long" place="N"/>
+  <in name="o" type="long" place="o"/>
+  <out name="O" type="long" place="O"/>
+
+  <net>
+    <struct name="state_t">
+      <field name="wait" type="long"/>
+      <field name="sum" type="long"/>
+    </struct>
+
+    <place name="N" type="long" virtual="true"/>
+    <place name="o" type="long"/>
+    <place name="O" type="long"/>
+    <place name="state" type="state_t"/>
+
+    <transition name="init">
+      <defun>
+        <in name="N" type="long"/>
+        <out name="state" type="state_t"/>
+        <expression>
+          ${state.wait} := ${N};
+          ${state.sum} := 0L
+        </expression>
+      </defun>
+      <connect-in port="N" place="N"/>
+      <connect-out port="state" place="state"/>
+    </transition>
+
+    <transition name="join">
+      <defun>
+        <in name="state" type="state_t"/>
+        <out name="state" type="state_t"/>
+        <in name="o" type="long"/>
+        <expression>
+          ${state.sum} := ${state.sum} + ${o};
+          ${state.wait} := ${state.wait} - 1L;
+        </expression>
+        <condition>${state.wait} :gt: 0L</condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="state" place="state"/>
+      <connect-in port="o" place="o"/>
+    </transition>
+
+    <transition name="break">
+      <defun>
+        <in name="state" type="state_t"/>
+        <out name="O" type="long"/>
+        <expression>
+          ${O} := ${state.sum}
+        </expression>
+        <condition>${state.wait} :eq: 0L</condition>
+      </defun>
+      <connect-in port="state" place="state"/>
+      <connect-out port="O" place="O"/>
+    </transition>
+  </net>
+</defun>

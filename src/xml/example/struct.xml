@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="struct">
+
+<in name="in" type="control"/>
+<out name="out" type="control" place="out"/>
+
+<net>
+
+<place name="out" type="control"/>
+
+<place name="place_string" type="string">
+<token><value>"a_string"</value></token>
+</place>
+<!-- duplicate place
+<place name="place_string" type="string">
+<token><value>"a_string"</value></token>
+</place>
+-->
+<place name="place_long" type="long">
+<token><value>42L * 23L</value></token>
+</place>
+<place name="place_double" type="double">
+<token><value>47.11e-23</value></token>
+</place>
+<place name="place_control" type="control">
+<token><value>[]</value></token>
+</place>
+<place name="place_control2" type="control">
+<token><value>[]</value></token>
+<token><value>[]</value></token>
+</place>
+<place name="place_char" type="char">
+<token><value>'c'</value></token>
+</place>
+<place name="place_bitset" type="bitset">
+<token><value>{ 12}</value></token>
+</place>
+<place name="place_bool" type="bool">
+<token><value>true</value></token>
+</place>
+<place name="place_bytearray" type="bytearray">
+<token><value>y( -128 127)</value></token>
+</place>
+
+</net>
+</defun>

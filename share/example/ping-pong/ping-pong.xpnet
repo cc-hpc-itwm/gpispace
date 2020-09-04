@@ -1,0 +1,101 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="ping_pong">
+  <in name="n" type="unsigned long" place="n"/>
+  <out name="count" type="unsigned long" place="count"/>
+  <net>
+    <place name="n" type="unsigned long"/>
+    <place name="count" type="unsigned long">
+      <token>
+        <value>
+          0UL
+        </value>
+      </token>
+    </place>
+
+    <transition name="step">
+      <defun>
+        <inout name="n" type="unsigned long"/>
+        <expression/>
+        <condition>
+          ${n} :gt: 0UL
+        </condition>
+      </defun>
+      <connect-in port="n" place="n"/>
+      <connect-out port="n" place="seq"/>
+    </transition>
+
+    <place name="seq" type="unsigned long"/>
+
+    <transition name="ping">
+      <defun>
+        <require key="ping" mandatory="true"/>
+        <inout name="seq" type="unsigned long"/>
+        <module name="ping_pong" function="ping()">
+          <code><![CDATA[
+          //! \note empty module call to measure scheduling overhead
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="seq" place="seq"/>
+      <connect-out port="seq" place="ping"/>
+    </transition>
+
+    <place name="ping" type="unsigned long"/>
+
+    <transition name="pong">
+      <defun>
+        <require key="pong" mandatory="true"/>
+        <inout name="seq" type="unsigned long"/>
+        <module name="ping_pong" function="pong()">
+          <code><![CDATA[
+          //! \note empty module call to measure scheduling overhead
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="seq" place="ping"/>
+      <connect-out port="seq" place="pong"/>
+    </transition>
+
+    <place name="pong" type="unsigned long"/>
+
+    <transition name="finalize_step">
+      <defun>
+        <inout name="count" type="unsigned long"/>
+        <inout name="n" type="unsigned long"/>
+        <expression>
+          ${count} := ${count} + 1UL;
+          ${n} := ${n} - 1UL;
+        </expression>
+      </defun>
+      <connect-inout port="count" place="count"/>
+      <connect-in port="n" place="pong"/>
+      <connect-out port="n" place="n"/>
+    </transition>
+
+    <transition name="stop">
+      <defun>
+        <in name="n" type="unsigned long"/>
+        <expression/>
+      </defun>
+      <condition>
+        ${n} :eq: 0UL
+      </condition>
+      <connect-in port="n" place="n"/>
+    </transition>
+  </net>
+</defun>

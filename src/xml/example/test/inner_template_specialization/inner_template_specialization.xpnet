@@ -1,0 +1,72 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="inner_template_specialization">
+  <in name="x" type="long" place="x"/>
+  <out name="y" type="long" place="y"/>
+  <net>
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <place name="x" type="long"/>
+    <place name="a" type="long"/>
+    <place name="b" type="long"/>
+    <transition name="dup_outer" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="x"/>
+      <connect-out port="one" place="a"/>
+      <connect-out port="two" place="b"/>
+    </transition>
+    <template name="sumT">
+      <in name="r" type="T"/>
+      <in name="s" type="T"/>
+      <out name="t" type="T"/>
+      <expression>
+        ${t} := ${r} + ${s};
+      </expression>
+    </template>
+    <specialize name="sum_long" use="sumT">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="inner" inline="true">
+      <defun>
+        <in name="x" type="long" place="x"/>
+        <out name="y" type="long" place="y"/>
+        <net>
+          <place name="x" type="long"/>
+          <place name="y" type="long"/>
+          <transition name="dup_inner" inline="true">
+            <!-- outer specialization of outer template is used -->
+            <use name="dup_long"/>
+            <connect-in port="in" place="x"/>
+            <connect-out port="one" place="a"/>
+            <connect-out port="two" place="b"/>
+          </transition>
+          <place name="a" type="long"/>
+          <place name="b" type="long"/>
+        </net>
+      </defun>
+      <connect-in port="x" place="a"/>
+      <connect-out port="y" place="c"/>
+    </transition>
+
+    <place name="c" type="long"/>
+
+    <place name="y" type="long"/>
+  </net>
+</defun>

@@ -1,0 +1,65 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="inline_bug">
+    <out name="no1" type="long" place="no1"/>
+    <out name="no2" type="long" place="no2"/>
+    <net>
+        <transition name="bugged" inline="true">
+            <defun>
+                <out name="output_1" type="control" place="output_1"/>
+                <out name="output_2" type="control" place="output_2"/>
+                <net>
+                    <place name="output_1" type="control">
+                        <token><value>[]</value></token>
+                    </place>
+                    <place name="output_2" type="control">
+                        <token><value>[]</value><value>[]</value></token>
+                    </place>
+                </net>
+            </defun>
+            <connect-out port="output_1" place="o1"/>
+            <connect-out port="output_2" place="o2"/>
+        </transition>
+
+        <place name="o1" type="control"/>
+        <place name="o2" type="control"/>
+        <place name="no1" type="long"><token><value>0L</value></token></place>
+        <place name="no2" type="long"><token><value>0L</value></token></place>
+        <transition name="count_o1">
+            <defun>
+                <in name="t" type="control"/>
+                <inout name="c" type="long"/>
+                <expression>
+                    ${c} := ${c} + 1L;
+                </expression>
+            </defun>
+            <connect-in port="t" place="o1"/>
+            <connect-inout port="c" place="no1"/>
+        </transition>
+        <transition name="count_o2">
+            <defun>
+                <in name="t" type="control"/>
+                <inout name="c" type="long"/>
+                <expression>
+                    ${c} := ${c} + 1L;
+                </expression>
+            </defun>
+            <connect-in port="t" place="o2"/>
+            <connect-inout port="c" place="no2"/>
+        </transition>
+    </net>
+</defun>

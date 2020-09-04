@@ -1,0 +1,146 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="n_of_m">
+  <in name="m" type="long" place="m_in"/>
+  <in name="parallel" type="long" place="parallel_in"/>
+  <out name="done" type="control" place="finalized"/>
+  <net>
+    <place name="m_in" type="long"/>
+    <place name="parallel_in" type="long"/>
+
+    <place name="m" type="long"/>
+    <place name="m_gen" type="long"/>
+    <place name="parallel" type="long"/>
+    <place name="parallel_eat" type="long"/>
+    <place name="wait" type="long"/>
+    <place name="credit" type="control"/>
+    <place name="n_after" type="long"/>
+    <place name="n_before" type="long"/>
+    <place name="n_done" type="long"/>
+
+    <include-template href="triple.xml"/>
+    <specialize name="triple_long" use="triple">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <include-template href="dup.xml"/>
+    <specialize name="dup_long" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="scatter_parallel" inline="true">
+      <use name="dup_long"/>
+      <connect-in port="in" place="parallel_in"/>
+      <connect-out port="one" place="parallel"/>
+      <connect-out port="two" place="parallel_eat"/>
+    </transition>
+
+    <transition name="scatter_m" inline="true">
+      <use name="triple_long"/>
+      <connect-in port="in" place="m_in"/>
+      <connect-out port="one" place="m"/>
+      <connect-out port="two" place="m_gen"/>
+      <connect-out port="three" place="wait"/>
+    </transition>
+
+    <transition name="generate_credits" inline="true">
+      <include-function href="sequence_control.xml"/>
+      <connect-in port="amount" place="parallel"/>
+      <connect-out port="out" place="credit"/>
+    </transition>
+
+    <transition name="generate" inline="true">
+      <include-function href="sequence_bounded.xml"/>
+      <place-map virtual="credit" real="credit"/>
+      <connect-in port="amount" place="m_gen"/>
+      <connect-out port="out" place="n_before"/>
+    </transition>
+
+    <transition name="run">
+      <defun>
+        <in name="n" type="long"/>
+        <in name="m" type="long"/>
+        <out name="n" type="long"/>
+        <module name="n_of_m" function="run (n, m)">
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+            std::cout << "RUN " << n << " of " << m << "\n";
+          ]]>
+          </code>
+        </module>
+      </defun>
+      <connect-read port="m" place="m"/>
+      <connect-in port="n" place="n_before"/>
+      <connect-out port="n" place="n_after"/>
+    </transition>
+
+    <include-template href="trigger_when.xml"/>
+    <specialize name="trigger_when_long" use="trigger_when">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="return_credit">
+      <use name="trigger_when_long"/>
+      <connect-in port="object" place="n_after"/>
+      <connect-out port="object" place="n_done"/>
+      <connect-out port="trigger" place="credit"/>
+    </transition>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait" use="wait">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <transition name="wait" inline="true">
+      <use name="wait"/>
+      <place-map virtual="wait" real="wait"/>
+      <connect-in port="trigger" place="n_done"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+
+    <place name="done" type="control"/>
+
+    <include-template href="eatN.xml"/>
+    <specialize name="eatN_control" use="eatN">
+      <type-map replace="T" with="control"/>
+    </specialize>
+
+    <transition name="eat_credits" inline="true">
+      <use name="eatN_control"/>
+      <place-map virtual="what" real="credit"/>
+      <connect-in port="N" place="parallel_eat"/>
+      <connect-in port="trigger" place="done"/>
+      <connect-out port="done" place="eaten"/>
+    </transition>
+
+    <place name="eaten" type="control"/>
+    <place name="finalized" type="control"/>
+
+    <transition name="finalize">
+      <defun>
+        <in name="m" type="long"/>
+        <in name="eaten" type="control"/>
+        <out name="finalized" type="control"/>
+        <expression>
+          ${finalized} := []
+        </expression>
+      </defun>
+      <connect-in port="m" place="m"/>
+      <connect-in port="eaten" place="eaten"/>
+      <connect-out port="finalized" place="finalized"/>
+    </transition>
+  </net>
+</defun>

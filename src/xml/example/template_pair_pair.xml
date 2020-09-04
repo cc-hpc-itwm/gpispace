@@ -1,0 +1,80 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<template name="pair_pair">
+  <template-parameter type="T"/>
+  <template-parameter type="U"/>
+  <template-parameter type="V"/>
+  <defun>
+    <in name="tag" type="T" place="tag"/>
+    <in name="first" type="U" place="first"/>
+    <in name="second" type="V" place="second"/>
+    <out name="pair_pair" type="PAIR_PAIR" place="pp"/>
+
+    <net>
+      <include-template href="make_pair.xml"/>
+
+      <place name="tag" type="T"/>
+      <place name="first" type="U"/>
+      <place name="second" type="V"/>
+      <place name="p1" type="PAIR1"/>
+      <place name="p2" type="PAIR2"/>
+      <place name="pp" type="PAIR_PAIR"/>
+
+      <specialize name="make_p1" use="make_pair">
+        <type-map replace="T" with="T"/>
+        <type-map replace="U" with="U"/>
+        <type-map replace="PAIR" with="PAIR1"/>
+        <type-get name="PAIR1"/>
+      </specialize>
+
+      <transition name="make_p1" inline="true">
+        <use name="make_p1"/>
+        <connect-in port="first" place="tag"/>
+        <connect-in port="second" place="first"/>
+        <connect-out port="pair" place="p1"/>
+      </transition>
+
+      <specialize name="make_p2" use="make_pair">
+        <type-map replace="T" with="T"/>
+        <type-map replace="U" with="V"/>
+        <type-map replace="PAIR" with="PAIR2"/>
+        <type-get name="PAIR2"/>
+      </specialize>
+
+      <transition name="make_p2" inline="true">
+        <use name="make_p2"/>
+        <connect-in port="first" place="tag"/>
+        <connect-in port="second" place="second"/>
+        <connect-out port="pair" place="p2"/>
+      </transition>
+
+      <specialize name="make_pp" use="make_pair">
+        <type-map replace="T" with="PAIR1"/>
+        <type-map replace="U" with="PAIR2"/>
+        <type-map replace="PAIR" with="PAIR_PAIR"/>
+        <type-get name="PAIR_PAIR"/>
+      </specialize>
+
+      <transition name="make_pp" inline="true">
+        <use name="make_pp"/>
+        <connect-in port="first" place="p1"/>
+        <connect-in port="second" place="p2"/>
+        <connect-out port="pair" place="pp"/>
+      </transition>
+    </net>
+  </defun>
+</template>

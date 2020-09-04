@@ -1,0 +1,67 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="workerlist">
+  <in name="num_workers" type="unsigned long" place="num_workers"/>
+  <out name="workers" type="list" place="workers"/>
+  <out name="hostnames" type="map" place="hostnames"/>
+
+  <net>
+    <place name="num_workers" type="unsigned long"/>
+    <place name="workers" type="list"/>
+    <place name="hostnames" type="map"/>
+
+    <transition name="run">
+      <defun>
+        <in name="num_workers" type="unsigned long"/>
+        <out name="workers" type="list"/>
+        <out name="hostnames" type="map"/>
+        <properties name="fhg">
+          <properties name="drts">
+            <properties name="schedule">
+              <property key="num_worker">"${num_workers}"</property>
+            </properties>
+          </properties>
+        </properties>
+        <module name="workerlist" function="run (workers, hostnames)"
+                pass_context="true">
+          <ld flag="-lwe-dev" />
+          <code><![CDATA[
+            const std::set<std::string> ws (_pnetc_context->workers());
+
+            if (ws.empty())
+            {
+              throw std::logic_error ("ws is empty!");
+            }
+
+            workers.assign (ws.begin(), ws.end());
+
+            for ( std::set<std::string>::const_iterator it (ws.begin())
+                ; it != ws.end()
+                ; ++it
+                )
+            {
+              hostnames[*it] = _pnetc_context->worker_to_hostname (*it);
+            }
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="num_workers" place="num_workers"/>
+      <connect-out port="workers" place="workers"/>
+      <connect-out port="hostnames" place="hostnames"/>
+    </transition>
+  </net>
+</defun>

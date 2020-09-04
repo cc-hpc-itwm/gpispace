@@ -1,0 +1,119 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="net_with_multiple_module_implementations">
+  <in name="num_tasks" type="long" place="num_tasks"/>
+  <in name="worst_comp_time" type="int" place="worst_comp_time"/>
+  <out name="done" type="control" place="done"/>
+
+  <net>
+    <place name="num_tasks" type="long"/>
+    <place name="worst_comp_time" type="int"/>
+    <place name="all_tasks_finished" type="control"/>
+    <place name="done" type="control"/>
+
+    <include-template href="dup.xml"/>
+    <specialize name="dup_task_number" use="dup">
+      <type-map replace="T" with="long"/>
+    </specialize>
+
+    <place name="num_remaining_tasks" type="long"/>
+    <place name="num_tasks_gen" type="long"/>
+    <transition name="dup_num_tasks" inline="true">
+      <use name="dup_task_number"/>
+      <connect-in port="in" place="num_tasks"/>
+      <connect-out port="one" place="num_remaining_tasks"/>
+      <connect-out port="two" place="num_tasks_gen"/>
+    </transition>
+
+    <place name="task_id" type="long"/>
+    <transition name="generate_task_ids" inline="true">
+      <include-function href="sequence.xml"/>
+      <connect-in port="amount" place="num_tasks_gen"/>
+      <connect-out port="out" place="task_id"/>
+    </transition>
+
+    <place name="task_finished" type="bool"/>
+    <transition name="transition_with_multiple_module_implementations">
+      <defun>
+        <preferences>
+          <target>A</target>
+          <target>B</target>
+          <target>C</target>
+        </preferences>
+        <in name="task_id" type="long"/>
+        <in name="worst_comp_time" type="int"/>
+        <out name="task_finished" type="bool"/>
+        <module name="test_module_with_target"
+                function="task (worst_comp_time, task_finished)"
+                target="A">
+          <cinclude href="chrono"/>
+          <cinclude href="thread"/>
+          <cxx flag="--std=c++11"/>
+          <code><![CDATA[
+            std::this_thread::sleep_for
+              (std::chrono::seconds (worst_comp_time));
+            task_finished = true;
+          ]]></code>
+        </module>
+        <module name="test_module_with_target"
+                function="task (task_finished)"
+                target="B">
+          <code><![CDATA[
+            task_finished = true;
+          ]]></code>
+        </module>
+        <module name="test_module_with_target"
+                function="task (task_finished)"
+                target="C">
+          <code><![CDATA[
+            task_finished = true;
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="task_id" place="task_id"/>
+      <connect-read port="worst_comp_time" place="worst_comp_time"/>
+      <connect-out port="task_finished" place="task_finished"/>
+    </transition>
+
+    <include-template href="wait.xml"/>
+    <specialize name="wait_bool" use="wait">
+      <type-map replace="T" with="bool"/>
+    </specialize>
+
+    <transition name="wait">
+      <use name="wait_bool"/>
+      <place-map virtual="wait" real="num_remaining_tasks"/>
+      <connect-in port="trigger" place="task_finished"/>
+      <connect-out port="done" place="all_tasks_finished"/>
+    </transition>
+
+    <transition name="finalize">
+      <defun>
+      <in name="all_tasks_finished" type="control"/>
+      <in name="slow_worker_host" type="string"/>
+      <in name="worst_comp_time" type="int"/>
+      <out name="done" type="control"/>
+      <expression>
+        ${done} := [];
+      </expression>
+      </defun>
+      <connect-in port="all_tasks_finished" place="all_tasks_finished"/>
+      <connect-in port="worst_comp_time" place="worst_comp_time"/>
+      <connect-out port="done" place="done"/>
+    </transition>
+  </net>
+</defun>

@@ -1,0 +1,6 @@
+<defun>
+  <net>
+    <place name="p" type="t"/>
+    <place name="p" type="t"/>
+  </net>
+</defun>

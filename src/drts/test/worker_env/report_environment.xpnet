@@ -1,0 +1,48 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="top">
+  <out name="env" type="set" place="env"/>
+  <net>
+    <place name="trigger" type="control">
+      <token><value>[]</value></token>
+    </place>
+    <place name="env" type="set"/>
+
+    <transition name="t">
+      <defun>
+        <in name="trigger" type="control"/>
+        <out name="env" type="set"/>
+        <module name="m" function="env f()">
+          <cinclude href="we/type/value/wrap.hpp"/>
+          <cinclude href="set"/>
+          <cinclude href="string"/>
+          <cinclude href="unistd.h"/>
+          <code><![CDATA[
+            std::set<std::string> env;
+            for (auto e (environ); *e; ++e)
+            {
+              env.emplace (*e);
+            }
+            return pnet::type::value::wrap (env);
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in place="trigger" port="trigger"/>
+      <connect-out place="env" port="env"/>
+    </transition>
+  </net>
+</defun>

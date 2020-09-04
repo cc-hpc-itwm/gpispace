@@ -1,0 +1,53 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="function_lookup">
+  <net>
+    <template name="t">
+      <template-parameter type="T"/>
+      <defun name="exp">
+        <net>
+          <place name="test" type="T"/>
+          <transition name="innertrans">
+            <defun>
+              <net>
+                <place name="innertest" type="T"/>
+              </net>
+            </defun>
+          </transition>
+        </net>
+      </defun>
+    </template>
+    <specialize name="t_control" use="t">
+      <type-map replace="T" with="control"/>
+    </specialize>
+    <specialize name="t_bool" use="t">
+      <type-map replace="T" with="bool"/>
+    </specialize>
+    <transition name="t1">
+      <use name="t_control"/>
+    </transition>
+    <transition name="tnet">
+      <defun name="ask_me_baby">
+        <net>
+          <transition name="tnet1">
+            <use name="t_control"/>
+          </transition>
+        </net>
+      </defun>
+    </transition>
+  </net>
+</defun>

@@ -1,0 +1,48 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="client_with_ostream_logger">
+  <in name="implementation" type="string" place="implementation"/>
+  <in name="message" type="string" place="message"/>
+  <net>
+    <place name="implementation" type="string"/>
+    <place name="message" type="string"/>
+
+    <transition name="log_with_ostream">
+      <defun>
+        <in name="implementation" type="string"/>
+        <in name="message" type="string"/>
+        <module name="log_with_ostream"
+                function="log_with_ostream (implementation, message)"
+                >
+          <cinclude href="drts/test/client_implementation_with_ostream_logger/client_implementation_with_ostream_logger.hpp"/>
+          <cinclude href="util-generic/dynamic_linking.hpp"/>
+          <cinclude href="iostream"/>
+          <code><![CDATA[
+
+          fhg::util::scoped_dlhandle (implementation)
+            .sym<decltype (client_with_ostream_logger)>
+              ("client_with_ostream_logger")
+                (message, std::cout);
+
+          ]]></code>
+        </module>
+      </defun>
+      <connect-in port="implementation" place="implementation"/>
+      <connect-in port="message" place="message"/>
+    </transition>
+  </net>
+</defun>

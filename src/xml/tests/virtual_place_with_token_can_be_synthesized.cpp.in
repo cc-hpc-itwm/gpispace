@@ -1,0 +1,62 @@
+// This file is part of GPI-Space.
+// Copyright (C) 2020 Fraunhofer ITWM
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#include <boost/test/unit_test.hpp>
+
+#include <xml/parse/parser.hpp>
+#include <xml/parse/state.hpp>
+
+#include <we/type/transition.hpp>
+#include <we/type/net.hpp>
+
+#include <fhg/util/xml.hpp>
+#include <util-generic/read_file.hpp>
+#include <util-generic/testing/flatten_nested_exceptions.hpp>
+
+#include <sstream>
+#include <string>
+
+namespace xml
+{
+  namespace parse
+  {
+    BOOST_AUTO_TEST_CASE (virtual_place_with_token_can_be_synthesized)
+    {
+      state::type state;
+
+      state.synthesize_virtual_places() = true;
+
+      std::string const filename
+        ("@XML_PARSE_TEST_XPNETS_DIR@/"
+        "virtual_place_with_token_can_be_synthesized.xpnet"
+        );
+
+      auto function (just_parse (state, filename));
+      post_processing_passes (function, &state);
+
+      ::we::type::transition_t transition;
+
+      BOOST_REQUIRE_NO_THROW (transition = xml_to_we (function, state));
+
+      //! \note additional sanity not strictly required, to not throw
+      //! is the important point
+      BOOST_REQUIRE (!!transition.net());
+      BOOST_REQUIRE_EQUAL ( transition.name()
+                          , "virtual_place_with_token_can_be_synthesized"
+                          );
+    }
+  }
+}

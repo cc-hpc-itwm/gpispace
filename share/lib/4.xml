@@ -1,0 +1,60 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<template name="quad">
+  <template-parameter type="T"/>
+  <defun>
+    <properties name="pnetc">
+      <properties name="warning">
+        <property key="inline_many_output_ports" value="false"/>
+      </properties>
+    </properties>
+    <in name="in" type="T" place="x"/>
+    <out name="one" type="T" place="one"/>
+    <out name="two" type="T" place="two"/>
+    <out name="three" type="T" place="three"/>
+    <out name="four" type="T" place="four"/>
+
+    <net>
+      <place name="x" type="T"/>
+      <place name="one" type="T"/>
+      <place name="two" type="T"/>
+      <place name="three" type="T"/>
+      <place name="four" type="T"/>
+
+      <transition name="triple">
+        <defun>
+          <in name="x" type="T"/>
+          <out name="one" type="T"/>
+          <out name="two" type="T"/>
+          <out name="three" type="T"/>
+          <out name="four" type="T"/>
+          <expression>
+            ${one} := ${x};
+            ${two} := ${x};
+            ${three} := ${x};
+            ${four} := ${x};
+          </expression>
+        </defun>
+        <connect-in port="x" place="x"/>
+        <connect-out port="one" place="one"/>
+        <connect-out port="two" place="two"/>
+        <connect-out port="three" place="three"/>
+        <connect-out port="four" place="four"/>
+      </transition>
+    </net>
+  </defun>
+</template>
