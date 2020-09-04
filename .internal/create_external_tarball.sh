@@ -18,12 +18,12 @@ then
 fi
 
 # set working directory
-workdir="$(pwd)"
+workdir="$(readlink -f "$(pwd)")"
 testlog="${workdir}/test_$(date '+%F_%H-%M').log"
 
 # assign command line parameters and define default values
 branch="${1}"
-tmpdir="${2:-${workdir}/tmp}"
+tmpdir="$(readlink -f "${2:-${workdir}/tmp}")"
 
 # determine number of processes to use
 procs="${NUM_PROCS:-$(nproc)}"
