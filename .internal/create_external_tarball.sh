@@ -51,7 +51,7 @@ function package_and_cleanup()
 {
     if ${success}
     then
-        tar --exclude ${builddir} -czf ${workdir}/gpispace-${branch}.tar.gz -C ${tmpdir} .
+        tar --exclude ${builddir} -czf ${workdir}/gpispace-${branch}.tar.gz -C ${tmpdir} gpispace
         rm ${testlog}
         echo "SUCCESS"
     else
