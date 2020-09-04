@@ -113,7 +113,12 @@ git rm -r \
     CHANGELOG.todo \
     doc/intern \
     playground \
+    share/xsd/Makefile \
+    share/xsd/XSDtoRNG.xsl \
+    share/xsd/pnet.rnc.fix.patch \
+    src/sdpa/test/sdpa/Scheduler.performance.*.DAT \
     tools
+git submodule foreach 'git rm -r .ci .gitlab-ci.yml || true'
 git submodule foreach --quiet 'rm $toplevel/$path/.git'
 rm -rf \
     .git \
