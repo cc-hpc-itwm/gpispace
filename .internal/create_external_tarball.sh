@@ -125,6 +125,82 @@ rm -rf \
     .gitmodules \
     external.patch
 
+# soak up input before writing to allow in-place awk
+function sponge()
+{
+  local output="${1}"
+  perl -e "@lines = <>; open OUT, '>${output}' or die; print OUT @lines or die"
+}
+
+function add_license_header_comment()
+{
+  local style="${1}"
+  local pattern="${2}"
+
+  while read -r file
+  do
+    awk \
+      -v style="${style}" \
+      -v year="$(date +%Y)" \
+      'FNR == 1 {
+         firstline = $0
+         getline
+
+         emptyfmt = style == "c" ? "//" \
+                  : style == "bash" ? "#" \
+                  : style == "man" ? ".\\\"" \
+                  : style == "xml" ? "<!--                                                                       -->" \
+                  : "<unknown style>"
+         fmt = style == "xml" ? "<!-- %-69s -->" \
+             : emptyfmt " %s"
+         surround_with_whitespace = style != "man"
+
+         if (firstline ~ /^(#!|<\?xml)/) {
+           print firstline
+           if (surround_with_whitespace) print ""
+         }
+
+         printf (fmt "\n", "This file is part of GPI-Space.")
+         printf (fmt "\n", "Copyright (C) " year " Fraunhofer ITWM")
+         printf (emptyfmt "\n")
+         printf (fmt "\n", "This program is free software: you can redistribute it and/or modify")
+         printf (fmt "\n", "it under the terms of the GNU General Public License as published by")
+         printf (fmt "\n", "the Free Software Foundation, either version 3 of the License, or")
+         printf (fmt "\n", "(at your option) any later version.")
+         printf (emptyfmt "\n")
+         printf (fmt "\n", "This program is distributed in the hope that it will be useful,")
+         printf (fmt "\n", "but WITHOUT ANY WARRANTY; without even the implied warranty of")
+         printf (fmt "\n", "MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the")
+         printf (fmt "\n", "GNU General Public License for more details.")
+         printf (emptyfmt "\n")
+         printf (fmt "\n", "You should have received a copy of the GNU General Public License")
+         printf (fmt "\n", "along with this program. If not, see <https://www.gnu.org/licenses/>.")
+
+         if (firstline ~ /^(#!|<\?xml)/) {
+           if (surround_with_whitespace && $0 !~ /^$/) print ""
+         } else {
+           if (surround_with_whitespace && firstline !~ /^$/) print ""
+           print firstline
+         }
+       }
+       FNR != 1 {
+         print
+       }' "${file}" | sponge "${file}"
+  done < <(find * \
+                -regextype posix-extended \
+                -regex "${pattern}" \
+                -and -not -path 'external/beegfs-client-devel*' \
+                -and -not -path 'external/rapidxml*' \
+                -and -not -path 'src/xml/tests/xpnets*.xpnet' \
+                -type f \
+          )
+}
+
+add_license_header_comment 'c' '.*\.(cpp(.in|)|hpp(.in|)|ipp|h)'
+add_license_header_comment 'bash' '.*(\.(cmake|rnc|sh)|CMakeLists.txt|Makefile)'
+add_license_header_comment 'xml' '.*\.(xpnet(.in|)|xml|xsd)'
+add_license_header_comment 'man' 'share/man/.*\.[0-9].*'
+
 # build & test
 mkdir -p ${testdir}
 cd ${builddir}
