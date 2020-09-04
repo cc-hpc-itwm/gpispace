@@ -232,7 +232,6 @@ function run_tests()
         --schedule-random \
         -LE "performance_test" \
         -j "${procs}" \
-        -VV \
         --output-log "${testlog}"
 }
 GSPC_NODEFILE_FOR_TESTS="${builddir}/nodefile" run_tests
