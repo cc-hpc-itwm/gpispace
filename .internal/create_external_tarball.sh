@@ -92,7 +92,7 @@ cp "${repodir}/.internal/external/doc/readme/CMakeLists.txt" \
 "${repodir}/doc/readme/configure.sh" \
   "${repodir}/doc/readme/parts" \
   "${repodir}/doc/readme/parts/driver-full" \
-  "${repodir}/doc/readme/run.cpp"
+  "${repodir}/doc/readme/driver.cpp"
 "${repodir}/doc/readme/configure.sh" \
   "${repodir}/doc/readme/parts" \
   "${repodir}/doc/readme/parts/script-full" \
