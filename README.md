@@ -42,7 +42,7 @@ GPI-Space. It is strongly suggested to configure Boost as follows:
 ```bash
 ./bootstrap.sh --prefix="${BOOST_ROOT}"
 ./b2                                                              \
-  clags="-fPIC -fno-gnu-unique"                                   \
+  cflags="-fPIC -fno-gnu-unique"                                  \
   cxxflags="-fPIC -fno-gnu-unique"                                \
   link=static                                                     \
   variant=release                                                 \
