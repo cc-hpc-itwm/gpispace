@@ -66,7 +66,6 @@ assume
 
 ```bash
 cd "${GPISPACE_SOURCE_DIR}"
-git submodule update --init --recursive
 
 mkdir -p "${GPISPACE_BUILD_DIR}" && cd "${GPISPACE_BUILD_DIR}"
 
