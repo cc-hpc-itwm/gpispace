@@ -104,7 +104,7 @@ cp "${repodir}/.internal/external/doc/readme/CMakeLists.txt" \
   "${repodir}/doc/readme/parts" \
   "${repodir}/doc/readme/parts/pnet-full" \
   "${repodir}/doc/readme/compute_and_aggregate.xpnet"
-rm -rf "${repodir}/doc/readme/parts"
+rm -rf "${repodir}/doc/readme/parts" "${repodir}/doc/readme/configure.sh"
 
 # cleanup repo
 git rm -r \
