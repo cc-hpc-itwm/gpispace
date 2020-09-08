@@ -222,13 +222,6 @@ namespace fhg
       std::unordered_map<fhg::rif::entry_point, std::vector<std::exception_ptr>>
         exceptions;
 
-      auto const& local_resource_id
-        ( [&] (std::string const& resource_id) -> std::string
-          {
-            return fhg::util::split_string (resource_id, ':').second;
-          }
-        );
-
       auto const& build_arguments_and_start_worker
         (
           [&] ( gspc::worker_description const& description
@@ -301,7 +294,7 @@ namespace fhg
 
               std::ostringstream osstr;
               osstr << name_prefix + "-" + connection->first.string() + "-"
-                    << local_resource_id (resource_ids[0])
+                    << resource_ids[0]
                     <<  ( description.socket
                         ? ("." + std::to_string (description.socket.get()))
                         : std::string()
@@ -371,7 +364,7 @@ namespace fhg
               }
 
               info_output << "I: starting worker \"" << name
-                         << "\", with the resource id " << local_resource_id (resource_ids[0])
+                         << "\", with the resource id " << resource_ids[0]
                          << ", " << description.shm_size << " SHM) and with parent "
                          << master_name << " on rif entry point "
                          << description.entry_point.get()
