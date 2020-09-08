@@ -104,3 +104,5 @@ fhg_add_test (NAME many_ranges_in_memory_transfer_minimal
   REQUIRES_VIRTUAL_MEMORY
   START_SCOPED_RIF
 )
+
+add_subdirectory (gspc)

@@ -141,6 +141,8 @@ extended_add_library (NAME pnet
 add_subdirectory (xml/tests)
 add_subdirectory (xml/parse/type/test)
 
+add_subdirectory (gspc)
+
 add_subdirectory (we)
 add_subdirectory (mmgr)
 
