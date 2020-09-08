@@ -1,26 +1,24 @@
 #include <drts/Forest.hpp>
 #include <drts/Resource.hpp>
 #include <drts/ResourceGraph.hpp>
+#include <drts/ResourceGraphWrapper.hpp>
 
 #include <memory>
 
 namespace gspc
 {
-  using Resources = UniqueForest<Resource>;
   ResourceGraph::ResourceGraph()
-    : _implementation (new Resources())
+    : _ (std::make_unique<implementation>())
   {}
 
-  ResourceGraph::~ResourceGraph()
-  { delete static_cast<Resources*>(_implementation); }
+  ResourceGraph::~ResourceGraph() = default;
 
   std::uint64_t ResourceGraph::insert
     ( std::string const& resource
     , std::unordered_set<std::uint64_t> const& children
     )
   {
-    return static_cast<Resources*>(_implementation)
-      ->insert (resource, children);
+    return _->_resources.insert (resource, children);
   }
 
   std::uint64_t  ResourceGraph::insert
@@ -29,7 +27,6 @@ namespace gspc
     , std::uint64_t const& proxy
     )
   {
-    return static_cast<Resources*>(_implementation)
-      ->insert (resource, children, proxy);
+    return _->_resources.insert (resource, children, proxy);
   }
 }

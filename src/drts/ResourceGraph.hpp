@@ -1,6 +1,8 @@
 #pragma once
 
 #include <drts/drts.fwd.hpp>
+#include <drts/pimpl.hpp>
+
 #include <boost/noncopyable.hpp>
 
 #include <cstdint>
@@ -12,7 +14,6 @@ namespace gspc
   {
   public:
     ResourceGraph();
-    ~ResourceGraph();
 
     std::uint64_t insert
       ( std::string const&
@@ -27,7 +28,6 @@ namespace gspc
 
     friend class ::gspc::scoped_runtime_system;
 
-  private:
-    void* _implementation;
+    PIMPL (ResourceGraph);
   };
 }

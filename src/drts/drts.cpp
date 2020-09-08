@@ -6,6 +6,8 @@
 #include <drts/private/rifd_entry_points_impl.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 #include <drts/Resource.hpp>
+#include <drts/ResourceGraph.hpp>
+#include <drts/ResourceGraphWrapper.hpp>
 
 #include <drts/resource/Class.hpp>
 #include <drts/resource/ID.hpp>
@@ -198,8 +200,7 @@ namespace gspc
                               , master
                               , info_output
                               , certificates
-                              , *static_cast<UniqueForest<Resource>*>
-                                  (resource_descriptions._implementation)
+                              , resource_descriptions._->_resources
                               )
           )
   {}
