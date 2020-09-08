@@ -10,7 +10,7 @@ extended_add_library ( NAME sdpa
           "daemon/WorkerManager.cpp"
           "events/Codec.cpp"
           "daemon/resource_manager/ResourceManager.cpp"
-  LIBRARIES "resources"
+  LIBRARIES "drts::resources"
 )
 
 target_link_libraries (sdpa

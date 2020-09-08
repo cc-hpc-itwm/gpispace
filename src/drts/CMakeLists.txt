@@ -48,10 +48,11 @@ extended_add_library (NAME gspc
 )
 
 extended_add_library (NAME resources
+  NAMESPACE drts
   SOURCES "remote_interface/ID.cpp"
           "resource/ID.cpp"
           "Resource.cpp"
-  INSTALL
+  LIBRARIES Util::Generic
 )
 
 add_subdirectory (test/add_worker)
