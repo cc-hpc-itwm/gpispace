@@ -67,8 +67,12 @@ namespace test
     {
       std::ostringstream command;
 
+      // The two boost defines are necessary for boost versions >1.61.0 where
+      // coroutines have been deprecated, but are still used by boost::asio.
+      // The second flag is required specifically for boost 1.62.0 where both
+      // flags occur due to a typo. This is fixed in later versions.
       command
-        << "CXXFLAGS=\"-Wall -Wextra -Werror\""
+        << "CXXFLAGS=\"-Wall -Wextra -Werror -DBOOST_COROUTINES_NO_DEPRECATION_WARNING -DBOOST_COROUTINE_NO_DEPRECATION_WARNING\""
         << " CXX=\"" << cmake_cxx_compiler << "\""
         << " make "
         << " LIB_DESTDIR=" << lib_destdir.get()

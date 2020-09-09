@@ -19,6 +19,7 @@
 
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
+#include <boost/version.hpp>
 
 #include <atomic>
 #include <cstddef>
@@ -326,8 +327,13 @@ namespace
   // Not defined in early versions of Boost.Asio, but bumping just for
   // that enum would be kind of absurd. This is wrapped version of
   // OpenSSL's SSL_R_SHORT_READ.
-  boost::system::error_code const boost_asio_ssl_error_stream_truncated
-    (0x140000db, boost::asio::error::get_ssl_category());
+  #if BOOST_VERSION <= 106100 // 1.61.0
+    auto const boost_asio_ssl_error_stream_truncated =
+      boost::system::error_code(0x140000db, boost::asio::error::get_ssl_category());
+  #else
+    auto const boost_asio_ssl_error_stream_truncated =
+      boost::asio::ssl::error::stream_truncated;
+  #endif
 }
 
 // A race in destruction of peer_t, while a message was just sent,

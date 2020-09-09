@@ -8,6 +8,11 @@
     - .env_centos7_devtoolset8
     - .job_docker_setup
 
+"ubuntu20-04: container setup":
+  extends:
+    - .env_ubuntu20-04
+    - .job_docker_setup
+
 "centos5.7: build":
   extends:
     - .env_centos57_gcc494
@@ -22,6 +27,12 @@
 "centos7: build":
   extends:
     - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_build
+
+"ubuntu20-04: build":
+  extends:
+    - .env_ubuntu20-04
     - .use_gitlab_backed_ccache
     - .job_build
 
@@ -42,6 +53,12 @@
     - .use_gitlab_backed_ccache
     - .job_test
 
+"ubuntu20-04: tests":
+  extends:
+    - .env_ubuntu20-04
+    - .use_gitlab_backed_ccache
+    - .job_test
+
 # todo: "centos5.7: virtual memory tests"? needs infiniband or
 # gpi2+eth compatibility (requires higher kernel version)
 
@@ -54,6 +71,12 @@
 "centos7: virtual memory tests":
   extends:
     - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test_vmem
+
+"ubuntu20-04: virtual memory tests":
+  extends:
+    - .env_ubuntu20-04
     - .use_gitlab_backed_ccache
     - .job_test_vmem
 
@@ -71,6 +94,12 @@
 "centos7: performance tests":
   extends:
     - .env_centos7_devtoolset8
+    - .use_gitlab_backed_ccache
+    - .job_test_performance
+
+"ubuntu20-04: performance tests":
+  extends:
+    - .env_ubuntu20-04
     - .use_gitlab_backed_ccache
     - .job_test_performance
 
@@ -148,6 +177,18 @@
 .env_centos7_devtoolset8:
   variables:
     environment_key: "centos7-devtoolset8"
+    docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
+    GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
+    GIT_SUBMODULE_STRATEGY: recursive
+  image: ${docker_image}
+  tags:
+    - docker06
+  before_script:
+    - export gspc_parallel_test_and_build_jobs=$(nproc)
+
+.env_ubuntu20-04:
+  variables:
+    environment_key: "ubuntu20-04"
     docker_image: "${CI_REGISTRY_IMAGE}/${environment_key}:${CI_PIPELINE_ID}"
     GSPC_NODEFILE_FOR_TESTS: "/etc/hostname"
     GIT_SUBMODULE_STRATEGY: recursive
