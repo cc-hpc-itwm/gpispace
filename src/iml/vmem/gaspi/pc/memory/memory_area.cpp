@@ -26,28 +26,16 @@ namespace gpi
       /***************************************************/
 
       area_t::area_t ( const gpi::pc::type::segment::segment_type type
-                     , const gpi::pc::type::process_id_t creator
-                     , const std::string & name
                      , const gpi::pc::type::size_t size
                      , handle_generator_t& handle_generator
                      )
         : m_descriptor ( type::segment::SEG_INVAL
                        , type
-                       , creator
-                       , name
                        , size
                        )
         , m_mmgr (size, 1)
         , _handle_generator (handle_generator)
       {
-        reinit ();
-      }
-
-      void area_t::reinit ()
-      {
-        m_mmgr = iml_client::vmem::dtmmgr (m_descriptor.local_size, 1);
-
-        update_descriptor_from_mmgr ();
       }
 
       void area_t::set_id (const gpi::pc::type::id_t id)
@@ -58,11 +46,6 @@ namespace gpi
       gpi::pc::type::id_t area_t::get_id () const
       {
         return m_descriptor.id;
-      }
-
-      gpi::pc::type::id_t area_t::get_owner () const
-      {
-        return m_descriptor.creator;
       }
 
       void area_t::pre_dtor ()
@@ -80,21 +63,6 @@ namespace gpi
           {
           }
         }
-      }
-
-      std::string const & area_t::name () const
-      {
-        return m_descriptor.name;
-      }
-
-      gpi::pc::type::size_t area_t::size () const
-      {
-        return m_descriptor.local_size;
-      }
-
-      int area_t::type () const
-      {
-        return m_descriptor.type;
       }
 
       bool area_t::is_shm_segment() const
@@ -177,7 +145,6 @@ namespace gpi
         hdl.local_size = local_size;
         hdl.name = name;
         hdl.offset = offset;
-        hdl.creator = IML_GPI_PC_INVAL;
         hdl.flags = is_global::yes;
 
         internal_alloc (hdl, false);
@@ -194,14 +161,12 @@ namespace gpi
         }
         else
         {
-          update_descriptor_from_mmgr ();
           m_handles [hdl.id] = hdl;
         }
       }
 
       gpi::pc::type::handle_t
-      area_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                    , const gpi::pc::type::size_t size
+      area_t::alloc ( const gpi::pc::type::size_t size
                     , const std::string & name
                     , const gpi::pc::type::flags_t flags
                     )
@@ -214,13 +179,11 @@ namespace gpi
         // get distribution scheme
         hdl.local_size = get_local_size (size, flags);
         hdl.name = name;
-        hdl.creator = proc_id;
         hdl.flags = flags;
         hdl.id = _handle_generator.next (m_descriptor.type);
 
         internal_alloc (hdl, true);
 
-        update_descriptor_from_mmgr ();
         m_handles [hdl.id] = hdl;
 
         return hdl.id;
@@ -229,17 +192,6 @@ namespace gpi
       void area_t::defrag (const gpi::pc::type::size_t)
       {
         throw std::runtime_error ("defrag is not yet implemented");
-      }
-
-      void area_t::update_descriptor_from_mmgr()
-      {
-        m_descriptor.avail = m_mmgr.memfree();
-        m_descriptor.allocs =
-            m_mmgr.numhandle (iml_client::vmem::dtmmgr::ARENA_UP)
-          + m_mmgr.numhandle (iml_client::vmem::dtmmgr::ARENA_DOWN);
-        // dtmmgr_numalloc -> total allocs
-        // dtmmgr_numfree -> total frees
-        m_descriptor.ts.touch();
       }
 
       void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl
@@ -339,19 +291,10 @@ namespace gpi
       void area_t::internal_free
         (lock_type const&, type::handle::descriptor_t const& desc)
       {
-        if (desc.nref)
-        {
-          throw std::runtime_error
-            ( "handle still in use: handle = " + std::to_string (desc.id)
-            + " nref = " + std::to_string (desc.nref)
-            );
-        }
-
         iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
 
         m_mmgr.free (desc.id, arena);
         m_handles.erase (desc.id);
-        update_descriptor_from_mmgr ();
       }
 
       gpi::pc::type::segment::descriptor_t const &

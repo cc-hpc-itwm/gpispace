@@ -14,8 +14,7 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
 
-        shm_area_t ( const gpi::pc::type::process_id_t creator
-                   , type::name_t const&
+        shm_area_t ( type::name_t const&
                    , const gpi::pc::type::size_t size
                    , handle_generator_t&
                    );
@@ -23,8 +22,6 @@ namespace gpi
         ~shm_area_t ();
       protected:
         virtual bool is_shm_segment() const override;
-
-        int get_type_id () const;
 
         virtual global::itopology_t& global_topology() override;
 

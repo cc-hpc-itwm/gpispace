@@ -108,16 +108,13 @@ namespace gpi
         };
       }
 
-      beegfs_area_t::beegfs_area_t ( const gpi::pc::type::process_id_t creator
-                                   , bool is_creator
+      beegfs_area_t::beegfs_area_t ( bool is_creator
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
                                    , gpi::pc::global::itopology_t & topology
                                    , handle_generator_t& handle_generator
                                    )
         : area_t ( beegfs_area_t::area_type
-                 , creator
-                 , path.string ()
                  , size
                  , handle_generator
                  )
@@ -391,12 +388,10 @@ namespace gpi
         , unsigned long total_size
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , type::id_t owner
         , bool is_creator
         )
       {
-        area_ptr_t area (new beegfs_area_t ( owner
-                                           , is_creator
+        area_ptr_t area (new beegfs_area_t ( is_creator
                                            , description._path
                                            , total_size
                                            , topology

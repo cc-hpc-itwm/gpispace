@@ -44,9 +44,6 @@ namespace gpi
            specific segments may/must hook into specific implementation details
            though
         */
-        gpi::pc::type::size_t size () const;
-        std::string const & name () const;
-        int type () const;
 
         void                set_id (const gpi::pc::type::id_t id);
         gpi::pc::type::id_t get_id () const;
@@ -54,8 +51,7 @@ namespace gpi
         gpi::pc::type::id_t get_owner () const;
 
         gpi::pc::type::handle_t
-        alloc ( const gpi::pc::type::process_id_t proc_id
-              , const gpi::pc::type::size_t size
+        alloc ( const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
               );
@@ -126,13 +122,9 @@ namespace gpi
                                           ) const = 0;
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
-               , const gpi::pc::type::process_id_t creator
-               , const std::string & name
                , const gpi::pc::type::size_t size
                , handle_generator_t&
                );
-
-        void reinit ();
 
         virtual bool is_shm_segment() const;
 
@@ -184,8 +176,6 @@ namespace gpi
         typedef std::unordered_map< gpi::pc::type::handle_t
                                   , gpi::pc::type::handle::descriptor_t
                                   > handle_descriptor_map_t;
-
-        void update_descriptor_from_mmgr ();
 
         void internal_alloc ( gpi::pc::type::handle::descriptor_t&
                             , bool is_creator

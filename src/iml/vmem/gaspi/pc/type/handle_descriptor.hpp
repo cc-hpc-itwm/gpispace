@@ -9,7 +9,6 @@
 
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
-#include <iml/vmem/gaspi/pc/type/time_stamp.hpp>
 
 namespace gpi
 {
@@ -26,11 +25,8 @@ namespace gpi
           gpi::pc::type::offset_t offset;
           gpi::pc::type::size_t size;
           gpi::pc::type::size_t local_size;
-          gpi::pc::type::size_t nref;
           gpi::pc::type::name_t name;
-          gpi::pc::type::process_id_t creator;
           gpi::pc::type::flags_t flags;
-          gpi::pc::type::time_stamp_t ts;
 
           descriptor_t ()
             : id (0)
@@ -38,7 +34,6 @@ namespace gpi
             , offset (0)
             , size (0)
             , local_size (0)
-            , nref (0)
             , name ("")
             , flags (is_global::no)
           {}
@@ -58,11 +53,8 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( offset );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP (local_size);
-            ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( name );
-            ar & BOOST_SERIALIZATION_NVP( creator );
             ar & BOOST_SERIALIZATION_NVP( flags );
-            ar & BOOST_SERIALIZATION_NVP( ts );
           }
         };
       }

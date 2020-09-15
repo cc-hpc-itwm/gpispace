@@ -35,13 +35,10 @@ namespace gpi
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , fhg::iml::vmem::gaspi_context&
-                                 , type::id_t owner
                                  );
 
       protected:
-        gaspi_area_t ( const gpi::pc::type::process_id_t creator
-                     , const std::string & name
-                     , gpi::pc::global::itopology_t & topology
+        gaspi_area_t ( gpi::pc::global::itopology_t & topology
                      , handle_generator_t&
                      , fhg::iml::vmem::gaspi_context&
                      , fhg::iml::vmem::gaspi_timeout&

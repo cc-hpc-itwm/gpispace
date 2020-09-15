@@ -29,12 +29,10 @@ namespace gpi
                                  , unsigned long total_size
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , type::id_t owner
                                  , bool is_creator
                                  );
 
-        beegfs_area_t ( const gpi::pc::type::process_id_t creator
-                      , bool is_creator
+        beegfs_area_t ( bool is_creator
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
                       , gpi::pc::global::itopology_t & topology
@@ -44,8 +42,6 @@ namespace gpi
         ~beegfs_area_t ();
 
       protected:
-        int get_type_id () const;
-
         global::itopology_t& global_topology() override;
 
       private:

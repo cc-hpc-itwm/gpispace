@@ -50,8 +50,6 @@ namespace gpi
           , size (size_)
         {}
       };
-
-#define IML_GPI_PC_INVAL (::gpi::pc::type::id_t)(-1)
     }
   }
 }

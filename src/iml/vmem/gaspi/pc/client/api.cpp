@@ -390,7 +390,6 @@ namespace gpi
           {
             proto::segment::message_t seg_msg (boost::get<proto::segment::message_t>(rply));
             proto::segment::register_reply_t reg (boost::get<proto::segment::register_reply_t> (seg_msg));
-            seg->assign_id (reg.segment);
             result = {reg.segment, reg.allocation};
           }
           catch (boost::bad_get const &)

@@ -22,20 +22,17 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
                                    , segm_size
                                    );
   segm.create ();
-  gpi::pc::memory::shm_area_t area ( 0
-                                   , "memory_area_alloc_free_test"
+  gpi::pc::memory::shm_area_t area ( "memory_area_alloc_free_test"
                                    , segm_size
                                    , handle_generator
                                    );
   area.set_id (2);
 
   BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
-  BOOST_CHECK_EQUAL (segm_size, area.descriptor().avail);
 
-  gpi::pc::type::handle_t hdl (area.alloc(1, alloc_size, "scratch", gpi::pc::is_global::no));
+  gpi::pc::type::handle_t hdl (area.alloc(alloc_size, "scratch", gpi::pc::is_global::no));
   BOOST_CHECK_NE (hdl, gpi::pc::type::handle_t());
   BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
-  BOOST_CHECK_EQUAL (segm_size - alloc_size, area.descriptor().avail);
 
   std::cout << "    handle = " << hdl << std::endl;
   gpi::pc::type::handle::descriptor_t desc (area.descriptor (hdl));
@@ -48,5 +45,4 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 
   area.free (hdl);
   BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
-  BOOST_CHECK_EQUAL (segm_size, area.descriptor().avail);
 }

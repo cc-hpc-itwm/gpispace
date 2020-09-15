@@ -26,7 +26,7 @@ namespace gpi
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
                                , fhg::iml::vmem::gaspi_context& gaspi_context
-                               , type::id_t owner
+                               , bool is_creator
                                )
         {
           return fhg::util::visit<area_ptr_t>
@@ -38,13 +38,12 @@ namespace gpi
                                             , topology
                                             , handle_generator
                                             , gaspi_context
-                                            , owner
                                             );
               }
             , [&] (iml::beegfs_segment_description const& desc)
               {
                 return beegfs_area_t::create
-                  (desc, total_size, topology, handle_generator, owner, owner != 0);
+                  (desc, total_size, topology, handle_generator, is_creator);
               }
             );
         }
@@ -133,8 +132,7 @@ namespace gpi
         add_area (area);
         _shm_segments_by_owner[creator].emplace (segment);
 
-        auto const allocation
-          (area->alloc (creator, size, name, is_global::no));
+        auto const allocation (area->alloc (size, name, is_global::no));
         add_handle (allocation, segment);
 
         return {segment, allocation};
@@ -288,8 +286,7 @@ namespace gpi
       }
 
       gpi::pc::type::handle_t
-      manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                       , const gpi::pc::type::segment_id_t seg_id
+      manager_t::alloc ( const gpi::pc::type::segment_id_t seg_id
                        , const gpi::pc::type::size_t size
                        , const std::string & name
                        , const gpi::pc::type::flags_t flags
@@ -297,7 +294,7 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        gpi::pc::type::handle_t hdl (area->alloc (proc_id, size, name, flags));
+        gpi::pc::type::handle_t hdl (area->alloc (size, name, flags));
 
         add_handle (hdl, seg_id);
 
@@ -407,7 +404,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, 0));
+        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false));
         area->set_id (seg_id);
         add_area (area);
       }
@@ -465,7 +462,7 @@ namespace gpi
 
         if (require_earlier_master_initialization (description))
         {
-          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, proc_id);
+          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true);
           area->set_id (id);
 
           add_area (area);
@@ -484,7 +481,7 @@ namespace gpi
                                                   , topology
                                                   , _handle_generator
                                                   , _gaspi_context
-                                                  , proc_id
+                                                  , true
                                                   )
                                     );
                     area->set_id (id);

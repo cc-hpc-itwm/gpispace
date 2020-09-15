@@ -26,7 +26,6 @@ namespace gpi
 
       segment_t::segment_t ( std::string const & name
                            , const type::size_t sz
-                           , const type::segment_id_t id
                            )
         : m_ptr (nullptr)
         , _name (name)
@@ -35,17 +34,10 @@ namespace gpi
         if (name.empty())
           throw std::runtime_error ("invalid name argument to segment_t(): name must not be empty");
 
-        if (name[0] != '/')
-          m_descriptor.name = "/" + name;
-        else
-          m_descriptor.name = name;
         if (_name[0] != '/')
         {
           _name = '/' + _name;
         }
-        m_descriptor.local_size = sz;
-        m_descriptor.avail = sz;
-        m_descriptor.id = id;
       }
 
       void segment_t::create (const mode_t mode)
@@ -172,11 +164,6 @@ namespace gpi
       const void *segment_t::ptr () const
       {
         return m_ptr;
-      }
-
-      void segment_t::assign_id (const type::segment_id_t id)
-      {
-        m_descriptor.id = id;
       }
     }
   }

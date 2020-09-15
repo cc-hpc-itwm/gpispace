@@ -152,9 +152,7 @@ namespace gpi
           {
             gpi::pc::proto::memory::alloc_reply_t rpl;
             rpl.handle = _memory_manager.alloc
-              ( m_proc_id
-              , alloc.segment, alloc.size, alloc.name, is_global::yes
-              );
+              (alloc.segment, alloc.size, alloc.name, is_global::yes);
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
@@ -219,8 +217,7 @@ namespace gpi
               = _memory_manager.register_shm_segment_and_allocate
                   ( m_proc_id
                   , std::make_shared<memory::shm_area_t>
-                      ( m_proc_id
-                      , register_segment.name
+                      ( register_segment.name
                       , register_segment.size
                       , _memory_manager.handle_generator()
                       )

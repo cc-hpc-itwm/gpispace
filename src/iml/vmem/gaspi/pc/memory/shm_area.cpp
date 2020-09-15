@@ -83,14 +83,11 @@ namespace gpi
         }
       }
 
-      shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
-                             , type::name_t const& name
+      shm_area_t::shm_area_t ( type::name_t const& name
                              , const gpi::pc::type::size_t user_size
                              , handle_generator_t& handle_generator
                              )
         : area_t ( shm_area_t::area_type
-                 , creator
-                 , name
                  , user_size
                  , handle_generator
                  )

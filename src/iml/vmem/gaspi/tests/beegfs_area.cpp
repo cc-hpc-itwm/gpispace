@@ -17,8 +17,6 @@
 
 #include <fcntl.h>
 #include <sys/stat.h>
-#include <sys/types.h> // pid_t
-#include <unistd.h>    // getpid, unlink
 
 #include <cstddef>
 #include <exception>
@@ -71,8 +69,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
   const char *text = "hello world!\n";
 
   {
-    beegfs_area_t area ( fhg::util::syscall::getpid()
-                       , true
+    beegfs_area_t area ( true
                        , path_to_shared_file
                        , size
                        , topology
@@ -82,7 +79,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
-    handle_t handle = area.alloc (1, size, "test", gpi::pc::is_global::yes);
+    handle_t handle = area.alloc (size, "test", gpi::pc::is_global::yes);
     area.write_to (memory_location_t (handle, 0), text, strlen (text));
 
     {
@@ -114,8 +111,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
 
   boost::filesystem::create_directories (path_to_shared_file);
 
-  BOOST_REQUIRE_THROW  ( gpi::pc::memory::beegfs_area_t ( fhg::util::syscall::getpid()
-                                                        , true
+  BOOST_REQUIRE_THROW  ( gpi::pc::memory::beegfs_area_t ( true
                                                         , path_to_shared_file
                                                         , size
                                                         , topology
@@ -126,8 +122,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
 
   boost::filesystem::remove (path_to_shared_file);
 
-  gpi::pc::memory::beegfs_area_t ( fhg::util::syscall::getpid()
-                                 , true
+  gpi::pc::memory::beegfs_area_t ( true
                                  , path_to_shared_file
                                  , size
                                  , topology
@@ -147,8 +142,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
 
   try
   {
-    beegfs_area_t area ( fhg::util::syscall::getpid()
-                       , true
+    beegfs_area_t area ( true
                        , path_to_shared_file
                        , size
                        , topology
@@ -178,8 +172,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
 
   try
   {
-    beegfs_area_t area ( fhg::util::syscall::getpid()
-                       , true
+    beegfs_area_t area ( true
                        , path_to_shared_file
                        , size
                        , topology
@@ -210,8 +203,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
   try
   {
-    beegfs_area_t area ( fhg::util::syscall::getpid()
-                       , true
+    beegfs_area_t area ( true
                        , path_to_shared_file
                        , size
                        , topology
@@ -220,7 +212,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
     area.set_id (2);
 
-    handle_t handle = area.alloc (1, size, "test", gpi::pc::is_global::yes);
+    handle_t handle = area.alloc (size, "test", gpi::pc::is_global::yes);
 
     area.write_to ( memory_location_t (handle, 0)
                   , text
@@ -257,8 +249,7 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 
   const gpi::pc::type::size_t size = (1L << 20); // 1 MB
 
-  beegfs_area_t area ( fhg::util::syscall::getpid()
-                     , true
+  beegfs_area_t area ( true
                      , path_to_shared_file
                      , size
                      , topology
@@ -267,8 +258,7 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
   BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   area.set_id (2);
 
-  BOOST_REQUIRE_THROW ( beegfs_area_t ( fhg::util::syscall::getpid()
-                                      , true
+  BOOST_REQUIRE_THROW ( beegfs_area_t ( true
                                       , path_to_shared_file
                                       , size
                                       , topology

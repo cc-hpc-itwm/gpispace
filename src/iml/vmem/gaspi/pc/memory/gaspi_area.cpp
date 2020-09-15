@@ -22,9 +22,7 @@ namespace gpi
   {
     namespace memory
     {
-      gaspi_area_t::gaspi_area_t ( const gpi::pc::type::process_id_t creator
-                                 , const std::string & name
-                                 , gpi::pc::global::itopology_t & topology
+      gaspi_area_t::gaspi_area_t ( gpi::pc::global::itopology_t & topology
                                  , handle_generator_t& handle_generator
                                  , fhg::iml::vmem::gaspi_context& gaspi_context
                                  , fhg::iml::vmem::gaspi_timeout& time_left
@@ -33,8 +31,6 @@ namespace gpi
                                  , type::size_t com_buffer_size
                                  )
         : area_t ( gaspi_area_t::area_type
-                 , creator
-                 , name
                  , per_node_size
                  , handle_generator
                  )
@@ -64,12 +60,11 @@ namespace gpi
         for (size_t i = 0; i < m_num_com_buffers; ++i)
         {
           const std::string hdl_name =
-            name + "-com-" + boost::lexical_cast<std::string>(i);
+            "com-" + boost::lexical_cast<std::string>(i);
           try
           {
             gpi::pc::type::handle_t com_hdl =
-              this->alloc ( IML_GPI_PC_INVAL
-                          , m_com_buffer_size
+              this->alloc ( m_com_buffer_size
                           , hdl_name
                           , is_global::no
                           );
@@ -404,7 +399,6 @@ namespace gpi
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , fhg::iml::vmem::gaspi_context& gaspi_context
-        , type::id_t owner
         )
       {
         type::size_t comsize = description._communication_buffer_size;
@@ -416,9 +410,7 @@ namespace gpi
 
         //! \todo get from user? use for other areas as well? remove?
         fhg::iml::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
-        gaspi_area_t * area = new gaspi_area_t ( owner
-                                               , "GASPI"
-                                               , topology
+        gaspi_area_t * area = new gaspi_area_t ( topology
                                                , handle_generator
                                                , gaspi_context
                                                , time_left

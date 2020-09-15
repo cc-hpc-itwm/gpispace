@@ -63,8 +63,7 @@ namespace gpi
                      );
 
         gpi::pc::type::handle_t
-        alloc ( const gpi::pc::type::process_id_t proc_id
-              , const gpi::pc::type::segment_id_t seg_id
+        alloc ( const gpi::pc::type::segment_id_t seg_id
               , const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
