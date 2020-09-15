@@ -153,7 +153,7 @@ namespace gpi
             gpi::pc::proto::memory::alloc_reply_t rpl;
             rpl.handle = _memory_manager.alloc
               ( m_proc_id
-              , alloc.segment, alloc.size, alloc.name, alloc.flags
+              , alloc.segment, alloc.size, alloc.name, is_global::yes
               );
             return gpi::pc::proto::memory::message_t (rpl);
           }

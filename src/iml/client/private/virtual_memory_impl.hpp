@@ -4,7 +4,6 @@
 
 #include <iml/vmem/gaspi/pc/client/api.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
@@ -28,7 +27,6 @@ namespace iml_client
         (api->alloc ( segment_id
                     , size
                     , description
-                    , gpi::pc::is_global::yes
                     )
         );
 

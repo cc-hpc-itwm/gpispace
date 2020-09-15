@@ -1,7 +1,6 @@
 #include <iml/vmem/gaspi/pc/client/api.hpp>
 
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 #include <iml/util/assert.hpp>
 #include <util-generic/print_exception.hpp>
@@ -145,14 +144,12 @@ namespace gpi
       api_t::alloc ( const type::segment_id_t seg
                    , const type::size_t sz
                    , const std::string & name
-                   , const type::flags_t flags
                    )
       {
         proto::memory::alloc_t alloc_msg;
         alloc_msg.segment = seg;
         alloc_msg.size = sz;
         alloc_msg.name = name;
-        alloc_msg.flags = flags;
 
         proto::message_t reply (communicate (proto::memory::message_t(alloc_msg)));
 

@@ -3,7 +3,6 @@
 #include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/memory_location.hpp>
 
@@ -45,7 +44,6 @@ namespace gpi
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
                                 , const std::string & desc
-                                , const type::flags_t
                                 );
         void free (const type::handle_id_t);
 
