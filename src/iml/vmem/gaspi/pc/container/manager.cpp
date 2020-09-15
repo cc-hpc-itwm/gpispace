@@ -223,17 +223,23 @@ namespace gpi
               );
 
             gpi::pc::proto::segment::register_reply_t rpl;
-            rpl.id =
-              _memory_manager.register_memory (m_proc_id, area);
-
+            rpl.segment = _memory_manager.register_memory (m_proc_id, area);
+            rpl.allocation = _memory_manager.alloc
+              ( m_proc_id
+              , rpl.segment
+              , register_segment.size
+              , register_segment.name
+              , is_global::no
+              );
             return gpi::pc::proto::segment::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
           {
+            _memory_manager.free (unregister_segment.allocation);
             _memory_manager.unregister_memory
-              (m_proc_id, unregister_segment.id);
+              (m_proc_id, unregister_segment.segment);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
           }

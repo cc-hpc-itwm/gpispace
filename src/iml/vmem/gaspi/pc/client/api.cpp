@@ -382,6 +382,7 @@ namespace gpi
         seg->create ();
 
         // communication part
+        api_t::shm_allocation result;
         {
           proto::segment::register_t rqst;
           rqst.name = name;
@@ -392,7 +393,8 @@ namespace gpi
           {
             proto::segment::message_t seg_msg (boost::get<proto::segment::message_t>(rply));
             proto::segment::register_reply_t reg (boost::get<proto::segment::register_reply_t> (seg_msg));
-            seg->assign_id (reg.id);
+            seg->assign_id (reg.segment);
+            result = {reg.segment, reg.allocation};
           }
           catch (boost::bad_get const &)
           {
@@ -429,15 +431,14 @@ namespace gpi
 
         seg->unlink();
 
-        return {seg->id(), alloc (seg->id(), size, name, is_global::no)};
+        return result;
       }
 
       void api_t::free_and_delete_shm_segment (shm_allocation const ids)
       {
-        free (ids.second);
-
         proto::segment::unregister_t rqst;
-        rqst.id = ids.first;
+        rqst.segment = ids.first;
+        rqst.allocation = ids.second;
 
         try
         {

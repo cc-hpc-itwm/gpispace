@@ -35,27 +35,31 @@ namespace gpi
 
         struct register_reply_t
         {
-          gpi::pc::type::segment_id_t id;
+          gpi::pc::type::segment_id_t segment;
+          gpi::pc::type::handle_id_t allocation;
 
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( id );
+            ar & BOOST_SERIALIZATION_NVP( segment );
+            ar & BOOST_SERIALIZATION_NVP( allocation );
           }
         };
 
         struct unregister_t
         {
-          gpi::pc::type::segment_id_t id;
+          gpi::pc::type::segment_id_t segment;
+          gpi::pc::type::handle_id_t allocation;
 
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( id );
+            ar & BOOST_SERIALIZATION_NVP( segment );
+            ar & BOOST_SERIALIZATION_NVP( allocation );
           }
         };
 
