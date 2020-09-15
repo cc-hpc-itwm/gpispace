@@ -1,4 +1,4 @@
-#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/scoped_shm_allocation.hpp>
 #include <iml/vmem/gaspi/pc/client/api.hpp>
 
 #include <fhg/util/thread/bounded_queue.hpp>
@@ -87,7 +87,7 @@ public:
     , std::string const& kernel_name
     , unsigned short comm_port
     , gpi::pc::client::api_t /*const*/* virtual_memory_socket
-    , iml_client::scoped_allocation /*const*/* shared_memory
+    , iml::client::scoped_shm_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -134,7 +134,7 @@ private:
   void emit_gantt (wfe_task_t const&, sdpa::daemon::NotificationEvent::state_t);
 
   gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-  iml_client::scoped_allocation /*const*/* _shared_memory;
+  iml::client::scoped_shm_allocation /*const*/* _shared_memory;
 
   //! \todo Two sets for connected and unconnected masters?
   masters_t m_masters;

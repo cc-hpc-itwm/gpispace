@@ -5,7 +5,7 @@
 #include <we/type/module_call.hpp>
 
 #include <iml/vmem/gaspi/pc/client/api.hpp>
-#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/scoped_shm_allocation.hpp>
 
 namespace we
 {
@@ -14,7 +14,7 @@ namespace we
     expr::eval::context module_call
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/*
-      , iml_client::scoped_allocation /*const*/*
+      , iml::client::scoped_shm_allocation /*const*/*
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call

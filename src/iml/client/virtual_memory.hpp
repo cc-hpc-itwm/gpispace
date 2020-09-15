@@ -21,7 +21,6 @@ namespace gpi
 
 namespace iml_client
 {
-  class scoped_allocation;
   class scoped_iml_runtime_system;
 
   class vmem_allocation

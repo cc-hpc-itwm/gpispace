@@ -8,7 +8,7 @@
 #include <fhg/util/starts_with.hpp>
 
 #include <iml/vmem/gaspi/pc/client/api.hpp>
-#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/scoped_shm_allocation.hpp>
 
 #include <drts/worker/context.hpp>
 
@@ -36,7 +36,7 @@ namespace
     wfe_exec_context
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/* virtual_memory
-      , iml_client::scoped_allocation /*const*/* shared_memory
+      , iml::client::scoped_shm_allocation /*const*/* shared_memory
       , boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       , expr::eval::context const& evaluation_context
@@ -119,7 +119,7 @@ namespace
   private:
     we::loader::loader& _loader;
     gpi::pc::client::api_t /*const*/* _virtual_memory;
-    iml_client::scoped_allocation /*const*/* _shared_memory;
+    iml::client::scoped_shm_allocation /*const*/* _shared_memory;
     boost::optional<std::string> _target_implementation;
     drts::worker::context* _worker_context;
     expr::eval::context const& _evaluation_context;
@@ -415,7 +415,7 @@ namespace we
     void activity_t::execute
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/ * virtual_memory
-      , iml_client::scoped_allocation /* const */ * shared_memory
+      , iml::client::scoped_shm_allocation /* const */ * shared_memory
       , boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       )

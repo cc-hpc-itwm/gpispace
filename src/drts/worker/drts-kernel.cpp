@@ -194,12 +194,12 @@ int main(int ac, char **av)
           )
       : nullptr
       );
-    std::unique_ptr<iml_client::scoped_allocation> const shared_memory
+    std::unique_ptr<iml::client::scoped_shm_allocation> const shared_memory
       ( ( virtual_memory_api
         && vm.count (option_name::shared_memory_size)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
-      ? fhg::util::cxx14::make_unique<iml_client::scoped_allocation>
+      ? fhg::util::cxx14::make_unique<iml::client::scoped_shm_allocation>
         ( virtual_memory_api
         , kernel_name + "-shared_memory"
         , vm.at (option_name::shared_memory_size).as<unsigned long>()

@@ -38,9 +38,12 @@ namespace gpi
   }
 }
 
-namespace iml_client
+namespace iml
 {
-  class scoped_allocation;
+  namespace client
+  {
+    class scoped_shm_allocation;
+  }
 }
 
 //! is: activity.fwd.hpp
@@ -122,7 +125,7 @@ namespace we
       void execute
         ( we::loader::loader&
         , gpi::pc::client::api_t /*const*/ *
-        , iml_client::scoped_allocation /* const */ *
+        , iml::client::scoped_shm_allocation /* const */ *
         , boost::optional<std::string> target_implementation
         , drts::worker::context*
         );
