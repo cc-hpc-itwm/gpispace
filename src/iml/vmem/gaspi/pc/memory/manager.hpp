@@ -60,7 +60,7 @@ namespace gpi
                             , const gpi::pc::type::segment_id_t
                             );
 
-        int
+        void
         remote_alloc ( const gpi::pc::type::segment_id_t
                      , const gpi::pc::type::handle_t
                      , const gpi::pc::type::offset_t
@@ -90,7 +90,7 @@ namespace gpi
                                  );
         void wait (type::memcpy_id_t const&);
 
-        int
+        void
         remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
                           , iml::segment_description const& description
                           , unsigned long total_size
@@ -104,7 +104,7 @@ namespace gpi
                    , global::topology_t& topology
                    );
 
-        int
+        void
         remote_del_memory ( const gpi::pc::type::segment_id_t seg_id
                           , global::topology_t& topology
                           );

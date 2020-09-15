@@ -202,7 +202,7 @@ namespace gpi
         }
       }
 
-      int
+      void
       area_t::remote_alloc ( const gpi::pc::type::handle_t hdl_id
                            , const gpi::pc::type::offset_t offset
                            , const gpi::pc::type::size_t size
@@ -237,8 +237,6 @@ namespace gpi
           update_descriptor_from_mmgr ();
           m_handles [hdl.id] = hdl;
         }
-
-        return 0;
       }
 
       gpi::pc::type::handle_t

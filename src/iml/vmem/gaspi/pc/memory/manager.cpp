@@ -335,7 +335,7 @@ namespace gpi
         m_handle_to_segment.erase (hdl);
       }
 
-      int
+      void
       manager_t::remote_alloc ( const gpi::pc::type::segment_id_t seg_id
                               , const gpi::pc::type::handle_t hdl
                               , const gpi::pc::type::offset_t offset
@@ -347,8 +347,6 @@ namespace gpi
         area_ptr area (get_area (seg_id));
         area->remote_alloc (hdl, offset, size, local_size, name);
         add_handle (hdl, seg_id);
-
-        return 0;
       }
 
       gpi::pc::type::handle_t
@@ -464,7 +462,7 @@ namespace gpi
         task_it->second.get();
       }
 
-      int
+      void
       manager_t::remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
                                    , iml::segment_description const& description
                                    , unsigned long total_size
@@ -474,7 +472,6 @@ namespace gpi
         area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, 0));
         area->set_id (seg_id);
         add_area (area);
-        return 0;
       }
 
       namespace
@@ -566,13 +563,12 @@ namespace gpi
         return id;
       }
 
-      int
+      void
       manager_t::remote_del_memory ( const gpi::pc::type::segment_id_t seg_id
                                    , global::topology_t& topology
                                    )
       {
         del_memory (0, seg_id, topology);
-        return 0;
       }
 
       void
