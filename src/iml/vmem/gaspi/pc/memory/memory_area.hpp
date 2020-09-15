@@ -3,7 +3,6 @@
 #include <iml/vmem/dtmmgr.hpp>
 
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <iml/vmem/gaspi/types.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
@@ -15,6 +14,7 @@
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
 #include <future>
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
@@ -213,7 +213,7 @@ namespace gpi
         handle_generator_t& _handle_generator;
       };
 
-      typedef boost::shared_ptr<area_t> area_ptr_t;
+      typedef std::shared_ptr<area_t> area_ptr_t;
     }
   }
 }

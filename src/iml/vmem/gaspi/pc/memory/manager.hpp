@@ -1,6 +1,5 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
 #include <iml/segment_description.hpp>
@@ -32,7 +31,7 @@ namespace gpi
       class manager_t : boost::noncopyable
       {
       public:
-        typedef boost::shared_ptr<area_t> area_ptr;
+        using area_ptr = area_ptr_t;
 
         manager_t (fhg::iml::vmem::gaspi_context&);
         ~manager_t ();
