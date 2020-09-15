@@ -140,18 +140,9 @@ namespace gpi
         area->set_id (segment);
         add_area (area);
       {
-        lock_type lock (m_mutex);
-        area_map_t::iterator area (m_areas.find(segment));
-        if (area == m_areas.end())
-        {
-          throw std::runtime_error ( "no such memory: "
-                                   + boost::lexical_cast<std::string>(segment)
-                                   );
-        }
-
         if (creator)
         {
-          area->second->attach_process (creator);
+          area->attach_process (creator);
         }
       }
 
@@ -170,7 +161,6 @@ namespace gpi
         lock_type lock (m_mutex);
 
       {
-        lock_type lock (m_mutex);
         area_map_t::iterator area (m_areas.find(mem_id));
         if (area == m_areas.end())
         {
@@ -201,13 +191,7 @@ namespace gpi
         {
           try
           {
-            area_map_t::iterator area_it (m_areas.find(mem_id));
-            if (area_it == m_areas.end())
-            {
-              throw std::runtime_error ( "no such memory: "
-                                       + boost::lexical_cast<std::string>(mem_id)
-                                       );
-            }
+            auto const area_it (m_areas.find(mem_id));
 
             area_ptr area (area_it->second);
 
@@ -229,7 +213,6 @@ namespace gpi
           {
             // unroll
       {
-        lock_type lock (m_mutex);
         area_map_t::iterator area (m_areas.find(mem_id));
         if (area == m_areas.end())
         {
@@ -268,7 +251,6 @@ namespace gpi
         {
           auto const mem_id (segments.front());
       {
-        lock_type lock (m_mutex);
         area_map_t::iterator area (m_areas.find(mem_id));
         if (area == m_areas.end())
         {
