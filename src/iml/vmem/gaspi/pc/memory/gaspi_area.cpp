@@ -126,7 +126,7 @@ namespace gpi
       gaspi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
         if (  hdl.flags == is_global::yes
-           && hdl.creator != (gpi::pc::type::process_id_t)(-1)
+           && hdl.creator != IML_GPI_PC_INVAL
            )
         {
           _topology.alloc ( descriptor ().id

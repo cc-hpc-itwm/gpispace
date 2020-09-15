@@ -330,7 +330,7 @@ namespace gpi
       void
       beegfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (hdl.creator != (gpi::pc::type::process_id_t)(-1))
+        if (hdl.creator != IML_GPI_PC_INVAL)
         {
           m_topology.alloc ( descriptor ().id
                            , hdl.id
