@@ -50,8 +50,6 @@ namespace gpi
                      , type::size_t com_buffer_size
                      );
 
-        virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
-
         virtual global::itopology_t& global_topology() override;
 
         virtual std::packaged_task<void()> get_send_task

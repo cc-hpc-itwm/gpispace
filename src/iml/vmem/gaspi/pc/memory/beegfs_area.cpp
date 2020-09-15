@@ -312,12 +312,6 @@ namespace gpi
         return nullptr;
       }
 
-      bool
-      beegfs_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
-      {
-        return false;
-      }
-
       global::itopology_t& beegfs_area_t::global_topology()
       {
         return m_topology;

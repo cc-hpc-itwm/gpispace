@@ -149,9 +149,6 @@ namespace gpi
 
         /* hook functions that need to be overridded by specific segments */
 
-        virtual
-        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
-
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                                     , const gpi::pc::type::offset_t a
                                     , const gpi::pc::type::offset_t b

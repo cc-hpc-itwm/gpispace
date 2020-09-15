@@ -109,12 +109,6 @@ namespace gpi
           : (char*)nullptr;
       }
 
-      bool
-      gaspi_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
-      {
-        return false;
-      }
-
       global::itopology_t& gaspi_area_t::global_topology()
       {
         return _topology;

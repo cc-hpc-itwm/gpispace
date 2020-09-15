@@ -432,17 +432,10 @@ namespace gpi
         }
       }
 
-      bool
-      area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
-      {
-        return !is_shm_segment()
-            || (proc == descriptor ().creator);
-      }
-
       void area_t::attach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
-        if (is_allowed_to_attach (id))
+        if (is_shm_segment() && id == descriptor().creator)
         {
           m_attached_processes.insert (id);
         }
