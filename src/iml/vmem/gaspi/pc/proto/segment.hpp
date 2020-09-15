@@ -6,6 +6,7 @@
 #include <boost/serialization/string.hpp>
 #include <boost/serialization/variant.hpp>
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 
@@ -61,21 +62,16 @@ namespace gpi
         // replies with add_reply_t
         struct add_memory_t
         {
-          add_memory_t ()
-            : url ("")
-          {}
+          iml::segment_description description;
+          unsigned long total_size;
 
-          add_memory_t (std::string const & a_url)
-            : url (a_url)
-          {}
-
-          std::string            url;
         private:
           friend class boost::serialization::access;
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP (url);
+            ar & description;
+            ar & total_size;
           }
         };
 

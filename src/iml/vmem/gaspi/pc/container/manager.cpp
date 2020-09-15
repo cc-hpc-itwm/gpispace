@@ -12,8 +12,6 @@
 
 #include <iml/vmem/gaspi/pc/memory/shm_area.hpp>
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
-#include <iml/vmem/gaspi/pc/url.hpp>
-#include <iml/vmem/gaspi/pc/url_io.hpp>
 
 #include <cstdio>
 #include <cstdlib>
@@ -247,7 +245,11 @@ namespace gpi
             return proto::segment::message_t
               ( proto::segment::add_reply_t
                   ( _memory_manager.add_memory
-                      (m_proc_id, add_mem.url, _topology)
+                      ( m_proc_id
+                      , add_mem.description
+                      , add_mem.total_size
+                      , _topology
+                      )
                   )
               );
           }

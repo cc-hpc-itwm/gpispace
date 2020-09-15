@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/types.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
@@ -29,7 +30,8 @@ namespace gpi
         virtual void free (const gpi::pc::type::handle_t) = 0;
 
         virtual void add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                , std::string const & url
+                                , iml::segment_description const& description
+                                , unsigned long total_size
                                 ) = 0;
 
         virtual void del_memory (const gpi::pc::type::segment_id_t seg_id) = 0;

@@ -7,8 +7,6 @@
 #include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
 
-#include <iml/vmem/gaspi/pc/url.hpp>
-
 #include <util-generic/divru.hpp>
 #include <util-generic/print_exception.hpp>
 
@@ -293,7 +291,7 @@ namespace gpi
 
             if (0 == read_bytes)
             {
-              throw std::runtime_error 
+              throw std::runtime_error
                 ( "could not read from src area - premature "
                   "end-of-file?"
                 );
@@ -350,7 +348,7 @@ namespace gpi
 
             if (written_bytes != buf.used ())
             {
-              throw std::runtime_error 
+              throw std::runtime_error
                 ( "could not write to dst area - premature "
                   "end-of-file?"
                 );
@@ -430,21 +428,16 @@ namespace gpi
       }
 
       area_ptr_t gaspi_area_t::create
-        ( std::string const &url_s
+        ( iml::gaspi_segment_description const& description
+        , unsigned long total_size
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , fhg::iml::vmem::gaspi_context& gaspi_context
         , type::id_t owner
         )
       {
-        url_t url (url_s);
-
-        type::size_t comsize =
-          boost::lexical_cast<type::size_t>(url.get ("buffer_size").get_value_or ("4194304"));
-        type::size_t numbuf =
-          boost::lexical_cast<type::size_t>(url.get ("buffers").get_value_or ("8"));
-        type::size_t const total_size
-          (boost::lexical_cast<type::size_t> (url.get ("total_size").get()));
+        type::size_t comsize = description._communication_buffer_size;
+        type::size_t numbuf = description._communication_buffer_count;
         type::size_t const per_node_size
           ( fhg::util::divru (total_size, gaspi_context.number_of_nodes())
           + comsize * numbuf

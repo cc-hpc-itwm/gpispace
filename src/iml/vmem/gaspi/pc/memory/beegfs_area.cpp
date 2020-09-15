@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <cstring>
 
-#include <iml/vmem/gaspi/pc/url.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
@@ -419,21 +418,18 @@ namespace gpi
       }
 
       area_ptr_t beegfs_area_t::create
-        ( std::string const &url_s
+        ( iml::beegfs_segment_description const& description
+        , unsigned long total_size
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , type::id_t owner
         )
       {
-        url_t url (url_s);
         gpi::pc::type::flags_t flags = F_NONE;
 
-        gpi::pc::type::size_t size =
-          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
-
         area_ptr_t area (new beegfs_area_t ( owner
-                                           , url.path()
-                                           , size
+                                           , description._path
+                                           , total_size
                                            , flags | F_GLOBAL
                                            , topology
                                            , handle_generator

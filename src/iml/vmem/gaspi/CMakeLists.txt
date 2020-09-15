@@ -25,6 +25,7 @@ extended_add_library (NAME vmem-pc-client-static
   SOURCES "pc/client/api.cpp"
   LIBRARIES Util::Generic
             IML::vmem-pc-segment
+            IML::Shared
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
@@ -46,7 +47,7 @@ extended_add_library (NAME vmem-pc-memory
           "pc/memory/beegfs_area.cpp"
   LIBRARIES IML::vmem-pc-segment
             IML::mmgr
-            IML::vmem_url
+            IML::Shared
             Util::Generic
             IML::vmem-gpiapi
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
@@ -66,17 +67,10 @@ extended_add_library (NAME vmem-pc-global
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME vmem_url
-  NAMESPACE IML
-  SOURCES "pc/url.cpp"
-  LIBRARIES IML::fhg-util
-)
-
 extended_add_library (NAME gpi_type_check
   NAMESPACE IML
   SOURCES "types.cpp"
   LIBRARIES IML::vmem-gpiapi
 )
 
-add_subdirectory (pc/test)
 add_subdirectory (tests)

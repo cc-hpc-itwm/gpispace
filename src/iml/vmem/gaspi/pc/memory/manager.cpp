@@ -1,9 +1,8 @@
 #include <iml/util/assert.hpp>
-#include <iml/vmem/gaspi/pc/url.hpp>
-#include <iml/vmem/gaspi/pc/url_io.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
@@ -24,28 +23,32 @@ namespace gpi
     {
       namespace
       {
-        area_ptr_t create_area ( std::string const &url_s
+        area_ptr_t create_area ( iml::segment_description const& description
+                               , unsigned long total_size
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
                                , fhg::iml::vmem::gaspi_context& gaspi_context
                                , type::id_t owner
                                )
         {
-          url_t url (url_s);
-
-          if (url.type() == "gaspi")
-          {
-            return gaspi_area_t::create
-              (url_s, topology, handle_generator, gaspi_context, owner);
-          }
-          else if (url.type() == "beegfs")
-          {
-            return beegfs_area_t::create
-              (url_s, topology, handle_generator, owner);
-          }
-
-          throw std::runtime_error
-            ("no memory type registered with: '" + url_s + "'");
+          return fhg::util::visit<area_ptr_t>
+            ( description
+            , [&] (iml::gaspi_segment_description const& desc)
+              {
+                return gaspi_area_t::create ( desc
+                                            , total_size
+                                            , topology
+                                            , handle_generator
+                                            , gaspi_context
+                                            , owner
+                                            );
+              }
+            , [&] (iml::beegfs_segment_description const& desc)
+              {
+                return beegfs_area_t::create
+                  (desc, total_size, topology, handle_generator, owner);
+              }
+            );
         }
       }
 
@@ -463,29 +466,48 @@ namespace gpi
 
       int
       manager_t::remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                   , std::string const & url
+                                   , iml::segment_description const& description
+                                   , unsigned long total_size
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (url, topology, _handle_generator, _gaspi_context, 0));
+        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, 0));
         area->set_id (seg_id);
         add_area (area);
         return 0;
       }
 
-      gpi::pc::type::segment_id_t
-      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
-                            , const std::string & url_s
-                            , global::topology_t& topology
-                            )
+      namespace
       {
         //! \note for beegfs, master creates file that slaves need to
         //! open determining filesize from the opened file. thus, to
         //! avoid a race, the master is doing this before all
         //! others. gaspi on the other side needs simultaneous
         //! initialization for gaspi_segment_create etc.
-        bool const require_earlier_master_initialization
-          (url_t (url_s).type() == "beegfs");
+        bool require_earlier_master_initialization
+          (iml::segment_description const& description)
+        {
+          return fhg::util::visit<bool>
+            ( description
+            , [&] (iml::beegfs_segment_description const&)
+              {
+                return true;
+              }
+            , [&] (iml::gaspi_segment_description const&)
+              {
+                return false;
+              }
+            );
+        }
+      }
+
+      gpi::pc::type::segment_id_t
+      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+                            , iml::segment_description const& description
+                            , unsigned long total_size
+                            , global::topology_t& topology
+                            )
+      {
 
         type::segment_id_t const id
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
@@ -506,14 +528,14 @@ namespace gpi
                            }
                          );
 
-        if (require_earlier_master_initialization)
+        if (require_earlier_master_initialization (description))
         {
-          area_ptr_t area = create_area (url_s, topology, _handle_generator, _gaspi_context, proc_id);
+          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, proc_id);
           area->set_id (id);
 
           add_area (area);
 
-          topology.add_memory (id, url_s);
+          topology.add_memory (id, description, total_size);
         }
         else
         {
@@ -522,7 +544,8 @@ namespace gpi
                 ( std::launch::async
                 , [&]
                   {
-                    area_ptr_t area ( create_area ( url_s
+                    area_ptr_t area ( create_area ( description
+                                                  , total_size
                                                   , topology
                                                   , _handle_generator
                                                   , _gaspi_context
@@ -535,7 +558,7 @@ namespace gpi
                 )
             );
 
-          topology.add_memory (id, url_s);
+          topology.add_memory (id, description, total_size);
           local.get();
         }
 

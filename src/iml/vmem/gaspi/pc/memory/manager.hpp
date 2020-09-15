@@ -3,6 +3,7 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
@@ -87,13 +88,15 @@ namespace gpi
 
         int
         remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
-                          , std::string const & url
+                          , iml::segment_description const& description
+                          , unsigned long total_size
                           , global::topology_t& topology
                           );
 
         gpi::pc::type::segment_id_t
         add_memory ( const gpi::pc::type::process_id_t proc_id
-                   , const std::string & url
+                   , iml::segment_description const& description
+                   , unsigned long total_size
                    , global::topology_t& topology
                    );
 

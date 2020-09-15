@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
 
 #include <iml/vmem/gaspi/pc/type/segment_type.hpp>
@@ -29,7 +30,8 @@ namespace gpi
 
         typedef fhg::util::threadsafe_queue<handle_buffer_t> handle_pool_t;
 
-        static area_ptr_t create ( std::string const &url
+        static area_ptr_t create ( iml::gaspi_segment_description const&
+                                 , unsigned long total_size
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , fhg::iml::vmem::gaspi_context&

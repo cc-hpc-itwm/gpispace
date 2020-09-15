@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
 #include <iml/vmem/gaspi/pc/type/flags.hpp>
@@ -82,7 +83,10 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t
         info(const gpi::pc::type::handle_t h);
 
-        type::segment_id_t create_segment (std::string const& info);
+        type::segment_id_t create_segment
+          ( iml::segment_description const& description
+          , unsigned long total_size
+          );
         void delete_segment (type::segment_id_t);
 
         typedef std::recursive_mutex mutex_type;
@@ -100,25 +104,12 @@ namespace gpi
       struct remote_segment
       {
       public:
-        static struct {} gaspi;
-        static struct {} filesystem;
+        remote_segment
+          ( api_t& api
+          , iml::segment_description const& description
+          , unsigned long total_size
+          );
 
-        remote_segment ( api_t&
-                       , decltype (gaspi)
-                       , type::size_t
-                       , type::size_t communication_buffer
-                       , type::size_t num_communication_buffers
-                       );
-        remote_segment ( api_t&
-                       , decltype (filesystem)
-                       , type::size_t
-                       , boost::filesystem::path
-                       );
-
-      private:
-        remote_segment (api_t&, std::string const&);
-
-      public:
         ~remote_segment();
         remote_segment (remote_segment const&) = delete;
         remote_segment (remote_segment&&) = delete;

@@ -6,8 +6,6 @@
 
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 
-#include <boost/filesystem/path.hpp>
-
 #include <string>
 
 namespace gpi
@@ -25,26 +23,6 @@ namespace iml_client
 {
   class scoped_allocation;
   class scoped_iml_runtime_system;
-
-  namespace vmem
-  {
-    struct gaspi_segment_description
-    {
-      inline gaspi_segment_description
-        ( std::size_t communication_buffer_size = 4 * (1 << 20)
-        , std::size_t communication_buffer_count = 8
-        );
-
-      std::size_t _communication_buffer_size;
-      std::size_t _communication_buffer_count;
-    };
-    struct beegfs_segment_description
-    {
-      inline beegfs_segment_description (boost::filesystem::path);
-
-      boost::filesystem::path _path;
-    };
-  }
 
   class vmem_allocation
   {
@@ -81,17 +59,4 @@ namespace iml_client
 
     PIMPL (vmem_allocation);
   };
-
-  vmem::gaspi_segment_description::gaspi_segment_description
-      ( std::size_t communication_buffer_size
-      , std::size_t communication_buffer_count
-      )
-    : _communication_buffer_size (communication_buffer_size)
-    , _communication_buffer_count (communication_buffer_count)
-  {}
-
-  vmem::beegfs_segment_description::beegfs_segment_description
-      (boost::filesystem::path path)
-    : _path (std::move (path))
-  {}
 }

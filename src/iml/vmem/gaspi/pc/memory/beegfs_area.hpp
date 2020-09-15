@@ -2,6 +2,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
@@ -24,7 +25,8 @@ namespace gpi
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
-        static area_ptr_t create ( std::string const &url
+        static area_ptr_t create ( iml::beegfs_segment_description const&
+                                 , unsigned long total_size
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , type::id_t owner

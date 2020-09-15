@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
     );
 
   iml_client::vmem_allocation const global_data
-    ( iml_rts.alloc ( iml_client::vmem::gaspi_segment_description()
+    ( iml_rts.alloc ( iml::gaspi_segment_description()
                     , MAX_DATA_LEN
                     , "data"
                     )
