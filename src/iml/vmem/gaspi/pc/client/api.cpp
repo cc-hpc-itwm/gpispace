@@ -358,12 +358,10 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::segment_id_t
-      api_t::register_segment( std::string const & name
-                             , const gpi::pc::type::size_t sz
-                             )
+      gpi::pc::type::segment_id_t api_t::create_shm_segment
+        (std::string const& name, gpi::pc::type::size_t const size)
       {
-        segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
+        segment_ptr seg (new gpi::pc::segment::segment_t(name, size));
 
         try
         {
@@ -387,7 +385,7 @@ namespace gpi
         {
           proto::segment::register_t rqst;
           rqst.name = name;
-          rqst.size = sz;
+          rqst.size = size;
 
           proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
@@ -434,8 +432,7 @@ namespace gpi
         return seg->id();
       }
 
-      void
-      api_t::unregister_segment (const gpi::pc::type::segment_id_t id)
+      void api_t::delete_shm_segment (gpi::pc::type::segment_id_t const id)
       {
         proto::segment::unregister_t rqst;
         rqst.id = id;

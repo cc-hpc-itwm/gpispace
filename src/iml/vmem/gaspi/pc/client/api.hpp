@@ -73,10 +73,11 @@ namespace gpi
 
         void * ptr(const gpi::pc::type::handle_t h);
 
-        gpi::pc::type::segment_id_t register_segment( std::string const & name
-                                                    , const gpi::pc::type::size_t sz
-                                                    );
-        void unregister_segment(const gpi::pc::type::segment_id_t);
+        gpi::pc::type::segment_id_t create_shm_segment
+          ( std::string const& name
+          , gpi::pc::type::size_t size
+          );
+        void delete_shm_segment (gpi::pc::type::segment_id_t);
 
       private:
         void stop ();
