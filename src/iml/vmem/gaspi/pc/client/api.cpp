@@ -427,8 +427,6 @@ namespace gpi
             );
         }
 
-        fhg_assert (m_segments.find (seg->id()) == m_segments.end());
-
         m_segments [seg->id()] = seg;
 
         seg->unlink();
