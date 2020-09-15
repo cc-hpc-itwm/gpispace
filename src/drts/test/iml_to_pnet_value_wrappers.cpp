@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <regex>
 #include <sstream>
+#include <string>
 
 FHG_UTIL_TESTING_RANDOM_SPECIALIZE_SIMPLE (gpi::pc::type::range_t)
 {
@@ -57,6 +58,17 @@ namespace gspc
           );
       }
 
+      namespace
+      {
+        // \todo Move to fhg::util::testing::random<char>::no_newline().
+        std::string no_newline()
+        {
+          auto result (fhg::util::testing::random<char>::any());
+          result.erase ('\n');
+          return result;
+        }
+      }
+
       BOOST_AUTO_TEST_CASE (stream_slot_is_wrapped_correctly)
       {
         REQUIRE_TOKEN_MATCHES_REGEX
@@ -65,7 +77,8 @@ namespace gspc
           , stream_slot_to_value
               ( fhg::util::testing::random<gpi::pc::type::range_t>{}()
               , fhg::util::testing::random<gpi::pc::type::range_t>{}()
-              , fhg::util::testing::random<char>{}()
+                // Regex does not like newlines.
+              , fhg::util::testing::random<char>{} (no_newline())
               , fhg::util::testing::random<std::size_t>{}()
               )
           );
