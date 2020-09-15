@@ -53,13 +53,6 @@ namespace gpi
                                , const gpi::pc::type::segment_id_t
                                );
 
-        void attach_process ( const gpi::pc::type::process_id_t
-                            , const gpi::pc::type::segment_id_t
-                            );
-        void detach_process ( const gpi::pc::type::process_id_t
-                            , const gpi::pc::type::segment_id_t
-                            );
-
         void
         remote_alloc ( const gpi::pc::type::segment_id_t
                      , const gpi::pc::type::handle_t

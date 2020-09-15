@@ -124,7 +124,21 @@ namespace gpi
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         area->set_id (segment);
         add_area (area);
-        attach_process (creator, segment);
+      {
+        lock_type lock (m_mutex);
+        area_map_t::iterator area (m_areas.find(segment));
+        if (area == m_areas.end())
+        {
+          throw std::runtime_error ( "no such memory: "
+                                   + boost::lexical_cast<std::string>(segment)
+                                   );
+        }
+
+        if (creator)
+        {
+          area->second->attach_process (creator);
+        }
+      }
 
         auto const allocation
           (area->alloc (creator, size, name, is_global::no));
@@ -140,7 +154,26 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        detach_process (pid, mem_id);
+      {
+        lock_type lock (m_mutex);
+        area_map_t::iterator area (m_areas.find(mem_id));
+        if (area == m_areas.end())
+        {
+          throw std::runtime_error ( "no such memory: "
+                                   + boost::lexical_cast<std::string>(mem_id)
+                                   );
+        }
+
+        if (pid)
+        {
+          area->second->detach_process (pid);
+
+          if (!area->second->in_use())
+          {
+            unregister_memory (mem_id);
+          }
+        }
+      }
         if (m_areas.find(mem_id) != m_areas.end())
         {
           try
@@ -149,7 +182,22 @@ namespace gpi
           }
           catch (...)
           {
-            attach_process(pid, mem_id); // unroll
+            // unroll
+      {
+        lock_type lock (m_mutex);
+        area_map_t::iterator area (m_areas.find(mem_id));
+        if (area == m_areas.end())
+        {
+          throw std::runtime_error ( "no such memory: "
+                                   + boost::lexical_cast<std::string>(mem_id)
+                                   );
+        }
+
+        if (pid)
+        {
+          area->second->attach_process (pid);
+        }
+      }
             throw;
           }
         }
@@ -186,29 +234,24 @@ namespace gpi
       }
 
       void
-      manager_t::attach_process ( const gpi::pc::type::process_id_t proc_id
-                                , const gpi::pc::type::segment_id_t mem_id
-                                )
+      manager_t::garbage_collect (const gpi::pc::type::process_id_t proc_id)
       {
         lock_type lock (m_mutex);
-        area_map_t::iterator area (m_areas.find(mem_id));
-        if (area == m_areas.end())
+        std::list<gpi::pc::type::segment_id_t> segments;
+        for ( area_map_t::iterator area (m_areas.begin())
+            ; area != m_areas.end()
+            ; ++area
+            )
         {
-          throw std::runtime_error ( "no such memory: "
-                                   + boost::lexical_cast<std::string>(mem_id)
-                                   );
+          area->second->garbage_collect (proc_id);
+
+          if (area->second->is_process_attached (proc_id))
+            segments.push_back (area->first);
         }
 
-        if (proc_id)
+        while (! segments.empty())
         {
-          area->second->attach_process (proc_id);
-        }
-      }
-
-      void
-      manager_t::detach_process ( const gpi::pc::type::process_id_t proc_id
-                                , const gpi::pc::type::segment_id_t mem_id
-                                )
+          auto const mem_id (segments.front());
       {
         lock_type lock (m_mutex);
         area_map_t::iterator area (m_areas.find(mem_id));
@@ -229,26 +272,6 @@ namespace gpi
           }
         }
       }
-
-      void
-      manager_t::garbage_collect (const gpi::pc::type::process_id_t proc_id)
-      {
-        lock_type lock (m_mutex);
-        std::list<gpi::pc::type::segment_id_t> segments;
-        for ( area_map_t::iterator area (m_areas.begin())
-            ; area != m_areas.end()
-            ; ++area
-            )
-        {
-          area->second->garbage_collect (proc_id);
-
-          if (area->second->is_process_attached (proc_id))
-            segments.push_back (area->first);
-        }
-
-        while (! segments.empty())
-        {
-          detach_process (proc_id, segments.front());
           segments.pop_front();
         }
       }
