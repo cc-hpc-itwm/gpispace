@@ -557,14 +557,6 @@ namespace gpi
 
           area_ptr area (area_it->second);
 
-          if (area->in_use ())
-          {
-            // TODO: maybe move memory segment to garbage area
-
-            throw std::runtime_error
-              ("segment is still inuse, cannot unregister");
-          }
-
           area->pre_dtor ();
           m_areas.erase (area_it);
 
