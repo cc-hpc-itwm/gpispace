@@ -155,7 +155,6 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-      {
         auto const area_it (m_areas.find(mem_id));
         if (area_it == m_areas.end())
         {
@@ -177,12 +176,8 @@ namespace gpi
             area->garbage_collect ();
             m_areas.erase (area_it);
           }
-      }
-        if (m_areas.find(mem_id) != m_areas.end())
-        {
-          auto const area_it (m_areas.find(mem_id));
-          area_ptr area (area_it->second);
-
+          else
+          {
           try
           {
             if (area->in_use ())
