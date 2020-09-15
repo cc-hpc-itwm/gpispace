@@ -161,22 +161,21 @@ namespace gpi
         lock_type lock (m_mutex);
 
       {
-        area_map_t::iterator area (m_areas.find(mem_id));
-        if (area == m_areas.end())
+        auto const area_it (m_areas.find(mem_id));
+        if (area_it == m_areas.end())
         {
           throw std::runtime_error ( "no such memory: "
                                    + boost::lexical_cast<std::string>(mem_id)
                                    );
         }
+        auto const area (area_it->second);
 
         if (pid)
         {
-          area->second->detach_process (pid);
+          area->detach_process (pid);
 
-          if (!area->second->in_use())
+          if (!area->in_use())
           {
-            area_map_t::iterator area_it (area);
-
             area_ptr area (area_it->second);
 
             // WORK HERE:
@@ -189,12 +188,11 @@ namespace gpi
       }
         if (m_areas.find(mem_id) != m_areas.end())
         {
+          auto const area_it (m_areas.find(mem_id));
+          area_ptr area (area_it->second);
+
           try
           {
-            auto const area_it (m_areas.find(mem_id));
-
-            area_ptr area (area_it->second);
-
             if (area->in_use ())
             {
               // TODO: maybe move memory segment to garbage area
@@ -213,17 +211,9 @@ namespace gpi
           {
             // unroll
       {
-        area_map_t::iterator area (m_areas.find(mem_id));
-        if (area == m_areas.end())
-        {
-          throw std::runtime_error ( "no such memory: "
-                                   + boost::lexical_cast<std::string>(mem_id)
-                                   );
-        }
-
         if (pid)
         {
-          area->second->attach_process (pid);
+          area->attach_process (pid);
         }
       }
             throw;
@@ -236,39 +226,37 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         std::list<gpi::pc::type::segment_id_t> segments;
-        for ( area_map_t::iterator area (m_areas.begin())
-            ; area != m_areas.end()
-            ; ++area
+        for ( area_map_t::iterator area_it (m_areas.begin())
+            ; area_it != m_areas.end()
+            ; ++area_it
             )
         {
-          area->second->garbage_collect (proc_id);
+          auto const area (area_it->second);
+          area->garbage_collect (proc_id);
 
-          if (area->second->is_process_attached (proc_id))
-            segments.push_back (area->first);
+          if (area->is_process_attached (proc_id))
+            segments.push_back (area_it->first);
         }
 
         while (! segments.empty())
         {
           auto const mem_id (segments.front());
       {
-        area_map_t::iterator area (m_areas.find(mem_id));
-        if (area == m_areas.end())
+        auto const area_it (m_areas.find(mem_id));
+        if (area_it == m_areas.end())
         {
           throw std::runtime_error ( "no such memory: "
                                    + boost::lexical_cast<std::string>(mem_id)
                                    );
         }
+        auto const area (area_it->second);
 
         if (proc_id)
         {
-          area->second->detach_process (proc_id);
+          area->detach_process (proc_id);
 
-          if (!area->second->in_use())
+          if (!area->in_use())
           {
-            area_map_t::iterator area_it (area);
-
-            area_ptr area (area_it->second);
-
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
