@@ -600,7 +600,7 @@ namespace gpi
           area->garbage_collect ();
           m_areas.erase (area_it);
 
-          if (proc_id > 0 && area->flags () & F_GLOBAL)
+          if (proc_id > 0)
           {
             topology.del_memory (seg_id);
           }

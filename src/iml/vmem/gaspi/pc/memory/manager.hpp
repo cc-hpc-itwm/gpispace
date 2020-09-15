@@ -106,6 +106,7 @@ namespace gpi
                           , global::topology_t& topology
                           );
 
+        // Not called with shm areas, those use unregister_memory().
         void
         del_memory ( const gpi::pc::type::process_id_t proc_id
                    , const gpi::pc::type::segment_id_t seg_id
