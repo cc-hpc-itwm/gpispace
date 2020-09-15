@@ -71,7 +71,7 @@ namespace gpi
               this->alloc ( IML_GPI_PC_INVAL
                           , m_com_buffer_size
                           , hdl_name
-                          , gpi::pc::F_EXCLUSIVE
+                          , 0
                           );
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);
