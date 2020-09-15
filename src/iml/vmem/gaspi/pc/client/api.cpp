@@ -358,7 +358,7 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::segment_id_t api_t::create_shm_segment
+      api_t::shm_allocation api_t::create_shm_segment_and_allocate
         (std::string const& name, gpi::pc::type::size_t const size)
       {
         segment_ptr seg (new gpi::pc::segment::segment_t(name, size));
@@ -429,13 +429,15 @@ namespace gpi
 
         seg->unlink();
 
-        return seg->id();
+        return {seg->id(), alloc (seg->id(), size, name, is_global::no)};
       }
 
-      void api_t::delete_shm_segment (gpi::pc::type::segment_id_t const id)
+      void api_t::free_and_delete_shm_segment (shm_allocation const ids)
       {
+        free (ids.second);
+
         proto::segment::unregister_t rqst;
-        rqst.id = id;
+        rqst.id = ids.first;
 
         try
         {
@@ -451,14 +453,14 @@ namespace gpi
         catch (...)
         {
           throw std::runtime_error
-            ( "could not unregister segment " + std::to_string (id)
+            ( "could not unregister segment " + std::to_string (ids.first)
             + ": " + fhg::util::current_exception_printer().string()
             );
         }
 
         // remove local
         lock_type lock (m_mutex);
-        m_segments.erase (id);
+        m_segments.erase (ids.first);
       }
 
       remote_segment::remote_segment

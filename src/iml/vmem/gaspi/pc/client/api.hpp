@@ -73,11 +73,12 @@ namespace gpi
 
         void * ptr(const gpi::pc::type::handle_t h);
 
-        gpi::pc::type::segment_id_t create_shm_segment
+        using shm_allocation = std::pair<type::segment_id_t, type::handle_id_t>;
+        shm_allocation create_shm_segment_and_allocate
           ( std::string const& name
           , gpi::pc::type::size_t size
           );
-        void delete_shm_segment (gpi::pc::type::segment_id_t);
+        void free_and_delete_shm_segment (shm_allocation);
 
       private:
         void stop ();

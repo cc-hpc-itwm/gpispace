@@ -1,7 +1,6 @@
 #pragma once
 
 #include <iml/vmem/gaspi/pc/client/api.hpp>
-#include <iml/vmem/gaspi/pc/segment/segment.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
 
 namespace iml
@@ -10,33 +9,6 @@ namespace iml
   {
   class scoped_shm_allocation
   {
-    class scoped_shm_segment
-    {
-    public:
-      scoped_shm_segment
-        ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
-        , std::string const& description
-        , unsigned long size
-        )
-          : _virtual_memory (virtual_memory)
-          , _segment (_virtual_memory->register_segment (description, size))
-      {}
-
-      ~scoped_shm_segment()
-      {
-        _virtual_memory->unregister_segment (_segment);
-      }
-
-      operator gpi::pc::type::handle_id_t const& () const
-      {
-        return _segment;
-      }
-
-    private:
-      std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
-      gpi::pc::type::handle_id_t const _segment;
-    };
-
   public:
     scoped_shm_allocation
       ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
@@ -44,26 +16,20 @@ namespace iml
       , unsigned long size
       )
         : _virtual_memory (virtual_memory)
-        , _scoped_shm_segment (scoped_shm_segment (_virtual_memory, description, size))
-        , _handle (_virtual_memory->alloc
-                    ( _scoped_shm_segment
-                    , size
-                    , description
-                    , gpi::pc::is_global::no
-                    , 0 // NOT global
-                    )
-                  )
+        , _shm_allocation ( _virtual_memory->create_shm_segment_and_allocate
+                              (description, size)
+                          )
         , _size (size)
     {}
 
     ~scoped_shm_allocation()
     {
-      _virtual_memory->free (_handle);
+      _virtual_memory->free_and_delete_shm_segment (_shm_allocation);
     }
 
-    operator gpi::pc::type::handle_t const& () const
+    operator gpi::pc::type::handle_t() const
     {
-      return _handle;
+      return _shm_allocation.second;
     }
 
     unsigned long size() const
@@ -73,8 +39,7 @@ namespace iml
 
   private:
     std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
-    scoped_shm_segment const _scoped_shm_segment;
-    gpi::pc::type::handle_t const _handle;
+    gpi::pc::client::api_t::shm_allocation const _shm_allocation;
     unsigned long const _size;
   };
   }
