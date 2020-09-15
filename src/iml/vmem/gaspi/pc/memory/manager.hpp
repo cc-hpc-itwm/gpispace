@@ -28,6 +28,8 @@ namespace gpi
     }
     namespace memory
     {
+      class shm_area_t;
+
       class manager_t : boost::noncopyable
       {
       public:
@@ -42,7 +44,7 @@ namespace gpi
 
         gpi::pc::type::segment_id_t
         register_memory( const gpi::pc::type::process_id_t creator
-                       , area_ptr const &area
+                       , std::shared_ptr<shm_area_t> area
                        );
         void unregister_memory ( const gpi::pc::type::process_id_t pid
                                , const gpi::pc::type::segment_id_t

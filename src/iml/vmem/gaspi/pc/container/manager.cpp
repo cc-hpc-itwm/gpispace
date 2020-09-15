@@ -214,8 +214,8 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            memory::area_ptr_t area
-              ( new memory::shm_area_t ( m_proc_id
+            auto area
+              ( std::make_shared<memory::shm_area_t> ( m_proc_id
                                        , register_segment.name
                                        , register_segment.size
                                        , _memory_manager.handle_generator()

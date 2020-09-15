@@ -114,7 +114,7 @@ namespace gpi
 
       gpi::pc::type::segment_id_t
       manager_t::register_memory ( const gpi::pc::type::process_id_t creator
-                                 , const area_ptr &area
+                                 , std::shared_ptr<shm_area_t> area
                                  )
       {
         area->set_id
