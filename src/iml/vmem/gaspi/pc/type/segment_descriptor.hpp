@@ -29,7 +29,6 @@ namespace gpi
           gpi::pc::type::size_t local_size;     // maximum local size
           gpi::pc::type::size_t avail;          // available size
           gpi::pc::type::size_t allocs;         // number of allocations
-          gpi::pc::type::ref_count_t nref;      // number of containers attached
           gpi::pc::type::flags_t const flags;         // flags (see above)
           gpi::pc::type::time_stamp_t ts;       // time stamps
 
@@ -41,7 +40,6 @@ namespace gpi
             , local_size (0)
             , avail (0)
             , allocs (0)
-            , nref (0)
             , flags (0)
           {}
 
@@ -59,7 +57,6 @@ namespace gpi
               , local_size (a_size)
               , avail (a_size)
               , allocs (0)
-              , nref (0)
               , flags (a_flags)
           {}
 
@@ -80,7 +77,6 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( local_size );
             ar & BOOST_SERIALIZATION_NVP( avail );
             ar & BOOST_SERIALIZATION_NVP( allocs );
-            ar & BOOST_SERIALIZATION_NVP( nref );
             ar & BOOST_SERIALIZATION_NVP( flags );
             ar & BOOST_SERIALIZATION_NVP( ts );
           }

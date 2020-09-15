@@ -109,7 +109,7 @@ namespace gpi
       bool area_t::in_use () const
       {
         lock_type lock (m_mutex);
-        return m_descriptor.nref > 0;
+        return !m_attached_processes.empty();
       }
 
       std::string const & area_t::name () const
@@ -160,7 +160,6 @@ namespace gpi
       bool area_t::is_eligible_for_deletion () const
       {
         lock_type lock (m_mutex);
-        fhg_assert (m_descriptor.nref == m_attached_processes.size());
         if (in_use())
         {
           return false;
@@ -358,7 +357,7 @@ namespace gpi
         {
           throw std::runtime_error
             ( "handle still in use: handle = " + std::to_string (hdl)
-            + " nref = " + std::to_string (desc.nref)
+            + " nref = " + std::to_string (m_attached_processes.size())
             );
         }
 
@@ -447,10 +446,7 @@ namespace gpi
         lock_type lock (m_mutex);
         if (is_allowed_to_attach (id))
         {
-          if (m_attached_processes.insert (id).second)
-          {
-            ++m_descriptor.nref;
-          }
+          m_attached_processes.insert (id);
         }
         else
         {
@@ -465,7 +461,6 @@ namespace gpi
         process_ids_t::iterator p (m_attached_processes.find(id));
         if (p != m_attached_processes.end())
         {
-          --m_descriptor.nref;
           m_attached_processes.erase (p);
         }
       }
