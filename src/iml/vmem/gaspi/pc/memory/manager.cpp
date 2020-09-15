@@ -180,7 +180,6 @@ namespace gpi
         {
         auto const area_it (m_areas.find(mem_id));
         auto const area (area_it->second);
-          area->garbage_collect (proc_id);
 
             // WORK HERE:
             //    let this do another thread

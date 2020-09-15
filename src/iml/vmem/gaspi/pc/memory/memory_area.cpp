@@ -82,30 +82,6 @@ namespace gpi
         }
       }
 
-      // remove all handles allocated by pid
-      void area_t::garbage_collect (const gpi::pc::type::process_id_t pid)
-      {
-        lock_type lock (m_mutex);
-        std::stack<gpi::pc::type::handle_t> garbage_handles;
-        for ( handle_descriptor_map_t::const_iterator hdl_it(m_handles.begin())
-            ; hdl_it != m_handles.end()
-            ; ++hdl_it
-            )
-        {
-          if (hdl_it->second.creator == pid)
-          {
-            garbage_handles.push (hdl_it->first);
-          }
-        }
-
-        while (!garbage_handles.empty())
-        {
-          gpi::pc::type::handle_t hdl (garbage_handles.top ());
-          garbage_handles.pop ();
-          this->free (hdl);
-        }
-      }
-
       std::string const & area_t::name () const
       {
         return m_descriptor.name;

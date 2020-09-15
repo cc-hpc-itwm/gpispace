@@ -48,8 +48,6 @@ namespace gpi
         std::string const & name () const;
         int type () const;
 
-        void garbage_collect (const gpi::pc::type::process_id_t pid);
-
         void                set_id (const gpi::pc::type::id_t id);
         gpi::pc::type::id_t get_id () const;
 
