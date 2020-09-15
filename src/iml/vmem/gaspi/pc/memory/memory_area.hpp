@@ -148,8 +148,6 @@ namespace gpi
         gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
 
         /* hook functions that need to be overridded by specific segments */
-        virtual
-        iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
 
         virtual
         bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;

@@ -51,7 +51,6 @@ namespace gpi
                      );
 
         virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
-        virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
 
         virtual global::itopology_t& global_topology() override;
 

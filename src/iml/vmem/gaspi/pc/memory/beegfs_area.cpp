@@ -306,13 +306,6 @@ namespace gpi
         }
       }
 
-      iml_client::vmem::dtmmgr::Arena_t
-      beegfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
-      {
-        // we do not support multiple arenas in this memory type
-        return iml_client::vmem::dtmmgr::ARENA_UP;
-      }
-
       void *
       beegfs_area_t::raw_ptr (gpi::pc::type::offset_t)
       {

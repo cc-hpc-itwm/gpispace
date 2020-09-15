@@ -157,12 +157,6 @@ namespace gpi
           : nullptr;
       }
 
-      iml_client::vmem::dtmmgr::Arena_t
-      shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
-      {
-        return iml_client::vmem::dtmmgr::ARENA_UP;
-      }
-
       bool
       shm_area_t::is_range_local ( const gpi::pc::type::handle::descriptor_t &hdl
                                  , const gpi::pc::type::offset_t a

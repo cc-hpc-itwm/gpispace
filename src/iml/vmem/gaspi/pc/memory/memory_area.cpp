@@ -202,6 +202,16 @@ namespace gpi
         }
       }
 
+      namespace
+      {
+        iml_client::vmem::dtmmgr::Arena_t grow_direction (is_global visibility)
+        {
+          return visibility == is_global::yes
+            ? iml_client::vmem::dtmmgr::ARENA_UP
+            : iml_client::vmem::dtmmgr::ARENA_DOWN;
+        }
+      }
+
       void
       area_t::remote_alloc ( const gpi::pc::type::handle_t hdl_id
                            , const gpi::pc::type::offset_t offset

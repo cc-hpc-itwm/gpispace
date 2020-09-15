@@ -100,13 +100,6 @@ namespace gpi
         }
       }
 
-      iml_client::vmem::dtmmgr::Arena_t
-      gaspi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
-      {
-        return flgs == is_global::yes
-          ? iml_client::vmem::dtmmgr::ARENA_UP : iml_client::vmem::dtmmgr::ARENA_DOWN;
-      }
-
       void *
       gaspi_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
