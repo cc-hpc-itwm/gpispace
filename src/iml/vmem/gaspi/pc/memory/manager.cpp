@@ -166,13 +166,6 @@ namespace gpi
 
           area->detach_process (pid);
 
-          if (area->in_use())
-          {
-            area->attach_process (pid);
-            throw std::runtime_error
-              ("segment is still inuse, cannot unregister");
-          }
-
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
@@ -205,14 +198,11 @@ namespace gpi
 
           area->detach_process (proc_id);
 
-          if (!area->in_use())
-          {
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
             area->pre_dtor ();
             m_areas.erase (area_it);
-          }
           segments.pop_front();
         }
       }
