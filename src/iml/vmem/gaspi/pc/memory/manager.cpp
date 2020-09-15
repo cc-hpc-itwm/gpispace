@@ -1,5 +1,3 @@
-#include <iml/util/assert.hpp>
-
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/functor_visitor.hpp>
@@ -355,8 +353,6 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        fhg_assert (area);
-
         gpi::pc::type::handle_t hdl (area->alloc (proc_id, size, name, flags));
 
         add_handle (hdl, seg_id);
@@ -369,8 +365,6 @@ namespace gpi
       {
         area_ptr area (get_area_by_handle (hdl));
 
-        fhg_assert (area);
-
         area->remote_free (hdl);
         del_handle (hdl);
       }
@@ -379,8 +373,6 @@ namespace gpi
       manager_t::free (const gpi::pc::type::handle_t hdl)
       {
         area_ptr area (get_area_by_handle (hdl));
-
-        fhg_assert (area);
 
         del_handle (hdl);
         area->free (hdl);
