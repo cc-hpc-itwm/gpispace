@@ -26,7 +26,7 @@ namespace gpi
         }
 
         static void* open ( std::string const & path
-                          , gpi::pc::type::size_t & size
+                          , gpi::pc::type::size_t size
                           , const int open_flags
                           , const mode_t open_mode = 0
                           )
@@ -46,15 +46,7 @@ namespace gpi
           else if (open_flags & O_RDWR)
             prot = PROT_READ | PROT_WRITE;
 
-          if (0 == size)
-          {
-            //! \todo clarify which side opens the segment to not have
-            //! this auto-size-determination in here, and to be able
-            //! to drop memory_area_t::reinit
-            size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
-            fhg::util::syscall::lseek (fd, 0, SEEK_SET);
-          }
-          else if (open_flags & O_CREAT)
+          if (open_flags & O_CREAT)
           {
             fhg::util::syscall::ftruncate (fd, size);
           }
@@ -114,21 +106,13 @@ namespace gpi
         else
           m_path = "/" + name;
 
-        gpi::pc::type::size_t size = user_size;
-
         int open_flags = O_RDWR;
 
         m_ptr = detail::open ( m_path
-                             , size
+                             , user_size
                              , open_flags
                              , 0600
                              );
-
-        if (0 == user_size)
-        {
-          descriptor ().local_size = size;
-          area_t::reinit ();
-        }
       }
 
       shm_area_t::~shm_area_t()
