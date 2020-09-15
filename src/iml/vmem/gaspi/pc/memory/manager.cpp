@@ -117,7 +117,7 @@ namespace gpi
           // WORK HERE:
           //    let this do another thread
           //    and just give him the area_ptr
-          area->garbage_collect ();
+          area->pre_dtor ();
           m_areas.erase (area_it);
         }
       }
@@ -176,7 +176,7 @@ namespace gpi
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
-            area->garbage_collect ();
+            area->pre_dtor ();
             m_areas.erase (area_it);
       }
 
@@ -210,7 +210,7 @@ namespace gpi
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
-            area->garbage_collect ();
+            area->pre_dtor ();
             m_areas.erase (area_it);
           }
           segments.pop_front();
@@ -565,7 +565,7 @@ namespace gpi
               ("segment is still inuse, cannot unregister");
           }
 
-          area->garbage_collect ();
+          area->pre_dtor ();
           m_areas.erase (area_it);
 
           if (proc_id > 0)

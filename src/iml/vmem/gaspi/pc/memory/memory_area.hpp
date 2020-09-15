@@ -32,6 +32,10 @@ namespace gpi
       class area_t : boost::noncopyable
       {
       public:
+        // WORK HERE:
+        //    this function *must not* be called from the dtor
+        //    otherwise we endup calling pure virtual functions
+        void pre_dtor();
         virtual ~area_t () = default;
 
         /* public interface the basic implementation is the same
@@ -45,10 +49,6 @@ namespace gpi
         bool in_use () const;
         int type () const;
 
-        // WORK HERE:
-        //    this function *must not* be called from the dtor
-        //    otherwise we endup calling pure virtual functions
-        void garbage_collect ();
         void garbage_collect (const gpi::pc::type::process_id_t pid);
 
         void                set_id (const gpi::pc::type::id_t id);

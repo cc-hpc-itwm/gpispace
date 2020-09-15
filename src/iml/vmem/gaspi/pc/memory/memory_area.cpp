@@ -65,7 +65,7 @@ namespace gpi
         return m_descriptor.creator;
       }
 
-      void area_t::garbage_collect ()
+      void area_t::pre_dtor ()
       {
         lock_type lock (m_mutex);
 
