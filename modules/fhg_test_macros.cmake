@@ -4,6 +4,9 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-teardown-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspcmonc"
+  "${CMAKE_INSTALL_PREFIX}/bin/iml-bootstrap-rifd"
+  "${CMAKE_INSTALL_PREFIX}/bin/iml-rifd"
+  "${CMAKE_INSTALL_PREFIX}/bin/iml-teardown-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
   "${CMAKE_INSTALL_PREFIX}/bin/pnetc"
   "${CMAKE_INSTALL_PREFIX}/external/boost/include/boost/version.hpp"
@@ -11,6 +14,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/drts_iml.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/pimpl.hpp"
@@ -63,6 +67,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/to_value.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/unwrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/wrap.hpp"
+  "${CMAKE_INSTALL_PREFIX}/lib/libIML-client.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libdrts-context.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libfhg-util.a"
   "${CMAKE_INSTALL_PREFIX}/lib/librif-started_process_promise.a"
@@ -70,11 +75,27 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
-  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/gpi-space"
   #! \note This does not include bundled libraries!
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/iml.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/iml.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/iml.pimpl.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/rifd_entry_points.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/rifd_entry_points.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/scoped_rifd.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/scoped_rifd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/stream.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/virtual_memory.fwd.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/client/virtual_memory.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/pc/type/handle.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/pc/type/memory_location.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/pc/type/types.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/types.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/netdev_id.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/netdev_id.ipp"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdetermine_size.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_load.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdo_write.so"
+  "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-gpi-server"
   "${CMAKE_INSTALL_PREFIX}/revision"
   "${CMAKE_INSTALL_PREFIX}/git.submodules"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/README.md"
@@ -121,6 +142,9 @@ set (FILES_REQUIRED_IN_INSTALLATION
 set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
 set (TEST_VMEM_PORTS_PER_TEST 100)
 
+set (TEST_IML_VMEM_PORT_COUNTER 11520 CACHE INTERNAL "counter for iml-vmem-port")
+set (TEST_IML_VMEM_PORTS_PER_TEST 100)
+
 #! \note due to half of the arguments not being known and them thus
 #! not being split (eg LIBRARIES is part of ARGS), appending would
 #! mean we might append into some other argument's parameters
@@ -129,7 +153,9 @@ macro (prepend _list)
 endmacro()
 
 macro(FHG_ADD_TEST)
-  set (options REQUIRES_INSTALLATION REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
+  set (options REQUIRES_INSTALLATION REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF
+    REQUIRES_IML START_IML_SCOPED_RIF
+  )
   set (one_value_options)
   set (multi_value_options LABELS ARGS)
   set (required_options)
@@ -158,6 +184,25 @@ macro(FHG_ADD_TEST)
     prepend (TEST_ARGS --rif-strategy ${TESTING_RIF_STRATEGY})
     if (TESTING_RIF_STRATEGY_PARAMETERS)
       prepend (TEST_ARGS RIF ${TESTING_RIF_STRATEGY_PARAMETERS} FIR)
+    endif()
+  endif()
+
+  if (TEST_REQUIRES_IML)
+    prepend (TEST_ARGS --iml-vmem-port ${TEST_IML_VMEM_PORT_COUNTER})
+    math (EXPR TEST_IML_VMEM_PORT_COUNTER_TMP
+               "${TEST_IML_VMEM_PORT_COUNTER} + ${TEST_IML_VMEM_PORTS_PER_TEST}"
+    )
+    set (TEST_IML_VMEM_PORT_COUNTER ${TEST_IML_VMEM_PORT_COUNTER_TMP}
+      CACHE INTERNAL "NOTE: yep, cmake requires this temporary"
+    )
+    prepend (TEST_LABELS "requires_vmem")
+    list (APPEND _fwd_args RUN_SERIAL)
+  endif()
+
+  if (TEST_START_IML_SCOPED_RIF)
+    prepend (TEST_ARGS --iml-rif-strategy ${TESTING_RIF_STRATEGY})
+    if (TESTING_IML_RIF_STRATEGY_PARAMETERS)
+      prepend (TEST_ARGS IML-RIF ${TESTING_RIF_STRATEGY_PARAMETERS} FIR-LMI)
     endif()
   endif()
 

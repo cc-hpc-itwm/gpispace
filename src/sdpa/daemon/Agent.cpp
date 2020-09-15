@@ -139,7 +139,7 @@ namespace sdpa
       , _virtual_memory_api
         ( vmem_socket
         ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-            (_log_emitter, vmem_socket->string())
+            (vmem_socket->string())
         : nullptr
         )
       , _event_handler_thread (&Agent::handle_events, this)

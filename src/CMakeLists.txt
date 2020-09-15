@@ -10,9 +10,6 @@ extended_add_library (NAME fhgcom
 )
 add_subdirectory (fhgcom/tests)
 
-add_subdirectory (gpi-space)
-add_subdirectory (vmem)
-
   add_subdirectory (pnete)
   add_subdirectory (util)
 
@@ -124,8 +121,8 @@ extended_add_library (NAME pnet
           "xml/parse/warning.cpp"
   LIBRARIES fhg-util
             drts-context
-            gpi-space-pc-client-static
-            gpi-space-pc-segment
+            IML::vmem-pc-client-static
+            IML::vmem-pc-segment
             Util::Generic
             Boost::date_time
             Boost::program_options
@@ -142,7 +139,6 @@ add_subdirectory (xml/tests)
 add_subdirectory (xml/parse/type/test)
 
 add_subdirectory (we)
-add_subdirectory (mmgr)
 
 add_subdirectory (drts)
 add_subdirectory (bin)
@@ -154,6 +150,8 @@ add_subdirectory (sdpa)
 add_subdirectory (fhg)
 add_subdirectory (util-generic)
 add_subdirectory (util-qt)
+
+add_subdirectory (iml)
 
 extended_add_library (NAME logging
   NAMESPACE gspc

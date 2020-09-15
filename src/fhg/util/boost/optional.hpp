@@ -32,18 +32,6 @@ namespace fhg
 
         return optional.get();
       }
-
-      template<typename Fun, typename... Args>
-        boost::optional<typename std::result_of<Fun(Args...)>::type>
-          exception_is_none (Fun&& fun, Args&&... args)
-      try
-      {
-        return fun (std::forward<Args> (args)...);
-      }
-      catch (...)
-      {
-        return boost::none;
-      }
     }
   }
 }
