@@ -119,6 +119,7 @@ git rm -r \
     share/xsd/Makefile \
     share/xsd/XSDtoRNG.xsl \
     share/xsd/pnet.rnc.fix.patch \
+    src/iml \
     src/sdpa/test/sdpa/Scheduler.performance.*.DAT \
     tools
 git submodule foreach 'git rm -r .ci .gitlab-ci.yml || true'
