@@ -49,9 +49,7 @@ namespace gpi
       gpi::pc::type::handle_t
       handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
       {
-        fhg_assert (seg >= 0);
-
-        if ( size_t(seg) >= m_counter.size())
+        if (seg >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
 
         return detail::encode ( m_node_identifier
@@ -63,9 +61,7 @@ namespace gpi
       void
       handle_generator_t::initialize_counter (const gpi::pc::type::segment::segment_type seg)
       {
-        fhg_assert (seg >= 0);
-
-        if ( (size_t)seg >= m_counter.size())
+        if (seg >= m_counter.size())
           throw std::invalid_argument ("invalid segment type");
 
         m_counter [seg] = 0;
