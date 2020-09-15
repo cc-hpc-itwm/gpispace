@@ -139,12 +139,7 @@ namespace gpi
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         area->set_id (segment);
         add_area (area);
-      {
-        if (creator)
-        {
           area->attach_process (creator);
-        }
-      }
 
         auto const allocation
           (area->alloc (creator, size, name, is_global::no));
@@ -170,8 +165,6 @@ namespace gpi
         }
         auto const area (area_it->second);
 
-        if (pid)
-        {
           area->detach_process (pid);
 
           if (!area->in_use())
@@ -184,7 +177,6 @@ namespace gpi
             area->garbage_collect ();
             m_areas.erase (area_it);
           }
-        }
       }
         if (m_areas.find(mem_id) != m_areas.end())
         {
@@ -211,10 +203,7 @@ namespace gpi
           {
             // unroll
       {
-        if (pid)
-        {
           area->attach_process (pid);
-        }
       }
             throw;
           }
@@ -241,18 +230,9 @@ namespace gpi
         while (! segments.empty())
         {
           auto const mem_id (segments.front());
-      {
         auto const area_it (m_areas.find(mem_id));
-        if (area_it == m_areas.end())
-        {
-          throw std::runtime_error ( "no such memory: "
-                                   + boost::lexical_cast<std::string>(mem_id)
-                                   );
-        }
         auto const area (area_it->second);
 
-        if (proc_id)
-        {
           area->detach_process (proc_id);
 
           if (!area->in_use())
@@ -263,8 +243,6 @@ namespace gpi
             area->garbage_collect ();
             m_areas.erase (area_it);
           }
-        }
-      }
           segments.pop_front();
         }
       }
