@@ -103,7 +103,30 @@ namespace gpi
         lock_type lock (m_mutex);
         while (! m_areas.empty())
         {
-          unregister_memory (m_areas.begin()->first);
+          auto const mem_id (m_areas.begin()->first);
+          area_map_t::iterator area_it (m_areas.find(mem_id));
+          if (area_it == m_areas.end())
+          {
+            throw std::runtime_error ( "no such memory: "
+                                     + boost::lexical_cast<std::string>(mem_id)
+                                     );
+          }
+
+          area_ptr area (area_it->second);
+
+          if (area->in_use ())
+          {
+            // TODO: maybe move memory segment to garbage area
+
+            throw std::runtime_error
+              ("segment is still inuse, cannot unregister");
+          }
+
+          // WORK HERE:
+          //    let this do another thread
+          //    and just give him the area_ptr
+          area->garbage_collect ();
+          m_areas.erase (area_it);
         }
       }
 
@@ -170,7 +193,29 @@ namespace gpi
 
           if (!area->second->in_use())
           {
-            unregister_memory (mem_id);
+            area_map_t::iterator area_it (m_areas.find(mem_id));
+            if (area_it == m_areas.end())
+            {
+              throw std::runtime_error ( "no such memory: "
+                                       + boost::lexical_cast<std::string>(mem_id)
+                                       );
+            }
+
+            area_ptr area (area_it->second);
+
+            if (area->in_use ())
+            {
+              // TODO: maybe move memory segment to garbage area
+
+              throw std::runtime_error
+                ("segment is still inuse, cannot unregister");
+            }
+
+            // WORK HERE:
+            //    let this do another thread
+            //    and just give him the area_ptr
+            area->garbage_collect ();
+            m_areas.erase (area_it);
           }
         }
       }
@@ -178,7 +223,29 @@ namespace gpi
         {
           try
           {
-            unregister_memory(mem_id);
+            area_map_t::iterator area_it (m_areas.find(mem_id));
+            if (area_it == m_areas.end())
+            {
+              throw std::runtime_error ( "no such memory: "
+                                       + boost::lexical_cast<std::string>(mem_id)
+                                       );
+            }
+
+            area_ptr area (area_it->second);
+
+            if (area->in_use ())
+            {
+              // TODO: maybe move memory segment to garbage area
+
+              throw std::runtime_error
+                ("segment is still inuse, cannot unregister");
+            }
+
+            // WORK HERE:
+            //    let this do another thread
+            //    and just give him the area_ptr
+            area->garbage_collect ();
+            m_areas.erase (area_it);
           }
           catch (...)
           {
@@ -200,36 +267,6 @@ namespace gpi
       }
             throw;
           }
-        }
-      }
-
-      void
-      manager_t::unregister_memory (const gpi::pc::type::segment_id_t mem_id)
-      {
-        {
-          area_map_t::iterator area_it (m_areas.find(mem_id));
-          if (area_it == m_areas.end())
-          {
-            throw std::runtime_error ( "no such memory: "
-                                     + boost::lexical_cast<std::string>(mem_id)
-                                     );
-          }
-
-          area_ptr area (area_it->second);
-
-          if (area->in_use ())
-          {
-            // TODO: maybe move memory segment to garbage area
-
-            throw std::runtime_error
-                ("segment is still inuse, cannot unregister");
-          }
-
-          // WORK HERE:
-          //    let this do another thread
-          //    and just give him the area_ptr
-          area->garbage_collect ();
-          m_areas.erase (area_it);
         }
       }
 
@@ -268,7 +305,29 @@ namespace gpi
 
           if (!area->second->in_use())
           {
-            unregister_memory (mem_id);
+            area_map_t::iterator area_it (m_areas.find(mem_id));
+            if (area_it == m_areas.end())
+            {
+              throw std::runtime_error ( "no such memory: "
+                                       + boost::lexical_cast<std::string>(mem_id)
+                                       );
+            }
+
+            area_ptr area (area_it->second);
+
+            if (area->in_use ())
+            {
+              // TODO: maybe move memory segment to garbage area
+
+              throw std::runtime_error
+                ("segment is still inuse, cannot unregister");
+            }
+
+            // WORK HERE:
+            //    let this do another thread
+            //    and just give him the area_ptr
+            area->garbage_collect ();
+            m_areas.erase (area_it);
           }
         }
       }

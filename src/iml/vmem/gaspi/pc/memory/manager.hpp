@@ -128,7 +128,6 @@ namespace gpi
                         , const gpi::pc::type::segment_id_t
                         );
         void del_handle (const gpi::pc::type::handle_t);
-        void unregister_memory (const gpi::pc::type::segment_id_t);
 
         mutable mutex_type m_mutex;
         area_map_t m_areas;
