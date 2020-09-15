@@ -457,7 +457,7 @@ namespace gpi
 
         fhg::util::syscall::close (socket);
 
-        _memory_manager.garbage_collect (process_id);
+        _memory_manager.remove_shm_segments_of (process_id);
 
         //! \note this detaches _this_ thread from everything
         //! left. Nothing shall be done in here that accesses `this`

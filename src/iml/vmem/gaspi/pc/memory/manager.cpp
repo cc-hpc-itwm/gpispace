@@ -165,8 +165,8 @@ namespace gpi
             m_areas.erase (area_it);
       }
 
-      void
-      manager_t::garbage_collect (const gpi::pc::type::process_id_t proc_id)
+      void manager_t::remove_shm_segments_of
+        (gpi::pc::type::process_id_t const proc_id)
       {
         lock_type lock (m_mutex);
 

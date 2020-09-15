@@ -75,7 +75,7 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t info (const gpi::pc::type::handle_t hdl) const;
         std::map<std::string, double> get_transfer_costs (const std::list<gpi::pc::type::memory_region_t>&) const;
 
-        void garbage_collect (const gpi::pc::type::process_id_t);
+        void remove_shm_segments_of (gpi::pc::type::process_id_t);
 
         type::memcpy_id_t memcpy ( type::memory_location_t const & dst
                                  , type::memory_location_t const & src
