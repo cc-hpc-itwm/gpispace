@@ -189,14 +189,6 @@ namespace gpi
 
             area_ptr area (area_it->second);
 
-            if (area->in_use ())
-            {
-              // TODO: maybe move memory segment to garbage area
-
-              throw std::runtime_error
-                ("segment is still inuse, cannot unregister");
-            }
-
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
@@ -294,14 +286,6 @@ namespace gpi
             area_map_t::iterator area_it (area);
 
             area_ptr area (area_it->second);
-
-            if (area->in_use ())
-            {
-              // TODO: maybe move memory segment to garbage area
-
-              throw std::runtime_error
-                ("segment is still inuse, cannot unregister");
-            }
 
             // WORK HERE:
             //    let this do another thread
