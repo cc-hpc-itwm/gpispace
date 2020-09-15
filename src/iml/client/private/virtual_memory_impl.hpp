@@ -14,26 +14,6 @@
 
 namespace iml_client
 {
-  namespace
-  {
-    gpi::pc::type::handle_id_t vmem_alloc
-      ( std::unique_ptr<gpi::pc::client::api_t> const& api
-      , gpi::pc::type::segment_id_t const segment_id
-      , unsigned long const size
-      , std::string const& description
-      )
-    {
-      gpi::pc::type::handle_id_t handle_id
-        (api->alloc ( segment_id
-                    , size
-                    , description
-                    )
-        );
-
-      return handle_id;
-    }
-  }
-
   struct vmem_allocation::implementation
   {
     implementation ( std::unique_ptr<gpi::pc::client::api_t> const& api
@@ -47,7 +27,7 @@ namespace iml_client
           ( fhg::util::cxx14::make_unique<gpi::pc::client::remote_segment>
               (*_api, segment_desc, _size)
           )
-      , _handle_id (vmem_alloc (_api, *_remote_segment, _size, description))
+      , _handle_id (_api->alloc (*_remote_segment, _size, description))
       , _disowned (false)
     {}
     ~implementation()
