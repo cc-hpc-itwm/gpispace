@@ -103,15 +103,7 @@ namespace gpi
         lock_type lock (m_mutex);
         while (! m_areas.empty())
         {
-          auto const mem_id (m_areas.begin()->first);
-          area_map_t::iterator area_it (m_areas.find(mem_id));
-          if (area_it == m_areas.end())
-          {
-            throw std::runtime_error ( "no such memory: "
-                                     + boost::lexical_cast<std::string>(mem_id)
-                                     );
-          }
-
+          auto const area_it (m_areas.begin());
           area_ptr area (area_it->second);
 
           if (area->in_use ())
@@ -193,13 +185,7 @@ namespace gpi
 
           if (!area->second->in_use())
           {
-            area_map_t::iterator area_it (m_areas.find(mem_id));
-            if (area_it == m_areas.end())
-            {
-              throw std::runtime_error ( "no such memory: "
-                                       + boost::lexical_cast<std::string>(mem_id)
-                                       );
-            }
+            area_map_t::iterator area_it (area);
 
             area_ptr area (area_it->second);
 
@@ -305,13 +291,7 @@ namespace gpi
 
           if (!area->second->in_use())
           {
-            area_map_t::iterator area_it (m_areas.find(mem_id));
-            if (area_it == m_areas.end())
-            {
-              throw std::runtime_error ( "no such memory: "
-                                       + boost::lexical_cast<std::string>(mem_id)
-                                       );
-            }
+            area_map_t::iterator area_it (area);
 
             area_ptr area (area_it->second);
 
