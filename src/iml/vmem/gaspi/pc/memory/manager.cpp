@@ -44,7 +44,7 @@ namespace gpi
             , [&] (iml::beegfs_segment_description const& desc)
               {
                 return beegfs_area_t::create
-                  (desc, total_size, topology, handle_generator, owner);
+                  (desc, total_size, topology, handle_generator, owner, owner != 0);
               }
             );
         }

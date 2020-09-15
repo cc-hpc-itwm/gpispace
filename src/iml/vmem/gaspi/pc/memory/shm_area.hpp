@@ -46,6 +46,7 @@ namespace gpi
 
         void *m_ptr;
         std::string m_path;
+        std::size_t _size;
       };
     }
   }

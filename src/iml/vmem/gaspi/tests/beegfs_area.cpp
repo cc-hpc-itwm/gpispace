@@ -72,6 +72,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
   {
     beegfs_area_t area ( fhg::util::syscall::getpid()
+                       , true
                        , path_to_shared_file
                        , size
                        , topology
@@ -114,6 +115,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
   boost::filesystem::create_directories (path_to_shared_file);
 
   BOOST_REQUIRE_THROW  ( gpi::pc::memory::beegfs_area_t ( fhg::util::syscall::getpid()
+                                                        , true
                                                         , path_to_shared_file
                                                         , size
                                                         , topology
@@ -125,6 +127,7 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
   boost::filesystem::remove (path_to_shared_file);
 
   gpi::pc::memory::beegfs_area_t ( fhg::util::syscall::getpid()
+                                 , true
                                  , path_to_shared_file
                                  , size
                                  , topology
@@ -145,6 +148,7 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
   try
   {
     beegfs_area_t area ( fhg::util::syscall::getpid()
+                       , true
                        , path_to_shared_file
                        , size
                        , topology
@@ -175,6 +179,7 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
   try
   {
     beegfs_area_t area ( fhg::util::syscall::getpid()
+                       , true
                        , path_to_shared_file
                        , size
                        , topology
@@ -206,6 +211,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
   try
   {
     beegfs_area_t area ( fhg::util::syscall::getpid()
+                       , true
                        , path_to_shared_file
                        , size
                        , topology
@@ -252,6 +258,7 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
   const gpi::pc::type::size_t size = (1L << 20); // 1 MB
 
   beegfs_area_t area ( fhg::util::syscall::getpid()
+                     , true
                      , path_to_shared_file
                      , size
                      , topology
@@ -261,6 +268,7 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
   area.set_id (2);
 
   BOOST_REQUIRE_THROW ( beegfs_area_t ( fhg::util::syscall::getpid()
+                                      , true
                                       , path_to_shared_file
                                       , size
                                       , topology

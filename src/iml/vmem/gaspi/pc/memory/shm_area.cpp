@@ -95,6 +95,7 @@ namespace gpi
                  , handle_generator
                  )
         , m_ptr (nullptr)
+        , _size (user_size)
       {
         if (name.empty())
         {
@@ -119,7 +120,7 @@ namespace gpi
       {
         try
         {
-          detail::close (m_ptr, descriptor().local_size);
+          detail::close (m_ptr, _size);
           m_ptr = nullptr;
           detail::unlink (m_path);
         }
@@ -136,7 +137,7 @@ namespace gpi
       shm_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
         return
-          (m_ptr && off < descriptor().local_size)
+          (m_ptr && off < _size)
           ? ((char*)m_ptr + off)
           : nullptr;
       }
@@ -147,8 +148,8 @@ namespace gpi
                                  , const gpi::pc::type::offset_t b
                                  ) const
       {
-        return ((hdl.offset + a) <   size())
-          &&   ((hdl.offset + b) <=  size());
+        return ((hdl.offset + a) <   _size)
+          &&   ((hdl.offset + b) <=  _size);
       }
 
       gpi::pc::type::size_t

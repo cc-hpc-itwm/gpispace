@@ -415,16 +415,16 @@ namespace gpi
         //      how and when is it safe to remove the segment?
         //      client code might be using the data in some way
 
-        if (m_segments.find (seg->id()) != m_segments.end())
+        if (m_segments.find (result.first) != m_segments.end())
         {
           throw std::logic_error
             ( "Segment attached with id "
-            + std::to_string (seg->id())
+            + std::to_string (result.first)
             + " already exists"
             );
         }
 
-        m_segments [seg->id()] = seg;
+        m_segments [result.first] = seg;
 
         seg->unlink();
 

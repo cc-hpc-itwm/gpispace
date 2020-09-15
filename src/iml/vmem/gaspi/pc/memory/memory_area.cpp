@@ -31,13 +31,13 @@ namespace gpi
                      , const gpi::pc::type::size_t size
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor ( IML_GPI_PC_INVAL
+        : m_descriptor ( type::segment::SEG_INVAL
                        , type
                        , creator
                        , name
                        , size
                        )
-        , m_mmgr (m_descriptor.local_size, 1)
+        , m_mmgr (size, 1)
         , _handle_generator (handle_generator)
       {
         reinit ();
@@ -180,7 +180,7 @@ namespace gpi
         hdl.creator = IML_GPI_PC_INVAL;
         hdl.flags = is_global::yes;
 
-        internal_alloc (hdl);
+        internal_alloc (hdl, false);
 
         if (hdl.offset != offset)
         {
@@ -218,7 +218,7 @@ namespace gpi
         hdl.flags = flags;
         hdl.id = _handle_generator.next (m_descriptor.type);
 
-        internal_alloc (hdl);
+        internal_alloc (hdl, true);
 
         update_descriptor_from_mmgr ();
         m_handles [hdl.id] = hdl;
@@ -242,15 +242,17 @@ namespace gpi
         m_descriptor.ts.touch();
       }
 
-      void area_t::internal_alloc (gpi::pc::type::handle::descriptor_t &hdl)
+      void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl
+                                  , bool is_creator
+                                  )
       {
-        if (m_descriptor.avail < hdl.local_size)
+        if (m_mmgr.memfree() < hdl.local_size)
         {
           throw std::runtime_error
             ( "out of memory: total size = " + std::to_string (hdl.size)
             + " local size = " + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
-            + " avail = " + std::to_string (m_descriptor.avail)
+            + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
 
@@ -266,7 +268,7 @@ namespace gpi
             ( "not enough contiguous memory available: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
-            + " avail = " + std::to_string (m_descriptor.avail)
+            + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
         catch (iml_client::vmem::error::alloc::insufficient_memory const&)
@@ -275,7 +277,7 @@ namespace gpi
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
-            + " avail = " + std::to_string (m_descriptor.avail)
+            + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
         catch (iml_client::vmem::error::alloc::duplicate_handle const&)
@@ -288,7 +290,7 @@ namespace gpi
 
         try
         {
-          if (hdl.flags == is_global::yes && hdl.creator != IML_GPI_PC_INVAL)
+          if (hdl.flags == is_global::yes && is_creator)
           {
             global_topology().alloc ( descriptor ().id
                                     , hdl.id

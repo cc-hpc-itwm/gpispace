@@ -30,9 +30,11 @@ namespace gpi
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , type::id_t owner
+                                 , bool is_creator
                                  );
 
         beegfs_area_t ( const gpi::pc::type::process_id_t creator
+                      , bool is_creator
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
                       , gpi::pc::global::itopology_t & topology
@@ -72,7 +74,7 @@ namespace gpi
 
         std::string version_string() const;
 
-        void open();
+        void open (std::size_t total_size);
         void close();
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t
@@ -83,6 +85,7 @@ namespace gpi
         {
           lock_file_helper (beegfs_area_t&);
         };
+        bool _is_creator;
         //! \todo boost::optional with move-assignment support
         std::unique_ptr<lock_file_helper> _lock_file;
         path_t m_path;

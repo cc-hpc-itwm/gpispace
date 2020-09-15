@@ -109,6 +109,7 @@ namespace gpi
       }
 
       beegfs_area_t::beegfs_area_t ( const gpi::pc::type::process_id_t creator
+                                   , bool is_creator
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
                                    , gpi::pc::global::itopology_t & topology
@@ -120,13 +121,14 @@ namespace gpi
                  , size
                  , handle_generator
                  )
+        , _is_creator (is_creator)
         , m_path (path)
         , m_version (BEEGFS_AREA_VERSION)
         , m_topology (topology)
       {
         try
         {
-          open();
+          open (size);
         }
         catch (...)
         {
@@ -186,9 +188,9 @@ namespace gpi
           );
       }
 
-      void beegfs_area_t::open()
+      void beegfs_area_t::open (std::size_t total_size)
       {
-        if (get_owner())
+        if (_is_creator)
         {
           if (boost::filesystem::exists (m_path))
           {
@@ -211,14 +213,14 @@ namespace gpi
                              , 0600 // TODO: pass in permissions
                              );
 
-            data.ftruncate (size());
+            data.ftruncate (total_size);
           }
         }
         bool succeeded (false);
         FHG_UTIL_FINALLY
           ( [&]
             {
-              if (!succeeded && get_owner())
+              if (!succeeded && _is_creator)
               {
                 boost::filesystem::remove (detail::data_path (m_path));
                 boost::filesystem::remove (detail::version_path (m_path));
@@ -257,7 +259,7 @@ namespace gpi
           }
         }
 
-        if (get_owner())
+        if (_is_creator)
         {
           _lock_file
             = fhg::util::cxx14::make_unique<lock_file_helper> (*this);
@@ -273,13 +275,13 @@ namespace gpi
         off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
         fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-        if (size() != (gpi::pc::type::size_t)file_size)
+        if (total_size != (gpi::pc::type::size_t)file_size)
         {
           throw std::logic_error
             ( "segment file on disk has size "
             + std::to_string (file_size)
             + " but tried to open it with size "
-            + std::to_string (size())
+            + std::to_string (total_size)
             );
         }
 
@@ -295,7 +297,7 @@ namespace gpi
 
       void beegfs_area_t::close()
       {
-        if (get_owner())
+        if (_is_creator)
         {
           boost::filesystem::remove (detail::data_path (m_path));
           boost::filesystem::remove (detail::version_path (m_path));
@@ -390,9 +392,11 @@ namespace gpi
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , type::id_t owner
+        , bool is_creator
         )
       {
         area_ptr_t area (new beegfs_area_t ( owner
+                                           , is_creator
                                            , description._path
                                            , total_size
                                            , topology
