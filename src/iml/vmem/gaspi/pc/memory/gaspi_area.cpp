@@ -2,7 +2,6 @@
 
 #include <utility>
 
-#include <iml/util/assert.hpp>
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
 #include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
@@ -48,8 +47,16 @@ namespace gpi
         , m_com_buffer_size (com_buffer_size)
         , _topology (topology)
       {
-        fhg_assert (m_num_com_buffers > 0);
-        fhg_assert (m_com_buffer_size > 0);
+        if (m_num_com_buffers == 0)
+        {
+          throw std::invalid_argument
+            ("at least one communciation buffer is required");
+        }
+        if (m_com_buffer_size == 0)
+        {
+          throw std::invalid_argument
+            ("communication buffers can't be zero sized");
+        }
 
         //! \todo move to different gaspi segment to have separate
         //! allocation and not operate in the user's one. this could
