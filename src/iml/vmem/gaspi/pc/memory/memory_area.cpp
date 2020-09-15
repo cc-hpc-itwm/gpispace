@@ -106,12 +106,6 @@ namespace gpi
         }
       }
 
-      bool area_t::in_use () const
-      {
-        lock_type lock (m_mutex);
-        return !m_attached_processes.empty();
-      }
-
       std::string const & area_t::name () const
       {
         return m_descriptor.name;
@@ -154,13 +148,6 @@ namespace gpi
         const gpi::pc::type::offset_t end   = start + amount;
 
         return is_range_local (hdl_it->second, start, end);
-      }
-
-      bool
-      area_t::is_process_attached (const gpi::pc::type::process_id_t proc_id) const
-      {
-        lock_type lock (m_mutex);
-        return m_attached_processes.find (proc_id) != m_attached_processes.end();
       }
 
       void
@@ -416,30 +403,6 @@ namespace gpi
         {
           throw std::runtime_error
             ("cannot find descriptor for handle " + std::to_string (hdl));
-        }
-      }
-
-      void area_t::attach_process (const gpi::pc::type::process_id_t id)
-      {
-        lock_type lock (m_mutex);
-        if (is_shm_segment() && id == descriptor().creator)
-        {
-          m_attached_processes.insert (id);
-        }
-        else
-        {
-          throw std::runtime_error
-            ("permission denied, exclusive segment and you are not the owner");
-        }
-      }
-
-      void area_t::detach_process (const gpi::pc::type::process_id_t id)
-      {
-        lock_type lock (m_mutex);
-        process_ids_t::iterator p (m_attached_processes.find(id));
-        if (p != m_attached_processes.end())
-        {
-          m_attached_processes.erase (p);
         }
       }
 

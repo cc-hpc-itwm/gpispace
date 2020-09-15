@@ -131,6 +131,8 @@ namespace gpi
 
         mutable mutex_type m_mutex;
         area_map_t m_areas;
+        std::map<type::process_id_t, std::set<type::segment_id_t>>
+          _shm_segments_by_owner;
         handle_to_segment_t m_handle_to_segment;
         fhg::iml::vmem::gaspi_context& _gaspi_context;
 

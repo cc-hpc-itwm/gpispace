@@ -131,7 +131,7 @@ namespace gpi
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         area->set_id (segment);
         add_area (area);
-          area->attach_process (creator);
+        _shm_segments_by_owner[creator].emplace (segment);
 
         auto const allocation
           (area->alloc (creator, size, name, is_global::no));
@@ -156,7 +156,7 @@ namespace gpi
         }
         auto const area (area_it->second);
 
-          area->detach_process (pid);
+        _shm_segments_by_owner.at (pid).erase (mem_id);
 
             // WORK HERE:
             //    let this do another thread
@@ -169,34 +169,27 @@ namespace gpi
       manager_t::garbage_collect (const gpi::pc::type::process_id_t proc_id)
       {
         lock_type lock (m_mutex);
-        std::list<gpi::pc::type::segment_id_t> segments;
-        for ( area_map_t::iterator area_it (m_areas.begin())
-            ; area_it != m_areas.end()
-            ; ++area_it
-            )
-        {
-          auto const area (area_it->second);
-          area->garbage_collect (proc_id);
 
-          if (area->is_process_attached (proc_id))
-            segments.push_back (area_it->first);
+        auto const segments_it (_shm_segments_by_owner.find (proc_id));
+        if (segments_it == _shm_segments_by_owner.end())
+        {
+          return;
         }
 
-        while (! segments.empty())
+        for (auto const& mem_id : segments_it->second)
         {
-          auto const mem_id (segments.front());
         auto const area_it (m_areas.find(mem_id));
         auto const area (area_it->second);
-
-          area->detach_process (proc_id);
+          area->garbage_collect (proc_id);
 
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
             area->pre_dtor ();
             m_areas.erase (area_it);
-          segments.pop_front();
         }
+
+        _shm_segments_by_owner.erase (segments_it);
       }
 
       void

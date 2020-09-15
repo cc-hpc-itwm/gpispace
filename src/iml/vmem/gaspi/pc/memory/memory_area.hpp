@@ -46,7 +46,6 @@ namespace gpi
         */
         gpi::pc::type::size_t size () const;
         std::string const & name () const;
-        bool in_use () const;
         int type () const;
 
         void garbage_collect (const gpi::pc::type::process_id_t pid);
@@ -87,15 +86,10 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
 
-        void attach_process (const gpi::pc::type::process_id_t);
-        void detach_process (const gpi::pc::type::process_id_t);
-
         bool is_local (const gpi::pc::type::memory_region_t region) const;
         bool is_local ( const gpi::pc::type::memory_location_t loc
                       , const gpi::pc::type::size_t amt
                       ) const;
-
-        bool is_process_attached (const gpi::pc::type::process_id_t) const;
 
         void check_bounds ( const gpi::pc::type::memory_location_t & loc
                           , const gpi::pc::type::size_t size
@@ -189,7 +183,6 @@ namespace gpi
       private:
         typedef std::recursive_mutex mutex_type;
         typedef std::unique_lock<mutex_type> lock_type;
-        typedef std::unordered_set <gpi::pc::type::process_id_t> process_ids_t;
         typedef std::unordered_map< gpi::pc::type::handle_t
                                   , gpi::pc::type::handle::descriptor_t
                                   > handle_descriptor_map_t;
@@ -205,7 +198,6 @@ namespace gpi
         gpi::pc::type::segment::descriptor_t m_descriptor;
         iml_client::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
-        process_ids_t m_attached_processes;
 
         handle_generator_t& _handle_generator;
       };
