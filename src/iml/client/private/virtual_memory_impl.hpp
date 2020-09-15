@@ -9,8 +9,6 @@
 
 #include <util-generic/cxx14/make_unique.hpp>
 
-#include <boost/format.hpp>
-
 #include <exception>
 #include <memory>
 #include <string>
@@ -33,17 +31,6 @@ namespace iml_client
                     , gpi::pc::is_global::yes
                     )
         );
-
-      if (gpi::pc::type::handle::is_null (handle_id))
-      {
-        throw std::runtime_error
-          ( ( boost::format
-              ("Could not allocate %1% bytes with description '%2%'")
-            % size
-            % description
-            ).str()
-          );
-      }
 
       return handle_id;
     }
