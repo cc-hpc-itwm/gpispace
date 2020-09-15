@@ -161,7 +161,7 @@ namespace gpi
       {
         lock_type lock (m_mutex);
         fhg_assert (m_descriptor.nref == m_attached_processes.size());
-        if (m_descriptor.nref)
+        if (in_use())
         {
           return false;
         }
