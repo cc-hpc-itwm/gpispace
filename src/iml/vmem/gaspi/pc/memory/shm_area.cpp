@@ -12,8 +12,6 @@
 
 #include <boost/lexical_cast.hpp>
 
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
-
 namespace gpi
 {
   namespace pc

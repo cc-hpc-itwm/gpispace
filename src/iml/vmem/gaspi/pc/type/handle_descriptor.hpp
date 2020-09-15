@@ -8,7 +8,6 @@
 #include <boost/serialization/vector.hpp>
 
 #include <iml/vmem/gaspi/pc/type/types.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
 #include <iml/vmem/gaspi/pc/type/time_stamp.hpp>
 

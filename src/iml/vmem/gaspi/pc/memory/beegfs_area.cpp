@@ -26,8 +26,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
 
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
-
 namespace gpi
 {
   namespace pc

@@ -8,8 +8,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <util-generic/unreachable.hpp>
 

@@ -3,7 +3,7 @@
 #include <utility>
 
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
 
 #include <util-generic/divru.hpp>

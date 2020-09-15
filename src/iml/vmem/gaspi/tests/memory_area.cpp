@@ -2,7 +2,7 @@
 
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 

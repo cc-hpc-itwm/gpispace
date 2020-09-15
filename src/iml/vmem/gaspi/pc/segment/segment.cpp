@@ -11,8 +11,6 @@
 
 #include <util-generic/syscall.hpp>
 
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
-
 #include <boost/system/system_error.hpp>
 
 namespace gpi
