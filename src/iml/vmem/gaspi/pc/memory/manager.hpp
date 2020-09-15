@@ -42,10 +42,13 @@ namespace gpi
 
         handle_generator_t& handle_generator();
 
-        gpi::pc::type::segment_id_t
-        register_memory( const gpi::pc::type::process_id_t creator
-                       , std::shared_ptr<shm_area_t> area
-                       );
+        std::pair<type::segment_id_t, type::handle_t>
+          register_shm_segment_and_allocate
+            ( gpi::pc::type::process_id_t creator
+            , std::shared_ptr<shm_area_t> area
+            , gpi::pc::type::size_t size
+            , std::string const& name
+            );
         void unregister_memory ( const gpi::pc::type::process_id_t pid
                                , const gpi::pc::type::segment_id_t
                                );

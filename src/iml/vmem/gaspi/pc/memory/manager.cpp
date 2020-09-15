@@ -112,17 +112,25 @@ namespace gpi
         return _handle_generator;
       }
 
-      gpi::pc::type::segment_id_t
-      manager_t::register_memory ( const gpi::pc::type::process_id_t creator
-                                 , std::shared_ptr<shm_area_t> area
-                                 )
+      std::pair<type::segment_id_t, type::handle_t>
+        manager_t::register_shm_segment_and_allocate
+          ( gpi::pc::type::process_id_t creator
+          , std::shared_ptr<shm_area_t> area
+          , gpi::pc::type::size_t size
+          , std::string const& name
+          )
       {
-        area->set_id
+        auto const segment
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        area->set_id (segment);
         add_area (area);
-        attach_process (creator, area->get_id ());
+        attach_process (creator, segment);
 
-        return area->get_id ();
+        auto const allocation
+          (area->alloc (creator, size, name, is_global::no));
+        add_handle (allocation, segment);
+
+        return {segment, allocation};
       }
 
       void

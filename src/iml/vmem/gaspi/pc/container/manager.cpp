@@ -214,23 +214,19 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            auto area
-              ( std::make_shared<memory::shm_area_t> ( m_proc_id
-                                       , register_segment.name
-                                       , register_segment.size
-                                       , _memory_manager.handle_generator()
-                                       )
-              );
-
             gpi::pc::proto::segment::register_reply_t rpl;
-            rpl.segment = _memory_manager.register_memory (m_proc_id, area);
-            rpl.allocation = _memory_manager.alloc
-              ( m_proc_id
-              , rpl.segment
-              , register_segment.size
-              , register_segment.name
-              , is_global::no
-              );
+            std::tie (rpl.segment, rpl.allocation)
+              = _memory_manager.register_shm_segment_and_allocate
+                  ( m_proc_id
+                  , std::make_shared<memory::shm_area_t>
+                      ( m_proc_id
+                      , register_segment.name
+                      , register_segment.size
+                      , _memory_manager.handle_generator()
+                      )
+                  , register_segment.size
+                  , register_segment.name
+                  );
             return gpi::pc::proto::segment::message_t (rpl);
           }
 
