@@ -22,6 +22,8 @@ namespace gpi
 
         ~shm_area_t ();
       protected:
+        virtual bool is_shm_segment() const override;
+
         virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
         int get_type_id () const;
 

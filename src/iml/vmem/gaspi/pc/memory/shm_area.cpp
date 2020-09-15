@@ -102,7 +102,6 @@ namespace gpi
                  , creator
                  , name
                  , user_size
-                 , F_EXCLUSIVE
                  , handle_generator
                  )
         , m_ptr (nullptr)
@@ -144,6 +143,11 @@ namespace gpi
         }
         catch (...)
         { }
+      }
+
+      bool shm_area_t::is_shm_segment() const
+      {
+        return true;
       }
 
       void*

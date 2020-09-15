@@ -120,7 +120,6 @@ namespace gpi
                  , creator
                  , path.string ()
                  , size
-                 , F_GLOBAL
                  , handle_generator
                  )
         , m_path (path)

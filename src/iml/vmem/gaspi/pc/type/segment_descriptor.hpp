@@ -8,7 +8,6 @@
 #include <boost/serialization/vector.hpp>
 
 #include <iml/vmem/gaspi/pc/type/types.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/time_stamp.hpp>
 #include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 
@@ -29,7 +28,6 @@ namespace gpi
           gpi::pc::type::size_t local_size;     // maximum local size
           gpi::pc::type::size_t avail;          // available size
           gpi::pc::type::size_t allocs;         // number of allocations
-          gpi::pc::type::flags_t const flags;         // flags (see above)
           gpi::pc::type::time_stamp_t ts;       // time stamps
 
           descriptor_t ()
@@ -40,7 +38,6 @@ namespace gpi
             , local_size (0)
             , avail (0)
             , allocs (0)
-            , flags (0)
           {}
 
           descriptor_t ( const gpi::pc::type::segment_id_t a_id
@@ -48,7 +45,6 @@ namespace gpi
                        , const gpi::pc::type::process_id_t a_proc
                        , const gpi::pc::type::name_t a_name
                        , const gpi::pc::type::size_t a_size
-                       , const gpi::pc::type::flags_t a_flags
                        )
               : id (a_id)
               , type (a_type)
@@ -57,7 +53,6 @@ namespace gpi
               , local_size (a_size)
               , avail (a_size)
               , allocs (0)
-              , flags (a_flags)
           {}
 
           bool operator< (const descriptor_t & other) const
@@ -77,7 +72,6 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( local_size );
             ar & BOOST_SERIALIZATION_NVP( avail );
             ar & BOOST_SERIALIZATION_NVP( allocs );
-            ar & BOOST_SERIALIZATION_NVP( flags );
             ar & BOOST_SERIALIZATION_NVP( ts );
           }
         };

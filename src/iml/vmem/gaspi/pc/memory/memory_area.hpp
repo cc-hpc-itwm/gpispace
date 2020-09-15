@@ -40,7 +40,6 @@ namespace gpi
         std::string const & name () const;
         bool in_use () const;
         int type () const;
-        gpi::pc::type::flags_t flags () const;
 
         // WORK HERE:
         //    this function *must not* be called from the dtor
@@ -135,11 +134,12 @@ namespace gpi
                , const gpi::pc::type::process_id_t creator
                , const std::string & name
                , const gpi::pc::type::size_t size
-               , const gpi::pc::type::flags_t flags
                , handle_generator_t&
                );
 
         void reinit ();
+
+        virtual bool is_shm_segment() const;
 
         gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
 

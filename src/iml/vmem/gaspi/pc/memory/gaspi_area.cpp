@@ -36,7 +36,6 @@ namespace gpi
                  , creator
                  , name
                  , per_node_size
-                 , gpi::pc::F_GLOBAL
                  , handle_generator
                  )
         , _gaspi_context (gaspi_context)

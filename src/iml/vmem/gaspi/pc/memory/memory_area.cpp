@@ -27,7 +27,6 @@ namespace gpi
                      , const gpi::pc::type::process_id_t creator
                      , const std::string & name
                      , const gpi::pc::type::size_t size
-                     , const gpi::pc::type::flags_t flags
                      , handle_generator_t& handle_generator
                      )
         : m_descriptor ( IML_GPI_PC_INVAL
@@ -35,7 +34,6 @@ namespace gpi
                        , creator
                        , name
                        , size
-                       , flags
                        )
         , m_mmgr (m_descriptor.local_size, 1)
         , _handle_generator (handle_generator)
@@ -127,10 +125,9 @@ namespace gpi
         return m_descriptor.type;
       }
 
-      gpi::pc::type::flags_t
-      area_t::flags () const
+      bool area_t::is_shm_segment() const
       {
-        return descriptor ().flags;
+        return false;
       }
 
       bool area_t::is_local (const gpi::pc::type::memory_region_t region) const
@@ -437,7 +434,7 @@ namespace gpi
       bool
       area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
       {
-        return (!gpi::flag::is_set (descriptor ().flags, gpi::pc::F_EXCLUSIVE))
+        return !is_shm_segment()
             || (proc == descriptor ().creator);
       }
 
