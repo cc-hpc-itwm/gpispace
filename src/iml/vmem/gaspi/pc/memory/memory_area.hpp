@@ -94,7 +94,6 @@ namespace gpi
         bool is_local ( const gpi::pc::type::memory_location_t loc
                       , const gpi::pc::type::size_t amt
                       ) const;
-        bool is_eligible_for_deletion () const;
 
         bool is_process_attached (const gpi::pc::type::process_id_t) const;
 

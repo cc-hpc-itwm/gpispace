@@ -223,7 +223,7 @@ namespace gpi
         {
           area->second->detach_process (proc_id);
 
-          if (area->second->is_eligible_for_deletion())
+          if (!area->second->in_use())
           {
             unregister_memory (mem_id);
           }

@@ -156,19 +156,6 @@ namespace gpi
         return is_range_local (hdl_it->second, start, end);
       }
 
-      bool area_t::is_eligible_for_deletion () const
-      {
-        lock_type lock (m_mutex);
-        if (in_use())
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-
       bool
       area_t::is_process_attached (const gpi::pc::type::process_id_t proc_id) const
       {
