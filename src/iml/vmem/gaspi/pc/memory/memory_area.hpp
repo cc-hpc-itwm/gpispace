@@ -84,11 +84,8 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
 
-        gpi::pc::type::size_t
-        attach_process (const gpi::pc::type::process_id_t);
-
-        gpi::pc::type::size_t
-        detach_process (const gpi::pc::type::process_id_t);
+        void attach_process (const gpi::pc::type::process_id_t);
+        void detach_process (const gpi::pc::type::process_id_t);
 
         bool is_local (const gpi::pc::type::memory_region_t region) const;
         bool is_local ( const gpi::pc::type::memory_location_t loc

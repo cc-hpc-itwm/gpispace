@@ -442,8 +442,7 @@ namespace gpi
             || (proc == descriptor ().creator);
       }
 
-      gpi::pc::type::size_t
-      area_t::attach_process (const gpi::pc::type::process_id_t id)
+      void area_t::attach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
         if (is_allowed_to_attach (id))
@@ -452,7 +451,6 @@ namespace gpi
           {
             ++m_descriptor.nref;
           }
-          return m_descriptor.nref;
         }
         else
         {
@@ -461,8 +459,7 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::size_t
-      area_t::detach_process (const gpi::pc::type::process_id_t id)
+      void area_t::detach_process (const gpi::pc::type::process_id_t id)
       {
         lock_type lock (m_mutex);
         process_ids_t::iterator p (m_attached_processes.find(id));
@@ -471,7 +468,6 @@ namespace gpi
           --m_descriptor.nref;
           m_attached_processes.erase (p);
         }
-        return m_descriptor.nref;
       }
 
       gpi::pc::type::offset_t
