@@ -216,7 +216,7 @@ namespace gpi
         hdl.name = name;
         hdl.offset = offset;
         hdl.creator = IML_GPI_PC_INVAL;
-        hdl.flags = gpi::pc::F_GLOBAL;
+        hdl.flags = is_global::yes;
 
         internal_alloc (hdl);
 

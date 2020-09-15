@@ -30,7 +30,7 @@ namespace iml_client
         (api->alloc ( segment_id
                     , size
                     , description
-                    , gpi::pc::F_GLOBAL
+                    , gpi::pc::is_global::yes
                     )
         );
 

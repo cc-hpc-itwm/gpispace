@@ -29,7 +29,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (2048U, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048U, area.descriptor().avail);
 
-  gpi::pc::type::handle_t hdl (area.alloc(1, 64, "scratch", 0));
+  gpi::pc::type::handle_t hdl (area.alloc(1, 64, "scratch", gpi::pc::is_global::no));
   BOOST_CHECK_NE (hdl, gpi::pc::type::handle_t());
   BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);
   BOOST_CHECK_EQUAL (2048u - 64, area.descriptor().avail);
@@ -41,7 +41,7 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   BOOST_CHECK_EQUAL (desc.offset, 0u);
   BOOST_CHECK_EQUAL (desc.size, 64u);
   BOOST_CHECK_EQUAL (desc.name, "scratch");
-  BOOST_CHECK_EQUAL (desc.flags, 0u);
+  BOOST_CHECK (desc.flags == gpi::pc::is_global::no);
 
   area.free (hdl);
   BOOST_CHECK_EQUAL (2048u, area.descriptor().local_size);

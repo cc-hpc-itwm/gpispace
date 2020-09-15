@@ -81,7 +81,7 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
-    handle_t handle = area.alloc (1, size, "test", 0);
+    handle_t handle = area.alloc (1, size, "test", gpi::pc::is_global::no);
     area.write_to (memory_location_t (handle, 0), text, strlen (text));
 
     {
@@ -214,7 +214,7 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
     BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
     area.set_id (2);
 
-    handle_t handle = area.alloc (1, size, "test", 0);
+    handle_t handle = area.alloc (1, size, "test", gpi::pc::is_global::no);
 
     area.write_to ( memory_location_t (handle, 0)
                   , text

@@ -71,7 +71,7 @@ namespace gpi
               this->alloc ( IML_GPI_PC_INVAL
                           , m_com_buffer_size
                           , hdl_name
-                          , 0
+                          , is_global::no
                           );
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);
@@ -103,7 +103,7 @@ namespace gpi
       iml_client::vmem::dtmmgr::Arena_t
       gaspi_area_t::grow_direction (const gpi::pc::type::flags_t flgs) const
       {
-        return gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL)
+        return flgs == is_global::yes
           ? iml_client::vmem::dtmmgr::ARENA_UP : iml_client::vmem::dtmmgr::ARENA_DOWN;
       }
 
@@ -125,7 +125,7 @@ namespace gpi
       void
       gaspi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (  gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL)
+        if (  hdl.flags == is_global::yes
            && hdl.creator != (gpi::pc::type::process_id_t)(-1)
            )
         {
@@ -142,7 +142,7 @@ namespace gpi
       void
       gaspi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
       {
-        if (gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
+        if (hdl.flags == is_global::yes)
         {
           _topology.free(hdl.id);
         }
@@ -156,7 +156,7 @@ namespace gpi
       {
         gpi::pc::type::id_t     my_rank = _gaspi_context.rank ();
 
-        if (not gpi::flag::is_set (hdl.flags, gpi::pc::F_GLOBAL))
+        if (hdl.flags == is_global::no)
           my_rank = 0;
 
         // my part of the handle is within [my_begin, my_end)
@@ -176,7 +176,7 @@ namespace gpi
                                    , const gpi::pc::type::flags_t flgs
                                    ) const
       {
-        if (gpi::flag::is_set (flgs, gpi::pc::F_GLOBAL))
+        if (flgs == is_global::yes)
         {
           // static distribution scheme with overhead
           const size_t num_nodes = _gaspi_context.number_of_nodes ();

@@ -46,7 +46,7 @@ namespace gpi
             , local_size (0)
             , nref (0)
             , name ("")
-            , flags (0)
+            , flags (is_global::no)
           {}
 
           bool operator< (const descriptor_t & other) const

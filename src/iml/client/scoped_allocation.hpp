@@ -47,7 +47,7 @@ namespace iml_client
                     ( _scoped_segment
                     , size
                     , description
-                    , 0
+                    , gpi::pc::is_global::no
                     )
                   )
         , _size (size)
