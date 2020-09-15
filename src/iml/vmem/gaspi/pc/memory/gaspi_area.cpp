@@ -122,30 +122,9 @@ namespace gpi
         return false;
       }
 
-      void
-      gaspi_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      global::itopology_t& gaspi_area_t::global_topology()
       {
-        if (  hdl.flags == is_global::yes
-           && hdl.creator != IML_GPI_PC_INVAL
-           )
-        {
-          _topology.alloc ( descriptor ().id
-                                            , hdl.id
-                                            , hdl.offset
-                                            , hdl.size
-                                            , hdl.local_size
-                                            , hdl.name
-                                            );
-        }
-      }
-
-      void
-      gaspi_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
-      {
-        if (hdl.flags == is_global::yes)
-        {
-          _topology.free(hdl.id);
-        }
+        return _topology;
       }
 
       bool

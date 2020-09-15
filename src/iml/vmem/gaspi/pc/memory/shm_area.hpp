@@ -27,8 +27,7 @@ namespace gpi
         virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
         int get_type_id () const;
 
-        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override{}
-        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override{}
+        virtual global::itopology_t& global_topology() override;
 
       private:
         virtual void *raw_ptr (gpi::pc::type::offset_t off) override;

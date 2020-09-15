@@ -23,6 +23,10 @@ namespace gpi
 {
   namespace pc
   {
+    namespace global
+    {
+      class itopology_t;
+    }
     namespace memory
     {
       class area_t : boost::noncopyable
@@ -186,11 +190,8 @@ namespace gpi
                       , gpi::pc::type::size_t amount
                       );
 
-        /*
-         hook functions that may be overriden
-         */
-        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) {}
-        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) {}
+        virtual global::itopology_t& global_topology() = 0;
+
       private:
         typedef std::recursive_mutex mutex_type;
         typedef std::unique_lock<mutex_type> lock_type;

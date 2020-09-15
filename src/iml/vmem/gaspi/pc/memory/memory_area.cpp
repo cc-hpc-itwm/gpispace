@@ -1,5 +1,7 @@
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
+#include <iml/vmem/gaspi/pc/global/itopology.hpp>
+
 #include <stack>
 
 #include <iml/util/assert.hpp>
@@ -328,12 +330,21 @@ namespace gpi
 
         try
         {
-          alloc_hook (hdl);
+          if (hdl.flags == is_global::yes && hdl.creator != IML_GPI_PC_INVAL)
+          {
+            global_topology().alloc ( descriptor ().id
+                                    , hdl.id
+                                    , hdl.offset
+                                    , hdl.size
+                                    , hdl.local_size
+                                    , hdl.name
+                                    );
+          }
         }
         catch (std::exception const & ex)
         {
           m_mmgr.free (hdl.id, arena);
-          std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
+          std::throw_with_nested (std::runtime_error ("global alloc failed"));
         }
       }
 
@@ -363,13 +374,17 @@ namespace gpi
         m_mmgr.free (hdl, arena);
         m_handles.erase (hdl);
         update_descriptor_from_mmgr ();
+
         try
         {
-          free_hook (desc);
+          if (desc.flags == is_global::yes)
+          {
+            global_topology().free (desc.id);
+          }
         }
         catch (std::exception const & ex)
         {
-          std::throw_with_nested (std::runtime_error ("free_hook failed"));
+          std::throw_with_nested (std::runtime_error ("global free failed"));
         }
       }
 

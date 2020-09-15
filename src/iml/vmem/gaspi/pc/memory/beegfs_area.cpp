@@ -325,25 +325,9 @@ namespace gpi
         return false;
       }
 
-      void
-      beegfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
+      global::itopology_t& beegfs_area_t::global_topology()
       {
-        if (hdl.creator != IML_GPI_PC_INVAL)
-        {
-          m_topology.alloc ( descriptor ().id
-                           , hdl.id
-                           , hdl.offset
-                           , hdl.size
-                           , hdl.local_size
-                           , hdl.name
-                           );
-        }
-      }
-
-      void
-      beegfs_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
-      {
-        m_topology.free(hdl.id);
+        return m_topology;
       }
 
       bool

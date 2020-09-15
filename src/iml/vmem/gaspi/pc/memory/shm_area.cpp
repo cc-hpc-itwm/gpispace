@@ -187,6 +187,12 @@ namespace gpi
       {
         return 0.0;
       }
+
+      global::itopology_t& shm_area_t::global_topology()
+      {
+        throw std::logic_error
+          ("shm_area may never trigger a global operation");
+      }
     }
   }
 }
