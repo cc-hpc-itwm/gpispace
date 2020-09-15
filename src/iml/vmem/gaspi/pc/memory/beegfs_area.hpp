@@ -35,7 +35,6 @@ namespace gpi
         beegfs_area_t ( const gpi::pc::type::process_id_t creator
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
-                      , const gpi::pc::type::flags_t flags
                       , gpi::pc::global::itopology_t & topology
                       , handle_generator_t&
                       );

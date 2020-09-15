@@ -24,7 +24,6 @@ namespace gpi
     {
       gaspi_area_t::gaspi_area_t ( const gpi::pc::type::process_id_t creator
                                  , const std::string & name
-                                 , const gpi::pc::type::flags_t flags
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t& handle_generator
                                  , fhg::iml::vmem::gaspi_context& gaspi_context
@@ -37,7 +36,7 @@ namespace gpi
                  , creator
                  , name
                  , per_node_size
-                 , flags
+                 , gpi::pc::F_GLOBAL
                  , handle_generator
                  )
         , _gaspi_context (gaspi_context)
@@ -454,7 +453,6 @@ namespace gpi
         fhg::iml::vmem::gaspi_timeout time_left (std::chrono::seconds (30));
         gaspi_area_t * area = new gaspi_area_t ( owner
                                                , "GASPI"
-                                               , gpi::pc::F_GLOBAL
                                                , topology
                                                , handle_generator
                                                , gaspi_context

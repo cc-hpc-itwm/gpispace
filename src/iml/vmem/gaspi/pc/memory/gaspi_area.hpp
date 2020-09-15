@@ -41,7 +41,6 @@ namespace gpi
       protected:
         gaspi_area_t ( const gpi::pc::type::process_id_t creator
                      , const std::string & name
-                     , const gpi::pc::type::flags_t flags
                      , gpi::pc::global::itopology_t & topology
                      , handle_generator_t&
                      , fhg::iml::vmem::gaspi_context&

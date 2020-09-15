@@ -113,7 +113,6 @@ namespace gpi
       beegfs_area_t::beegfs_area_t ( const gpi::pc::type::process_id_t creator
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
-                                   , const gpi::pc::type::flags_t flags
                                    , gpi::pc::global::itopology_t & topology
                                    , handle_generator_t& handle_generator
                                    )
@@ -121,7 +120,7 @@ namespace gpi
                  , creator
                  , path.string ()
                  , size
-                 , flags
+                 , F_GLOBAL
                  , handle_generator
                  )
         , m_path (path)
@@ -425,12 +424,9 @@ namespace gpi
         , type::id_t owner
         )
       {
-        gpi::pc::type::flags_t flags = F_NONE;
-
         area_ptr_t area (new beegfs_area_t ( owner
                                            , description._path
                                            , total_size
-                                           , flags | F_GLOBAL
                                            , topology
                                            , handle_generator
                                            )
