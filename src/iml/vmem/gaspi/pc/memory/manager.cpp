@@ -166,43 +166,18 @@ namespace gpi
 
           area->detach_process (pid);
 
-          if (!area->in_use())
+          if (area->in_use())
           {
-            area_ptr area (area_it->second);
+            area->attach_process (pid);
+            throw std::runtime_error
+              ("segment is still inuse, cannot unregister");
+          }
 
             // WORK HERE:
             //    let this do another thread
             //    and just give him the area_ptr
             area->garbage_collect ();
             m_areas.erase (area_it);
-          }
-          else
-          {
-          try
-          {
-            if (area->in_use ())
-            {
-              // TODO: maybe move memory segment to garbage area
-
-              throw std::runtime_error
-                ("segment is still inuse, cannot unregister");
-            }
-
-            // WORK HERE:
-            //    let this do another thread
-            //    and just give him the area_ptr
-            area->garbage_collect ();
-            m_areas.erase (area_it);
-          }
-          catch (...)
-          {
-            // unroll
-      {
-          area->attach_process (pid);
-      }
-            throw;
-          }
-        }
       }
 
       void
