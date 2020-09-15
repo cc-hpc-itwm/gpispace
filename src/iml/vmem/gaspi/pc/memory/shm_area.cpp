@@ -102,7 +102,7 @@ namespace gpi
                  , creator
                  , name
                  , user_size
-                 , F_NOCREATE | F_EXCLUSIVE
+                 , F_EXCLUSIVE
                  , handle_generator
                  )
         , m_ptr (nullptr)
