@@ -106,14 +106,6 @@ namespace gpi
           auto const area_it (m_areas.begin());
           area_ptr area (area_it->second);
 
-          if (area->in_use ())
-          {
-            // TODO: maybe move memory segment to garbage area
-
-            throw std::runtime_error
-              ("segment is still inuse, cannot unregister");
-          }
-
           // WORK HERE:
           //    let this do another thread
           //    and just give him the area_ptr
