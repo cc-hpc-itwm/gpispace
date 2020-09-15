@@ -203,6 +203,8 @@ namespace gpi
         void update_descriptor_from_mmgr ();
 
         void internal_alloc (gpi::pc::type::handle::descriptor_t &);
+        void internal_free
+          (lock_type const&, type::handle::descriptor_t const&);
 
       private:
         mutable mutex_type m_mutex;

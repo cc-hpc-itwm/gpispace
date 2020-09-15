@@ -350,30 +350,11 @@ namespace gpi
 
       void area_t::free (const gpi::pc::type::handle_t hdl)
       {
-        lock_type lock (m_mutex);
+        lock_type const lock (m_mutex);
 
-        if (m_handles.find(hdl) == m_handles.end())
-        {
-          throw std::runtime_error
-            ( "no such handle: handle = " + std::to_string (hdl)
-            + " segment = " + std::to_string (m_descriptor.id)
-            );
-        }
+        auto const desc (descriptor (hdl));
 
-        const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
-        if (desc.nref)
-        {
-          throw std::runtime_error
-            ( "handle still in use: handle = " + std::to_string (hdl)
-            + " nref = " + std::to_string (m_attached_processes.size())
-            );
-        }
-
-        iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
-
-        m_mmgr.free (hdl, arena);
-        m_handles.erase (hdl);
-        update_descriptor_from_mmgr ();
+        internal_free (lock, desc);
 
         try
         {
@@ -390,29 +371,26 @@ namespace gpi
 
       void area_t::remote_free (const gpi::pc::type::handle_t hdl)
       {
-        lock_type lock (m_mutex);
+        lock_type const lock (m_mutex);
 
-        if (m_handles.find(hdl) == m_handles.end())
-        {
-          throw std::runtime_error
-            ( "no such handle: handle = " + std::to_string (hdl)
-            + " segment = " + std::to_string (m_descriptor.id)
-            );
-        }
+        internal_free (lock, descriptor (hdl));
+      }
 
-        const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
+      void area_t::internal_free
+        (lock_type const&, type::handle::descriptor_t const& desc)
+      {
         if (desc.nref)
         {
           throw std::runtime_error
-            ( "handle still in use: handle = " + std::to_string (hdl)
+            ( "handle still in use: handle = " + std::to_string (desc.id)
             + " nref = " + std::to_string (desc.nref)
             );
         }
 
         iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
 
-        m_mmgr.free (hdl, arena);
-        m_handles.erase (hdl);
+        m_mmgr.free (desc.id, arena);
+        m_handles.erase (desc.id);
         update_descriptor_from_mmgr ();
       }
 
