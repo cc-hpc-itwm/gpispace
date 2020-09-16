@@ -14,6 +14,9 @@
 
 #include <sys/un.h>
 
+#include <exception>
+#include <stdexcept>
+
 namespace
 {
   void close_socket (const int fd)
@@ -39,7 +42,7 @@ namespace
     catch (boost::system::system_error const& se)
     {
       close_socket (sfd);
-      return -se.code().value();
+      throw;
     }
 
     return sfd;
@@ -53,8 +56,16 @@ namespace gpi
     namespace client
     {
       api_t::api_t (std::string const & path)
+      try
         : m_socket (open_socket (path))
       {}
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              ("Failed to open IML communication socket '" + path + "'")
+          );
+      }
 
       api_t::~api_t ()
       {
