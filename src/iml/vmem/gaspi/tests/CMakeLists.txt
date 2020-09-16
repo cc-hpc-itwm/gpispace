@@ -64,3 +64,10 @@ fhg_add_test (NAME iml-vmem_beegfs_area
             IML::fhg-util
             IML::test-utilities
 )
+
+fhg_add_test (NAME iml-api
+  SOURCES "api.cpp"
+  USE_BOOST
+  LIBRARIES IML::vmem-pc-client-static
+            Util::Generic
+)
