@@ -29,27 +29,14 @@ namespace gpi
 
       handle_generator_t::handle_generator_t(const gpi::pc::type::size_t identifier)
         : m_node_identifier (identifier)
-        , m_counter (4)
+        , m_counter (0)
       {}
 
-      gpi::pc::type::handle_t
-      handle_generator_t::next (const gpi::pc::type::segment::segment_type seg)
+      gpi::pc::type::handle_t handle_generator_t::next()
       {
-        if (seg >= m_counter.size())
-          throw std::invalid_argument ("invalid segment type");
-
         return detail::encode ( m_node_identifier
-                              , ++m_counter[seg]
+                              , ++m_counter
                               );
-      }
-
-      void
-      handle_generator_t::initialize_counter (const gpi::pc::type::segment::segment_type seg)
-      {
-        if (seg >= m_counter.size())
-          throw std::invalid_argument ("invalid segment type");
-
-        m_counter [seg] = 0;
       }
     }
   }

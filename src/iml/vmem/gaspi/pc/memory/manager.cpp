@@ -55,9 +55,6 @@ namespace gpi
         , _interrupt_task_queue (_tasks)
         , _handle_generator (gaspi_context.rank())
       {
-        _handle_generator.initialize_counter
-          (gpi::pc::type::segment::SEG_INVAL);
-
         const std::size_t number_of_queues (gaspi_context.number_of_queues());
         for (std::size_t i (0); i < number_of_queues; ++i)
         {
@@ -126,8 +123,7 @@ namespace gpi
           , std::string const& name
           )
       {
-        auto const segment
-          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        auto const segment (_handle_generator.next());
         add_area (segment, area);
         _shm_segments_by_owner[creator].emplace (segment);
 
@@ -438,8 +434,7 @@ namespace gpi
                             )
       {
 
-        type::segment_id_t const id
-          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        type::segment_id_t const id (_handle_generator.next());
         bool successfully_added (false);
         FHG_UTIL_FINALLY ( [&]
                            {

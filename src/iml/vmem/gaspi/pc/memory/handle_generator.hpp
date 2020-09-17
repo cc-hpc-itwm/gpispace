@@ -27,27 +27,11 @@ namespace gpi
         explicit
         handle_generator_t (const gpi::pc::type::size_t identifier);
 
-        /*
-          generate a new handle for the given segment
+        gpi::pc::type::handle_t next();
 
-          the handle ids are generated as follows:
-          the four most significant bits indicate:
-
-              0x0     - invalid alloc
-              0x1     - gpi allocation
-              0x2     - shared memory
-              0x3     - gpu allocation
-              0x4-0xf - reserved
-
-          the remaining bits are assigned in an implementation specific way.
-        */
-        gpi::pc::type::handle_t
-        next (const gpi::pc::type::segment::segment_type);
-
-        void initialize_counter (const gpi::pc::type::segment::segment_type);
       private:
         gpi::pc::type::size_t m_node_identifier;
-        std::vector<std::atomic<gpi::pc::type::size_t>> m_counter;
+        std::atomic<gpi::pc::type::size_t> m_counter;
       };
     }
   }

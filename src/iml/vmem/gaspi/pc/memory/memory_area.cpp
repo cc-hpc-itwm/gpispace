@@ -167,7 +167,7 @@ namespace gpi
         hdl.local_size = get_local_size (size, flags);
         hdl.name = name;
         hdl.flags = flags;
-        hdl.id = _handle_generator.next (m_descriptor.type);
+        hdl.id = _handle_generator.next();
 
         internal_alloc (hdl, true, segment_id);
 
