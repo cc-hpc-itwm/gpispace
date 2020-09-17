@@ -39,11 +39,6 @@ namespace gpi
               , local_size (a_size)
           {}
 
-          bool operator< (const descriptor_t & other) const
-          {
-            return id < other.id;
-          }
-
         private:
           friend class boost::serialization::access;
           template<typename Archive>

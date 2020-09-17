@@ -47,8 +47,6 @@ namespace gpi
 
         void                set_id (const gpi::pc::type::id_t id);
 
-        gpi::pc::type::id_t get_owner () const;
-
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::size_t size
               , const std::string & name
@@ -69,12 +67,8 @@ namespace gpi
         void
         free (const gpi::pc::type::handle_t hdl);
 
-        void defrag (const gpi::pc::type::size_t free_at_least = 0);
-
         gpi::pc::type::segment::descriptor_t const &
         descriptor () const;
-
-        gpi::pc::type::segment::descriptor_t & descriptor ();
 
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;

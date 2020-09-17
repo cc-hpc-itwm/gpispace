@@ -182,11 +182,6 @@ namespace gpi
         return hdl.id;
       }
 
-      void area_t::defrag (const gpi::pc::type::size_t)
-      {
-        throw std::runtime_error ("defrag is not yet implemented");
-      }
-
       void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl
                                   , bool is_creator
                                   )
@@ -292,13 +287,6 @@ namespace gpi
 
       gpi::pc::type::segment::descriptor_t const &
       area_t::descriptor () const
-      {
-        lock_type lock (m_mutex);
-        return m_descriptor;
-      }
-
-      gpi::pc::type::segment::descriptor_t &
-      area_t::descriptor ()
       {
         lock_type lock (m_mutex);
         return m_descriptor;
