@@ -1,6 +1,5 @@
 #pragma once
 
-#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 namespace gpi
@@ -12,8 +11,6 @@ namespace gpi
       class shm_area_t : public virtual area_t
       {
       public:
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
-
         shm_area_t ( type::name_t const&
                    , const gpi::pc::type::size_t size
                    , handle_generator_t&

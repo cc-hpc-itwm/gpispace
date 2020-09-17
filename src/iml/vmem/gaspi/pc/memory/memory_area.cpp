@@ -25,11 +25,10 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( const gpi::pc::type::segment::segment_type type
-                     , const gpi::pc::type::size_t size
+      area_t::area_t ( const gpi::pc::type::size_t size
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor (type, size)
+        : m_descriptor (size)
         , m_mmgr (size, 1)
         , _handle_generator (handle_generator)
       {

@@ -8,7 +8,6 @@
 #include <boost/serialization/vector.hpp>
 
 #include <iml/vmem/gaspi/pc/type/types.hpp>
-#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 
 namespace gpi
 {
@@ -20,19 +19,15 @@ namespace gpi
       {
         struct descriptor_t
         {
-          segment_type type;                    // type id
           gpi::pc::type::size_t local_size;     // maximum local size
 
           descriptor_t ()
-            : type (SEG_INVAL)
-            , local_size (0)
+            : local_size (0)
           {}
 
-          descriptor_t ( const segment_type a_type
-                       , const gpi::pc::type::size_t a_size
+          descriptor_t ( const gpi::pc::type::size_t a_size
                        )
-              : type (a_type)
-              , local_size (a_size)
+              : local_size (a_size)
           {}
 
         private:
@@ -40,7 +35,6 @@ namespace gpi
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( type );
             ar & BOOST_SERIALIZATION_NVP( local_size );
           }
         };

@@ -114,8 +114,7 @@ namespace gpi
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( const gpi::pc::type::segment::segment_type type
-               , const gpi::pc::type::size_t size
+        area_t ( const gpi::pc::type::size_t size
                , handle_generator_t&
                );
 

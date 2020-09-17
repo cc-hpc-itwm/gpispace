@@ -114,10 +114,7 @@ namespace gpi
                                    , gpi::pc::global::itopology_t & topology
                                    , handle_generator_t& handle_generator
                                    )
-        : area_t ( beegfs_area_t::area_type
-                 , size
-                 , handle_generator
-                 )
+        : area_t (size, handle_generator)
         , _is_creator (is_creator)
         , m_path (path)
         , m_version (BEEGFS_AREA_VERSION)

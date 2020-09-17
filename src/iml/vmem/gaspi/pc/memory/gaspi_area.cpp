@@ -30,10 +30,7 @@ namespace gpi
                                  , type::size_t num_com_buffers
                                  , type::size_t com_buffer_size
                                  )
-        : area_t ( gaspi_area_t::area_type
-                 , per_node_size
-                 , handle_generator
-                 )
+        : area_t (per_node_size, handle_generator)
         , _gaspi_context (gaspi_context)
         , _gaspi (_gaspi_context, per_node_size, time_left)
         , m_ptr (_gaspi.dma_ptr())

@@ -3,7 +3,6 @@
 #include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
 
-#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 #include <iml/vmem/gaspi/pc/memory/handle_buffer.hpp>
 
@@ -26,8 +25,6 @@ namespace gpi
       class gaspi_area_t : public area_t
       {
       public:
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GASPI;
-
         typedef fhg::util::threadsafe_queue<handle_buffer_t> handle_pool_t;
 
         static area_ptr_t create ( iml::gaspi_segment_description const&
