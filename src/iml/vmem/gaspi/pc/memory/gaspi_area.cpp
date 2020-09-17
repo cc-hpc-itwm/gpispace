@@ -67,6 +67,7 @@ namespace gpi
               this->alloc ( m_com_buffer_size
                           , hdl_name
                           , is_global::no
+                          , type::segment::SEG_INVAL
                           );
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);

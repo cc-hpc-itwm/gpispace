@@ -29,18 +29,10 @@ namespace gpi
                      , const gpi::pc::type::size_t size
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor ( type::segment::SEG_INVAL
-                       , type
-                       , size
-                       )
+        : m_descriptor (type, size)
         , m_mmgr (size, 1)
         , _handle_generator (handle_generator)
       {
-      }
-
-      void area_t::set_id (const gpi::pc::type::id_t id)
-      {
-        m_descriptor.id = id;
       }
 
       void area_t::pre_dtor ()
@@ -131,6 +123,7 @@ namespace gpi
                            , const gpi::pc::type::size_t size
                            , const gpi::pc::type::size_t local_size
                            , const std::string & name
+                           , type::segment_id_t segment_id
                            )
       {
         gpi::pc::type::handle::descriptor_t hdl;
@@ -141,7 +134,7 @@ namespace gpi
         hdl.offset = offset;
         hdl.flags = is_global::yes;
 
-        internal_alloc (hdl, false);
+        internal_alloc (hdl, false, segment_id);
 
         if (hdl.offset != offset)
         {
@@ -163,6 +156,7 @@ namespace gpi
       area_t::alloc ( const gpi::pc::type::size_t size
                     , const std::string & name
                     , const gpi::pc::type::flags_t flags
+                    , type::segment_id_t segment_id
                     )
       {
         lock_type lock (m_mutex);
@@ -175,7 +169,7 @@ namespace gpi
         hdl.flags = flags;
         hdl.id = _handle_generator.next (m_descriptor.type);
 
-        internal_alloc (hdl, true);
+        internal_alloc (hdl, true, segment_id);
 
         m_handles [hdl.id] = hdl;
 
@@ -184,6 +178,7 @@ namespace gpi
 
       void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl
                                   , bool is_creator
+                                  , type::segment_id_t segment_id
                                   )
       {
         if (m_mmgr.memfree() < hdl.local_size)
@@ -191,7 +186,7 @@ namespace gpi
           throw std::runtime_error
             ( "out of memory: total size = " + std::to_string (hdl.size)
             + " local size = " + std::to_string (hdl.local_size)
-            + " segment = " + std::to_string (m_descriptor.id)
+            + " segment = " + std::to_string (segment_id)
             + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
@@ -207,7 +202,7 @@ namespace gpi
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
             + std::to_string (hdl.local_size)
-            + " segment = " + std::to_string (m_descriptor.id)
+            + " segment = " + std::to_string (segment_id)
             + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
@@ -216,7 +211,7 @@ namespace gpi
           throw std::runtime_error
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
-            + " segment = " + std::to_string (m_descriptor.id)
+            + " segment = " + std::to_string (segment_id)
             + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
@@ -224,7 +219,7 @@ namespace gpi
         {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
-            + " segment " + std::to_string (m_descriptor.id)
+            + " segment " + std::to_string (segment_id)
             );
         }
 
@@ -232,7 +227,7 @@ namespace gpi
         {
           if (hdl.flags == is_global::yes && is_creator)
           {
-            global_topology().alloc ( descriptor ().id
+            global_topology().alloc ( segment_id
                                     , hdl.id
                                     , hdl.offset
                                     , hdl.size

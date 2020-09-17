@@ -26,11 +26,10 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
                                    , segm_size
                                    , handle_generator
                                    );
-  area.set_id (2);
 
   BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
 
-  gpi::pc::type::handle_t hdl (area.alloc(alloc_size, "scratch", gpi::pc::is_global::no));
+  gpi::pc::type::handle_t hdl (area.alloc(alloc_size, "scratch", gpi::pc::is_global::no, 2));
   BOOST_CHECK_NE (hdl, gpi::pc::type::handle_t());
   BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
 

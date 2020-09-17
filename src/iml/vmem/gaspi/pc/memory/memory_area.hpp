@@ -45,12 +45,11 @@ namespace gpi
            though
         */
 
-        void                set_id (const gpi::pc::type::id_t id);
-
         gpi::pc::type::handle_t
         alloc ( const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
+              , type::segment_id_t segment_id
               );
 
         void
@@ -59,6 +58,7 @@ namespace gpi
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::size_t local_size
                      , const std::string & name
+                     , type::segment_id_t segment_id
                      );
 
         void
@@ -172,6 +172,7 @@ namespace gpi
 
         void internal_alloc ( gpi::pc::type::handle::descriptor_t&
                             , bool is_creator
+                            , type::segment_id_t segment_id
                             );
         void internal_free
           (lock_type const&, type::handle::descriptor_t const&);

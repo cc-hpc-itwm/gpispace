@@ -20,22 +20,18 @@ namespace gpi
       {
         struct descriptor_t
         {
-          gpi::pc::type::segment_id_t id;       // identification
           segment_type type;                    // type id
           gpi::pc::type::size_t local_size;     // maximum local size
 
           descriptor_t ()
-            : id (SEG_INVAL)
-            , type (SEG_INVAL)
+            : type (SEG_INVAL)
             , local_size (0)
           {}
 
-          descriptor_t ( const gpi::pc::type::segment_id_t a_id
-                       , const segment_type a_type
+          descriptor_t ( const segment_type a_type
                        , const gpi::pc::type::size_t a_size
                        )
-              : id (a_id)
-              , type (a_type)
+              : type (a_type)
               , local_size (a_size)
           {}
 
@@ -44,7 +40,6 @@ namespace gpi
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( id );
             ar & BOOST_SERIALIZATION_NVP( type );
             ar & BOOST_SERIALIZATION_NVP( local_size );
           }

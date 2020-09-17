@@ -128,11 +128,11 @@ namespace gpi
       {
         auto const segment
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
-        area->set_id (segment);
         add_area (segment, area);
         _shm_segments_by_owner[creator].emplace (segment);
 
-        auto const allocation (area->alloc (size, name, is_global::no));
+        auto const allocation
+          (area->alloc (size, name, is_global::no, segment));
         add_handle (allocation, segment);
 
         return {segment, allocation};
@@ -279,7 +279,7 @@ namespace gpi
                               )
       {
         area_ptr area (get_area (seg_id));
-        area->remote_alloc (hdl, offset, size, local_size, name);
+        area->remote_alloc (hdl, offset, size, local_size, name, seg_id);
         add_handle (hdl, seg_id);
       }
 
@@ -292,7 +292,7 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        gpi::pc::type::handle_t hdl (area->alloc (size, name, flags));
+        gpi::pc::type::handle_t hdl (area->alloc (size, name, flags, seg_id));
 
         add_handle (hdl, seg_id);
 
@@ -403,7 +403,6 @@ namespace gpi
                                    )
       {
         area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false));
-        area->set_id (seg_id);
         add_area (seg_id, std::move (area));
       }
 
@@ -461,8 +460,6 @@ namespace gpi
         if (require_earlier_master_initialization (description))
         {
           area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true);
-          area->set_id (id);
-
           add_area (id, std::move (area));
 
           topology.add_memory (id, description, total_size);
@@ -482,7 +479,6 @@ namespace gpi
                                                   , true
                                                   )
                                     );
-                    area->set_id (id);
                     add_area (id, std::move (area));
                   }
                 )
