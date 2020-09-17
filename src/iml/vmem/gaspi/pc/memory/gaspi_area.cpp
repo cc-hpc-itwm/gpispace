@@ -115,7 +115,7 @@ namespace gpi
                                   , const gpi::pc::type::offset_t end
                                   ) const
       {
-        gpi::pc::type::id_t     my_rank = _gaspi_context.rank ();
+        auto my_rank = _gaspi_context.rank ();
 
         if (hdl.flags == is_global::no)
           my_rank = 0;
