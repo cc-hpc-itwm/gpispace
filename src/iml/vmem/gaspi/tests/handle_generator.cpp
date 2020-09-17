@@ -12,12 +12,12 @@ BOOST_AUTO_TEST_CASE ( test_generate )
 
   gpi::pc::type::handle_t globl
       (handle_generator.next (gpi::pc::type::segment::SEG_GASPI));
-  BOOST_CHECK_EQUAL (globl.gpi.ident, 42U);
-  BOOST_CHECK_EQUAL (globl.gpi.cntr, 1U);
+  BOOST_CHECK_EQUAL (globl.ident, 42U);
+  BOOST_CHECK_EQUAL (globl.cntr, 1U);
 
   gpi::pc::type::handle_t local
       (handle_generator.next (gpi::pc::type::segment::SEG_SHM));
-  BOOST_CHECK_EQUAL (local.shm.cntr, 1U);
+  BOOST_CHECK_EQUAL (local.cntr, 1U);
 
   gpi::pc::type::handle_id_t id = local;
   BOOST_CHECK_EQUAL (local, id);
@@ -31,11 +31,11 @@ BOOST_AUTO_TEST_CASE ( test_generate_interleaved )
   {
     gpi::pc::type::handle_t g
         (handle_generator.next (gpi::pc::type::segment::SEG_GASPI));
-    BOOST_CHECK_EQUAL (g.gpi.ident, 42U);
-    BOOST_CHECK_EQUAL (g.gpi.cntr, i+1);
+    BOOST_CHECK_EQUAL (g.ident, 42U);
+    BOOST_CHECK_EQUAL (g.cntr, i+1);
 
     gpi::pc::type::handle_t s
         (handle_generator.next (gpi::pc::type::segment::SEG_SHM));
-    BOOST_CHECK_EQUAL (s.shm.cntr, i+1);
+    BOOST_CHECK_EQUAL (s.cntr, i+1);
   }
 }

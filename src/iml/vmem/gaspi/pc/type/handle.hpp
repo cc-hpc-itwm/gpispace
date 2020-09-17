@@ -47,20 +47,10 @@ namespace gpi
 
         union
         {
-          struct __attribute__((packed))
+          struct // == sizeof(handle_id_t)
           {
-            union
-            {
-              struct // == sizeof(handle_id_t)
-              {
-                handle_id_t cntr  : global_count_bits;
-                handle_id_t ident : ident_bits;
-              } gpi;
-              struct // == sizeof(handle_id_t)
-              {
-                handle_id_t cntr : local_count_bits;
-              } shm;
-            };
+            handle_id_t cntr  : global_count_bits;
+            handle_id_t ident : ident_bits;
           };
           handle_id_t handle;
         };

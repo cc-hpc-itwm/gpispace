@@ -12,24 +12,16 @@ namespace gpi
       namespace detail
       {
         gpi::pc::type::handle_t encode ( const gpi::pc::type::size_t node
-                                       , const gpi::pc::type::segment::segment_type type
                                        , const gpi::pc::type::size_t counter
                                        )
         {
           gpi::pc::type::handle_t hdl;
 
-          if (gpi::pc::type::segment::SEG_SHM == type)
-          {
-            hdl.shm.cntr = counter;
-          }
-          else
-          {
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::ident_bits>(node);
-            hdl.gpi.ident = node;
+            hdl.ident = node;
 
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::global_count_bits>(counter);
-            hdl.gpi.cntr = counter;
-          }
+            hdl.cntr = counter;
 
           return hdl;
         }
@@ -47,7 +39,6 @@ namespace gpi
           throw std::invalid_argument ("invalid segment type");
 
         return detail::encode ( m_node_identifier
-                              , seg
                               , ++m_counter[seg]
                               );
       }
