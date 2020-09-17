@@ -4,6 +4,7 @@
 
 #include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
@@ -39,8 +40,6 @@ namespace gpi
         ~manager_t ();
 
         void clear ();
-
-        handle_generator_t& handle_generator();
 
         std::pair<type::segment_id_t, type::handle_t>
           register_shm_segment_and_allocate

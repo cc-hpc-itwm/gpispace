@@ -217,7 +217,6 @@ namespace gpi
                   , std::make_shared<memory::shm_area_t>
                       ( register_segment.name
                       , register_segment.size
-                      , _memory_manager.handle_generator()
                       )
                   , register_segment.size
                   , register_segment.name

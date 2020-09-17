@@ -49,18 +49,14 @@ struct setup_and_cleanup_shared_file
 
 namespace
 {
-  gpi::pc::type::size_t random_handle_identifier()
+  gpi::pc::type::handle_t random_handle()
   {
-    // \todo Roll differently? Roll at all? 12 == handle_t::ident_bits
-    return fhg::util::testing::random<gpi::pc::type::size_t>{}
-      ((1 << 12) - 1);
+    return fhg::util::testing::random<gpi::pc::type::handle_id_t>{}();
   }
 }
 
 BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
-
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
 
@@ -74,10 +70,10 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
                        , path_to_shared_file
                        , size
                        , topology
-                       , handle_generator
                        );
 
-    handle_t handle = area.alloc (size, "test", gpi::pc::is_global::yes, 2);
+    handle_t handle (random_handle());
+    area.alloc (size, "test", gpi::pc::is_global::yes, 2, handle);
     area.write_to (memory_location_t (handle, 0), text, strlen (text));
 
     {
@@ -99,8 +95,6 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
-
   using namespace gpi::pc::memory;
 
   gpi::tests::dummy_topology topology;
@@ -113,7 +107,6 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
                                                         , path_to_shared_file
                                                         , size
                                                         , topology
-                                                        , handle_generator
                                                         )
                        , std::exception
                        );
@@ -124,14 +117,11 @@ BOOST_FIXTURE_TEST_CASE (existing_directory_is_failure, setup_and_cleanup_shared
                                  , path_to_shared_file
                                  , size
                                  , topology
-                                 , handle_generator
                                  );
 }
 
 BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
-
   using namespace gpi::pc::memory;
 
   gpi::tests::dummy_topology topology;
@@ -144,7 +134,6 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
                        , path_to_shared_file
                        , size
                        , topology
-                       , handle_generator
                        );
   }
   catch (std::exception const &ex)
@@ -159,8 +148,6 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
 
 BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
-
   using namespace gpi::pc::memory;
 
   gpi::tests::dummy_topology topology;
@@ -173,7 +160,6 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
                        , path_to_shared_file
                        , size
                        , topology
-                       , handle_generator
                        );
   }
   catch (std::exception const &ex)
@@ -187,8 +173,6 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
 
 BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
-
   using namespace gpi::pc::memory;
   using namespace gpi::pc::type;
 
@@ -203,10 +187,10 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
                        , path_to_shared_file
                        , size
                        , topology
-                       , handle_generator
                        );
 
-    handle_t handle = area.alloc (size, "test", gpi::pc::is_global::yes, 2);
+    handle_t handle (random_handle());
+    area.alloc (size, "test", gpi::pc::is_global::yes, 2, handle);
 
     area.write_to ( memory_location_t (handle, 0)
                   , text
@@ -235,8 +219,6 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
 
 BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
 {
-  gpi::pc::memory::handle_generator_t handle_generator (random_handle_identifier());
-
   using namespace gpi::pc::memory;
 
   gpi::tests::dummy_topology topology;
@@ -247,14 +229,12 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
                      , path_to_shared_file
                      , size
                      , topology
-                     , handle_generator
                      );
 
   BOOST_REQUIRE_THROW ( beegfs_area_t ( true
                                       , path_to_shared_file
                                       , size
                                       , topology
-                                      , handle_generator
                                       )
                       , std::exception
                       );

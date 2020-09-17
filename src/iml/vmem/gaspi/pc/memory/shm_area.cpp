@@ -85,9 +85,8 @@ namespace gpi
 
       shm_area_t::shm_area_t ( type::name_t const& name
                              , const gpi::pc::type::size_t user_size
-                             , handle_generator_t& handle_generator
                              )
-        : area_t (user_size, handle_generator)
+        : area_t (user_size)
         , m_ptr (nullptr)
         , _size (user_size)
       {

@@ -5,7 +5,6 @@
 
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
 #include <iml/vmem/gaspi/pc/memory/gaspi_area.hpp>
-#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 #include <iml/vmem/gaspi/pc/memory/manager.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 #include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
@@ -43,7 +42,7 @@ namespace gpi
             , [&] (iml::beegfs_segment_description const& desc)
               {
                 return beegfs_area_t::create
-                  (desc, total_size, topology, handle_generator, is_creator);
+                  (desc, total_size, topology, is_creator);
               }
             );
         }
@@ -110,11 +109,6 @@ namespace gpi
         }
       }
 
-      handle_generator_t& manager_t::handle_generator()
-      {
-        return _handle_generator;
-      }
-
       std::pair<type::segment_id_t, type::handle_t>
         manager_t::register_shm_segment_and_allocate
           ( gpi::pc::type::process_id_t creator
@@ -127,8 +121,8 @@ namespace gpi
         add_area (segment, area);
         _shm_segments_by_owner[creator].emplace (segment);
 
-        auto const allocation
-          (area->alloc (size, name, is_global::no, segment));
+        auto const allocation (_handle_generator.next());
+        area->alloc (size, name, is_global::no, segment, allocation);
         add_handle (allocation, segment);
 
         return {segment, allocation};
@@ -288,11 +282,12 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        gpi::pc::type::handle_t hdl (area->alloc (size, name, flags, seg_id));
+        auto const allocation (_handle_generator.next());
+        area->alloc (size, name, flags, seg_id, allocation);
 
-        add_handle (hdl, seg_id);
+        add_handle (allocation, seg_id);
 
-        return hdl;
+        return allocation;
       }
 
       void

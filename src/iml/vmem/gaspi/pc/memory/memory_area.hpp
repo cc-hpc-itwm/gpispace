@@ -10,8 +10,6 @@
 #include <iml/vmem/gaspi/pc/type/memory_location.hpp>
 #include <iml/vmem/gaspi/pc/type/handle_descriptor.hpp>
 
-#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
-
 #include <future>
 #include <memory>
 #include <mutex>
@@ -44,11 +42,12 @@ namespace gpi
            though
         */
 
-        gpi::pc::type::handle_t
+        void
         alloc ( const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
               , type::segment_id_t segment_id
+              , type::handle_t allocation_id
               );
 
         void
@@ -110,9 +109,7 @@ namespace gpi
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( const gpi::pc::type::size_t size
-               , handle_generator_t&
-               );
+        area_t (gpi::pc::type::size_t size);
 
         virtual bool is_shm_segment() const;
 
@@ -179,8 +176,6 @@ namespace gpi
       private:
         iml_client::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
-
-        handle_generator_t& _handle_generator;
       };
 
       typedef std::shared_ptr<area_t> area_ptr_t;

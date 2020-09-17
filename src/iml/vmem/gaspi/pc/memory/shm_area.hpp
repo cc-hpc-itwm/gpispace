@@ -13,7 +13,6 @@ namespace gpi
       public:
         shm_area_t ( type::name_t const&
                    , const gpi::pc::type::size_t size
-                   , handle_generator_t&
                    );
 
         ~shm_area_t ();

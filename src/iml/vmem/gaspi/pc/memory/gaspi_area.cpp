@@ -30,7 +30,7 @@ namespace gpi
                                  , type::size_t num_com_buffers
                                  , type::size_t com_buffer_size
                                  )
-        : area_t (per_node_size, handle_generator)
+        : area_t (per_node_size)
         , _gaspi_context (gaspi_context)
         , _gaspi (_gaspi_context, per_node_size, time_left)
         , m_ptr (_gaspi.dma_ptr())
@@ -60,11 +60,12 @@ namespace gpi
             "com-" + boost::lexical_cast<std::string>(i);
           try
           {
-            gpi::pc::type::handle_t com_hdl =
+            gpi::pc::type::handle_t com_hdl (handle_generator.next());
               this->alloc ( m_com_buffer_size
                           , hdl_name
                           , is_global::no
                           , 0
+                          , com_hdl
                           );
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);

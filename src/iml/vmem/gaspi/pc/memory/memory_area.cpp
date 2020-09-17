@@ -25,12 +25,9 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( const gpi::pc::type::size_t size
-                     , handle_generator_t& handle_generator
-                     )
+      area_t::area_t (type::size_t size)
         : _local_size (size)
         , m_mmgr (size, 1)
-        , _handle_generator (handle_generator)
       {
       }
 
@@ -151,11 +148,12 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::handle_t
+      void
       area_t::alloc ( const gpi::pc::type::size_t size
                     , const std::string & name
                     , const gpi::pc::type::flags_t flags
                     , type::segment_id_t segment_id
+                    , type::handle_t allocation_id
                     )
       {
         lock_type lock (m_mutex);
@@ -166,13 +164,11 @@ namespace gpi
         hdl.local_size = get_local_size (size, flags);
         hdl.name = name;
         hdl.flags = flags;
-        hdl.id = _handle_generator.next();
+        hdl.id = allocation_id;
 
         internal_alloc (hdl, true, segment_id);
 
         m_handles [hdl.id] = hdl;
-
-        return hdl.id;
       }
 
       void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl

@@ -26,7 +26,6 @@ namespace gpi
         static area_ptr_t create ( iml::beegfs_segment_description const&
                                  , unsigned long total_size
                                  , gpi::pc::global::itopology_t & topology
-                                 , handle_generator_t&
                                  , bool is_creator
                                  );
 
@@ -34,7 +33,6 @@ namespace gpi
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
                       , gpi::pc::global::itopology_t & topology
-                      , handle_generator_t&
                       );
 
         ~beegfs_area_t ();

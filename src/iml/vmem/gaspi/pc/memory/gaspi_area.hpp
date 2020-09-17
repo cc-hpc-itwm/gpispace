@@ -5,6 +5,7 @@
 
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 #include <iml/vmem/gaspi/pc/memory/handle_buffer.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
 
