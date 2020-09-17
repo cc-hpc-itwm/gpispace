@@ -36,11 +36,6 @@ namespace gpi
             , flags (is_global::no)
           {}
 
-          bool operator< (const descriptor_t & other) const
-          {
-            return id < other.id;
-          }
-
         private:
           friend class boost::serialization::access;
           template<typename Archive>

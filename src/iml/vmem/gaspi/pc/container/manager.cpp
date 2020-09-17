@@ -167,8 +167,6 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::memory::memcpy_t & cpy) const
           {
-            gpi::pc::type::validate (cpy.dst.handle);
-            gpi::pc::type::validate (cpy.src.handle);
             gpi::pc::proto::memory::memcpy_reply_t rpl;
             rpl.memcpy_id = _memory_manager.memcpy (cpy.dst, cpy.src, cpy.size);
             return gpi::pc::proto::memory::message_t (rpl);

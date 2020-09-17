@@ -29,9 +29,8 @@ namespace gpi
       {
         static const int total_bits = (sizeof(handle_id_t)*8);
         static const int ident_bits = 12;
-        static const int typec_bits = 4;
-        static const int global_count_bits = (total_bits - ident_bits - typec_bits);
-        static const int local_count_bits = (total_bits - typec_bits);
+        static const int global_count_bits = (total_bits - ident_bits);
+        static const int local_count_bits = total_bits;
         static const int string_length = (2+total_bits/4); // 0x...
 
         handle_t ()
@@ -56,18 +55,11 @@ namespace gpi
               {
                 handle_id_t cntr  : global_count_bits;
                 handle_id_t ident : ident_bits;
-                int _pad  : typec_bits;
               } gpi;
               struct // == sizeof(handle_id_t)
               {
                 handle_id_t cntr : local_count_bits;
-                int _pad  : typec_bits;
               } shm;
-              struct // == sizeof(handle_id_t)
-              {
-                handle_id_t _pad : (total_bits - typec_bits);
-                int type : typec_bits;
-              };
             };
           };
           handle_id_t handle;
@@ -81,16 +73,6 @@ namespace gpi
           ar & BOOST_SERIALIZATION_NVP( handle );
         }
       };
-
-      inline
-      void validate (const handle_t & hdl)
-      {
-        if (hdl.type == 0)
-        {
-          throw std::invalid_argument
-            ("invalid handle: " + boost::lexical_cast<std::string>(hdl.handle));
-        }
-      }
 
       inline
       std::ostream & operator << (std::ostream & os, const handle_t h)
@@ -120,8 +102,6 @@ namespace gpi
         const std::ios_base::fmtflags saved_flags (is.flags());
         is.flags (std::ios::hex);
         is >> h.handle;
-
-        validate (h);
 
         is.flags (saved_flags);
         return is;

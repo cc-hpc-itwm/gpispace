@@ -17,7 +17,6 @@ namespace gpi
           , SEG_GASPI    = 1    // GASPI based segment
           , SEG_SHM      = 2    // SHM based segment
           , SEG_BEEGFS   = 3    // (parallel) beegfs shared file-system based segment
-          , SEG_MAX_TYPE = ((1 << 4) - 1)
           };
       }
     }

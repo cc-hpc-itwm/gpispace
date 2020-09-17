@@ -20,16 +20,10 @@ namespace gpi
 
           if (gpi::pc::type::segment::SEG_SHM == type)
           {
-            hdl.type = type;
-
-            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::local_count_bits>(counter);
             hdl.shm.cntr = counter;
           }
           else
           {
-            gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::typec_bits>(type);
-            hdl.type = type;
-
             gpi::pc::type::check_for_overflow<gpi::pc::type::handle_t::ident_bits>(node);
             hdl.gpi.ident = node;
 
@@ -43,7 +37,7 @@ namespace gpi
 
       handle_generator_t::handle_generator_t(const gpi::pc::type::size_t identifier)
         : m_node_identifier (identifier)
-        , m_counter (1 << gpi::pc::type::handle_t::typec_bits)
+        , m_counter (4)
       {}
 
       gpi::pc::type::handle_t
