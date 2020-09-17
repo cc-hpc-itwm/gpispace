@@ -67,10 +67,4 @@ extended_add_library (NAME vmem-pc-global
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
-extended_add_library (NAME gpi_type_check
-  NAMESPACE IML
-  SOURCES "types.cpp"
-  LIBRARIES IML::vmem-gpiapi
-)
-
 add_subdirectory (tests)
