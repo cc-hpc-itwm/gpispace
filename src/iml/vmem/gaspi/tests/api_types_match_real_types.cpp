@@ -1,4 +1,5 @@
 #include <iml/vmem/gaspi/types.hpp>
+#include <iml/vmem/netdev_id.hpp>
 
 #include <util-generic/testing/require_type.hpp>
 
@@ -22,6 +23,7 @@ namespace gpi
       (notification_id_t, gaspi_notification_id_t);
     FHG_UTIL_TESTING_CHECK_TYPE_EQUAL (timeout_t, gaspi_timeout_t);
     FHG_UTIL_TESTING_CHECK_TYPE_EQUAL (segment_id_t, gaspi_segment_id_t);
-    FHG_UTIL_TESTING_CHECK_TYPE_EQUAL (netdev_id_t, gaspi_int);
+    FHG_UTIL_TESTING_CHECK_TYPE_EQUAL
+      (decltype (fhg::iml::vmem::netdev_id::value), gaspi_int);
   }
 }

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iml/vmem/gaspi/types.hpp>
-
 #include <boost/any.hpp>
 
 #include <ostream>
@@ -37,7 +35,7 @@ namespace fhg
           void serialize (Archive&, unsigned int);
 
         //! The choice in a format that can be written to \c gaspi_config_t.
-        gpi::netdev_id_t value;
+        int value;
       };
     }
   }

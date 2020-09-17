@@ -5,10 +5,6 @@ install (FILES
   DESTINATION include/iml/vmem/gaspi/pc/type/
 )
 
-install (FILES
-  types.hpp
-  DESTINATION include/iml/vmem/gaspi/
-)
 
 extended_add_library (NAME vmem-gpiapi
   NAMESPACE IML
