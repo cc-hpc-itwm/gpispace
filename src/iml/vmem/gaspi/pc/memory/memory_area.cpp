@@ -134,7 +134,6 @@ namespace gpi
                            )
       {
         gpi::pc::type::handle::descriptor_t hdl;
-        hdl.segment = m_descriptor.id;
         hdl.id = hdl_id;
         hdl.size = size;
         hdl.local_size = local_size;
@@ -169,7 +168,6 @@ namespace gpi
         lock_type lock (m_mutex);
 
         gpi::pc::type::handle::descriptor_t hdl;
-        hdl.segment = m_descriptor.id;
         hdl.size = size;
         // get distribution scheme
         hdl.local_size = get_local_size (size, flags);

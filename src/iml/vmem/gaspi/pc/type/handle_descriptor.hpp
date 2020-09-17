@@ -21,7 +21,6 @@ namespace gpi
         struct descriptor_t
         {
           gpi::pc::type::handle_t id;
-          gpi::pc::type::segment_id_t segment;
           gpi::pc::type::offset_t offset;
           gpi::pc::type::size_t size;
           gpi::pc::type::size_t local_size;
@@ -30,7 +29,6 @@ namespace gpi
 
           descriptor_t ()
             : id (0)
-            , segment (0)
             , offset (0)
             , size (0)
             , local_size (0)
@@ -49,7 +47,6 @@ namespace gpi
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
             ar & BOOST_SERIALIZATION_NVP( id.handle );
-            ar & BOOST_SERIALIZATION_NVP( segment );
             ar & BOOST_SERIALIZATION_NVP( offset );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP (local_size);

@@ -37,7 +37,6 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   std::cout << "    handle = " << hdl << std::endl;
   gpi::pc::type::handle::descriptor_t desc (area.descriptor (hdl));
   BOOST_CHECK_EQUAL (desc.id.handle, hdl.handle);
-  BOOST_CHECK_EQUAL (desc.segment, area.descriptor().id);
   BOOST_CHECK_EQUAL (desc.offset, segm_size - alloc_size);
   BOOST_CHECK_EQUAL (desc.size, alloc_size);
   BOOST_CHECK_EQUAL (desc.name, "scratch");
