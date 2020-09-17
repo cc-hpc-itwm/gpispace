@@ -51,8 +51,9 @@ namespace
 {
   gpi::pc::type::size_t random_handle_identifier()
   {
+    // \todo Roll differently? Roll at all? 12 == handle_t::ident_bits
     return fhg::util::testing::random<gpi::pc::type::size_t>{}
-      ((1 << gpi::pc::type::handle_t::ident_bits) - 1);
+      ((1 << 12) - 1);
   }
 }
 

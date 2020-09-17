@@ -41,7 +41,7 @@ namespace gpi
           template<typename Archive>
           void serialize (Archive & ar, const unsigned int /*version*/)
           {
-            ar & BOOST_SERIALIZATION_NVP( id.handle );
+            ar & BOOST_SERIALIZATION_NVP( id );
             ar & BOOST_SERIALIZATION_NVP( offset );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP (local_size);

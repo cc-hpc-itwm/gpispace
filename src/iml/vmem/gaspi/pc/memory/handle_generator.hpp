@@ -1,9 +1,5 @@
 #pragma once
 
-#include <vector>
-
-#include <boost/noncopyable.hpp>
-
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
 
@@ -15,22 +11,19 @@ namespace gpi
   {
     namespace memory
     {
-      class handle_generator_t : boost::noncopyable
+      class handle_generator_t
       {
       public:
-        /** create a new handle_generator for a given node identifier.
+        //! Initialize a handle generator which will generate unique
+        //! handles with the global part \a identifier.
+        explicit handle_generator_t (type::size_t identifier);
 
-            usually the rank can be used
-         */
-
-        explicit
-        handle_generator_t (const gpi::pc::type::size_t identifier);
-
-        gpi::pc::type::handle_t next();
+        //! Generate the next handle. Thread-safe.
+        type::handle_t next();
 
       private:
-        gpi::pc::type::size_t m_node_identifier;
-        std::atomic<gpi::pc::type::size_t> m_counter;
+        type::size_t m_node_identifier;
+        std::atomic<type::size_t> m_counter;
       };
     }
   }
