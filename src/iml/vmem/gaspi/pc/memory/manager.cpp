@@ -129,7 +129,7 @@ namespace gpi
         auto const segment
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
         area->set_id (segment);
-        add_area (area);
+        add_area (segment, area);
         _shm_segments_by_owner[creator].emplace (segment);
 
         auto const allocation (area->alloc (size, name, is_global::no));
@@ -189,18 +189,16 @@ namespace gpi
         _shm_segments_by_owner.erase (segments_it);
       }
 
-      void
-      manager_t::add_area (manager_t::area_ptr const &area)
+      void manager_t::add_area
+        (type::segment_id_t seg_id, manager_t::area_ptr area)
       {
-        lock_type lock (m_mutex);
+        lock_type const lock (m_mutex);
 
-        if (m_areas.find (area->get_id ()) != m_areas.end())
+        if (!m_areas.emplace (seg_id, std::move (area)).second)
         {
           throw std::runtime_error
             ("cannot add another gpi segment: id already in use!");
         }
-
-        m_areas [area->get_id ()] = area;
       }
 
       manager_t::area_ptr
@@ -406,7 +404,7 @@ namespace gpi
       {
         area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false));
         area->set_id (seg_id);
-        add_area (area);
+        add_area (seg_id, std::move (area));
       }
 
       namespace
@@ -465,7 +463,7 @@ namespace gpi
           area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true);
           area->set_id (id);
 
-          add_area (area);
+          add_area (id, std::move (area));
 
           topology.add_memory (id, description, total_size);
         }
@@ -485,7 +483,7 @@ namespace gpi
                                                   )
                                     );
                     area->set_id (id);
-                    add_area (area);
+                    add_area (id, std::move (area));
                   }
                 )
             );

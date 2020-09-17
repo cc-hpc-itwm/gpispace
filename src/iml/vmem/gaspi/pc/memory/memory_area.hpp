@@ -46,7 +46,6 @@ namespace gpi
         */
 
         void                set_id (const gpi::pc::type::id_t id);
-        gpi::pc::type::id_t get_id () const;
 
         gpi::pc::type::id_t get_owner () const;
 

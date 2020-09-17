@@ -43,11 +43,6 @@ namespace gpi
         m_descriptor.id = id;
       }
 
-      gpi::pc::type::id_t area_t::get_id () const
-      {
-        return m_descriptor.id;
-      }
-
       void area_t::pre_dtor ()
       {
         lock_type lock (m_mutex);
