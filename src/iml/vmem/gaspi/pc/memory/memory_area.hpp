@@ -8,7 +8,6 @@
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
 #include <iml/vmem/gaspi/pc/type/memory_location.hpp>
-#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 #include <iml/vmem/gaspi/pc/type/handle_descriptor.hpp>
 
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
@@ -66,9 +65,6 @@ namespace gpi
 
         void
         free (const gpi::pc::type::handle_t hdl);
-
-        gpi::pc::type::segment::descriptor_t const &
-        descriptor () const;
 
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
@@ -178,7 +174,9 @@ namespace gpi
 
       private:
         mutable mutex_type m_mutex;
-        gpi::pc::type::segment::descriptor_t m_descriptor;
+      protected:
+        type::size_t const _local_size;
+      private:
         iml_client::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
 

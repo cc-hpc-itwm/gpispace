@@ -28,7 +28,7 @@ namespace gpi
       area_t::area_t ( const gpi::pc::type::size_t size
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor (size)
+        : _local_size (size)
         , m_mmgr (size, 1)
         , _handle_generator (handle_generator)
       {
@@ -277,13 +277,6 @@ namespace gpi
 
         m_mmgr.free (desc.id, arena);
         m_handles.erase (desc.id);
-      }
-
-      gpi::pc::type::segment::descriptor_t const &
-      area_t::descriptor () const
-      {
-        lock_type lock (m_mutex);
-        return m_descriptor;
       }
 
       gpi::pc::type::handle::descriptor_t const &

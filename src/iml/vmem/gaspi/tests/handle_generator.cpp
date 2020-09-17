@@ -1,7 +1,5 @@
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
-#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
-
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
 #include <boost/test/unit_test.hpp>

@@ -76,8 +76,6 @@ BOOST_FIXTURE_TEST_CASE (create_beegfs_segment, setup_and_cleanup_shared_file)
                        , handle_generator
                        );
 
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
-
     handle_t handle = area.alloc (size, "test", gpi::pc::is_global::yes, 2);
     area.write_to (memory_location_t (handle, 0), text, strlen (text));
 
@@ -147,7 +145,6 @@ BOOST_FIXTURE_TEST_CASE (create_big_beegfs_segment, setup_and_cleanup_shared_fil
                        , topology
                        , handle_generator
                        );
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
   catch (std::exception const &ex)
   {
@@ -177,7 +174,6 @@ BOOST_FIXTURE_TEST_CASE (create_huge_beegfs_segment, setup_and_cleanup_shared_fi
                        , topology
                        , handle_generator
                        );
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
   }
   catch (std::exception const &ex)
   {
@@ -208,7 +204,6 @@ BOOST_FIXTURE_TEST_CASE (test_read, setup_and_cleanup_shared_file)
                        , topology
                        , handle_generator
                        );
-    BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
     handle_t handle = area.alloc (size, "test", gpi::pc::is_global::yes, 2);
 
@@ -253,7 +248,6 @@ BOOST_FIXTURE_TEST_CASE (test_already_open, setup_and_cleanup_shared_file)
                      , topology
                      , handle_generator
                      );
-  BOOST_CHECK_EQUAL (size, area.descriptor().local_size);
 
   BOOST_REQUIRE_THROW ( beegfs_area_t ( true
                                       , path_to_shared_file

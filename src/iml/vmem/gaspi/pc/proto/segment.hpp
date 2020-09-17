@@ -8,7 +8,6 @@
 
 #include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
-#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 
 namespace gpi
 {

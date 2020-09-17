@@ -88,7 +88,7 @@ namespace gpi
           throw std::runtime_error
             ( std::string ("not all communication buffers could be allocated:")
             + " com-size := " + boost::lexical_cast<std::string>(m_com_buffer_size)
-            + " mem-size := " + boost::lexical_cast<std::string>(descriptor ().local_size)
+            + " mem-size := " + boost::lexical_cast<std::string>(_local_size)
             );
         }
       }
@@ -97,7 +97,7 @@ namespace gpi
       gaspi_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
         return
-          (m_ptr && off < descriptor ().local_size)
+          (m_ptr && off < _local_size)
           ? ((char*)m_ptr + off)
           : (char*)nullptr;
       }

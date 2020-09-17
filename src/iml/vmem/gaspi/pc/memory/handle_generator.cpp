@@ -1,8 +1,6 @@
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 #include <iml/util/assert.hpp>
 
-#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
-
 namespace gpi
 {
   namespace pc
