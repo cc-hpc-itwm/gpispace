@@ -2,6 +2,8 @@
 
 #include <GASPI.h>
 
+#include <type_traits>
+
 namespace gpi
 {
   //! \note don't expose GASPI.h to users, but we still correct types
