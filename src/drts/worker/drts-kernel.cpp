@@ -200,7 +200,7 @@ int main(int ac, char **av)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
       ? fhg::util::cxx14::make_unique<iml::client::scoped_shm_allocation>
-        ( virtual_memory_api
+        ( virtual_memory_api.get()
         , kernel_name + "-shared_memory"
         , vm.at (option_name::shared_memory_size).as<unsigned long>()
         )

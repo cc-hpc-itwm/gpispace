@@ -31,7 +31,7 @@ namespace iml_client
     : vmem_allocation (drts, segment_desc, size, description)
   {
     iml::client::scoped_shm_allocation const buffer
-      (drts->_->_virtual_memory_api, "vmem_allocation_buffer", size);
+      (drts->_->_virtual_memory_api.get(), "vmem_allocation_buffer", size);
 
     char* const content
       (static_cast<char*> (drts->_->_virtual_memory_api->ptr (buffer)));
