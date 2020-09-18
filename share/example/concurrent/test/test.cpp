@@ -26,7 +26,6 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -46,21 +45,17 @@ BOOST_AUTO_TEST_CASE (share_example_concurrent)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
-    ( installation
-    , "concurrent"
+    ( "concurrent"
     , test::source_directory (vm)
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", rifds.entry_points());
+    (vm, "", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run

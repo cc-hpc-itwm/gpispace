@@ -3,8 +3,7 @@ fhg_add_test (NAME drts_run_bunch_of_tasks.performance
   USE_BOOST
   PERFORMANCE_TEST
   RUN_SERIAL
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --num-workers 4
        --num-tasks 10000
@@ -23,8 +22,7 @@ fhg_add_test (NAME drts_run_bunch_of_tasks_put_token.performance
   USE_BOOST
   PERFORMANCE_TEST
   RUN_SERIAL
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
        --num-workers 4
        --num-tasks 10000

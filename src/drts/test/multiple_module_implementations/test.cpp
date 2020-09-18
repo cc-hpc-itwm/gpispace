@@ -30,7 +30,6 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
@@ -59,11 +58,8 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "multiple_module_implementations"
+    ( "multiple_module_implementations"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -81,14 +77,12 @@ BOOST_AUTO_TEST_CASE (multiple_module_implementations)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {vm}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::set<std::string> const preferences {"A", "B", "C"};
 
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "A:20 B:20 C:20"
     , rifds.entry_points()
     );

@@ -38,7 +38,6 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
@@ -81,11 +80,8 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "run_bunch_of_tasks_with_put_token"
+    ( "run_bunch_of_tasks_with_put_token"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -103,12 +99,10 @@ BOOST_AUTO_TEST_CASE (run_bunch_of_tasks_with_put_token)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {vm}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "A:" + std::to_string (num_workers)
     , rifds.entry_points()
     );

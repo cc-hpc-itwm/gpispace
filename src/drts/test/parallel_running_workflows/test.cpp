@@ -31,7 +31,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
@@ -70,8 +69,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   fhg::util::temporary_file const temporary_file_a
     (shared_directory / boost::filesystem::unique_path());
   fhg::util::temporary_file const temporary_file_b
@@ -81,14 +78,12 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   boost::filesystem::path const filename_b (temporary_file_b);
 
   test::make_net_lib_install const make_wait_then_touch
-    ( installation
-    , "wait_then_touch"
+    ( "wait_then_touch"
     , test::source_directory (vm)
     , installation_dir
     );
   test::make_net_lib_install const make_touch_then_wait
-    ( installation
-    , "touch_then_wait"
+    ( "touch_then_wait"
     , test::source_directory (vm)
     , installation_dir
     );
@@ -96,7 +91,6 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
@@ -104,7 +98,7 @@ BOOST_AUTO_TEST_CASE (drts_parallel_running_workflows)
                           );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:2", rifds.entry_points(), std::cerr, certificates);
+    (vm, "worker:2", rifds.entry_points(), std::cerr, certificates);
 
   auto submit_fun
     ( [&filename_a, &filename_b, &drts, &certificates]

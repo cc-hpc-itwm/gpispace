@@ -1,17 +1,7 @@
-
 fhg_add_test (NAME drts_installation
   SOURCES installation.cpp
   USE_BOOST
-  LIBRARIES gspc
-            Boost::program_options
-  REQUIRES_INSTALLATION
-)
-fhg_add_test (NAME drts_installation_from_command_line
-  SOURCES installation_from_command_line.cpp
-  USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-  LIBRARIES gspc
-            Boost::program_options
+  LIBRARIES GPISpace::Installation
   REQUIRES_INSTALLATION
 )
 
@@ -24,8 +14,7 @@ fhg_add_test (NAME drts_context
 fhg_add_test (NAME scoped_rifd
   SOURCES scoped_rifd.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+  ARGS --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
             test-utilities
             Boost::program_options
@@ -36,8 +25,7 @@ fhg_add_test (NAME scoped_rifd
 fhg_add_test (NAME scoped_drts
   SOURCES scoped_drts.cpp
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+  ARGS --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
             test-utilities
             Boost::program_options
@@ -53,8 +41,7 @@ extended_add_library (NAME module_nounload_detection-empty
 fhg_add_test (NAME module_nounload_detection
   SOURCES "module_nounload_detection.cpp"
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
             test-utilities
@@ -71,8 +58,7 @@ fhg_add_test (NAME module_nounload_detection
 fhg_add_test (NAME worker_env
   SOURCES "worker_env.cpp"
   USE_BOOST
-  ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+  ARGS --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
             test-utilities

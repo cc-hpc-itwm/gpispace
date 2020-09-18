@@ -34,7 +34,6 @@ BOOST_AUTO_TEST_CASE (plugin_call_before_and_destroy_in_one_transition)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -65,21 +64,17 @@ BOOST_AUTO_TEST_CASE (plugin_call_before_and_destroy_in_one_transition)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
-    ( installation
-    , "call_before_and_destroy_in_one_transition"
+    ( "call_before_and_destroy_in_one_transition"
     , test::source_directory (vm)
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
   pnet::type::value::value_type const plugin_path
     (vm["plugin-path"].as<std::string>());

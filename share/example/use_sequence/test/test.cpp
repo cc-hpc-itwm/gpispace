@@ -32,7 +32,6 @@ namespace
 
     options_description.add (test::options::source_directory());
     options_description.add (test::options::shared_directory());
-    options_description.add (gspc::options::installation());
     options_description.add (gspc::options::drts());
     options_description.add (gspc::options::scoped_rifd());
 
@@ -58,21 +57,17 @@ namespace
 
     vm.notify();
 
-    gspc::installation const installation (vm);
-
     test::make_net const make
-      ( installation
-      , main
+      ( main
       , test::source_directory (vm)
       );
 
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
     gspc::scoped_runtime_system const drts
-      (vm, installation, "work:4", rifds.entry_points());
+      (vm, "work:4", rifds.entry_points());
 
     return gspc::client (drts).put_and_run
       (gspc::workflow (make.pnet()), {{"n", n}});

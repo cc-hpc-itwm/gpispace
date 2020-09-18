@@ -23,7 +23,6 @@ namespace gspc
   struct scoped_runtime_system::implementation
   {
     implementation ( boost::program_options::variables_map const& vm
-                   , installation const&
                    , std::string const& topology_description
                    , boost::optional<rifd_entry_points> const& entry_points
                    , rifd_entry_point const& master
@@ -58,7 +57,6 @@ namespace gspc
                              , bool worker_env_copy_current
                              , std::vector<boost::filesystem::path> worker_env_copy_file
                              , std::vector<std::string> worker_env_set_variable
-                             , installation_path
                              , boost::optional<std::chrono::seconds> vmem_startup_timeout
                              , std::vector<worker_description> worker_descriptions
                              , boost::optional<unsigned short> vmem_port

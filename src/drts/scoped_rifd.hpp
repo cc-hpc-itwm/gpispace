@@ -80,7 +80,6 @@ namespace gspc
   public:
     rifds ( rifd::strategy const&
           , rifd::port const&
-          , installation const&
           );
 
     std::vector<std::string> hosts() const;
@@ -141,7 +140,6 @@ namespace gspc
     scoped_rifd ( rifd::strategy const&
                 , rifd::hostname const&
                 , rifd::port const&
-                , installation const&
                 , std::ostream& = std::cout
                 );
     ~scoped_rifd(); //! \todo report the failed entry points
@@ -155,7 +153,6 @@ namespace gspc
     scoped_rifds ( rifd::strategy const&
                  , rifd::hostnames const&
                  , rifd::port const&
-                 , installation const&
                  , std::ostream& = std::cout
                  );
     ~scoped_rifds(); //! \todo report the failed entry points

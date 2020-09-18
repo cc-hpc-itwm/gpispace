@@ -44,7 +44,6 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
@@ -91,11 +90,8 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "workflow_response_one_response_waits_while_others_are_made"
+    ( "workflow_response_one_response_waits_while_others_are_made"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -111,7 +107,6 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
@@ -119,7 +114,7 @@ BOOST_AUTO_TEST_CASE (one_response_waits_while_others_are_made)
                           );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
+    (vm, "work:2 management:1", rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 

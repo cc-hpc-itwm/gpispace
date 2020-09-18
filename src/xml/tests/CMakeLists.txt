@@ -57,6 +57,7 @@ fhg_add_test (NAME xml_parse_valid_preference_list
   SOURCES parse_valid_preference_list.cpp
   USE_BOOST
   LIBRARIES pnet
+  REQUIRES_INSTALLATION
 )
 
 fhg_add_test (NAME xml_parse_invalid_eureka

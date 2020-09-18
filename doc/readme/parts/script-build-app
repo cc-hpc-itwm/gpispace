@@ -9,6 +9,7 @@
   -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
   -L "${GPISPACE_INSTALL_DIR}/external/boost/lib/"                \
   -Wl,-rpath-link,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"   \
+  -Wl,-rpath-link,"${GPISPACE_INSTALL_DIR}/libexec/bundle/lib/"   \
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib:${GPISPACE_INSTALL_DIR}/external/boost/lib/" \
   driver.cpp                                                      \
   -lgspc                                                          \

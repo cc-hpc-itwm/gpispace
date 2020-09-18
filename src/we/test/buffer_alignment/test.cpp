@@ -32,7 +32,6 @@
 #define START_DRTS_WITH_SINGLE_WORKER_AND_CREATE_PETRI_NET_GEN(FILE,NET) \
   boost::program_options::options_description options_description;       \
   options_description.add (test::options::shared_directory());           \
-  options_description.add (gspc::options::installation());               \
   options_description.add (gspc::options::drts());                       \
   options_description.add (gspc::options::scoped_rifd());                \
   options_description.add (gspc::options::virtual_memory());             \
@@ -62,12 +61,9 @@
                                                                          \
   vm.notify();                                                           \
                                                                          \
-  gspc::installation const installation (vm);                            \
-                                                                         \
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}             \
                                  , gspc::rifd::hostnames {vm}            \
                                  , gspc::rifd::port {vm}                 \
-                                 , installation                          \
                                  );                                      \
                                                                          \
   fhg::util::temporary_path const _workflow_dir                          \
@@ -78,15 +74,13 @@
     (workflow_dir / (std::string (#FILE) + ".xpnet")) << NET;            \
                                                                          \
   test::make_net_lib_install const make                                  \
-    ( installation                                                       \
-    , #FILE                                                              \
+    ( #FILE                                                              \
     , workflow_dir                                                       \
     , installation_dir                                                   \
     );                                                                   \
                                                                          \
   gspc::scoped_runtime_system const drts                                 \
     ( vm                                                                 \
-    , installation                                                       \
     , "worker:1," + std::to_string (local_memory_size)                   \
     , rifds.entry_points()                                               \
     )

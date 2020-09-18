@@ -31,7 +31,6 @@ BOOST_DATA_TEST_CASE
 {
   boost::program_options::options_description options_description;
 
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
@@ -51,16 +50,13 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
                                         , gspc::rifd::hostnames {vm}
                                         , gspc::rifd::port {vm}
-                                        , installation
                                         );
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, "", scoped_rifds.entry_points(), std::cerr, certificates);
+    (vm, "", scoped_rifds.entry_points(), std::cerr, certificates);
 }
 
 BOOST_DATA_TEST_CASE
@@ -71,7 +67,6 @@ BOOST_DATA_TEST_CASE
 {
   boost::program_options::options_description options_description;
 
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
@@ -91,8 +86,6 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));
 
@@ -100,7 +93,6 @@ BOOST_DATA_TEST_CASE
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::ostringstream info_output_stream;
@@ -108,7 +100,6 @@ BOOST_DATA_TEST_CASE
   {
     gspc::scoped_runtime_system const drts
       ( vm
-      , installation
       , "worker:1"
       , boost::none
       , master.entry_point()
@@ -198,7 +189,6 @@ BOOST_DATA_TEST_CASE
 {
   boost::program_options::options_description options_description;
 
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
@@ -218,8 +208,6 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));
 
@@ -227,13 +215,11 @@ BOOST_DATA_TEST_CASE
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
-    , installation
     );
   gspc::scoped_rifds const scoped_rifds
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {{hosts.begin(), std::next (hosts.begin())}}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::ostringstream info_output_stream;
@@ -242,7 +228,6 @@ BOOST_DATA_TEST_CASE
   {
     gspc::scoped_runtime_system const drts
       ( vm
-      , installation
       , worker + ":1"
       , scoped_rifds.entry_points()
       , master.entry_point()

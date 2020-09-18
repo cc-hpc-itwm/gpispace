@@ -43,7 +43,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
@@ -87,11 +86,8 @@ BOOST_AUTO_TEST_CASE (add_worker)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "add_worker"
+    ( "add_worker"
     , test::source_directory (vm)
     , installation_dir
     );
@@ -118,7 +114,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
       rifds.emplace_back ( gspc::rifd::strategy (vm)
                          , gspc::rifd::hostnames ({*host})
                          , gspc::rifd::port (vm)
-                         , installation
                          );
     }
   }
@@ -127,7 +122,6 @@ BOOST_AUTO_TEST_CASE (add_worker)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   auto const certificates ( ssl_cert  == "yes" ? gspc::testing::yes_certs()
@@ -135,7 +129,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                           );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, master.entry_point(), std::cerr, certificates);
+    (vm, "worker:1", boost::none, master.entry_point(), std::cerr, certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);

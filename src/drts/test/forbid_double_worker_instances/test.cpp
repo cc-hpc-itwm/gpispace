@@ -24,7 +24,6 @@ BOOST_DATA_TEST_CASE
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
@@ -51,16 +50,13 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "test_worker:1", rifds.entry_points(), std::cerr, certificates);
+    (vm, "test_worker:1", rifds.entry_points(), std::cerr, certificates);
 
   std::unordered_map
     < gspc::rifd_entry_point

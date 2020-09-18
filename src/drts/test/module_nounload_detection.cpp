@@ -71,7 +71,6 @@
         , boost::program_options::options_description()                       \
         . add (test::options::source_directory())                             \
         . add (test::options::shared_directory())                             \
-        . add (gspc::options::installation())                                 \
         . add (gspc::options::drts())                                         \
         . add (gspc::options::scoped_rifd())                                  \
         )                                                                     \
@@ -91,10 +90,9 @@
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}                  \
                                  , gspc::rifd::hostnames {vm}                 \
                                  , gspc::rifd::port {vm}                      \
-                                 , vm                                         \
                                  );                                           \
   gspc::scoped_runtime_system const drts                                      \
-    (vm, vm, "worker:1x1", rifds.entry_points());                             \
+    (vm, "worker:1x1", rifds.entry_points());                                 \
   gspc::client client (drts)
 
 
@@ -103,8 +101,7 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload)
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
 
   test::make_net_lib_install const make
-    ( vm
-    , "module_with_nodelete_flag"
+    ( "module_with_nodelete_flag"
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
@@ -131,8 +128,7 @@ BOOST_AUTO_TEST_CASE (module_that_doesnt_unload_can_be_allowed)
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
 
   test::make_net_lib_install const make
-    ( vm
-    , "module_with_nodelete_flag_and_allowed_to_have_rest"
+    ( "module_with_nodelete_flag_and_allowed_to_have_rest"
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
@@ -148,8 +144,7 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload)
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
 
   test::make_net_lib_install const make
-    ( vm
-    , "module_that_loads_library_that_doesnt_unload"
+    ( "module_that_loads_library_that_doesnt_unload"
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
@@ -173,8 +168,7 @@ BOOST_AUTO_TEST_CASE (module_that_loads_library_that_doesnt_unload_allowed)
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
 
   test::make_net_lib_install const make
-    ( vm
-    , "module_that_loads_library_that_doesnt_unload_and_allowed_to_have_rest"
+    ( "module_that_loads_library_that_doesnt_unload_and_allowed_to_have_rest"
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );
@@ -193,8 +187,7 @@ BOOST_AUTO_TEST_CASE (worker_state_via_static_still_possible)
   COMMAND_LINE_PARSING_AND_SINGLE_WORKER_DRTS_SETUP;
 
   test::make_net_lib_install const make
-    ( vm
-    , "module_with_static_counter"
+    ( "module_with_static_counter"
     , test::source_directory (vm) / "module_nounload_detection"
     , lib_install_directory
     );

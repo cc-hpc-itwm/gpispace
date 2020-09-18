@@ -43,7 +43,6 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -69,15 +68,12 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   fhg::util::temporary_file _data_file
     (shared_directory / boost::filesystem::unique_path());
   boost::filesystem::path const data_file (_data_file);
 
   test::make_net_lib_install const make
-    ( installation
-    , "avg_stddev"
+    ( "avg_stddev"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -119,10 +115,9 @@ BOOST_AUTO_TEST_CASE (doc_tutorial_avg_stddev)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:4", rifds.entry_points());
+    (vm, "worker:4", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts)

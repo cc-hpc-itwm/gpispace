@@ -4,6 +4,7 @@
 #include <drts/private/pimpl.hpp>
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
+#include <gspc/installation_path.hpp>
 
 #include <util-generic/blocked.hpp>
 #include <util-generic/read_lines.hpp>
@@ -60,12 +61,11 @@ namespace gspc
   {
     implementation ( rifd::strategy const& strategy
                    , rifd::port const& port
-                   , installation const& installation
                    )
       : _strategy (strategy._->_.first)
       , _parameters (strategy._->_.second)
       , _port (port._->_)
-      , _installation (installation)
+      , _installation()
     {}
 
     std::pair< entry_point_by_host
@@ -137,7 +137,7 @@ namespace gspc
         ( fhg::rif::strategy::bootstrap ( _strategy
                                         , no_duplicates
                                         , _port
-                                        , _installation.gspc_home()
+                                        , _installation
                                         , _parameters
                                         , out
                                         )
@@ -255,7 +255,7 @@ namespace gspc
     std::string _strategy;
     std::vector<std::string> _parameters;
     boost::optional<unsigned short> _port;
-    installation _installation;
+    gspc::installation_path _installation;
 
     entry_point_by_host _entry_points;
     std::unordered_map<std::string, std::string> _real_hostnames;
@@ -263,9 +263,8 @@ namespace gspc
 
   rifds::rifds ( rifd::strategy const& strategy
                , rifd::port const& port
-               , installation const& installation
                )
-    : _ (new implementation (strategy, port, installation))
+    : _ (new implementation (strategy, port))
   {}
   PIMPL_DTOR (rifds)
 
@@ -353,10 +352,9 @@ namespace gspc
   scoped_rifd::scoped_rifd ( rifd::strategy const& strategy
                            , rifd::hostname const& hostname
                            , rifd::port const& port
-                           , installation const& installation
                            , std::ostream& out
                            )
-    : rifds (strategy, port, installation)
+    : rifds (strategy, port)
   {
     auto const failed
       (bootstrap (std::vector<std::string> {hostname._->_}, out).second);
@@ -380,10 +378,9 @@ namespace gspc
   scoped_rifds::scoped_rifds ( rifd::strategy const& strategy
                              , rifd::hostnames const& hostnames
                              , rifd::port const& port
-                             , installation const& installation
                              , std::ostream& out
                              )
-    : rifds (strategy, port, installation)
+    : rifds (strategy, port)
   {
     auto const failed (bootstrap (hostnames, out).second);
     if (!failed.empty())

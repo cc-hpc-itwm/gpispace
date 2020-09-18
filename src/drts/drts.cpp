@@ -14,18 +14,14 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/revision.hpp>
 #include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/make_optional.hpp>
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_exception.hpp>
-#include <util-generic/read_file.hpp>
 #include <util-generic/split.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
-
-#include <boost/format.hpp>
 
 #include <ostream>
 #include <sstream>
@@ -33,50 +29,14 @@
 
 namespace gspc
 {
-  installation::installation
-    (boost::filesystem::path const& gspc_home)
-      : _gspc_home (boost::filesystem::canonical (gspc_home))
-  {
-    boost::filesystem::path const path_revision (_gspc_home / "revision");
-
-    if (!boost::filesystem::exists (path_revision))
-    {
-      throw std::invalid_argument
-        (( boost::format ("GSPC revision mismatch: File '%1%' does not exist.")
-         % path_revision
-         ).str());
-    }
-
-    std::string const revision (fhg::util::read_file (path_revision));
-
-    if (revision != fhg::project_revision())
-    {
-      throw std::invalid_argument
-        (( boost::format ( "GSPC revision mismatch: Expected '%1%'"
-                         ", installation in '%2%' has version '%3%'"
-                         )
-         % fhg::project_revision()
-         % _gspc_home
-         % revision
-         ).str()
-        );
-    }
-  }
-  installation::installation
-    (boost::program_options::variables_map const& vm)
-      : installation (require_gspc_home (vm))
-  {}
-
   scoped_runtime_system::scoped_runtime_system
       ( boost::program_options::variables_map const& vm
-      , installation const& installation
       , std::string const& topology_description
       , std::ostream& info_output
       , Certificates const& certificates
       )
     : scoped_runtime_system
         ( vm
-        , installation
         , topology_description
         , require_rif_entry_points_file (vm)
         , info_output
@@ -85,7 +45,6 @@ namespace gspc
   {}
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
-    , installation const& installation
     , std::string const& topology_description
     , rifd_entry_points const& entry_points
     , std::ostream& info_output
@@ -93,7 +52,6 @@ namespace gspc
     )
       : scoped_runtime_system
           ( vm
-          , installation
           , topology_description
           , entry_points
           , [&entry_points]() -> rifd_entry_point
@@ -114,7 +72,6 @@ namespace gspc
   {}
   scoped_runtime_system::scoped_runtime_system
     ( boost::program_options::variables_map const& vm
-    , installation const& installation
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
@@ -122,7 +79,6 @@ namespace gspc
     , Certificates const& certificates
     )
       : _ (new implementation ( vm
-                              , installation
                               , topology_description
                               , entry_points
                               , master
@@ -162,7 +118,6 @@ namespace gspc
       , bool worker_env_copy_current
       , std::vector<boost::filesystem::path> worker_env_copy_file
       , std::vector<std::string> worker_env_set_variable
-      , gspc::installation_path installation_path
       , boost::optional<std::chrono::seconds> vmem_startup_timeout
       , std::vector<worker_description> worker_descriptions
       , boost::optional<unsigned short> vmem_port
@@ -182,7 +137,7 @@ namespace gspc
     , _worker_env_copy_current (worker_env_copy_current)
     , _worker_env_copy_file (std::move (worker_env_copy_file))
     , _worker_env_set_variable (std::move (worker_env_set_variable))
-    , _installation_path (installation_path)
+    , _installation_path()
     , _logging_rif_entry_point (logging_rif_entry_point)
     , _worker_descriptions (worker_descriptions)
     , _processes_storage (_info_output)
@@ -343,7 +298,6 @@ namespace gspc
 
   scoped_runtime_system::implementation::implementation
     ( boost::program_options::variables_map const& vm
-    , installation const& installation
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
     , rifd_entry_point const& master
@@ -368,7 +322,6 @@ namespace gspc
           , get_worker_env_copy_current (vm).get_value_or (false)
           , get_worker_env_copy_file (vm).get_value_or ({})
           , get_worker_env_set_variable (vm).get_value_or ({})
-          , installation.gspc_home()
           , _virtual_memory_startup_timeout
           , parse_worker_descriptions (topology_description)
           , get_virtual_memory_port (vm)

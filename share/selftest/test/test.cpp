@@ -29,7 +29,6 @@ BOOST_AUTO_TEST_CASE (share_selftest)
 
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -55,11 +54,8 @@ BOOST_AUTO_TEST_CASE (share_selftest)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "selftest"
+    ( "selftest"
     , test::source_directory (vm)
     , installation_dir
     );
@@ -67,10 +63,9 @@ BOOST_AUTO_TEST_CASE (share_selftest)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:1", rifds.entry_points());
+    (vm, "work:1", rifds.entry_points());
 
     std::string const challenge (fhg::util::testing::random_string_without ("\"\\"));
 

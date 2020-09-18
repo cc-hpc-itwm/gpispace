@@ -40,7 +40,6 @@ BOOST_DATA_TEST_CASE
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   //! \todo switch to generic interface
@@ -75,11 +74,8 @@ BOOST_DATA_TEST_CASE
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "client_implementation_with_ostream_logger"
+    ( "client_implementation_with_ostream_logger"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -91,11 +87,10 @@ BOOST_DATA_TEST_CASE
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", rifds.entry_points(), std::cerr, certificates);
+    (vm, "worker:1", rifds.entry_points(), std::cerr, certificates);
 
   std::list<std::string> logged;
   fhg::logging::stream_receiver const log_receiver

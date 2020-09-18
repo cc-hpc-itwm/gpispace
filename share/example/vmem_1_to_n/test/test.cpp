@@ -45,7 +45,6 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
@@ -73,11 +72,8 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "vmem_1_to_n"
+    ( "vmem_1_to_n"
     , test::source_directory (vm)
     , installation_dir
     );
@@ -88,11 +84,9 @@ BOOST_AUTO_TEST_CASE (share_example_vmem_1_to_n)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "worker:1," + std::to_string (num_bytes)
     , rifds.entry_points()
     );

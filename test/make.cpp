@@ -2,6 +2,8 @@
 
 #include <test/make_environment.hpp>
 
+#include <gspc/installation_path.hpp>
+
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
 
 #include <boost/format.hpp>
@@ -11,23 +13,18 @@
 namespace test
 {
   //! \todo configure
-  boost::filesystem::path pnet_compiler (gspc::installation const& installation)
+  boost::filesystem::path pnet_compiler
+    (gspc::installation_path const& installation)
   {
-    return installation.gspc_home() / "bin" / "pnetc";
+    return installation / "bin" / "pnetc";
   }
   boost::filesystem::path workflow_library
-    (gspc::installation const& installation)
+    (gspc::installation_path const& installation)
   {
-    return installation.gspc_home() / "share" / "gspc" / "xml" / "lib";
-  }
-  boost::filesystem::path boost_root
-    (gspc::installation const& installation)
-  {
-    return installation.gspc_home() / "external" / "boost";
+    return installation / "share" / "gspc" / "xml" / "lib";
   }
 
-  make::make ( gspc::installation const& installation
-             , std::string const& main
+  make::make ( std::string const& main
              , boost::filesystem::path const& source_directory
              , boost::optional<boost::filesystem::path> const& lib_destdir
              , option::options const& options
@@ -45,6 +42,8 @@ namespace test
 
     {
       std::ostringstream command;
+
+      gspc::installation_path const installation;
 
       command
         << pnet_compiler (installation)

@@ -28,7 +28,6 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -56,11 +55,8 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , main
+    ( main
     , test::source_directory (vm)
     , installation_dir
     );
@@ -68,10 +64,9 @@ BOOST_AUTO_TEST_CASE (share_example_ping_pong)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "ping:1 pong:1", rifds.entry_points());
+    (vm, "ping:1 pong:1", rifds.entry_points());
 
   unsigned long const n (64);
 

@@ -67,7 +67,6 @@ namespace share_example_stream_test
 
     options_description.add (test::options::shared_directory());
     options_description.add (test::options::source_directory());
-    options_description.add (gspc::options::installation());
     options_description.add (gspc::options::drts());
     options_description.add (gspc::options::scoped_rifd());
     options_description.add (gspc::options::virtual_memory());
@@ -95,11 +94,8 @@ namespace share_example_stream_test
 
     vm.notify();
 
-    gspc::installation const installation (vm);
-
     test::make_net_lib_install const make
-      ( installation
-      , workflow_name
+      ( workflow_name
       , test::source_directory (vm)
       , installation_dir
       , test::option::options()
@@ -116,10 +112,9 @@ namespace share_example_stream_test
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                    , gspc::rifd::hostnames {vm}
                                    , gspc::rifd::port {vm}
-                                   , installation
                                    );
     gspc::scoped_runtime_system const drts
-      (vm, installation, topology (size_slot), rifds.entry_points());
+      (vm, topology (size_slot), rifds.entry_points());
 
     gspc::vmem_allocation const allocation_buffer
       ( drts.alloc ( gspc::vmem::gaspi_segment_description()

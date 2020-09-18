@@ -56,7 +56,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
@@ -87,11 +86,8 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "use_fixed_ports_for_agents_and_workers"
+    ( "use_fixed_ports_for_agents_and_workers"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -109,7 +105,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
     ( gspc::rifd::strategy (vm)
     , gspc::rifd::hostnames ({hosts.front()})
     , gspc::rifd::port (vm)
-    , installation
     );
 
   std::unique_ptr<gspc::scoped_runtime_system> drts;
@@ -139,7 +134,6 @@ BOOST_AUTO_TEST_CASE (use_fixed_ports_for_agents_and_workers)
 
       drts = fhg::util::cxx14::make_unique<gspc::scoped_runtime_system>
                ( vm_with_ports
-               , installation
                , "worker:1/" + std::to_string (worker_port->release())
                , rifds.entry_points()
                );

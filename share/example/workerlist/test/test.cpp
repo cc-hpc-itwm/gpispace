@@ -31,7 +31,6 @@ namespace
 {
   void run_test ( unsigned long num_worker
                 , boost::program_options::variables_map const& vm
-                , gspc::installation const& installation
                 , test::make_net_lib_install const& make
                 , boost::filesystem::path const& shared_directory
                 )
@@ -39,11 +38,9 @@ namespace
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                    , gspc::rifd::hostnames {vm}
                                    , gspc::rifd::port {vm}
-                                   , installation
                                    );
     gspc::scoped_runtime_system const drts
       ( vm
-      , installation
       , "worker:" + std::to_string (num_worker)
       , rifds.entry_points()
       );
@@ -135,7 +132,6 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -161,18 +157,14 @@ BOOST_AUTO_TEST_CASE (share_example_workerlist)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "workerlist"
+    ( "workerlist"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
-    . add<test::option::gen::library_path> (installation.gspc_home() / "lib")
     );
 
-  run_test (1, vm, installation, make, shared_directory);
-  run_test (2, vm, installation, make, shared_directory);
-  run_test (5, vm, installation, make, shared_directory);
+  run_test (1, vm, make, shared_directory);
+  run_test (2, vm, make, shared_directory);
+  run_test (5, vm, make, shared_directory);
 }

@@ -4,6 +4,8 @@
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
 
+#include <gspc/installation_path.hpp>
+
 #include <test/make.hpp>
 #include <test/parse_command_line.hpp>
 #include <test/scoped_nodefile_from_environment.hpp>
@@ -30,7 +32,6 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -56,25 +57,23 @@ BOOST_AUTO_TEST_CASE (share_lib_cache_demo)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
+  gspc::installation_path const gspc_home;
 
   test::make_net_lib_install const make
-    ( installation
-    , "demo"
+    ( "demo"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
     . add<test::option::include>
-        (installation.gspc_home() / "share" / "gspc" / "xml")
+        (gspc_home / "share" / "gspc" / "xml")
     );
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "work:4", rifds.entry_points());
+    (vm, "work:4", rifds.entry_points());
 
   long const num_id (6);
   long const multiplicity (4);

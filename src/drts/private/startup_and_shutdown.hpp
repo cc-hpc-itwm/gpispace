@@ -4,7 +4,7 @@
 #include <drts/worker_description.hpp>
 #include <drts/drts.fwd.hpp>
 
-#include <installation_path.hpp>
+#include <gspc/installation_path.hpp>
 
 #include <fhg/util/signal_handler_manager.hpp>
 

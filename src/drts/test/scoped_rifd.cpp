@@ -16,7 +16,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
 {
   boost::program_options::options_description options_description;
 
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (test::options::shared_directory());
 
@@ -36,11 +35,8 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   gspc::scoped_rifds const scoped_rifds ( gspc::rifd::strategy {vm}
                                         , gspc::rifd::hostnames {vm}
                                         , gspc::rifd::port {vm}
-                                        , installation
                                         );
 }

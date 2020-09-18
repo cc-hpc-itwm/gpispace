@@ -32,7 +32,6 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -58,11 +57,8 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "pi"
+    ( "pi"
     , test::source_directory (vm)
     , installation_dir
     );
@@ -70,10 +66,9 @@ BOOST_AUTO_TEST_CASE (share_example_pi)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
-    (vm, installation, "worker:12", rifds.entry_points());
+    (vm, "worker:12", rifds.entry_points());
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run ( gspc::workflow (make.pnet())

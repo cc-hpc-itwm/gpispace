@@ -29,7 +29,6 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -57,11 +56,8 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "n_of_m"
+    ( "n_of_m"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -74,11 +70,9 @@ BOOST_DATA_TEST_CASE (tutorial_n_of_m, std::vector<int> ({1, 8}), num_worker)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "work:" + std::to_string (num_worker)
     , rifds.entry_points()
     );

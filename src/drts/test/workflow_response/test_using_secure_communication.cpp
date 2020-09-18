@@ -45,7 +45,6 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add_options()
@@ -93,11 +92,8 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , name
+    ( name
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -113,7 +109,6 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
   gspc::scoped_rifds const rifds { gspc::rifd::strategy (vm)
                                  , gspc::rifd::hostnames (vm)
                                  , gspc::rifd::port (vm)
-                                 , installation
                                  };
 
   std::string const ssl_cert (vm.at ("ssl-cert").as<std::string>());
@@ -124,7 +119,7 @@ BOOST_AUTO_TEST_CASE (workflow_response_using_secure_communication)
   std::string const topology (vm.at ("topology").as<std::string>());
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology, rifds.entry_points(), std::cerr, certificates);
+    (vm, topology, rifds.entry_points(), std::cerr, certificates);
 
   gspc::client client (drts, certificates);
 

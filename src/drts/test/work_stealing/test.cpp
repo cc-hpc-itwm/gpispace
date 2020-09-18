@@ -39,7 +39,6 @@ BOOST_AUTO_TEST_CASE (steal_work)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::logging());
   options_description.add (gspc::options::scoped_rifd());
@@ -77,11 +76,8 @@ BOOST_AUTO_TEST_CASE (steal_work)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , net
+    ( net
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -99,7 +95,6 @@ BOOST_AUTO_TEST_CASE (steal_work)
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostnames {vm}
     , gspc::rifd::port {vm}
-    , installation
     );
 
   std::set<std::string> const capabilities {"A", "B", "C"};
@@ -116,7 +111,7 @@ BOOST_AUTO_TEST_CASE (steal_work)
   }
 
   gspc::scoped_runtime_system const drts
-    (vm, installation, topology.str(), rifds.entry_points());
+    (vm, topology.str(), rifds.entry_points());
 
   long const num_tasks (6 * num_workers_of_a_type_per_host * hosts.size());
   auto worst_comp_time

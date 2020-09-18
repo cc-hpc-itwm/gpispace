@@ -33,17 +33,15 @@ namespace
 {
   void run_and_check
     ( boost::program_options::variables_map const& vm
-    , gspc::installation const& installation
     , boost::filesystem::path const& pnet
     )
   {
     gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                    , gspc::rifd::hostnames {vm}
                                    , gspc::rifd::port {vm}
-                                   , installation
                                    );
     gspc::scoped_runtime_system const drts
-      (vm, installation, "work:4", rifds.entry_points());
+      (vm, "work:4", rifds.entry_points());
 
     auto pair
       ( [] (long x, long y) -> pnet::type::value::value_type
@@ -73,7 +71,6 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -93,15 +90,12 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_expr)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net const make
-    ( installation
-    , "sum_expr_many"
+    ( "sum_expr_many"
     , test::source_directory (vm)
     );
 
-  run_and_check (vm, installation, make.pnet());
+  run_and_check (vm, make.pnet());
 }
 
 BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
@@ -110,7 +104,6 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
 
   options_description.add (test::options::source_directory());
   options_description.add (test::options::shared_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
 
@@ -156,11 +149,8 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     , "Could not 'make sum_module'"
     );
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "sum_many"
+    ( "sum_many"
     , test::source_directory (vm)
     , installation_dir
     , test::option::options()
@@ -168,5 +158,5 @@ BOOST_AUTO_TEST_CASE (tutorial_sum_mod)
     . add<test::option::gen::include> (test::source_directory (vm) / "include")
     );
 
-  run_and_check (vm, installation, make.pnet());
+  run_and_check (vm, make.pnet());
 }

@@ -66,7 +66,6 @@ namespace
         . options ( boost::program_options::options_description()
                   . add (test::options::source_directory())
                   . add (test::options::shared_directory())
-                  . add (gspc::options::installation())
                   )
         . allow_unregistered()
         . run()
@@ -77,8 +76,7 @@ namespace
       app_search_path
         = test::shared_directory (vm) / boost::filesystem::unique_path();
 
-      _make.emplace ( vm
-                    , "report_environment"
+      _make.emplace ( "report_environment"
                     , test::source_directory (vm) / "worker_env"
                     , app_search_path
                     );
@@ -145,7 +143,6 @@ BOOST_GLOBAL_FIXTURE (compile_pnet);
         , boost::program_options::options_description()                       \
         . add (test::options::source_directory())                             \
         . add (test::options::shared_directory())                             \
-        . add (gspc::options::installation())                                 \
         . add (gspc::options::drts())                                         \
         . add (gspc::options::scoped_rifd())                                  \
         )                                                                     \
@@ -160,10 +157,9 @@ BOOST_GLOBAL_FIXTURE (compile_pnet);
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}                  \
                                  , gspc::rifd::hostnames {vm}                 \
                                  , gspc::rifd::port {vm}                      \
-                                 , vm                                         \
                                  );                                           \
   gspc::scoped_runtime_system const drts                                      \
-    (vm, vm, "worker:1x1", rifds.entry_points());                             \
+    (vm, "worker:1x1", rifds.entry_points());                                 \
   gspc::client client (drts)
 
 //! Given \a args_, the command line arguments, and \a expected_env_,

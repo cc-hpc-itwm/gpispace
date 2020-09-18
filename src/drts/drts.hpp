@@ -43,38 +43,20 @@ namespace gspc
   namespace options
   {
     boost::program_options::options_description logging();
-    boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description external_rifd();
     boost::program_options::options_description virtual_memory();
   }
 
-  class installation
-  {
-  public:
-    installation (boost::filesystem::path const& gspc_home);
-    installation (boost::program_options::variables_map const& vm);
-
-    boost::filesystem::path const& gspc_home() const
-    {
-      return _gspc_home;
-    }
-
-  private:
-    boost::filesystem::path const _gspc_home;
-  };
-
   class scoped_runtime_system
   {
   public:
     scoped_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
                           , std::string const& topology_description
                           , std::ostream& info_output = std::cerr
                           , Certificates const& certificates = boost::none
                           );
     scoped_runtime_system ( boost::program_options::variables_map const& vm
-                          , installation const&
                           , std::string const& topology_description
                           , rifd_entry_points const& entry_points
                           , std::ostream& info_output = std::cerr
@@ -82,7 +64,6 @@ namespace gspc
                           );
     scoped_runtime_system
       ( boost::program_options::variables_map const& vm
-      , installation const&
       , std::string const& topology_description
       , boost::optional<rifd_entry_points> const& entry_points
       , rifd_entry_point const& master
@@ -153,7 +134,4 @@ namespace gspc
   void set_application_search_path ( boost::program_options::variables_map&
                                    , boost::filesystem::path const&
                                    );
-  void set_gspc_home ( boost::program_options::variables_map&
-                     , boost::filesystem::path const&
-                     );
 }

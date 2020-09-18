@@ -47,7 +47,6 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
     ;
   options_description.add (test::options::shared_directory());
   options_description.add (test::options::source_directory());
-  options_description.add (gspc::options::installation());
   options_description.add (gspc::options::drts());
   options_description.add (gspc::options::scoped_rifd());
   options_description.add (gspc::options::virtual_memory());
@@ -75,11 +74,8 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
 
   vm.notify();
 
-  gspc::installation const installation (vm);
-
   test::make_net_lib_install const make
-    ( installation
-    , "many_ranges_in_memory_transfer"
+    ( "many_ranges_in_memory_transfer"
     , test::source_directory (vm)
     , installation_dir
     );
@@ -96,12 +92,10 @@ BOOST_AUTO_TEST_CASE (many_ranges_in_memory_transfer)
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
                                  , gspc::rifd::port {vm}
-                                 , installation
                                  );
 
   gspc::scoped_runtime_system const drts
     ( vm
-    , installation
     , "worker:1," + std::to_string (number_of_ranges * size_of_range)
     , rifds.entry_points()
     );
