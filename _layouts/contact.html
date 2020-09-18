@@ -1,0 +1,79 @@
+---
+layout: default
+---
+
+<div class="home">
+
+  {% if page.title %}
+  <h1 class="post-title">{{ page.title }}</h1>
+  {% endif %}
+
+  <div class="contact-grid-container">
+
+    {% for contact in site.contacts %}
+    <div class="contact-grid-item">
+      {% if contact.avatar %}
+        {% assign avatar = contact.avatar %}
+      {% else %}
+        {% assign avatar = site.default_avatar %}
+      {% endif %}
+      <img src="{{ avatar | relative_url }}" alt="Avatar">
+      <h4>
+        <b>
+          {% if contact.title %}
+            {{ contact.title }}
+          {% endif %}
+          {{ contact.name }}
+        </b>
+      </h4>
+      <table>
+        <tr>
+          <td>
+            <i class="fas fa-at"></i>
+          </td>
+          <td>
+            {{ contact.email }} [at] itwm.fraunhofer.de
+          </td>
+        </tr>
+        {% if contact.phone %}
+        <tr>
+          <td>
+            <i class="fas fa-phone"></i>
+          </td>
+          <td>
+            <a class="u-email" href="tel:{{ contact.phone }}" rel="nofollow">{{ contact.phone }}</a>
+          </td>
+        </tr>
+        {% endif %}
+        {% if contact.address %}
+          {% assign address = contact.address %}
+        <tr>
+          <td>
+            <i class="fas fa-building"></i>
+          </td>
+          <td>
+            {% if address.company %}
+              {{ address.company }}<br/>
+            {% endif %}
+            {{ address.street }}<br/>
+            {{ address.zipcode }} {{ address.city }}<br/>
+            {% if address.state %}
+              {{ address.state }}<br/>
+            {% endif %}
+            {% if address.country %}
+              {{ address.country }}
+            {% endif %}
+          </td>
+        </tr>
+        {% endif %}
+      </table>
+    </div>
+    {% endfor %}
+
+  </div>
+
+</div>
+
+<br/>
+
+{{ content }}
