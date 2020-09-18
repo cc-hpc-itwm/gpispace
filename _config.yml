@@ -13,7 +13,7 @@ show_excerpts: false
 minima:
   date_format: "%b %-d, %Y"
 
-baseurl: /gspc
+baseurl: /gpispace
 
 plugins:
   - jekyll-feed
