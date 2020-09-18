@@ -10,9 +10,6 @@ namespace iml_test
     (boost::program_options::variables_map& vm)
   {
     iml_client::set_virtual_memory_socket
-      ( vm
-      , boost::filesystem::temp_directory_path()
-      / boost::filesystem::unique_path()
-      );
+      ( vm, "/dev/shm/loerwald/gpispace/imlsock");
   }
 }

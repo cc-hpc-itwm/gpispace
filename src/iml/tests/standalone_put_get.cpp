@@ -1,5 +1,3 @@
-#include <boost/test/unit_test.hpp>
-
 #include <iml/client/iml.hpp>
 #include <iml/client/scoped_rifd.hpp>
 #include <iml/client/virtual_memory.hpp>
@@ -19,17 +17,21 @@
 #include <util-generic/temporary_path.hpp>
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random/string.hpp>
+#include <util-generic/print_exception.hpp>
 
+#include <chrono>
+#include <thread>
 #include <algorithm>
 #include <iostream>
 #include <string>
 
 namespace
 {
-  size_t const MAX_DATA_LEN = 1024 * 1024;
+  size_t const MAX_DATA_LEN = 1024;
 }
 
-BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
+int main (int argc, char** argv)
+try
 {
   boost::program_options::options_description options_description;
 
@@ -40,8 +42,8 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
 
   boost::program_options::variables_map vm
     ( iml_test::parse_command_line
-        ( boost::unit_test::framework::master_test_suite().argc
-        , boost::unit_test::framework::master_test_suite().argv
+        ( argc
+        , argv
         , options_description
         )
     );
@@ -131,8 +133,6 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
   std::size_t read_size;
   std::memcpy (&read_size, global_data.api()->ptr (read_buffer), sizeof (read_size));
 
-  BOOST_REQUIRE (read_size && read_size <= data_range.size);
-
   global_data.api()->memcpy_and_wait
     ( {read_buffer, metadata_range.size}
     , {data_range.handle, data_range.offset}
@@ -144,6 +144,17 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
     + metadata_range.size
     );
 
-  BOOST_REQUIRE_EQUAL (data.length(), read_size);
-  BOOST_REQUIRE_EQUAL (data.c_str(), read_content);
+  std::cout << "verify: " << read_content << "\n";
+
+  gpi::pc::type::handle_t handle (data_range.handle);
+
+  std::cout << "handle=" << handle << "\n";
+  std::cout << "MAX_DATA_LEN=" << MAX_DATA_LEN << "\n";
+
+  std::this_thread::sleep_for (std::chrono::hours (10));
+}
+catch (...)
+{
+  std::cerr << fhg::util::current_exception_printer() << "\n";
+  return 1;
 }
