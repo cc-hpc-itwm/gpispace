@@ -1,0 +1,81 @@
+theme: minima
+
+title: GPI-Space
+description: Memory Driven Computing
+logo: /assets/img/logo/250x78-gpi-space.jpg
+company_logo: /assets/img/logo/itwm.svg
+
+show_downloads: true
+download_branch: v20.09
+
+show_excerpts: false
+
+minima:
+  date_format: "%b %-d, %Y"
+
+baseurl: /gpispace
+
+plugins:
+  - jekyll-feed
+  - jekyll-seo-tag
+
+# urls entry:
+#   required:
+#     text
+#     url
+urls:
+  - text: Home
+    url: /
+  - text: Features
+    url: /features
+  - text: Applications
+    url: /applications
+  - text: Installation
+    url: /installation
+  - text: How to Use
+    url: /how-to-use
+  - text: Contact
+    url: /contact
+
+# contacts entry:
+#   required:
+#     name
+#     email
+#   optional:
+#     title
+#     avatar
+#     phone
+#     address
+#
+# address entry:
+#   required:
+#     street
+#     zipcode
+#     city
+#   optional:
+#     company
+#     state
+#     country
+default_avatar: /assets/img/avatar/230x230-default.svg
+contacts:
+  - title: Dr.
+    name: Rui Màrio Silva Machado
+    avatar: /assets/img/avatar/230X230-itwm-hpc-da-silva-machado-rui-mario-.jpg
+    email: rui.machado@itwm.fraunhofer.de
+    phone: +49 631 31600-4392
+    address:
+      company: Fraunhofer-Institut für Techno- und Wirtschaftsmathematik ITWM
+      street: Fraunhofer-Platz 1
+      zipcode: 67663
+      city: Kaiserslautern
+      country: Germany
+  - title: Dr.
+    name: Mirko Rahn
+    avatar: /assets/img/avatar/230X230-itwm-hpc-rahn-mirko.jpg
+    email: mirko.rahn@itwm.fraunhofer.de
+    address:
+      company: Fraunhofer-Institut für Techno- und Wirtschaftsmathematik ITWM
+      street: Fraunhofer-Platz 1
+      zipcode: 67663
+      city: Kaiserslautern
+      country: Germany
