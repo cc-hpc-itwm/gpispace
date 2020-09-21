@@ -58,7 +58,7 @@ function package_and_cleanup()
         echo "ABORTED"
     fi
 
-    killall -u $(id -un) -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true
+    killall -u $(id -un) -qs SIGKILL iml-gpi-server gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true
     rm -rf "${tmpdir}"
 }
 

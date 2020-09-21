@@ -2,8 +2,6 @@
 
 #include <rif/entry_point.hpp>
 
-#include <vmem/netdev_id.hpp>
-
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/syscall.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
@@ -213,88 +211,6 @@ try
       }
     , fhg::rpc::not_yielding
     );
-
-  fhg::rpc::service_handler<fhg::rif::protocol::start_vmem>
-    start_vmem_service
-      ( service_dispatcher
-      , [] ( boost::filesystem::path command
-           , boost::filesystem::path socket
-           , unsigned short gaspi_port
-           , std::chrono::seconds proc_init_timeout
-           , std::vector<std::string> nodes
-           , std::string gaspi_master
-           , std::size_t rank
-           , fhg::vmem::netdev_id netdev_id
-           ) -> pid_t
-        {
-          std::vector<std::string> arguments
-            { "--socket", socket.string()
-            , "--port", std::to_string (gaspi_port)
-            , "--gpi-timeout", std::to_string (proc_init_timeout.count())
-            , "--netdev", to_string (netdev_id)
-            };
-
-          //! \todo allow to specify folder to put temporary file in
-          boost::filesystem::path const nodefile
-            ( boost::filesystem::unique_path
-                ("GPISPACE-VMEM-NODEFILE-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-            );
-          fhg::util::temporary_file nodefile_temporary (nodefile);
-          {
-            std::ofstream nodefile_stream (nodefile.string());
-
-            if (!nodefile_stream)
-            {
-              throw std::runtime_error
-                ( ( boost::format ("Could not create nodefile %1%: %2%")
-                  % nodefile
-                  % strerror (errno)
-                  )
-                . str()
-                );
-            }
-
-            for (std::string const& node : nodes)
-            {
-              nodefile_stream << node << "\n";
-            }
-
-            if (!nodefile_stream)
-            {
-              throw std::runtime_error
-                ( ( boost::format ("Could not write to nodefile %1%: %2%")
-                  % nodefile
-                  % strerror (errno)
-                  )
-                . str()
-                );
-            }
-          }
-
-          std::pair<pid_t, std::vector<std::string>> const
-            startup_messages
-            ( fhg::rif::execute_and_get_startup_messages
-                ( command
-                , arguments
-                , { {"GASPI_MASTER", gaspi_master}
-                  , {"GASPI_SOCKET", "0"}
-                  , {"GASPI_MFILE", nodefile.string()}
-                  , {"GASPI_RANK", std::to_string (rank)}
-                  , {"GASPI_NRANKS", std::to_string (nodes.size())}
-                  , {"GASPI_SET_NUMA_SOCKET", "0"}
-                  }
-                )
-            );
-
-          if (!startup_messages.second.empty())
-          {
-            throw std::logic_error ("expected no startup messages");
-          }
-
-          return startup_messages.first;
-        }
-      , fhg::rpc::not_yielding
-      );
 
   fhg::rpc::service_handler<fhg::rif::protocol::start_agent>
     start_agent_service

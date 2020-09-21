@@ -52,7 +52,7 @@ namespace we
 
     void put_global_data
       ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_allocation /*const*/& shared_memory
+      , iml_client::scoped_allocation /*const*/& shared_memory
       , const fvmAllocHandle_t global_memory_handle
       , const fvmOffset_t global_memory_offset
       , const fvmSize_t size
@@ -70,7 +70,7 @@ namespace we
 
     void get_global_data
       ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_allocation /*const*/& shared_memory
+      , iml_client::scoped_allocation /*const*/& shared_memory
       , const fvmAllocHandle_t global_memory_handle
       , const fvmOffset_t global_memory_offset
       , const fvmSize_t size
@@ -89,14 +89,14 @@ namespace we
     void transfer
       ( std::function<void
                       ( gpi::pc::client::api_t /*const*/&
-                      , gspc::scoped_allocation /*const*/&
+                      , iml_client::scoped_allocation /*const*/&
                       , const fvmAllocHandle_t
                       , const fvmOffset_t
                       , const fvmSize_t
                       , const fvmShmemOffset_t
                       )> do_transfer
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , iml_client::scoped_allocation /*const*/* shared_memory
       , std::unordered_map<std::string, buffer> const& memory_buffer
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
@@ -185,7 +185,7 @@ namespace we
     expr::eval::context module_call
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , iml_client::scoped_allocation /*const*/* shared_memory
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call

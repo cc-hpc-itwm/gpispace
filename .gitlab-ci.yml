@@ -131,7 +131,7 @@
     - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
     # todo: move into add_test macro by wrapping tests with a script
     # that kills even within a run
-    - trap "killall -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
+    - trap "killall -qs SIGKILL iml-gpi-server gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
 
 .env_centos6_devtoolset8:
   variables:

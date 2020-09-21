@@ -7,9 +7,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-
-#include <drts/private/scoped_allocation.hpp>
+#include <iml/vmem/gaspi/pc/client/api.hpp>
+#include <iml/client/scoped_allocation.hpp>
 
 #include <drts/worker/context.hpp>
 
@@ -37,7 +36,7 @@ namespace
     wfe_exec_context
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/* virtual_memory
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , iml_client::scoped_allocation /*const*/* shared_memory
       , boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       , expr::eval::context const& evaluation_context
@@ -120,7 +119,7 @@ namespace
   private:
     we::loader::loader& _loader;
     gpi::pc::client::api_t /*const*/* _virtual_memory;
-    gspc::scoped_allocation /*const*/* _shared_memory;
+    iml_client::scoped_allocation /*const*/* _shared_memory;
     boost::optional<std::string> _target_implementation;
     drts::worker::context* _worker_context;
     expr::eval::context const& _evaluation_context;
@@ -416,7 +415,7 @@ namespace we
     void activity_t::execute
       ( we::loader::loader& loader
       , gpi::pc::client::api_t /*const*/ * virtual_memory
-      , gspc::scoped_allocation /* const */ * shared_memory
+      , iml_client::scoped_allocation /* const */ * shared_memory
       , boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       )
@@ -501,6 +500,30 @@ namespace we
       }
     }
 
+    gpi::pc::type::handle_id_t
+      global_range_handle_name_to_handle (we::global::handle const& handle)
+    {
+      return std::stoul (handle.name(), nullptr, 16);
+    }
+
+    std::list<gpi::pc::type::memory_region_t> define_memory_regions
+      (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
+    {
+      std::list<gpi::pc::type::memory_region_t> regions;
+      for (auto const& range: transfers | boost::adaptors::map_values)
+      {
+        regions.emplace_back
+          ( gpi::pc::type::memory_location_t
+              ( global_range_handle_name_to_handle (range.handle())
+              , range.offset()
+              )
+          , range.size()
+          );
+      }
+
+      return regions;
+    }
+
     Requirements_and_preferences activity_t::requirements_and_preferences
       (gpi::pc::client::api_t* virtual_memory_api)
     {
@@ -539,7 +562,6 @@ namespace we
         , std::move (schedule_data)
         , [&]
           {
-            //! \todo Move to gpi::pc::client::api_t
             if (!transition().module_call())
             {
               return null_transfer_cost;
@@ -563,7 +585,8 @@ namespace we
                 ("vmem transfers without vmem knowledge in agent");
             }
 
-            return virtual_memory_api->transfer_costs (vm_transfers);
+            return virtual_memory_api->transfer_costs
+              (define_memory_regions (vm_transfers));
           }()
         , computational_cost
         , !transition().module_call()

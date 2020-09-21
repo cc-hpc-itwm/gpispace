@@ -10,8 +10,6 @@
 
 #include <logging/endpoint.hpp>
 
-#include <vmem/netdev_id.hpp>
-
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/optional.hpp>
@@ -67,19 +65,6 @@ namespace fhg
         hostinfo_t hostinfo;
         fhg::logging::endpoint logger_registration_endpoint;
       };
-
-      FHG_RPC_FUNCTION_DESCRIPTION
-        ( start_vmem
-        , pid_t ( boost::filesystem::path command
-                , boost::filesystem::path socket
-                , unsigned short gaspi_port
-                , std::chrono::seconds proc_init_timeout
-                , std::vector<std::string> nodes
-                , std::string gaspi_master
-                , std::size_t rank
-                , fhg::vmem::netdev_id netdev_id
-                )
-        );
 
       FHG_RPC_FUNCTION_DESCRIPTION
         ( start_agent

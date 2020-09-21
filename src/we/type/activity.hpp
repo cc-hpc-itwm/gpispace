@@ -38,7 +38,7 @@ namespace gpi
   }
 }
 
-namespace gspc
+namespace iml_client
 {
   class scoped_allocation;
 }
@@ -122,7 +122,7 @@ namespace we
       void execute
         ( we::loader::loader&
         , gpi::pc::client::api_t /*const*/ *
-        , gspc::scoped_allocation /* const */ *
+        , iml_client::scoped_allocation /* const */ *
         , boost::optional<std::string> target_implementation
         , drts::worker::context*
         );

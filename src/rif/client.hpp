@@ -20,7 +20,6 @@ namespace fhg
         , execute_and_get_startup_messages (_endpoint)
         , execute_and_get_startup_messages_and_wait (_endpoint)
         , kill (_endpoint)
-        , start_vmem (_endpoint)
         , start_agent (_endpoint)
         , start_worker (_endpoint)
         , start_logging_demultiplexer (_endpoint)
@@ -36,7 +35,6 @@ namespace fhg
       rpc::remote_function<protocol::execute_and_get_startup_messages_and_wait>
         execute_and_get_startup_messages_and_wait;
       rpc::remote_function<protocol::kill> kill;
-      rpc::remote_function<protocol::start_vmem> start_vmem;
       rpc::remote_function<protocol::start_agent> start_agent;
       rpc::remote_function<protocol::start_worker> start_worker;
       rpc::remote_function<protocol::start_logging_demultiplexer>

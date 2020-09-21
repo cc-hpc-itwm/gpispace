@@ -42,10 +42,6 @@ namespace gspc
     {
       return libexec_gspc() / "drts-kernel";
     }
-    boost::filesystem::path vmem() const
-    {
-      return libexec_gspc() / "gpi-space";
-    }
     boost::filesystem::path logging_demultiplexer() const
     {
       return libexec_gspc() / "gspc-logging-demultiplexer.exe";

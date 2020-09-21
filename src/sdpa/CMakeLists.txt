@@ -12,8 +12,8 @@ ADD_LIBRARY(sdpa
 )
 
 target_link_libraries (sdpa
-  gpi-space-pc-client-static
-  gpi-space-pc-segment
+  IML::vmem-pc-client-static
+  IML::vmem-pc-segment
   RPC
   Boost::serialization
   Boost::date_time
