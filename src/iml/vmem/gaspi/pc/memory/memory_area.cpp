@@ -91,7 +91,7 @@ namespace gpi
         {
           throw std::invalid_argument
             ( ( boost::format ("out-of-bounds: access to %1%-handle %2%:"
-                              " range [%3%,%4%) is not withing [0,%5%)"
+                              " range [%3%,%4%) is not within [0,%5%)"
                               )
               % hdl_it->second.id
               % hdl_it->second.name
