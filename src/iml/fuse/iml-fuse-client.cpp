@@ -279,14 +279,28 @@ namespace iml
         );
     }
 
+    namespace
+    {
+      void adjust_to_allocation_boundaries
+        ( Client::AllocationInformation const& info
+        , std::size_t& size
+        , std::size_t& offset
+        )
+      {
+        offset = std::min (info.size, offset);
+        size = std::min (info.size - offset, size);
+      }
+    }
+
     int Adapter::read ( char* buffer
-                      , std::size_t const size
+                      , std::size_t size
                       , std::size_t offset
                       , fuse_file_info const* const fi
                       )
     {
       AllocationHandle const handle (fi->fh);
 
+      adjust_to_allocation_boundaries (_client.stat (handle), size, offset);
       std::size_t left_to_read (size);
 
       // \todo get_up_to (#parts);
@@ -310,13 +324,14 @@ namespace iml
     }
 
     int Adapter::write ( char const* buffer
-                       , std::size_t const size
+                       , std::size_t size
                        , std::size_t offset
                        , fuse_file_info const* const fi
                        )
     {
       AllocationHandle const handle (fi->fh);
 
+      adjust_to_allocation_boundaries (_client.stat (handle), size, offset);
       std::size_t left_to_write (size);
 
       // \todo get_up_to (#parts);
