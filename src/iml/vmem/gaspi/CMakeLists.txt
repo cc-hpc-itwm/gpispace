@@ -24,6 +24,7 @@ extended_add_library (NAME vmem-pc-client-static
   NAMESPACE IML
   SOURCES "pc/client/api.cpp"
   LIBRARIES Util::Generic
+            IML::vmem-pc-segment
   SYSTEM_INCLUDE_DIRECTORIES PRIVATE "${LIBRT_INCLUDE_DIR}"
 )
 
