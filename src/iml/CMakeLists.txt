@@ -70,6 +70,9 @@ find_package (libfuse 2.7.4 REQUIRED)
 
 extended_add_executable (NAME iml-fuse-client
   SOURCES "fuse/iml-fuse-client.cpp"
+          "fuse/client.cpp"
+          "fuse/detail/Adapter.cpp"
+          "fuse/detail/PathOrHandle.cpp"
   LIBRARIES IML::vmem-pc-client-static
             Util::Generic
             libfuse::libfuse
