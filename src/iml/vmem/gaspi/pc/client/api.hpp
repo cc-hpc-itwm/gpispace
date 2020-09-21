@@ -1,8 +1,8 @@
 #pragma once
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
 #include <iml/vmem/gaspi/pc/segment/segment.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/memory_location.hpp>
 
@@ -44,7 +44,6 @@ namespace gpi
         type::handle_id_t alloc ( const type::segment_id_t
                                 , const type::size_t
                                 , const std::string & desc
-                                , const type::flags_t
                                 );
         void free (const type::handle_id_t);
 
@@ -72,17 +71,22 @@ namespace gpi
 
         void * ptr(const gpi::pc::type::handle_t h);
 
-        gpi::pc::type::segment_id_t register_segment( std::string const & name
-                                                    , const gpi::pc::type::size_t sz
-                                                    );
-        void unregister_segment(const gpi::pc::type::segment_id_t);
+        using shm_allocation = std::pair<type::segment_id_t, type::handle_id_t>;
+        shm_allocation create_shm_segment_and_allocate
+          ( std::string const& name
+          , gpi::pc::type::size_t size
+          );
+        void free_and_delete_shm_segment (shm_allocation);
 
       private:
         void stop ();
         gpi::pc::type::handle::descriptor_t
         info(const gpi::pc::type::handle_t h);
 
-        type::segment_id_t create_segment (std::string const& info);
+        type::segment_id_t create_segment
+          ( iml::segment_description const& description
+          , unsigned long total_size
+          );
         void delete_segment (type::segment_id_t);
 
         typedef std::recursive_mutex mutex_type;
@@ -100,25 +104,12 @@ namespace gpi
       struct remote_segment
       {
       public:
-        static struct {} gaspi;
-        static struct {} filesystem;
+        remote_segment
+          ( api_t& api
+          , iml::segment_description const& description
+          , unsigned long total_size
+          );
 
-        remote_segment ( api_t&
-                       , decltype (gaspi)
-                       , type::size_t
-                       , type::size_t communication_buffer
-                       , type::size_t num_communication_buffers
-                       );
-        remote_segment ( api_t&
-                       , decltype (filesystem)
-                       , type::size_t
-                       , boost::filesystem::path
-                       );
-
-      private:
-        remote_segment (api_t&, std::string const&);
-
-      public:
         ~remote_segment();
         remote_segment (remote_segment const&) = delete;
         remote_segment (remote_segment&&) = delete;

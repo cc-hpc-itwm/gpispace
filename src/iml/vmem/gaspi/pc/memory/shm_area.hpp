@@ -14,19 +14,16 @@ namespace gpi
       public:
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_SHM;
 
-        shm_area_t ( const gpi::pc::type::process_id_t creator
-                   , type::name_t const&
+        shm_area_t ( type::name_t const&
                    , const gpi::pc::type::size_t size
                    , handle_generator_t&
                    );
 
         ~shm_area_t ();
       protected:
-        virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
-        int get_type_id () const;
+        virtual bool is_shm_segment() const override;
 
-        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override{}
-        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override{}
+        virtual global::itopology_t& global_topology() override;
 
       private:
         virtual void *raw_ptr (gpi::pc::type::offset_t off) override;
@@ -46,6 +43,7 @@ namespace gpi
 
         void *m_ptr;
         std::string m_path;
+        std::size_t _size;
       };
     }
   }

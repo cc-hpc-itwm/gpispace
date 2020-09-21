@@ -7,7 +7,7 @@
 #include <iml/client/private/virtual_memory_impl.hpp>
 #include <iml/client/virtual_memory.hpp>
 
-#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/scoped_shm_allocation.hpp>
 
 #include <iml/vmem/gaspi/pc/client/api.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
@@ -90,9 +90,9 @@ namespace iml_client
     unsigned long const _number_of_slots;
     unsigned long const _offset_to_meta_data;
 
-    scoped_allocation const _flags;
-    scoped_allocation const _update;
-    scoped_allocation const _data;
+    iml::client::scoped_shm_allocation const _flags;
+    iml::client::scoped_shm_allocation const _update;
+    iml::client::scoped_shm_allocation const _data;
 
     std::unordered_set<unsigned long> _free_slots;
     std::atomic<std::size_t> _sequence_number;

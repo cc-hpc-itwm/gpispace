@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <cstring>
 
-#include <iml/vmem/gaspi/pc/url.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hostname.hpp>
@@ -26,8 +25,6 @@
 #include <boost/system/system_error.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/filesystem/fstream.hpp>
-
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 namespace gpi
 {
@@ -111,27 +108,24 @@ namespace gpi
         };
       }
 
-      beegfs_area_t::beegfs_area_t ( const gpi::pc::type::process_id_t creator
+      beegfs_area_t::beegfs_area_t ( bool is_creator
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
-                                   , const gpi::pc::type::flags_t flags
                                    , gpi::pc::global::itopology_t & topology
                                    , handle_generator_t& handle_generator
                                    )
         : area_t ( beegfs_area_t::area_type
-                 , creator
-                 , path.string ()
                  , size
-                 , flags
                  , handle_generator
                  )
+        , _is_creator (is_creator)
         , m_path (path)
         , m_version (BEEGFS_AREA_VERSION)
         , m_topology (topology)
       {
         try
         {
-          open();
+          open (size);
         }
         catch (...)
         {
@@ -191,9 +185,9 @@ namespace gpi
           );
       }
 
-      void beegfs_area_t::open()
+      void beegfs_area_t::open (std::size_t total_size)
       {
-        if (get_owner())
+        if (_is_creator)
         {
           if (boost::filesystem::exists (m_path))
           {
@@ -216,14 +210,14 @@ namespace gpi
                              , 0600 // TODO: pass in permissions
                              );
 
-            data.ftruncate (size());
+            data.ftruncate (total_size);
           }
         }
         bool succeeded (false);
         FHG_UTIL_FINALLY
           ( [&]
             {
-              if (!succeeded && get_owner())
+              if (!succeeded && _is_creator)
               {
                 boost::filesystem::remove (detail::data_path (m_path));
                 boost::filesystem::remove (detail::version_path (m_path));
@@ -262,7 +256,7 @@ namespace gpi
           }
         }
 
-        if (get_owner())
+        if (_is_creator)
         {
           _lock_file
             = fhg::util::cxx14::make_unique<lock_file_helper> (*this);
@@ -278,13 +272,13 @@ namespace gpi
         off_t const file_size (fhg::util::syscall::lseek (fd, 0, SEEK_END));
         fhg::util::syscall::lseek (fd, 0, SEEK_SET);
 
-        if (size() != (gpi::pc::type::size_t)file_size)
+        if (total_size != (gpi::pc::type::size_t)file_size)
         {
           throw std::logic_error
             ( "segment file on disk has size "
             + std::to_string (file_size)
             + " but tried to open it with size "
-            + std::to_string (size())
+            + std::to_string (total_size)
             );
         }
 
@@ -300,7 +294,7 @@ namespace gpi
 
       void beegfs_area_t::close()
       {
-        if (get_owner())
+        if (_is_creator)
         {
           boost::filesystem::remove (detail::data_path (m_path));
           boost::filesystem::remove (detail::version_path (m_path));
@@ -311,44 +305,15 @@ namespace gpi
         }
       }
 
-      iml_client::vmem::dtmmgr::Arena_t
-      beegfs_area_t::grow_direction (const gpi::pc::type::flags_t) const
-      {
-        // we do not support multiple arenas in this memory type
-        return iml_client::vmem::dtmmgr::ARENA_UP;
-      }
-
       void *
       beegfs_area_t::raw_ptr (gpi::pc::type::offset_t)
       {
         return nullptr;
       }
 
-      bool
-      beegfs_area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t) const
+      global::itopology_t& beegfs_area_t::global_topology()
       {
-        return false;
-      }
-
-      void
-      beegfs_area_t::alloc_hook (const gpi::pc::type::handle::descriptor_t &hdl)
-      {
-        if (hdl.creator != (gpi::pc::type::process_id_t)(-1))
-        {
-          m_topology.alloc ( descriptor ().id
-                           , hdl.id
-                           , hdl.offset
-                           , hdl.size
-                           , hdl.local_size
-                           , hdl.name
-                           );
-        }
-      }
-
-      void
-      beegfs_area_t::free_hook (const gpi::pc::type::handle::descriptor_t &hdl)
-      {
-        m_topology.free(hdl.id);
+        return m_topology;
       }
 
       bool
@@ -419,22 +384,16 @@ namespace gpi
       }
 
       area_ptr_t beegfs_area_t::create
-        ( std::string const &url_s
+        ( iml::beegfs_segment_description const& description
+        , unsigned long total_size
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
-        , type::id_t owner
+        , bool is_creator
         )
       {
-        url_t url (url_s);
-        gpi::pc::type::flags_t flags = F_NONE;
-
-        gpi::pc::type::size_t size =
-          boost::lexical_cast<gpi::pc::type::size_t>(url.get ("total_size").get_value_or ("0"));
-
-        area_ptr_t area (new beegfs_area_t ( owner
-                                           , url.path()
-                                           , size
-                                           , flags | F_GLOBAL
+        area_ptr_t area (new beegfs_area_t ( is_creator
+                                           , description._path
+                                           , total_size
                                            , topology
                                            , handle_generator
                                            )

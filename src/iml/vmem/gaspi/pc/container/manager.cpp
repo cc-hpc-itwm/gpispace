@@ -12,8 +12,6 @@
 
 #include <iml/vmem/gaspi/pc/memory/shm_area.hpp>
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
-#include <iml/vmem/gaspi/pc/url.hpp>
-#include <iml/vmem/gaspi/pc/url_io.hpp>
 
 #include <cstdio>
 #include <cstdlib>
@@ -154,9 +152,7 @@ namespace gpi
           {
             gpi::pc::proto::memory::alloc_reply_t rpl;
             rpl.handle = _memory_manager.alloc
-              ( m_proc_id
-              , alloc.segment, alloc.size, alloc.name, alloc.flags
-              );
+              (alloc.segment, alloc.size, alloc.name, is_global::yes);
             return gpi::pc::proto::memory::message_t (rpl);
           }
 
@@ -216,26 +212,27 @@ namespace gpi
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::register_t & register_segment) const
           {
-            memory::area_ptr_t area
-              ( new memory::shm_area_t ( m_proc_id
-                                       , register_segment.name
-                                       , register_segment.size
-                                       , _memory_manager.handle_generator()
-                                       )
-              );
-
             gpi::pc::proto::segment::register_reply_t rpl;
-            rpl.id =
-              _memory_manager.register_memory (m_proc_id, area);
-
+            std::tie (rpl.segment, rpl.allocation)
+              = _memory_manager.register_shm_segment_and_allocate
+                  ( m_proc_id
+                  , std::make_shared<memory::shm_area_t>
+                      ( register_segment.name
+                      , register_segment.size
+                      , _memory_manager.handle_generator()
+                      )
+                  , register_segment.size
+                  , register_segment.name
+                  );
             return gpi::pc::proto::segment::message_t (rpl);
           }
 
           gpi::pc::proto::message_t
             operator () (const gpi::pc::proto::segment::unregister_t & unregister_segment) const
           {
+            _memory_manager.free (unregister_segment.allocation);
             _memory_manager.unregister_memory
-              (m_proc_id, unregister_segment.id);
+              (m_proc_id, unregister_segment.segment);
             return gpi::pc::proto::error::error_t
               (gpi::pc::proto::error::success, "success");
           }
@@ -247,7 +244,11 @@ namespace gpi
             return proto::segment::message_t
               ( proto::segment::add_reply_t
                   ( _memory_manager.add_memory
-                      (m_proc_id, add_mem.url, _topology)
+                      ( m_proc_id
+                      , add_mem.description
+                      , add_mem.total_size
+                      , _topology
+                      )
                   )
               );
           }
@@ -453,7 +454,7 @@ namespace gpi
 
         fhg::util::syscall::close (socket);
 
-        _memory_manager.garbage_collect (process_id);
+        _memory_manager.remove_shm_segments_of (process_id);
 
         //! \note this detaches _this_ thread from everything
         //! left. Nothing shall be done in here that accesses `this`

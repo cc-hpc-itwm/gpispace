@@ -3,7 +3,6 @@
 #include <iml/vmem/dtmmgr.hpp>
 
 #include <boost/noncopyable.hpp>
-#include <boost/shared_ptr.hpp>
 
 #include <iml/vmem/gaspi/types.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
@@ -15,6 +14,7 @@
 #include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
 #include <future>
+#include <memory>
 #include <mutex>
 #include <unordered_map>
 #include <unordered_set>
@@ -23,11 +23,19 @@ namespace gpi
 {
   namespace pc
   {
+    namespace global
+    {
+      class itopology_t;
+    }
     namespace memory
     {
       class area_t : boost::noncopyable
       {
       public:
+        // WORK HERE:
+        //    this function *must not* be called from the dtor
+        //    otherwise we endup calling pure virtual functions
+        void pre_dtor();
         virtual ~area_t () = default;
 
         /* public interface the basic implementation is the same
@@ -36,17 +44,6 @@ namespace gpi
            specific segments may/must hook into specific implementation details
            though
         */
-        gpi::pc::type::size_t size () const;
-        std::string const & name () const;
-        bool in_use () const;
-        int type () const;
-        gpi::pc::type::flags_t flags () const;
-
-        // WORK HERE:
-        //    this function *must not* be called from the dtor
-        //    otherwise we endup calling pure virtual functions
-        void garbage_collect ();
-        void garbage_collect (const gpi::pc::type::process_id_t pid);
 
         void                set_id (const gpi::pc::type::id_t id);
         gpi::pc::type::id_t get_id () const;
@@ -54,13 +51,12 @@ namespace gpi
         gpi::pc::type::id_t get_owner () const;
 
         gpi::pc::type::handle_t
-        alloc ( const gpi::pc::type::process_id_t proc_id
-              , const gpi::pc::type::size_t size
+        alloc ( const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
               );
 
-        int
+        void
         remote_alloc ( const gpi::pc::type::handle_t hdl
                      , const gpi::pc::type::offset_t offset
                      , const gpi::pc::type::size_t size
@@ -84,19 +80,10 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
 
-        gpi::pc::type::size_t
-        attach_process (const gpi::pc::type::process_id_t);
-
-        gpi::pc::type::size_t
-        detach_process (const gpi::pc::type::process_id_t);
-
         bool is_local (const gpi::pc::type::memory_region_t region) const;
         bool is_local ( const gpi::pc::type::memory_location_t loc
                       , const gpi::pc::type::size_t amt
                       ) const;
-        bool is_eligible_for_deletion () const;
-
-        bool is_process_attached (const gpi::pc::type::process_id_t) const;
 
         void check_bounds ( const gpi::pc::type::memory_location_t & loc
                           , const gpi::pc::type::size_t size
@@ -135,23 +122,15 @@ namespace gpi
                                           ) const = 0;
       protected:
         area_t ( const gpi::pc::type::segment::segment_type type
-               , const gpi::pc::type::process_id_t creator
-               , const std::string & name
                , const gpi::pc::type::size_t size
-               , const gpi::pc::type::flags_t flags
                , handle_generator_t&
                );
 
-        void reinit ();
+        virtual bool is_shm_segment() const;
 
         gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
 
         /* hook functions that need to be overridded by specific segments */
-        virtual
-        iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const = 0;
-
-        virtual
-        bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const;
 
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
                                     , const gpi::pc::type::offset_t a
@@ -189,34 +168,31 @@ namespace gpi
                       , gpi::pc::type::size_t amount
                       );
 
-        /*
-         hook functions that may be overriden
-         */
-        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) {}
-        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) {}
+        virtual global::itopology_t& global_topology() = 0;
+
       private:
         typedef std::recursive_mutex mutex_type;
         typedef std::unique_lock<mutex_type> lock_type;
-        typedef std::unordered_set <gpi::pc::type::process_id_t> process_ids_t;
         typedef std::unordered_map< gpi::pc::type::handle_t
                                   , gpi::pc::type::handle::descriptor_t
                                   > handle_descriptor_map_t;
 
-        void update_descriptor_from_mmgr ();
-
-        void internal_alloc (gpi::pc::type::handle::descriptor_t &);
+        void internal_alloc ( gpi::pc::type::handle::descriptor_t&
+                            , bool is_creator
+                            );
+        void internal_free
+          (lock_type const&, type::handle::descriptor_t const&);
 
       private:
         mutable mutex_type m_mutex;
         gpi::pc::type::segment::descriptor_t m_descriptor;
         iml_client::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
-        process_ids_t m_attached_processes;
 
         handle_generator_t& _handle_generator;
       };
 
-      typedef boost::shared_ptr<area_t> area_ptr_t;
+      typedef std::shared_ptr<area_t> area_ptr_t;
     }
   }
 }

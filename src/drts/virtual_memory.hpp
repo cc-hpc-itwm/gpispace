@@ -17,10 +17,10 @@ namespace gspc
 {
   namespace vmem
   {
-    using beegfs_segment_description = iml_client::vmem::beegfs_segment_description;
-    using gaspi_segment_description = iml_client::vmem::gaspi_segment_description;
+    using beegfs_segment_description = iml::beegfs_segment_description;
+    using gaspi_segment_description = iml::gaspi_segment_description;
 
-    using segment_description = iml_client::vmem::segment_description;
+    using segment_description = iml::segment_description;
   }
 
   class vmem_allocation

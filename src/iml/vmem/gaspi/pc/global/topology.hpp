@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
 #include <iml/vmem/gaspi/pc/memory/manager.hpp>
 
@@ -48,7 +49,8 @@ namespace gpi
         virtual void free (const gpi::pc::type::handle_t) override;
 
         virtual void add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                , const std::string & url
+                                , iml::segment_description const& description
+                                , unsigned long total_size
                                 ) override;
         virtual void del_memory (const gpi::pc::type::segment_id_t seg_id) override;
 
@@ -72,7 +74,8 @@ namespace gpi
 
         FHG_RPC_FUNCTION_DESCRIPTION ( add_memory_desc
                                      , void ( type::segment_id_t
-                                            , std::string
+                                            , iml::segment_description
+                                            , unsigned long
                                             )
                                      );
         FHG_RPC_FUNCTION_DESCRIPTION ( del_memory_desc

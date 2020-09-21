@@ -6,15 +6,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
-#include <iml/vmem/gaspi/pc/url.hpp>
-
 #include <util-generic/finally.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
 
 #include <boost/lexical_cast.hpp>
-
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 namespace gpi
 {
@@ -30,7 +26,7 @@ namespace gpi
         }
 
         static void* open ( std::string const & path
-                          , gpi::pc::type::size_t & size
+                          , gpi::pc::type::size_t size
                           , const int open_flags
                           , const mode_t open_mode = 0
                           )
@@ -50,15 +46,7 @@ namespace gpi
           else if (open_flags & O_RDWR)
             prot = PROT_READ | PROT_WRITE;
 
-          if (0 == size)
-          {
-            //! \todo clarify which side opens the segment to not have
-            //! this auto-size-determination in here, and to be able
-            //! to drop memory_area_t::reinit
-            size = fhg::util::syscall::lseek (fd, 0, SEEK_END);
-            fhg::util::syscall::lseek (fd, 0, SEEK_SET);
-          }
-          else if (open_flags & O_CREAT)
+          if (open_flags & O_CREAT)
           {
             fhg::util::syscall::ftruncate (fd, size);
           }
@@ -95,19 +83,16 @@ namespace gpi
         }
       }
 
-      shm_area_t::shm_area_t ( const gpi::pc::type::process_id_t creator
-                             , type::name_t const& name
+      shm_area_t::shm_area_t ( type::name_t const& name
                              , const gpi::pc::type::size_t user_size
                              , handle_generator_t& handle_generator
                              )
         : area_t ( shm_area_t::area_type
-                 , creator
-                 , name
                  , user_size
-                 , F_NOCREATE | F_EXCLUSIVE
                  , handle_generator
                  )
         , m_ptr (nullptr)
+        , _size (user_size)
       {
         if (name.empty())
         {
@@ -119,28 +104,20 @@ namespace gpi
         else
           m_path = "/" + name;
 
-        gpi::pc::type::size_t size = user_size;
-
         int open_flags = O_RDWR;
 
         m_ptr = detail::open ( m_path
-                             , size
+                             , user_size
                              , open_flags
                              , 0600
                              );
-
-        if (0 == user_size)
-        {
-          descriptor ().local_size = size;
-          area_t::reinit ();
-        }
       }
 
       shm_area_t::~shm_area_t()
       {
         try
         {
-          detail::close (m_ptr, descriptor().local_size);
+          detail::close (m_ptr, _size);
           m_ptr = nullptr;
           detail::unlink (m_path);
         }
@@ -148,19 +125,18 @@ namespace gpi
         { }
       }
 
+      bool shm_area_t::is_shm_segment() const
+      {
+        return true;
+      }
+
       void*
       shm_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
         return
-          (m_ptr && off < descriptor().local_size)
+          (m_ptr && off < _size)
           ? ((char*)m_ptr + off)
           : nullptr;
-      }
-
-      iml_client::vmem::dtmmgr::Arena_t
-      shm_area_t::grow_direction (const gpi::pc::type::flags_t) const
-      {
-        return iml_client::vmem::dtmmgr::ARENA_UP;
       }
 
       bool
@@ -169,8 +145,8 @@ namespace gpi
                                  , const gpi::pc::type::offset_t b
                                  ) const
       {
-        return ((hdl.offset + a) <   size())
-          &&   ((hdl.offset + b) <=  size());
+        return ((hdl.offset + a) <   _size)
+          &&   ((hdl.offset + b) <=  _size);
       }
 
       gpi::pc::type::size_t
@@ -186,6 +162,12 @@ namespace gpi
                                             ) const
       {
         return 0.0;
+      }
+
+      global::itopology_t& shm_area_t::global_topology()
+      {
+        throw std::logic_error
+          ("shm_area may never trigger a global operation");
       }
     }
   }

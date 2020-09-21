@@ -28,6 +28,7 @@ extended_add_library (NAME client
             IML::vmem-pc-segment
             IML::vmem-client
             IML::fhg-revision
+            IML::Shared
             Util::Generic
             Boost::filesystem
             Boost::program_options

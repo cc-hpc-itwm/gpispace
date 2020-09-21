@@ -1,9 +1,6 @@
-#include <iml/util/assert.hpp>
-#include <iml/vmem/gaspi/pc/url.hpp>
-#include <iml/vmem/gaspi/pc/url_io.hpp>
-
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
+#include <util-generic/functor_visitor.hpp>
 #include <util-generic/print_exception.hpp>
 
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
@@ -24,28 +21,31 @@ namespace gpi
     {
       namespace
       {
-        area_ptr_t create_area ( std::string const &url_s
+        area_ptr_t create_area ( iml::segment_description const& description
+                               , unsigned long total_size
                                , global::topology_t& topology
                                , handle_generator_t& handle_generator
                                , fhg::iml::vmem::gaspi_context& gaspi_context
-                               , type::id_t owner
+                               , bool is_creator
                                )
         {
-          url_t url (url_s);
-
-          if (url.type() == "gaspi")
-          {
-            return gaspi_area_t::create
-              (url_s, topology, handle_generator, gaspi_context, owner);
-          }
-          else if (url.type() == "beegfs")
-          {
-            return beegfs_area_t::create
-              (url_s, topology, handle_generator, owner);
-          }
-
-          throw std::runtime_error
-            ("no memory type registered with: '" + url_s + "'");
+          return fhg::util::visit<area_ptr_t>
+            ( description
+            , [&] (iml::gaspi_segment_description const& desc)
+              {
+                return gaspi_area_t::create ( desc
+                                            , total_size
+                                            , topology
+                                            , handle_generator
+                                            , gaspi_context
+                                            );
+              }
+            , [&] (iml::beegfs_segment_description const& desc)
+              {
+                return beegfs_area_t::create
+                  (desc, total_size, topology, handle_generator, is_creator);
+              }
+            );
         }
       }
 
@@ -102,7 +102,14 @@ namespace gpi
         lock_type lock (m_mutex);
         while (! m_areas.empty())
         {
-          unregister_memory (m_areas.begin()->first);
+          auto const area_it (m_areas.begin());
+          area_ptr area (area_it->second);
+
+          // WORK HERE:
+          //    let this do another thread
+          //    and just give him the area_ptr
+          area->pre_dtor ();
+          m_areas.erase (area_it);
         }
       }
 
@@ -111,17 +118,24 @@ namespace gpi
         return _handle_generator;
       }
 
-      gpi::pc::type::segment_id_t
-      manager_t::register_memory ( const gpi::pc::type::process_id_t creator
-                                 , const area_ptr &area
-                                 )
+      std::pair<type::segment_id_t, type::handle_t>
+        manager_t::register_shm_segment_and_allocate
+          ( gpi::pc::type::process_id_t creator
+          , std::shared_ptr<shm_area_t> area
+          , gpi::pc::type::size_t size
+          , std::string const& name
+          )
       {
-        area->set_id
+        auto const segment
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        area->set_id (segment);
         add_area (area);
-        attach_process (creator, area->get_id ());
+        _shm_segments_by_owner[creator].emplace (segment);
 
-        return area->get_id ();
+        auto const allocation (area->alloc (size, name, is_global::no));
+        add_handle (allocation, segment);
+
+        return {segment, allocation};
       }
 
       void
@@ -131,117 +145,48 @@ namespace gpi
       {
         lock_type lock (m_mutex);
 
-        detach_process (pid, mem_id);
-        if (m_areas.find(mem_id) != m_areas.end())
-        {
-          try
-          {
-            unregister_memory(mem_id);
-          }
-          catch (...)
-          {
-            attach_process(pid, mem_id); // unroll
-            throw;
-          }
-        }
-      }
-
-      void
-      manager_t::unregister_memory (const gpi::pc::type::segment_id_t mem_id)
-      {
-        {
-          area_map_t::iterator area_it (m_areas.find(mem_id));
-          if (area_it == m_areas.end())
-          {
-            throw std::runtime_error ( "no such memory: "
-                                     + boost::lexical_cast<std::string>(mem_id)
-                                     );
-          }
-
-          area_ptr area (area_it->second);
-
-          if (area->in_use ())
-          {
-            // TODO: maybe move memory segment to garbage area
-
-            throw std::runtime_error
-                ("segment is still inuse, cannot unregister");
-          }
-
-          // WORK HERE:
-          //    let this do another thread
-          //    and just give him the area_ptr
-          area->garbage_collect ();
-          m_areas.erase (area_it);
-        }
-      }
-
-      void
-      manager_t::attach_process ( const gpi::pc::type::process_id_t proc_id
-                                , const gpi::pc::type::segment_id_t mem_id
-                                )
-      {
-        lock_type lock (m_mutex);
-        area_map_t::iterator area (m_areas.find(mem_id));
-        if (area == m_areas.end())
+        auto const area_it (m_areas.find(mem_id));
+        if (area_it == m_areas.end())
         {
           throw std::runtime_error ( "no such memory: "
                                    + boost::lexical_cast<std::string>(mem_id)
                                    );
         }
+        auto const area (area_it->second);
 
-        if (proc_id)
-        {
-          area->second->attach_process (proc_id);
-        }
+        _shm_segments_by_owner.at (pid).erase (mem_id);
+
+            // WORK HERE:
+            //    let this do another thread
+            //    and just give him the area_ptr
+            area->pre_dtor ();
+            m_areas.erase (area_it);
       }
 
-      void
-      manager_t::detach_process ( const gpi::pc::type::process_id_t proc_id
-                                , const gpi::pc::type::segment_id_t mem_id
-                                )
+      void manager_t::remove_shm_segments_of
+        (gpi::pc::type::process_id_t const proc_id)
       {
         lock_type lock (m_mutex);
-        area_map_t::iterator area (m_areas.find(mem_id));
-        if (area == m_areas.end())
+
+        auto const segments_it (_shm_segments_by_owner.find (proc_id));
+        if (segments_it == _shm_segments_by_owner.end())
         {
-          throw std::runtime_error ( "no such memory: "
-                                   + boost::lexical_cast<std::string>(mem_id)
-                                   );
+          return;
         }
 
-        if (proc_id)
+        for (auto const& mem_id : segments_it->second)
         {
-          area->second->detach_process (proc_id);
+        auto const area_it (m_areas.find(mem_id));
+        auto const area (area_it->second);
 
-          if (area->second->is_eligible_for_deletion())
-          {
-            unregister_memory (mem_id);
-          }
-        }
-      }
-
-      void
-      manager_t::garbage_collect (const gpi::pc::type::process_id_t proc_id)
-      {
-        lock_type lock (m_mutex);
-        std::list<gpi::pc::type::segment_id_t> segments;
-        for ( area_map_t::iterator area (m_areas.begin())
-            ; area != m_areas.end()
-            ; ++area
-            )
-        {
-          area->second->garbage_collect (proc_id);
-
-          if (area->second->is_process_attached (proc_id))
-            segments.push_back (area->first);
+            // WORK HERE:
+            //    let this do another thread
+            //    and just give him the area_ptr
+            area->pre_dtor ();
+            m_areas.erase (area_it);
         }
 
-        while (! segments.empty())
-        {
-          detach_process (proc_id, segments.front());
-          segments.pop_front();
-        }
+        _shm_segments_by_owner.erase (segments_it);
       }
 
       void
@@ -326,7 +271,7 @@ namespace gpi
         m_handle_to_segment.erase (hdl);
       }
 
-      int
+      void
       manager_t::remote_alloc ( const gpi::pc::type::segment_id_t seg_id
                               , const gpi::pc::type::handle_t hdl
                               , const gpi::pc::type::offset_t offset
@@ -338,13 +283,10 @@ namespace gpi
         area_ptr area (get_area (seg_id));
         area->remote_alloc (hdl, offset, size, local_size, name);
         add_handle (hdl, seg_id);
-
-        return 0;
       }
 
       gpi::pc::type::handle_t
-      manager_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                       , const gpi::pc::type::segment_id_t seg_id
+      manager_t::alloc ( const gpi::pc::type::segment_id_t seg_id
                        , const gpi::pc::type::size_t size
                        , const std::string & name
                        , const gpi::pc::type::flags_t flags
@@ -352,9 +294,7 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        fhg_assert (area);
-
-        gpi::pc::type::handle_t hdl (area->alloc (proc_id, size, name, flags));
+        gpi::pc::type::handle_t hdl (area->alloc (size, name, flags));
 
         add_handle (hdl, seg_id);
 
@@ -366,8 +306,6 @@ namespace gpi
       {
         area_ptr area (get_area_by_handle (hdl));
 
-        fhg_assert (area);
-
         area->remote_free (hdl);
         del_handle (hdl);
       }
@@ -376,8 +314,6 @@ namespace gpi
       manager_t::free (const gpi::pc::type::handle_t hdl)
       {
         area_ptr area (get_area_by_handle (hdl));
-
-        fhg_assert (area);
 
         del_handle (hdl);
         area->free (hdl);
@@ -461,31 +397,49 @@ namespace gpi
         task_it->second.get();
       }
 
-      int
+      void
       manager_t::remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                   , std::string const & url
+                                   , iml::segment_description const& description
+                                   , unsigned long total_size
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (url, topology, _handle_generator, _gaspi_context, 0));
+        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false));
         area->set_id (seg_id);
         add_area (area);
-        return 0;
       }
 
-      gpi::pc::type::segment_id_t
-      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
-                            , const std::string & url_s
-                            , global::topology_t& topology
-                            )
+      namespace
       {
         //! \note for beegfs, master creates file that slaves need to
         //! open determining filesize from the opened file. thus, to
         //! avoid a race, the master is doing this before all
         //! others. gaspi on the other side needs simultaneous
         //! initialization for gaspi_segment_create etc.
-        bool const require_earlier_master_initialization
-          (url_t (url_s).type() == "beegfs");
+        bool require_earlier_master_initialization
+          (iml::segment_description const& description)
+        {
+          return fhg::util::visit<bool>
+            ( description
+            , [&] (iml::beegfs_segment_description const&)
+              {
+                return true;
+              }
+            , [&] (iml::gaspi_segment_description const&)
+              {
+                return false;
+              }
+            );
+        }
+      }
+
+      gpi::pc::type::segment_id_t
+      manager_t::add_memory ( const gpi::pc::type::process_id_t proc_id
+                            , iml::segment_description const& description
+                            , unsigned long total_size
+                            , global::topology_t& topology
+                            )
+      {
 
         type::segment_id_t const id
           (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
@@ -506,14 +460,14 @@ namespace gpi
                            }
                          );
 
-        if (require_earlier_master_initialization)
+        if (require_earlier_master_initialization (description))
         {
-          area_ptr_t area = create_area (url_s, topology, _handle_generator, _gaspi_context, proc_id);
+          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true);
           area->set_id (id);
 
           add_area (area);
 
-          topology.add_memory (id, url_s);
+          topology.add_memory (id, description, total_size);
         }
         else
         {
@@ -522,11 +476,12 @@ namespace gpi
                 ( std::launch::async
                 , [&]
                   {
-                    area_ptr_t area ( create_area ( url_s
+                    area_ptr_t area ( create_area ( description
+                                                  , total_size
                                                   , topology
                                                   , _handle_generator
                                                   , _gaspi_context
-                                                  , proc_id
+                                                  , true
                                                   )
                                     );
                     area->set_id (id);
@@ -535,7 +490,7 @@ namespace gpi
                 )
             );
 
-          topology.add_memory (id, url_s);
+          topology.add_memory (id, description, total_size);
           local.get();
         }
 
@@ -543,13 +498,12 @@ namespace gpi
         return id;
       }
 
-      int
+      void
       manager_t::remote_del_memory ( const gpi::pc::type::segment_id_t seg_id
                                    , global::topology_t& topology
                                    )
       {
         del_memory (0, seg_id, topology);
-        return 0;
       }
 
       void
@@ -574,18 +528,10 @@ namespace gpi
 
           area_ptr area (area_it->second);
 
-          if (area->in_use ())
-          {
-            // TODO: maybe move memory segment to garbage area
-
-            throw std::runtime_error
-              ("segment is still inuse, cannot unregister");
-          }
-
-          area->garbage_collect ();
+          area->pre_dtor ();
           m_areas.erase (area_it);
 
-          if (proc_id > 0 && area->flags () & F_GLOBAL)
+          if (proc_id > 0)
           {
             topology.del_memory (seg_id);
           }

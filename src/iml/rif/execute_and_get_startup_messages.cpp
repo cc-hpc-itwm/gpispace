@@ -2,7 +2,6 @@
 
 #include <iml/rif/started_process_promise.hpp>
 
-#include <iml/util/assert.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -22,6 +21,7 @@
 #include <mutex>
 #include <numeric>
 #include <sstream>
+#include <stdexcept>
 #include <system_error>
 
 namespace fhg
@@ -51,13 +51,19 @@ namespace fhg
 
         size_t append (std::vector<char>& buffer, std::string const& str, size_t pos)
         {
-          fhg_assert (buffer.size() >= str.size() + pos);
+          if (buffer.size() < str.size() + pos)
+          {
+            throw std::logic_error ("append assumes preallocated buffer");
+          }
           std::copy (str.begin(), str.end(), buffer.begin() + pos);
           return pos + str.size();
         }
         size_t append (std::vector<char>& buffer, char c, size_t pos)
         {
-          fhg_assert (buffer.size() >= sizeof (char) + pos);
+          if (buffer.size() < sizeof (char) + 1)
+          {
+            throw std::logic_error ("append assumes preallocated buffer");
+          }
           *(buffer.begin() + pos) = c;
           return pos + 1;
         }

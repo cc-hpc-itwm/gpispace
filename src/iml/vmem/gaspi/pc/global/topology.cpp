@@ -43,11 +43,12 @@ namespace gpi
                 )
         , _add_memory ( _service_dispatcher
                       , [&memory_manager, this] ( type::segment_id_t seg_id
-                                                , std::string url_s
+                                                , iml::segment_description const& description
+                                                , unsigned long total_size
                                                 )
                         {
                           memory_manager.remote_add_memory
-                            (seg_id, url_s, *this);
+                            (seg_id, description, total_size, *this);
                         }
                       , fhg::rpc::not_yielding
                       )
@@ -159,10 +160,11 @@ namespace gpi
       }
 
       void topology_t::add_memory ( const gpi::pc::type::segment_id_t seg_id
-                                  , const std::string & url
+                                  , iml::segment_description const& description
+                                  , unsigned long total_size
                                   )
       {
-        request<add_memory_desc> (seg_id, url);
+        request<add_memory_desc> (seg_id, description, total_size);
       }
 
       void topology_t::del_memory (const gpi::pc::type::segment_id_t seg_id)

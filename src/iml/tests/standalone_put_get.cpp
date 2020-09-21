@@ -3,7 +3,7 @@
 #include <iml/client/iml.hpp>
 #include <iml/client/scoped_rifd.hpp>
 #include <iml/client/virtual_memory.hpp>
-#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/scoped_shm_allocation.hpp>
 
 #include <boost/program_options.hpp>
 #include <boost/format.hpp>
@@ -72,7 +72,7 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
     );
 
   iml_client::vmem_allocation const global_data
-    ( iml_rts.alloc ( iml_client::vmem::gaspi_segment_description()
+    ( iml_rts.alloc ( iml::gaspi_segment_description()
                     , MAX_DATA_LEN
                     , "data"
                     )
@@ -83,7 +83,7 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
   std::string const data
     (fhg::util::testing::random_identifier (MAX_DATA_LEN - offset_metadata));
 
-  iml_client::scoped_allocation const write_buffer
+  iml::client::scoped_shm_allocation const write_buffer
     ( global_data.api()
     , "write_data"
     , MAX_DATA_LEN
@@ -108,7 +108,7 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
     , data.length() + offset_metadata
     );
 
-  iml_client::scoped_allocation const read_buffer
+  iml::client::scoped_shm_allocation const read_buffer
     ( global_data.api()
     , "read_data"
     , MAX_DATA_LEN

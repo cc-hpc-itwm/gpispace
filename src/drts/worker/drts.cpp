@@ -107,7 +107,7 @@ DRTSImpl::DRTSImpl
     , std::string const& kernel_name
     , unsigned short comm_port
     , gpi::pc::client::api_t /*const*/* virtual_memory_api
-    , iml_client::scoped_allocation /*const*/* shared_memory
+    , iml::client::scoped_shm_allocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path

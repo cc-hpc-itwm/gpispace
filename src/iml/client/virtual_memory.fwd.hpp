@@ -1,6 +1,6 @@
 #pragma once
 
-#include <boost/variant.hpp>
+#include <iml/segment_description.hpp>
 
 namespace iml_client
 {
@@ -8,10 +8,8 @@ namespace iml_client
 
   namespace vmem
   {
-    struct gaspi_segment_description;
-    struct beegfs_segment_description;
-    using segment_description = boost::variant < gaspi_segment_description
-                                               , beegfs_segment_description
-                                               >;
+    using gaspi_segment_description = iml::gaspi_segment_description;
+    using beegfs_segment_description = iml::beegfs_segment_description;
+    using segment_description = iml::segment_description;
   }
 }
