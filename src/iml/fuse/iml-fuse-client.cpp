@@ -1,6 +1,7 @@
 #include <iml/client/scoped_shm_allocation.hpp>
 #include <iml/vmem/gaspi/pc/client/api.hpp>
 
+#include <util-generic/divru.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/print_exception.hpp>
 #include <util-generic/threadsafe_queue.hpp>
@@ -25,6 +26,7 @@ namespace iml
 {
   using Client = gpi::pc::client::api_t;
   using AllocationHandle = gpi::pc::type::handle_t;
+  using SegmentHandle = gpi::pc::type::segment_id_t;
 
   namespace client
   {
@@ -35,40 +37,80 @@ namespace iml
   {
     namespace detail
     {
-      struct PathOrHandle
-        : boost::variant<boost::filesystem::path, AllocationHandle>
+      using Unknown = boost::filesystem::path;
+      struct TopLevel{};
+      using PathOrHandleBase = boost::variant< Unknown
+                                             , TopLevel
+                                             , SegmentHandle
+                                             , AllocationHandle
+                                             >;
+      struct PathOrHandle : PathOrHandleBase
       {
-        using Base = boost::variant<boost::filesystem::path, AllocationHandle>;
-        PathOrHandle (boost::filesystem::path const& path);
         PathOrHandle (char const* path);
       };
 
-      PathOrHandle::PathOrHandle (char const* path)
-        : PathOrHandle (boost::filesystem::path (path))
-      {}
-
-      PathOrHandle::PathOrHandle (boost::filesystem::path const& path)
-        : Base (path)
+      namespace
       {
-        try
+        // \todo Move the logging endpoint parser to util-generic and
+        // use here. Probably invent a better directory structure
+        // before rewriting this quick hack.
+        PathOrHandleBase parse (char const* path)
         {
-          auto const& path_string (path.string());
-          if (path_string.size() < 2 || path_string[0] != '/')
+          // /                               top level
+          // /segmentid                      segment
+          // /segmentid/                     segment
+          // /segmentid/allocationid         allocation
+          // \todo no ../s taken into account.
+          std::istringstream iss (path);
+
+          char slash;
+          if (!(iss >> slash) || slash != '/')
           {
-            return;
+            return Unknown {path};
+          }
+          else if (iss.peek() == std::char_traits<char>::eof())
+          {
+            return TopLevel{};
           }
 
-          std::istringstream iss (path_string);
-          iss.get();
+          SegmentHandle segment;
+          if (!(iss >> segment))
+          {
+            return Unknown {path};
+          }
+          else if (iss.peek() == std::char_traits<char>::eof())
+          {
+            return segment;
+          }
+          if (!(iss >> slash) || slash != '/')
+          {
+            return Unknown {path};
+          }
+          else if (iss.peek() == std::char_traits<char>::eof())
+          {
+            return segment;
+          }
 
-          AllocationHandle handle;
-          iss >> handle;
-          static_cast<Base&> (*this) = std::move (handle);
-        }
-        catch (...)
-        {
+          // \todo Don't ignore segment ID: Implementations need to be
+          // able to check if the allocation exists *in that segment*.
+
+          AllocationHandle allocation;
+          if (!(iss >> allocation))
+          {
+            return Unknown {path};
+          }
+          else if (iss.peek() == std::char_traits<char>::eof())
+          {
+            return allocation;
+          }
+
+          return Unknown {path};
         }
       }
+
+      PathOrHandle::PathOrHandle (char const* path)
+        : PathOrHandleBase (parse (path))
+      {}
     }
 
     class Adapter
@@ -77,6 +119,7 @@ namespace iml
       Adapter (boost::filesystem::path const& iml_socket);
 
       int getattr (detail::PathOrHandle const&, struct stat*) const;
+      int readdir (detail::PathOrHandle const&, void*, fuse_fill_dir_t) const;
       int open (detail::PathOrHandle const&, fuse_file_info*) const;
       int read (char*, std::size_t, std::size_t, fuse_file_info const*);
       int write (char const*, std::size_t, std::size_t, fuse_file_info const*);
@@ -105,35 +148,102 @@ namespace iml
 
       return fhg::util::visit<int>
         ( path_or_handle
-        , [&] (boost::filesystem::path const& path)
+        , [&] (detail::Unknown const&)
           {
-            if (path == "/")
-            {
-              stat_buf->st_mode = S_IFDIR | S_IRUSR | S_IWUSR | S_IXUSR;
-              stat_buf->st_nlink = 2;
-              // \todo Fake entries with a readme.
-              return 0;
-            }
             return -ENOENT;
           }
-        , [&] (AllocationHandle const&)
+        , [&] (detail::TopLevel const&)
           {
-            // \todo Should we claim we're a block device instead?
-            stat_buf->st_mode = S_IFREG | S_IRUSR | S_IWUSR;
-            stat_buf->st_nlink = 1;
-            // \todo Query size.
-            // stat_buf->st_size = info (handle).size;
+            stat_buf->st_mode = S_IFDIR | S_IRUSR | S_IWUSR | S_IXUSR;
+            stat_buf->st_nlink = 2 + _client.existing_segments().size();
+            // \todo Fake entries with a readme.
             return 0;
+          }
+        , [&] (SegmentHandle const& segment)
+          {
+            stat_buf->st_mode = S_IFDIR | S_IRUSR | S_IWUSR | S_IXUSR;
+            stat_buf->st_nlink
+              = 2 + _client.existing_allocations (segment).size();
+            return 0;
+          }
+        , [&] (AllocationHandle const& handle)
+          {
+            try
+            {
+              auto const info (_client.stat (handle));
+              stat_buf->st_mode = S_IFREG | S_IRUSR | S_IWUSR;
+              stat_buf->st_nlink = 1;
+              stat_buf->st_size = info.size;
+              stat_buf->st_blocks = fhg::util::divru (info.size, 512ul);
+              return 0;
+            }
+            catch (...)
+            {
+              std::cerr << "getattr: " << fhg::util::current_exception_printer() << "\n";
+              return -ENOENT;
+            }
           }
         );
   //              uid_t     st_uid;     /* user ID of owner */
   //              gid_t     st_gid;     /* group ID of owner */
   //              dev_t     st_rdev;    /* device ID (if special file) */
-  //              off_t     st_size;    /* total size, in bytes */
-  //              blkcnt_t  st_blocks;  /* number of 512B blocks allocated */
   //              time_t    st_atime;   /* time of last access */
   //              time_t    st_mtime;   /* time of last modification */
   //              time_t    st_ctime;   /* time of last status change */
+    }
+
+    int Adapter::readdir ( detail::PathOrHandle const& path_or_handle
+                         , void* buffer
+                         , fuse_fill_dir_t fill_dir
+                         ) const
+    {
+#define add(path_)                                      \
+      do                                                \
+      {                                                 \
+        if (fill_dir (buffer, path_, nullptr, 0))       \
+        {                                               \
+          return -EINVAL;                               \
+        }                                               \
+      }                                                 \
+      while (false)
+
+      return fhg::util::visit<int>
+        ( path_or_handle
+        , [&] (detail::Unknown const&)
+          {
+            return -ENOENT;
+          }
+        , [&] (detail::TopLevel const&)
+          {
+            add (".");
+            add ("..");
+            for (auto const& elem : _client.existing_segments())
+            {
+              std::ostringstream oss;
+              oss << elem;
+              add (oss.str().c_str());
+            }
+            return 0;
+          }
+        , [&] (SegmentHandle const& segment)
+          {
+            add (".");
+            add ("..");
+            for (gpi::pc::type::handle_t elem : _client.existing_allocations (segment))
+            {
+              std::ostringstream oss;
+              oss << elem;
+              add (oss.str().c_str());
+            }
+            return 0;
+          }
+        , [&] (AllocationHandle const&)
+          {
+            return -ENOTDIR;
+          }
+        );
+
+#undef add
     }
 
     int Adapter::open ( detail::PathOrHandle const& path_or_handle
@@ -146,7 +256,15 @@ namespace iml
 
       return fhg::util::visit<int>
         ( path_or_handle
-        , [&] (boost::filesystem::path const&)
+        , [&] (detail::Unknown const&)
+          {
+            return -ENOSYS;
+          }
+        , [&] (detail::TopLevel const&)
+          {
+            return -ENOSYS;
+          }
+        , [&] (SegmentHandle const&)
           {
             return -ENOSYS;
           }
@@ -288,6 +406,16 @@ namespace wrapper
     {
       return call (&iml::fuse::Adapter::getattr, path, stat_buf);
     }
+
+    int readdir ( char const* path
+                , void* buffer
+                , fuse_fill_dir_t fill_dir
+                , off_t
+                , fuse_file_info* const
+                )
+    {
+      return call (&iml::fuse::Adapter::readdir, path, buffer, fill_dir);
+    }
   }
 }
 
@@ -335,7 +463,7 @@ try
   // \todo List existing segments and allocations.
   ops.getdir = nullptr;
   ops.opendir = nullptr;
-  ops.readdir = nullptr;
+  ops.readdir = wrapper::readdir;
   ops.releasedir = nullptr;
   ops.fsyncdir = nullptr;
   ops.getattr = wrapper::getattr;
@@ -386,8 +514,8 @@ try
   // Paths for read/write are not required as everything is in the
   // handle. `nullpath_ok` talks about "after unlinking", but we don't
   // support unlinking. Set both in case they do some optimization.
-  ops.flag_nullpath_ok = 1;
-  ops.flag_nopath = 1;
+  ops.flag_nullpath_ok = 0 /* \todo readdir needs path */;
+  ops.flag_nopath = 0 /* \todo readdir needs path */;
 
   // Meta-operations: We pass user_data via fuse_main so not needed.
   ops.init = nullptr;

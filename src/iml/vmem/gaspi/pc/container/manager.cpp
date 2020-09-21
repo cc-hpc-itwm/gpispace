@@ -143,6 +143,17 @@ namespace gpi
             , _topology (topology)
           {}
 
+          std::unordered_set<type::segment_id_t> operator()
+            (proto::existing_segments const&) const
+          {
+            return _memory_manager.existing_segments();
+          }
+          std::unordered_set<type::handle_id_t> operator()
+            (proto::existing_allocations const& req) const
+          {
+            return _memory_manager.existing_allocations (req.segment);
+          }
+
           /**********************************************/
           /***     M E M O R Y   R E L A T E D        ***/
           /**********************************************/

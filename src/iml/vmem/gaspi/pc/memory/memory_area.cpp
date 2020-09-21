@@ -48,6 +48,20 @@ namespace gpi
         }
       }
 
+      std::unordered_set<type::handle_id_t>
+        area_t::existing_allocations() const
+      {
+        std::unordered_set<type::handle_id_t> result;
+        for (auto const& kv : m_handles)
+        {
+          if (kv.second.flags == is_global::yes)
+          {
+            result.emplace (kv.first);
+          }
+        }
+        return result;
+      }
+
       bool area_t::is_shm_segment() const
       {
         return false;

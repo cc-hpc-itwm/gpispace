@@ -281,6 +281,48 @@ namespace gpi
         }
       }
 
+      api_t::AllocationInformation api_t::stat
+        (type::handle_id_t allocation) const
+      {
+        return {const_cast<api_t*> (this)->info (allocation).size};
+      }
+
+#define sane_rpc_call(response_type_, request_...)                \
+      [&]                                                         \
+      {                                                           \
+        auto const reply                                          \
+          (const_cast<api_t*> (this)->communicate (request_));    \
+                                                                  \
+        try                                                       \
+        {                                                         \
+          return boost::get<response_type_> (reply);              \
+        }                                                         \
+        catch (boost::bad_get const&)                             \
+        {                                                         \
+          throw std::runtime_error                                \
+            (boost::get<proto::error::error_t> (reply).detail);   \
+        }                                                         \
+        catch (...)                                               \
+        {                                                         \
+          const_cast<api_t*> (this)->stop();                      \
+          throw;                                                  \
+        }                                                         \
+      }()
+
+      std::unordered_set<type::segment_id_t> api_t::existing_segments() const
+      {
+        return sane_rpc_call ( std::unordered_set<type::segment_id_t>
+                             , proto::existing_segments{}
+                             );
+      }
+      std::unordered_set<type::handle_id_t> api_t::existing_allocations
+        (type::segment_id_t segment) const
+      {
+        return sane_rpc_call ( std::unordered_set<type::handle_id_t>
+                             , proto::existing_allocations {segment}
+                             );
+      }
+
       void *
       api_t::ptr(const gpi::pc::type::handle_t h)
       {

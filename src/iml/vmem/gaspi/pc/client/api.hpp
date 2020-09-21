@@ -14,6 +14,7 @@
 #include <map>
 #include <mutex>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 namespace gpi
@@ -77,6 +78,16 @@ namespace gpi
           , gpi::pc::type::size_t size
           );
         void free_and_delete_shm_segment (shm_allocation);
+
+        struct AllocationInformation
+        {
+          type::size_t size;
+        };
+        AllocationInformation stat (type::handle_id_t allocation) const;
+
+        std::unordered_set<type::segment_id_t> existing_segments() const;
+        std::unordered_set<type::handle_id_t> existing_allocations
+          (type::segment_id_t) const;
 
       private:
         void stop ();

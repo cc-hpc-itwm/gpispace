@@ -111,6 +111,27 @@ namespace gpi
         }
       }
 
+      std::unordered_set<type::segment_id_t>
+        manager_t::existing_segments() const
+      {
+        lock_type const lock (m_mutex);
+        std::unordered_set<type::segment_id_t> result;
+        for (auto const& kv : m_areas)
+        {
+          if (!kv.second->is_shm_segment())
+          {
+            result.emplace (kv.first);
+          }
+        }
+        return result;
+      }
+      std::unordered_set<type::handle_id_t>
+        manager_t::existing_allocations (type::segment_id_t segment) const
+      {
+        lock_type const lock (m_mutex);
+        return get_area (segment)->existing_allocations();
+      }
+
       std::pair<type::segment_id_t, type::handle_t>
         manager_t::register_shm_segment_and_allocate
           ( gpi::pc::type::process_id_t creator

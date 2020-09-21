@@ -42,6 +42,9 @@ namespace gpi
            though
         */
 
+        virtual bool is_shm_segment() const;
+        std::unordered_set<type::handle_id_t> existing_allocations() const;
+
         void
         alloc ( const gpi::pc::type::size_t size
               , const std::string & name
@@ -111,7 +114,6 @@ namespace gpi
       protected:
         area_t (gpi::pc::type::size_t size);
 
-        virtual bool is_shm_segment() const;
 
         gpi::pc::type::offset_t location_to_offset (gpi::pc::type::memory_location_t loc);
 

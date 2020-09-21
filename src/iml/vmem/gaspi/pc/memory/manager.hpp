@@ -41,6 +41,10 @@ namespace gpi
 
         void clear ();
 
+        std::unordered_set<type::segment_id_t> existing_segments() const;
+        std::unordered_set<type::handle_id_t> existing_allocations
+          (type::segment_id_t segment) const;
+
         std::pair<type::segment_id_t, type::handle_t>
           register_shm_segment_and_allocate
             ( gpi::pc::type::process_id_t creator
