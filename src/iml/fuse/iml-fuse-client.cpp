@@ -146,6 +146,9 @@ namespace iml
     {
       std::memset (stat_buf, 0, sizeof (*stat_buf));
 
+      stat_buf->st_uid = fuse_get_context()->uid;
+      stat_buf->st_gid = fuse_get_context()->gid;
+
       return fhg::util::visit<int>
         ( path_or_handle
         , [&] (detail::Unknown const&)
@@ -184,8 +187,6 @@ namespace iml
             }
           }
         );
-  //              uid_t     st_uid;     /* user ID of owner */
-  //              gid_t     st_gid;     /* group ID of owner */
   //              dev_t     st_rdev;    /* device ID (if special file) */
   //              time_t    st_atime;   /* time of last access */
   //              time_t    st_mtime;   /* time of last modification */
