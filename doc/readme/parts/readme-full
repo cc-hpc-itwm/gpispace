@@ -46,7 +46,7 @@ below:
  has input P3 and P5. T4 has two inputs P4 and P5 and one output
  P6. There are two tokens on P1, one token on P2, and one token on
  P3. Transitions T1, T2 and T3 are able to fire, T4 is
- not.](./img/petri_net.png)
+ not.](./img/petri_net.svg)
 
 ### Architecture
 The GPI-Space framework builds on a "agent-worker" architecture, as
@@ -68,7 +68,7 @@ in the figure below.
  cores, as well as a RIFD. The scheduler has a has a connection to
  each worker. Outside of GPI-Space is the User Application Workflow,
  containing a Petri Net, which has a connection to the
- Agent.](./img/GPISpace_arch.png)
+ Agent.](./img/GPISpace_arch.svg)
 
 ### Developing a GPI-Space Application
 Writing a GPI-Space application requires three steps:
@@ -103,7 +103,7 @@ below.
  two tokens each. compute's port in is consuming from place generator,
  the port out is producing to computed_values. aggregate's port i is
  consuming from computed_values, both the input and output port sum
- are connected to global_sum.](./img/gpispace_example_pnet.png)
+ are connected to global_sum.](./img/gpispace_example_pnet.svg)
 
 Note: The following listings assumes the set of variables as given in
 the `${GPISPACE_INSTALL_DIR}/share/gspc/README.md` file and additionally

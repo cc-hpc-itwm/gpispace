@@ -46,9 +46,9 @@ add_file_assembled_from_parts ("${CMAKE_CURRENT_BINARY_DIR}/compute_and_aggregat
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/getting_started.md"
   DESTINATION "share/gspc/"
 )
-install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/img/GPISpace_arch.png"
-               "${CMAKE_CURRENT_SOURCE_DIR}/img/gpispace_example_pnet.png"
-               "${CMAKE_CURRENT_SOURCE_DIR}/img/petri_net.png"
+install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/img/GPISpace_arch.svg"
+               "${CMAKE_CURRENT_SOURCE_DIR}/img/gpispace_example_pnet.svg"
+               "${CMAKE_CURRENT_SOURCE_DIR}/img/petri_net.svg"
   DESTINATION "share/gspc/img/"
 )
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/compute_and_aggregate.xpnet"
