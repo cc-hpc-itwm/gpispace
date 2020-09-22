@@ -261,6 +261,7 @@ namespace utils
       {
         sdpa::job_id_t _id;
         fhg::com::p2p::address_t _owner;
+        we::type::activity_t _activity;
       };
       std::map<std::string, job_t> _jobs;
       void delete_job (sdpa::job_id_t const& job_id);

@@ -628,7 +628,7 @@ namespace utils
       )
     {
       return _jobs.emplace
-        (activity.name(), job_t {job_id, owner}).first->first;
+        (activity.name(), job_t {job_id, owner, activity}).first->first;
     }
 
     void fake_drts_worker_notifying_module_call_submission::announce_job
@@ -673,7 +673,7 @@ namespace utils
       auto const job (_jobs.at (name));
 
       _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t());
+        (job._owner, job._id, job._activity);
 
       BOOST_REQUIRE_EQUAL (_finished_ack.wait(), job._id);
     }
