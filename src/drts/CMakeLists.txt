@@ -1,12 +1,18 @@
 add_subdirectory (worker)
 
 install (FILES
+  resource/Class.hpp
+  DESTINATION include/drts/resource
+)
+
+install (FILES
   certificates.hpp
   client.fwd.hpp
   client.hpp
   drts.fwd.hpp
   drts.hpp
   pimpl.hpp
+  Resource.hpp
   ResourceGraph.hpp
   rifd_entry_points.fwd.hpp
   rifd_entry_points.hpp

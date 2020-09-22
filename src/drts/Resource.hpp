@@ -2,7 +2,7 @@
 
 #include <drts/resource/Class.hpp>
 
-#include <drts/util-generic_hash_forward_declare.hpp>
+#include <boost/optional.hpp>
 
 namespace gspc
 {
@@ -12,20 +12,33 @@ namespace gspc
     Resource() = default;
     Resource (resource::Class);
     Resource (resource::Class, std::size_t);
+    Resource
+      ( resource::Class
+      , std::size_t
+      , boost::optional<std::size_t>
+      );
+    Resource
+      ( resource::Class
+      , std::size_t
+      , boost::optional<std::size_t>
+      , boost::optional<unsigned short>
+      );
 
-    //! \todo individual-worker-specific, non-resource attributes,
-    //! e.g. socket binding, port, memory…
     resource::Class resource_class;
     std::size_t shm_size;
+    boost::optional<std::size_t> socket;
+    boost::optional<unsigned short> port;
 
     template<typename Archive>
-      void serialize (Archive& ar, unsigned int);
+      void serialize (Archive& ar, unsigned int)
+    {
+      ar & resource_class;
+      ar & shm_size;
+      ar & socket;
+      ar & port;
+    }
 
     friend std::ostream& operator<< (std::ostream&, Resource const&);
     friend bool operator== (Resource const&, Resource const&);
   };
 }
-
-UTIL_MAKE_COMBINED_STD_HASH_DECLARE (gspc::Resource);
-
-#include <drts/Resource.ipp>

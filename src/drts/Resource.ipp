@@ -5,5 +5,7 @@ namespace gspc
   {
     ar & resource_class;
     ar & shm_size;
+    ar & socket;
+    ar & port;
   }
 }

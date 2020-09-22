@@ -7,22 +7,32 @@ namespace gspc
   {}
 
   Resource::Resource (resource::Class resource_class_, std::size_t shm_size_)
+    : Resource (resource_class_, shm_size_, boost::none)
+  {}
+
+  Resource::Resource
+      ( resource::Class resource_class_
+      , std::size_t shm_size_
+      , boost::optional<std::size_t> socket_
+      )
+    : Resource (resource_class_, shm_size_, socket_, boost::none)
+  {}
+
+  Resource::Resource
+      ( resource::Class resource_class_
+      , std::size_t shm_size_
+      , boost::optional<std::size_t> socket_
+      , boost::optional<unsigned short> port_
+      )
     : resource_class (resource_class_)
     , shm_size (shm_size_)
+    , socket (socket_)
+    , port (port_)
   {}
 
   bool operator== (Resource const& lhs, Resource const& rhs)
   {
-    return std::tie (lhs.resource_class) == std::tie (rhs.resource_class);
-  }
-  std::ostream& operator<< (std::ostream& os, Resource const& r)
-  {
-    return os << "resource " << r.resource_class;
+    return std::tie (lhs.resource_class, lhs.shm_size, lhs.socket, lhs.port)
+      == std::tie (rhs.resource_class, rhs.shm_size, rhs.socket, rhs.port);
   }
 }
-
-UTIL_MAKE_COMBINED_STD_HASH_DEFINE
-  ( gspc::Resource
-  , r
-  , r.resource_class
-  );
