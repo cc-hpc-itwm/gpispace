@@ -153,7 +153,7 @@ namespace gpi
                     , const std::string & name
                     , const gpi::pc::type::flags_t flags
                     , type::segment_id_t segment_id
-                    , type::handle_t allocation_id
+                    , type::handle_t allocation
                     )
       {
         lock_type lock (m_mutex);
@@ -164,7 +164,7 @@ namespace gpi
         hdl.local_size = get_local_size (size, flags);
         hdl.name = name;
         hdl.flags = flags;
-        hdl.id = allocation_id;
+        hdl.id = allocation;
 
         internal_alloc (hdl, true, segment_id);
 

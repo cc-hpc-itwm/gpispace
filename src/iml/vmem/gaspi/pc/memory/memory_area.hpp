@@ -47,7 +47,7 @@ namespace gpi
               , const std::string & name
               , const gpi::pc::type::flags_t flags
               , type::segment_id_t segment_id
-              , type::handle_t allocation_id
+              , type::handle_t allocation
               );
 
         void
