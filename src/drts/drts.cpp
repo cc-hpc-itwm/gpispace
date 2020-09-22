@@ -352,8 +352,8 @@ namespace gspc
                     , 1
                     , 0
                     , r.second.shm_size
-                    , boost::none
-                    , boost::none
+                    , r.second.socket
+                    , r.second.port
                     , osstr.str()
                     };
 
