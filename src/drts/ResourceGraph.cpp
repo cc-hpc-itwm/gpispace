@@ -1,5 +1,4 @@
 #include <drts/Forest.hpp>
-#include <drts/Resource.hpp>
 #include <drts/ResourceGraph.hpp>
 #include <drts/ResourceGraphWrapper.hpp>
 
@@ -14,7 +13,7 @@ namespace gspc
   ResourceGraph::~ResourceGraph() = default;
 
   std::uint64_t ResourceGraph::insert
-    ( std::string const& resource
+    ( Resource const& resource
     , std::unordered_set<std::uint64_t> const& children
     )
   {
@@ -22,7 +21,7 @@ namespace gspc
   }
 
   std::uint64_t  ResourceGraph::insert
-    ( std::string const& resource
+    ( Resource const& resource
     , std::unordered_set<std::uint64_t> const& children
     , std::uint64_t const& proxy
     )

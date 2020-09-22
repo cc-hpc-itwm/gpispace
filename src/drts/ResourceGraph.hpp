@@ -2,6 +2,7 @@
 
 #include <drts/drts.fwd.hpp>
 #include <drts/pimpl.hpp>
+#include <drts/Resource.hpp>
 
 #include <boost/noncopyable.hpp>
 
@@ -16,12 +17,12 @@ namespace gspc
     ResourceGraph();
 
     std::uint64_t insert
-      ( std::string const&
+      ( Resource const&
       , std::unordered_set<std::uint64_t> const&
       );
 
     std::uint64_t insert
-      ( std::string const&
+      ( Resource const&
       , std::unordered_set<std::uint64_t> const&
       , std::uint64_t const& proxy
       );
