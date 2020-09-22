@@ -249,10 +249,10 @@ namespace utils
 
       sdpa::job_id_t job_id (std::string name);
 
-      void add_job ( std::string const& name
-                   , sdpa::job_id_t const&
-                   , fhg::com::p2p::address_t const& owner
-                   );
+      std::string add_job ( we::type::activity_t const& activity
+                          , sdpa::job_id_t const&
+                          , fhg::com::p2p::address_t const& owner
+                          );
 
       void announce_job (std::string const& name);
 
@@ -261,7 +261,7 @@ namespace utils
       {
         sdpa::job_id_t _id;
         fhg::com::p2p::address_t _owner;
-        job_t (sdpa::job_id_t id, fhg::com::p2p::address_t owner);
+        we::type::activity_t _activity;
       };
       std::map<std::string, job_t> _jobs;
       void delete_job (sdpa::job_id_t const& job_id);
