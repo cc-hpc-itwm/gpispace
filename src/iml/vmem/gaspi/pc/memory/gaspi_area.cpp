@@ -29,6 +29,7 @@ namespace gpi
                                  , type::size_t per_node_size
                                  , type::size_t num_com_buffers
                                  , type::size_t com_buffer_size
+                                 , type::segment_id_t segment_id
                                  )
         : area_t (per_node_size)
         , _gaspi_context (gaspi_context)
@@ -64,7 +65,7 @@ namespace gpi
               this->alloc ( m_com_buffer_size
                           , hdl_name
                           , is_global::no
-                          , 0
+                          , segment_id
                           , com_hdl
                           );
             gpi::pc::type::handle::descriptor_t desc =
@@ -398,6 +399,7 @@ namespace gpi
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , fhg::iml::vmem::gaspi_context& gaspi_context
+        , type::segment_id_t segment_id
         )
       {
         type::size_t comsize = description._communication_buffer_size;
@@ -416,6 +418,7 @@ namespace gpi
                                                , per_node_size
                                                , numbuf
                                                , comsize
+                                               , segment_id
                                                );
         return area_ptr_t (area);
       }

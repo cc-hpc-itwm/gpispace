@@ -26,6 +26,7 @@ namespace gpi
                                , handle_generator_t& handle_generator
                                , fhg::iml::vmem::gaspi_context& gaspi_context
                                , bool is_creator
+                               , type::segment_id_t segment_id
                                )
         {
           return fhg::util::visit<area_ptr_t>
@@ -37,6 +38,7 @@ namespace gpi
                                             , topology
                                             , handle_generator
                                             , gaspi_context
+                                            , segment_id
                                             );
               }
             , [&] (iml::beegfs_segment_description const& desc)
@@ -393,7 +395,7 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false));
+        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false, seg_id));
         add_area (seg_id, std::move (area));
       }
 
@@ -449,7 +451,7 @@ namespace gpi
 
         if (require_earlier_master_initialization (description))
         {
-          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true);
+          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true, id);
           add_area (id, std::move (area));
 
           topology.add_memory (id, description, total_size);
@@ -467,6 +469,7 @@ namespace gpi
                                                   , _handle_generator
                                                   , _gaspi_context
                                                   , true
+                                                  , id
                                                   )
                                     );
                     add_area (id, std::move (area));

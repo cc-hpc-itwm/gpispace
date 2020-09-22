@@ -33,6 +33,7 @@ namespace gpi
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , fhg::iml::vmem::gaspi_context&
+                                 , type::segment_id_t segment_id
                                  );
 
       protected:
@@ -43,6 +44,7 @@ namespace gpi
                      , type::size_t memory_size
                      , type::size_t num_com_buffers
                      , type::size_t com_buffer_size
+                     , type::segment_id_t segment_id
                      );
 
         virtual global::itopology_t& global_topology() override;
