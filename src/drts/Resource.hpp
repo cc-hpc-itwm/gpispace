@@ -38,7 +38,6 @@ namespace gspc
       ar & port;
     }
 
-    friend std::ostream& operator<< (std::ostream&, Resource const&);
     friend bool operator== (Resource const&, Resource const&);
   };
 }
