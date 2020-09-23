@@ -8,11 +8,6 @@
     - .env_centos7_devtoolset8
     - .job_docker_setup
 
-"centos5.7: build":
-  extends:
-    - .env_centos57_gcc494
-    - .job_build
-
 "centos6: build":
   extends:
     - .env_centos6_devtoolset8
@@ -24,11 +19,6 @@
     - .env_centos7_devtoolset8
     - .use_gitlab_backed_ccache
     - .job_build
-
-"centos5.7: tests":
-  extends:
-    - .env_centos57_gcc494
-    - .job_test
 
 "centos6: tests":
   extends:
@@ -56,11 +46,6 @@
     - .env_centos7_devtoolset8
     - .use_gitlab_backed_ccache
     - .job_test_vmem
-
-"centos5.7: performance tests":
-  extends:
-    - .env_centos57_gcc494
-    - .job_test_performance
 
 "centos6: performance tests":
   extends:
@@ -113,25 +98,6 @@
 #         "Hard": 65536
 #       }
 #     }
-
-.env_centos57_gcc494:
-  variables:
-    environment_key: "centos57-gcc494"
-    GIT_SUBMODULE_STRATEGY: none
-  tags:
-    - centos-5.7
-  before_script:
-    - set -euo pipefail
-    - source "${CI_PROJECT_DIR}/.ci/env/${HOSTNAME}"
-    # curl is too old and cloning fails via http, so enforce ssh
-    - sed -i'' -e 's,url = ../../,url = git@gitlab.hpc.devnet.itwm.fhg.de:,'
-           .gitmodules
-    - git submodule update --init --recursive
-    - export GSPC_NODEFILE_FOR_TESTS="${CI_PROJECT_DIR}/nodefile_for_tests"
-    - hostname > "${GSPC_NODEFILE_FOR_TESTS}"
-    # todo: move into add_test macro by wrapping tests with a script
-    # that kills even within a run
-    - trap "killall -qs SIGKILL gpi-space gspc-rifd agent drts-kernel gspc-logging-demultiplexer.exe || true" EXIT
 
 .env_centos6_devtoolset8:
   variables:
