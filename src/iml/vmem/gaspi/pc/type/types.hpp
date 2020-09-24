@@ -8,6 +8,12 @@ namespace gpi
 {
   namespace pc
   {
+    enum class is_global
+    {
+      no,
+      yes,
+    };
+
     namespace type
     {
       typedef uint64_t size_t;
@@ -25,7 +31,7 @@ namespace gpi
 
       typedef uint32_t error_t;
       typedef uint16_t mode_t;
-      typedef uint16_t flags_t;
+      using flags_t = is_global;
       typedef std::string path_t;
       typedef std::string name_t;
 
@@ -44,35 +50,6 @@ namespace gpi
           , size (size_)
         {}
       };
-
-#define IML_GPI_PC_INVAL (::gpi::pc::type::id_t)(-1)
-    }
-  }
-
-  namespace flag
-  {
-    inline
-    bool is_set (const pc::type::flags_t f, const pc::type::flags_t mask)
-    {
-      return (f & mask);
-    }
-
-    inline
-    void set (pc::type::flags_t & f, const pc::type::flags_t mask)
-    {
-      f |= mask;
-    }
-
-    inline
-    void clear (pc::type::flags_t & f, const pc::type::flags_t mask)
-    {
-      f &= ~mask;
-    }
-
-    inline
-    void unset (pc::type::flags_t & f, const pc::type::flags_t mask)
-    {
-      f &= ~mask;
     }
   }
 }

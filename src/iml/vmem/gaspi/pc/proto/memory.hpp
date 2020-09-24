@@ -32,7 +32,6 @@ namespace gpi
           gpi::pc::type::segment_id_t segment;
           gpi::pc::type::size_t size;
           gpi::pc::type::name_t name;
-          gpi::pc::type::flags_t flags;
 
         private:
           friend class boost::serialization::access;
@@ -42,7 +41,6 @@ namespace gpi
             ar & BOOST_SERIALIZATION_NVP( segment );
             ar & BOOST_SERIALIZATION_NVP( size );
             ar & BOOST_SERIALIZATION_NVP( name );
-            ar & BOOST_SERIALIZATION_NVP( flags );
           }
         };
 

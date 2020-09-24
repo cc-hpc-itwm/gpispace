@@ -1,7 +1,6 @@
 #include <iml/vmem/gaspi/pc/client/api.hpp>
 
 #include <iml/vmem/gaspi/pc/proto/message.hpp>
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 
 #include <iml/util/assert.hpp>
 #include <util-generic/print_exception.hpp>
@@ -145,14 +144,12 @@ namespace gpi
       api_t::alloc ( const type::segment_id_t seg
                    , const type::size_t sz
                    , const std::string & name
-                   , const type::flags_t flags
                    )
       {
         proto::memory::alloc_t alloc_msg;
         alloc_msg.segment = seg;
         alloc_msg.size = sz;
         alloc_msg.name = name;
-        alloc_msg.flags = flags;
 
         proto::message_t reply (communicate (proto::memory::message_t(alloc_msg)));
 
@@ -187,11 +184,16 @@ namespace gpi
         }
       }
 
-      type::segment_id_t api_t::create_segment (std::string const& info)
+      type::segment_id_t api_t::create_segment
+        ( iml::segment_description const& description
+        , unsigned long total_size
+        )
       {
         proto::message_t const reply
           ( communicate ( proto::segment::message_t
-                            (proto::segment::add_memory_t (info))
+                            ( proto::segment::add_memory_t
+                                {description, total_size}
+                            )
                         )
           );
 
@@ -353,12 +355,10 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::segment_id_t
-      api_t::register_segment( std::string const & name
-                             , const gpi::pc::type::size_t sz
-                             )
+      api_t::shm_allocation api_t::create_shm_segment_and_allocate
+        (std::string const& name, gpi::pc::type::size_t const size)
       {
-        segment_ptr seg (new gpi::pc::segment::segment_t(name, sz));
+        segment_ptr seg (new gpi::pc::segment::segment_t(name, size));
 
         try
         {
@@ -379,17 +379,18 @@ namespace gpi
         seg->create ();
 
         // communication part
+        api_t::shm_allocation result;
         {
           proto::segment::register_t rqst;
           rqst.name = name;
-          rqst.size = sz;
+          rqst.size = size;
 
           proto::message_t rply (communicate (proto::segment::message_t (rqst)));
           try
           {
             proto::segment::message_t seg_msg (boost::get<proto::segment::message_t>(rply));
             proto::segment::register_reply_t reg (boost::get<proto::segment::register_reply_t> (seg_msg));
-            seg->assign_id (reg.id);
+            result = {reg.segment, reg.allocation};
           }
           catch (boost::bad_get const &)
           {
@@ -413,29 +414,27 @@ namespace gpi
         //      how and when is it safe to remove the segment?
         //      client code might be using the data in some way
 
-        if (m_segments.find (seg->id()) != m_segments.end())
+        if (m_segments.find (result.first) != m_segments.end())
         {
           throw std::logic_error
             ( "Segment attached with id "
-            + std::to_string (seg->id())
+            + std::to_string (result.first)
             + " already exists"
             );
         }
 
-        fhg_assert (m_segments.find (seg->id()) == m_segments.end());
-
-        m_segments [seg->id()] = seg;
+        m_segments [result.first] = seg;
 
         seg->unlink();
 
-        return seg->id();
+        return result;
       }
 
-      void
-      api_t::unregister_segment (const gpi::pc::type::segment_id_t id)
+      void api_t::free_and_delete_shm_segment (shm_allocation const ids)
       {
         proto::segment::unregister_t rqst;
-        rqst.id = id;
+        rqst.segment = ids.first;
+        rqst.allocation = ids.second;
 
         try
         {
@@ -451,48 +450,23 @@ namespace gpi
         catch (...)
         {
           throw std::runtime_error
-            ( "could not unregister segment " + std::to_string (id)
+            ( "could not unregister segment " + std::to_string (ids.first)
             + ": " + fhg::util::current_exception_printer().string()
             );
         }
 
         // remove local
         lock_type lock (m_mutex);
-        m_segments.erase (id);
+        m_segments.erase (ids.first);
       }
-
-      decltype (remote_segment::gaspi) remote_segment::gaspi = {};
-      decltype (remote_segment::filesystem) remote_segment::filesystem = {};
 
       remote_segment::remote_segment
           ( api_t& api
-          , decltype (gaspi)
-          , type::size_t size
-          , type::size_t communication_buffer_size
-          , type::size_t num_communication_buffers
+          , iml::segment_description const& description
+          , unsigned long total_size
           )
-        : remote_segment
-            ( api
-            , "gaspi://?total_size=" + std::to_string (size)
-            + "&buffer_size=" + std::to_string (communication_buffer_size)
-            + "&buffers=" + std::to_string (num_communication_buffers)
-            )
-      {}
-      remote_segment::remote_segment ( api_t& api
-                                     , decltype (filesystem)
-                                     , type::size_t size
-                                     , boost::filesystem::path location
-                                     )
-        : remote_segment
-            ( api
-            , "beegfs://" + location.string()
-            + "?total_size=" + std::to_string (size)
-            )
-      {}
-
-      remote_segment::remote_segment (api_t& api, std::string const& info)
         : _api (api)
-        , _segment_id (_api.create_segment (info))
+        , _segment_id (_api.create_segment (description, total_size))
       {}
 
       remote_segment::~remote_segment()

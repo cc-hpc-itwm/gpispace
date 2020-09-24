@@ -20,6 +20,17 @@ extended_add_library (NAME fhg-revision
   SOURCES "${CMAKE_CURRENT_BINARY_DIR}/revision.cpp"
 )
 
+extended_add_library (NAME Shared
+  NAMESPACE IML
+  SOURCES "segment_description.cpp"
+  LIBRARIES Util::Generic
+)
+
+install (FILES "segment_description.hpp"
+               "segment_description.ipp"
+  DESTINATION "include/iml"
+)
+
 add_subdirectory (util)
 add_subdirectory (vmem)
 add_subdirectory (rif)

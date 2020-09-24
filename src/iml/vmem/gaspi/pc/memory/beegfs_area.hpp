@@ -2,6 +2,7 @@
 
 #include <boost/filesystem.hpp>
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
@@ -24,16 +25,16 @@ namespace gpi
         static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
-        static area_ptr_t create ( std::string const &url
+        static area_ptr_t create ( iml::beegfs_segment_description const&
+                                 , unsigned long total_size
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
-                                 , type::id_t owner
+                                 , bool is_creator
                                  );
 
-        beegfs_area_t ( const gpi::pc::type::process_id_t creator
+        beegfs_area_t ( bool is_creator
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
-                      , const gpi::pc::type::flags_t flags
                       , gpi::pc::global::itopology_t & topology
                       , handle_generator_t&
                       );
@@ -41,13 +42,7 @@ namespace gpi
         ~beegfs_area_t ();
 
       protected:
-        int get_type_id () const;
-
-        virtual bool is_allowed_to_attach (const gpi::pc::type::process_id_t) const override;
-        virtual iml_client::vmem::dtmmgr::Arena_t grow_direction (const gpi::pc::type::flags_t) const override;
-
-        virtual void alloc_hook (const gpi::pc::type::handle::descriptor_t &) override;
-        virtual void  free_hook (const gpi::pc::type::handle::descriptor_t &) override;
+        global::itopology_t& global_topology() override;
 
       private:
         virtual bool is_range_local ( const gpi::pc::type::handle::descriptor_t &
@@ -75,7 +70,7 @@ namespace gpi
 
         std::string version_string() const;
 
-        void open();
+        void open (std::size_t total_size);
         void close();
         double get_transfer_costs ( const gpi::pc::type::memory_region_t&
                                   , const gpi::rank_t
@@ -86,6 +81,7 @@ namespace gpi
         {
           lock_file_helper (beegfs_area_t&);
         };
+        bool _is_creator;
         //! \todo boost::optional with move-assignment support
         std::unique_ptr<lock_file_helper> _lock_file;
         path_t m_path;

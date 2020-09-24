@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstddef>
+
 namespace gpi
 {
   namespace pc
@@ -8,7 +10,7 @@ namespace gpi
     {
       namespace segment
       {
-        enum segment_type
+        enum segment_type : std::size_t
           {
             // maximum of 4 bits available --> see handle_t
             SEG_INVAL    = 0

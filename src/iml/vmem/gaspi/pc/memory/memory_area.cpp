@@ -1,5 +1,7 @@
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
+#include <iml/vmem/gaspi/pc/global/itopology.hpp>
+
 #include <stack>
 
 #include <iml/util/assert.hpp>
@@ -8,8 +10,8 @@
 #include <boost/make_shared.hpp>
 #include <boost/lexical_cast.hpp>
 
-#include <iml/vmem/gaspi/pc/type/flags.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
+#include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <util-generic/unreachable.hpp>
 
@@ -24,30 +26,16 @@ namespace gpi
       /***************************************************/
 
       area_t::area_t ( const gpi::pc::type::segment::segment_type type
-                     , const gpi::pc::type::process_id_t creator
-                     , const std::string & name
                      , const gpi::pc::type::size_t size
-                     , const gpi::pc::type::flags_t flags
                      , handle_generator_t& handle_generator
                      )
-        : m_descriptor ( IML_GPI_PC_INVAL
+        : m_descriptor ( type::segment::SEG_INVAL
                        , type
-                       , creator
-                       , name
                        , size
-                       , flags
                        )
-        , m_mmgr (m_descriptor.local_size, 1)
+        , m_mmgr (size, 1)
         , _handle_generator (handle_generator)
       {
-        reinit ();
-      }
-
-      void area_t::reinit ()
-      {
-        m_mmgr = iml_client::vmem::dtmmgr (m_descriptor.local_size, 1);
-
-        update_descriptor_from_mmgr ();
       }
 
       void area_t::set_id (const gpi::pc::type::id_t id)
@@ -60,12 +48,7 @@ namespace gpi
         return m_descriptor.id;
       }
 
-      gpi::pc::type::id_t area_t::get_owner () const
-      {
-        return m_descriptor.creator;
-      }
-
-      void area_t::garbage_collect ()
+      void area_t::pre_dtor ()
       {
         lock_type lock (m_mutex);
 
@@ -82,55 +65,9 @@ namespace gpi
         }
       }
 
-      // remove all handles allocated by pid
-      void area_t::garbage_collect (const gpi::pc::type::process_id_t pid)
+      bool area_t::is_shm_segment() const
       {
-        lock_type lock (m_mutex);
-        std::stack<gpi::pc::type::handle_t> garbage_handles;
-        for ( handle_descriptor_map_t::const_iterator hdl_it(m_handles.begin())
-            ; hdl_it != m_handles.end()
-            ; ++hdl_it
-            )
-        {
-          if (hdl_it->second.creator == pid)
-          {
-            garbage_handles.push (hdl_it->first);
-          }
-        }
-
-        while (!garbage_handles.empty())
-        {
-          gpi::pc::type::handle_t hdl (garbage_handles.top ());
-          garbage_handles.pop ();
-          this->free (hdl);
-        }
-      }
-
-      bool area_t::in_use () const
-      {
-        lock_type lock (m_mutex);
-        return m_descriptor.nref > 0;
-      }
-
-      std::string const & area_t::name () const
-      {
-        return m_descriptor.name;
-      }
-
-      gpi::pc::type::size_t area_t::size () const
-      {
-        return m_descriptor.local_size;
-      }
-
-      int area_t::type () const
-      {
-        return m_descriptor.type;
-      }
-
-      gpi::pc::type::flags_t
-      area_t::flags () const
-      {
-        return descriptor ().flags;
+        return false;
       }
 
       bool area_t::is_local (const gpi::pc::type::memory_region_t region) const
@@ -155,27 +92,6 @@ namespace gpi
         const gpi::pc::type::offset_t end   = start + amount;
 
         return is_range_local (hdl_it->second, start, end);
-      }
-
-      bool area_t::is_eligible_for_deletion () const
-      {
-        lock_type lock (m_mutex);
-        fhg_assert (m_descriptor.nref == m_attached_processes.size());
-        if (m_descriptor.nref)
-        {
-          return false;
-        }
-        else
-        {
-          return true;
-        }
-      }
-
-      bool
-      area_t::is_process_attached (const gpi::pc::type::process_id_t proc_id) const
-      {
-        lock_type lock (m_mutex);
-        return m_attached_processes.find (proc_id) != m_attached_processes.end();
       }
 
       void
@@ -204,7 +120,17 @@ namespace gpi
         }
       }
 
-      int
+      namespace
+      {
+        iml_client::vmem::dtmmgr::Arena_t grow_direction (is_global visibility)
+        {
+          return visibility == is_global::yes
+            ? iml_client::vmem::dtmmgr::ARENA_UP
+            : iml_client::vmem::dtmmgr::ARENA_DOWN;
+        }
+      }
+
+      void
       area_t::remote_alloc ( const gpi::pc::type::handle_t hdl_id
                            , const gpi::pc::type::offset_t offset
                            , const gpi::pc::type::size_t size
@@ -219,10 +145,9 @@ namespace gpi
         hdl.local_size = local_size;
         hdl.name = name;
         hdl.offset = offset;
-        hdl.creator = IML_GPI_PC_INVAL;
-        hdl.flags = gpi::pc::F_GLOBAL;
+        hdl.flags = is_global::yes;
 
-        internal_alloc (hdl);
+        internal_alloc (hdl, false);
 
         if (hdl.offset != offset)
         {
@@ -236,16 +161,12 @@ namespace gpi
         }
         else
         {
-          update_descriptor_from_mmgr ();
           m_handles [hdl.id] = hdl;
         }
-
-        return 0;
       }
 
       gpi::pc::type::handle_t
-      area_t::alloc ( const gpi::pc::type::process_id_t proc_id
-                    , const gpi::pc::type::size_t size
+      area_t::alloc ( const gpi::pc::type::size_t size
                     , const std::string & name
                     , const gpi::pc::type::flags_t flags
                     )
@@ -258,13 +179,11 @@ namespace gpi
         // get distribution scheme
         hdl.local_size = get_local_size (size, flags);
         hdl.name = name;
-        hdl.creator = proc_id;
         hdl.flags = flags;
         hdl.id = _handle_generator.next (m_descriptor.type);
 
-        internal_alloc (hdl);
+        internal_alloc (hdl, true);
 
-        update_descriptor_from_mmgr ();
         m_handles [hdl.id] = hdl;
 
         return hdl.id;
@@ -275,26 +194,17 @@ namespace gpi
         throw std::runtime_error ("defrag is not yet implemented");
       }
 
-      void area_t::update_descriptor_from_mmgr()
+      void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl
+                                  , bool is_creator
+                                  )
       {
-        m_descriptor.avail = m_mmgr.memfree();
-        m_descriptor.allocs =
-            m_mmgr.numhandle (iml_client::vmem::dtmmgr::ARENA_UP)
-          + m_mmgr.numhandle (iml_client::vmem::dtmmgr::ARENA_DOWN);
-        // dtmmgr_numalloc -> total allocs
-        // dtmmgr_numfree -> total frees
-        m_descriptor.ts.touch();
-      }
-
-      void area_t::internal_alloc (gpi::pc::type::handle::descriptor_t &hdl)
-      {
-        if (m_descriptor.avail < hdl.local_size)
+        if (m_mmgr.memfree() < hdl.local_size)
         {
           throw std::runtime_error
             ( "out of memory: total size = " + std::to_string (hdl.size)
             + " local size = " + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
-            + " avail = " + std::to_string (m_descriptor.avail)
+            + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
 
@@ -310,7 +220,7 @@ namespace gpi
             ( "not enough contiguous memory available: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
-            + " avail = " + std::to_string (m_descriptor.avail)
+            + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
         catch (iml_client::vmem::error::alloc::insufficient_memory const&)
@@ -319,7 +229,7 @@ namespace gpi
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
             + " segment = " + std::to_string (m_descriptor.id)
-            + " avail = " + std::to_string (m_descriptor.avail)
+            + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
         catch (iml_client::vmem::error::alloc::duplicate_handle const&)
@@ -332,77 +242,59 @@ namespace gpi
 
         try
         {
-          alloc_hook (hdl);
+          if (hdl.flags == is_global::yes && is_creator)
+          {
+            global_topology().alloc ( descriptor ().id
+                                    , hdl.id
+                                    , hdl.offset
+                                    , hdl.size
+                                    , hdl.local_size
+                                    , hdl.name
+                                    );
+          }
         }
         catch (std::exception const & ex)
         {
           m_mmgr.free (hdl.id, arena);
-          std::throw_with_nested (std::runtime_error ("alloc_hook failed"));
+          std::throw_with_nested (std::runtime_error ("global alloc failed"));
         }
       }
 
       void area_t::free (const gpi::pc::type::handle_t hdl)
       {
-        lock_type lock (m_mutex);
+        lock_type const lock (m_mutex);
 
-        if (m_handles.find(hdl) == m_handles.end())
-        {
-          throw std::runtime_error
-            ( "no such handle: handle = " + std::to_string (hdl)
-            + " segment = " + std::to_string (m_descriptor.id)
-            );
-        }
+        auto const desc (descriptor (hdl));
 
-        const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
-        if (desc.nref)
-        {
-          throw std::runtime_error
-            ( "handle still in use: handle = " + std::to_string (hdl)
-            + " nref = " + std::to_string (desc.nref)
-            );
-        }
+        internal_free (lock, desc);
 
-        iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
-
-        m_mmgr.free (hdl, arena);
-        m_handles.erase (hdl);
-        update_descriptor_from_mmgr ();
         try
         {
-          free_hook (desc);
+          if (desc.flags == is_global::yes)
+          {
+            global_topology().free (desc.id);
+          }
         }
         catch (std::exception const & ex)
         {
-          std::throw_with_nested (std::runtime_error ("free_hook failed"));
+          std::throw_with_nested (std::runtime_error ("global free failed"));
         }
       }
 
       void area_t::remote_free (const gpi::pc::type::handle_t hdl)
       {
-        lock_type lock (m_mutex);
+        lock_type const lock (m_mutex);
 
-        if (m_handles.find(hdl) == m_handles.end())
-        {
-          throw std::runtime_error
-            ( "no such handle: handle = " + std::to_string (hdl)
-            + " segment = " + std::to_string (m_descriptor.id)
-            );
-        }
+        internal_free (lock, descriptor (hdl));
+      }
 
-        const gpi::pc::type::handle::descriptor_t desc (m_handles.at(hdl));
-        if (desc.nref)
-        {
-          throw std::runtime_error
-            ( "handle still in use: handle = " + std::to_string (hdl)
-            + " nref = " + std::to_string (desc.nref)
-            );
-        }
-
+      void area_t::internal_free
+        (lock_type const&, type::handle::descriptor_t const& desc)
+      {
         iml_client::vmem::dtmmgr::Arena_t arena (grow_direction(desc.flags));
 
-        m_mmgr.free (hdl, arena);
-        m_handles.erase (hdl);
-        update_descriptor_from_mmgr ();
+        m_mmgr.free (desc.id, arena);
+        m_handles.erase (desc.id);
       }
 
       gpi::pc::type::segment::descriptor_t const &
@@ -433,45 +325,6 @@ namespace gpi
           throw std::runtime_error
             ("cannot find descriptor for handle " + std::to_string (hdl));
         }
-      }
-
-      bool
-      area_t::is_allowed_to_attach (const gpi::pc::type::process_id_t proc) const
-      {
-        return (!gpi::flag::is_set (descriptor ().flags, gpi::pc::F_EXCLUSIVE))
-            || (proc == descriptor ().creator);
-      }
-
-      gpi::pc::type::size_t
-      area_t::attach_process (const gpi::pc::type::process_id_t id)
-      {
-        lock_type lock (m_mutex);
-        if (is_allowed_to_attach (id))
-        {
-          if (m_attached_processes.insert (id).second)
-          {
-            ++m_descriptor.nref;
-          }
-          return m_descriptor.nref;
-        }
-        else
-        {
-          throw std::runtime_error
-            ("permission denied, exclusive segment and you are not the owner");
-        }
-      }
-
-      gpi::pc::type::size_t
-      area_t::detach_process (const gpi::pc::type::process_id_t id)
-      {
-        lock_type lock (m_mutex);
-        process_ids_t::iterator p (m_attached_processes.find(id));
-        if (p != m_attached_processes.end())
-        {
-          --m_descriptor.nref;
-          m_attached_processes.erase (p);
-        }
-        return m_descriptor.nref;
       }
 
       gpi::pc::type::offset_t

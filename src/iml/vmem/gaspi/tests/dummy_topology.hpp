@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
 
 namespace gpi
@@ -22,7 +23,8 @@ namespace gpi
       {}
 
       virtual void add_memory ( const gpi::pc::type::segment_id_t
-                     , const std::string &
+                              , iml::segment_description const&
+                              , unsigned long
                      ) override
       {}
 

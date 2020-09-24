@@ -1,8 +1,8 @@
 #pragma once
 
-#include <boost/shared_ptr.hpp>
 #include <boost/noncopyable.hpp>
 
+#include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 
@@ -28,10 +28,12 @@ namespace gpi
     }
     namespace memory
     {
+      class shm_area_t;
+
       class manager_t : boost::noncopyable
       {
       public:
-        typedef boost::shared_ptr<area_t> area_ptr;
+        using area_ptr = area_ptr_t;
 
         manager_t (fhg::iml::vmem::gaspi_context&);
         ~manager_t ();
@@ -40,22 +42,18 @@ namespace gpi
 
         handle_generator_t& handle_generator();
 
-        gpi::pc::type::segment_id_t
-        register_memory( const gpi::pc::type::process_id_t creator
-                       , area_ptr const &area
-                       );
+        std::pair<type::segment_id_t, type::handle_t>
+          register_shm_segment_and_allocate
+            ( gpi::pc::type::process_id_t creator
+            , std::shared_ptr<shm_area_t> area
+            , gpi::pc::type::size_t size
+            , std::string const& name
+            );
         void unregister_memory ( const gpi::pc::type::process_id_t pid
                                , const gpi::pc::type::segment_id_t
                                );
 
-        void attach_process ( const gpi::pc::type::process_id_t
-                            , const gpi::pc::type::segment_id_t
-                            );
-        void detach_process ( const gpi::pc::type::process_id_t
-                            , const gpi::pc::type::segment_id_t
-                            );
-
-        int
+        void
         remote_alloc ( const gpi::pc::type::segment_id_t
                      , const gpi::pc::type::handle_t
                      , const gpi::pc::type::offset_t
@@ -65,8 +63,7 @@ namespace gpi
                      );
 
         gpi::pc::type::handle_t
-        alloc ( const gpi::pc::type::process_id_t proc_id
-              , const gpi::pc::type::segment_id_t seg_id
+        alloc ( const gpi::pc::type::segment_id_t seg_id
               , const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
@@ -77,7 +74,7 @@ namespace gpi
         gpi::pc::type::handle::descriptor_t info (const gpi::pc::type::handle_t hdl) const;
         std::map<std::string, double> get_transfer_costs (const std::list<gpi::pc::type::memory_region_t>&) const;
 
-        void garbage_collect (const gpi::pc::type::process_id_t);
+        void remove_shm_segments_of (gpi::pc::type::process_id_t);
 
         type::memcpy_id_t memcpy ( type::memory_location_t const & dst
                                  , type::memory_location_t const & src
@@ -85,23 +82,26 @@ namespace gpi
                                  );
         void wait (type::memcpy_id_t const&);
 
-        int
+        void
         remote_add_memory ( const gpi::pc::type::segment_id_t seg_id
-                          , std::string const & url
+                          , iml::segment_description const& description
+                          , unsigned long total_size
                           , global::topology_t& topology
                           );
 
         gpi::pc::type::segment_id_t
         add_memory ( const gpi::pc::type::process_id_t proc_id
-                   , const std::string & url
+                   , iml::segment_description const& description
+                   , unsigned long total_size
                    , global::topology_t& topology
                    );
 
-        int
+        void
         remote_del_memory ( const gpi::pc::type::segment_id_t seg_id
                           , global::topology_t& topology
                           );
 
+        // Not called with shm areas, those use unregister_memory().
         void
         del_memory ( const gpi::pc::type::process_id_t proc_id
                    , const gpi::pc::type::segment_id_t seg_id
@@ -127,10 +127,11 @@ namespace gpi
                         , const gpi::pc::type::segment_id_t
                         );
         void del_handle (const gpi::pc::type::handle_t);
-        void unregister_memory (const gpi::pc::type::segment_id_t);
 
         mutable mutex_type m_mutex;
         area_map_t m_areas;
+        std::map<type::process_id_t, std::set<type::segment_id_t>>
+          _shm_segments_by_owner;
         handle_to_segment_t m_handle_to_segment;
         fhg::iml::vmem::gaspi_context& _gaspi_context;
 

@@ -3,7 +3,7 @@
 
 #include <iml/client/private/iml_impl.hpp>
 #include <iml/client/private/pimpl.hpp>
-#include <iml/client/scoped_allocation.hpp>
+#include <iml/client/scoped_shm_allocation.hpp>
 #include <iml/client/private/virtual_memory_impl.hpp>
 
 #include <boost/format.hpp>
@@ -30,7 +30,7 @@ namespace iml_client
                                    )
     : vmem_allocation (drts, segment_desc, size, description)
   {
-    scoped_allocation const buffer
+    iml::client::scoped_shm_allocation const buffer
       (drts->_->_virtual_memory_api, "vmem_allocation_buffer", size);
 
     char* const content
