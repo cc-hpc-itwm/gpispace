@@ -34,7 +34,7 @@ RUN cmake_version=3.16.9                                                      \
         --depth 1                                                             \
         --shallow-submodules                                                  \
         --recursive                                                           \
-        --branch tags/v${cmake_version}                                       \
+        --branch v${cmake_version}                                            \
         https://github.com/Kitware/CMake.git                                  \
         cmake                                                                 \
  && cd cmake                                                                  \
