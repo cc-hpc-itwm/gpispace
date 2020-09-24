@@ -3,7 +3,6 @@
 #include <boost/filesystem.hpp>
 
 #include <iml/segment_description.hpp>
-#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
@@ -22,13 +21,11 @@ namespace gpi
       public:
         typedef boost::filesystem::path path_t;
 
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_BEEGFS;
         static const int BEEGFS_AREA_VERSION = 0x0001;
 
         static area_ptr_t create ( iml::beegfs_segment_description const&
                                  , unsigned long total_size
                                  , gpi::pc::global::itopology_t & topology
-                                 , handle_generator_t&
                                  , bool is_creator
                                  );
 
@@ -36,7 +33,6 @@ namespace gpi
                       , const path_t & path
                       , const gpi::pc::type::size_t size        // total
                       , gpi::pc::global::itopology_t & topology
-                      , handle_generator_t&
                       );
 
         ~beegfs_area_t ();

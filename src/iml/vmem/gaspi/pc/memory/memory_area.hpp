@@ -8,10 +8,7 @@
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 #include <iml/vmem/gaspi/pc/type/handle.hpp>
 #include <iml/vmem/gaspi/pc/type/memory_location.hpp>
-#include <iml/vmem/gaspi/pc/type/segment_descriptor.hpp>
 #include <iml/vmem/gaspi/pc/type/handle_descriptor.hpp>
-
-#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
 #include <future>
 #include <memory>
@@ -45,15 +42,12 @@ namespace gpi
            though
         */
 
-        void                set_id (const gpi::pc::type::id_t id);
-        gpi::pc::type::id_t get_id () const;
-
-        gpi::pc::type::id_t get_owner () const;
-
-        gpi::pc::type::handle_t
+        void
         alloc ( const gpi::pc::type::size_t size
               , const std::string & name
               , const gpi::pc::type::flags_t flags
+              , type::segment_id_t segment_id
+              , type::handle_t allocation
               );
 
         void
@@ -62,6 +56,7 @@ namespace gpi
                      , const gpi::pc::type::size_t size
                      , const gpi::pc::type::size_t local_size
                      , const std::string & name
+                     , type::segment_id_t segment_id
                      );
 
         void
@@ -69,13 +64,6 @@ namespace gpi
 
         void
         free (const gpi::pc::type::handle_t hdl);
-
-        void defrag (const gpi::pc::type::size_t free_at_least = 0);
-
-        gpi::pc::type::segment::descriptor_t const &
-        descriptor () const;
-
-        gpi::pc::type::segment::descriptor_t & descriptor ();
 
         gpi::pc::type::handle::descriptor_t const &
         descriptor (const gpi::pc::type::handle_t) const;
@@ -121,10 +109,7 @@ namespace gpi
                                           , const gpi::rank_t
                                           ) const = 0;
       protected:
-        area_t ( const gpi::pc::type::segment::segment_type type
-               , const gpi::pc::type::size_t size
-               , handle_generator_t&
-               );
+        area_t (gpi::pc::type::size_t size);
 
         virtual bool is_shm_segment() const;
 
@@ -179,17 +164,18 @@ namespace gpi
 
         void internal_alloc ( gpi::pc::type::handle::descriptor_t&
                             , bool is_creator
+                            , type::segment_id_t segment_id
                             );
         void internal_free
           (lock_type const&, type::handle::descriptor_t const&);
 
       private:
         mutable mutex_type m_mutex;
-        gpi::pc::type::segment::descriptor_t m_descriptor;
+      protected:
+        type::size_t const _local_size;
+      private:
         iml_client::vmem::dtmmgr m_mmgr;
         handle_descriptor_map_t m_handles;
-
-        handle_generator_t& _handle_generator;
       };
 
       typedef std::shared_ptr<area_t> area_ptr_t;

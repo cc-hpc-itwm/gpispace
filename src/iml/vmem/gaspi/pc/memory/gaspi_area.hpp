@@ -3,9 +3,9 @@
 #include <iml/segment_description.hpp>
 #include <iml/vmem/gaspi/gpi/gaspi.hpp>
 
-#include <iml/vmem/gaspi/pc/type/segment_type.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 #include <iml/vmem/gaspi/pc/memory/handle_buffer.hpp>
+#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 
 #include <iml/vmem/gaspi/pc/global/itopology.hpp>
 
@@ -26,8 +26,6 @@ namespace gpi
       class gaspi_area_t : public area_t
       {
       public:
-        static const type::segment::segment_type area_type = gpi::pc::type::segment::SEG_GASPI;
-
         typedef fhg::util::threadsafe_queue<handle_buffer_t> handle_pool_t;
 
         static area_ptr_t create ( iml::gaspi_segment_description const&
@@ -35,6 +33,7 @@ namespace gpi
                                  , gpi::pc::global::itopology_t & topology
                                  , handle_generator_t&
                                  , fhg::iml::vmem::gaspi_context&
+                                 , type::segment_id_t segment_id
                                  );
 
       protected:
@@ -45,6 +44,7 @@ namespace gpi
                      , type::size_t memory_size
                      , type::size_t num_com_buffers
                      , type::size_t com_buffer_size
+                     , type::segment_id_t segment_id
                      );
 
         virtual global::itopology_t& global_topology() override;

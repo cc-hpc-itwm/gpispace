@@ -5,6 +5,7 @@
 #include <iml/vmem/gaspi/pc/type/types.hpp>
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/test/unit_test.hpp>
 #include <boost/lexical_cast.hpp>
@@ -13,8 +14,6 @@
 
 BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
 {
-  gpi::pc::memory::handle_generator_t handle_generator (42);
-
   auto const segm_size (2048u);
   auto const alloc_size (64u);
 
@@ -24,25 +23,20 @@ BOOST_AUTO_TEST_CASE ( memory_area_alloc_free )
   segm.create ();
   gpi::pc::memory::shm_area_t area ( "memory_area_alloc_free_test"
                                    , segm_size
-                                   , handle_generator
                                    );
-  area.set_id (2);
 
-  BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
-
-  gpi::pc::type::handle_t hdl (area.alloc(alloc_size, "scratch", gpi::pc::is_global::no));
+  gpi::pc::type::handle_t hdl
+    (fhg::util::testing::random<gpi::pc::type::handle_id_t>{}());
+  area.alloc(alloc_size, "scratch", gpi::pc::is_global::no, 2, hdl);
   BOOST_CHECK_NE (hdl, gpi::pc::type::handle_t());
-  BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
 
   std::cout << "    handle = " << hdl << std::endl;
   gpi::pc::type::handle::descriptor_t desc (area.descriptor (hdl));
-  BOOST_CHECK_EQUAL (desc.id.handle, hdl.handle);
-  BOOST_CHECK_EQUAL (desc.segment, area.descriptor().id);
+  BOOST_CHECK_EQUAL (desc.id, hdl);
   BOOST_CHECK_EQUAL (desc.offset, segm_size - alloc_size);
   BOOST_CHECK_EQUAL (desc.size, alloc_size);
   BOOST_CHECK_EQUAL (desc.name, "scratch");
   BOOST_CHECK (desc.flags == gpi::pc::is_global::no);
 
   area.free (hdl);
-  BOOST_CHECK_EQUAL (segm_size, area.descriptor().local_size);
 }

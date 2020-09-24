@@ -5,7 +5,6 @@
 
 #include <iml/vmem/gaspi/pc/global/topology.hpp>
 #include <iml/vmem/gaspi/pc/memory/gaspi_area.hpp>
-#include <iml/vmem/gaspi/pc/memory/handle_generator.hpp>
 #include <iml/vmem/gaspi/pc/memory/manager.hpp>
 #include <iml/vmem/gaspi/pc/memory/memory_area.hpp>
 #include <iml/vmem/gaspi/pc/memory/beegfs_area.hpp>
@@ -27,6 +26,7 @@ namespace gpi
                                , handle_generator_t& handle_generator
                                , fhg::iml::vmem::gaspi_context& gaspi_context
                                , bool is_creator
+                               , type::segment_id_t segment_id
                                )
         {
           return fhg::util::visit<area_ptr_t>
@@ -38,12 +38,13 @@ namespace gpi
                                             , topology
                                             , handle_generator
                                             , gaspi_context
+                                            , segment_id
                                             );
               }
             , [&] (iml::beegfs_segment_description const& desc)
               {
                 return beegfs_area_t::create
-                  (desc, total_size, topology, handle_generator, is_creator);
+                  (desc, total_size, topology, is_creator);
               }
             );
         }
@@ -55,9 +56,6 @@ namespace gpi
         , _interrupt_task_queue (_tasks)
         , _handle_generator (gaspi_context.rank())
       {
-        _handle_generator.initialize_counter
-          (gpi::pc::type::segment::SEG_INVAL);
-
         const std::size_t number_of_queues (gaspi_context.number_of_queues());
         for (std::size_t i (0); i < number_of_queues; ++i)
         {
@@ -113,11 +111,6 @@ namespace gpi
         }
       }
 
-      handle_generator_t& manager_t::handle_generator()
-      {
-        return _handle_generator;
-      }
-
       std::pair<type::segment_id_t, type::handle_t>
         manager_t::register_shm_segment_and_allocate
           ( gpi::pc::type::process_id_t creator
@@ -126,13 +119,12 @@ namespace gpi
           , std::string const& name
           )
       {
-        auto const segment
-          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
-        area->set_id (segment);
-        add_area (area);
+        auto const segment (_handle_generator.next());
+        add_area (segment, area);
         _shm_segments_by_owner[creator].emplace (segment);
 
-        auto const allocation (area->alloc (size, name, is_global::no));
+        auto const allocation (_handle_generator.next());
+        area->alloc (size, name, is_global::no, segment, allocation);
         add_handle (allocation, segment);
 
         return {segment, allocation};
@@ -189,18 +181,16 @@ namespace gpi
         _shm_segments_by_owner.erase (segments_it);
       }
 
-      void
-      manager_t::add_area (manager_t::area_ptr const &area)
+      void manager_t::add_area
+        (type::segment_id_t seg_id, manager_t::area_ptr area)
       {
-        lock_type lock (m_mutex);
+        lock_type const lock (m_mutex);
 
-        if (m_areas.find (area->get_id ()) != m_areas.end())
+        if (!m_areas.emplace (seg_id, std::move (area)).second)
         {
           throw std::runtime_error
             ("cannot add another gpi segment: id already in use!");
         }
-
-        m_areas [area->get_id ()] = area;
       }
 
       manager_t::area_ptr
@@ -281,7 +271,7 @@ namespace gpi
                               )
       {
         area_ptr area (get_area (seg_id));
-        area->remote_alloc (hdl, offset, size, local_size, name);
+        area->remote_alloc (hdl, offset, size, local_size, name, seg_id);
         add_handle (hdl, seg_id);
       }
 
@@ -294,11 +284,12 @@ namespace gpi
       {
         area_ptr area (get_area (seg_id));
 
-        gpi::pc::type::handle_t hdl (area->alloc (size, name, flags));
+        auto const allocation (_handle_generator.next());
+        area->alloc (size, name, flags, seg_id, allocation);
 
-        add_handle (hdl, seg_id);
+        add_handle (allocation, seg_id);
 
-        return hdl;
+        return allocation;
       }
 
       void
@@ -404,9 +395,8 @@ namespace gpi
                                    , global::topology_t& topology
                                    )
       {
-        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false));
-        area->set_id (seg_id);
-        add_area (area);
+        area_ptr_t area (create_area (description, total_size, topology, _handle_generator, _gaspi_context, false, seg_id));
+        add_area (seg_id, std::move (area));
       }
 
       namespace
@@ -441,8 +431,7 @@ namespace gpi
                             )
       {
 
-        type::segment_id_t const id
-          (_handle_generator.next (gpi::pc::type::segment::SEG_INVAL));
+        type::segment_id_t const id (_handle_generator.next());
         bool successfully_added (false);
         FHG_UTIL_FINALLY ( [&]
                            {
@@ -462,10 +451,8 @@ namespace gpi
 
         if (require_earlier_master_initialization (description))
         {
-          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true);
-          area->set_id (id);
-
-          add_area (area);
+          area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true, id);
+          add_area (id, std::move (area));
 
           topology.add_memory (id, description, total_size);
         }
@@ -482,10 +469,10 @@ namespace gpi
                                                   , _handle_generator
                                                   , _gaspi_context
                                                   , true
+                                                  , id
                                                   )
                                     );
-                    area->set_id (id);
-                    add_area (area);
+                    add_area (id, std::move (area));
                   }
                 )
             );

@@ -288,7 +288,7 @@ namespace gpi
             descriptor = info(h);
 
           lock_type lock(m_mutex);
-          segment_map_t::const_iterator seg_it (m_segments.find(descriptor.segment));
+          segment_map_t::const_iterator seg_it (m_segments.find(h));
           if (seg_it != m_segments.end())
           {
             return seg_it->second->ptr<char>() + descriptor.offset;
@@ -414,7 +414,7 @@ namespace gpi
         //      how and when is it safe to remove the segment?
         //      client code might be using the data in some way
 
-        if (m_segments.find (result.first) != m_segments.end())
+        if (m_segments.find (result.second) != m_segments.end())
         {
           throw std::logic_error
             ( "Segment attached with id "
@@ -423,7 +423,7 @@ namespace gpi
             );
         }
 
-        m_segments [result.first] = seg;
+        m_segments [result.second] = seg;
 
         seg->unlink();
 
@@ -457,7 +457,7 @@ namespace gpi
 
         // remove local
         lock_type lock (m_mutex);
-        m_segments.erase (ids.first);
+        m_segments.erase (ids.second);
       }
 
       remote_segment::remote_segment

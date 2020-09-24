@@ -84,7 +84,7 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
     (fhg::util::testing::random_identifier (MAX_DATA_LEN - offset_metadata));
 
   iml::client::scoped_shm_allocation const write_buffer
-    ( global_data.api()
+    ( global_data.api().get()
     , "write_data"
     , MAX_DATA_LEN
     );
@@ -109,7 +109,7 @@ BOOST_AUTO_TEST_CASE (iml_standalone_local_put_get)
     );
 
   iml::client::scoped_shm_allocation const read_buffer
-    ( global_data.api()
+    ( global_data.api().get()
     , "read_data"
     , MAX_DATA_LEN
     );

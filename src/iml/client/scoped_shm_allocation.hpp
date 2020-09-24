@@ -11,7 +11,7 @@ namespace iml
   {
   public:
     scoped_shm_allocation
-      ( std::unique_ptr<gpi::pc::client::api_t> const& virtual_memory
+      ( gpi::pc::client::api_t* virtual_memory
       , std::string const& description
       , unsigned long size
       )
@@ -22,9 +22,23 @@ namespace iml
         , _size (size)
     {}
 
+    scoped_shm_allocation() = delete;
+    scoped_shm_allocation (scoped_shm_allocation const&) = delete;
+    scoped_shm_allocation (scoped_shm_allocation&& other)
+      : _virtual_memory (other._virtual_memory)
+      , _shm_allocation (other._shm_allocation)
+      , _size (other._size)
+    {
+      other._virtual_memory = nullptr;
+    }
+    scoped_shm_allocation& operator= (scoped_shm_allocation const&) = delete;
+    scoped_shm_allocation& operator= (scoped_shm_allocation&&) = delete;
     ~scoped_shm_allocation()
     {
-      _virtual_memory->free_and_delete_shm_segment (_shm_allocation);
+      if (_virtual_memory)
+      {
+        _virtual_memory->free_and_delete_shm_segment (_shm_allocation);
+      }
     }
 
     operator gpi::pc::type::handle_t() const
@@ -38,7 +52,7 @@ namespace iml
     }
 
   private:
-    std::unique_ptr<gpi::pc::client::api_t> const& _virtual_memory;
+    gpi::pc::client::api_t* _virtual_memory;
     gpi::pc::client::api_t::shm_allocation const _shm_allocation;
     unsigned long const _size;
   };

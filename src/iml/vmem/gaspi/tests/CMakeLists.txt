@@ -71,3 +71,10 @@ fhg_add_test (NAME iml-api
   LIBRARIES IML::vmem-pc-client-static
             Util::Generic
 )
+
+fhg_add_test (NAME iml-vmem_api_types_match_real_types
+  SOURCES "api_types_match_real_types.cpp"
+  LIBRARIES GASPI::static
+            Util::Generic
+  USE_BOOST
+)

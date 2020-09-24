@@ -90,7 +90,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/pc/type/handle.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/pc/type/memory_location.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/pc/type/types.hpp"
-  "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/gaspi/types.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/netdev_id.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/iml/vmem/netdev_id.ipp"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/libdetermine_size.so"

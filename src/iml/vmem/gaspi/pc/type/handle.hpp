@@ -16,64 +16,57 @@ namespace gpi
   {
     namespace type
     {
-      template <size_t Bits>
-      void check_for_overflow (const gpi::pc::type::handle_id_t part)
-      {
-        if (part > ((1UL << Bits) - 1))
-        {
-          throw std::runtime_error ("handle would overflow");
-        }
-      }
-
       struct handle_t
       {
+      private:
         static const int total_bits = (sizeof(handle_id_t)*8);
         static const int ident_bits = 12;
-        static const int typec_bits = 4;
-        static const int global_count_bits = (total_bits - ident_bits - typec_bits);
-        static const int local_count_bits = (total_bits - typec_bits);
+        static const int global_count_bits = (total_bits - ident_bits);
         static const int string_length = (2+total_bits/4); // 0x...
+        template <size_t Bits>
+          void check_for_overflow (const type::handle_id_t part)
+        {
+          if (part > ((1UL << Bits) - 1))
+          {
+            throw std::runtime_error ("handle would overflow");
+          }
+        }
 
-        handle_t ()
-          : handle (0)
-        {}
+      public:
+        handle_t (handle_id_t global_id, handle_id_t counter)
+        {
+          check_for_overflow<ident_bits> (global_id);
+          check_for_overflow<global_count_bits> (counter);
 
-        handle_t (handle_id_t h)
-          : handle (h)
+          ident = global_id;
+          cntr = counter;
+        }
+        handle_t (handle_id_t id)
+          : handle (id)
         {}
 
         operator handle_id_t () const { return handle; }
         bool operator== (const handle_id_t o) const {return handle == o;}
         bool operator<  (const handle_id_t o) const {return handle < o; }
 
+        //! For serialization only.
+        handle_t() = default;
+
+        friend std::ostream& operator<< (std::ostream&, handle_t const&);
+        friend std::istream& operator>> (std::istream&, handle_t&);
+        friend std::hash<gpi::pc::type::handle_t>;
+
+      private:
         union
         {
-          struct __attribute__((packed))
+          struct // == sizeof(handle_id_t)
           {
-            union
-            {
-              struct // == sizeof(handle_id_t)
-              {
-                handle_id_t cntr  : global_count_bits;
-                handle_id_t ident : ident_bits;
-                int _pad  : typec_bits;
-              } gpi;
-              struct // == sizeof(handle_id_t)
-              {
-                handle_id_t cntr : local_count_bits;
-                int _pad  : typec_bits;
-              } shm;
-              struct // == sizeof(handle_id_t)
-              {
-                handle_id_t _pad : (total_bits - typec_bits);
-                int type : typec_bits;
-              };
-            };
+            handle_id_t cntr  : global_count_bits;
+            handle_id_t ident : ident_bits;
           };
           handle_id_t handle;
         };
 
-      private:
         friend class boost::serialization::access;
         template<typename Archive>
         void serialize (Archive & ar, const unsigned int /*version*/)
@@ -83,17 +76,7 @@ namespace gpi
       };
 
       inline
-      void validate (const handle_t & hdl)
-      {
-        if (hdl.type == 0)
-        {
-          throw std::invalid_argument
-            ("invalid handle: " + boost::lexical_cast<std::string>(hdl.handle));
-        }
-      }
-
-      inline
-      std::ostream & operator << (std::ostream & os, const handle_t h)
+      std::ostream & operator << (std::ostream & os, const handle_t& h)
       {
         const std::ios_base::fmtflags saved_flags (os.flags());
         const char saved_fill = os.fill (' ');
@@ -120,8 +103,6 @@ namespace gpi
         const std::ios_base::fmtflags saved_flags (is.flags());
         is.flags (std::ios::hex);
         is >> h.handle;
-
-        validate (h);
 
         is.flags (saved_flags);
         return is;

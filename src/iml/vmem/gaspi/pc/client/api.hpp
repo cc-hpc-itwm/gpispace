@@ -26,7 +26,7 @@ namespace gpi
       {
       public:
         typedef boost::shared_ptr<gpi::pc::segment::segment_t> segment_ptr;
-        typedef std::map<gpi::pc::type::segment_id_t, segment_ptr> segment_map_t;
+        typedef std::map<gpi::pc::type::handle_id_t, segment_ptr> segment_map_t;
 
         api_t (std::string const & path);
 

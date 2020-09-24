@@ -112,12 +112,8 @@ namespace gpi
                                    , const beegfs_area_t::path_t & path
                                    , const gpi::pc::type::size_t size        // total
                                    , gpi::pc::global::itopology_t & topology
-                                   , handle_generator_t& handle_generator
                                    )
-        : area_t ( beegfs_area_t::area_type
-                 , size
-                 , handle_generator
-                 )
+        : area_t (size)
         , _is_creator (is_creator)
         , m_path (path)
         , m_version (BEEGFS_AREA_VERSION)
@@ -387,7 +383,6 @@ namespace gpi
         ( iml::beegfs_segment_description const& description
         , unsigned long total_size
         , gpi::pc::global::itopology_t & topology
-        , handle_generator_t& handle_generator
         , bool is_creator
         )
       {
@@ -395,7 +390,6 @@ namespace gpi
                                            , description._path
                                            , total_size
                                            , topology
-                                           , handle_generator
                                            )
                         );
         return area;

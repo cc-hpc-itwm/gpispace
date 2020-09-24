@@ -29,11 +29,9 @@ namespace gpi
                                  , type::size_t per_node_size
                                  , type::size_t num_com_buffers
                                  , type::size_t com_buffer_size
+                                 , type::segment_id_t segment_id
                                  )
-        : area_t ( gaspi_area_t::area_type
-                 , per_node_size
-                 , handle_generator
-                 )
+        : area_t (per_node_size)
         , _gaspi_context (gaspi_context)
         , _gaspi (_gaspi_context, per_node_size, time_left)
         , m_ptr (_gaspi.dma_ptr())
@@ -63,10 +61,12 @@ namespace gpi
             "com-" + boost::lexical_cast<std::string>(i);
           try
           {
-            gpi::pc::type::handle_t com_hdl =
+            gpi::pc::type::handle_t com_hdl (handle_generator.next());
               this->alloc ( m_com_buffer_size
                           , hdl_name
                           , is_global::no
+                          , segment_id
+                          , com_hdl
                           );
             gpi::pc::type::handle::descriptor_t desc =
               descriptor (com_hdl);
@@ -90,7 +90,7 @@ namespace gpi
           throw std::runtime_error
             ( std::string ("not all communication buffers could be allocated:")
             + " com-size := " + boost::lexical_cast<std::string>(m_com_buffer_size)
-            + " mem-size := " + boost::lexical_cast<std::string>(descriptor ().local_size)
+            + " mem-size := " + boost::lexical_cast<std::string>(_local_size)
             );
         }
       }
@@ -99,7 +99,7 @@ namespace gpi
       gaspi_area_t::raw_ptr (gpi::pc::type::offset_t off)
       {
         return
-          (m_ptr && off < descriptor ().local_size)
+          (m_ptr && off < _local_size)
           ? ((char*)m_ptr + off)
           : (char*)nullptr;
       }
@@ -115,7 +115,7 @@ namespace gpi
                                   , const gpi::pc::type::offset_t end
                                   ) const
       {
-        gpi::pc::type::id_t     my_rank = _gaspi_context.rank ();
+        auto my_rank = _gaspi_context.rank ();
 
         if (hdl.flags == is_global::no)
           my_rank = 0;
@@ -399,6 +399,7 @@ namespace gpi
         , gpi::pc::global::itopology_t & topology
         , handle_generator_t& handle_generator
         , fhg::iml::vmem::gaspi_context& gaspi_context
+        , type::segment_id_t segment_id
         )
       {
         type::size_t comsize = description._communication_buffer_size;
@@ -417,6 +418,7 @@ namespace gpi
                                                , per_node_size
                                                , numbuf
                                                , comsize
+                                               , segment_id
                                                );
         return area_ptr_t (area);
       }

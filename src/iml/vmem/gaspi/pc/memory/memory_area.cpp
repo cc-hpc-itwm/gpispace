@@ -25,27 +25,10 @@ namespace gpi
       /*                   area_t                        */
       /***************************************************/
 
-      area_t::area_t ( const gpi::pc::type::segment::segment_type type
-                     , const gpi::pc::type::size_t size
-                     , handle_generator_t& handle_generator
-                     )
-        : m_descriptor ( type::segment::SEG_INVAL
-                       , type
-                       , size
-                       )
+      area_t::area_t (type::size_t size)
+        : _local_size (size)
         , m_mmgr (size, 1)
-        , _handle_generator (handle_generator)
       {
-      }
-
-      void area_t::set_id (const gpi::pc::type::id_t id)
-      {
-        m_descriptor.id = id;
-      }
-
-      gpi::pc::type::id_t area_t::get_id () const
-      {
-        return m_descriptor.id;
       }
 
       void area_t::pre_dtor ()
@@ -108,7 +91,7 @@ namespace gpi
         {
           throw std::invalid_argument
             ( ( boost::format ("out-of-bounds: access to %1%-handle %2%:"
-                              " range [%3%,%4%) is not withing [0,%5%)"
+                              " range [%3%,%4%) is not within [0,%5%)"
                               )
               % hdl_it->second.id
               % hdl_it->second.name
@@ -136,10 +119,10 @@ namespace gpi
                            , const gpi::pc::type::size_t size
                            , const gpi::pc::type::size_t local_size
                            , const std::string & name
+                           , type::segment_id_t segment_id
                            )
       {
         gpi::pc::type::handle::descriptor_t hdl;
-        hdl.segment = m_descriptor.id;
         hdl.id = hdl_id;
         hdl.size = size;
         hdl.local_size = local_size;
@@ -147,7 +130,7 @@ namespace gpi
         hdl.offset = offset;
         hdl.flags = is_global::yes;
 
-        internal_alloc (hdl, false);
+        internal_alloc (hdl, false, segment_id);
 
         if (hdl.offset != offset)
         {
@@ -165,37 +148,32 @@ namespace gpi
         }
       }
 
-      gpi::pc::type::handle_t
+      void
       area_t::alloc ( const gpi::pc::type::size_t size
                     , const std::string & name
                     , const gpi::pc::type::flags_t flags
+                    , type::segment_id_t segment_id
+                    , type::handle_t allocation
                     )
       {
         lock_type lock (m_mutex);
 
         gpi::pc::type::handle::descriptor_t hdl;
-        hdl.segment = m_descriptor.id;
         hdl.size = size;
         // get distribution scheme
         hdl.local_size = get_local_size (size, flags);
         hdl.name = name;
         hdl.flags = flags;
-        hdl.id = _handle_generator.next (m_descriptor.type);
+        hdl.id = allocation;
 
-        internal_alloc (hdl, true);
+        internal_alloc (hdl, true, segment_id);
 
         m_handles [hdl.id] = hdl;
-
-        return hdl.id;
-      }
-
-      void area_t::defrag (const gpi::pc::type::size_t)
-      {
-        throw std::runtime_error ("defrag is not yet implemented");
       }
 
       void area_t::internal_alloc ( gpi::pc::type::handle::descriptor_t& hdl
                                   , bool is_creator
+                                  , type::segment_id_t segment_id
                                   )
       {
         if (m_mmgr.memfree() < hdl.local_size)
@@ -203,7 +181,7 @@ namespace gpi
           throw std::runtime_error
             ( "out of memory: total size = " + std::to_string (hdl.size)
             + " local size = " + std::to_string (hdl.local_size)
-            + " segment = " + std::to_string (m_descriptor.id)
+            + " segment = " + std::to_string (segment_id)
             + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
@@ -219,7 +197,7 @@ namespace gpi
           throw std::runtime_error
             ( "not enough contiguous memory available: requested_size = "
             + std::to_string (hdl.local_size)
-            + " segment = " + std::to_string (m_descriptor.id)
+            + " segment = " + std::to_string (segment_id)
             + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
@@ -228,7 +206,7 @@ namespace gpi
           throw std::runtime_error
             ( "not enough memory: requested_size = "
             + std::to_string (hdl.local_size)
-            + " segment = " + std::to_string (m_descriptor.id)
+            + " segment = " + std::to_string (segment_id)
             + " avail = " + std::to_string (m_mmgr.memfree())
             );
         }
@@ -236,7 +214,7 @@ namespace gpi
         {
           throw std::runtime_error
             ( "duplicate handle: handle = " + std::to_string (hdl.id)
-            + " segment " + std::to_string (m_descriptor.id)
+            + " segment " + std::to_string (segment_id)
             );
         }
 
@@ -244,7 +222,7 @@ namespace gpi
         {
           if (hdl.flags == is_global::yes && is_creator)
           {
-            global_topology().alloc ( descriptor ().id
+            global_topology().alloc ( segment_id
                                     , hdl.id
                                     , hdl.offset
                                     , hdl.size
@@ -295,20 +273,6 @@ namespace gpi
 
         m_mmgr.free (desc.id, arena);
         m_handles.erase (desc.id);
-      }
-
-      gpi::pc::type::segment::descriptor_t const &
-      area_t::descriptor () const
-      {
-        lock_type lock (m_mutex);
-        return m_descriptor;
-      }
-
-      gpi::pc::type::segment::descriptor_t &
-      area_t::descriptor ()
-      {
-        lock_type lock (m_mutex);
-        return m_descriptor;
       }
 
       gpi::pc::type::handle::descriptor_t const &
