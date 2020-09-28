@@ -5,6 +5,10 @@ description: Memory Driven Computing
 logo: /assets/img/logo/250x78-gpi-space.jpg
 company_logo: /assets/img/logo/itwm.svg
 
+editors:
+  - Max Zeyen
+copyright: 2020
+
 show_downloads: true
 download_branch: v20.09
 
