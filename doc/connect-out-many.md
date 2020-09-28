@@ -10,7 +10,7 @@ For example, a module call might expand a node in a tree with varying branching 
 the following module call may require performing operations on the individual child nodes.
 
 In the above scenario, the ``list`` generated on the output port of the Petri Net can be broken down into individual
-tokens and fed into an input place (whose type matches that of the output tokens) explicitly, by using the ``stack``
+tokens and fed to a place (whose type matches that of the output tokens) explicitly, by using the ``stack``
 utility, along the following pattern:
 
 ```
@@ -24,7 +24,7 @@ This naive solution has the following drawbacks:
 * the implementation copies `O(n^2)` many elements where `n` is the length of the result list.
 
 An ideal way to alleviate the drawbacks of the above solution is to introduce an option that facilitates the application
-developer to connect an output port of type ``list`` directly to an individual valued input place. The list-to-tokens
+developer to connect an output port of type ``list`` directly to an individual valued place. The list-to-tokens
 decomposition can happen implicitly, thus, shifting the burden away from the application developer. Towards enabling
 this, we define the new **``connect-out-many``** Petri Net feature in this document.
 
@@ -40,7 +40,7 @@ port-to-place connections defined as ``connect-to-many`` triggers the workflow e
 
 * decompose the value of type ``list`` generated at the output port (via an executed module call or expression) into
   individual elements, and,
-* feed each element of the list to input place (as long as the element type matches that of the input place).
+* feed each element of the list to the connected place (as long as the element type matches that of the place).
 
 Unlike the manual decomposition solution, ``connect-out-many`` enables a sort of **put_many port-to-place token
 injection pattern**, that is performed implicitly by the workflow engine in O(n).
@@ -49,14 +49,14 @@ injection pattern**, that is performed implicitly by the workflow engine in O(n)
 The ``connect-out-many`` Petri Net element can be leveraged as follows:
 
 ```
-<place name="<input-place-name>" type="<input-place-type>" />
+<place name="<place-name>" type="<place-type>" />
 <transition name="<transition-name>">
  <defun>
  ...
  <out name="<output-port-name>" type="list"/>
  </defun>
  ...
-<connect-out-many port="<output-port-name>" place="<input-place-name>"/>
+<connect-out-many port="<output-port-name>" place="<place-name>"/>
 </transition>
 ```
 
@@ -65,7 +65,7 @@ The ``connect-out-many`` Petri Net element can be leveraged as follows:
 
 
 > NOTE (2): During compile time, the output port attached to a ``connect-out-many`` is only checked for type ``list``.
-> Any mismatch between the elements of the ``list`` and the input place is detected during runtime, which causes the
+> Any mismatch between the elements of the ``list`` and the connected place is detected during at runtime, which causes the
 > GPI-Space workflow engine to throw a ``type_mismatch`` exception.
 
 
