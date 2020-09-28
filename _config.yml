@@ -61,7 +61,7 @@ contacts:
   - title: Dr.
     name: Rui Màrio Silva Machado
     avatar: /assets/img/avatar/230X230-itwm-hpc-da-silva-machado-rui-mario-.jpg
-    email: rui.machado@itwm.fraunhofer.de
+    email: rui.machado
     phone: +49 631 31600-4392
     address:
       company: Fraunhofer-Institut für Techno- und Wirtschaftsmathematik ITWM
@@ -72,7 +72,18 @@ contacts:
   - title: Dr.
     name: Mirko Rahn
     avatar: /assets/img/avatar/230X230-itwm-hpc-rahn-mirko.jpg
-    email: mirko.rahn@itwm.fraunhofer.de
+    email: mirko.rahn
+    address:
+      company: Fraunhofer-Institut für Techno- und Wirtschaftsmathematik ITWM
+      street: Fraunhofer-Platz 1
+      zipcode: 67663
+      city: Kaiserslautern
+      country: Germany
+  - title: Dr.
+    name: Franz-Josef Pfreundt
+    avatar: /assets/img/avatar/230X230-itwm-hpc-pfreundt-franz-josef.jpg
+    email: franz-josef.pfreundt
+    phone: +49 631 31600-4459
     address:
       company: Fraunhofer-Institut für Techno- und Wirtschaftsmathematik ITWM
       street: Fraunhofer-Platz 1

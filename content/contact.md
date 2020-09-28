@@ -17,6 +17,20 @@ simply providing suggestions on how we can improve GPI-Space and help
 spread the word are great ways to contribute and make GPI-Space
 better.
 
+## How to Cite
+
+For referencing GPI-Space in publications, please use the following BibTeX entry.
+
+```
+@misc {GSPC,
+  author = {Fraunhofer ITWM, Competence Center High Performance Computing},
+  title = {GPI-Space},
+  year = {2020},
+  month = {September},
+  howpublished = {https://www.gpi-space.de},
+}
+```
+
 ## How to Contribute
 
 For contributions other than modifications of the source code, as for
