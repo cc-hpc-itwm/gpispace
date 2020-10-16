@@ -15,7 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
-project (gspc VERSION 20.04 LANGUAGES CXX)
+project (gspc VERSION 20.09.1 LANGUAGES CXX)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -30,8 +30,8 @@ include (require_compiler_version)
 
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 
-# BEGIN RELEASE v20.09
-set (PROJECT_REVISION 82d06658bf4fa8447d8d61ffa04e955b4cf45219)
+# BEGIN RELEASE v20.09.1
+set (PROJECT_REVISION 6baf5e132471693a9f6153f2d5cf02dc84adc166)
 install (FILES "${CMAKE_SOURCE_DIR}/git.submodules" DESTINATION .)
 # END RELEASE
 
@@ -83,7 +83,7 @@ add_definitions ("-DBOOST_MPL_LIMIT_VECTOR_SIZE=40")
 
 require_compiler_version_ge (COMPILER "GNU" VERSION 4.9.4)
 
-find_boost (1.59 REQUIRED QUIET COMPONENTS
+find_boost (1.61 REQUIRED QUIET COMPONENTS
   chrono
   date_time
   filesystem

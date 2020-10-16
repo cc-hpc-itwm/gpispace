@@ -1,3 +1,21 @@
+# [20.09.1] - 2020-10-16
+
+## Compatibility hotfix
+
+This hotfix introduces minor code changes to enable building and
+running GPI-Space on Ubuntu 20.04. The ReadMe got updated to reflect
+these changes.
+
+## Fixes
+
+- The CMake project version is now the same as the git tag version.
+- The minimum required Boost version in the CMake script is updated
+  to reflect the minimum requirements stated in the ReadMe.
+- The copyright statement is now automatically updated with the
+  current year.
+- Increased the generated SSH key size for testing for compatibility
+  with newer versions of OpenSSL.
+
 # [20.09] - 2020-09-04
 
 ## Ability to override worker description per batch

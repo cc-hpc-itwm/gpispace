@@ -242,10 +242,10 @@ namespace fhg
     }
 
     void connection_t::handle_read_header( const boost::system::error_code & ec
-                                         , std::size_t IF_FHG_ASSERT (bytes_transferred)
+                                         , std::size_t bytes_transferred
                                          )
     {
-      if (! ec)
+      if (! ec && bytes_transferred > 0)
       {
         fhg_assert (bytes_transferred == sizeof(p2p::header_t));
 
