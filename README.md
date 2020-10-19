@@ -73,7 +73,7 @@ GPI-Space. It is strongly suggested to configure Boost as follows:
 ```bash
 ./bootstrap.sh --prefix="${BOOST_ROOT}"
 ./b2                                                              \
-  clags="-fPIC -fno-gnu-unique"                                   \
+  cflags="-fPIC -fno-gnu-unique"                                   \
   cxxflags="-fPIC -fno-gnu-unique"                                \
   link=static                                                     \
   variant=release                                                 \
@@ -83,7 +83,7 @@ GPI-Space. It is strongly suggested to configure Boost as follows:
 #### Notes on building libssh2
 
 libssh2 is not built with the OpenSSL backend on all systems.
-Additionally, some versions available via package manager might not be ompatible with OpenSSH's
+Additionally, some versions available via package manager might not be compatible with OpenSSH's
 default settings.
 Building libssh2 from scratch is however straightforward thanks to
 CMake.
