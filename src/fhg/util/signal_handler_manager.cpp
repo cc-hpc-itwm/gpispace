@@ -108,9 +108,10 @@ namespace fhg
 
     namespace
     {
-      void crit_err_hdlr ( int sig_num, siginfo_t* info, void* context
-                         , fhg::logging::stream_emitter& logger
-                         )
+      [[noreturn]] void crit_err_hdlr
+        ( int sig_num, siginfo_t* info, void* context
+        , fhg::logging::stream_emitter& logger
+        )
       {
         sigcontext* mcontext (static_cast<sigcontext*> (static_cast<void*>
                                (&(static_cast<ucontext_t*> (context)->uc_mcontext))

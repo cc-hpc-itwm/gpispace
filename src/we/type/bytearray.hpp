@@ -49,7 +49,7 @@ namespace we
       template<typename T>
         explicit bytearray
           ( T const& x
-          , typename std::enable_if<not std::is_pointer<T>::value>::type* = 0
+          , typename std::enable_if<not std::is_pointer<T>::value>::type* = nullptr
           )
         : _v ( static_cast<const char*> (static_cast<const void*> (&x))
              , static_cast<const char*> (static_cast<const void*> (&x)) + sizeof (x)

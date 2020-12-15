@@ -14,12 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_test (NAME util_alphanum
-  SOURCES alphanum.cpp
-  USE_BOOST
-  LIBRARIES fhg-util
-)
-
 fhg_add_test (NAME util_num
   SOURCES num.cpp
   USE_BOOST

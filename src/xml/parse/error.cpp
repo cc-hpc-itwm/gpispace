@@ -679,6 +679,13 @@ namespace xml
                     )
       {}
 
+      modules_without_preferences::modules_without_preferences
+          (const util::position_type& position)
+        : generic ( boost::format ("modules without preferences at %1%")
+                  % position
+                  )
+      {}
+
       duplicate_module_for_target::duplicate_module_for_target
         ( const std::string& module
         , const std::string& target

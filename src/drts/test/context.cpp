@@ -104,7 +104,7 @@ namespace
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_runs_function_and_calls_on_exit, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_runs_function_and_calls_on_exit, context_fixture)
 {
   int const r {fhg::util::testing::random<int>()()};
 
@@ -112,7 +112,7 @@ BOOST_FIXTURE_TEST_CASE
 
   channel_from_child_to_parent channel;
 
-  context.execute_and_kill_on_cancel
+  context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
     ( [r, &channel]()
       {
         channel.write (r);
@@ -133,7 +133,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_calls_on_cancel, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_calls_on_cancel, context_fixture)
 {
   bool cancelled {false};
   bool signaled {false};
@@ -147,7 +147,7 @@ BOOST_FIXTURE_TEST_CASE
             (fhg::util::testing::random<int>()() % 500)
           );
 
-        context.execute_and_kill_on_cancel
+        context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
           ( []()
             {
               while (1) {}
@@ -172,11 +172,11 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_calls_on_signal, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_calls_on_signal, context_fixture)
 {
   bool signalled {false};
 
-  context.execute_and_kill_on_cancel
+  context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
     ( []()
       {
         fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGUSR1);
@@ -195,11 +195,11 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_calls_SIGTERM_blocked, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_calls_SIGTERM_blocked, context_fixture)
 {
   bool exited {false};
 
-  context.execute_and_kill_on_cancel
+  context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
     ( [] ()
       {
         fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGTERM);
@@ -218,11 +218,11 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_calls_SIGINT_blocked, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_calls_SIGINT_blocked, context_fixture)
 {
   bool exited {false};
 
-  context.execute_and_kill_on_cancel
+  context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
     ( [] ()
       {
         fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGINT);
@@ -240,14 +240,14 @@ BOOST_FIXTURE_TEST_CASE
   BOOST_REQUIRE (exited);
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, context_fixture)
+BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_with_throw, context_fixture)
 {
   std::runtime_error const exception {fhg::util::testing::random_string()};
 
   fhg::util::testing::require_exception
     ( [this, &exception]()
       {
-        context.execute_and_kill_on_cancel
+        context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
           ( [&exception]()
             {
               throw exception;
@@ -261,13 +261,13 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_with_throw, context_fixture)
     );
 }
 
-BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_fun_exit, context_fixture)
+BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_fun_exit, context_fixture)
 {
   for (int ec (0); ec < 256; ++ec)
   {
     bool exited {false};
 
-    context.execute_and_kill_on_cancel
+    context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
       ( [&ec]()
         {
           exit (ec);
@@ -287,12 +287,12 @@ BOOST_FIXTURE_TEST_CASE (execute_and_kill_on_cancel_fun_exit, context_fixture)
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_simpler_unexpected_signal, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_simpler_unexpected_signal, context_fixture)
 {
   fhg::util::testing::require_exception
     ( [this]()
       {
-        context.execute_and_kill_on_cancel
+        context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
           ( []()
             {
               fhg::util::syscall::kill (fhg::util::syscall::getpid(), SIGUSR1);
@@ -306,14 +306,14 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_simpler_unexpected_exit, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_simpler_unexpected_exit, context_fixture)
 {
   for (int ec (0); ec < 256; ++ec)
   {
     fhg::util::testing::require_exception
       ( [this, ec]()
       {
-        context.execute_and_kill_on_cancel
+        context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
           ( [ec] ()
             {
               exit (ec);
@@ -327,13 +327,13 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  (execute_and_kill_on_cancel_simpler_cancelled, context_fixture)
+  (execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_simpler_cancelled, context_fixture)
 {
   auto future
     ( std::async ( std::launch::async
                  , [&]
                    {
-                     context.execute_and_kill_on_cancel
+                     context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
                        ( []
                          {
                            while (1) {}
@@ -355,7 +355,7 @@ BOOST_FIXTURE_TEST_CASE
 }
 
 BOOST_FIXTURE_TEST_CASE
-  ( execute_and_kill_on_cancel_can_be_called_more_often_than_max_open_files
+  ( execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN_can_be_called_more_often_than_max_open_files
   , context_fixture
   )
 {
@@ -363,7 +363,7 @@ BOOST_FIXTURE_TEST_CASE
 
   for (long i (0); i < 2 * maximum_open_files; ++i)
   {
-    context.execute_and_kill_on_cancel
+    context.execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
       ( [](){}
       , &on_cancel_unexpected
       , &on_signal_unexpected

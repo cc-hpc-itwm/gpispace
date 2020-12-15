@@ -42,8 +42,8 @@ namespace fhg
           layout()->setSpacing (0);
           layout()->setContentsMargins (0, 0, 0, 0);
 
-          connect (_button, SIGNAL (clicked()), SLOT (open_chooser()));
-          connect (_lineedit, SIGNAL (textChanged (QString)), SIGNAL (text_changed()));
+          QObject::connect (_button, &QPushButton::clicked, this, &file_line_edit::open_chooser);
+          QObject::connect (_lineedit, &QLineEdit::textChanged, this, &file_line_edit::text_changed);
         }
 
         file_line_edit::file_line_edit ( QFileDialog::FileMode mode

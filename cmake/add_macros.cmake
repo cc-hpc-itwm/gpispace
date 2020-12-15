@@ -1,5 +1,3 @@
-#! \note workaround for https://cmake.org/Bug/view.php?id=9985, which
-
 # This file is part of GPI-Space.
 # Copyright (C) 2020 Fraunhofer ITWM
 #
@@ -16,6 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+# Plain and keyword `target_link_libraries()` signatures cannot be mixed.
+cmake_policy (SET CMP0023 NEW)
+
+#! \note workaround for https://cmake.org/Bug/view.php?id=9985, which
 #! was solved with policy CMP0065 in 3.4.
 #! \todo When updating to 3.5 (because 3.4 breaks pkgconfig), remove
 #! this, as well as NO_RDYNAMIC handling below and replace with the
@@ -30,6 +32,7 @@ foreach (language ${_languages})
 endforeach()
 
 set (_add_macros_bundle_sh "${CMAKE_CURRENT_LIST_DIR}/bundle.sh")
+set (_add_macros_test_wrapper "${CMAKE_CURRENT_LIST_DIR}/_test_wrapper.cmake")
 
 macro (_default_if_unset VAR VAL)
   if (NOT ${VAR})
@@ -283,7 +286,7 @@ function (extended_add_library)
       add_library (${target_name} ${ARG_TYPE} ${${ARG_NAME}_mocced} ${ARG_SOURCES})
     endif()
 
-    target_link_libraries (${target_name} ${ARG_LIBRARIES})
+    target_link_libraries (${target_name} PUBLIC ${ARG_LIBRARIES})
 
     if (NOT ARG_NO_RDYNAMIC)
       set_property (TARGET ${target_name} APPEND_STRING
@@ -326,7 +329,7 @@ function (extended_add_library)
     target_compile_options (${target_name} ${ARG_COMPILE_OPTIONS})
   endif()
 
-  if (ARG_VISIBILTY_HIDDEN)
+  if (ARG_VISIBILITY_HIDDEN)
     if (${ARG_TYPE} STREQUAL "STATIC")
       message (FATAL_ERROR
         "VISIBILITY_HIDDEN makes no sense for static targets"
@@ -376,7 +379,7 @@ function (extended_add_executable)
 
   _ensure_rpath_globals_before_target_addition()
   add_executable (${target_name} ${${ARG_NAME}_mocced} ${ARG_SOURCES})
-  target_link_libraries (${target_name} ${ARG_LIBRARIES})
+  target_link_libraries (${target_name} PRIVATE ${ARG_LIBRARIES})
 
   if (ARG_SYSTEM_INCLUDE_DIRECTORIES)
     target_include_directories (${target_name} SYSTEM
@@ -433,6 +436,13 @@ function (add_imported_executable)
   set_property (TARGET ${target_name} PROPERTY IMPORTED_LOCATION ${ARG_LOCATION})
 endfunction()
 
+# - \a PRE_TEST_HOOK and \a POST_TEST_HOOK can be used to specify
+#   CMake scripts to be executed before/after the actual test. Their
+#   results are ignored so that they are not abused as pre/post-test
+#   conditions that should be in the actual test. Their output is not
+#   suppressed though. The post hook is run independent of test result.
+#   \todo Timeouts are *not* taken into account, so the post hook will
+#   not be executed if the test hangs!
 function (add_unit_test)
   set (QT_OPTIONS)
   if (TARGET Qt4::QtCore OR TARGET Qt5::Core)
@@ -440,7 +450,7 @@ function (add_unit_test)
   endif()
 
   set (options USE_BOOST PERFORMANCE_TEST RUN_SERIAL NO_RDYNAMIC)
-  set (one_value_options NAME DESCRIPTION)
+  set (one_value_options NAME DESCRIPTION PRE_TEST_HOOK POST_TEST_HOOK)
   set (multi_value_options LIBRARIES ${QT_OPTIONS} SOURCES INCLUDE_DIRECTORIES
     SYSTEM_INCLUDE_DIRECTORIES ARGS DEPENDS COMPILE_FLAGS LABELS REQUIRED_FILES
     COMPILE_DEFINITIONS)
@@ -484,8 +494,25 @@ function (add_unit_test)
     target_include_directories (${target_name} ${ARG_INCLUDE_DIRECTORIES})
   endif()
 
-  target_link_libraries (${target_name} ${ARG_LIBRARIES})
-  add_test (NAME ${ARG_NAME} COMMAND $<TARGET_FILE:${target_name}> ${ARG_ARGS})
+  target_link_libraries (${target_name} PRIVATE ${ARG_LIBRARIES})
+  if (NOT ARG_PRE_TEST_HOOK AND NOT ARG_POST_TEST_HOOK)
+    add_test (NAME ${ARG_NAME} COMMAND
+      $<TARGET_FILE:${target_name}> ${ARG_ARGS}
+    )
+  else()
+    add_test (NAME ${ARG_NAME} COMMAND
+      "${CMAKE_COMMAND}"
+        -D "test_command=$<TARGET_FILE:${target_name}>"
+        -D "test_args=${ARG_ARGS}"
+        -D "pre_test_hook=${ARG_PRE_TEST_HOOK}"
+        -D "post_test_hook=${ARG_POST_TEST_HOOK}"
+        -P "${_add_macros_test_wrapper}"
+        VERBATIM
+    )
+    set_tests_properties (${ARG_NAME} PROPERTIES
+      FAIL_REGULAR_EXPRESSION "^### Test failed with exit code [0-9-]*. ###$"
+    )
+  endif()
 
   if (ARG_DEPENDS)
     add_dependencies (${target_name} ${ARG_DEPENDS})

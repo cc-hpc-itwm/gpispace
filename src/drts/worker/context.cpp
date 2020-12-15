@@ -60,14 +60,14 @@ namespace drts
     {
       _->module_call_do_cancel();
     }
-    void context::execute_and_kill_on_cancel
+    void context::execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
       ( std::function<void()> fun
       , std::function<void()> on_cancel
       , std::function<void (int)> on_signal
       , std::function<void (int)> on_exit
       )
     {
-      _->execute_and_kill_on_cancel (fun, on_cancel, on_signal, on_exit);
+      _->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN (fun, on_cancel, on_signal, on_exit);
     }
 
     context_constructor::context_constructor
@@ -128,7 +128,7 @@ namespace drts
 
     //! \todo factor out channel_from_child_to_parent, see
     //! execute_and_get_startup_messages, process::execute
-    void context::implementation::execute_and_kill_on_cancel
+    void context::implementation::execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
       ( std::function<void()> fun
       , std::function<void()> on_cancel
       , std::function<void (int)> on_signal

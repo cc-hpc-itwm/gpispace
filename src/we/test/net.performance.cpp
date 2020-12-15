@@ -118,10 +118,11 @@ namespace we
         BOOST_REQUIRE (net.get_token (p).empty());
 
 #define CHECK(_limit, _quality)                                         \
+        do                                                              \
         if (last_duration > _limit)                                     \
         {                                                               \
-          BOOST_CHECK_LT (last_duration * _quality, duration * 10);    \
-        }
+          BOOST_CHECK_LT (last_duration * _quality, duration * 10);     \
+        } while (false)
 
         CHECK (std::chrono::microseconds (100), 85);
         CHECK (std::chrono::milliseconds (1), 93);

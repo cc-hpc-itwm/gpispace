@@ -61,7 +61,7 @@ namespace sdpa
     SAVE_CONSTRUCT_DATA_DEF (JobStatusReplyEvent, e)
     {
       SAVE_JOBEVENT_CONSTRUCT_DATA (e);
-      SAVE_TO_ARCHIVE_WITH_TEMPORARY (sdpa::status::code, e->status());
+      SAVE_TO_ARCHIVE_WITH_TEMPORARY (sdpa::status::code, e->status())
       SAVE_TO_ARCHIVE (e->error_message());
     }
 

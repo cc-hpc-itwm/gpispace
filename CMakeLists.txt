@@ -15,7 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
-project (gspc VERSION 20.09.1 LANGUAGES CXX)
+project (gspc VERSION 20.12 LANGUAGES CXX)
 
 # Where are the additional libraries installed? Note: provide includes
 # path here, subsequent checks will resolve everything else
@@ -30,8 +30,7 @@ include (require_compiler_version)
 
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 
-# BEGIN RELEASE v20.09.1
-set (PROJECT_REVISION 6baf5e132471693a9f6153f2d5cf02dc84adc166)
+# BEGIN RELEASE @BRANCH@
 install (FILES "${CMAKE_SOURCE_DIR}/git.submodules" DESTINATION .)
 # END RELEASE
 
@@ -97,7 +96,7 @@ find_boost (1.61 REQUIRED QUIET COMPONENTS
   timer
   unit_test_framework
 )
-find_package (GASPI 1.3.1 REQUIRED QUIET)
+find_package (GASPI 1.3.2 REQUIRED QUIET)
 find_package (HWLOC REQUIRED QUIET)
 find_package (LibRT REQUIRED QUIET)
 find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED QUIET)

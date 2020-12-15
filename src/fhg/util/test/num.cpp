@@ -22,6 +22,9 @@
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/require.hpp>
 
+#include <boost/test/data/monomorphic.hpp>
+#include <boost/test/data/test_case.hpp>
+
 #include <string>
 #include <iostream>
 
@@ -63,120 +66,6 @@ BOOST_AUTO_TEST_CASE (_uint)
   position_string pos (inp);
 
   BOOST_REQUIRE_EQUAL (23U, read_uint (pos));
-}
-
-BOOST_AUTO_TEST_CASE (_long)
-{
-  using fhg::util::read_long;
-
-  {
-    const std::string inp ("23");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (23L, read_long (pos));
-  }
-  {
-    const std::string inp ("-2");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2L, read_long (pos));
-  }
-}
-
-BOOST_AUTO_TEST_CASE (_int)
-{
-  using fhg::util::read_int;
-
-  {
-    const std::string inp ("23");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (23, read_int (pos));
-  }
-  {
-    const std::string inp ("-2");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2, read_int (pos));
-  }
-}
-
-BOOST_AUTO_TEST_CASE (_double)
-{
-  using fhg::util::read_double;
-
-  {
-    const std::string inp ("23");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (23.0, read_double (pos));
-  }
-  {
-    const std::string inp ("-2");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2.0, read_double (pos));
-  }
-  {
-    const std::string inp ("-2e4");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
-  }
-  {
-    const std::string inp ("-2e+4");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
-  }
-  {
-    const std::string inp ("-2.e4");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
-  }
-  {
-    const std::string inp ("-2.0e4");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2e4, read_double (pos));
-  }
-  {
-    const std::string inp ("-2e-4");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2e-4, read_double (pos));
-  }
-  {
-    const std::string inp ("-0.125");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-0.125, read_double (pos));
-  }
-}
-
-BOOST_AUTO_TEST_CASE (_float)
-{
-  using fhg::util::read_float;
-
-  {
-    const std::string inp ("23.125f");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (23.125f, read_float (pos));
-  }
-  {
-    const std::string inp ("-2f");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2.0f, read_float (pos));
-  }
-  {
-    const std::string inp ("-2e4f");
-    position_string pos (inp);
-
-    BOOST_REQUIRE_EQUAL (-2e4f, read_float (pos));
-  }
 }
 
 namespace
@@ -308,6 +197,7 @@ BOOST_AUTO_TEST_CASE (_num)
 BOOST_AUTO_TEST_CASE (unexpected_digit)
 {
 #define CHECK(s,T,f)                                                    \
+  do                                                                    \
   {                                                                     \
     const std::string inp (s);                                          \
     position_string p (inp);                                            \
@@ -315,19 +205,11 @@ BOOST_AUTO_TEST_CASE (unexpected_digit)
     BOOST_CHECK_THROW ( fhg::util::read_ ## f (p)                       \
                       , error::unexpected_digit<T>                      \
                       );                                                \
-  }
+  } while (false)
 
   CHECK ("4294967297", unsigned int, uint);
   CHECK ("42949672960", unsigned int, uint);
   CHECK ("0x100000000", unsigned int, uint);
-  CHECK ("0x80000000", int, int);
-  {
-    const std::string inp ("-0x80000000");
-    position_string p (inp);
-
-    BOOST_CHECK_EQUAL (fhg::util::read_int (p), -0x80000000);
-  }
-  CHECK ("-0x80000001", int, int);
 
 #undef CHECK
 }
@@ -377,5 +259,27 @@ BOOST_AUTO_TEST_CASE (limits)
     typedef error::value_too_big<double, float> error_type;
 
     BOOST_REQUIRE_THROW (read_num (pos), error_type);
+  }
+}
+
+namespace fhg
+{
+  namespace util
+  {
+    // When reading floats Implementation casted float_max to ul_max,
+    // which overflows and thus is undefined behavior. In the observed
+    // instances it ended up comparing against 0, failing because 1 > 0.
+    BOOST_DATA_TEST_CASE (issue_896_limits_checked_incorrectly_narrow_cast
+     , std::vector<std::string> ({"1f", "+1f", "-1f", "1F", "+1F", "-1F"})
+     ^ std::vector<num_type>    ({ 1.f,   1.f,  -1.f,  1.f,   1.f,  -1.f})
+     , input
+     , expected
+      )
+    {
+      position_string pos (input);
+      num_type result;
+      BOOST_REQUIRE_NO_THROW (result = read_num (pos));
+      BOOST_REQUIRE_EQUAL (result, expected);
+    }
   }
 }

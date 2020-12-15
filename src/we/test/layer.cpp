@@ -151,10 +151,11 @@ struct daemon
   }
 
 #define INC_IN_PROGRESS(COUNTER)                                \
+  do                                                            \
   {                                                             \
     std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     ++_in_progress_ ## COUNTER;                                 \
-  }
+  } while (false)
 
 #define DEC_IN_PROGRESS(COUNTER)                                \
   {                                                             \
@@ -166,16 +167,18 @@ struct daemon
   std::unordered_set<we::layer::id_type> _in_progress_cancels;
 
 #define ADD_CANCEL_IN_PROGRESS(ID)                              \
+  do                                                            \
   {                                                             \
     std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     _in_progress_cancels.emplace (ID);                          \
-  }
+  } while (false)
 
 #define REMOVE_CANCEL_IN_PROGRESS(ID)                           \
+  do                                                            \
   {                                                             \
     std::lock_guard<std::mutex> const _ (_in_progress_mutex);   \
     _in_progress_cancels.erase (ID);                            \
-  }
+  } while (false)
 
   DECLARE_EXPECT_CLASS ( submit
                        , we::layer::id_type* id
@@ -853,13 +856,13 @@ namespace
       }
 
       auto&& do_method
-        ( [&] (we::layer::id_type const& id, method how)
+        ( [&] (we::layer::id_type const& id_, method how)
           {
             switch (how)
             {
-            case canceled: do_canceled (id); break;
-            case failed: do_failed (id, "interleaved with cancel"); break;
-            case finished: do_finished (id, activity_result); break;
+            case canceled: do_canceled (id_); break;
+            case failed: do_failed (id_, "interleaved with cancel"); break;
+            case finished: do_finished (id_, activity_result); break;
             }
           }
         );
@@ -1445,7 +1448,7 @@ namespace
 }
 
 BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
-BOOST_FIXTURE_TEST_CASE (workflow_response, daemon)
+BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
 {
   we::type::activity_t activity_input;
   we::type::activity_t activity_output;
@@ -1667,7 +1670,7 @@ namespace
       );
   }
 
-  void disallow (std::string what)
+  [[noreturn]] void disallow (std::string what)
   {
     throw std::runtime_error ("disallowed function called: " + what);
   }
@@ -2014,7 +2017,7 @@ namespace
                          );
     }
 
-    void create_job (std::size_t token_count)
+    void create_job (std::size_t token_count_)
     {
       we::type::net_type copy_of_net_without_inputs (net);
 
@@ -2029,7 +2032,7 @@ namespace
 
       for (auto const& act : activities)
       {
-        for (std::size_t i (0); i < token_count; ++i)
+        for (std::size_t i (0); i < token_count_; ++i)
         {
           net.put_token (act.first, value::CONTROL);
         }

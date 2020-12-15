@@ -288,11 +288,6 @@ namespace gpi
         return hdl.id;
       }
 
-      void area_t::defrag (const gpi::pc::type::size_t)
-      {
-        throw std::runtime_error ("defrag is not yet implemented");
-      }
-
       void area_t::update_descriptor_from_mmgr()
       {
         m_descriptor.avail = m_mmgr.memfree();

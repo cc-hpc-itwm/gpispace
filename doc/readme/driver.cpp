@@ -92,8 +92,7 @@ try
     values_on_ports.emplace ("task_trigger", we::type::literal::control{});
   }
 
-  auto const results
-    (gspc::client (drts).put_and_run (workflow, values_on_ports));
+  auto const results (client.put_and_run (workflow, values_on_ports));
 
   if (results.size() != 1 || results.count ("aggregated_value") != 1) {
     throw std::logic_error ("unexpected output");

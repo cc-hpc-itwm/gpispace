@@ -1100,19 +1100,20 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER (position_type, os, position)
      << ": " << FHG_BOOST_TEST_PRINT_LOG_VALUE_HELPER (position.second);
 }
 
-BOOST_AUTO_TEST_CASE (positions)
+BOOST_AUTO_TEST_CASE (positions_works)
 {
   using pnet::type::value::value_type;
   using pnet::type::value::path::split;
 
 #define LITERAL(literal...)                                             \
+  do                                                                    \
   {                                                                     \
     std::list<position_type> positions;                                 \
     positions.push_back                                                 \
       (std::make_pair (std::list<std::string>(), literal));             \
     BOOST_REQUIRE_EQUAL                                                 \
       (pnet::type::value::positions (literal), positions);              \
-  }
+  } while (false)
 
   LITERAL (we::type::literal::control());
   LITERAL (true);

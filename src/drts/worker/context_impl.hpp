@@ -57,7 +57,7 @@ namespace drts
       void set_module_call_do_cancel (std::function<void()> fun);
       void module_call_do_cancel();
 
-      void execute_and_kill_on_cancel
+      void execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
         ( std::function<void()> fun
         , std::function<void()> on_cancel
         , std::function<void (int)> on_signal

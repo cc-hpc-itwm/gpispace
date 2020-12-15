@@ -226,12 +226,14 @@ namespace sdpa
                                , job_handler handler
                                )
     {
+      auto requirements_and_preferences
+        (activity.requirements_and_preferences (_virtual_memory_api.get()));
+
       return addJob ( job_id
                     , std::move (activity)
                     , std::move (source)
                     , std::move (handler)
-                    , activity.requirements_and_preferences
-                        (_virtual_memory_api.get())
+                    , std::move (requirements_and_preferences)
                     );
     }
 

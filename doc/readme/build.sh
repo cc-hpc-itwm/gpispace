@@ -20,8 +20,37 @@ set -euo pipefail
 scriptfile="$(readlink -f ${BASH_SOURCE})"; scriptdir="${scriptfile%/*}"
 cd "${scriptdir}"
 
+if test ${#} -lt 1 || test ${#} -gt 4
+then
+  echo >&2 "usage: ${0} GPISPACE_INSTALL_DIR [APP_INSTALL_DIR [LOG_PORT [CXX]]]"
+  exit 1
+fi
+
 GPISPACE_INSTALL_DIR="${1}"
-APP_INSTALL_DIR="${2:-$(mktemp -d)}"
+
+if test -z "${2:-}"
+then
+  APP_INSTALL_DIR="$(mktemp -d)"
+  trap 'rm -rv "${APP_INSTALL_DIR}"' EXIT
+else
+  APP_INSTALL_DIR="${2}"
+fi
+
+if test ! -d "${APP_INSTALL_DIR}"
+then
+  echo >&2 "${0}: Error: APP_INSTALL_DIR '${APP_INSTALL_DIR}' does not exist."
+  exit 1
+fi
+
+for dir in bin lib src compute_and_aggregate.pnet nodefile
+do
+  if test -e "${APP_INSTALL_DIR}/${dir}"
+  then
+    echo >&2 "${0}: Error: APP_INSTALL_DIR '${APP_INSTALL_DIR}' must not contain any of {bin,lib,src,compute_and_aggregate.pnet,nodefile}."
+    exit 1
+  fi
+done
+
 LOG_PORT="${3:-}"
 CXX="${4:-c++}"
 
@@ -46,32 +75,38 @@ make install                                                      \
   -std=c++11                                                      \
   -DAPP_INSTALL_DIR="\"${APP_INSTALL_DIR}\""                      \
   -DGPISPACE_INSTALL_DIR="\"${GPISPACE_INSTALL_DIR}\""            \
-  -isystem "${GPISPACE_INSTALL_DIR}/include"                      \
-  -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \
-  -Wl,--exclude-libs,libboost_program_options.a                   \
-  -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
-  -L "${GPISPACE_INSTALL_DIR}/external/boost/lib/"                \
-  -Wl,-rpath-link,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"   \
-  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib:${GPISPACE_INSTALL_DIR}/external/boost/lib/" \
   driver.cpp                                                      \
+  -o "${APP_INSTALL_DIR}/bin/compute_and_aggregate"               \
+                                                                  \
+  -isystem "${GPISPACE_INSTALL_DIR}/include"                      \
+  -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib/"                       \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/bundle/lib/"        \
   -lgspc                                                          \
+                                                                  \
+  -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \
+  -L "${GPISPACE_INSTALL_DIR}/external/boost/lib/"                \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"        \
+  -Wl,--exclude-libs,libboost_program_options.a                   \
   -lboost_program_options                                         \
-  -lboost_system                                                  \
-  -o "${APP_INSTALL_DIR}/bin/compute_and_aggregate"
+  -lboost_system
 
 if test -n "${LOG_PORT}"
 then
 "${GPISPACE_INSTALL_DIR}/bin/gspc-monitor" --port "${LOG_PORT}" &
 fi
 
-hostname > nodefile
-# or to test in a cluster allocation, for `--nodefile` below, use
+hostname > "${APP_INSTALL_DIR}/nodefile"
+# note: the location doesn't matter for the execution
+# note: this script puts the nodefile into the ${APP_INSTALL_DIR} as
+# this directory is known to be writeable
+# note: to test in a cluster allocation, for `--nodefile` below, use
 # Slurm: "$(generate_pbs_nodefile)"
 # PBS/Torque: "${PBS_NODEFILE}"
 
 "${APP_INSTALL_DIR}/bin/compute_and_aggregate"                    \
   --rif-strategy ssh                                              \
-  --nodefile "${PWD}/nodefile"                                    \
+  --nodefile "${APP_INSTALL_DIR}/nodefile"                        \
   ${LOG_PORT:+--log-host ${HOSTNAME} --log-port ${LOG_PORT}}      \
   --N 20                                                          \
   --workers-per-node 4

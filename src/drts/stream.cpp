@@ -184,14 +184,14 @@ namespace gspc
   stream::stream ( scoped_runtime_system const& drts
                  , std::string const& name
                  , gspc::vmem_allocation const& buffer
-                 , stream::size_of_slot const& size_of_slot
+                 , stream::size_of_slot const& size_of_slot_
                  , std::function<void (pnet::type::value::value_type const&)>
                      on_slot_filled
                  )
     : _ (new implementation ( drts
                             , name
                             , buffer
-                            , size_of_slot
+                            , size_of_slot_
                             , on_slot_filled
                             )
         )

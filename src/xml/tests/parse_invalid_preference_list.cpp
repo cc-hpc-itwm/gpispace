@@ -97,10 +97,12 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
   std::string const input
     ( ( boost::format (R"EOS(
         <defun>
-          <preferences>
-            <target>%1%</target>
-            <target>%1%</target>
-          </preferences>
+          <modules>
+            <preferences>
+              <target>%1%</target>
+              <target>%1%</target>
+            </preferences>
+          </modules>
         </defun>)EOS")
       % name
       ).str()
@@ -119,7 +121,7 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_duplicates)
                         ", already in the preferences"
                       )
         % name
-        % "[<stdin>:5:13]"
+        % "[<stdin>:6:15]"
       );
 }
 
@@ -128,8 +130,10 @@ BOOST_AUTO_TEST_CASE (parse_empty_preference_list)
   std::string const input
     ( ( boost::format (R"EOS(
         <defun>
-          <preferences>
-          </preferences>
+          <modules>
+            <preferences>
+            </preferences>
+          </modules>
         </defun>)EOS")
       ).str()
     );
@@ -146,7 +150,7 @@ BOOST_AUTO_TEST_CASE (parse_empty_preference_list)
         , boost::format ( "ERROR: preferences enabled, but no targets"
                         " specified at %1%"
                       )
-          % "[<stdin>:3:11]"
+          % "[<stdin>:4:13]"
       );
 }
 
@@ -157,9 +161,11 @@ BOOST_AUTO_TEST_CASE (parse_preference_list_with_invalid_identifier)
   std::string const input
     ( ( boost::format (R"EOS(
         <defun>
-          <preferences>
-            <target>%1%</target>
-          </preferences>
+          <modules>
+            <preferences>
+              <target>%1%</target>
+            </preferences>
+          </modules>
         </defun>)EOS")
       % name
       ).str()
@@ -197,10 +203,12 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
   std::string const input
     ( ( boost::format (R"EOS(
         <defun>
-          <preferences>
-            <target>%1%</target>
-            <target>%2%</target>
-          </preferences>
+          <modules>
+            <preferences>
+              <target>%1%</target>
+              <target>%2%</target>
+            </preferences>
+          </modules>
           %3%
         </defun>)EOS")
       % first_target_name
@@ -222,7 +230,7 @@ BOOST_DATA_TEST_CASE ( parse_preference_list_without_modules
                         " no modules with target defined"
                         " in %1%"
                       )
-        % "[<stdin>:2:9]"
+        % "[<stdin>:3:11]"
      );
 }
 
@@ -257,7 +265,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_a_module_without_target)
                         " for multi-module transition at %2%"
                       )
                       % mod_name_with_no_target
-                      % "[<stdin>:6:11]"
+                      % "[<stdin>:7:11]"
       );
 }
 
@@ -292,7 +300,7 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_with_duplicate_module_targets)
                       )
                       % (mod_name + "_" + target_name_first)
                       % target_name_first
-                      % "[<stdin>:8:1]"
+                      % "[<stdin>:9:1]"
       );
 }
 
@@ -319,13 +327,8 @@ BOOST_AUTO_TEST_CASE (parse_multi_modules_without_preferences)
             (pnet_no_pref.pnet_xml);
           xml::parse::just_parse (state, input_stream);
         }
-      , boost::format ( "ERROR: module '%1%' defined with"
-                        " target '%2%', but preferences"
-                        " not enabled at %3%"
-                      )
-                    % mod_name_with_no_preferences
-                    % target_name
-                    % "[<stdin>:5:11]"
+      , boost::format ("ERROR: modules without preferences at %1%")
+          % "[<stdin>:3:11]"
       );
 }
 

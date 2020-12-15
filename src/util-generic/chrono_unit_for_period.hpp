@@ -16,37 +16,19 @@
 
 #pragma once
 
-#include <chrono>
 #include <string>
 
 namespace fhg
 {
   namespace util
   {
+    //! Determine a human readable string representing the unit for
+    //! the given \c std::chrono::duration::period. SI units are
+    //! represented by their standard symbols. Otherwise, the period
+    //! is represented as "[n]s" or "[n/d]s" if d != 1.
     template<typename Period>
-      std::string chrono_unit_for_period()
-    {
-      if (Period::den == 1)
-      {
-        return "[" + std::to_string (Period::num) + "]s";
-      }
-      else
-      {
-        return "[" + std::to_string (Period::num) + "/"
-          + std::to_string (Period::den) + "]s";
-      }
-    }
-
-#define CHRONO_UNIT_FOR_PREDEFINED_PERIOD(ratio_)               \
-    template<> std::string chrono_unit_for_period<ratio_>()
-
-    CHRONO_UNIT_FOR_PREDEFINED_PERIOD (std::chrono::nanoseconds::period);
-    CHRONO_UNIT_FOR_PREDEFINED_PERIOD (std::chrono::microseconds::period);
-    CHRONO_UNIT_FOR_PREDEFINED_PERIOD (std::chrono::milliseconds::period);
-    CHRONO_UNIT_FOR_PREDEFINED_PERIOD (std::chrono::seconds::period);
-    CHRONO_UNIT_FOR_PREDEFINED_PERIOD (std::chrono::minutes::period);
-    CHRONO_UNIT_FOR_PREDEFINED_PERIOD (std::chrono::hours::period);
-
-#undef CHRONO_UNIT_FOR_PREDEFINED_PERIOD
+      std::string chrono_unit_for_period();
   }
 }
+
+#include <util-generic/chrono_unit_for_period.ipp>

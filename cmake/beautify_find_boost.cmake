@@ -71,6 +71,22 @@ Use `find_package (GPISpace REQUIRED)` before using `find_boost() with `FROM_GPI
       NAMESPACE Boost
       SYSTEM_INCLUDE_DIRECTORIES INTERFACE ${Boost_INCLUDE_DIR}
     )
+
+    #! \note With Boost 1.62, Boost.Coroutine is deprecated and should be
+    #! replaced with Boost.Coroutine2. Boost.ASIO does not yet do so. As
+    #! soon as it does, this should be extended to limit with an upper
+    #! version.
+    if (Boost_VERSION VERSION_GREATER 1.61.0 AND Boost_VERSION VERSION_LESS 1.70.0)
+      target_compile_definitions (Boost-base INTERFACE
+        BOOST_COROUTINES_NO_DEPRECATION_WARNING
+      )
+    endif ()
+
+    if (Boost_VERSION VERSION_EQUAL 1.62.0)
+      target_compile_definitions(Boost-base INTERFACE
+        BOOST_COROUTINE_NO_DEPRECATION_WARNING
+      )
+    endif ()
   endif()
 
   foreach (component ${FIND_COMPONENTS})

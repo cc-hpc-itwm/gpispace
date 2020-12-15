@@ -417,7 +417,7 @@ namespace we
            || activity_data._activity->wait_for_output()
            )
         {
-          id_type const id (activity_data._id);
+          id_type const id_ (activity_data._id);
 
           try
           {
@@ -433,7 +433,7 @@ namespace we
           catch (...)
           {
             rts_failed_and_forget
-              ( id
+              ( id_
               , fhg::util::current_exception_printer (": ").string()
               );
           }

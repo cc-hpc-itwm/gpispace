@@ -560,18 +560,36 @@ namespace xml
 
           for (memory_get const& mg : fun.memory_gets())
           {
-            memory_gets.emplace_back (mg.global(), mg.local(), boost::none);
+            memory_gets.emplace_back
+              ( mg.global()
+              , mg.local()
+              , boost::none
+              , mg.allow_empty_ranges().get_value_or (false)
+              );
           }
           for (memory_put const& mp : fun.memory_puts())
           {
             memory_puts.emplace_back
-              (mp.global(), mp.local(), mp.not_modified_in_module_call());
+              ( mp.global()
+              , mp.local()
+              , mp.not_modified_in_module_call()
+              , mp.allow_empty_ranges().get_value_or (false)
+              );
           }
           for (memory_getput const& mgp : fun.memory_getputs())
           {
-            memory_gets.emplace_back (mgp.global(), mgp.local(), boost::none);
+            memory_gets.emplace_back
+              ( mgp.global()
+              , mgp.local()
+              , boost::none
+              , mgp.allow_empty_ranges().get_value_or (false)
+              );
             memory_puts.emplace_back
-              (mgp.global(), mgp.local(), mgp.not_modified_in_module_call());
+              ( mgp.global()
+              , mgp.local()
+              , mgp.not_modified_in_module_call()
+              , mgp.allow_empty_ranges().get_value_or (false)
+              );
           }
 
           return we_module_type ( mod.name()
@@ -954,13 +972,15 @@ namespace xml
         gspc::installation_path const installation;
 
         stream                                                     << std::endl;
-        stream << "CXXFLAGS += -fPIC"                              << std::endl;
-        stream << "CXXFLAGS += -fno-gnu-unique"                    << std::endl;
-        stream << "CXXFLAGS += --std=c++11"                        << std::endl;
-        stream                                                     << std::endl;
         stream << "ifndef CXX"                                     << std::endl;
         stream << "  $(error Variable CXX is not defined)"         << std::endl;
         stream << "endif"                                          << std::endl;
+        stream                                                     << std::endl;
+        stream << "CXXFLAGS += -fPIC"                              << std::endl;
+        stream << "ifeq '' '$(findstring clang,$(CXX))'"           << std::endl;
+        stream << "  CXXFLAGS += -fno-gnu-unique"                  << std::endl;
+        stream << "endif"                                          << std::endl;
+        stream << "CXXFLAGS += --std=c++11"                        << std::endl;
         stream                                                     << std::endl;
         stream << "CXXFLAGS += -I."                                << std::endl;
         stream << "CXXFLAGS += -isystem "
@@ -1019,7 +1039,7 @@ namespace xml
         stream                                                     << std::endl;
         stream << "ifeq \"$(CP)\" \"\""                            << std::endl;
         stream                                                     << std::endl;
-        stream << "%.cpp:"                                         << std::endl;
+        stream << "%.cpp: %.cpp_tmpl"                              << std::endl;
         stream << "\t$(error Missing file '$@'.)"                  << std::endl;
         stream                                                     << std::endl;
         stream << "else"                                           << std::endl;

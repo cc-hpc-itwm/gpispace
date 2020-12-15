@@ -39,6 +39,7 @@ namespace
                                            , std::string const&
                                            )> make_transfer
                   , boost::optional<bool> not_modified_in_module_call
+                  , boost::optional<bool> allow_empty_ranges
                   )
   {
     std::list<std::string> expressions_global;
@@ -66,7 +67,7 @@ namespace
       );
 
     const std::string expected
-      ( ( boost::format (R"EOS(<memory-%1%%4%>
+      ( ( boost::format (R"EOS(<memory-%1%%4%%5%>
   <global>%2%</global>
   <local>%3%</local>
 </memory-%1%>)EOS")
@@ -76,6 +77,12 @@ namespace
         % ( not_modified_in_module_call
           ? ( boost::format (" not-modified-in-module-call=\"%1%\"")
             % (*not_modified_in_module_call ? "true" : "false")
+            ).str()
+          : ""
+          )
+        % ( allow_empty_ranges
+          ? ( boost::format (" allow-empty-ranges=\"%1%\"")
+            % (*allow_empty_ranges ? "true" : "false")
             ).str()
           : ""
           )
@@ -92,18 +99,20 @@ namespace
 
 BOOST_DATA_TEST_CASE
   ( dump_get
-  , counts * counts
+  , counts * counts * tribool_values
   , num_expressions_global
   , num_expressions_local
+  , allow_empty_ranges
   )
 {
   check_dump<xml::parse::type::memory_get>
     ( num_expressions_global
     , num_expressions_local
     , "get"
-    , []( std::string const& expressions_global
-        , std::string const& expressions_local
-        )
+    , [&allow_empty_ranges]
+      ( std::string const& expressions_global
+      , std::string const& expressions_local
+      )
       {
         return xml::parse::type::memory_get
           ( xml::parse::util::position_type
@@ -111,25 +120,28 @@ BOOST_DATA_TEST_CASE
           , expressions_global
           , expressions_local
           , we::type::property::type()
+          , allow_empty_ranges
           );
       }
     , boost::none
+    , allow_empty_ranges
     );
 }
 
 BOOST_DATA_TEST_CASE
   ( dump_put
-  , counts * counts * tribool_values
+  , counts * counts * tribool_values * tribool_values
   , num_expressions_global
   , num_expressions_local
   , not_modified_in_module_call
+  , allow_empty_ranges
   )
 {
   check_dump<xml::parse::type::memory_put>
     ( num_expressions_global
     , num_expressions_local
     , "put"
-    , [&not_modified_in_module_call]
+    , [&not_modified_in_module_call, &allow_empty_ranges]
         ( std::string const& expressions_global
         , std::string const& expressions_local
         )
@@ -141,25 +153,28 @@ BOOST_DATA_TEST_CASE
           , expressions_local
           , we::type::property::type()
           , not_modified_in_module_call
+          , allow_empty_ranges
           );
       }
     , not_modified_in_module_call
+    , allow_empty_ranges
     );
 }
 
 BOOST_DATA_TEST_CASE
   ( dump_getput
-  , counts * counts * tribool_values
+  , counts * counts * tribool_values * tribool_values
   , num_expressions_global
   , num_expressions_local
   , not_modified_in_module_call
+  , allow_empty_ranges
   )
 {
   check_dump<xml::parse::type::memory_getput>
     ( num_expressions_global
     , num_expressions_local
     , "getput"
-    , [&not_modified_in_module_call]
+    , [&not_modified_in_module_call, &allow_empty_ranges]
         ( std::string const& expressions_global
         , std::string const& expressions_local
         )
@@ -171,8 +186,10 @@ BOOST_DATA_TEST_CASE
           , expressions_local
           , we::type::property::type()
           , not_modified_in_module_call
+          , allow_empty_ranges
           );
       }
     , not_modified_in_module_call
+    , allow_empty_ranges
     );
 }

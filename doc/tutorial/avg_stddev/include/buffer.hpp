@@ -29,7 +29,7 @@ namespace fhg
       std::size_t _size;
 
     public:
-      type () : _begin (NULL), _count (0), _size (0) {}
+      type () : _begin (nullptr), _count (0), _size (0) {}
       type (const type& other)
         : _begin (other._begin)
         , _count (other._count)

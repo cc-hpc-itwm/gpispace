@@ -21,7 +21,7 @@ fhg_add_runtime_executable (NAME gpi-space
             gpi-space-pc-global
             gpi-space-pc-memory
             gpi-space-pc-segment
-            fhg-revision
+            fhg-project_configuration
             fhg-util
             mmgr
             fhgcom
@@ -39,7 +39,7 @@ fhg_add_runtime_executable (NAME gpi-space
 
 fhg_add_runtime_executable (NAME pnet2dot
   SOURCES "pnet2dot.cpp"
-  LIBRARIES fhg-revision
+  LIBRARIES fhg-project_configuration
             pnet
             Util::Generic
             Boost::program_options
@@ -49,7 +49,7 @@ fhg_add_runtime_executable (NAME pnet2dot
 
 fhg_add_runtime_executable (NAME pnetc
   SOURCES "pnetc.cpp"
-  LIBRARIES fhg-revision
+  LIBRARIES fhg-project_configuration
             pnet
             Util::Generic
             Boost::filesystem

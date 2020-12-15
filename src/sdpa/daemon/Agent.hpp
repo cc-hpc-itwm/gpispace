@@ -118,6 +118,8 @@ namespace sdpa {
       template<typename Event, typename... Args>
         void notify_subscribers (job_id_t job_id, Args&&... args)
       {
+        std::lock_guard<std::mutex> const _ (mtx_subscriber_);
+
         for  ( fhg::com::p2p::address_t const& subscriber
              : _subscriptions.right.equal_range (job_id)
              | boost::adaptors::map_values

@@ -60,22 +60,6 @@ namespace
       function = ::xml::parse::just_parse (state, xpnet.string());
     }
 
-    void post_processing_passes()
-    {
-      ::xml::parse::post_processing_passes (*function, &state);
-    }
-
-    void dump_xml()
-    {
-      ::xml::parse::dump_xml (*function, state);
-    }
-
-    ::we::type::activity_t xml_to_we()
-    {
-      return ::we::type::activity_t
-        {::xml::parse::xml_to_we (*function, state)};
-    }
-
     ::xml::parse::state::type state;
     boost::optional< ::xml::parse::type::function_type> function;
 

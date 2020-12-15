@@ -81,9 +81,11 @@ namespace
     return
       ( boost::format (R"EOS(
         <defun name="n_preferences">
+          <modules>
           %1%
           %3%
           %2%
+          </modules>
         </defun>)EOS")
         % pnet_target_list
         % pnet_module_list

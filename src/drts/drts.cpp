@@ -30,7 +30,7 @@
 
 #include <sdpa/client.hpp>
 
-#include <fhg/revision.hpp>
+#include <fhg/project_version.hpp>
 #include <fhg/util/boost/program_options/require_all_if_one.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/make_optional.hpp>
@@ -53,27 +53,27 @@ namespace gspc
     (boost::filesystem::path const& gspc_home)
       : _gspc_home (boost::filesystem::canonical (gspc_home))
   {
-    boost::filesystem::path const path_revision (_gspc_home / "revision");
+    boost::filesystem::path const path_version (_gspc_home / "version");
 
-    if (!boost::filesystem::exists (path_revision))
+    if (!boost::filesystem::exists (path_version))
     {
       throw std::invalid_argument
-        (( boost::format ("GSPC revision mismatch: File '%1%' does not exist.")
-         % path_revision
+        (( boost::format ("GSPC version mismatch: File '%1%' does not exist.")
+         % path_version
          ).str());
     }
 
-    std::string const revision (fhg::util::read_file (path_revision));
+    std::string const version (fhg::util::read_file (path_version));
 
-    if (revision != fhg::project_revision())
+    if (version != fhg::project_version())
     {
       throw std::invalid_argument
-        (( boost::format ( "GSPC revision mismatch: Expected '%1%'"
+        (( boost::format ( "GSPC version mismatch: Expected '%1%'"
                          ", installation in '%2%' has version '%3%'"
                          )
-         % fhg::project_revision()
+         % fhg::project_version()
          % _gspc_home
-         % revision
+         % version
          ).str()
         );
     }

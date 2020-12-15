@@ -17,47 +17,35 @@
 #pragma once
 
 #include <util-generic/callable_signature.hpp>
-#include <util-generic/wait_and_collect_exceptions.hpp>
 
-#include <functional>
+#include <iterator>
+#include <utility>
 #include <type_traits>
 
 namespace fhg
 {
   namespace util
   {
+    //! Apply \a fun asynchronously (using \c std::async) to all
+    //! elements between \a begin and \a end, and wait for the results.
+    //! \see wait_and_collect_exceptions()
     template< typename Iterator
             , typename Fun
             , typename = typename std::enable_if
                  <is_callable<Fun, void (decltype (*std::declval<Iterator>()))>{}>::type
             >
-      void asynchronous (Iterator begin, Iterator end, Fun&& fun)
-    {
-      std::vector<std::future<void>> executions;
+      void asynchronous (Iterator begin, Iterator end, Fun&& fun);
 
-      while (begin != end)
-      {
-        executions.emplace_back
-          (std::async (std::launch::async, std::bind (fun, *begin)));
-
-        ++begin;
-      }
-
-      wait_and_collect_exceptions (executions);
-    }
-
-    //! \todo cxx14: use cbegin, cend
+    //! Apply \a fun asynchronously (using \c std::async) to all
+    //! elements in \a collection, and wait for the results.
+    //! \see wait_and_collect_exceptions()
     template< typename Collection
             , typename Fun
             , typename = typename std::enable_if
                 <is_callable<Fun, void (decltype (*std::begin (std::declval<Collection>())))>{}>::type
             >
-      void asynchronous (Collection collection, Fun&& fun)
-    {
-      return asynchronous<decltype (std::begin (collection))>
-        ( std::begin (collection), std::end (collection)
-        , std::forward<Fun> (fun)
-        );
-    }
+      void asynchronous (Collection collection, Fun&& fun);
   }
 }
+
+#include <util-generic/asynchronous.ipp>

@@ -15,21 +15,16 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 string(TIMESTAMP COPYRIGHT_YEAR "%Y")
-configure_file (${CMAKE_CURRENT_SOURCE_DIR}/revision.cpp.in ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new @ONLY)
-
-execute_process(
-  COMMAND ${CMAKE_COMMAND} -E compare_files ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new
-  RESULT_VARIABLE revision_cpp_needs_update
-  OUTPUT_QUIET
-  ERROR_QUIET
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/project_configuration.cpp.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/project_configuration.cpp"
+  @ONLY
 )
-if (revision_cpp_needs_update)
-  file(RENAME ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp.new ${CMAKE_CURRENT_BINARY_DIR}/revision.cpp)
-  file (WRITE "${CMAKE_BINARY_DIR}/revision" "${PROJECT_REVISION}")
-endif()
 
-extended_add_library (NAME fhg-revision
-  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/revision.cpp"
+file (WRITE "${CMAKE_BINARY_DIR}/version" "${PROJECT_VERSION}")
+
+extended_add_library (NAME fhg-project_configuration
+  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/project_configuration.cpp"
 )
 
 extended_add_library (NAME fhg-util
@@ -56,25 +51,18 @@ extended_add_library (NAME fhg-util
           "util/xml.cpp"
 
           "util/system_with_blocked_SIGCHLD.cpp"
-  LIBRARIES Util::Generic
+  LIBRARIES gspc::logging
+            Util::Generic
             Boost::thread
             Boost::system
             Boost::filesystem
-  INSTALL
 )
 
 add_subdirectory (util/test)
-
-install (FILES
-  util/parse/position.hpp
-  util/parse/error.hpp
-  util/parse/require.hpp
-  DESTINATION include/fhg/util/parse
-)
 
 install (FILES
   util/dl.hpp
   DESTINATION include/fhg/util
 )
 
-install (FILES "${CMAKE_BINARY_DIR}/revision" DESTINATION .)
+install (FILES "${CMAKE_BINARY_DIR}/version" DESTINATION .)

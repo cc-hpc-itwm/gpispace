@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-find_package (libssh2 REQUIRED COMPONENTS _relocatable)
+find_package (Libssh2 REQUIRED COMPONENTS _relocatable)
 
 fhg_add_runtime_executable (NAME gspc-rifd
   SOURCES "gspc-rifd.cpp"
@@ -66,13 +66,14 @@ extended_add_library (NAME rif-strategies
           "strategy/ssh/session.cpp"
   LIBRARIES RPC
             fhg-util
-            libssh2::libssh2
+            Libssh2::libssh2
+            OpenSSL::Crypto
 )
 
 fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
   SOURCES "gspc-bootstrap-rifd.cpp"
   LIBRARIES rif-strategies
-            fhg-revision
+            fhg-project_configuration
             fhg-util
             Util::Generic
             Boost::filesystem
@@ -83,7 +84,7 @@ fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
 fhg_add_runtime_executable (NAME gspc-teardown-rifd
   SOURCES "gspc-teardown-rifd.cpp"
   LIBRARIES rif-strategies
-            fhg-revision
+            fhg-project_configuration
             fhg-util
             Util::Generic
             Boost::filesystem

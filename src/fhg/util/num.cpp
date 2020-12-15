@@ -16,13 +16,10 @@
 
 #include <fhg/util/num.hpp>
 #include <fhg/util/parse/error.hpp>
-#include <fhg/util/parse/from_string.hpp>
 
 #include <util-generic/fallthrough.hpp>
 
 #include <limits>
-
-#include <iostream>
 
 namespace fhg
 {
@@ -184,32 +181,16 @@ namespace fhg
         return false;
       }
 
-      template<typename I>
-        inline I generic_read_signed_integral (parse::position& pos)
+      double read_fraction (const unsigned long ipart, parse::position& pos)
       {
-        return generic_read_integral<I> (pos, read_sign (pos));
-      }
+        double x (ipart);
 
-      template<typename F>
-        struct initial_fak
-      {
-        static F value;
-      };
-
-      template<> double initial_fak<double>::value = 0.1;
-      template<> float initial_fak<float>::value = 0.1f;
-
-      template<typename F>
-        F read_fraction (const unsigned long ipart, parse::position& pos)
-      {
-        F x (ipart);
-
-        F frac (0.0);
-        F fak (initial_fak<F>::value);
+        double frac (0.0);
+        double fak (0.1);
 
         while (!pos.end() && isdigit (*pos))
         {
-          frac += F(*pos - '0') * fak;
+          frac += double(*pos - '0') * fak;
           fak *= 0.1;
           ++pos;
         }
@@ -241,21 +222,6 @@ namespace fhg
 
         return x;
       }
-
-      template<typename F>
-        inline F generic_read_fractional (parse::position& pos)
-      {
-        const bool negative (read_sign (pos));
-        const unsigned long i (read_ulong (pos));
-
-        if (!pos.end() && *pos == '.')
-        {
-          ++pos;
-        }
-
-        return negative
-          ? -read_fraction<F> (i, pos) : read_fraction<F> (i, pos);
-      }
     }
 
     unsigned long read_ulong (parse::position& pos)
@@ -265,26 +231,6 @@ namespace fhg
     unsigned int read_uint (parse::position& pos)
     {
       return generic_read_integral<unsigned int> (pos);
-    }
-    std::size_t read_size_t (parse::position& pos)
-    {
-      return generic_read_integral<std::size_t> (pos);
-    }
-    long read_long (parse::position& pos)
-    {
-      return generic_read_signed_integral<long> (pos);
-    }
-    int read_int (parse::position& pos)
-    {
-      return generic_read_signed_integral<int> (pos);
-    }
-    double read_double (parse::position& pos)
-    {
-      return generic_read_fractional<double> (pos);
-    }
-    float read_float (parse::position& pos)
-    {
-      return generic_read_fractional<float> (pos);
     }
 
     namespace
@@ -298,6 +244,14 @@ namespace fhg
         }
 
         return static_cast<To> (x);
+      }
+
+      template<>
+        float cast (unsigned long const& x, parse::position const&)
+      {
+        // Always fits. Check would fail though due to max float not
+        // fitting unsigned long.
+        return static_cast<float> (x);
       }
     }
 
@@ -350,7 +304,7 @@ namespace fhg
             case 'e':
             case 'E':
               {
-                const double d (read_fraction<double> (ul, pos));
+                auto const d (read_fraction (ul, pos));
 
                 if (!pos.end() && (*pos == 'f' || *pos == 'F'))
                 {
@@ -372,16 +326,5 @@ namespace fhg
     }
 
 #undef SIGNED
-
-    int read_int (std::string const& input)
-    {
-      return parse::from_string<int>
-        (static_cast<int (*) (parse::position&)> (&read_int), input);
-    }
-    std::size_t read_size_t (std::string const& input)
-    {
-      return parse::from_string<std::size_t>
-        (static_cast<std::size_t (*) (parse::position&)> (&read_size_t), input);
-    }
   }
 }

@@ -429,9 +429,9 @@ BOOST_FIXTURE_TEST_CASE (err1_invalid_closing_tag_name, fixture)
   fhg::util::testing::require_exception_with_message
     <std::runtime_error>
     ( [&input]()
-      { xml::parse::state::type state;
+      { xml::parse::state::type state_empty;
         std::istringstream input_stream (input);
-        xml::parse::just_parse (state, input_stream);
+        xml::parse::just_parse (state_empty, input_stream);
       }
     , boost::format ("Parse error: %1%: invalid closing tag name")
     % "[<stdin>:4:7]"

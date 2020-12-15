@@ -344,6 +344,8 @@ namespace xml
       class modules_without_preferences : public generic
       {
       public:
+        modules_without_preferences (const util::position_type&);
+
         modules_without_preferences ( const std::string&
                                     , const std::string&
                                     , const util::position_type&

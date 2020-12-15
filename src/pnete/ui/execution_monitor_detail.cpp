@@ -71,7 +71,7 @@ namespace fhg
 
       namespace
       {
-        void abort_on_column_change()
+        [[noreturn]] void abort_on_column_change()
         {
           throw util::backtracing_exception ("column count of source model changed, which should not happen");
         }

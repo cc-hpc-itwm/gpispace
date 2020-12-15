@@ -22,7 +22,7 @@ install_prefix=${1:?missing argument 1: install_prefix}
 cxx_compiler=${2:?missing argument 2: cxx_compiler}
 num_parallel_procs=${3:-10}
 
-cxx_args="-x c++ -o /dev/null -c --std=c++11"
+cxx_args="-x c++ -o /dev/null -c --std=c++14"
 cxx_args="${cxx_args} -I ${install_prefix}/include"
 cxx_args="${cxx_args} -I ${install_prefix}/external/boost/include"
 

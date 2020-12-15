@@ -33,9 +33,10 @@ namespace fhg
   {
     namespace
     {
-      void throw_gaspi_error ( std::string const& function_name
-                             , gaspi_return_t rc
-                             )
+      [[noreturn]] void throw_gaspi_error
+        ( std::string const& function_name
+        , gaspi_return_t rc
+        )
       {
         throw gpi::exception::gaspi_error
           ( gpi::error::internal_error()

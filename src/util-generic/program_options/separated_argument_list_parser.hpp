@@ -18,11 +18,10 @@
 
 #include <boost/program_options/option.hpp>
 
-#include <algorithm>
 #include <map>
 #include <string>
-#include <vector>
 #include <utility>
+#include <vector>
 
 namespace fhg
 {
@@ -38,43 +37,14 @@ namespace fhg
                            >
                 > _sections;
 
-        separated_argument_list_parser (decltype (_sections) sections)
-          : _sections (std::move (sections))
-        {}
+        separated_argument_list_parser (decltype (_sections));
         separated_argument_list_parser ( std::string open
                                        , std::string close
                                        , std::string option
-                                       )
-          : _sections ({{open, {close, option}}})
-        {}
+                                       );
 
         std::vector<boost::program_options::option>
-          operator() (std::vector<std::string>& args) const
-        {
-          auto const pos (_sections.find (args[0]));
-
-          if (pos == _sections.end())
-          {
-            return {};
-          }
-
-          auto begin (std::next (args.begin()));
-          auto const end (std::find (begin, args.end(), pos->second.first));
-
-          std::vector<std::string> values (begin, end);
-          args.erase
-            (args.begin(), end == args.end() ? end : std::next (end));
-
-          if (values.empty())
-          {
-            return {};
-          }
-
-          //! \note workaround for https://svn.boost.org/trac/boost/ticket/11645
-          boost::program_options::option option (pos->second.second, values);
-          option.position_key = -1;
-          return {option};
-        }
+          operator() (std::vector<std::string>& args) const;
       };
     }
   }

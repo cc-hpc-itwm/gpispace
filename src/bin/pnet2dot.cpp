@@ -21,7 +21,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/value/show.hpp>
 
-#include <fhg/revision.hpp>
+#include <fhg/project_info.hpp>
 #include <fhg/util/indenter.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/starts_with.hpp>

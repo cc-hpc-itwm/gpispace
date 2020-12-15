@@ -35,10 +35,12 @@ namespace we
         ( std::string const& global
         , std::string const& local
         , boost::optional<bool> const& not_modified_in_module_call
+        , bool allow_empty_ranges
         )
         : _global (global)
         , _local (local)
         , _not_modified_in_module_call (not_modified_in_module_call)
+        , _allow_empty_ranges (allow_empty_ranges)
       {}
       std::string const& global() const
       {
@@ -52,10 +54,15 @@ namespace we
       {
         return _not_modified_in_module_call;
       }
+      bool const& allow_empty_ranges() const
+      {
+        return _allow_empty_ranges;
+      }
     private:
       std::string _global;
       std::string _local;
       boost::optional<bool> _not_modified_in_module_call;
+      bool _allow_empty_ranges;
 
       friend class boost::serialization::access;
       template<class Archive>
@@ -64,6 +71,7 @@ namespace we
         ar & _global;
         ar & _local;
         ar & _not_modified_in_module_call;
+        ar & _allow_empty_ranges;
       }
     };
   }

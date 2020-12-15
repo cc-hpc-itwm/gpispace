@@ -156,11 +156,13 @@ namespace
             (fhg::util::testing::random<std::string>::except ("\\\""))
         );
 
+      auto const port_id
+        (transition.add_port ({random_string(), we::type::PORT_IN, type}));
       net.add_connection
         ( we::edge::PT
-        , net.add_transition (transition)
+        , net.add_transition (std::move (transition))
         , place_id
-        , transition.add_port ({random_string(), we::type::PORT_IN, type})
+        , port_id
         , {}
         );
     }

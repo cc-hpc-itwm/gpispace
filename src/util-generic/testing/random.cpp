@@ -16,8 +16,11 @@
 
 #include <util-generic/testing/random.hpp>
 
-#include <util-generic/first_then.hpp>
+#include <util-generic/join.hpp>
 #include <util-generic/testing/random/state_bits.hpp>
+
+#include <boost/test/framework.hpp>
+#include <boost/test/utils/lazy_ostream.hpp>
 
 #include <array>
 #include <functional>
@@ -64,21 +67,6 @@ namespace fhg
 #endif
             }
 
-            bool had_failure = false;
-            ~seed_state_t()
-            {
-              if (had_failure)
-              {
-                std::cerr << "**** random generator was seeded with:";
-                first_then<char> const sep (' ', ',');
-                for (seed_seq_type const& part : seed_data)
-                {
-                  std::cerr << sep << part;
-                }
-                std::cerr << "\n";
-              }
-            }
-
             void seed (RandomNumberEngine& engine) const
             {
               std::seed_seq seed_sequence (seed_data.begin(), seed_data.end());
@@ -100,22 +88,24 @@ namespace fhg
           static std::once_flag was_seeded;
           std::call_once (was_seeded, [&] { seed_state().seed (engine); });
 
+          // Context resets per test unit, so check if in a new unit
+          // to avoid duplicate addition of context.
+          static auto last_unit (boost::unit_test::INV_TEST_UNIT_ID);
+          auto const curr_unit
+            (boost::unit_test::framework::current_test_case_id());
+          if (last_unit != curr_unit)
+          {
+            boost::unit_test::framework::add_context
+              ( BOOST_TEST_LAZY_MSG
+                  ( "random generator was seeded with: "
+                  << join (seed_state().seed_data, ",")
+                  )
+              , true
+              );
+            last_unit = curr_unit;
+          }
+
           return engine;
-        }
-
-        void print_seed_on_failure_observer::test_aborted()
-        {
-          seed_state().had_failure = true;
-        }
-        void print_seed_on_failure_observer::test_unit_aborted
-          (boost::unit_test::test_unit const&)
-        {
-          seed_state().had_failure = true;
-        }
-
-        print_seed_on_failure_observer::print_seed_on_failure_observer()
-        {
-          boost::unit_test::framework::register_observer (*this);
         }
       }
     }

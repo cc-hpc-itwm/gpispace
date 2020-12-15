@@ -113,7 +113,7 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
     . add<test::option::gen::include> (test::source_directory (vm) / "include")
     );
 
-  pnet::type::value::value_type const control {we::type::literal::control()};
+  pnet::type::value::value_type const control_v {we::type::literal::control()};
 
   gspc::scoped_rifds const rifds ( gspc::rifd::strategy {vm}
                                  , gspc::rifd::hostnames {vm}
@@ -125,7 +125,7 @@ BOOST_AUTO_TEST_CASE (tutorial_hello_world)
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts).put_and_run
-        (gspc::workflow (make.pnet()), {{"in", control}})
+        (gspc::workflow (make.pnet()), {{"in", control_v}})
     );
 
   decltype (result) const expected {{"out", std::string ("gpu")}};

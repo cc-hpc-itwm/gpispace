@@ -284,7 +284,7 @@ namespace we
 
     void activity_t::set_wait_for_output()
     {
-      return mutable_transition().set_property ({"drts", "wait_for_output"}, true);;
+      return mutable_transition().set_property ({"drts", "wait_for_output"}, true);
     }
     void activity_t::put_token
       (std::string place_name, pnet::type::value::value_type const& token)

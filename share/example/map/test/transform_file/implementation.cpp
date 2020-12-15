@@ -51,7 +51,7 @@ void map_produce ( map::user_data_type const& user_data
        % (id * buffer.second)
        ).str()
       );
-  };
+  }
 
   if (!stream.read ( static_cast<char*> (buffer.first)
                    , std::min (buffer.second, size - id * buffer.second)
@@ -60,7 +60,7 @@ void map_produce ( map::user_data_type const& user_data
   {
     throw std::runtime_error
       ((boost::format ("Could not read from '%1%'") % input).str());
-  };
+  }
 }
 
 void map_process
@@ -119,7 +119,7 @@ void map_consume ( map::user_data_type const& user_data
        % (id * buffer.second)
        ).str()
       );
-  };
+  }
 
   if (!stream.write ( static_cast<char const*> (buffer.first)
                     , std::min (buffer.second, size - id * buffer.second)
@@ -128,5 +128,5 @@ void map_consume ( map::user_data_type const& user_data
   {
     throw std::runtime_error
       ((boost::format ("Could not write to '%1%'") % output).str());
-  };
+  }
 }

@@ -78,20 +78,6 @@ namespace fhg
       }
     }
 
-    socket_t make_socket
-      ( boost::asio::io_service& io_service
-      , boost::asio::ssl::context* ctx
-      )
-    {
-      if (ctx)
-      {
-        return fhg::util::cxx14::make_unique<ssl_stream_t> (io_service, *ctx);
-      }
-      else
-      {
-        return fhg::util::cxx14::make_unique<tcp_socket_t> (io_service);
-      }
-    }
     template<typename SocketPtr>
       tcp_socket_t& raw_socket (SocketPtr& socket)
     {
@@ -120,7 +106,17 @@ namespace fhg
       )
       : _peer (peer)
       , strand_(strand)
-      , socket_ (make_socket (io_service, ctx))
+      , socket_
+        ( [&]() -> socket_t
+          {
+            if (ctx)
+            {
+              return std::make_unique<ssl_stream_t> (io_service, *ctx);
+            }
+
+            return std::make_unique<tcp_socket_t> (io_service);
+          }()
+        )
       , _raw_socket (raw_socket (socket_))
       , _handle_hello_message (handle_hello_message)
       , _handle_user_data (handle_user_data)

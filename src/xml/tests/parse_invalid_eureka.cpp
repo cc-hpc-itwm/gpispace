@@ -163,12 +163,14 @@ BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
  <net>
   <transition name="foo">
     <defun>
-      <preferences>
-        <target>%2%</target>
-        <target>%3%</target>
-      </preferences>
-      <module name="%1%" function="func()" target="%2%" eureka-group="%4%"/>
-      <module name="%1%" function="func()" target="%3%" eureka-group="%5%"/>
+      <modules>
+        <preferences>
+          <target>%2%</target>
+          <target>%3%</target>
+        </preferences>
+        <module name="%1%" function="func()" target="%2%" eureka-group="%4%"/>
+        <module name="%1%" function="func()" target="%3%" eureka-group="%5%"/>
+      </modules>
     </defun>
   </transition>
  </net>
@@ -184,9 +186,9 @@ BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
   fhg::util::testing::require_exception_with_message
     <xml::parse::error::mismatching_eureka_for_module>
     ( [&input]()
-      { xml::parse::state::type state;
+      { xml::parse::state::type state_empty;
         std::istringstream input_stream (input);
-        xml::parse::just_parse (state, input_stream);
+        xml::parse::just_parse (state_empty, input_stream);
       }
     , boost::format
         ( "ERROR: mismatching eureka group for module '%1%'"
@@ -224,12 +226,14 @@ BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
  <net>
   <transition name="foo">
     <defun>
-      <preferences>
-        <target>%2%</target>
-        <target>%3%</target>
-      </preferences>
-      <module name="%1%" function="func()" target="%2%"%4%/>
-      <module name="%1%" function="func()" target="%3%"%5%/>
+      <modules>
+        <preferences>
+          <target>%2%</target>
+          <target>%3%</target>
+        </preferences>
+        <module name="%1%" function="func()" target="%2%"%4%/>
+        <module name="%1%" function="func()" target="%3%"%5%/>
+      </modules>
     </defun>
   </transition>
  </net>

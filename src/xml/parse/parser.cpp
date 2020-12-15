@@ -280,6 +280,11 @@ namespace xml
           }
         }
 
+        if (target_list.empty())
+        {
+          throw error::empty_preferences (state.position (node));
+        }
+
         return target_list;
       }
 
@@ -574,6 +579,7 @@ namespace xml
                                         , std::string const&
                                         , we::type::property::type const&
                                         , boost::optional<bool> const&
+                                        , boost::optional<bool> const&
                                         )> make_transfer
         )
       {
@@ -635,6 +641,10 @@ namespace xml
             ( fhg::util::read_bool
             , optional (node, "not-modified-in-module-call")
             )
+          , fhg::util::boost::fmap<std::string, bool>
+              ( fhg::util::read_bool
+              , optional (node, "allow-empty-ranges")
+              )
           );
       }
 
@@ -650,12 +660,14 @@ namespace xml
                , std::string const& local
                , we::type::property::type const& properties
                , boost::optional<bool> const& // ignored
+               , boost::optional<bool> const& allow_empty_ranges
                )
           { return type::memory_get
               ( state_.position (node_)
               , global
               , local
               , properties
+              , allow_empty_ranges
               );
           }
           );
@@ -673,12 +685,14 @@ namespace xml
                , std::string const& local
                , we::type::property::type const& properties
                , boost::optional<bool> const& not_modified_in_module_call
+               , boost::optional<bool> const& allow_empty_ranges
                )
           { return type::memory_put ( state_.position (node_)
                                     , global
                                     , local
                                     , properties
                                     , not_modified_in_module_call
+                                    , allow_empty_ranges
                                     );
           }
           );
@@ -696,12 +710,14 @@ namespace xml
                , std::string const& local
                , we::type::property::type const& properties
                , boost::optional<bool> const& not_modified_in_module_call
+               , boost::optional<bool> const& allow_empty_ranges
                )
           { return type::memory_getput ( state_.position (node_)
                                        , global
                                        , local
                                        , properties
                                        , not_modified_in_module_call
+                                       , allow_empty_ranges
                                        );
           }
           );
@@ -1005,7 +1021,7 @@ namespace xml
         {
           return TRANSITION (function.get());
         }
-        
+
         if (!!use)
         {
           return TRANSITION (use.get());
@@ -1879,6 +1895,65 @@ namespace xml
 
       // ******************************************************************* //
 
+      std::tuple<type::multi_module_type, type::preferences_type>
+        modules_type ( xml_node_type const* node
+                     , state::type& state
+                     , type::function_type::ports_type const& ports
+                     , fhg::pnet::util::unique<type::memory_buffer_type> const&
+                         memory_buffers
+                     )
+      {
+        type::multi_module_type modules;
+        boost::optional<type::preferences_type> preferences;
+
+        for ( xml_node_type* child (node->first_node())
+            ; child
+            ; child = child ? child->next_sibling() : child
+            )
+        {
+          const std::string child_name (name_element (child, state));
+
+          if (child)
+          {
+            if (child_name == "preferences")
+            {
+              preferences = preferences_type (child, state);
+            }
+            else if (child_name == "module")
+            {
+              modules.add ( module_type ( child
+                                        , state
+                                        , ports
+                                        , memory_buffers
+                                        , true
+                                        , state.position (node).path()
+                                        )
+                          );
+            }
+            else
+            {
+              state.warn ( warning::unexpected_element
+                             ( child_name
+                             , "modules_type"
+                             , state.file_in_progress()
+                             )
+                         );
+            }
+          }
+        }
+
+        if (modules.modules().empty())
+        {
+          throw error::preferences_without_modules (state.position (node));
+        }
+        else if (!preferences)
+        {
+          throw error::modules_without_preferences (state.position (node));
+        }
+
+        return std::make_tuple (std::move (modules), std::move (*preferences));
+      }
+
       type::function_type
         function_type (const xml_node_type* node, state::type& state)
       {
@@ -1965,23 +2040,18 @@ namespace xml
             }
             else if (child_name == "module")
             {
-              type::module_type parsed_module =
-                module_type ( child
-                            , state
-                            , ports
-                            , memory_buffers
-                            , !preferences.targets().empty()
-                            , state.position (node).path()
-                            );
-
-              if (parsed_module.target())
-              {
-                multi_module.add (parsed_module);
-              }
-              else
-              {
-                module = parsed_module;
-              }
+              module = module_type ( child
+                                   , state
+                                   , ports
+                                   , memory_buffers
+                                   , false
+                                   , state.position (node).path()
+                                   );
+            }
+            else if (child_name == "modules")
+            {
+              std::tie (multi_module, preferences)
+                = modules_type (child, state, ports, memory_buffers);
             }
             else if (child_name == "net")
             {
@@ -2011,15 +2081,6 @@ namespace xml
             {
               require_type (requirements, child, state);
             }
-            else if (child_name == "preferences")
-            {
-              preferences = preferences_type (child, state);
-
-              if (preferences.targets().empty())
-              {
-                throw error::empty_preferences (state.position (child));
-              }
-            }
             else
             {
               state.warn ( warning::unexpected_element ( child_name
@@ -2031,11 +2092,7 @@ namespace xml
           }
         }
 
-        if (!preferences.targets().empty() && multi_module.modules().empty())
-        {
-          throw error::preferences_without_modules (state.position (node));
-        }
-        else if (!preferences.targets().empty())
+        if (!multi_module.modules().empty())
         {
           is_matching_preferences_and_modules_with_eureka_id ( node
                                                              , state

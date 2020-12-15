@@ -30,21 +30,35 @@ namespace xml
         , std::string const& global
         , std::string const& local
         , const we::type::property::type& properties
+        , boost::optional<bool> const& allow_empty_ranges
         )
           : with_position_of_definition (position_of_definition)
           , _global (global)
           , _local (local)
           , _properties (properties)
+          , _allow_empty_ranges (allow_empty_ranges)
       {}
+
+      boost::optional<bool> const&
+        memory_transfer_type::allow_empty_ranges() const
+      {
+        return _allow_empty_ranges;
+      }
 
       memory_get::memory_get
         ( const util::position_type& position_of_definition
         , std::string const& global
         , std::string const& local
         , const we::type::property::type& properties
+        , boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
-            (position_of_definition, global, local, properties)
+              ( position_of_definition
+              , global
+              , local
+              , properties
+              , allow_empty_ranges
+              )
       {}
 
       memory_put::memory_put
@@ -53,9 +67,15 @@ namespace xml
         , std::string const& local
         , const we::type::property::type& properties
         , boost::optional<bool> const& not_modified_in_module_call
+        , boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
-            (position_of_definition, global, local, properties)
+              ( position_of_definition
+              , global
+              , local
+              , properties
+              , allow_empty_ranges
+              )
           , _not_modified_in_module_call (not_modified_in_module_call)
       {}
 
@@ -65,9 +85,15 @@ namespace xml
         , std::string const& local
         , const we::type::property::type& properties
         , boost::optional<bool> const& not_modified_in_module_call
+        , boost::optional<bool> const& allow_empty_ranges
         )
           : memory_transfer_type
-            (position_of_definition, global, local, properties)
+              ( position_of_definition
+              , global
+              , local
+              , properties
+              , allow_empty_ranges
+              )
           , _not_modified_in_module_call (not_modified_in_module_call)
       {}
 
@@ -79,6 +105,7 @@ namespace xml
                              , memory_transfer_type const& mt
                              )
           {
+            s.attr ("allow-empty-ranges", mt.allow_empty_ranges());
             s.open ("global");
             s.content (mt.global());
             s.close();

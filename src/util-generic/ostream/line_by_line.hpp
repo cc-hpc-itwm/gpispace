@@ -29,35 +29,10 @@ namespace fhg
       class line_by_line : public std::streambuf
       {
       public:
-        line_by_line (std::function<void (std::string const&)> const& callback)
-          : std::streambuf()
-          , _callback (callback)
-        {}
-        ~line_by_line()
-        {
-          if (!_buffer.empty())
-          {
-            _callback (_buffer);
-          }
-        }
+        line_by_line (std::function<void (std::string const&)> const& callback);
+        virtual ~line_by_line() override;
 
-        int_type overflow (int_type i)
-        {
-          auto const c (traits_type::to_char_type (i));
-
-          if (c == '\n')
-          {
-            _callback (_buffer);
-
-            _buffer.clear();
-          }
-          else
-          {
-            _buffer += c;
-          }
-
-          return i;
-        }
+        virtual int_type overflow (int_type i) override;
 
       private:
         std::string _buffer;

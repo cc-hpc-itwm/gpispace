@@ -40,6 +40,7 @@ extended_add_library (NAME we-dev
   LIBRARIES fhg-util
             ${CMAKE_DL_LIBS}
   INSTALL
+  CREATE_BUNDLE_INFO
 )
 
 extended_add_library (NAME we-dev-testing

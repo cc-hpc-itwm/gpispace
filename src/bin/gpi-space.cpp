@@ -20,7 +20,6 @@
  *
  */
 
-#include <fhg/revision.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path.hpp>
 #include <fhg/util/boost/program_options/validators/nonexisting_path_in_existing_directory.hpp>

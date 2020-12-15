@@ -20,6 +20,7 @@
 #include <we/expr/parse/parser.hpp>
 #include <we/type/value.hpp>
 
+#include <algorithm>
 #include <stdexcept>
 
 namespace we
@@ -81,6 +82,37 @@ namespace we
           throw std::runtime_error ("sum of sizes of ranges differ");
         }
       }
+
+      std::list<local::range>
+        evaluate_and_trigger_error_if_empty_ranges_are_not_allowed
+          ( expr::eval::context& context
+          , type::memory_transfer const& transfer
+          )
+      {
+        auto local_ranges
+          (evaluate<local::range> (context, transfer.local()));
+
+        if (!transfer.allow_empty_ranges())
+        {
+          if ( std::any_of ( local_ranges.begin()
+                           , local_ranges.end()
+                           , [] (local::range const& range)
+                             {
+                               return range.size() == 0;
+                             }
+                           )
+             )
+          {
+            throw std::runtime_error
+              ( "Attempting to transfer empty ranges! If this behavior is "
+                "wanted, then please set the attribute \"allow-empty-ranges\" "
+                "for memory transfers on true in the Petri net!"
+              );
+           }
+        }
+
+        return local_ranges;
+      }
     }
 
     bool module_call_t::require_function_unloads_without_rest() const
@@ -118,7 +150,8 @@ namespace we
       {
         expr::eval::context context (input);
 
-        zip ( evaluate<local::range> (context, mg.local())
+        zip ( evaluate_and_trigger_error_if_empty_ranges_are_not_allowed
+                (context, mg)
             , evaluate<global::range> (context, mg.global())
             , gets
             );
@@ -139,7 +172,8 @@ namespace we
         {
           expr::eval::context context (output);
 
-          zip ( evaluate<local::range> (context, mp.local())
+          zip ( evaluate_and_trigger_error_if_empty_ranges_are_not_allowed
+                  (context, mp)
               , evaluate<global::range> (context, mp.global())
               , puts
               );
@@ -161,7 +195,8 @@ namespace we
         {
           expr::eval::context context (output);
 
-          zip ( evaluate<local::range> (context, mp.local())
+          zip ( evaluate_and_trigger_error_if_empty_ranges_are_not_allowed
+                  (context, mp)
               , evaluate<global::range> (context, mp.global())
               , puts
               );

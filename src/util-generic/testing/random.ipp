@@ -23,9 +23,14 @@
 #include <util-generic/testing/random/integral.hpp>
 #include <util-generic/testing/random/string.hpp>
 
-#include <boost/test/tree/observer.hpp>
+// \todo Not needed by this header, but a lot of test cases rely on
+// this fixing a missing include that was resolved in 1.65. Add the
+// missing include to all tests doing that, or bump Boost and remove
+// this check.
+#include <boost/version.hpp>
+#if BOOST_VERSION < 106500
 #include <boost/test/tree/test_unit.hpp>
-#include <boost/test/unit_test_suite.hpp>
+#endif
 
 #include <algorithm>
 #include <unordered_set>
@@ -36,21 +41,6 @@ namespace fhg
   {
     namespace testing
     {
-      namespace detail
-      {
-        struct print_seed_on_failure_observer
-          : public boost::unit_test::test_observer
-        {
-          print_seed_on_failure_observer();
-
-          virtual void test_aborted() override;
-          virtual void test_unit_aborted
-            (boost::unit_test::test_unit const&) override;
-        };
-
-        BOOST_GLOBAL_FIXTURE (print_seed_on_failure_observer);
-      }
-
       template<typename Container, typename Generator>
         Container randoms (std::size_t n, Generator&& generator)
       {

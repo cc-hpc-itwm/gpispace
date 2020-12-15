@@ -22,7 +22,8 @@
 
 struct D : public gspc::we::plugin::Base
 {
-  D (::gspc::we::plugin::Context const&, ::gspc::we::plugin::PutToken)
+  [[noreturn]]
+    D (::gspc::we::plugin::Context const&, ::gspc::we::plugin::PutToken)
   {
     throw std::runtime_error ("D::D()");
   }

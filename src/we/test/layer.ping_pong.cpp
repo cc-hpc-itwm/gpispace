@@ -36,7 +36,7 @@
 
 namespace
 {
-  void disallow (std::string what)
+  [[noreturn]] void disallow (std::string what)
   {
     throw std::runtime_error ("disallowed function called: " + what);
   }

@@ -49,11 +49,11 @@
     
 	<transition name="run_task_requiring_capability_A">
       <defun>
+        <require key="A" mandatory="true"/>
         <in name="trigger_A" type="bool"/>
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>
         <out name="done_A" type="control"/>
-        <require key="A" mandatory="true"/>
         <module name="task_A"
                 function="task_A (host, port, done_A)"
                 pass_context="true">
@@ -84,11 +84,11 @@
     
 	<transition name="run_task_requiring_capability_B">
       <defun>
+        <require key="B" mandatory="true"/>
         <in name="trigger_B" type="bool"/>
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>
         <out name="done_B" type="control"/>
-        <require key="B" mandatory="true"/>
         <module name="task_B"
                 function="task_B (host, port, done_B)"
                 pass_context="true">
@@ -113,11 +113,11 @@
     
 	<transition name="run_task_requiring_capability_C">
       <defun>
+        <require key="C" mandatory="true"/>
         <in name="trigger_C" type="bool"/>
         <in name="host" type="string"/>
         <in name="port" type="unsigned int"/>
         <out name="done_C" type="control"/>
-        <require key="C" mandatory="true"/>
         <module name="task_C"
                 function="task_C (host, port, done_C)"
                 pass_context="true">

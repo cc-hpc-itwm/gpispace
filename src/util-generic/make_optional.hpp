@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <boost/optional.hpp>
-
 namespace fhg
 {
   namespace util
@@ -27,17 +25,8 @@ namespace fhg
     //! when value is dependend on cond and would require `cond ?
     //! boost::optional<T> (value) : boost::optional<T>()` instead.
 #define FHG_UTIL_MAKE_OPTIONAL(cond_, how_...)                      \
-    fhg::util::detail::make_optional (cond_, [&] { return how_; })
-
-    namespace detail
-    {
-      template<typename Fun>
-        auto make_optional (bool cond, Fun&& fun)
-          -> boost::optional<decltype (fun())>
-      {
-        using T = boost::optional<decltype (fun())>;
-        return cond ? T (fun()) : T();
-      }
-    }
+    FHG_UTIL_MAKE_OPTIONAL_IMPL(cond_, how_)
   }
 }
+
+#include <util-generic/make_optional.ipp>

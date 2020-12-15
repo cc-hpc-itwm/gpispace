@@ -32,9 +32,9 @@ namespace fhg
       {}
     }
 
-    tcp_endpoint::tcp_endpoint (std::string host, unsigned short port)
-      : host (std::move (host))
-      , port (port)
+    tcp_endpoint::tcp_endpoint (std::string host_, unsigned short port_)
+      : host (std::move (host_))
+      , port (port_)
     {}
 
     namespace
@@ -44,8 +44,11 @@ namespace fhg
       {
         auto const colon_pos (raw.find (':'));
 
-#define REQUIRE(cond_)                                         \
-        if (!(cond_)) { throw std::runtime_error (#cond_); }
+#define REQUIRE(cond_)                                          \
+        do                                                      \
+        {                                                       \
+          if (!(cond_)) { throw std::runtime_error (#cond_); }  \
+        } while (false)
 
         REQUIRE (colon_pos != std::string::npos);
         REQUIRE (colon_pos + 1 != raw.size());

@@ -26,32 +26,34 @@
 
     <transition name="hello">
       <defun>
-
-        <preferences>
-          <target>gpu</target>
-          <target>cpu</target>
-        </preferences>
-
         <in name="in" type="control"/>
         <out name="out" type="string"/>
-        <module name="hello_world_pref_list" function="out one_call_to_hello_world()" target="cpu">
-          <cinclude href="hello_world.hpp"/> <!-- cpp library -->
-          <cinclude href="iostream"/>
-          <code><![CDATA[
-          std::cout << "Hello world...[impl=CPU]" << std::endl;
-          return impl_hello_world_cpu();
-          ]]></code>
-        </module>
+        <modules>
 
-        <module name="hello_world_pref_list" function="out one_call_to_hello_world()" target="gpu">
-          <cinclude href="hello_world.hpp"/> <!-- cpp library -->
-          <cinclude href="iostream"/>
-          <code><![CDATA[
-          std::cout << "Hello world...[impl=GPU]" << std::endl;
-          return impl_hello_world_gpu();
-          ]]></code>
-        </module>
+          <preferences>
+            <target>gpu</target>
+            <target>cpu</target>
+          </preferences>
 
+          <module name="hello_world_pref_list" function="out one_call_to_hello_world()" target="cpu">
+            <cinclude href="hello_world.hpp"/> <!-- cpp library -->
+            <cinclude href="iostream"/>
+            <code><![CDATA[
+            std::cout << "Hello world...[impl=CPU]" << std::endl;
+            return impl_hello_world_cpu();
+            ]]></code>
+          </module>
+  
+          <module name="hello_world_pref_list" function="out one_call_to_hello_world()" target="gpu">
+            <cinclude href="hello_world.hpp"/> <!-- cpp library -->
+            <cinclude href="iostream"/>
+            <code><![CDATA[
+            std::cout << "Hello world...[impl=GPU]" << std::endl;
+            return impl_hello_world_gpu();
+            ]]></code>
+          </module>
+
+        </modules>
       </defun>
 
       <connect-in port="in" place="in"/>

@@ -961,7 +961,7 @@ namespace we
       }
     }
 
-    void net_type::unexpected_eureka (eureka_ids_type const& ids)
+    void unexpected_eureka (eureka_ids_type const& ids)
     {
       throw std::logic_error
         (str ( boost::format ("Unexpected call to eureka: %1%")

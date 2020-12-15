@@ -167,7 +167,7 @@ namespace sdpa
       } visitor;
 
       SAVE_TO_ARCHIVE_WITH_TEMPORARY
-        (workflow_response_response::serialized, boost::apply_visitor (visitor, e->content()));
+        (workflow_response_response::serialized, boost::apply_visitor (visitor, e->content()))
     }
 
     LOAD_CONSTRUCT_DATA_DEF (workflow_response_response, e)

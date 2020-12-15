@@ -19,7 +19,6 @@
 #include <fhgcom/tests/address_printer.hpp>
 
 #include <test/certificates_data.hpp>
-#include <test/hopefully_free_port.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
@@ -178,11 +177,11 @@ BOOST_DATA_TEST_CASE ( peer_run_two
       {
         peer_2.async_recv ( [&] ( boost::system::error_code ec
                                 , boost::optional<fhg::com::p2p::address_t>
-                                , message_t message
+                                , message_t message_
                                 )
                             {
                               error = ec;
-                              m = std::move (message);
+                              m = std::move (message_);
                               recv_finished.notify();
                             }
                           );
@@ -270,74 +269,6 @@ BOOST_DATA_TEST_CASE
                     );
 }
 
-BOOST_DATA_TEST_CASE
-  (two_peers_one_restarts_repeatedly, certificates_data, certificates)
-{
-  using namespace fhg::com;
-
-  peer_t peer_1 ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-                , host_t("localhost")
-                , port_t("0")
-                , certificates
-                );
-
-  bool stop_request (false);
-
-  test::hopefully_free_port peer_2_port;
-  fhg::com::port_t peer_2_port_string (std::to_string (peer_2_port));
-
-  std::thread sender ( [&peer_1, &stop_request, &peer_2_port_string]
-                       {
-                         while (not stop_request)
-                         {
-                           try
-                           {
-                             peer_1.send ( peer_1.connect_to
-                                             ( host_t ("localhost")
-                                             , peer_2_port_string
-                                             )
-                                         , "hello world\n"
-                                         );
-                           }
-                           catch (std::exception const &ex)
-                           {
-                             //! \todo explain why this can be ignored
-                             // ignore
-                           }
-                         }
-                       }
-                     );
-
-  peer_2_port.release();
-  for (std::size_t i (0); i < 100; ++i)
-  {
-    peer_t peer_2
-      ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
-      , host_t ("localhost"), peer_2_port_string, certificates
-      );
-
-    try
-    {
-      peer_2.send ( peer_2.connect_to ( host (peer_1.local_endpoint())
-                                      , port (peer_1.local_endpoint())
-                                      )
-                  , "hello world!"
-                  );
-    }
-    catch (boost::system::system_error const &se)
-    {
-      if (se.code ().value () != boost::asio::error::eof)
-      {
-        throw;
-      }
-    }
-  }
-
-  stop_request = true;
-
-  sender.join ();
-}
-
 namespace
 {
   // Not defined in early versions of Boost.Asio, but bumping just for
@@ -350,7 +281,6 @@ namespace
   auto const boost_asio_ssl_error_stream_truncated
     (boost::asio::ssl::error::stream_truncated);
 #endif
-
 }
 
 // A race in destruction of peer_t, while a message was just sent,

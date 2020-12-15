@@ -94,8 +94,6 @@ namespace gpi
         void
         free (const gpi::pc::type::handle_t hdl);
 
-        void defrag (const gpi::pc::type::size_t free_at_least = 0);
-
         gpi::pc::type::segment::descriptor_t const &
         descriptor () const;
 

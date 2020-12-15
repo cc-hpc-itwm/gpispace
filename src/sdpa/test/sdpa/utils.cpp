@@ -597,9 +597,7 @@ namespace utils
                              , sdpa::events::SubmitJobEvent const* e
                              )
     {
-      auto const name (e->activity().name());
-
-      add_job (name, *e->job_id(), source);
+      auto const name (add_job (e->activity(), *e->job_id(), source));
 
       _network.perform<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
 
@@ -639,13 +637,14 @@ namespace utils
       return _jobs.at (name)._id;
     }
 
-    void fake_drts_worker_notifying_module_call_submission::add_job
-      ( std::string const& name
+    std::string fake_drts_worker_notifying_module_call_submission::add_job
+      ( we::type::activity_t const& activity
       , sdpa::job_id_t const& job_id
       , fhg::com::p2p::address_t const& owner
       )
     {
-      _jobs.emplace (name, job_t (job_id, owner));
+      return _jobs.emplace
+        (activity.name(), job_t {job_id, owner, activity}).first->first;
     }
 
     void fake_drts_worker_notifying_module_call_submission::announce_job
@@ -653,12 +652,6 @@ namespace utils
     {
       _announce_job (name);
     }
-
-    fake_drts_worker_notifying_module_call_submission::job_t::job_t
-        (sdpa::job_id_t id, fhg::com::p2p::address_t owner)
-      : _id (id)
-      , _owner (owner)
-    {}
 
     fake_drts_worker_waiting_for_finished_ack
       ::fake_drts_worker_waiting_for_finished_ack
@@ -696,7 +689,7 @@ namespace utils
       auto const job (_jobs.at (name));
 
       _network.perform<sdpa::events::JobFinishedEvent>
-        (job._owner, job._id, we::type::activity_t());
+        (job._owner, job._id, job._activity);
 
       BOOST_REQUIRE_EQUAL (_finished_ack.wait(), job._id);
     }
@@ -772,7 +765,7 @@ namespace utils
     , sdpa::events::CancelJobEvent const* pEvt
     )
   {
-    std::lock_guard<std::mutex> const _ (_cancels_mutex);
+    std::lock_guard<std::mutex> const _lock_cancels (_cancels_mutex);
 
     auto const job_id (pEvt->job_id());
     if ( std::find_if ( _jobs.begin()
@@ -794,7 +787,7 @@ namespace utils
 
   void fake_drts_worker_notifying_cancel::canceled (std::string job_id)
   {
-    std::lock_guard<std::mutex> const _ (_cancels_mutex);
+    std::lock_guard<std::mutex> const _lock_cancels (_cancels_mutex);
 
     auto const master (_cancels.at (job_id));
     _cancels.erase (job_id);

@@ -48,7 +48,7 @@
 
     try
     {
-      _pnetc_context->execute_and_kill_on_cancel
+      _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
         ( []()
           {
             while (1) {}

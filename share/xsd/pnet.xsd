@@ -128,7 +128,14 @@
     <xsd:attribute name="pass_context" type="xsd:boolean" use="optional"/>
     <xsd:attribute name="require_function_unloads_without_rest" type="xsd:boolean" use="optional"/>
     <xsd:attribute name="require_module_unloads_without_rest" type="xsd:boolean" use="optional"/>
-    <xsd:attribute name="target" type="xsd:string" use="optional"/>
+  </xsd:complexType>
+
+  <xsd:complexType name="mod_type_with_target">
+    <xsd:complexContent>
+      <xsd:extension base="mod_type">
+        <xsd:attribute name="target" type="xsd:string" use="required"/>
+      </xsd:extension>
+    </xsd:complexContent>
   </xsd:complexType>
 
   <xsd:complexType name="type_map_type">
@@ -213,6 +220,7 @@
       </xsd:choice>
       <xsd:element minOccurs="1" maxOccurs="1" name="global" type="xsd:string"/>
       <xsd:element minOccurs="1" maxOccurs="1" name="local" type="xsd:string"/>
+      <xsd:attribute name="allow-empty-ranges" type="xsd:boolean" use="optional"/>
     </xsd:sequence>
   </xsd:complexType>
 
@@ -226,6 +234,7 @@
       <xsd:element minOccurs="1" maxOccurs="1" name="local" type="xsd:string"/>
     </xsd:sequence>
     <xsd:attribute name="not-modified-in-module-call" type="xsd:boolean" use="optional"/>
+    <xsd:attribute name="allow-empty-ranges" type="xsd:boolean" use="optional"/>
   </xsd:complexType>
 
   <xsd:complexType name="connect_type">
@@ -267,6 +276,13 @@
     <xsd:attribute name="name" type="xsd:ID" use="optional"/>
   </xsd:complexType>
 
+  <xsd:complexType name="modules_type">
+    <xsd:sequence>
+      <xsd:element name="preferences" type="preferences_type"/>
+      <xsd:element minOccurs="1" maxOccurs="unbounded" name="module" type="mod_type_with_target"/>
+    </xsd:sequence>
+  </xsd:complexType>
+
   <xsd:complexType name="function_type">
     <xsd:sequence>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
@@ -275,9 +291,6 @@
         <xsd:element name="require" type="require_type"/>
         <xsd:element name="struct" type="struct_type"/>
         <xsd:element name="include-structs" type="struct_include_type"/>
-      </xsd:choice>
-      <xsd:choice minOccurs="0" maxOccurs="1">
-        <xsd:element name="preferences" type="preferences_type"/>
       </xsd:choice>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="in" type="port_type"/>
@@ -294,6 +307,7 @@
       <xsd:choice>
         <xsd:element minOccurs="1" maxOccurs="1" name="expression" type="xsd:string"/>
         <xsd:element minOccurs="1" maxOccurs="1" name="module" type="mod_type"/>
+        <xsd:element name="modules" type="modules_type"/>
         <xsd:element minOccurs="1" maxOccurs="1" name="net" type="net_type"/>
       </xsd:choice>
       <xsd:element minOccurs="0" maxOccurs="unbounded" name="condition" type="xsd:string"/>

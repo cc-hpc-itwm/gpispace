@@ -161,7 +161,7 @@ try
       queue_full.put (_buf);
     }
 
-  queue_full.put (buffer_type (0, 0));
+  queue_full.put (buffer_type (nullptr, 0));
 
   thread_writer.join();
 

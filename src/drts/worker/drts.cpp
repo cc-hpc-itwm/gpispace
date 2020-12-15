@@ -70,7 +70,7 @@ struct wfe_task_t
   drts::worker::context context;
 
   wfe_task_t ( std::string id_
-             , we::type::activity_t const& activity
+             , we::type::activity_t const& activity_
              , boost::optional<std::string> const& target_impl_
              , std::string worker_name
              , std::set<std::string> workers
@@ -78,7 +78,7 @@ struct wfe_task_t
              )
     : id (id_)
     , state (PENDING)
-    , activity (activity)
+    , activity (activity_)
     , target_impl (target_impl_)
     , context
       (drts::worker::context_constructor (worker_name, workers, logger))
@@ -251,7 +251,7 @@ void DRTSImpl::handleSubmitJobEvent
     return;
   }
 
-  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
+  std::lock_guard<std::mutex> const _lock_job_map_mutex (m_job_map_mutex);
 
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
@@ -282,7 +282,8 @@ void DRTSImpl::handleSubmitJobEvent
       , *e->job_id()
       );
 
-    std::lock_guard<std::mutex> _ (_guard_backlogfull_notified_masters);
+    std::lock_guard<std::mutex> _lock_backlogfull_notified_masters
+      (_guard_backlogfull_notified_masters);
     _masters_backlogfull_notified.emplace (source);
 
     return;
@@ -325,7 +326,8 @@ void DRTSImpl::handleCancelJobEvent
     _log_emitter.emit ( "trying to cancel running job " + e->job_id()
                       , fhg::logging::legacy::category_level_trace
                       );
-    std::lock_guard<std::mutex> const _ (_currently_executed_tasks_mutex);
+    std::lock_guard<std::mutex> const _lock_currently_executed_tasks
+      (_currently_executed_tasks_mutex);
     std::map<std::string, wfe_task_t *>::iterator task_it
       (_currently_executed_tasks.find(e->job_id()));
     if (task_it != _currently_executed_tasks.end())

@@ -26,8 +26,8 @@ namespace fhg
     {
       namespace detail
       {
-        tag::tag (const std::string& tag)
-          : _tag (tag)
+        tag::tag (const std::string& tag_)
+          : _tag (tag_)
           , _has_content (false)
           , _has_text_content (false)
         {}

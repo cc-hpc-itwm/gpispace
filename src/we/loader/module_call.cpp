@@ -124,6 +124,12 @@ namespace we
 
         fhg_assert (local.size() == global.size());
 
+        // Nothing to transfer if empty range, continue with the next transfer
+        if (local.size() == 0)
+        {
+          continue;
+        }
+
         if (!memory_buffer.count (local.buffer()))
         {
           //! \todo specific exception

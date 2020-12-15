@@ -16,63 +16,19 @@
 
 #pragma once
 
-#include <util-generic/first_then.hpp>
-#include <util-generic/ostream/callback/bracket.hpp>
 #include <util-generic/ostream/callback/function.hpp>
-#include <util-generic/ostream/callback/range.hpp>
-#include <util-generic/ostream/modifier.hpp>
 
 #include <boost/optional.hpp>
 
-#include <type_traits>
+#include <algorithm>
 #include <iterator>
+#include <string>
+#include <type_traits>
 
 namespace fhg
 {
   namespace util
   {
-    template<typename Iterator, typename Separator>
-      class join_iterator : public ostream::modifier
-    {
-      using value_type = typename std::iterator_traits<Iterator>::value_type;
-
-    public:
-      join_iterator ( Iterator begin
-                    , Iterator end
-                    , Separator separator
-                    , ostream::callback::print_function<value_type> const& print
-                    = ostream::callback::id<value_type>()
-                    , std::string const& open = ""
-                    , std::string const& close = ""
-                    )
-        : _begin (begin)
-        , _end (end)
-        , _separator (separator)
-        , _print (print)
-        , _open (open)
-        , _close (close)
-      {}
-      virtual std::ostream& operator() (std::ostream& os) const override
-      {
-        os << _open;
-
-        ostream::callback::range<Iterator, Separator> (_separator, _print)
-          (os, {_begin, _end});
-
-        os << _close;
-
-        return os;
-      }
-
-    private:
-      Iterator const _begin;
-      Iterator const _end;
-      Separator const _separator;
-      ostream::callback::print_function<value_type> const _print;
-      std::string const _open;
-      std::string const _close;
-    };
-
     template<typename C>
       using Container = typename std::remove_reference<C>::type;
     template<typename C>
@@ -80,76 +36,30 @@ namespace fhg
     template<typename C>
       using Value = typename Container<C>::value_type;
     template<typename C>
-    using Difference =
-      typename std::iterator_traits<Iterator<C>>::difference_type;
-
+      using Difference =
+        typename std::iterator_traits<Iterator<C>>::difference_type;
+    template<typename Iterator, typename Separator>
+      class join_iterator;
     template<typename C, typename Separator>
-      class join_reference : public ostream::modifier
-    {
-      using size_type = Difference<C>;
+      class join_reference;
 
-    public:
-      join_reference ( C const& container
-                     , Separator separator
-                     , ostream::callback::print_function<Value<C>> const& print
-                     = ostream::callback::id<Value<C>>()
-                     , std::string const& open = ""
-                     , std::string const& close = ""
-                     , boost::optional<size_type> const& max_elements_to_print
-                     = boost::none
-                     )
-        : _container (container)
-        , _separator (separator)
-        , _print (print)
-        , _open (open)
-        , _close (close)
-        , _max_elements_to_print (max_elements_to_print)
-      {}
-      virtual std::ostream& operator() (std::ostream& os) const override
-      {
-        size_type const number_of_elements
-          ( !_max_elements_to_print
-          ? 0
-          : std::distance (_container.begin(), _container.end())
-          );
-
-        if (!!_max_elements_to_print)
-        {
-          os << "[" << number_of_elements << "]: ";
-        }
-
-        return os
-          << join_iterator<Iterator<C>, Separator>
-          ( _container.begin()
-          , ( !!_max_elements_to_print
-            ? std::next ( _container.begin()
-                        , std::min ( number_of_elements
-                                   , _max_elements_to_print.get()
-                                   )
-                        )
-            : _container.end()
-            )
-          , _separator
-          , _print
-          , _open
-          , ( (  !!_max_elements_to_print
-              && number_of_elements > _max_elements_to_print.get()
-              )
-            ? "..." + _close
-            : _close
-            )
-          );
-      }
-
-    private:
-      C const& _container;
-      Separator const _separator;
-      ostream::callback::print_function<Value<C>> const _print;
-      std::string const _open;
-      std::string const _close;
-      boost::optional<size_type> _max_elements_to_print;
-    };
-
+    //! Create an ostream modifier that outputs the elements in \a c
+    //! separated by \a s. The elements are printed using \a
+    //! print. The sequence is prefixed by \a open and suffixed by \a
+    //! close. If there are more than \a max_elements_to_print, the
+    //! sequence is truncated once the limit is reached. If a limit is
+    //! given, it is also indicated.
+    //!
+    //! Examples:
+    //! - Given c = [1, 2, 3]; s = ", "; print = id; open = "["; close
+    //!   = "]"; max_elements_to_print = none, the resulting output is
+    //!   '[1, 2, 3]'.
+    //! - Given c = [1, 2, 3]; s = "-"; print = id; open = "<"; close
+    //!   = ">"; max_elements_to_print = 4, the resulting output is
+    //!   '[3]: <1-2-3>'.
+    //! - Given c = [1, 2, 3]; s = ", "; print = id; open = ""; close
+    //!   = ""; max_elements_to_print = 1, the resulting output is
+    //!   '[3]: 1...'.
     template<typename Container, typename Separator>
       constexpr join_reference<Container, Separator>
         join ( Container const& c
@@ -160,25 +70,26 @@ namespace fhg
              , std::string const& close = ""
              , boost::optional<Difference<Container>> const& max_elements_to_print
              = boost::none
-             )
-    {
-      return join_reference<Container, Separator>
-        (c, s, print, open, close, max_elements_to_print);
-    }
+             );
 
+    //! Create an ostream modifier that outputs the elements between
+    //! \a begin and \a end separated by \a separator. The elements
+    //! are printed surrounded by \a local_open and \a local_close per
+    //! element.
+    //!
+    //! Examples:
+    //! - Given [begin, end) = [a, b, c]; separator = "-"; local_open
+    //!   = ""; local_close = "", the resulting output is 'a-b-c'.
+    //! - Given [begin, end) = [a, b]; separator = " "; local_open =
+    //!   "{"; local_close = "}", the resulting output is '{a} {b}'.
     template<typename Iterator, typename Separator>
       constexpr join_iterator<Iterator, Separator>
         join ( Iterator begin, Iterator end
              , Separator separator
              , std::string const& local_open = ""
              , std::string const& local_close = ""
-             )
-    {
-      return join_iterator<Iterator, Separator>
-        ( begin, end, separator
-        , ostream::callback::bracket<typename Iterator::value_type>
-            (local_open, local_close)
-        );
-    }
+             );
   }
 }
+
+#include <util-generic/join.ipp>

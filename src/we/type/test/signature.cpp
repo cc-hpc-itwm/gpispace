@@ -35,6 +35,7 @@
 BOOST_AUTO_TEST_CASE (signature_show)
 {
 #define CHECK(_expected,_sig...)                \
+  do                                            \
   {                                             \
     using pnet::type::signature::show;          \
                                                 \
@@ -43,7 +44,7 @@ BOOST_AUTO_TEST_CASE (signature_show)
     oss << show (signature_type (_sig));        \
                                                 \
     BOOST_CHECK_EQUAL (oss.str(), _expected);   \
-  }
+  } while (false)
 
   using pnet::type::signature::signature_type;
   using pnet::type::signature::structured_type;
@@ -102,6 +103,7 @@ BOOST_AUTO_TEST_CASE (signature_show)
 BOOST_AUTO_TEST_CASE (signature_dump)
 {
 #define CHECK(_expected,_sig...)                        \
+  do                                                    \
   {                                                     \
     using pnet::type::signature::dump;                  \
                                                         \
@@ -110,7 +112,7 @@ BOOST_AUTO_TEST_CASE (signature_dump)
     oss << dump (structured_type (_sig));               \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
-  }
+  } while (false)
 
   using pnet::type::signature::structured_type;
   using pnet::type::signature::structure_type;
@@ -160,6 +162,7 @@ BOOST_AUTO_TEST_CASE (signature_dump)
 BOOST_AUTO_TEST_CASE (signature_cpp)
 {
 #define CHECK_HEADER(_expected,_sig...)                 \
+  do                                                    \
   {                                                     \
     using pnet::type::signature::cpp::header;           \
                                                         \
@@ -168,8 +171,9 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     oss << header (structured_type (_sig));             \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
-  }
+  } while (false)
 #define CHECK_HEADER_OP(_expected,_sig...)              \
+  do                                                    \
   {                                                     \
     using pnet::type::signature::cpp::header_op;        \
                                                         \
@@ -178,8 +182,9 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     oss << header_op (structured_type (_sig));          \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
-  }
+  } while (false)
 #define CHECK_IMPL(_expected,_sig...)                   \
+  do                                                    \
   {                                                     \
     using pnet::type::signature::cpp::impl;             \
                                                         \
@@ -188,7 +193,7 @@ BOOST_AUTO_TEST_CASE (signature_cpp)
     oss << impl (structured_type (_sig));               \
                                                         \
     BOOST_CHECK_EQUAL (oss.str(), _expected);           \
-  }
+  } while (false)
 
   using pnet::type::signature::structured_type;
   using pnet::type::signature::structure_type;

@@ -20,7 +20,7 @@
 
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 
-BOOST_AUTO_TEST_CASE (dtmmgr)
+BOOST_AUTO_TEST_CASE (dtmmgr_works)
 {
   gspc::vmem::dtmmgr dtmmgr (45, 2);
 

@@ -49,30 +49,36 @@
 #include <vector>
 
 #define CHECK_ALL_WORKERS_HAVE_AT_LEAST_ONE_TASK_ASSIGNED(_workers) \
-  for (unsigned int i (0); i < _workers.size(); ++i)                \
+  do                                                                \
   {                                                                 \
-    BOOST_REQUIRE_GT                                                \
-      ( count_assigned_jobs                                         \
-          (get_current_assignment(), _workers[i])                   \
-      , 0                                                           \
-      );                                                            \
-  }
+    for (unsigned int i (0); i < _workers.size(); ++i)              \
+    {                                                               \
+      BOOST_REQUIRE_GT                                              \
+        ( count_assigned_jobs                                       \
+            (get_current_assignment(), _workers[i])                 \
+        , 0                                                         \
+        );                                                          \
+    }                                                               \
+  } while (false)
 
 #define CHECK_ALL_WORKERS_HAVE_AT_MOST_ONE_TASK_ASSIGNED(_workers)  \
-  for (unsigned int i (0); i < _workers.size(); ++i)                \
+  do                                                                \
   {                                                                 \
-    BOOST_REQUIRE_GE                                                \
-      ( count_assigned_jobs                                         \
-          (get_current_assignment(), _workers[i])                   \
-      , 0                                                           \
-      );                                                            \
+    for (unsigned int i (0); i < _workers.size(); ++i)              \
+    {                                                               \
+      BOOST_REQUIRE_GE                                              \
+        ( count_assigned_jobs                                       \
+            (get_current_assignment(), _workers[i])                 \
+        , 0                                                         \
+        );                                                          \
                                                                     \
-    BOOST_REQUIRE_LE                                                \
-      ( count_assigned_jobs                                         \
-          (get_current_assignment(), _workers[i])                   \
-      , 1                                                           \
-      );                                                            \
-  }
+      BOOST_REQUIRE_LE                                              \
+        ( count_assigned_jobs                                       \
+            (get_current_assignment(), _workers[i])                 \
+        , 1                                                         \
+        );                                                          \
+    }                                                               \
+  } while (false)
 
 #define CHECK_EXPECTED_WORKERS_AND_IMPLEMENTATION(_job, _workers, _implementation)  \
   do                                                                                \
@@ -2099,25 +2105,25 @@ BOOST_FIXTURE_TEST_CASE
   }
 
   {
-    auto const assignment (get_current_assignment());
+    auto const assignment_ (get_current_assignment());
 
     // One worker has 2 pending jobs, 2 workers are idle, no jobs to assign are left
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 2);
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment), 0);
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment), 0);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment_), 2);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment_), 0);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment_), 0);
   }
 
   request_scheduling();
 
   {
-    auto const assignment (get_current_assignment());
+    auto const assignment_ (get_current_assignment());
 
     // One of the idle workers should steal the only job to steal from
     // the worker with 2 pending jobs.
-    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment), 1);
+    BOOST_REQUIRE_EQUAL (n_jobs_assigned_to_worker (worker_with_2_jobs, assignment_), 1);
     BOOST_REQUIRE_EQUAL
-      ( n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment)
-      + n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment)
+      ( n_jobs_assigned_to_worker (*workers_with_1_job.begin(), assignment_)
+      + n_jobs_assigned_to_worker (*std::next (workers_with_1_job.begin()), assignment_)
       , 1
       );
   }
@@ -2364,14 +2370,14 @@ BOOST_FIXTURE_TEST_CASE
     ( [this]
       ( sdpa::daemon::WorkerSet const& assigned_workers
       , sdpa::daemon::Implementation const& implementation
-      , sdpa::job_id_t const& job
+      , sdpa::job_id_t const& job_
       )
       {
         BOOST_REQUIRE_EQUAL
-          (_requirements_and_preferences.at (job).numWorkers(), 1);
+          (_requirements_and_preferences.at (job_).numWorkers(), 1);
 
-        BOOST_REQUIRE_EQUAL (this->workers (job), assigned_workers);
-        BOOST_REQUIRE_EQUAL (this->implementation (job), implementation);
+        BOOST_REQUIRE_EQUAL (this->workers (job_), assigned_workers);
+        BOOST_REQUIRE_EQUAL (this->implementation (job_), implementation);
       }
     );
 }

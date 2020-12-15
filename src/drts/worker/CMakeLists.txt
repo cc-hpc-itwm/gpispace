@@ -43,4 +43,5 @@ extended_add_library (NAME drts-context
             Boost::iostreams
   TYPE SHARED
   INSTALL
+  CREATE_BUNDLE_INFO
 )

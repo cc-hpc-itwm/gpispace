@@ -57,8 +57,8 @@ namespace gspc
     hostnames::hostnames (boost::program_options::variables_map const& vm)
       : _ (new implementation (fhg::util::read_lines (require_nodefile (vm))))
     {}
-    hostnames::hostnames (std::vector<std::string> const& hostnames)
-      : _ (new implementation (hostnames))
+    hostnames::hostnames (std::vector<std::string> const& hostnames_)
+      : _ (new implementation (hostnames_))
     {}
     hostname::hostname (std::string const& host)
       : _ (new implementation (host))

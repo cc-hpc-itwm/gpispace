@@ -54,11 +54,12 @@ extended_add_library (NAME gspc
             gpi-space-pc-client-static
             gpi-space-pc-segment
             GPISpace::vmem
-            fhg-revision
+            fhg-project_configuration
             Util::Generic
             Boost::filesystem
             Boost::program_options
   INSTALL
+  CREATE_BUNDLE_INFO
 )
 
 add_subdirectory (test/add_worker)
@@ -71,4 +72,5 @@ add_subdirectory (test/use_fixed_ports_for_agents_and_workers)
 add_subdirectory (test/multiple_module_implementations)
 add_subdirectory (test/work_stealing)
 add_subdirectory (test/run_bunch_of_tasks)
+add_subdirectory (test/using_ranges_and_buffers_in_memory_transfers)
 add_subdirectory (test)

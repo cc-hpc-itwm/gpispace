@@ -18,9 +18,9 @@
 
 #include <util-generic/ostream/redirect.hpp>
 
-#include <boost/format.hpp>
-#include <iostream>
 #include <mutex>
+#include <ostream>
+#include <string>
 #include <vector>
 
 namespace fhg
@@ -32,12 +32,7 @@ namespace fhg
       class redirect_standard_streams
       {
       public:
-        redirect_standard_streams (std::vector<std::string>& lines)
-          : _lines (lines)
-          , _append_from_clog (std::clog, "log: ", _lines, _guard)
-          , _append_from_cout (std::cout, "out: ", _lines, _guard)
-          , _append_from_cerr (std::cerr, "err: ", _lines, _guard)
-        {}
+        redirect_standard_streams (std::vector<std::string>& lines);
 
       private:
         std::mutex _guard;
@@ -48,18 +43,7 @@ namespace fhg
                    , std::string prefix
                    , std::vector<std::string>& lines
                    , std::mutex& guard
-                   )
-            : redirect
-              ( os
-              , [&lines, &guard] (std::string const& line)
-                {
-                  std::unique_lock<std::mutex> const _ (guard);
-
-                  lines.emplace_back (line);
-                }
-              )
-            , _prepender (os, prefix)
-          {}
+                   );
           prepend_line _prepender;
         };
         appender _append_from_clog;

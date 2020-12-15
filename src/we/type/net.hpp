@@ -49,6 +49,8 @@ namespace we
 {
   namespace type
   {
+    [[noreturn]] void unexpected_eureka (eureka_ids_type const&);
+
     class net_type
     {
     public:
@@ -137,7 +139,7 @@ namespace we
         fire_expressions_and_extract_activity_random
           ( std::mt19937&
           , we::workflow_response_callback const&
-          , we::eureka_response_callback const& = &net_type::unexpected_eureka
+          , we::eureka_response_callback const& = &unexpected_eureka
           );
 
       void inject ( transition_id_type
@@ -147,8 +149,7 @@ namespace we
                   = [] ( pnet::type::value::value_type const&
                        , pnet::type::value::value_type const&
                        ) {}
-                  , eureka_response_callback
-                    = &we::type::net_type::unexpected_eureka
+                  , eureka_response_callback = &unexpected_eureka
                   );
 
     private:
@@ -221,8 +222,6 @@ namespace we
       to_be_updated_type do_put_value
         (place_id_type, pnet::type::value::value_type const&);
       void do_update (to_be_updated_type const&);
-
-      static void unexpected_eureka (eureka_ids_type const&);
 
       friend class boost::serialization::access;
       template<typename Archive>

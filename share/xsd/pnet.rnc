@@ -74,8 +74,10 @@ mod_type =
   attribute eureka-group { xsd:string }?,
   attribute pass_context { xsd:boolean }?,
   attribute require_function_unloads_without_rest { xsd:boolean }?,
-  attribute require_module_unloads_without_rest { xsd:boolean }?,
-  attribute target { xsd:string }?
+  attribute require_module_unloads_without_rest { xsd:boolean }?
+mod_type_with_target =
+  mod_type,
+  attribute target { xsd:string }
 type_map_type =
   attribute replace { xsd:NCName },
   attribute with { xsd:string }
@@ -116,13 +118,15 @@ memory_transfer_get_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   element global { xsd:string },
-  element local { xsd:string }
+  element local { xsd:string },
+  attribute allow-empty-ranges { xsd:boolean }?
 memory_transfer_put_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   element global { xsd:string },
   element local { xsd:string },
   attribute not-modified-in-module-call { xsd:boolean }?
+  attribute allow-empty-ranges { xsd:boolean }?
 connect_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
@@ -143,13 +147,15 @@ template_type =
   element template-parameter { template_parameter_type }*,
   element defun { function_type },
   attribute name { xsd:ID }?
+modules_type =
+  element preferences { preferences_type },
+  element module { mod_type_with_target }+
 function_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type }
    | element require { require_type }
    | element struct { struct_type }
    | element include-structs { struct_include_type })*,
-  (element preferences { preferences_type })?,
   (element in { port_type }
    | element out { port_type }
    | element inout { port_type }
@@ -160,6 +166,7 @@ function_type =
    | element memory-getput { memory_transfer_put_type })*,
   (element expression { xsd:string }
    | element module { mod_type }
+   | element modules { modules_type }
    | element net { net_type }),
   element condition { xsd:string }*,
   attribute name { xsd:NCName }?

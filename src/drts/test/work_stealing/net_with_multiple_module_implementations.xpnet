@@ -49,40 +49,42 @@
     <place name="task_finished" type="bool"/>
     <transition name="transition_with_multiple_module_implementations">
       <defun>
-        <preferences>
-          <target>A</target>
-          <target>B</target>
-          <target>C</target>
-        </preferences>
         <in name="task_id" type="long"/>
         <in name="worst_comp_time" type="int"/>
         <out name="task_finished" type="bool"/>
-        <module name="test_module_with_target"
-                function="task (worst_comp_time, task_finished)"
-                target="A">
-          <cinclude href="chrono"/>
-          <cinclude href="thread"/>
-          <cxx flag="--std=c++11"/>
-          <code><![CDATA[
-            std::this_thread::sleep_for
-              (std::chrono::seconds (worst_comp_time));
-            task_finished = true;
-          ]]></code>
-        </module>
-        <module name="test_module_with_target"
-                function="task (task_finished)"
-                target="B">
-          <code><![CDATA[
-            task_finished = true;
-          ]]></code>
-        </module>
-        <module name="test_module_with_target"
-                function="task (task_finished)"
-                target="C">
-          <code><![CDATA[
-            task_finished = true;
-          ]]></code>
-        </module>
+        <modules>
+          <preferences>
+            <target>A</target>
+            <target>B</target>
+            <target>C</target>
+          </preferences>
+          <module name="test_module"
+                  function="task (worst_comp_time, task_finished)"
+                  target="A">
+            <cinclude href="chrono"/>
+            <cinclude href="thread"/>
+            <cxx flag="--std=c++11"/>
+            <code><![CDATA[
+              std::this_thread::sleep_for
+                (std::chrono::seconds (worst_comp_time));
+              task_finished = true;
+            ]]></code>
+          </module>
+          <module name="test_module"
+                  function="task (task_finished)"
+                  target="B">
+            <code><![CDATA[
+              task_finished = true;
+            ]]></code>
+          </module>
+          <module name="test_module"
+                  function="task (task_finished)"
+                  target="C">
+            <code><![CDATA[
+              task_finished = true;
+            ]]></code>
+          </module>
+        </modules>
       </defun>
       <connect-in port="task_id" place="task_id"/>
       <connect-read port="worst_comp_time" place="worst_comp_time"/>

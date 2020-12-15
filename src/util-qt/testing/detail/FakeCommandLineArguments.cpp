@@ -38,8 +38,11 @@ namespace fhg
 
             argv.emplace_back (argv_data.data());
 
-            argc = fhg::util::suppress_warning::shorten_64_to_32_with_check<int>
-              (argv.size(), "fingers crossed");
+            argc = fhg::util::suppress_warning::sign_conversion<int>
+              ( fhg::util::suppress_warning::shorten_64_to_32_with_check<unsigned int>
+                  ( argv.size(), "As per insertion above, size == 1ul.")
+              , "As per insertion and cast above, size == 1ul."
+              );
           }
         }
       }

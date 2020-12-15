@@ -20,7 +20,7 @@
 #include <logging/stream_receiver.hpp>
 #include <logging/tcp_server_providing_add_emitters.hpp>
 
-#include <fhg/revision.hpp>
+#include <fhg/project_version.hpp>
 #include <fhg/util/boost/program_options/generic.hpp>
 #include <fhg/util/boost/program_options/validators/positive_integral.hpp>
 #include <util-generic/print_exception.hpp>
@@ -72,10 +72,7 @@ try
   QApplication a (ac, av);
 
   QApplication::setApplicationName ("gspc-monitor");
-  QApplication::setApplicationVersion ( QString (fhg::project_version())
-                                      .append (" - ")
-                                      .append (fhg::project_revision())
-                                      );
+  QApplication::setApplicationVersion (QString (fhg::project_version()));
   QApplication::setOrganizationDomain ("itwm.fraunhofer.de");
   QApplication::setOrganizationName ("Fraunhofer ITWM");
 

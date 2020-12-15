@@ -17,7 +17,6 @@
 #pragma once
 
 #include <util-generic/ostream/line_by_line.hpp>
-#include <util-generic/ostream/put_time.hpp>
 
 #include <iostream>
 
@@ -30,17 +29,7 @@ namespace fhg
       class echo : private line_by_line, public std::ostream
       {
       public:
-        echo (std::ostream& os = std::cout)
-          : line_by_line
-            ([&os] (std::string const& line)
-            {
-              os << '[' << put_time<std::chrono::system_clock>() << ']'
-                 << ' ' << line
-                 << std::endl;
-            }
-            )
-          , std::ostream (this)
-        {}
+        echo (std::ostream& os = std::cout);
       };
     }
   }

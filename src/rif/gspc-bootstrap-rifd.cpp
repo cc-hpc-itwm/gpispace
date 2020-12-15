@@ -16,7 +16,7 @@
 
 #include <rif/entry_point.hpp>
 
-#include <fhg/revision.hpp>
+#include <fhg/project_info.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_directory.hpp>
 #include <fhg/util/boost/program_options/validators/nonempty_file.hpp>

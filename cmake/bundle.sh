@@ -23,28 +23,67 @@ chrpath_binary="${2}"
 input="${3}"
 
 function join { local IFS="$1"; shift; echo "${*}"; }
+
+# Don't bundle system libraries that aren't portable.
 exclusion=$(join '|' \
-  .*libibverbs\.so.* \
-  .*libxcb\.so.* \
-  .*libSM\.so.* \
-  .*libc\.so.* \
-  .*libz\.so.* \
-  .*libm\.so.* \
-  .*librt\.so.* \
-  .*libfont\.so.* \
-  .*libfreetype\.so.* \
-  .*libaudio\.so.* \
-  .*libICE\.so.* \
-  .*libglapi\.so.* \
-  .*libglib\.so.* \
-  .*libgobject\.so.* \
-  .*libdl\.so.* \
-  .*libX.*\.so.* \
-  .*libGL\.so.* \
-  .*libpthread\.so.* \
-  .*libgthread\.so.* \
-  .*libreadline\.so.* \
+  '.*libGL\.so.*' \
+  '.*libICE\.so.*' \
+  '.*libSM\.so.*' \
+  '.*libX.*\.so.*' \
+  '.*libaudio\.so.*' \
+  '.*libfont\.so.*' \
+  '.*libfreetype\.so.*' \
+  '.*libglapi\.so.*' \
+  '.*libglib\.so.*' \
+  '.*libgobject\.so.*' \
+  '.*libgthread\.so.*' \
+  '.*libibverbs\.so.*' \
+  '.*libreadline\.so.*' \
+  '.*libxcb\.so.*' \
+  '.*libz\.so.*' \
 )
+
+## glibc differs too much between distros to be freely copied, but
+## does exist essentially everywhere.
+exclusion=${exclusion}\|$(join '|' \
+  '.*libBrokenLocale\.so.*' \
+  '.*libSegFault\.so.*' \
+  '.*libanl\.so.*' \
+  '.*libc\.so.*' \
+  '.*libcidn\.so.*' \
+  '.*libcrypt\.so.*' \
+  '.*libdl\.so.*' \
+  '.*libm\.so.*' \
+  '.*libmemusage\.so.*' \
+  '.*libnsl\.so.*' \
+  '.*libnss_compat\.so.*' \
+  '.*libnss_db\.so.*' \
+  '.*libnss_dns\.so.*' \
+  '.*libnss_files\.so.*' \
+  '.*libnss_hesiod\.so.*' \
+  '.*libnss_nis\.so.*' \
+  '.*libnss_nisplus\.so.*' \
+  '.*libpcprofile\.so.*' \
+  '.*libpthread\.so.*' \
+  '.*libresolv\.so.*' \
+  '.*librt\.so.*' \
+  '.*librtkaio\.so.*' \
+  '.*libthread_db\.so.*' \
+  '.*libutil\.so.*' \
+)
+
+# Don't bundle products that rely on secondary files in their
+# installation that don't show up in ldd.
+
+## GPI-Space
+exclusion=${exclusion}\|$(join '|' \
+  'libdrts-context\.so' \
+  'libgspc\.so' \
+  'libwe-dev\.so'
+)
+
+## \todo Qt? See #9 and #22.
+#exclusion="${exclusion}|.*libQt.*\.so.*"
 
 rm -rf "${destination}"
 mkdir -p "${destination}"

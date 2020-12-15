@@ -145,9 +145,10 @@ namespace pnet
       {
         require_structured (_path, v) (s);
       }
-      void operator() ( const type::value::structured_type& v
-                      , const std::string& s
-                      ) const
+      [[noreturn]] void operator()
+        ( const type::value::structured_type& v
+        , const std::string& s
+        ) const
       {
         throw exception::type_mismatch (s, v, _path);
       }

@@ -42,21 +42,6 @@ extended_add_library (NAME RPC
   POSITION_INDEPENDENT
 )
 
-#! \note With Boost 1.62, Boost.Coroutine is deprecated and should be
-#! replaced with Boost.Coroutine2. Boost.ASIO does not yet do so. As
-#! soon as it does, this if should be extended to limit with an upper
-#! version.
-if (Boost_VERSION VERSION_GREATER 1.61.0)
-  target_compile_definitions (RPC PRIVATE
-    BOOST_COROUTINE_NO_DEPRECATION_WARNING
-    BOOST_COROUTINES_NO_DEPRECATION_WARNING
-  )
-  target_compile_definitions (RPC INTERFACE
-    BOOST_COROUTINE_NO_DEPRECATION_WARNING
-    BOOST_COROUTINES_NO_DEPRECATION_WARNING
-  )
-endif()
-
 # Boost.Asio's strands share queues for sake of performance. There by
 # default are 193 queues and a "random" distribution from strand to
 # queue. By defining this config flag, the randomness is removed at

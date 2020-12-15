@@ -45,8 +45,8 @@ namespace gspc
     ::we::type::activity_t _activity;
   };
 
-  workflow::workflow (boost::filesystem::path workflow)
-    : _ (new implementation (::we::type::activity_t (workflow)))
+  workflow::workflow (boost::filesystem::path workflow_)
+    : _ (new implementation (::we::type::activity_t (workflow_)))
   {}
   PIMPL_DTOR (workflow)
 

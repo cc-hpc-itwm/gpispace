@@ -443,11 +443,6 @@ namespace xml
         {                                                               \
           generic_warn (w, _warning_ ## x, _option_W ## x );                  \
         }
-#define WARN_(x,y)                                                      \
-      void type::warn (const warning::x& w) const                       \
-      {                                                                 \
-        generic_warn (w, _warning_ ## y, _option_W ## y );                    \
-      }
 
       WARN (overwrite_function_name_as)
       WARN (overwrite_template_name_as)
@@ -476,7 +471,6 @@ namespace xml
       WARN (struct_redefined)
 
 #undef WARN
-#undef WARN_
 
       void
       type::check_for_include_loop (const boost::filesystem::path& path) const

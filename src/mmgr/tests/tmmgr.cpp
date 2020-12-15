@@ -22,15 +22,16 @@
 #include <util-generic/testing/require_exception.hpp>
 
 #define REQUIRE_ALLOC_SUCCESS(h,s,o,g)                                  \
+  do                                                                    \
   {                                                                     \
     std::pair<gspc::vmem::Offset_t, gspc::vmem::MemSize_t> const        \
       OffsetSize (tmmgr.alloc (h, s));                                  \
                                                                         \
     BOOST_REQUIRE_EQUAL (OffsetSize.first, o);                          \
     BOOST_REQUIRE_EQUAL (OffsetSize.second, g);                         \
-  }
+  } while (false)
 
-BOOST_AUTO_TEST_CASE (tmmgr)
+BOOST_AUTO_TEST_CASE (tmmgr_works)
 {
   gspc::vmem::tmmgr tmmgr (45, 1);
 
