@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,11 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_executable (NAME monitor_pressure_generator
-  SOURCES monitor_pressure_generator.cpp
-  LIBRARIES pnet
-            gspc::logging
-            Util::Generic
-)
+if (BUILD_TESTING)
+  extended_add_executable (NAME monitor_pressure_generator
+    SOURCES monitor_pressure_generator.cpp
+    LIBRARIES pnet
+              gspc::logging
+              Util::Generic
+              Boost::unit_test_framework # util-generic#61
+  )
 
 #! \todo Add test for monitor pressure.
+endif()

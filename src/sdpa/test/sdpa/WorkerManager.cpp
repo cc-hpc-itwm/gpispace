@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@
 
 namespace
 {
-  std::vector<std::string> generate_worker_names (const int n)
+  std::vector<std::string> generate_worker_names (const unsigned int n)
   {
     return fhg::util::testing::randoms<std::vector<std::string>>
       (n, &utils::random_peer_name);

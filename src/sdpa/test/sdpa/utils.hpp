@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ namespace utils
                          , bool accept_workers
                          , fhg::com::Certificates const&
                          );
-    ~basic_drts_component();
+    ~basic_drts_component() override;
 
     virtual void handle_worker_registration_response
       ( fhg::com::p2p::address_t const&
@@ -208,7 +208,7 @@ namespace utils
       event_thread_and_worker_join (basic_drts_component&);
       ~event_thread_and_worker_join();
 
-      basic_drts_component& _component;
+      basic_drts_component& _component_logic;
     };
 
   private:
@@ -425,16 +425,12 @@ namespace utils
 
     sdpa::job_id_t submit_job (we::type::activity_t);
 
-    sdpa::status::code query_job_status (sdpa::job_id_t const&);
-
     sdpa::status::code wait_for_terminal_state (sdpa::job_id_t const&);
     sdpa::status::code wait_for_terminal_state
       (sdpa::job_id_t const&, sdpa::client::job_info_t& job_info);
 
     sdpa::status::code wait_for_terminal_state_and_cleanup
       (sdpa::job_id_t const&);
-
-    sdpa::discovery_info_t discover (sdpa::job_id_t const&);
 
     void delete_job (sdpa::job_id_t const&);
 

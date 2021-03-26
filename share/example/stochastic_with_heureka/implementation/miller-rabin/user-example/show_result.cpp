@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,12 +14,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <miller-rabin/util.hpp>
+
 #include <we/type/bytearray.hpp>
 #include <we/type/value/read.hpp>
 
 #include <iostream>
+#include <ostream>
+#include <string>
 
 int main (int argc, char** argv)
+try
 {
   if (argc != 2)
   {
@@ -27,11 +32,17 @@ int main (int argc, char** argv)
     return 1;
   }
 
-  bool result;
-  boost::get<we::type::bytearray>
-    (pnet::type::value::read (std::string (argv[1]))).copy (&result);
+  miller_rabin::show_result
+    ( std::cout
+    , boost::get<we::type::bytearray>
+        (pnet::type::value::read (std::string (argv[1])))
+    );
 
-  std::cout << "result = " << (result ? "composite" : "probably prime")
-            << std::endl;
   return 0;
+}
+catch (std::exception const& e)
+{
+  std::cout << "EXCEPTION: " << e.what() << std::endl;
+
+  return -1;
 }

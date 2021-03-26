@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -28,8 +28,7 @@ ADD_LIBRARY(sdpa
 )
 
 target_link_libraries (sdpa
-  gpi-space-pc-client-static
-  gpi-space-pc-segment
+  IML::Client
   RPC
   Boost::serialization
   Boost::date_time

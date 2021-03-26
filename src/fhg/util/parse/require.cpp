@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 
 #include <fhg/util/parse/require.hpp>
 
+#include <fhg/util/cctype.hpp>
 #include <fhg/util/parse/error.hpp>
 #include <fhg/util/parse/position.hpp>
 
@@ -59,7 +60,7 @@ namespace fhg
 
         void skip_spaces (position& pos)
         {
-          while (!pos.end() && isspace (*pos))
+          while (!pos.end() && fhg::util::isspace (*pos))
           {
             ++pos;
           }
@@ -127,14 +128,14 @@ namespace fhg
         {
           std::string id;
 
-          if (pos.end() || !(isalpha (*pos) || *pos == '_'))
+          if (pos.end() || !(fhg::util::isalpha (*pos) || *pos == '_'))
           {
             throw error::expected ("identifier [a-zA-Z_][a-zA-Z_0-9]*", pos);
           }
 
           id.push_back (*pos); ++pos;
 
-          while (!pos.end() && (isalpha (*pos) || *pos == '_' || isdigit (*pos)))
+          while (!pos.end() && (fhg::util::isalpha (*pos) || *pos == '_' || fhg::util::isdigit (*pos)))
           {
             id.push_back (*pos); ++pos;
           }

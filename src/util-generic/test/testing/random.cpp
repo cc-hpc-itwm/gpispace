@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -30,6 +30,7 @@
 #include <cstddef>
 #include <deque>
 #include <forward_list>
+#include <functional>
 #include <list>
 #include <set>
 #include <stdexcept>
@@ -242,7 +243,8 @@ namespace fhg
           std::size_t i = 1;
           double operator()()
           {
-            return i++ * M_PI;
+            return static_cast<double> (i++) * M_PI;
+                // ^ cast may loose precision
           }
         };
 
@@ -317,7 +319,8 @@ namespace fhg
           negative += rolled < 0.0f;
           positive += rolled > 0.0f;
 
-          BOOST_REQUIRE (std::isnormal (rolled) || rolled == 0.0f);
+          BOOST_REQUIRE
+            (std::isnormal (rolled) || std::equal_to<float>{} (rolled, 0.0f));
         }
 
         BOOST_REQUIRE_LE (negative, 9.0 / 16.0 * rolls);

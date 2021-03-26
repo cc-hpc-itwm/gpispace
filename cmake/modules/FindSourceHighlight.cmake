@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -39,6 +39,10 @@ find_program (${CMAKE_FIND_PACKAGE_NAME}_BINARY
 )
 
 _pkgconfig_find_library_module_finalize (${CMAKE_FIND_PACKAGE_NAME}_BINARY)
+
+if (NOT ${${CMAKE_FIND_PACKAGE_NAME}_FOUND})
+  return()
+endif()
 
 add_imported_executable (NAME source-highlight
   NAMESPACE ${_libnamespace}

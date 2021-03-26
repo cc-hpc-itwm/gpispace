@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,11 +19,8 @@
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/CapabilitiesGainedEvent.hpp>
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/delayed_function_call.hpp>
 #include <sdpa/events/put_token.hpp>
@@ -32,7 +29,6 @@
 
 #include <fhg/util/boost/optional.hpp>
 #include <fhg/util/macros.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/fallthrough.hpp>
 #include <util-generic/functor_visitor.hpp>
 #include <util-generic/hostname.hpp>
@@ -45,6 +41,7 @@
 #include <algorithm>
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <sstream>
 #include <thread>
 
@@ -92,7 +89,6 @@ namespace sdpa
       : _name (name)
       , _master_info (std::move (masters))
       , _subscriptions()
-      , _discover_sources()
       , _job_map_mutex()
       , job_map_()
       , _cleanup_job_map_on_dtor_helper (job_map_)
@@ -133,8 +129,6 @@ namespace sdpa
               , std::bind (&Agent::finished, this, std::placeholders::_1, std::placeholders::_2)
               , std::bind (&Agent::failed, this, std::placeholders::_1, std::placeholders::_2)
               , std::bind (&Agent::canceled, this, std::placeholders::_1)
-              , std::bind (&Agent::discover, this, std::placeholders::_1, std::placeholders::_2)
-              , std::bind (&Agent::discovered, this, std::placeholders::_1, std::placeholders::_2)
               , std::bind (&Agent::token_put, this, std::placeholders::_1, std::placeholders::_2)
               , std::bind (&Agent::workflow_response_response, this, std::placeholders::_1, std::placeholders::_2)
               , std::bind (&Agent::gen_id, this)
@@ -154,8 +148,7 @@ namespace sdpa
           )
       , _virtual_memory_api
         ( vmem_socket
-        ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-            (_log_emitter, vmem_socket->string())
+        ? std::make_unique<iml::Client> (*vmem_socket)
         : nullptr
         )
       , _event_handler_thread (&Agent::handle_events, this)
@@ -722,9 +715,16 @@ namespace sdpa
       }
     }
 
-    void Agent::finished ( const we::layer::id_type& id
-                         , const we::type::activity_t& result
+    void Agent::finished ( we::layer::id_type const& id
+                         , we::type::activity_t const& result
                          )
+    {
+      delay (std::bind (&Agent::workflow_finished, this, id, result));
+    }
+
+    void Agent::workflow_finished ( we::layer::id_type const& id
+                                  , we::type::activity_t const& result
+                                  )
     {
       Job* const pJob (require_job (id, "got finished message for old/unknown Job " + id));
 
@@ -743,9 +743,16 @@ namespace sdpa
       }
     }
 
-    void Agent::failed ( const we::layer::id_type& id
-                       , std::string const & reason
+    void Agent::failed ( we::layer::id_type const& id
+                       , std::string const& reason
                        )
+    {
+      delay (std::bind (&Agent::workflow_failed, this, id, reason));
+    }
+
+    void Agent::workflow_failed ( we::layer::id_type const& id
+                                , std::string const& reason
+                                )
     {
       Job* const pJob (require_job (id, "got failed message for old/unknown Job " + id));
 
@@ -754,7 +761,12 @@ namespace sdpa
       emit_gantt (pJob->id(), pJob->activity(), NotificationEvent::STATE_FAILED);
     }
 
-    void Agent::canceled (const we::layer::id_type& job_id)
+    void Agent::canceled (we::layer::id_type const& job_id)
+    {
+      delay (std::bind (&Agent::workflow_canceled, this, job_id));
+    }
+
+    void Agent::workflow_canceled (we::layer::id_type const& job_id)
     {
       Job* const pJob (require_job (job_id, "rts_canceled (unknown job)"));
 
@@ -1270,158 +1282,6 @@ namespace sdpa
       deleteJob(pEvt->job_id());
     }
 
-    void Agent::discover
-      ( we::layer::id_type discover_id
-      , we::layer::id_type job_id
-      )
-    {
-      delay ( std::bind ( &Agent::delayed_discover, this
-                        , discover_id, job_id
-                        )
-            );
-    }
-
-    void Agent::delayed_discover
-      ( we::layer::id_type discover_id
-      , we::layer::id_type job_id
-      )
-    {
-      Job const* const pJob (findJob (job_id));
-
-      if (!pJob)
-      {
-        workflowEngine()->discovered
-          ( discover_id
-          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
-          );
-
-        return;
-      }
-
-      if (pJob->getStatus() != sdpa::status::RUNNING)
-      {
-        workflowEngine()->discovered
-          ( discover_id
-          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
-          );
-
-        return;
-      }
-
-      fhg::util::visit<void>
-        ( pJob->handler()
-        , [&] (job_handler_worker const&)
-          {
-            std::unordered_set<worker_id_t> const workers
-              (_worker_manager.findSubmOrAckWorkers (job_id));
-
-            for (worker_id_t const& w : workers)
-            {
-              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-                .discover_job_states (job_id, discover_id);
-            }
-          }
-        , [&] (job_handler_wfe const&)
-          {
-            workflowEngine()->discovered
-              ( discover_id
-              , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
-              );
-          }
-        );
-    }
-
-    void Agent::handleDiscoverJobStatesEvent
-      ( fhg::com::p2p::address_t const& source
-      , const sdpa::events::DiscoverJobStatesEvent *pEvt
-      )
-    {
-      auto const job_id (pEvt->job_id());
-      Job const* const pJob (findJob (job_id));
-
-      if (!pJob)
-      {
-        parent_proxy (this, source).discover_job_states_reply
-          ( pEvt->discover_id()
-          , discovery_info_t (job_id, boost::none, discovery_info_set_t())
-          );
-
-        return;
-      }
-
-      if (pJob->getStatus() != sdpa::status::RUNNING)
-      {
-        parent_proxy (this, source).discover_job_states_reply
-          ( pEvt->discover_id()
-          , discovery_info_t (job_id, pJob->getStatus(), discovery_info_set_t())
-          );
-
-        return;
-      }
-
-      fhg::util::visit<void>
-        ( pJob->handler()
-        , [&] (job_handler_worker const&)
-          {
-            _discover_sources.emplace
-              (std::make_pair (pEvt->discover_id(), job_id), source);
-
-            std::unordered_set<worker_id_t> const workers
-              (_worker_manager.findSubmOrAckWorkers (job_id));
-
-            for (worker_id_t const& w: workers)
-            {
-              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-                .discover_job_states (job_id, pEvt->discover_id());
-            }
-          }
-        , [&] (job_handler_wfe const&)
-          {
-            _discover_sources.emplace
-              (std::make_pair (pEvt->discover_id(), job_id), source);
-
-            workflowEngine()->discover (pEvt->discover_id(), job_id);
-          }
-        );
-    }
-
-    void Agent::discovered
-      ( we::layer::id_type discover_id
-      , sdpa::discovery_info_t discover_result
-      )
-    {
-      const std::pair<job_id_t, job_id_t> source_id
-        (discover_id, discover_result.job_id());
-
-      parent_proxy (this, _discover_sources.at (source_id))
-        .discover_job_states_reply (discover_id, discover_result);
-
-      _discover_sources.erase (source_id);
-    }
-
-    void Agent::handleDiscoverJobStatesReplyEvent
-      ( fhg::com::p2p::address_t const&
-      , const sdpa::events::DiscoverJobStatesReplyEvent* e
-      )
-    {
-      const std::pair<job_id_t, job_id_t> source_id
-        (e->discover_id(), e->discover_result().job_id());
-      const std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>::iterator
-        source (_discover_sources.find (source_id));
-
-      if (source == _discover_sources.end())
-      {
-        workflowEngine()->discovered (e->discover_id(), e->discover_result());
-      }
-      else
-      {
-        parent_proxy (this, source->second).discover_job_states_reply
-          (e->discover_id(), e->discover_result());
-
-        _discover_sources.erase (source);
-      }
-    }
-
     void Agent::handleBacklogNoLongerFullEvent
       ( fhg::com::p2p::address_t const& source
       , const events::BacklogNoLongerFullEvent*
@@ -1517,6 +1377,15 @@ namespace sdpa
       , boost::optional<std::exception_ptr> error
       )
     {
+      delay
+        (std::bind (&Agent::token_put_in_workflow, this, put_token_id, error));
+    }
+
+    void Agent::token_put_in_workflow
+      ( std::string put_token_id
+      , boost::optional<std::exception_ptr> error
+      )
+    {
       parent_proxy (this, take (_put_token_source, put_token_id))
         .put_token_response (put_token_id, error);
     }
@@ -1589,25 +1458,21 @@ namespace sdpa
       , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
     {
-      parent_proxy (this, take (_workflow_response_source, workflow_response_id))
-        .workflow_response_response (workflow_response_id, result);
+      delay (std::bind ( &Agent::workflow_engine_workflow_response_response
+                       , this
+                       , workflow_response_id
+                       , result
+                       )
+            );
     }
 
-    void Agent::handleQueryJobStatusEvent
-      ( fhg::com::p2p::address_t const& source
-      , const events::QueryJobStatusEvent* pEvt
+    void Agent::workflow_engine_workflow_response_response
+      ( std::string workflow_response_id
+      , boost::variant<std::exception_ptr, pnet::type::value::value_type> result
       )
     {
-      sdpa::job_id_t const jobId = pEvt->job_id();
-
-      Job const* const pJob (findJob(jobId));
-      if (!pJob)
-      {
-        throw std::runtime_error ("Inexistent job: "+pEvt->job_id());
-      }
-
-      parent_proxy (this, source).query_job_status_reply
-        (pJob->id(), pJob->getStatus(), pJob->error_message());
+      parent_proxy (this, take (_workflow_response_source, workflow_response_id))
+        .workflow_response_response (workflow_response_id, result);
     }
 
     void Agent::scheduling_thread()
@@ -1693,13 +1558,6 @@ namespace sdpa
       _that->sendEventToOther<events::JobFinishedAckEvent> (_address, id);
     }
 
-    void Agent::child_proxy::discover_job_states
-      (job_id_t job_id, job_id_t discover_id) const
-    {
-      _that->sendEventToOther<events::DiscoverJobStatesEvent>
-        (_address, job_id, discover_id);
-    }
-
     void Agent::child_proxy::put_token
       ( job_id_t job_id
       , std::string put_token_id
@@ -1746,7 +1604,7 @@ namespace sdpa
     {
       _that->sendEventToOther<events::WorkerRegistrationEvent>
         ( _address
-        , _that->name(), capabilities, 0, true, fhg::util::hostname()
+        , _that->name(), capabilities, 0ul, true, fhg::util::hostname()
         );
     }
 
@@ -1795,20 +1653,6 @@ namespace sdpa
     {
       _that->sendEventToOther<events::CapabilitiesLostEvent>
         (_address, capabilities);
-    }
-
-    void Agent::parent_proxy::discover_job_states_reply
-      (job_id_t discover_id, discovery_info_t info) const
-    {
-      _that->sendEventToOther<events::DiscoverJobStatesReplyEvent>
-        (_address, discover_id, info);
-    }
-
-    void Agent::parent_proxy::query_job_status_reply
-      (job_id_t id, status::code status, std::string error_message) const
-    {
-      _that->sendEventToOther<events::JobStatusReplyEvent>
-        (_address, id, status, error_message);
     }
 
     void Agent::parent_proxy::put_token_response

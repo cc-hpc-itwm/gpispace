@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -800,7 +800,10 @@ namespace xml
           {}
 
           void operator () (expression_type&) const { return; }
-          void operator () (module_type &) const { return; }
+          void operator () (module_type &m) const
+          {
+            m.specialize (map);
+          }
           void operator () (net_type & net) const
           {
             net.specialize (map, get, known_structs, state);
@@ -1364,29 +1367,29 @@ namespace xml
         };
       }
 
-      bool find_module_calls ( const state::type & state
-                             , net_type & n
-                             , fun_info_map & m
-                             , mcs_type& mcs
-                             )
-      {
-        n.contains_a_module_call = false;
-
-        for (transition_type& transition : n.transitions())
-          {
-            n.contains_a_module_call
-              |= boost::apply_visitor
-              ( transition_find_module_calls_visitor
-                (state, transition, m, mcs)
-              , transition.function_or_use()
-              );
-          }
-
-        return n.contains_a_module_call;
-      }
-
       namespace
       {
+        bool find_module_calls ( const state::type & state
+                               , net_type & n
+                               , fun_info_map & m
+                               , mcs_type& mcs
+                               )
+        {
+          n.contains_a_module_call = false;
+
+          for (transition_type& transition : n.transitions())
+            {
+              n.contains_a_module_call
+                |= boost::apply_visitor
+                ( transition_find_module_calls_visitor
+                  (state, transition, m, mcs)
+                , transition.function_or_use()
+                );
+            }
+
+          return n.contains_a_module_call;
+        }
+
         typedef std::unordered_set<std::string> types_type;
 
         struct port_with_type
@@ -1612,7 +1615,7 @@ namespace xml
 
             s << sep << "void";
 
-            if (memory_buffer.read_only())
+            if (memory_buffer.read_only().get_value_or (false))
             {
               s << " const";
             }

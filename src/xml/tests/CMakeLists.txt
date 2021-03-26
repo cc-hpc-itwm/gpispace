@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -97,5 +97,12 @@ fhg_add_test (NAME xml_parse_virtual_place_with_token_can_be_synthesized
             Boost::filesystem
 )
 
+fhg_add_test (NAME xml_module_pass_context
+  SOURCES module_pass_context.cpp
+  USE_BOOST
+  LIBRARIES pnet
+)
+
 add_subdirectory (bytearray)
 add_subdirectory (diagnostics)
+add_subdirectory (template_with_module_call)

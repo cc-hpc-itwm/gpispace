@@ -570,6 +570,7 @@ GPI-Space libraries as follows:
   -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib/"                       \
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/bundle/lib/"        \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/iml/"               \
   -lgspc                                                          \
                                                                   \
   -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@ namespace fhg
             }
           }
 
-          nonempty_file (boost::filesystem::path const& path)
-            : nonempty_file (path.string())
+          nonempty_file (boost::filesystem::path const& p)
+            : nonempty_file (p.string())
           {}
         };
 

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -44,10 +44,13 @@
 #include <string>
 #include <vector>
 
-std::vector<std::string>  test_nets
-  { "net_with_single_module_implementation"
-  , "net_with_multiple_module_implementations"
-  };
+namespace
+{
+  std::vector<std::string>  test_nets
+    { "net_with_single_module_implementation"
+    , "net_with_multiple_module_implementations"
+    };
+}
 
 BOOST_AUTO_TEST_CASE (steal_work)
 {

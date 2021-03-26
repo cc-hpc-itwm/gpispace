@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 
-BOOST_AUTO_TEST_CASE (first_then)
+BOOST_AUTO_TEST_CASE (first_then_works)
 {
   std::string const first {fhg::util::testing::random<std::string>{}()};
   std::string const then {fhg::util::testing::random<std::string>{}()};

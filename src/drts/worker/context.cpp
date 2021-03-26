@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 #include <drts/worker/context.hpp>
 #include <drts/worker/context_impl.hpp>
 
+#include <util-generic/exit_status.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
@@ -179,18 +180,18 @@ namespace drts
             ((boost::format ("wait (%1%) != %1%") % child).str());
         }
 
-        if (WIFSIGNALED (status))
+        if (fhg::util::wifsignaled (status))
         {
-          if (cancelled && WTERMSIG (status) == SIGUSR2)
+          if (cancelled && fhg::util::wtermsig (status) == SIGUSR2)
           {
             return on_cancel();
           }
 
-          return on_signal (WTERMSIG (status));
+          return on_signal (fhg::util::wtermsig (status));
         }
-        else if (WIFEXITED (status))
+        else if (fhg::util::wifexited (status))
         {
-          if (WEXITSTATUS (status) == 1)
+          if (fhg::util::wexitstatus (status) == 1)
           {
             boost::iostreams::stream<boost::iostreams::file_descriptor_source>
               pipe_read (pipe_fds[0], boost::iostreams::never_close_handle);
@@ -208,7 +209,7 @@ namespace drts
             }
           }
 
-          return on_exit (WEXITSTATUS (status));
+          return on_exit (fhg::util::wexitstatus (status));
         }
         else
         {

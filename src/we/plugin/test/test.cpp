@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,6 +23,8 @@
 #include <util-generic/testing/flatten_nested_exceptions.hpp>
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
+
+#include <boost/filesystem/path.hpp>
 
 #include <stdexcept>
 #include <string>
@@ -138,14 +140,30 @@ namespace gspc
             {
               plugins.before_eval (pid, context);
             }
-          , std::invalid_argument ("Plugins: Unknown " + to_string (pid))
+          , fhg::util::testing::make_nested
+            ( std::runtime_error
+              (str ( boost::format ("Plugins::before_eval (%1%, %2%)")
+                   % to_string (pid)
+                   % context
+                   )
+              )
+            , std::invalid_argument ("Plugins: Unknown " + to_string (pid))
+            )
           );
         fhg::util::testing::require_exception
           ( [&]
             {
               plugins.after_eval (pid, context);
             }
-          , std::invalid_argument ("Plugins: Unknown " + to_string (pid))
+          , fhg::util::testing::make_nested
+            ( std::runtime_error
+              (str ( boost::format ("Plugins::after_eval (%1%, %2%)")
+                   % to_string (pid)
+                   % context
+                   )
+              )
+            , std::invalid_argument ("Plugins: Unknown " + to_string (pid))
+            )
           );
       }
 
@@ -287,14 +305,30 @@ namespace gspc
             {
               plugins.before_eval (pid, context);
             }
-          , std::runtime_error ("C::before_eval()")
+          , fhg::util::testing::make_nested
+            ( std::runtime_error
+              (str ( boost::format ("Plugins::before_eval (%1%, %2%)")
+                   % to_string (pid)
+                   % context
+                   )
+              )
+            , std::runtime_error ("C::before_eval()")
+            )
           );
         fhg::util::testing::require_exception
           ( [&]
             {
               plugins.after_eval (pid, context);
             }
-          , std::runtime_error ("C::after_eval()")
+          , fhg::util::testing::make_nested
+            ( std::runtime_error
+              (str ( boost::format ("Plugins::after_eval (%1%, %2%)")
+                   % to_string (pid)
+                   % context
+                   )
+              )
+            , std::runtime_error ("C::after_eval()")
+            )
           );
       }
 
@@ -305,7 +339,15 @@ namespace gspc
             {
               plugins.create (D, context, UNEXPECTED());
             }
-          , std::runtime_error ("D::D()")
+          , fhg::util::testing::make_nested
+            ( std::runtime_error
+              (str ( boost::format ("Plugins::create (%1%, %2%)")
+                   % boost::filesystem::path {D}
+                   % context
+                   )
+              )
+            , std::runtime_error ("D::D()")
+            )
           );
       }
     }

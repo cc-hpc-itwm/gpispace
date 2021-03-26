@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ FHG_BOOST_TEST_LOG_VALUE_PRINTER_WRAPPED (fhg::logging::endpoint, USE_TO_STRING)
   {                                                             \
     namespace logging                                           \
     {                                                           \
+      static                                                    \
       std::ostream& operator<< (std::ostream& os, t_ const& t)  \
       {                                                         \
         return os << t.to_string();                             \
@@ -49,19 +50,18 @@ namespace fhg
 {
   namespace logging
   {
+    static
     bool operator== (tcp_endpoint const& lhs, tcp_endpoint const& rhs)
     {
       return lhs.to_string() == rhs.to_string();
     }
+    static
     bool operator== (socket_endpoint const& lhs, socket_endpoint const& rhs)
     {
       return lhs.to_string() == rhs.to_string();
     }
-    bool operator== (endpoint const& lhs, endpoint const& rhs)
-    {
-      return lhs.to_string() == rhs.to_string();
-    }
 
+    static
     bool operator== ( boost::variant<tcp_endpoint, socket_endpoint> const& lhs
                     , socket_endpoint const& rhs
                     )
@@ -69,6 +69,7 @@ namespace fhg
       return lhs.type() == typeid (socket_endpoint)
         && boost::get<socket_endpoint> (lhs) == rhs;
     }
+    static
     bool operator== ( boost::variant<tcp_endpoint, socket_endpoint> const& lhs
                     , tcp_endpoint const& rhs
                     )

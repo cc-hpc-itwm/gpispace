@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -63,7 +63,7 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
 BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
 {
   std::string const port_name (fhg::util::testing::random_identifier());
-  unsigned long const value (rand());
+  auto const value (fhg::util::testing::random<unsigned long>{}());
 
   we::type::property::type properties;
   properties.set ( {"fhg", "drts", "schedule", "num_worker"}

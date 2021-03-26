@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,10 +16,9 @@
 
 #include <we/expr/token/type.hpp>
 
-#include <boost/format.hpp>
+#include <util-generic/unreachable.hpp>
 
 #include <iostream>
-#include <stdexcept>
 
 namespace expr
 {
@@ -104,12 +103,8 @@ namespace expr
         case ref: return os << "<ref>";
         case eof: return os << "<eof>";
         case define: return os << " := ";
-        default: throw std::runtime_error
-            (( boost::format ("token::show (%1%)")
-             % static_cast<int> (_token)
-             ).str()
-            );
         }
+      FHG_UTIL_UNREACHABLE();
     }
     std::ostream& operator<< (std::ostream& os, const show& s)
     {

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -95,8 +95,6 @@ BOOST_AUTO_TEST_CASE (emulate_share_example_ping_pong)
       }
     , std::bind (&disallow, "failed")
     , std::bind (&disallow, "canceled")
-    , std::bind (&disallow, "discover")
-    , std::bind (&disallow, "discovered")
     , std::bind (&disallow, "token_put")
     , std::bind (&disallow, "workflow_response")
     , [&current_id]

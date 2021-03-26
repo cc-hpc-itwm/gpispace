@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <fhg/util/num.hpp>
+#include <fhg/util/cctype.hpp>
 #include <fhg/util/parse/error.hpp>
 
 #include <util-generic/fallthrough.hpp>
@@ -34,17 +35,17 @@ namespace fhg
         {
           switch (c)
           {
-          case 'a'...'f':
-          case 'A'...'F': return true;
-          default: return isdigit (c);
+          case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
+          case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': return true;
+          default: return fhg::util::isdigit (c);
           }
         }
         static inline I val (const char& c)
         {
           switch (c)
           {
-          case 'a'...'f': return I (10 + (c - 'a'));
-          case 'A'...'F': return I (10 + (c - 'A'));
+          case 'a': case 'b': case 'c': case 'd': case 'e': case 'f': return I (10 + (c - 'a'));
+          case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': return I (10 + (c - 'A'));
           default: return I (c - '0');
           }
         }
@@ -59,7 +60,7 @@ namespace fhg
       {
         static inline bool isdig (const char & c)
         {
-          return isdigit (c);
+          return fhg::util::isdigit (c);
         }
         static inline I val (const char & c)
         {
@@ -129,7 +130,7 @@ namespace fhg
                                        , const bool has_sign = false
                                        )
       {
-        if (pos.end() || !isdigit(*pos))
+        if (pos.end() || !fhg::util::isdigit(*pos))
         {
           throw parse::error::expected ("digit", pos);
         }
@@ -188,7 +189,7 @@ namespace fhg
         double frac (0.0);
         double fak (0.1);
 
-        while (!pos.end() && isdigit (*pos))
+        while (!pos.end() && fhg::util::isdigit (*pos))
         {
           frac += double(*pos - '0') * fak;
           fak *= 0.1;

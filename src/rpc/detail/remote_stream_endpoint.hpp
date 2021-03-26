@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -77,7 +77,7 @@ namespace fhg
             , util::serialization::exception::serialization_functions
             = util::serialization::exception::serialization_functions()
             );
-        ~remote_stream_endpoint();
+        ~remote_stream_endpoint() override;
 
         //! \note Neither \a set_value nor \a set_exception are
         //! allowed to be blocking.

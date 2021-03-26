@@ -1,10 +1,21 @@
 #! /bin/bash
 
+# arguments: (optional) path to cmake binary, defaults to cmake3 or
+#            cmake, if available, else aborts.
 # requires: $CXX is compiler with --std=c++11 available
-# requires: $GSPC_HOME set
-# requires: executed in source directory
+# requires: $GPISpace_ROOT or $CMAKE_PREFIX_PATH or $GPISpace_DIR set
+# optional: $GSPC_NODEFILE_FOR_TESTS pointing to a path of a nodefile
+#           to use. If not set, the current host is used.
+# optional: $SWH_INSTALL_DIR to specify an installation directory for
+#           the example that can be reached from all nodes in the given
+#           nodefile. If not set, a local directory one is used.
+# optional: $GMP_PREFIX to allow building the miller-rabin
+#           "third-party" example independent of building
+#           stochastic-with-heureka itself.
 
 set -euo pipefail
+
+cmake_bin="${1:-$(command -v cmake3 2>/dev/null || command -v cmake)}"
 
 cleanups=()
 function push_cleanup()
@@ -25,210 +36,218 @@ function cleanup()
 }
 trap cleanup EXIT
 
-source_dir="${PWD}"
+source_dir="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")"
 
 build_dir="$(mktemp -d)"
 push_cleanup "rm -rf \"${build_dir}\""
 
- install_dir="$(mktemp -d)"
- push_cleanup "rm -rf \"${install_dir}\""
+install_dir="${SWH_INSTALL_DIR:-$(mktemp -d)}"
+push_cleanup "rm -rf \"${install_dir}\""
 
-  pushd "${build_dir}"
-  push_cleanup "popd"
+test_dir="$(mktemp -d)"
+push_cleanup "rm -rf \"${test_dir}\""
 
-   cmake "${source_dir}" -DCMAKE_INSTALL_PREFIX="${install_dir}" \
-         -DGSPC_HOME="${GSPC_HOME}"
-   make install
+if test -n "${GSPC_NODEFILE_FOR_TESTS:-}"
+then
+  cp "${GSPC_NODEFILE_FOR_TESTS}" "${test_dir}/nodefile"
+else
+  hostname > "${test_dir}/nodefile"
+fi
+push_cleanup "rm \"${test_dir}/nodefile\""
 
-   ctest --output-on-failure
 
-  pop_cleanup # pushd build_dir
+pushd "${build_dir}"
+push_cleanup "popd"
 
-  test_dir="$(mktemp -d)"
-  push_cleanup "rm -rf \"${test_dir}\""
-   pushd "${test_dir}"
-   push_cleanup "popd"
-    hostname > "${test_dir}/nodefile"
-    push_cleanup "rm \"${test_dir}/nodefile\""
+"${cmake_bin}" "${source_dir}" -DCMAKE_INSTALL_PREFIX="${install_dir}"
+make install
 
-     drts_arguments=(--nodefile "${test_dir}/nodefile")
-     drts_arguments+=(--rif-strategy "ssh")
 
-     mkdir "stochastic_with_heureka"
-     push_cleanup "rm -rf \"stochastic_with_heureka\""
-      pushd "stochastic_with_heureka"
-      push_cleanup "popd"
+ctest --output-on-failure
 
-       mkdir "asian"
-       push_cleanup "rm -rf \"asian\""
-        pushd "asian"
-        push_cleanup "popd"
+pop_cleanup
 
-         function check_asianopt_result() {
-           local got=$(tail -n 4)
-           local expected=$(cat <<EOF
-got_heureka = false
+drts_arguments=(--nodefile "${test_dir}/nodefile")
+drts_arguments+=(--rif-strategy "ssh")
+
+function run_test_do_check() {
+  local name="${1}"
+  local expected="${2}"
+  local got="${3}"
+
+  if [[ "${got}" != "${expected}" ]]
+  then
+    echo >&2 "Test '${name}' failed. Expected:"
+    echo >&2 "${expected}"
+    false
+  fi
+
+  echo "Test '${name}' succeeded."
+}
+
+function run_test() {
+  local name expected arguments binary lines
+
+  name="${1}"; shift
+  expected="${1}"; shift
+  binary="${1}"; shift
+  arguments=("${@}")
+
+  lines=$(wc -l <<<"${expected}")
+
+  echo "Running test '${name}'..."
+  run_test_do_check \
+    "${name}" \
+    "${expected}" \
+    "$("${binary}" "${drts_arguments[@]}" "${arguments[@]}" \
+          | tee "/dev/stderr" \
+          | tail -n "${lines}")"
+}
+
+run_test "asianopt" \
+  "got_heureka = false
 number_of_rolls_done = 100000
 price = 6895.57
-std_dev = 0.581295
-EOF
-                )
-           if [[ "${got}" != "${expected}" ]]
-           then
-             echo "Expected:" >&2
-             echo "${expected}" >&2
-             false
-           fi
-         }
+std_dev = 0.581295" \
+  \
+  "${install_dir}/bin/run-asianopt" \
+    --post-process-per-node 1 \
+    --reduce-per-node 10 \
+    --roll-and-heureka-per-node 10 \
+    --number-of-rolls 100000 \
+    --rolls-at-once 1000 \
+    --seed 3134 \
+    --K 85.0 \
+    --S 7000.0 \
+    --T 1.02 \
+    --d 0.0 \
+    --r 0.05 \
+    --sigma 0.2 \
+    --control-variate false \
+    --first-fixing 1 \
+    --fixings-per-year 50.0 \
+    --option-type FixC
 
-         "${install_dir}/bin/run-asianopt" \
-           "${drts_arguments[@]}" \
-           --post-process-per-node 1 \
-           --reduce-per-node 10 \
-           --roll-and-heureka-per-node 10 \
-           --number-of-rolls 100000 \
-           --rolls-at-once 1000 \
-           --seed 3134 \
-           --K 85.0 \
-           --S 7000.0 \
-           --T 1.02 \
-           --d 0.0 \
-           --r 0.05 \
-           --sigma 0.2 \
-           --controle-variate false \
-           --first-fixing 1 \
-           --fixings-per-year 50.0 \
-           --option-type FixC 2>/dev/null \
-           | tee "/dev/stderr" \
-           | check_asianopt_result
+run_test "barropt" \
+  "got_heureka = false
+number_of_rolls_done = 100000
+value = 6061.46
+stddev = 6.89952" \
+  \
+  "${install_dir}/bin/run-barropt" \
+    --post-process-per-node 1 \
+    --reduce-per-node 10 \
+    --roll-and-heureka-per-node 10 \
+    --number-of-rolls 100000 \
+    --rolls-at-once 1000 \
+    --seed 3134 \
+    --S 7000.0 \
+    --K 85.0 \
+    --H 10000.0 \
+    --r 0.05 \
+    --sigma 0.2 \
+    --T 1.02 \
+    --timesteps 100 \
+    --option-type Call \
+    --barrier-type UaO
 
-        pop_cleanup # pushd asian
-       pop_cleanup # mkdir asian
+probably_a_prime_number="656692050181897513638241554199181923922955921760928836766304161790553989228223793461834703506872747071705167995972707253940099469869516422893633357693"
 
-       # todo: barropt
-       # todo: miller-rabin user example
-       # todo: pcp
+if test -e "${install_dir}/bin/run-miller-rabin"
+then
 
-       if test -e "${install_dir}/bin/run-miller-rabin"
-       then
-         mkdir "miller-rabin-prime"
-         push_cleanup "rm -rf \"miller-rabin-prime\""
-          pushd "miller-rabin-prime"
-          push_cleanup "popd"
+  run_test "miller-rabin prime" \
+    "got_heureka = false
+number_of_rolls_done = 250000
+result = probably prime" \
+    \
+    "${install_dir}/bin/run-miller-rabin" \
+      --post-process-per-node 1 \
+      --reduce-per-node 10 \
+      --roll-and-heureka-per-node 10 \
+      --number-of-rolls 250000 \
+      --rolls-at-once 10000 \
+      --seed 3134 \
+      --to-test "${probably_a_prime_number}"
 
-           function check_miller_rabin_prime_result() {
-             local got=$(tail -n 3)
-             local expected=$(cat <<EOF
-got_heureka = false
-number_of_rolls_done = 1000000
-result = probably prime
-EOF
-                  )
-             if [[ "${got}" != "${expected}" ]]
-             then
-               echo "Expected:" >&2
-               echo "${expected}" >&2
-               false
-             fi
-           }
+fi
 
-           "${install_dir}/bin/run-miller-rabin" \
-             "${drts_arguments[@]}" \
-             --post-process-per-node 1 \
-             --reduce-per-node 10 \
-             --roll-and-heureka-per-node 10 \
-             --number-of-rolls 1000000 \
-             --rolls-at-once 10000 \
-             --seed 3134 \
-             --to-test 656692050181897513638241554199181923922955921760928836766304161790553989228223793461834703506872747071705167995972707253940099469869516422893633357693 \
-             | tee "/dev/stderr" \
-             | check_miller_rabin_prime_result
+if test -n "${GMP_PREFIX:-}"
+then
 
-          pop_cleanup # pushd miller-rabin-prime
-         pop_cleanup # mkdir miller-rabin-prime
-       fi # if test -e miller-rabin
+  pushd "${install_dir}/example/miller-rabin"
+  push_cleanup "popd"
+  push_cleanup "make clean"
 
-       mkdir "pi"
-       push_cleanup "rm -rf \"pi\""
-        pushd "pi"
-        push_cleanup "popd"
+  make \
+    SWH_PREFIX="${install_dir}" \
+    GMP_PREFIX="${GMP_PREFIX}" \
+    GSPC_PREFIX="$(grep '^GSPC_HOME:PATH=' "${build_dir}/CMakeCache.txt" | sed -e 's,GSPC_HOME:PATH=,,')"
 
-         function check_pi_result() {
-           local got=$(tail -n 6)
-           local expected=$(cat <<EOF
-got_heureka = false
+  run_test "miller-rabin prime, third-party compiled" \
+    "result = y( 0)" \
+    \
+    "${install_dir}/bin/run-generic-stochastic_with_heureka" \
+      --implementation "${install_dir}/example/miller-rabin/miller-rabin.so" \
+      --post-process-per-node 1 \
+      --reduce-per-node 10 \
+      --roll-and-heureka-per-node 10 \
+      --number-of-rolls 250000 \
+      --rolls-at-once 10000 \
+      --seed 3134 \
+      --user-data "$(./generate-user-data "${probably_a_prime_number}")"
+
+  run_test_do_check "miller-rabin prime, third-party compiled: show-result" \
+    "result = probably prime" \
+    "$(./show-result "y( 0)")"
+
+  pop_cleanup
+  pop_cleanup
+
+fi
+
+# todo: miller-rabin user example
+
+run_test "pcp" \
+  "solution abb" \
+  \
+  "${install_dir}/bin/run-pcp" \
+    --post-process-per-node 1 \
+    --reduce-per-node 10 \
+    --roll-and-heureka-per-node 10 \
+    --number-of-rolls 10000 \
+    --rolls-at-once 100 \
+    --seed 3134
+
+run_test "pi" \
+  "got_heureka = false
 number_of_rolls_done = 100000000
 result = 78538025 / 100000000
 reduced = 3141521 / 4000000
 PI = 3.14152
-err = -7.16536e-05
-EOF
-                )
-           if [[ "${got}" != "${expected}" ]]
-           then
-             echo "Expected:" >&2
-             echo "${expected}" >&2
-             false
-           fi
-         }
+err = -7.16536e-05" \
+  \
+  "${install_dir}/bin/run-pi" \
+    --post-process-per-node 1 \
+    --reduce-per-node 10 \
+    --roll-and-heureka-per-node 10 \
+    --number-of-rolls 100000000 \
+    --rolls-at-once 1000000 \
+    --seed 3134
 
-         "${install_dir}/bin/run-pi" \
-           "${drts_arguments[@]}" \
-           --post-process-per-node 1 \
-           --reduce-per-node 10 \
-           --roll-and-heureka-per-node 10 \
-           --number-of-rolls 100000000 \
-           --rolls-at-once 1000000 \
-           --seed 3134 \
-           | tee "/dev/stderr" \
-           | check_pi_result
-
-        pop_cleanup # pushd pi
-       pop_cleanup # mkdir pi
-
-       mkdir "tasks_with_normal_distributed_duration"
-       push_cleanup "rm -rf \"tasks_with_normal_distributed_duration\""
-        pushd "tasks_with_normal_distributed_duration"
-        push_cleanup "popd"
-
-         function check_tasks_with_normal_distributed_duration_result() {
-           local got=$(tail -n 3)
-           local expected=$(cat <<EOF
-got_heureka = false
+run_test "tasks_with_normal_distributed_duration" \
+  "got_heureka = false
 number_of_rolls_done = 1000
-number_of_tasks = 1000
-EOF
-                )
-           if [[ "${got}" != "${expected}" ]]
-           then
-             echo "Expected:" >&2
-             echo "${expected}" >&2
-             false
-           fi
-         }
+number_of_tasks = 1000" \
+  \
+  "${install_dir}/bin/run-tasks_with_normal_distributed_duration" \
+    --post-process-per-node 1 \
+    --reduce-per-node 1 \
+    --roll-and-heureka-per-node 25 \
+    --number-of-rolls 1000 \
+    --rolls-at-once 1 \
+    --seed 3134 \
+    --mean 50 \
+    --stddev 40
 
-         "${install_dir}/bin/run-tasks_with_normal_distributed_duration" \
-           "${drts_arguments[@]}" \
-           --post-process-per-node 1 \
-           --reduce-per-node 1 \
-           --roll-and-heureka-per-node 25 \
-           --number-of-rolls 1000 \
-           --rolls-at-once 1 \
-           --seed 3134 \
-           --mean 500 \
-           --stddev 400 \
-           | tee "/dev/stderr" \
-           | check_tasks_with_normal_distributed_duration_result
-
-        pop_cleanup # pushd tasks_with_normal_distributed_duration
-       pop_cleanup # mkdir tasks_with_normal_distributed_duration
-
-      pop_cleanup # pushd stochastic_with_heureka
-     pop_cleanup # mkdir stochastic_with_heureka
-
-    pop_cleanup # nodefile
-   pop_cleanup # pushd test_dir
-  pop_cleanup # mktemp test_dir
-
- pop_cleanup # mktemp install_dir
-pop_cleanup # mktemp build_dir
+echo "The stochastic-with-heureka selftest succeeded."

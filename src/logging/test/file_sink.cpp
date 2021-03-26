@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -198,7 +198,7 @@ namespace fhg
 
     BOOST_DATA_TEST_CASE
       ( flushing_happens_in_given_interval
-      , boost::unit_test::data::make ({1, 2, 3, 5, 6, 13, 31})
+      , boost::unit_test::data::make ({1ul, 2ul, 3ul, 5ul, 6ul, 13ul, 31ul})
       , interval
       )
     {
@@ -217,7 +217,7 @@ namespace fhg
 
         for (std::size_t repetition (0); repetition < repetitions; ++repetition)
         {
-          for (int i (0); i < interval - 1; ++i)
+          for (unsigned long i (0); i + 1 < interval; ++i)
           {
             emit();
             BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), expected_lines);
@@ -228,7 +228,7 @@ namespace fhg
           BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), expected_lines);
         }
 
-        for (int i (0); i < interval - 1; ++i)
+        for (unsigned long i (0); i + 1 < interval; ++i)
         {
           emit();
           BOOST_REQUIRE_EQUAL (util::read_lines (path).size(), expected_lines);

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <we/type/value/show.hpp>
 
 #include <fhg/project_info.hpp>
+#include <fhg/util/cctype.hpp>
 #include <fhg/util/indenter.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/starts_with.hpp>
@@ -108,7 +109,7 @@ namespace
       {
         ++pos;
 
-        while (pos != end && (isspace (*pos) || *pos == b))
+        while (pos != end && (fhg::util::isspace (*pos) || *pos == b))
         {
           ++pos;
         }

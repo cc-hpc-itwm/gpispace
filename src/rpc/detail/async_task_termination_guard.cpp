@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
 #include <rpc/detail/async_task_termination_guard.hpp>
 
 #include <algorithm>
+#include <utility>
 
 namespace fhg
 {
@@ -34,6 +35,9 @@ namespace fhg
         _state->_counted_down.wait (lock, [&] { return _state->_count == 0; });
       }
 
+      async_task_termination_guard::mark_task_scope::mark_task_scope (std::shared_ptr<state> state)
+        : _state (std::move (state))
+      {}
       async_task_termination_guard::mark_task_scope::~mark_task_scope()
       {
         std::lock_guard<std::mutex> const lock (_state->_guard);

@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ function (find_boost)
   _parse_arguments_with_unknown (FIND "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
   set (_all_already_known TRUE)
-  foreach (_component ${FIND_COMPONENTS})
+  foreach (_component ${FIND_COMPONENTS} base)
     if (NOT TARGET Boost::${_component})
       set (_all_already_known FALSE)
     endif()
@@ -169,7 +169,7 @@ Use `find_package (GPISpace REQUIRED)` before using `find_boost() with `FROM_GPI
   # results in linking issues with some global variables that end up
   # in segfaults during destruction in some environments.
   if ( TARGET Boost::unit_test_framework
-      AND Boost_UNIT_TEST_FRAMEWORK_LIBRARY MATCHES ".*\.so[0-9\.]*$"
+      AND Boost_UNIT_TEST_FRAMEWORK_LIBRARY MATCHES "[.]so[0-9.]*$"
      )
     get_property (_current_options
       TARGET Boost::unit_test_framework

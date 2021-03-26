@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -25,6 +25,8 @@
 
 #include <util-generic/print_exception.hpp>
 #include <util-generic/syscall.hpp>
+#include <util-generic/unreachable.hpp>
+#include <util-generic/testing/random.hpp>
 
 #include <boost/format.hpp>
 #include <boost/optional.hpp>
@@ -99,12 +101,13 @@ struct activity
   we::type::activity_t _act;
 };
 
+static
 std::string worker_gen()
 {
   static long ids[]          = {0,      0,      0,       0,     0,     0};
   static const char* names[] = {"calc", "load", "store", "foo", "bar", "baz"};
 
-  const unsigned long r (lrand48() % sizeof(names)/sizeof(*names));
+  const auto r (fhg::util::testing::random<std::size_t>{}() % sizeof(names)/sizeof(*names));
   return (boost::format ("%1%-ip-127-0-0-1 %3% 50501-%2%") % names[r] % ++ids[r] % fhg::util::syscall::getpid()).str();
 }
 
@@ -118,7 +121,7 @@ try
     return -1;
   }
 
-  const int worker_count (ac >= 2 ? atoi (av[1]) : 1);
+  const auto worker_count (ac >= 2 ? std::stoul (av[1]) : 1);
   const int duration (ac >= 3 ? 1000 / atoi (av[2]) : 1);
 
   fhg::logging::stream_emitter emitter;
@@ -132,7 +135,7 @@ try
 
   for (;;)
   {
-    const std::string worker (worker_names[lrand48() % worker_names.size()]);
+    const std::string worker (worker_names[fhg::util::testing::random<decltype (worker_names)::size_type>{}() % worker_names.size()]);
 
     if (!workers[worker])
     {
@@ -149,11 +152,7 @@ try
     std::this_thread::sleep_for (std::chrono::milliseconds (duration));
   }
 
-  //! \note Wait for remote logger being done.
-  //! \todo Wait more cleverly.
-  std::this_thread::sleep_for (std::chrono::seconds (2));
-
-  return 0;
+  FHG_UTIL_UNREACHABLE();
 }
 catch (...)
 {

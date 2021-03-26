@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,14 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_executable (NAME gen
-  SOURCES "gen.cpp"
-  LIBRARIES Util::Generic
-            Boost::program_options
-            Boost::thread
-            Boost::system
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
-)
+if (BUILD_TESTING)
+  extended_add_executable (NAME gen
+    SOURCES "gen.cpp"
+    LIBRARIES Util::Generic
+              Boost::program_options
+              Boost::thread
+              Boost::system
+    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/../include"
+  )
+endif()
 
 fhg_add_test (NAME doc_tutorial_avg_stddev
   SOURCES test.cpp

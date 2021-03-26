@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-find_package (OpenSSL REQUIRED)
+add_subdirectory (iml)
 
 extended_add_library (NAME fhgcom
   SOURCES "fhgcom/connection.cpp"
@@ -26,11 +26,19 @@ extended_add_library (NAME fhgcom
 )
 add_subdirectory (fhgcom/tests)
 
-add_subdirectory (gpi-space)
-add_subdirectory (vmem)
-
   add_subdirectory (pnete)
   add_subdirectory (util)
+
+file (READ "we/type/signature/pnetc_compare.hpp" PNETC_COMPARE_HPP)
+
+configure_file ("we/type/signature/cpp.cpp.in"
+  "${CMAKE_BINARY_DIR}/we/type/signature/cpp.cpp"
+  @ONLY
+)
+configure_file ("we/type/test/signature.cpp.in"
+  "${CMAKE_BINARY_DIR}/we/type/test/signature.cpp"
+  @ONLY
+)
 
 extended_add_library (NAME pnet
   SOURCES "we/exception.cpp"
@@ -71,7 +79,7 @@ extended_add_library (NAME pnet
           "we/type/property.cpp"
           "we/type/schedule_data.cpp"
           "we/type/signature/complete.cpp"
-          "we/type/signature/cpp.cpp"
+          "${CMAKE_BINARY_DIR}/we/type/signature/cpp.cpp"
           "we/type/signature/dump.cpp"
           "we/type/signature/is_literal.cpp"
           "we/type/signature/names.cpp"
@@ -81,7 +89,6 @@ extended_add_library (NAME pnet
           "we/type/transition.cpp"
           "we/type/value/function.cpp"
           "we/type/value/name.cpp"
-          "we/type/value/name_of.cpp"
           "we/type/value/path/append.cpp"
           "we/type/value/path/join.cpp"
           "we/type/value/path/split.cpp"
@@ -140,8 +147,7 @@ extended_add_library (NAME pnet
           "xml/parse/warning.cpp"
   LIBRARIES fhg-util
             drts-context
-            gpi-space-pc-client-static
-            gpi-space-pc-segment
+            IML::Client
             Util::Generic
             Boost::date_time
             Boost::program_options
@@ -158,7 +164,6 @@ add_subdirectory (xml/tests)
 add_subdirectory (xml/parse/type/test)
 
 add_subdirectory (we)
-add_subdirectory (mmgr)
 
 add_subdirectory (drts)
 add_subdirectory (bin)
@@ -209,9 +214,15 @@ extended_add_executable (NAME gspc-logging-demultiplexer
   INSTALL INSTALL_DESTINATION "libexec/gspc"
 )
 
+extended_add_library (NAME logging_test
+  NAMESPACE gspc
+  SOURCES "logging/test/message.cpp"
+  LIBRARIES gspc::logging
+)
+
 extended_add_executable (NAME gspc-logging-to-stdout
   SOURCES "logging/gspc-logging-to-stdout.cpp"
-  LIBRARIES gspc::logging
+  LIBRARIES gspc::logging_test
             Util::Generic
   INSTALL INSTALL_DESTINATION "bin"
 )
@@ -219,49 +230,49 @@ extended_add_executable (NAME gspc-logging-to-stdout
 add_unit_test (NAME logging_endpoint
   SOURCES "logging/test/endpoint.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 
 add_unit_test (NAME logging_file_sink
   SOURCES "logging/test/file_sink.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 
 add_unit_test (NAME logging_ostream_redirect
   SOURCES "logging/test/ostream_redirect.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 
 add_unit_test (NAME logging_socket_endpoint
   SOURCES "logging/test/socket_endpoint.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 
 add_unit_test (NAME logging_stream_emitter
   SOURCES "logging/test/stream_emitter.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 
 add_unit_test (NAME logging_stream_receiver
   SOURCES "logging/test/stream_receiver.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 
 add_unit_test (NAME logging_tcp_endpoint
   SOURCES "logging/test/tcp_endpoint.cpp"
   LIBRARIES Util::Generic
-            gspc::logging
+            gspc::logging_test
   USE_BOOST
 )
 

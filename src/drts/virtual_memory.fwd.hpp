@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
 
 #pragma once
 
-#include <boost/variant.hpp>
+#include <iml/SegmentDescription.hpp>
 
 namespace gspc
 {
@@ -24,10 +24,9 @@ namespace gspc
 
   namespace vmem
   {
-    struct gaspi_segment_description;
-    struct beegfs_segment_description;
-    using segment_description = boost::variant < gaspi_segment_description
-                                               , beegfs_segment_description
-                                               >;
+    using beegfs_segment_description = iml::beegfs::SegmentDescription;
+    using gaspi_segment_description = iml::gaspi::SegmentDescription;
+
+    using segment_description = iml::SegmentDescription;
   }
 }

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +15,11 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #pragma once
+
+#include <boost/optional.hpp>
+
+#include <list>
+#include <string>
 
 namespace
 {

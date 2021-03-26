@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@
 
 #include <rif/strategy/ssh/session.hpp>
 
+#include <boost/filesystem/operations.hpp>
 #include <boost/format.hpp>
 
 #include <future>
@@ -134,67 +135,70 @@ namespace fhg
                              , 22
                              };
 
-            po::option<std::string, po::nonempty_string> username()
+            namespace
             {
-              auto const name ("ssh-username");
-              auto const description ("username to use for remote host");
+              po::option<std::string, po::nonempty_string> username()
+              {
+                auto const name ("ssh-username");
+                auto const description ("username to use for remote host");
 
-              boost::optional<std::string> const user (util::getenv ("USER"));
-              if (user && !user->empty())
-              {
-                return {name, description, *user};
-              }
-              else
-              {
-                return {name, description};
-              }
-            }
-
-            boost::optional<boost::filesystem::path> maybe_default_key
-              (std::string suffix)
-            {
-              auto const home (util::getenv ("HOME"));
-              if (home)
-              {
-                auto const key_path ( boost::filesystem::path (*home)
-                                    / ".ssh"
-                                    / ("id_rsa" + suffix)
-                                    );
-                if (boost::filesystem::exists (key_path))
+                boost::optional<std::string> const user (util::getenv ("USER"));
+                if (user && !user->empty())
                 {
-                  return key_path;
+                  return {name, description, *user};
+                }
+                else
+                {
+                  return {name, description};
                 }
               }
-              return boost::none;
-            }
 
-            po::option<boost::filesystem::path, po::existing_path> public_key()
-            {
-              auto const name ("ssh-public-key");
-              auto const description ("public key file used for authentication");
-
-              if (auto const maybe_default = maybe_default_key (".pub"))
+              boost::optional<boost::filesystem::path> maybe_default_key
+                (std::string suffix)
               {
-                return {name, description, *maybe_default};
+                auto const home (util::getenv ("HOME"));
+                if (home)
+                {
+                  auto const key_path ( boost::filesystem::path (*home)
+                                      / ".ssh"
+                                      / ("id_rsa" + suffix)
+                                      );
+                  if (boost::filesystem::exists (key_path))
+                  {
+                    return key_path;
+                  }
+                }
+                return boost::none;
               }
-              else
-              {
-                return {name, description};
-              }
-            }
 
-            po::option<boost::filesystem::path, po::existing_path> private_key()
-            {
-              auto const name ("ssh-private-key");
-              auto const description ("private key file used for authentication");
+              po::option<boost::filesystem::path, po::existing_path> public_key()
+              {
+                auto const name ("ssh-public-key");
+                auto const description ("public key file used for authentication");
 
-              if (auto const maybe_default = maybe_default_key (""))
-              {
-                return {name, description, *maybe_default};
+                if (auto const maybe_default = maybe_default_key (".pub"))
+                {
+                  return {name, description, *maybe_default};
+                }
+                else
+                {
+                  return {name, description};
+                }
               }
-              else
+
+              po::option<boost::filesystem::path, po::existing_path> private_key()
               {
-                return {name, description};
+                auto const name ("ssh-private-key");
+                auto const description ("private key file used for authentication");
+
+                if (auto const maybe_default = maybe_default_key (""))
+                {
+                  return {name, description, *maybe_default};
+                }
+                else
+                {
+                  return {name, description};
+                }
               }
             }
           }

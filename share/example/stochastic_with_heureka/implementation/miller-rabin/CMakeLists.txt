@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -42,47 +42,46 @@ if (NOT (GMP_INCLUDE_DIR AND GMP_LIBRARY_gmp AND GMP_LIBRARY_gmpxx))
 endif()
 
 if (BUILD_MILLER_RABIN)
-  extended_add_library (NAME gmp
-    LIBRARIES "${GMP_LIBRARY_gmpxx}"
-              "${GMP_LIBRARY_gmp}"
-    INCLUDE_DIRECTORIES INTERFACE "${GMP_INCLUDE_DIR}"
+  add_library (gmp INTERFACE)
+  target_link_libraries (gmp
+    INTERFACE "${GMP_LIBRARY_gmpxx}"
+    INTERFACE "${GMP_LIBRARY_gmp}")
+  target_include_directories (gmp INTERFACE "${GMP_INCLUDE_DIR}")
+
+  add_library (util STATIC "util.cpp")
+  target_link_libraries (util
+    PUBLIC gmp
+    PUBLIC GPISpace::workflow_development)
+  set_target_properties (util PROPERTIES POSITION_INDEPENDENT_CODE ON)
+
+  add_executable (miller-rabin-utils.test "util-test.cpp")
+  target_compile_definitions (miller-rabin-utils.test PRIVATE
+    "BOOST_TEST_MODULE=\"miller-rabin-utils\""
+  )
+  target_link_libraries (miller-rabin-utils.test
+    PRIVATE util
+    PRIVATE Boost::unit_test_framework)
+  add_test (NAME miller-rabin-utils COMMAND
+    $<TARGET_FILE:miller-rabin-utils.test>
   )
 
-  extended_add_library (NAME util
-    TYPE STATIC
-    SOURCES "util.cpp"
-    LIBRARIES gmp
-    POSITION_INDEPENDENT
-  )
-
-  add_unit_test (NAME miller-rabin-utils
-    SOURCES "util-test.cpp"
-    LIBRARIES util
-    USE_BOOST
-  )
-
-  extended_add_library (NAME miller-rabin
-    TYPE MODULE
+  swh_add_implementation_module (NAME miller-rabin
     SOURCES "miller-rabin.cpp"
-    LIBRARIES util
-              GPISpace::workflow_development
-              gmp
-    INSTALL INSTALL_DESTINATION "implementation"
-  )
-  bundle_GPISpace_add_rpath (TARGET miller-rabin
-    INSTALL_DIRECTORY "implementation"
+    LIBRARIES PRIVATE util
   )
 
-  extended_add_executable (NAME run-miller-rabin
+  swh_add_implementation_exe (NAME miller-rabin
     SOURCES "run.cpp"
-    DONT_APPEND_EXE_SUFFIX
-    LIBRARIES run-stochastic_with_heureka
-              gmp
-    INSTALL
-  )
-  bundle_GPISpace_add_rpath (TARGET run-miller-rabin
-    INSTALL_DIRECTORY "bin"
+    LIBRARIES PRIVATE util
   )
 endif()
 
-add_subdirectory (user-example)
+install (FILES "user-example/generate_user_data.cpp"
+               "user-example/Makefile"
+               "user-example/miller-rabin.cpp"
+               "user-example/README"
+               "user-example/show_result.cpp"
+               "user-example/util.cpp"
+               "user-example/util.hpp"
+  DESTINATION "example/miller-rabin"
+)

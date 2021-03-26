@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,7 +24,9 @@ namespace pnet
   {
     namespace value
     {
-      template<typename T> const std::string& name_of (const T&);
+      template<typename T> inline const std::string& name_of (const T&);
     }
   }
 }
+
+#include <we/type/value/name_of.ipp>

@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@ extended_add_library (NAME we-dev
           "type/literal/control.cpp"
           "type/signature/show.cpp"
           "type/value/name.cpp"
-          "type/value/name_of.cpp"
           "type/value/path/append.cpp"
           "type/value/path/join.cpp"
           "type/value/path/split.cpp"
@@ -43,10 +42,12 @@ extended_add_library (NAME we-dev
   CREATE_BUNDLE_INFO
 )
 
-extended_add_library (NAME we-dev-testing
-  SOURCES "expr/token/testing/all_tokens.cpp"
-  LIBRARIES we-dev
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME we-dev-testing
+    SOURCES "expr/token/testing/all_tokens.cpp"
+    LIBRARIES we-dev
+  )
+endif()
 
 install (FILES
   expr/eval/context.hpp

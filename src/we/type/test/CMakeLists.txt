@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@ fhg_add_test (NAME we_type_value
 )
 
 fhg_add_test (NAME we_type_signature
-  SOURCES signature.cpp
+  SOURCES "${CMAKE_BINARY_DIR}/we/type/test/signature.cpp"
   USE_BOOST
   LIBRARIES pnet
 )
@@ -47,6 +47,12 @@ fhg_add_test (NAME we_type_module_call
 extended_add_executable (NAME mk_cpp
   SOURCES "mk_cpp.cpp"
   LIBRARIES pnet Util::Generic
+)
+
+fhg_add_test (NAME we_type_pnetc_compare
+  SOURCES "pnetc_compare.cpp"
+  USE_BOOST
+  LIBRARIES pnet
 )
 
 add_custom_command (
@@ -82,7 +88,7 @@ fhg_add_test (NAME we_type_dynamic_requirements
 fhg_add_test (NAME we_type_transition_with_preferences
   SOURCES transition_with_preferences.cpp
   USE_BOOST
-  LIBRARIES pnet
+  LIBRARIES pnet we::test_equality
 )
 
 fhg_add_test (NAME we_type_memory_buffer_info

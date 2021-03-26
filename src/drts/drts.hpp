@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,12 +22,14 @@
 #include <drts/pimpl.hpp>
 #include <drts/rifd_entry_points.hpp>
 #include <drts/stream.hpp>
-#include <drts/virtual_memory.fwd.hpp>
+#include <drts/virtual_memory.hpp>
 #include <drts/worker_description.hpp>
 
 #include <logging/endpoint.hpp>
 
 #include <we/type/value.hpp>
+
+#include <iml/MemorySize.hpp>
 
 #include <boost/filesystem/path.hpp>
 #include <boost/optional.hpp>
@@ -43,17 +45,6 @@
 #include <utility>
 #include <vector>
 
-namespace gpi
-{
-  namespace pc
-  {
-    namespace client
-    {
-      class api_t;
-    }
-  }
-}
-
 namespace gspc
 {
   namespace options
@@ -62,6 +53,7 @@ namespace gspc
     boost::program_options::options_description installation();
     boost::program_options::options_description drts();
     boost::program_options::options_description external_rifd();
+    boost::program_options::options_description remote_iml();
     boost::program_options::options_description virtual_memory();
   }
 
@@ -133,11 +125,13 @@ namespace gspc
                       >
       remove_worker (rifd_entry_points const&);
 
+    //! \note \a name is ignored and exists for API stability only.
     vmem_allocation alloc
       ( vmem::segment_description
       , unsigned long size
       , std::string const& name
       ) const;
+    //! \note \a name is ignored and exists for API stability only.
     vmem_allocation alloc_and_fill
       ( vmem::segment_description
       , unsigned long size
@@ -145,9 +139,10 @@ namespace gspc
       , char const* const data
       ) const;
 
+    //! \note \a name is ignored and exists for API stability only.
     stream create_stream ( std::string const& name
                          , gspc::vmem_allocation const& buffer
-                         , gspc::stream::size_of_slot const&
+                         , iml::MemorySize
                          , std::function<void (pnet::type::value::value_type const&)> on_slot_filled
                          ) const;
 
@@ -159,9 +154,7 @@ namespace gspc
     scoped_runtime_system& operator= (scoped_runtime_system&&) = delete;
 
   private:
-    friend class vmem_allocation;
     friend class information_to_reattach;
-    friend class stream;
 
     PIMPL (scoped_runtime_system);
   };
@@ -172,4 +165,8 @@ namespace gspc
   void set_gspc_home ( boost::program_options::variables_map&
                      , boost::filesystem::path const&
                      );
+
+  void set_remote_iml_vmem_socket ( boost::program_options::variables_map&
+                                  , boost::filesystem::path const&
+                                  );
 }

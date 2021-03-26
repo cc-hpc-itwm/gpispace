@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,11 +34,19 @@ namespace pnet
     private:                                              \
       _type _ ## _name
 
+#define DTOR_COPY_MOVE_ASSIGN(_name)            \
+    ~_name() noexcept override = default;       \
+    _name (_name const&) = default;             \
+    _name (_name&&) = default;                  \
+    _name& operator= (_name const&) = delete;   \
+    _name& operator= (_name&&) = delete
+
     class type_error : public std::runtime_error
     {
     public:
       type_error (const std::string&);
-      ~type_error() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (type_error);
     };
 
     class type_mismatch : public type_error
@@ -48,7 +56,8 @@ namespace pnet
                     , const type::value::value_type&
                     , const std::list<std::string>&
                     );
-      ~type_mismatch() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (type_mismatch);
 
       MEMBER (signature, type::signature::signature_type);
       MEMBER (value, type::value::value_type);
@@ -62,7 +71,8 @@ namespace pnet
                     , const type::value::value_type&
                     , const std::list<std::string>&
                     );
-      ~missing_field() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (missing_field);
 
       MEMBER (signature, type::signature::signature_type);
       MEMBER (value, type::value::value_type);
@@ -75,7 +85,8 @@ namespace pnet
       unknown_field ( const type::value::value_type&
                     , const std::list<std::string>&
                     );
-      ~unknown_field() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (unknown_field);
 
       MEMBER (value, type::value::value_type);
       MEMBER (path, std::list<std::string>);
@@ -89,7 +100,8 @@ namespace pnet
            , const type::value::value_type&
            , const type::value::value_type&
            );
-      ~eval() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (eval);
 
       MEMBER (token, ::expr::token::type);
       MEMBER (values, std::list<type::value::value_type>);
@@ -99,7 +111,8 @@ namespace pnet
     {
     public:
       missing_binding (const std::string&);
-      ~missing_binding() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (missing_binding);
 
       MEMBER (key, std::string);
     };
@@ -108,7 +121,8 @@ namespace pnet
     {
     public:
       could_not_resolve (const std::string&, const std::list<std::string>&);
-      ~could_not_resolve() throw() {}
+
+      DTOR_COPY_MOVE_ASSIGN (could_not_resolve);
 
       MEMBER (type, std::string);
       MEMBER (path, std::list<std::string>);
@@ -122,13 +136,15 @@ namespace pnet
         unknown ( const std::string& transition_name
                 , const std::string& port_name
                 );
-        ~unknown() throw() {}
+
+        DTOR_COPY_MOVE_ASSIGN (unknown);
 
         MEMBER (transition_name, std::string);
         MEMBER (port_name, std::string);
       };
     }
 
+#undef DTOR_COPY_MOVE_ASSIGN
 #undef MEMBER
   }
 }

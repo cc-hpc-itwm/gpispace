@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@ namespace sdpa
 {
   namespace events
   {
-    class DiscoverJobStatesEvent;
-    class DiscoverJobStatesReplyEvent;
     class CancelJobAckEvent;
     class CancelJobEvent;
     class DeleteJobAckEvent;
@@ -92,10 +90,6 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: Subscribe"); }
       virtual void handleSubscribeAckEvent (fhg::com::p2p::address_t const&, const SubscribeAckEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: SubscribeAck"); }
-      virtual void handleDiscoverJobStatesEvent (fhg::com::p2p::address_t const&, const DiscoverJobStatesEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStates"); }
-      virtual void handleDiscoverJobStatesReplyEvent (fhg::com::p2p::address_t const&, const DiscoverJobStatesReplyEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: DiscoverJobStatesReply"); }
       virtual void handle_put_token (fhg::com::p2p::address_t const&, const put_token*)
       { throw std::runtime_error ("UNHANDLED EVENT: put_token"); }
       virtual void handle_put_token_response (fhg::com::p2p::address_t const&, const put_token_response*)

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -93,7 +93,7 @@ namespace expr
             )
           , _value (value)
         {}
-        virtual ~square_root_for_negative_argument() = default;
+        virtual ~square_root_for_negative_argument() override = default;
 
       private:
         T _value;
@@ -111,7 +111,7 @@ namespace expr
             )
           , _value (value)
         {}
-        virtual ~log_for_nonpositive_argument() = default;
+        virtual ~log_for_nonpositive_argument() override = default;
 
       private:
         T _value;

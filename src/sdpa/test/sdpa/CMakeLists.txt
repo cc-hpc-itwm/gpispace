@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME SDPATestUtilities
-  NAMESPACE GPISpace
-  SOURCES "utils.cpp"
-  LIBRARIES sdpa
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME SDPATestUtilities
+    NAMESPACE GPISpace
+    SOURCES "utils.cpp"
+    LIBRARIES sdpa
+  )
+endif()
 
 fhg_add_test (NAME sdpa_AddNewWorkers
   SOURCES AddNewWorkers.cpp
@@ -63,14 +65,6 @@ fhg_add_test (NAME sdpa_CoallocationScheduler
 fhg_add_test (NAME sdpa_daemon_message_flow
   SOURCES daemon_message_flow.cpp
   DESCRIPTION "Message flow between client/agent and children/parents"
-  USE_BOOST
-  LIBRARIES GPISpace::SDPATestUtilities
-            sdpa
-            test-utilities
-)
-
-fhg_add_test (NAME sdpa_DiscoverJobStates
-  SOURCES DiscoverJobStates.cpp
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa

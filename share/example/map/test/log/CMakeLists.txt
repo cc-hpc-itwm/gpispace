@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,17 +14,19 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME log_map-impl
-  TYPE MODULE
-  SOURCES "implementation.cpp"
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
-  LIBRARIES we-dev
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME log_map-impl
+    TYPE MODULE
+    SOURCES "implementation.cpp"
+    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+    LIBRARIES we-dev
+  )
 
-math (EXPR size_input 50)
-math (EXPR size_output 50)
-math (EXPR size_block 10)
-math (EXPR num_block 10)
+  math (EXPR size_input 50)
+  math (EXPR size_output 50)
+  math (EXPR size_block 10)
+  math (EXPR num_block 10)
+endif()
 
 fhg_add_test (NAME share_example_map_log
   SOURCES test.cpp

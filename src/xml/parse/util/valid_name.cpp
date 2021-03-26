@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,6 +18,8 @@
 
 #include <xml/parse/error.hpp>
 
+#include <fhg/util/cctype.hpp>
+
 namespace xml
 {
   namespace parse
@@ -27,18 +29,18 @@ namespace xml
     {
       std::string name;
 
-      while (!pos.end() && isspace (*pos))
+      while (!pos.end() && fhg::util::isspace (*pos))
       {
         ++pos;
       }
 
-      if (!pos.end() && (isalpha (*pos) || *pos == '_'))
+      if (!pos.end() && (fhg::util::isalpha (*pos) || *pos == '_'))
       {
         name.push_back (*pos);
 
         ++pos;
 
-        while (!pos.end() && (isalnum (*pos) || *pos == '_'))
+        while (!pos.end() && (fhg::util::isalnum (*pos) || *pos == '_'))
         {
           name.push_back (*pos);
 
@@ -46,7 +48,7 @@ namespace xml
         }
       }
 
-      while (!pos.end() && isspace (*pos))
+      while (!pos.end() && fhg::util::isspace (*pos))
       {
         ++pos;
       }
@@ -59,7 +61,7 @@ namespace xml
                               , const boost::filesystem::path & path
                               )
     {
-      fhg::util::parse::position_string pos (name);
+      fhg::util::parse::position pos (name);
 
       if (parse_name (pos) != name)
       {

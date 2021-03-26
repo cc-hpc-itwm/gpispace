@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@
      void DLL_PUBLIC we_mod_initialize(::we::loader::IModule *mod)                \
      {\
         (void)(mod);                               \
-        {volatile int _ = WE_GUARD_SYMBOL; (void)_;}
+        {volatile unsigned int _ = WE_GUARD_SYMBOL; (void)_;}
 
 #define WE_REGISTER_FUN_AS(fun,as)             \
         mod->add_function(as, &fun)

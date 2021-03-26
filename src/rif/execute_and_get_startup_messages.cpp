@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@
 
 #include <rif/started_process_promise.hpp>
 
-#include <fhg/assert.hpp>
+#include <util-generic/exit_status.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
 #include <util-generic/temporary_file.hpp>
@@ -38,6 +38,7 @@
 #include <mutex>
 #include <numeric>
 #include <sstream>
+#include <stdexcept>
 #include <system_error>
 
 namespace fhg
@@ -65,13 +66,19 @@ namespace fhg
 
       size_t append (std::vector<char>& buffer, std::string const& str, size_t pos)
       {
-        fhg_assert (buffer.size() >= str.size() + pos);
+        if (buffer.size() < str.size() + pos)
+        {
+          throw std::logic_error ("append assumes preallocated buffer");
+        }
         std::copy (str.begin(), str.end(), buffer.begin() + pos);
         return pos + str.size();
       }
       size_t append (std::vector<char>& buffer, char c, size_t pos)
       {
-        fhg_assert (buffer.size() >= sizeof (char) + pos);
+        if (buffer.size() < sizeof (char) + 1)
+        {
+          throw std::logic_error ("append assumes preallocated buffer");
+        }
         *(buffer.begin() + pos) = c;
         return pos + 1;
       }
@@ -205,14 +212,14 @@ namespace fhg
             throw std::logic_error ("waitpid (pid) != pid");
           }
 
-          if (WIFSIGNALED (child_status))
+          if (fhg::util::wifsignaled (child_status))
           {
             throw std::runtime_error
-              ("child signalled: " + std::to_string (WTERMSIG (child_status)));
+              ("child signalled: " + std::to_string (fhg::util::wtermsig (child_status)));
           }
-          else if (WIFEXITED (child_status))
+          else if (fhg::util::wifexited (child_status))
           {
-            switch (WEXITSTATUS (child_status))
+            switch (fhg::util::wexitstatus (child_status))
             {
             case 241:
               throw std::system_error
@@ -240,7 +247,7 @@ namespace fhg
                 ("execve failed: unknown error");
             default:
               throw std::runtime_error
-                ("child exited: " + std::to_string (WEXITSTATUS (child_status)));
+                ("child exited: " + std::to_string (fhg::util::wexitstatus (child_status)));
             }
           }
 

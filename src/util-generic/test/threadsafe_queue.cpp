@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -279,7 +279,7 @@ BOOST_AUTO_TEST_CASE (try_put_by_multiple_threads)
   std::size_t were_able_to_put (0);
   for (auto& able_to_put : able_to_puts)
   {
-    were_able_to_put += +able_to_put.get();
+    were_able_to_put += (able_to_put.get() ? 1ul : 0ul);
   }
 
   BOOST_REQUIRE_EQUAL (capacity, were_able_to_put);

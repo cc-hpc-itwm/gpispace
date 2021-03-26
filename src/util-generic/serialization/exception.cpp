@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -488,13 +488,13 @@ namespace fhg
           {
             for (serialization_functions::value_type const& fun : funs)
             {
-              boost::optional<std::string> exception_data
+              boost::optional<std::string> exception_data_v
                 (fun.second.from_ptr (exception));
 
-              if (exception_data)
+              if (exception_data_v)
               {
                 return user_defined_exception_data
-                  {fun.first, std::move (*exception_data), std::move (fallback)};
+                  {fun.first, std::move (*exception_data_v), std::move (fallback)};
               }
             }
 

@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,6 +16,7 @@
 
 default namespace = ""
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
+namespace ns_1 = "http://relaxng.org/ns/compatibility/annotations/1.0"
 namespace rng = "http://relaxng.org/ns/structure/1.0"
 namespace xsd = "http://www.w3.org/2001/XMLSchema"
 
@@ -63,7 +64,9 @@ struct_type =
   (element field { struct_field_type }
    | element struct { struct_type })*,
   attribute name { xsd:NCName }
-token_type = element value { xsd:string }+
+# \todo make simple content to avoid
+# <token><value>0</value></token> and allow just <token>0</token>
+token_type = (element value { xsd:string })*
 mod_type =
   (element cinclude { cinclude_type }
    | element ld { flag_type }
@@ -71,9 +74,24 @@ mod_type =
   element code { xsd:string }?,
   attribute name { xsd:NCName },
   attribute function { xsd:string },
-  attribute eureka-group { xsd:string }?,
-  attribute pass_context { xsd:boolean }?,
-  attribute require_function_unloads_without_rest { xsd:boolean }?,
+  (attribute eureka-group { xsd:string }?)
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  ([ ns_1:defaultValue = "false" ]
+   attribute pass_context { xsd:boolean }?)
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : true"
+     ],
+  ([ ns_1:defaultValue = "true" ]
+   attribute require_function_unloads_without_rest { xsd:boolean }?)
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : true"
+     ],
+  [ ns_1:defaultValue = "true" ]
   attribute require_module_unloads_without_rest { xsd:boolean }?
 mod_type_with_target =
   mod_type,
@@ -89,17 +107,29 @@ template_use_type =
   attribute use { xsd:string }
 use_type = attribute name { xsd:NCName }
 require_type =
-  attribute key { xsd:string },
-  attribute mandatory { xsd:boolean }?
+  attribute key { xsd:string }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : true"
+     ],
+  [ ns_1:defaultValue = "true" ] attribute mandatory { xsd:boolean }?
 template_parameter_type = attribute type { xsd:NCName }
 place_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   element token { token_type }*,
   attribute name { xsd:NCName },
-  attribute type { xsd:string },
-  attribute virtual { xsd:boolean }?,
-  attribute put_token { xsd:boolean }?
+  attribute type { xsd:string }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  ([ ns_1:defaultValue = "false" ] attribute virtual { xsd:boolean }?)
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ ns_1:defaultValue = "false" ] attribute put_token { xsd:boolean }?
 port_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
@@ -112,20 +142,39 @@ memory_buffer_type =
    | element include-properties { properties_include_type })*,
   element size { xsd:string },
   element alignment { xsd:string }?,
-  attribute name { xsd:NCName },
-  attribute read-only { xsd:boolean }?
+  attribute name { xsd:NCName }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ ns_1:defaultValue = "false" ] attribute read-only { xsd:boolean }?
 memory_transfer_get_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   element global { xsd:string },
-  element local { xsd:string },
+  element local { xsd:string }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ ns_1:defaultValue = "false" ]
   attribute allow-empty-ranges { xsd:boolean }?
 memory_transfer_put_type =
   (element properties { property_map_type }
    | element include-properties { properties_include_type })*,
   element global { xsd:string },
-  element local { xsd:string },
-  attribute not-modified-in-module-call { xsd:boolean }?
+  element local { xsd:string }
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  ([ ns_1:defaultValue = "false" ]
+   attribute not-modified-in-module-call { xsd:boolean }?)
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ ns_1:defaultValue = "false" ]
   attribute allow-empty-ranges { xsd:boolean }?
 connect_type =
   (element properties { property_map_type }
@@ -187,8 +236,12 @@ transition_type =
    | element place-map { place_map_type }
    | element condition { xsd:string })*,
   attribute name { xsd:NCName },
-  attribute priority { xsd:nonNegativeInteger }?,
-  attribute inline { xsd:boolean }?
+  (attribute priority { xsd:nonNegativeInteger }?)
+  >> a:documentation [
+       "\x{a}" ~
+       "            default value is : false"
+     ],
+  [ ns_1:defaultValue = "false" ] attribute inline { xsd:boolean }?
 net_type =
   (element include-properties { properties_include_type }
    | element include-structs { struct_include_type }

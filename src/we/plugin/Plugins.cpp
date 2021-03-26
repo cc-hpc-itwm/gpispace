@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,6 +16,9 @@
 
 #include <we/plugin/Plugins.hpp>
 
+#include <boost/format.hpp>
+
+#include <exception>
 #include <stdexcept>
 #include <string>
 #include <tuple>
@@ -31,12 +34,24 @@ namespace gspc
                          , Context const& context
                          , PutToken put_token
                          )
+      try
       {
         return _.emplace
           ( std::piecewise_construct
           , std::forward_as_tuple (_next_id++)
           , std::forward_as_tuple (path, context, std::move (put_token))
           ).first->first;
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            (str ( boost::format ("Plugins::create (%1%, %2%)")
+                 % path
+                 % context
+                 )
+            )
+          );
       }
 
       void Plugins::destroy (ID pid)
@@ -45,12 +60,36 @@ namespace gspc
       }
 
       void Plugins::before_eval (ID pid, Context const& context)
+      try
       {
         at (pid)->second.before_eval (context);
       }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            (str ( boost::format ("Plugins::before_eval (%1%, %2%)")
+                 % to_string (pid)
+                 % context
+                 )
+            )
+          );
+      }
       void Plugins::after_eval (ID pid, Context const& context)
+      try
       {
         at (pid)->second.after_eval (context);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+            (str ( boost::format ("Plugins::after_eval (%1%, %2%)")
+                 % to_string (pid)
+                 % context
+                 )
+            )
+          );
       }
 
       decltype (Plugins::_)::iterator Plugins::at (ID pid)

@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -26,6 +26,7 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/client.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/drts.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/drts/drts_iml.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/information_to_reattach.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/pimpl.hpp"
@@ -78,7 +79,6 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/drts-kernel"
-  "${CMAKE_INSTALL_PREFIX}/libexec/gspc/gpi-space"
   #! \note This does not include bundled libraries!
   "${CMAKE_INSTALL_PREFIX}/version"
   "${CMAKE_INSTALL_PREFIX}/git.submodules"
@@ -121,6 +121,52 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/xsd/pnet.rnc"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/xsd/pnet.xsd"
   "${CMAKE_INSTALL_PREFIX}/share/gspc/xml/xsd/schemas.xml"
+
+  # \todo Assert IML API here? These are duplicated from IML's
+  # iml_files_in_installation variable, but that's defined after this
+  # file is included. It could be contained in a `find_package (IML)`,
+  # but that currently doesn't exist. Alternatively one could probably
+  # abuse some fake target and property and a generator expression?
+  "${CMAKE_INSTALL_PREFIX}/bin/iml-bootstrap-rifd"
+  "${CMAKE_INSTALL_PREFIX}/bin/iml-teardown-rifd"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/AllocationHandle.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/AllocationHandle.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/Client.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemcpyID.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryLocation.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryLocation.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryOffset.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryRegion.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemoryRegion.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/MemorySize.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/Rifs.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/RuntimeSystem.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentAndAllocation.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentDescription.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentHandle.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SegmentHandle.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocation.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocationHandle.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/SharedMemoryAllocationHandle.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/beegfs/SegmentDescription.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/beegfs/SegmentDescription.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/detail/dllexport.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/detail/dllexport.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/NetdevID.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/NetdevID.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/SegmentDescription.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/gaspi/SegmentDescription.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoint.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoint.ipp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/EntryPoints.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/bootstrap.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/strategies.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/iml/rif/teardown.hpp"
+  "${CMAKE_INSTALL_PREFIX}/lib/libIML-Client.so"
+  "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-gpi-server"
+  "${CMAKE_INSTALL_PREFIX}/libexec/iml/iml-rifd"
+  # Intentionally omitted: libIMLPrivate-InstallationSentinel.so:
+  # location depends on implementation detail.
 )
 
 set (TEST_VMEM_PORT_COUNTER 10820 CACHE INTERNAL "counter for vmem-port")
@@ -134,8 +180,12 @@ macro (prepend _list)
 endmacro()
 
 macro(FHG_ADD_TEST)
+  if (NOT BUILD_TESTING)
+    return()
+  endif()
+
   set (options REQUIRES_INSTALLATION REQUIRES_VIRTUAL_MEMORY START_SCOPED_RIF)
-  set (one_value_options)
+  set (one_value_options NAME)
   set (multi_value_options LABELS ARGS)
   set (required_options)
   _parse_arguments_with_unknown (TEST "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
@@ -166,9 +216,20 @@ macro(FHG_ADD_TEST)
     endif()
   endif()
 
-  add_unit_test (${TEST_UNPARSED_ARGUMENTS}
+  add_unit_test (NAME ${TEST_NAME}
+    ${TEST_UNPARSED_ARGUMENTS}
     LABELS ${TEST_LABELS}
     ARGS ${TEST_ARGS}
     ${_fwd_args}
   )
+
+  if (TEST_REQUIRES_INSTALLATION)
+    # When unit tests use our installation, they still see the
+    # uninstalled installation sentinels. As our build directory
+    # structure differs from the install directory binaries would not
+    # be found. Thus, override with the actual installation directory.
+    set_tests_properties (${TEST_NAME} PROPERTIES ENVIRONMENT
+      "IML_TESTING_OVERRIDE_INSTALLATION_PREFIX=${CMAKE_INSTALL_PREFIX}"
+    )
+  endif()
 endmacro()

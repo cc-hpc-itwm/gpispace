@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,22 +14,5 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME pi
-  TYPE MODULE
-  SOURCES "pi.cpp"
-  LIBRARIES GPISpace::workflow_development
-  INSTALL INSTALL_DESTINATION "implementation"
-)
-bundle_GPISpace_add_rpath (TARGET pi
-  INSTALL_DIRECTORY "implementation"
-)
-
-extended_add_executable (NAME run-pi
-  SOURCES "run.cpp"
-  DONT_APPEND_EXE_SUFFIX
-  LIBRARIES run-stochastic_with_heureka
-  INSTALL
-)
-bundle_GPISpace_add_rpath (TARGET run-pi
-  INSTALL_DIRECTORY "bin"
-)
+swh_add_implementation_module (NAME pi SOURCES "pi.cpp")
+swh_add_implementation_exe (NAME pi SOURCES "run.cpp")

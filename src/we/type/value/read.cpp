@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -124,7 +124,7 @@ namespace pnet
 
             fhg::util::parse::require::require (pos, '}');
 
-            return bs;
+            return std::move (bs);
           }
 
         case 'y':
@@ -146,7 +146,7 @@ namespace pnet
 
             fhg::util::parse::require::require (pos, ')');
 
-            return ba;
+            return std::move (ba);
           }
 
         case 'M':
@@ -162,7 +162,7 @@ namespace pnet
               , std::bind (map_item, std::ref (m), std::placeholders::_1)
               );
 
-            return m;
+            return std::move (m);
           }
 
         case 'S':
@@ -186,7 +186,7 @@ namespace pnet
                 , std::bind (set_item, std::ref (s), std::placeholders::_1)
                 );
 
-              return s;
+              return std::move (s);
             }
           case 't':
             {
@@ -201,7 +201,7 @@ namespace pnet
                 , std::bind (struct_item, std::ref (m), std::placeholders::_1)
                 );
 
-              return m;
+              return std::move (m);
             }
           default:
             throw fhg::util::parse::error::expected ("truct, et", pos);
@@ -220,7 +220,7 @@ namespace pnet
               , std::bind (list_item, std::ref (l), std::placeholders::_1)
               );
 
-            return l;
+            return std::move (l);
           }
 
         default:
@@ -230,7 +230,7 @@ namespace pnet
 
       value_type read (const std::string& input)
       {
-        fhg::util::parse::position_string pos (input);
+        fhg::util::parse::position pos (input);
 
         return read (pos);
       }

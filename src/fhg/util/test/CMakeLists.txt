@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -50,9 +50,3 @@ fhg_add_test (NAME util_assert
   COMPILE_FLAGS "-UFHG_ASSERT_MODE -DFHG_ASSERT_MODE=1"
   LIBRARIES fhg-util
   )
-
-fhg_add_test (NAME util_bounded_queue
-  SOURCES bounded_queue.cpp
-  USE_BOOST
-  LIBRARIES Boost::thread Boost::system fhg-util
-)

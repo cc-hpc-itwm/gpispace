@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,7 +36,6 @@
 
 #include <boost/lexical_cast.hpp>
 #include <boost/preprocessor/punctuation/comma.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/range/algorithm.hpp>
 #include <boost/test/data/monomorphic.hpp>
 #include <boost/test/data/test_case.hpp>
@@ -44,6 +43,7 @@
 #include <condition_variable>
 #include <functional>
 #include <list>
+#include <memory>
 #include <mutex>
 #include <tuple>
 
@@ -121,8 +121,6 @@ struct daemon
             , std::bind (&daemon::finished, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::failed, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::canceled, this, std::placeholders::_1)
-            , std::bind (&daemon::discover, this, std::placeholders::_1, std::placeholders::_2)
-            , std::bind (&daemon::discovered, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::token_put, this, std::placeholders::_1)
             , std::bind (&daemon::workflow_response, this, std::placeholders::_1, std::placeholders::_2)
             , std::bind (&daemon::generate_id, this)
@@ -313,61 +311,6 @@ struct daemon
     REMOVE_CANCEL_IN_PROGRESS (id);
   }
 
-  DECLARE_EXPECT_CLASS ( discover
-                       , we::layer::id_type discover_id
-        BOOST_PP_COMMA() we::layer::id_type id
-                       , _discover_id (discover_id)
-        BOOST_PP_COMMA() _id (id)
-                       , we::layer::id_type _discover_id
-                       ; we::layer::id_type _id
-                       , _discover_id == discover_id && _id == id
-                       );
-
-  void discover
-    (we::layer::id_type discover_id, we::layer::id_type id)
-  {
-    std::list<expect_discover*>::iterator const e
-      ( boost::find_if ( _to_discover
-                       , std::bind (&expect_discover::eq, std::placeholders::_1, discover_id, id)
-                       )
-      );
-
-    BOOST_REQUIRE (e != _to_discover.end());
-
-    (*e)->happened();
-    _to_discover.erase (e);
-
-    INC_IN_PROGRESS (replies);
-  }
-
-  DECLARE_EXPECT_CLASS ( discovered
-                       , we::layer::id_type discover_id
-        BOOST_PP_COMMA() sdpa::discovery_info_t result
-                       , _discover_id (discover_id)
-        BOOST_PP_COMMA() _result (result)
-                       , we::layer::id_type _discover_id
-                       ; sdpa::discovery_info_t _result
-                       , _discover_id == discover_id && _result == result
-                       );
-
-  void discovered ( we::layer::id_type discover_id
-                  , sdpa::discovery_info_t result
-                  )
-  {
-    std::list<expect_discovered*>::iterator const e
-      ( boost::find_if ( _to_discovered
-                       , std::bind (&expect_discovered::eq, std::placeholders::_1, discover_id, result)
-                       )
-      );
-
-    BOOST_REQUIRE (e != _to_discovered.end());
-
-    (*e)->happened();
-    _to_discovered.erase (e);
-
-    DEC_IN_PROGRESS (replies);
-  }
-
   DECLARE_EXPECT_CLASS ( token_put
                        , std::string put_token_id
                        , _put_token_id (put_token_id)
@@ -460,21 +403,6 @@ struct daemon
     REMOVE_CANCEL_IN_PROGRESS (id);
 
     layer.canceled (id);
-  }
-
-  void do_discover
-    (we::layer::id_type discover_id, we::layer::id_type id)
-  {
-    INC_IN_PROGRESS (replies);
-
-    layer.discover (discover_id, id);
-  }
-  void do_discovered
-    (we::layer::id_type discover_id, sdpa::discovery_info_t result)
-  {
-    DEC_IN_PROGRESS (replies);
-
-    layer.discovered (discover_id, result);
   }
 
   void do_put_token ( we::layer::id_type id
@@ -1085,11 +1013,11 @@ BOOST_FIXTURE_TEST_CASE
   std::vector<we::layer::id_type> child_ids (N);
 
   {
-    boost::ptr_vector<expect_submit> _;
-    _.reserve (N);
+    std::list<std::unique_ptr<expect_submit>> expected_submissions;
     for (std::size_t i (0); i < N; ++i)
     {
-      _.push_back (new expect_submit (this, &child_ids[i], activity_child));
+      expected_submissions.emplace_back
+        (std::make_unique<expect_submit> (this, &child_ids[i], activity_child));
     }
 
     do_submit (id, activity_input);
@@ -1104,122 +1032,6 @@ BOOST_FIXTURE_TEST_CASE
     expect_finished const _ (this, id, activity_output);
 
     do_finished (child_ids.back(), activity_result);
-  }
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
-BOOST_FIXTURE_TEST_CASE
-  (discovered_shall_be_called_after_discover_one_child, daemon)
-{
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (1);
-
-  we::layer::id_type const id (generate_id());
-
-  we::layer::id_type child_id;
-  {
-    expect_submit const _ (this, &child_id, activity_child);
-
-    do_submit (id, activity_input);
-  }
-
-  const we::layer::id_type discover_id
-    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
-  {
-    expect_discover const _ (this, discover_id, child_id);
-
-    do_discover (discover_id, id);
-  }
-
-  sdpa::discovery_info_t discover_result_child( child_id
-                                                , sdpa::status::PENDING
-                                                , sdpa::discovery_info_set_t());
-
-  sdpa::discovery_info_set_t child_disc_set;
-  child_disc_set.insert(discover_result_child);
-  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
-
-  {
-    expect_discovered const _ (this, discover_id, discover_result);
-
-    do_discovered (discover_id, discover_result_child);
-  }
-
-  {
-    expect_finished const _ (this, id, activity_output);
-
-    do_finished (child_id, activity_result);
-  }
-}
-
-BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
-BOOST_FIXTURE_TEST_CASE
-  (discovered_shall_be_called_after_discover_two_childs, daemon)
-{
-  we::type::activity_t activity_input;
-  we::type::activity_t activity_output;
-  we::type::activity_t activity_child;
-  we::type::activity_t activity_result;
-  std::tie (activity_input, activity_output, activity_child, activity_result)
-    = activity_with_child (2);
-
-  we::layer::id_type const id (generate_id());
-
-  we::layer::id_type child_id_a;
-  we::layer::id_type child_id_b;
-  {
-    expect_submit const _a (this, &child_id_a, activity_child);
-    expect_submit const _b (this, &child_id_b, activity_child);
-
-    do_submit (id, activity_input);
-  }
-
-  const we::layer::id_type discover_id
-    (std::string (rand() % 0xFE + 1, rand() % 0xFE + 1));
-  {
-    expect_discover const _a (this, discover_id, child_id_a);
-    expect_discover const _b (this, discover_id, child_id_b);
-
-    do_discover (discover_id, id);
-  }
-
-  using pnet::type::value::poke;
-
-  sdpa::discovery_info_t discover_result_child_a( child_id_a
-                                                  , sdpa::status::PENDING
-                                                  , sdpa::discovery_info_set_t());
-
-  sdpa::discovery_info_t discover_result_child_b( child_id_b
-                                                  , sdpa::status::PENDING
-                                                  , sdpa::discovery_info_set_t());
-
-  sdpa::discovery_info_set_t child_disc_set;
-  child_disc_set.insert(discover_result_child_a);
-  child_disc_set.insert(discover_result_child_b);
-  sdpa::discovery_info_t discover_result(id, boost::none, child_disc_set);
-
-  do_discovered (discover_id, discover_result_child_a);
-
-  {
-    expect_discovered const _ (this, discover_id, discover_result);
-
-    //! \note There is a race here where layer may call rts_discovered
-    //! before do_discovered, but this is checked by comparing the
-    //! result: if it would finish discovering before the second child
-    //! was discovered, there would be a child entry missing.
-
-    do_discovered (discover_id, discover_result_child_b);
-  }
-
-  {
-    expect_finished const _ (this, id, activity_output);
-
-    do_finished (child_id_a, activity_result);
-    do_finished (child_id_b, activity_result);
   }
 }
 
@@ -1689,8 +1501,6 @@ namespace
                , std::bind (&disallow, "finished")
                , std::bind (&disallow, "failed")
                , std::bind (&disallow, "canceled")
-               , std::bind (&disallow, "discover")
-               , std::bind (&disallow, "discovered")
                , std::bind (&disallow, "token_put")
                , std::bind (&disallow, "workflow_response")
                , std::bind
@@ -1830,8 +1640,6 @@ namespace
                , std::bind (&disallow, "finished")
                , std::bind (&disallow, "failed")
                , std::bind (&disallow, "canceled")
-               , std::bind (&disallow, "discover")
-               , std::bind (&disallow, "discovered")
                , std::bind (&disallow, "token_put")
                , std::bind (&disallow, "workflow_response")
                , std::bind
@@ -1844,13 +1652,14 @@ namespace
     {
       _received_preferences = activity.preferences_TESTING_ONLY();
       std::lock_guard<std::mutex> const _ (_mtx_submitted);
+      _submitted = true;
       _cond_submitted.notify_one();
     }
 
     void wait_submitted()
     {
       std::unique_lock<std::mutex> lock (_mtx_submitted);
-      _cond_submitted.wait (lock);
+      _cond_submitted.wait (lock, [&] { return _submitted; });
     }
 
     std::list<we::type::preference_t> received_preferences()
@@ -1861,6 +1670,7 @@ namespace
   private:
     std::mutex _mtx_submitted;
     std::condition_variable _cond_submitted;
+    bool _submitted {false};
     std::list<we::type::preference_t> _received_preferences;
 
   private:

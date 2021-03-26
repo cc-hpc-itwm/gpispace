@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -52,8 +52,6 @@ namespace
   void cancel (we::layer::id_type){}
   void failed (we::layer::id_type, std::string){}
   void canceled (we::layer::id_type){}
-  void discover (we::layer::id_type, we::layer::id_type){}
-  void discovered (we::layer::id_type, sdpa::discovery_info_t){}
   void token_put (std::string, boost::optional<std::exception_ptr>){}
   void workflow_response_response (std::string, boost::variant<std::exception_ptr, pnet::type::value::value_type>){}
 
@@ -92,8 +90,6 @@ BOOST_AUTO_TEST_CASE
     , std::bind (&finished_fake, &finished, std::placeholders::_1, std::placeholders::_2)
     , &failed
     , &canceled
-    , &discover
-    , &discovered
     , &token_put
     , &workflow_response_response
     , &generate_id

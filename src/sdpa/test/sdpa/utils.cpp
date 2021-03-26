@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -540,11 +540,11 @@ namespace utils
 
   basic_drts_component::event_thread_and_worker_join::event_thread_and_worker_join (basic_drts_component& component)
     : event_thread (component)
-    , _component (component)
+    , _component_logic (component)
   {}
   basic_drts_component::event_thread_and_worker_join::~event_thread_and_worker_join()
   {
-    _component.wait_for_workers_to_shutdown();
+    _component_logic.wait_for_workers_to_shutdown();
   }
 
   namespace no_thread
@@ -831,11 +831,6 @@ namespace utils
     return _.submitJob (workflow);
   }
 
-  sdpa::status::code client::query_job_status (sdpa::job_id_t const& id)
-  {
-    return _.queryJob (id);
-  }
-
   sdpa::status::code client::wait_for_terminal_state (sdpa::job_id_t const& id)
   {
     sdpa::client::job_info_t UNUSED_job_info;
@@ -854,12 +849,6 @@ namespace utils
     auto const ret (wait_for_terminal_state (id));
     delete_job (id);
     return ret;
-  }
-
-  sdpa::discovery_info_t client::discover (sdpa::job_id_t const& id)
-  {
-    static fhg::util::testing::unique_random<std::string> discover_ids;
-    return _.discoverJobStates (discover_ids(), id);
   }
 
   void client::delete_job (sdpa::job_id_t const& id)

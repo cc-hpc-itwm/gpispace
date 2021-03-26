@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,10 +14,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+if (BUILD_TESTING)
+  extended_add_library (NAME test_equality
+    NAMESPACE we
+    SOURCES "operator_equal.cpp"
+    LIBRARIES pnet
+  )
+endif()
+
 fhg_add_test (NAME we_layer
   SOURCES layer.cpp
   USE_BOOST
-  LIBRARIES pnet
+  LIBRARIES pnet we::test_equality
 )
 
 fhg_add_test (NAME we_layer.ping_pong

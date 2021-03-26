@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 #include <boost/program_options.hpp>
 
 #include <map>
+#include <stdexcept>
 #include <string>
 #include <utility>
 #include <vector>
@@ -142,6 +143,22 @@ namespace fhg
           friend class options;
         };
 
+        //! Custom exception thrown when `-h/--help` is among the command-line
+        //! options.
+        class HelpException : public std::runtime_error
+        {
+        public:
+          explicit HelpException (const std::string&);
+        };
+
+        //! Custom exception thrown when `-v/--version` is among the
+        //! command-line options.
+        class VersionException : public std::runtime_error
+        {
+        public:
+          explicit VersionException (const std::string&);
+        };
+
         //! A group of command line options, both the description and
         //! after parsing also the values. Hierarchies are possible.
         class options
@@ -149,6 +166,18 @@ namespace fhg
         public:
           //! Create a group that in `--help` is named \a header.
           options (std::string const& header);
+
+          //! Create a group that in `--help` is named \a header
+          //! and uses total \a line_length when turned into a string.
+          options (std::string const& header, unsigned line_length);
+
+          //! Create a group that in `--help` is named \a header and
+          //! and uses total \a line_length and \a min_description_length
+          //! when turned into a string.
+          options ( std::string const& header
+                  , unsigned line_length
+                  , unsigned min_description_length
+                  );
 
           //! Parse the given \a args and validate against all options
           //! added beforehand, throwing on unknown arguments or

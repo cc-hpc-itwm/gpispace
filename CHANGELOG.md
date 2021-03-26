@@ -1,3 +1,98 @@
+# [21.03] - 2021-03-26
+
+## Virtual Memory is now called IML and separate
+
+The virtual memory layer of GPI-Space has been factored out to become
+a separate component, the "Independent Memory Layer", short IML. It is
+still shipped with GPI-Space and the APIs are backwards compatible.
+
+GPI-Space has learned to use an externally started IML rather than
+bootstrapping its own. This allows applications to keep an IML alive
+across runs to cache data, or to allow preparing and extracting data
+independent of GPI-Space. The socket of an external IML can be
+specified with the `--remote-iml-vmem-socket` option, which needs to
+point to the IML server on all hosts used by the runtime system.
+
+The independent API is available in `include/iml/`. It can be used
+independently from GPI-Space by using `find_package (IML)`.
+
+## CMake "config" file now provided
+
+GPI-Space now provides a CMake package config file to replace
+`FindGPISpace.cmake` scripts. `find_package (GPISpace)` will now find
+GPI-Space by searching `GPISpace_ROOT` and `GPISpace_DIR` or
+`CMAKE_PREFIX_PATH` (see documentation of [CMake's `find_package`](https://cmake.org/cmake/help/v3.13/command/find_package.html#search-procedure)
+for details).
+
+Applications using `beautify_find_gpispace.cmake` will need to update
+that script and remove their copy of `FindGPISpace.cmake`. The script
+was updated to be backwards compatible with the existing arguments.
+
+Applications using `find_package (GPISpace)` need to change how the
+version requirement is specified as the standard CMake syntax is now
+used:
+
+```
+# old
+find_package (GPISpace REQUIRED COMPONENTS VERSION=20.12)
+# new
+find_package (GPISpace 21.03 EXACT REQUIRED)
+```
+
+The argument `REVISION` has been removed. Its usage will cause an
+error instead. `beautify_find_gpispace` handling of `VERSION` has been
+fixed.
+
+The old `FindGPISpace.cmake` script is no longer supported and was
+removed from the repository.
+
+## Expression plugins: Nest exceptions, print context
+
+When a plugin callback throws an exception, then the exception is
+wrapped by an runtime_error that adds the evaluation context to the
+error message.
+
+That frees clients from adding the context and helps developers to
+debug plugins.
+
+## Fixes
+
+- Information about dependencies found are no longer hidden when
+  configuring.
+- The XSD and RNC schemas now specify the attribute
+  `allow-empty-ranges` at the correct location.
+- `pnetc` now honors `<memory-buffer read_only="false">`, rather than
+  treating presence of the attribute as `true`.
+- Petri-net modules no longer link against `drts-context` if
+  `pass_context="false"`.
+- Fix error handling in client when receiving data in case of
+  disconnection.
+- Fixed races between event handlers and layer callbacks in agent that
+  might cause `Error: reason := receiving response failed:
+  asio. misc:2 code := 2` in rare cases.
+
+### Allow multiple specializations of templates with module calls
+
+It is now possible to use multiple specializations of templates that
+contain module calls. In order to get unique wrappers, the type map is
+mangled into the function name, e.g. if a template with the type
+parameter `T` is specialized by `int` the function name is extended by
+`_T_int`.
+
+### Respect the `BUILD_TESTING` option
+
+Allow the users to enable/disable building the tests by forcing the system to
+properly handle the CMake `BUILD_TESTING` option.
+
+## Miscellaneous
+
+- Various improvements have been made to the README document to ease
+  installation process of dependencies and GPI-Space and testing a
+  fresh installation.
+- The upper Boost version requirement of 1.63.0 is now enforced when
+  configuring.
+- The XSD and RNC schemas now document defaults.
+
 # [20.12] - 2020-12-14
 
 ## Added an example that demonstrates "How to accumulate results from multiple submissions of the same workflow"

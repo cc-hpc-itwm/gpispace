@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,9 +15,11 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <miller-rabin/util.hpp>
+
 #include <stochastic_with_heureka/interface.hpp>
 
-#include <iostream>
+#include <string>
+#include <utility>
 
 extern "C"
   std::pair<we::type::bytearray, bool> stochastic_with_heureka_roll_and_heureka
@@ -58,11 +60,11 @@ extern "C"
   {
     if (miller_rabin::is_witness_for_compositeness (random_number (N), N))
     {
-      return std::make_pair (we::type::bytearray (true), true);
+      return {we::type::bytearray {true}, true};
     }
   }
 
-  return std::make_pair (we::type::bytearray (false), false);
+  return {we::type::bytearray {false}, false};
 };
 
 extern "C"
@@ -77,7 +79,7 @@ extern "C"
   partial_resultL_bytearray.copy (&partial_resultL);
   partial_resultR_bytearray.copy (&partial_resultR);
 
-  return we::type::bytearray (partial_resultL || partial_resultR);
+  return we::type::bytearray {partial_resultL || partial_resultR};
 }
 
 extern "C"

@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,24 +40,129 @@ macro (_default_if_unset VAR VAL)
   endif()
 endmacro()
 
+#! Bundling allows an installed project to be location independent and
+#! freely movable, regardless of dependencies being installed globally
+#! or not. This is useful for separate build and execution
+#! environments that differ in their configuration. If the build and
+#! execution environments are identical, there is no need to enable
+#! bundling. The default is INSTALL_DO_NOT_BUNDLE = OFF,
+#! i.e. bundling, for convenience and safety.
+#!
+#! When using bundling it may be needed to still have the installed
+#! libraries point to some additional location in the installed
+#! project for searching, e.g. an GPI-Space application pointing to
+#! the bundled GPI-Space. This can be done globally via the
+#! INSTALL_RPATH_DIRS list variable or per target using the RPATH
+#! argument of extended_add_library()/extended_add_executable().
+#!
+#! When bundling,
+#! - let the build rpath point to all the dependencies
+#! - use ldd (in bundle.sh) to find all those resolved dependencies
+#! - copy them into libexec/bundle/lib, filtering known
+#!   system-specific libraries such as glibc and known
+#!   already-bundling products like GPI-Space (see bundle.sh)
+#! - remove all rpaths from the bundled libraries
+#! - set the rpath to point to libexec/bundle/lib for anything
+#!   installed. Also let it point to libraries installed (i.e. lib/
+#!   and libexec/product/lib/ sometimes). The latter are manually
+#!   specified in the add macros.
+#! This way it is ensured that exactly the libraries also used when
+#! building are used in an installed product. That product is also
+#! self-contained and can be freely moved around.
+#!
+#! When not bundling, the rpaths should point to the libraries used
+#! when building, still, even if LD_LIBRARY_PATH is unset, and of
+#! course additionally point to the libraries installed by the
+#! project.
+#!
+#! To get these behaviors, CMake needs to be told twice:
+#! - target property INSTALL_RPATH_USE_LINK_PATH: This property tells
+#!   CMake to copy every path in LD_LIBRARY_PATH (this possibly
+#!   includes unrelated paths, but oh well) and the paths needed to
+#!   link everything to the target into the rpath. In the bundling
+#!   case that should not happen, in the non-bundling case that's
+#!   exactly what's needed.
+#!
+#! - CMAKE_<lang>_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH: This
+#!   should^tm not be required as it is platform/toolchain specific,
+#!   but there rarely are proper toolchain configurations, which leads
+#!   to manually installed compilers and their libstdcxx not being
+#!   found at runtime.
+#!
+#!   In the bundle case, that's irrelevant: It was found during build
+#!   time, so it will be bundled and there is no need to point to the
+#!   manually installed compiler. In the non-bundle case, it is
+#!   important and forces CMake to use the implicit link directories.
+#!
+#!   Sadly this is not a property per target but a global variable
+#!   (see cmComputeLinkInformation.cxx), which is something that's
+#!   hard to set within functions and macros (CMake only allows to
+#!   write to the "parent" scope, which may be not enough, and has no
+#!   way to set global variables explicitly). Additionally, it can't
+#!   be set immediately to allow projects to include add_macros and
+#!   set INSTALL_DO_NOT_BUNDLE in *their* CMakelists, so setting it is
+#!   deferred via _ensure_rpath_globals_before_target_addition().
+#!   CMake does check the cache though in case a variable doesn't
+#!   exist, so it can be weaseled in by first ensuring there is no
+#!   variable set -- or it already has the same value -- and then
+#!   setting a cache variable to "emulate" a global one. It is
+#!   impossible to unset the existing variable, because of how
+#!   CMake variable scopes work.
+
 set (INSTALL_DO_NOT_BUNDLE OFF CACHE BOOL "Do not bundle installed targets")
 set (INSTALL_RPATH_DIRS "" CACHE STRING
-  "List of RPATH directories inside $CMAKE_INSTALL_PREFIX to use if
-   not bundling"
+  "List of paths, either relative into $CMAKE_INSTALL_PREFIX or
+   absolute, added to RPATH of all targets defined with
+   extended_add_library()/extended_add_executable() (in addition to
+   automatic ones from bundling, if enabled). Note that the value of
+   this variable is used at configuration, not generation time, so
+   order of setting the variable and adding targets matters."
 )
 
-#! \note This is a macro on purpose because we want to set the
-#! variable in the global scope. CMake only allows `PARENT_SCOPE`
-#! though, so hopefully no function using this macro is ever called
-#! from a non-global scope...
-macro (_ensure_rpath_globals_before_target_addition)
-  get_property (_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+
+get_property (_languages GLOBAL PROPERTY ENABLED_LANGUAGES)
+foreach (_language ${_languages})
+  if (NOT DEFINED _was_defined_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH)
+    if (DEFINED CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH)
+      set (_was_defined_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH true)
+      set (_orig_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH
+        ${CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH}
+      )
+    else()
+      set (_was_defined_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH false)
+      set (_orig_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH false)
+    endif()
+  endif()
+endforeach()
+
+function (_ensure_rpath_globals_before_target_addition)
   foreach (_language ${_languages})
-    set (CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH
-      ${INSTALL_DO_NOT_BUNDLE} PARENT_SCOPE
-    )
+    # If it is equal, everything is fine. If it isn't and it was not
+    # defined, overwrite it via cache. If it isn't and it was defined,
+    # it is impossible to overwrite that way.
+    #  == if (${_orig_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH} XOR ${INSTALL_DO_NOT_BUNDLE})
+    if ((${_orig_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH} AND NOT ${INSTALL_DO_NOT_BUNDLE})
+        OR (NOT ${_orig_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH} AND ${INSTALL_DO_NOT_BUNDLE}))
+      if (_was_defined_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH)
+        message (FATAL_ERROR "CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH=${_orig_CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH} \
+but INSTALL_DO_NOT_BUNDLE=${INSTALL_DO_NOT_BUNDLE} would like to overwrite that, which it \
+can't due to scope and definition precendence. This combination is \
+thus not supported in this environment."
+        )
+      else()
+        set (CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH
+          ${INSTALL_DO_NOT_BUNDLE}
+          CACHE BOOL
+          "Whether CMake should add CMAKE_${_language}_IMPLICIT_LINK_DIRECTORIES
+           to a target's RPATH. Needs to be in sync with INSTALL_DO_NOT_BUNDLE!"
+          FORCE
+        )
+        mark_as_advanced (CMAKE_${_language}_USE_IMPLICIT_LINK_DIRECTORIES_IN_RUNTIME_PATH)
+      endif()
+    endif()
   endforeach()
-endmacro()
+endfunction()
+
 
 macro (_create_bundle TARGET_NAME BUNDLE_PATH_VAR)
   find_program (CHRPATH_BINARY NAMES chrpath DOC "chrpath is required for bundling")
@@ -115,8 +220,9 @@ function (_maybe_bundle_target_and_rpath TARGET_NAME INSTALL_DESTINATION RPATH C
         DEPENDS "${_bundle_info_file}"
       )
     else()
-      #! \note Even if we do not bundle, we want (empty) bundle
-      #! information to exist in order not to handle this at use.
+      #! \note Even if there is no bundling, (empty) bundle
+      #! information needs to exist in order not to handle this as
+      #! special case at usage of the information.
       file (WRITE "${_bundle_info_file}" "")
     endif()
 
@@ -141,7 +247,7 @@ function (_maybe_bundle_target_and_rpath TARGET_NAME INSTALL_DESTINATION RPATH C
   set_property (TARGET ${TARGET_NAME} PROPERTY BUILD_WITH_INSTALL_RPATH false)
 
   set_property (TARGET ${TARGET_NAME} PROPERTY INSTALL_RPATH ${RPATH})
-  set_property (TARGET ${TARGET_NAME} PROPERTY INSTALL_RPATH_USE_LINK_PATH false)
+  set_property (TARGET ${TARGET_NAME} PROPERTY INSTALL_RPATH_USE_LINK_PATH ${INSTALL_DO_NOT_BUNDLE})
 endfunction()
 
 include (add_cxx_compiler_flag_if_supported)
@@ -199,9 +305,9 @@ macro (_moc TARGET_VAR)
     qt5_wrap_cpp (${TARGET_VAR} ${ARGN} OPTIONS "${HACK_OPTIONS}")
   endif()
 
-  #! \note Disable warnings for mocced files: We can't fix them anyway
-  #! and since we use -Werror in some projects, they make everything
-  #! fail compiling.
+  #! \note Disable warnings for mocced files: They can't be fixed
+  #! anyway and since some projects use -Werror, they would make
+  #! everything fail compiling.
   add_cxx_compiler_flag_if_supported_source_files (
     FLAG "-Wno-undefined-reinterpret-cast"
     SOURCES ${${TARGET_VAR}}
@@ -246,13 +352,12 @@ function (extended_add_library)
   # point end up in the context of GPI-Space and dynamically loaded
   # (dlopen-ed + dlclose-ed) modules, in one way or the
   # other. `dlclose` ends up not unloading libraries with `unique`
-  # symbols, so in an effort to reduce the amount of times we have to
-  # find out that some module has some unique symbol from somewhere,
-  # we enforce at least our own libraries to be free of them. Also
-  # building the libraries that never end up being linked into a
-  # workflow module with this flag is collateral damage (is it? we
-  # don't know.) we are willing to take over the weeks that have been
-  # wasted with this over the past years.
+  # symbols, so in an effort to reduce the amount of times debugging
+  # this, enforce that at least this project's libraries are free of
+  # them. Also building the libraries that never end up being linked
+  # into a workflow module with this flag is collateral damage that
+  # isn't as bad as the weeks that have been wasted with this over the
+  # past years.
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     list (APPEND ARG_COMPILE_OPTIONS INTERFACE -fno-gnu-unique)
   endif()
@@ -457,6 +562,10 @@ function (add_unit_test)
   set (required_options NAME SOURCES)
   _parse_arguments (ARG "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
+  if (NOT BUILD_TESTING)
+    return()
+  endif()
+
   _default_if_unset (ARG_DESCRIPTION "${ARG_NAME}")
 
   set (target_name ${ARG_NAME}.test)
@@ -507,10 +616,9 @@ function (add_unit_test)
         -D "pre_test_hook=${ARG_PRE_TEST_HOOK}"
         -D "post_test_hook=${ARG_POST_TEST_HOOK}"
         -P "${_add_macros_test_wrapper}"
-        VERBATIM
     )
     set_tests_properties (${ARG_NAME} PROPERTIES
-      FAIL_REGULAR_EXPRESSION "^### Test failed with exit code [0-9-]*. ###$"
+      FAIL_REGULAR_EXPRESSION "### Test failed with exit code .*[.] ###"
     )
   endif()
 

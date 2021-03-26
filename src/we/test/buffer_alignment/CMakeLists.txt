@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -31,9 +31,11 @@ fhg_add_test (NAME we_buffer_alignment
   START_SCOPED_RIF
 )
 
-extended_add_library (NAME net_using_buffers
-  TYPE STATIC
-  SOURCES "net_description.cpp"
-          "nets_using_buffers.cpp"
-  LIBRARIES Util::Generic
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME net_using_buffers
+    TYPE STATIC
+    SOURCES "net_description.cpp"
+            "nets_using_buffers.cpp"
+    LIBRARIES Util::Generic
+  )
+endif()

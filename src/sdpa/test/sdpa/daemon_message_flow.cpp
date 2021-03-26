@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -82,10 +82,6 @@ namespace
 }
 
 BOOST_AUTO_TEST_SUITE (client)
-
-//! \todo queryJob() sends QueryJobStatus, receives JobStatusReply
-
-//! \todo discoverJobStates() sends DiscoverJobStates, receives DiscoverJobStatesReply
 
 //! \todo cancelJob() sends CancelJob, receives CancelJobAck
 

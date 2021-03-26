@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@ find_boost (1.59 REQUIRED QUIET
   COMPONENTS filesystem
              program_options
              serialization
+             unit_test_framework
              thread
 )
 
@@ -135,6 +136,50 @@ check_cxx_source_runs ([[
   HAS_STD_APPLY
 )
 
+check_cxx_compiler_flag ("-Werror=old-style-cast"
+  COMPILER_FLAG_EXISTS_WERROR_OLD_STYLE_CAST
+)
+
+if (COMPILER_FLAG_EXISTS_WERROR_OLD_STYLE_CAST)
+  set (CMAKE_REQUIRED_FLAGS_SAVED "${CMAKE_REQUIRED_FLAGS}")
+  set (CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -Werror=old-style-cast")
+  check_cxx_source_runs ([[
+    #include <sys/wait.h>
+    int main (int argc, char**)
+    {
+      return WEXITSTATUS (argc);
+      //     ^^^^^^^^^^^
+    }
+    ]]
+    HAS_WEXITSTATUS_WITHOUT_OLD_STYLE_CAST
+  )
+  check_cxx_source_runs ([[
+    #include <signal.h>
+    int main (int, char**)
+    {
+      return SIG_ERR == nullptr;
+      //     ^^^^^^^
+    }
+    ]]
+    HAS_SIG_ERR_WITHOUT_OLD_STYLE_CAST
+  )
+  check_cxx_source_runs ([[
+    #include <sys/mman.h>
+    int main (int, char**)
+    {
+      return MAP_FAILED == nullptr;
+      //     ^^^^^^^^^^
+    }
+    ]]
+    HAS_MAP_FAILED_WITHOUT_OLD_STYLE_CAST
+  )
+  set (CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS_SAVED}")
+else()
+  set (HAS_WEXITSTATUS_WITHOUT_OLD_STYLE_CAST 1)
+  set (HAS_SIG_ERR_WITHOUT_OLD_STYLE_CAST 1)
+  set (HAS_MAP_FAILED_WITHOUT_OLD_STYLE_CAST 1)
+endif()
+
 check_cxx_compiler_flag ("-Wundefined-func-template"
   COMPILER_FLAG_EXISTS_WUNDEFINED_FUNC_TEMPLATE
 )
@@ -145,9 +190,11 @@ extended_add_library (NAME Generic
           "connectable_to_address_string.cpp"
           "dynamic_linking.cpp"
           "executable_path.cpp"
+          "exit_status.cpp"
           "filesystem_lock_directory.cpp"
           "hostname.cpp"
           "$<$<BOOL:${FUNCTION_EXISTS_SIGNALFD}>:interruption_handler.cpp>"
+          "map_failed.cpp"
           "ostream/echo.cpp"
           "ostream/line_by_line.cpp"
           "ostream/modifier.cpp"
@@ -158,6 +205,7 @@ extended_add_library (NAME Generic
           "procfs.cpp"
           "program_options/separated_argument_list_parser.cpp"
           "read_lines.cpp"
+          "sig_err.cpp"
           "serialization/exception.cpp"
           "syscall.cpp"
           "system.cpp"
@@ -165,13 +213,14 @@ extended_add_library (NAME Generic
           "syscall/process_signal_block.cpp"
           "syscall/signal_fd.cpp"
           "syscall/signal_set.cpp"
-          "testing/random.cpp"
-          "testing/random/char.cpp"
-          "testing/random/string.cpp"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/random.cpp>"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/random/char.cpp>"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/random/string.cpp>"
           "wait_and_collect_exceptions.cpp"
   LIBRARIES Boost::base
             Boost::serialization
             Boost::filesystem
+            Boost::unit_test_framework
             ${CMAKE_DL_LIBS}
             #! \todo find librt and only link if required by shm_open+
             rt
@@ -186,11 +235,18 @@ extended_add_library (NAME Generic
                       -DHAS_STD_MAKE_UNIQUE=$<BOOL:${HAS_STD_MAKE_UNIQUE}>
                       -DHAS_STD_VOID_T=$<BOOL:${HAS_STD_VOID_T}>
                       -DCOMPILER_FLAG_EXISTS_WUNDEFINED_FUNC_TEMPLATE=$<BOOL:${COMPILER_FLAG_EXISTS_WUNDEFINED_FUNC_TEMPLATE}>
+                      -DHAS_WEXITSTATUS_WITHOUT_OLD_STYLE_CAST=$<BOOL:${HAS_WEXITSTATUS_WITHOUT_OLD_STYLE_CAST}>
+                      -DHAS_SIG_ERR_WITHOUT_OLD_STYLE_CAST=$<BOOL:${HAS_SIG_ERR_WITHOUT_OLD_STYLE_CAST}>
+                      -DHAS_MAP_FAILED_WITHOUT_OLD_STYLE_CAST=$<BOOL:${HAS_MAP_FAILED_WITHOUT_OLD_STYLE_CAST}>
   POSITION_INDEPENDENT
 )
 
 
 function (util_generic_unit_test _path)
+  if (NOT BUILD_TESTING)
+    return()
+  endif()
+
   _parse_arguments_with_unknown (ARG
     "" "" "LIBRARIES;SOURCES;REQUIRE_FAIL" "" ${ARGN}
   )
@@ -245,14 +301,17 @@ util_generic_unit_test (cxx17/void_t)
 
 util_generic_unit_test (divru)
 
-extended_add_library (NAME util-generic-dynamic_linking-test_library
-  TYPE SHARED
-  SOURCES "test/dynamic_linking-lib.cpp"
-  LIBRARIES Util::Generic
-)
-set_property (TARGET util-generic-dynamic_linking-test_library
-  PROPERTY CXX_VISIBILITY_PRESET hidden
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME util-generic-dynamic_linking-test_library
+    TYPE SHARED
+    SOURCES "test/dynamic_linking-lib.cpp"
+    LIBRARIES Util::Generic
+  )
+  set_property (TARGET util-generic-dynamic_linking-test_library
+    PROPERTY CXX_VISIBILITY_PRESET hidden
+  )
+endif()
+
 util_generic_unit_test (dynamic_linking
   DEPENDS util-generic-dynamic_linking-test_library
   COMPILE_DEFINITIONS PRIVATE
@@ -367,10 +426,12 @@ util_generic_unit_test (serialization/trivial)
 
 util_generic_unit_test (split)
 
-extended_add_executable (NAME system_command
-  SOURCES "test/system_command.cpp"
-  LIBRARIES Util::Generic
-)
+if (BUILD_TESTING)
+  extended_add_executable (NAME system_command
+    SOURCES "test/system_command.cpp"
+    LIBRARIES Util::Generic
+  )
+endif()
 
 util_generic_unit_test (system
   LIBRARIES Boost::filesystem

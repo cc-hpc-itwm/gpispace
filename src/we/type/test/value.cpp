@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -68,7 +68,7 @@ namespace
       oss << pnet::type::value::show (value_type (x));
       BOOST_CHECK_EQUAL (expected_show, oss.str());
       const std::string inp (oss.str());
-      fhg::util::parse::position_string pos (inp);
+      fhg::util::parse::position pos (inp);
       BOOST_CHECK_EQUAL (value_type (x), pnet::type::value::read (pos));
       BOOST_CHECK (pos.end());
     }
@@ -222,7 +222,7 @@ BOOST_AUTO_TEST_CASE (_read)
     std::list<value_type> l;
     std::map<value_type, value_type> m;
     std::string input ("List( ) Map[]");
-    fhg::util::parse::position_string pos (input);
+    fhg::util::parse::position pos (input);
 
     BOOST_CHECK_EQUAL (value_type (l), read (pos));
     BOOST_CHECK_EQUAL (value_type (m), read (pos));

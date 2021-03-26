@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,34 +14,37 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME A
-  NAMESPACE PluginTest
-  SOURCES "A.cpp"
-  POSITION_INDEPENDENT
-  TYPE SHARED
-  LIBRARIES pnet
-)
-extended_add_library (NAME B
-  NAMESPACE PluginTest
-  SOURCES "B.cpp"
-  POSITION_INDEPENDENT
-  TYPE SHARED
-  LIBRARIES pnet
-)
-extended_add_library (NAME C
-  NAMESPACE PluginTest
-  SOURCES "C.cpp"
-  POSITION_INDEPENDENT
-  TYPE SHARED
-  LIBRARIES pnet
-)
-extended_add_library (NAME D
-  NAMESPACE PluginTest
-  SOURCES "D.cpp"
-  POSITION_INDEPENDENT
-  TYPE SHARED
-  LIBRARIES pnet
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME A
+    NAMESPACE PluginTest
+    SOURCES "A.cpp"
+    POSITION_INDEPENDENT
+    TYPE SHARED
+    LIBRARIES pnet
+  )
+  extended_add_library (NAME B
+    NAMESPACE PluginTest
+    SOURCES "B.cpp"
+    POSITION_INDEPENDENT
+    TYPE SHARED
+    LIBRARIES pnet
+  )
+  extended_add_library (NAME C
+    NAMESPACE PluginTest
+    SOURCES "C.cpp"
+    POSITION_INDEPENDENT
+    TYPE SHARED
+    LIBRARIES pnet
+  )
+  extended_add_library (NAME D
+    NAMESPACE PluginTest
+    SOURCES "D.cpp"
+    POSITION_INDEPENDENT
+    TYPE SHARED
+    LIBRARIES pnet
+  )
+endif()
+
 fhg_add_test (NAME Plugins
   SOURCES test.cpp
   USE_BOOST

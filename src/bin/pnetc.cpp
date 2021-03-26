@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -32,9 +32,7 @@
 #include <boost/program_options.hpp>
 #include <boost/filesystem.hpp>
 
-// ************************************************************************* //
-
-namespace // anonymous
+namespace
 {
   class wrapping_word_stream
   {
@@ -42,6 +40,7 @@ namespace // anonymous
     const std::size_t _max_len;
     mutable std::size_t _len;
     std::ostream& _stream;
+
   public:
     wrapping_word_stream (std::ostream& stream, const std::size_t max = 75)
       : _max_len (max)
@@ -52,13 +51,13 @@ namespace // anonymous
     void put (const std::string& w) const
     {
       if (_len + w.size() > _max_len)
-        {
-          _stream << " \\"; newl(); append (" ");
-        }
+      {
+        _stream << " \\"; newl(); append (" ");
+      }
       else if (_len > 0)
-        {
-          append (" ");
-        }
+      {
+        append (" ");
+      }
 
       append (w);
     }
@@ -85,16 +84,16 @@ namespace // anonymous
     const std::string::const_iterator end (s.end());
 
     while (pos != end)
+    {
+      switch (*pos)
       {
-        switch (*pos)
-          {
-          case ' ': quoted += "\\ "; break;
-          case '$': quoted += "$$"; break;
-          default: quoted += *pos; break;
-          }
-
-        ++pos;
+      case ' ': quoted += "\\ "; break;
+      case '$': quoted += "$$"; break;
+      default: quoted += *pos; break;
       }
+
+      ++pos;
+    }
 
     return quoted;
   }
@@ -106,15 +105,15 @@ namespace // anonymous
     const std::string::const_iterator end (s.end());
 
     while (pos != end)
+    {
+      switch (*pos)
       {
-        switch (*pos)
-          {
-          case ' ': quoted += "\\ "; break;
-          default: quoted += *pos; break;
-          }
-
-        ++pos;
+      case ' ': quoted += "\\ "; break;
+      default: quoted += *pos; break;
       }
+
+      ++pos;
+    }
 
     return quoted;
   }
@@ -127,92 +126,92 @@ namespace // anonymous
     wrapping_word_stream wrapping_stream (stream);
 
     if (state.dependencies_target().size() > 0)
+    {
+      for (const std::string& target : state.dependencies_target())
       {
-        for (const std::string& target : state.dependencies_target())
-          {
-            wrapping_stream.put (target);
-          }
+        wrapping_stream.put (target);
       }
+    }
 
     if (state.dependencies_target_quoted().size() > 0)
+    {
+      for (const std::string& target : state.dependencies_target_quoted())
       {
-        for (const std::string& target : state.dependencies_target_quoted())
-          {
-            wrapping_stream.put (quote_for_make (target));
-          }
+        wrapping_stream.put (quote_for_make (target));
       }
+    }
 
     if (  (state.dependencies_target().size() == 0)
        && (state.dependencies_target_quoted().size() == 0)
        )
-      {
-        wrapping_stream.put (input);
-      }
+    {
+      wrapping_stream.put (input);
+    }
 
     wrapping_stream.append (":");
 
     for (const boost::filesystem::path& path : state.dependencies())
-      {
-        const std::string& dep (path.string());
+    {
+      const std::string& dep (path.string());
 
-        if (dep != input)
-          {
-            wrapping_stream.put (dep);
-          }
+      if (dep != input)
+      {
+        wrapping_stream.put (dep);
       }
+    }
 
     wrapping_stream.newl();
 
     if (state.dependencies_add_phony_targets())
+    {
+      for (const boost::filesystem::path& path : state.dependencies())
       {
-        for (const boost::filesystem::path& path : state.dependencies())
-          {
-            const std::string& dep (path.string());
+        const std::string& dep (path.string());
 
-            if (dep != input)
-              {
-                wrapping_stream.newl();
-                wrapping_stream.append (dep);
-                wrapping_stream.append(":");
-                wrapping_stream.newl();
-              }
-          }
+        if (dep != input)
+        {
+          wrapping_stream.newl();
+          wrapping_stream.append (dep);
+          wrapping_stream.append(":");
+          wrapping_stream.newl();
+        }
       }
-  }
-} // anonymous namespace
-
-void dump_dependencies ( const xml::parse::state::type& state
-                       , const std::string& input
-                       )
-{
-  const std::string& file (state.dump_dependencies());
-
-  std::ofstream stream (file.c_str());
-  if (!stream)
-  {
-    throw xml::parse::error::could_not_open_file (file);
+    }
   }
 
-  write_dependencies (state, input, stream);
-}
-
-void list_dependencies ( const xml::parse::state::type& state
-                       , const std::string& input
-                       )
-{
-  const std::string& file (state.list_dependencies());
-
-  std::ofstream stream (file.c_str());
-  if (!stream)
+  void dump_dependencies ( const xml::parse::state::type& state
+                         , const std::string& input
+                         )
   {
-    throw xml::parse::error::could_not_open_file (file);
+    const std::string& file (state.dump_dependencies());
+
+    std::ofstream stream (file.c_str());
+    if (!stream)
+    {
+      throw xml::parse::error::could_not_open_file (file);
+    }
+
+    write_dependencies (state, input, stream);
   }
 
-  stream << quote_for_list (input) << std::endl;
-
-  for (const boost::filesystem::path& p : state.dependencies())
+  void list_dependencies ( const xml::parse::state::type& state
+                         , const std::string& input
+                         )
   {
-    stream << quote_for_list(p.string()) << std::endl;
+    const std::string& file (state.list_dependencies());
+
+    std::ofstream stream (file.c_str());
+    if (!stream)
+    {
+      throw xml::parse::error::could_not_open_file (file);
+    }
+
+    stream << quote_for_list (input) << std::endl;
+
+    for (const boost::filesystem::path& p : state.dependencies())
+    {
+      stream << quote_for_list(p.string()) << std::endl;
+    }
   }
 }
 
@@ -240,63 +239,63 @@ int main (int argc, char** argv)
 
   xml::parse::state::type state;
 
-try
-{
-  state.add_options (desc);
-
-  po::positional_options_description p;
-  p.add ("input", 1).add ("output",2);
-
-  po::variables_map vm;
-
   try
   {
-    po::store ( po::command_line_parser(argc, argv)
-              . options(desc).positional(p)
-              . extra_parser (xml::parse::state::reg_M)
-              . run()
-              , vm
-              );
-    po::notify (vm);
-  }
-  catch (...)
-  {
-    std::throw_with_nested (std::invalid_argument ("invalid argument"));
-  }
+    state.add_options (desc);
 
-  if (vm.count ("help"))
-  {
-    std::cout << argv[0] << ": the petri net compiler" << std::endl;
+    po::positional_options_description p;
+    p.add ("input", 1).add ("output",2);
 
-    std::cout << desc << std::endl;
+    po::variables_map vm;
 
-    return EXIT_SUCCESS;
-  }
+    try
+    {
+      po::store ( po::command_line_parser(argc, argv)
+                . options(desc).positional(p)
+                . extra_parser (xml::parse::state::reg_M)
+                . run()
+                , vm
+                );
+      po::notify (vm);
+    }
+    catch (...)
+    {
+      std::throw_with_nested (std::invalid_argument ("invalid argument"));
+    }
 
-  if (vm.count ("version"))
-  {
-    std::cout << fhg::project_info ("Pnet Compiler");
+    if (vm.count ("help"))
+    {
+      std::cout << argv[0] << ": the petri net compiler" << std::endl;
 
-    return EXIT_SUCCESS;
-  }
+      std::cout << desc << std::endl;
 
-  if (input == "-")
-  {
-    input = "/dev/stdin";
-  }
+      return EXIT_SUCCESS;
+    }
 
-  if (output == "-")
-  {
-    output = "/dev/stdout";
-  }
+    if (vm.count ("version"))
+    {
+      std::cout << fhg::project_info ("Pnet Compiler");
 
-  if (state.dump_dependenciesD())
-  {
-    state.dump_dependencies() = input + ".d";
-  }
+      return EXIT_SUCCESS;
+    }
 
-  xml::parse::type::function_type function
-    (xml::parse::just_parse (state, input));
+    if (input == "-")
+    {
+      input = "/dev/stdin";
+    }
+
+    if (output == "-")
+    {
+      output = "/dev/stdout";
+    }
+
+    if (state.dump_dependenciesD())
+    {
+      state.dump_dependencies() = input + ".d";
+    }
+
+    xml::parse::type::function_type function
+      (xml::parse::just_parse (state, input));
 
     if (state.dump_xml_file().size() > 0)
     {
@@ -326,11 +325,11 @@ try
       out << we::type::activity_t (xml::parse::xml_to_we (function, state)).to_string();
     }
 
-  return EXIT_SUCCESS;
-}
-catch (...)
-{
-  std::cerr << "pnetc: failed: " << fhg::util::current_exception_printer() << '\n';
-  return EXIT_FAILURE;
-}
+    return EXIT_SUCCESS;
+  }
+  catch (...)
+  {
+    std::cerr << "pnetc: failed: " << fhg::util::current_exception_printer() << '\n';
+    return EXIT_FAILURE;
+  }
 }

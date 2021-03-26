@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ namespace fhg
       (system_executes_a_command, with_command)
     {
       auto const path (boost::filesystem::unique_path());
-      temporary_file const _ (path);
+      temporary_file const _temp (path);
 
       auto const content ( testing::random<std::string>{}
                              (testing::random<std::string>::identifier{})

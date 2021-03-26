@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -744,34 +744,34 @@ namespace fhg
 
           INVALID_ENUM_VALUE (worker_model::state_type, state);
         }
-      }
 
-      bool maybe_show_tooltip
-        ( const worker_model::state_type state
-        , const paint_description& descr
-        , QHelpEvent* event
-        , QAbstractItemView* view
-        )
-      {
-        for (const paint_description::block& block : descr.blocks[state])
+        bool maybe_show_tooltip
+          ( const worker_model::state_type state
+          , const paint_description& descr
+          , QHelpEvent* event
+          , QAbstractItemView* view
+          )
         {
-          if ( block.rect.left() <= event->pos().x()
-             && event->pos().x() <= block.rect.right()
-             )
+          for (const paint_description::block& block : descr.blocks[state])
           {
-            const QString ranges ( block.subranges.size() > 20
-                                 ? QStringList (block.subranges.mid (0, 20)).join (", ") + "..."
-                                 : block.subranges.join (", ")
-                                 );
-            QToolTip::showText
-              ( event->globalPos()
-              , to_string (state) + ": " + ranges
-              , view
-              );
-            return true;
+            if ( block.rect.left() <= event->pos().x()
+               && event->pos().x() <= block.rect.right()
+               )
+            {
+              const QString ranges ( block.subranges.size() > 20
+                                   ? QStringList (block.subranges.mid (0, 20)).join (", ") + "..."
+                                   : block.subranges.join (", ")
+                                   );
+              QToolTip::showText
+                ( event->globalPos()
+                , to_string (state) + ": " + ranges
+                , view
+                );
+              return true;
+            }
           }
+          return false;
         }
-        return false;
       }
 
       bool execution_monitor_delegate::helpEvent

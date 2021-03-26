@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -28,19 +28,17 @@
 namespace test
 {
   //! \todo configure
-  boost::filesystem::path pnet_compiler (gspc::installation const& installation)
+  namespace
   {
-    return installation.gspc_home() / "bin" / "pnetc";
-  }
-  boost::filesystem::path workflow_library
-    (gspc::installation const& installation)
-  {
-    return installation.gspc_home() / "share" / "gspc" / "xml" / "lib";
-  }
-  boost::filesystem::path boost_root
-    (gspc::installation const& installation)
-  {
-    return installation.gspc_home() / "external" / "boost";
+    boost::filesystem::path pnet_compiler (gspc::installation const& installation)
+    {
+      return installation.gspc_home() / "bin" / "pnetc";
+    }
+    boost::filesystem::path workflow_library
+      (gspc::installation const& installation)
+    {
+      return installation.gspc_home() / "share" / "gspc" / "xml" / "lib";
+    }
   }
 
   make::make ( gspc::installation const& installation

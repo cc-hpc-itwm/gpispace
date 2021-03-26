@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -172,9 +172,13 @@ namespace stochastic_with_heureka
       (binary_path.parent_path() / "workflow");
 
     boost::filesystem::path const gspc_home
+#if defined SWH_DEPLOYMENT_STRATEGY_InstallationCanNotBeMovedAndRefersToDependenciesUsingAbsolutePaths
+      (GSPC_HOME);
+#elif defined SWH_DEPLOYMENT_STRATEGY_LocationAndHostIndependentBundle
       ( binary_path.parent_path()
       / "libexec" / "bundle" / "gpispace"
       );
+#endif
 
     if (!boost::filesystem::is_directory (workflow_path))
     {

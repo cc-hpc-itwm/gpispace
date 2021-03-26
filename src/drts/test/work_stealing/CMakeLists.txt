@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ fhg_add_test (NAME drts_work_stealing_single_module
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}"
+  RUN_SERIAL
 )
 
 fhg_add_test (NAME drts_work_stealing_multiple_module

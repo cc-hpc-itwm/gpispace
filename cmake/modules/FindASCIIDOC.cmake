@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -40,8 +40,8 @@ execute_process (COMMAND ${ASCIIDOC_ASCIIDOC_BINARY} --version
 if (NOT ${ASCIIDOC_version_result} EQUAL 0)
   message (SEND_ERROR "Command \"${ASCIIDOC_ASCIIDOC_BINARY} --version\" failed with output:\n${ASCIIDOC_version_error}")
 else()
-  if ("${ASCIIDOC_version_output}" MATCHES "^asciidoc [0-9]+\\.[0-9]+\\.[0-9]+")
-    string (REGEX REPLACE "^asciidoc ([0-9]+\\.[0-9]+\\.[0-9]+)" "\\1"
+  if ("${ASCIIDOC_version_output}" MATCHES "^asciidoc [0-9]+[.][0-9]+[.][0-9]+")
+    string (REGEX REPLACE "^asciidoc ([0-9]+[.][0-9]+[.][0-9]+)" "\\1"
       ASCIIDOC_VERSION "${ASCIIDOC_version_output}"
     )
   else()

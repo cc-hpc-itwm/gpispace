@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -61,6 +61,10 @@ target_compile_definitions (RPC PUBLIC
 )
 
 function (rpc_unit_test _path)
+  if (NOT BUILD_TESTING)
+    return()
+  endif()
+
   _parse_arguments_with_unknown (ARG "" "" "LIBRARIES;SOURCES" "" ${ARGN})
   string (REPLACE "/" "-" _name "rpc-${_path}")
 
@@ -83,7 +87,10 @@ rpc_unit_test (locked_with_info_file)
 rpc_unit_test (many_threads_hammer_one_server RUN_SERIAL)
 
 rpc_unit_test (performance PERFORMANCE_TEST)
-set_tests_properties (rpc-performance PROPERTIES TIMEOUT 300)
+
+if (BUILD_TESTING)
+  set_tests_properties (rpc-performance PROPERTIES TIMEOUT 300)
+endif()
 
 rpc_unit_test (socket)
 

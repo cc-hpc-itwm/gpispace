@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -38,32 +38,6 @@ namespace sdpa
 {
   namespace daemon
   {
-    class worker_id_host_info_t
-    {
-    public:
-      worker_id_host_info_t ( worker_id_t worker_id
-                            , std::string worker_host
-                            , unsigned long shared_memory_size
-                            , double last_time_idle
-                            , boost::optional<std::string> implementation
-                            );
-
-      const worker_id_t& worker_id() const {return worker_id_;}
-      const std::string& worker_host() const {return worker_host_;}
-      double last_time_idle() const {return _last_time_idle;}
-      unsigned long shared_memory_size() const {return shared_memory_size_;}
-      boost::optional<std::string> const& implementation() const;
-
-    private:
-      worker_id_t worker_id_;
-      std::string worker_host_;
-      unsigned long shared_memory_size_;
-      double _last_time_idle;
-      boost::optional<std::string> _implementation;
-    };
-    using mmap_match_deg_worker_id_t
-      = std::multimap<double, worker_id_host_info_t, std::greater<double>>;
-
     using WorkerSet = std::set<worker_id_t>;
     using Workers_and_implementation = std::pair<WorkerSet, Implementation>;
 

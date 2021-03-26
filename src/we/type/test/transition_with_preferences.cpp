@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include <util-generic/testing/require_exception.hpp>
 #include <util-generic/testing/printer/list.hpp>
 #include <util-generic/testing/require_serialized_to_id.hpp>
+#include <util-generic/unreachable.hpp>
 
 #include <we/test/operator_equal.hpp>
 
@@ -60,9 +61,9 @@ namespace {
         return data_type(we::type::module_call_t());
       case transition_type::multi_module:
         return data_type(we::type::multi_module_call_t());
-      default:
-        throw std::logic_error ("invalid transition data_type specified");
       }
+
+      FHG_UTIL_UNREACHABLE ("transition_type: all handled");
     };
 
     return we::type::transition_t
@@ -109,6 +110,7 @@ namespace we
 {
   namespace type
   {
+    static
     std::ostream& operator<< (std::ostream& os, const transition_t& x)
     {
       return os << x.name();

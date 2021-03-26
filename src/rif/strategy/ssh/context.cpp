@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -90,7 +90,9 @@ namespace libssh2
     detail::wrapped::init (0);
 
     GLOBAL_crypto_locks = static_cast<pthread_mutex_t*>
-      (OPENSSL_malloc (CRYPTO_num_locks() * sizeof (pthread_mutex_t)));
+      //! \todo update to openssl-1.1.1 to avoid old style cast in macro definition
+      //! (OPENSSL_malloc (CRYPTO_num_locks() * sizeof (pthread_mutex_t)));
+          (CRYPTO_malloc  (CRYPTO_num_locks() * sizeof (pthread_mutex_t), __FILE__, __LINE__));
 
     try
     {

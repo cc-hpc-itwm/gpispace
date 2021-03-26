@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -39,7 +39,7 @@
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
+#include <iml/Client.hpp>
 
 #include <logging/stream_emitter.hpp>
 
@@ -83,7 +83,7 @@ namespace sdpa {
                    , bool create_wfe
                    , fhg::com::Certificates const& certificates
                    );
-      virtual ~Agent() = default;
+      virtual ~Agent() override = default;
 
       const std::string& name() const;
       boost::asio::ip::tcp::endpoint peer_local_endpoint() const;
@@ -97,8 +97,6 @@ namespace sdpa {
       void finished(const we::layer::id_type & id, const we::type::activity_t& result);
       void failed( const we::layer::id_type& wfId, std::string const& reason);
       void canceled(const we::layer::id_type& id);
-      void discover (we::layer::id_type discover_id, we::layer::id_type job_id);
-      void discovered (we::layer::id_type discover_id, sdpa::discovery_info_t);
       void token_put
         (std::string put_token_id, boost::optional<std::exception_ptr>);
       void workflow_response_response
@@ -184,21 +182,9 @@ namespace sdpa {
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::WorkerRegistrationEvent*
         ) override;
-      virtual void handleQueryJobStatusEvent
-        ( fhg::com::p2p::address_t const&
-        , const sdpa::events::QueryJobStatusEvent*
-        ) override;
       virtual void handleBacklogNoLongerFullEvent
         ( fhg::com::p2p::address_t const&
         , const events::BacklogNoLongerFullEvent*
-        ) override;
-      virtual void handleDiscoverJobStatesReplyEvent
-        ( fhg::com::p2p::address_t const&
-        , const sdpa::events::DiscoverJobStatesReplyEvent*
-        ) override;
-      virtual void handleDiscoverJobStatesEvent
-        ( fhg::com::p2p::address_t const&
-        , const sdpa::events::DiscoverJobStatesEvent*
         ) override;
       virtual void handle_put_token
         ( fhg::com::p2p::address_t const&
@@ -250,6 +236,18 @@ namespace sdpa {
 
       void handle_job_termination (Job*);
 
+      void workflow_finished
+        (we::layer::id_type const&, we::type::activity_t const&);
+      void workflow_failed
+        (we::layer::id_type const&, std::string const&);
+      void workflow_canceled (we::layer::id_type const&);
+      void token_put_in_workflow
+        (std::string, boost::optional<std::exception_ptr>);
+      void workflow_engine_workflow_response_response
+        ( std::string
+        , boost::variant<std::exception_ptr, pnet::type::value::value_type>
+        );
+
       //! \todo aggregated results for coallocation jobs and sub jobs
       void job_finished (Job*, we::type::activity_t const&);
       void job_failed (Job*, std::string const& reason);
@@ -284,7 +282,6 @@ namespace sdpa {
       void deleteJob(const sdpa::job_id_t& job_id);
 
       void cancel_worker_handled_job (we::layer::id_type const&);
-      void delayed_discover (we::layer::id_type discover_id, we::layer::id_type);
 
       std::string _name;
 
@@ -301,9 +298,6 @@ namespace sdpa {
         >;
 
       subscriber_relation_type _subscriptions;
-
-      std::unordered_map<std::pair<job_id_t, job_id_t>, fhg::com::p2p::address_t>
-        _discover_sources;
 
       std::unordered_map<std::string, fhg::com::p2p::address_t> _put_token_source;
       std::unordered_map<std::string, fhg::com::p2p::address_t>
@@ -368,7 +362,7 @@ namespace sdpa {
       //! all classes. (see issue #618)
       void handle_events();
 
-      std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+      std::unique_ptr<iml::Client> _virtual_memory_api;
 
       boost::strict_scoped_thread<> _event_handler_thread;
       decltype (_event_queue)::interrupt_on_scope_exit _interrupt_event_queue;
@@ -390,8 +384,6 @@ namespace sdpa {
 
         void job_failed_ack (job_id_t) const;
         void job_finished_ack (job_id_t) const;
-
-        void discover_job_states (job_id_t, job_id_t discover_id) const;
 
         void put_token ( job_id_t
                        , std::string put_token_id
@@ -430,12 +422,6 @@ namespace sdpa {
 
         void capabilities_gained (capabilities_set_t) const;
         void capabilities_lost (capabilities_set_t) const;
-
-        void discover_job_states_reply
-          (job_id_t discover_id, discovery_info_t) const;
-        //! \todo Client only. Move to client_proxy?
-        void query_job_status_reply
-          (job_id_t, status::code, std::string error_message) const;
 
         void put_token_response ( std::string put_token_id
                                 , boost::optional<std::exception_ptr>

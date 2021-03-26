@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -200,7 +200,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
                            );
        tokens = fhg::util::testing::unique_randoms
                 <std::vector<long>> (n_tokens);
-       return tokens.at ( fhg::util::testing::random<long>{}()
+       return tokens.at ( fhg::util::testing::random<std::vector<long>::size_type>{}()
                         % n_tokens
                         );
      }()
@@ -253,7 +253,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_eureka_responses)
        tokens = fhg::util::testing::unique_randoms
                 <std::vector<long>> (n_tokens);
        auto const eureka
-        (tokens.at (fhg::util::testing::random<long>{}() % n_tokens));
+        (tokens.at (fhg::util::testing::random<std::vector<long>::size_type>{}() % n_tokens));
        std::for_each ( tokens.begin()
                      , tokens.end()
                      , [&eureka, &num_eureka_expected] (long const& val)

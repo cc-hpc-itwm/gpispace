@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -137,7 +137,7 @@ namespace pnet
             {
             case expr::token::_stack_empty: return x.empty();
             case expr::token::_stack_top: return x.back();
-            case expr::token::_stack_pop: x.pop_back(); return x;
+            case expr::token::_stack_pop: x.pop_back(); return std::move (x);
             case expr::token::_stack_size: return x.size();
             default: throw exception::eval (_token, x);
             }
@@ -146,7 +146,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_set_pop: x.erase (x.begin()); return x;
+            case expr::token::_set_pop: x.erase (x.begin()); return std::move (x);
             case expr::token::_set_top: return *(x.begin());
             case expr::token::_set_empty: return x.empty();
             case expr::token::_set_size: return x.size();
@@ -287,7 +287,7 @@ namespace pnet
             case expr::token::ge: return l >= r;
             case expr::token::ne: return l != r;
             case expr::token::eq: return l == r;
-            case expr::token::add: { std::string s; s += l; s += r; return s; }
+            case expr::token::add: { std::string s; s += l; s += r; return std::move (s); }
             case expr::token::min: return std::min (l, r);
             case expr::token::max: return std::max (l, r);
             default: throw exception::eval (_token, l, r);
@@ -303,7 +303,7 @@ namespace pnet
             case expr::token::ge: return l >= r;
             case expr::token::ne: return l != r;
             case expr::token::eq: return l == r;
-            case expr::token::add: { std::string s; s += l; s += r; return s; }
+            case expr::token::add: { std::string s; s += l; s += r; return std::move (s); }
             case expr::token::min: return std::min (l, r);
             case expr::token::max: return std::max (l, r);
             default: throw exception::eval (_token, l, r);
@@ -325,8 +325,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_bitset_insert: l.ins (r); return l;
-            case expr::token::_bitset_delete: l.del (r); return l;
+            case expr::token::_bitset_insert: l.ins (r); return std::move (l);
+            case expr::token::_bitset_delete: l.del (r); return std::move (l);
             case expr::token::_bitset_is_element: return l.is_element (r);
             default: throw exception::eval (_token, l, r);
             }
@@ -351,7 +351,7 @@ namespace pnet
               {
                 l.push_back (r.front()); r.pop_front();
               }
-              return l;
+              return std::move (l);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -360,7 +360,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_stack_push: l.push_back (r); return l;
+            case expr::token::_stack_push: l.push_back (r); return std::move (l);
             default: throw exception::eval (_token, l, r);
             }
           }
@@ -387,8 +387,8 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_set_insert: l.insert (r); return l;
-            case expr::token::_set_erase: l.erase (r); return l;
+            case expr::token::_set_insert: l.insert (r); return std::move (l);
+            case expr::token::_set_erase: l.erase (r); return std::move (l);
             case expr::token::_set_is_element: return l.find (r) != l.end();
             default: throw exception::eval (_token, l, r);
             }
@@ -398,7 +398,7 @@ namespace pnet
           {
             switch (_token)
             {
-            case expr::token::_map_unassign: l.erase (r); return l;
+            case expr::token::_map_unassign: l.erase (r); return std::move (l);
             case expr::token::_map_is_assigned: return l.find (r) != l.end();
             case expr::token::_map_get_assignment: return l.at (r);
             default: throw exception::eval (_token, l, r);

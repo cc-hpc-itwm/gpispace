@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -13,29 +13,6 @@
 #
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
-
-fhg_add_runtime_executable (NAME gpi-space
-  SOURCES "gpi-space.cpp"
-  LIBRARIES gpi-space-gpiapi
-            gpi-space-pc-container
-            gpi-space-pc-global
-            gpi-space-pc-memory
-            gpi-space-pc-segment
-            fhg-project_configuration
-            fhg-util
-            mmgr
-            fhgcom
-            rif-started_process_promise
-            Util::Generic
-            ${CMAKE_THREAD_LIBS_INIT}
-            Boost::filesystem
-            Boost::program_options
-            Boost::serialization
-            Boost::thread
-            Boost::system
-  CREATE_BUNDLE_INFO
-  INSTALL_DESTINATION "libexec/gspc"
-)
 
 fhg_add_runtime_executable (NAME pnet2dot
   SOURCES "pnet2dot.cpp"

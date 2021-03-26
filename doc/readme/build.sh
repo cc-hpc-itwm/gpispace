@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -82,6 +82,7 @@ make install                                                      \
   -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib/"                       \
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/bundle/lib/"        \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/iml/"               \
   -lgspc                                                          \
                                                                   \
   -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \

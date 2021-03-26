@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,8 +31,6 @@ namespace fhg
     {
     public:
       typedef std::list<T> container_type;
-      typedef typename container_type::size_type size_type;
-
       T get()
       {
         std::unique_lock<std::mutex> lock (m_mtx);
@@ -63,7 +61,7 @@ namespace fhg
         m_container.clear();
       }
     private:
-      mutable std::mutex m_mtx;
+      std::mutex m_mtx;
       std::condition_variable m_get_cond;
 
       container_type m_container;

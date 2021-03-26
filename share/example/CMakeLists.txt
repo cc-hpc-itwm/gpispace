@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -35,25 +35,23 @@ install (DIRECTORY "stochastic_with_heureka"
   DESTINATION "${example_install_prefix}"
   USE_SOURCE_PERMISSIONS
 )
-# \note To avoid having the cmake submodule twice and possible out of
-# sync, just copy the top level one into the example
-# installation. This implies that a non-installed
-# stochastic_with_heureka does *not* build unless a cmake submodule is
-# manually checked out/copied there.
-install (DIRECTORY "${CMAKE_SOURCE_DIR}/cmake"
-  DESTINATION "${example_install_prefix}/stochastic_with_heureka"
-  USE_SOURCE_PERMISSIONS
-)
 
 set (installed_stochastic_with_heureka_path
   "${CMAKE_INSTALL_PREFIX}/${example_install_prefix}/stochastic_with_heureka"
 )
 add_test (NAME example-stochastic_with_heureka
   COMMAND "${installed_stochastic_with_heureka_path}/selftest"
+          "${CMAKE_COMMAND}"
 )
-set_tests_properties (example-stochastic_with_heureka PROPERTIES
-  WORKING_DIRECTORY "${installed_stochastic_with_heureka_path}"
-  ENVIRONMENT "CC=${CMAKE_CC_COMPILER};CXX=${CMAKE_CXX_COMPILER};GSPC_HOME=${CMAKE_INSTALL_PREFIX}"
-  LABELS "requires_installation"
-  REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
+set_property (TEST example-stochastic_with_heureka
+  PROPERTY ENVIRONMENT
+    "CXX=${CMAKE_CXX_COMPILER}"
+    "GPISpace_ROOT=${CMAKE_INSTALL_PREFIX}"
+    "SWH_INSTALL_DIR=${SHARED_DIRECTORY_FOR_TESTS}/stochastic_with_heureka"
+)
+set_property (TEST example-stochastic_with_heureka
+  PROPERTY LABELS "requires_installation"
+)
+set_property (TEST example-stochastic_with_heureka
+  PROPERTY REQUIRED_FILES "${FILES_REQUIRED_IN_INSTALLATION}"
 )

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -152,7 +152,7 @@ BOOST_AUTO_TEST_CASE (nested)
       : std::logic_error ("dummy = " + std::to_string (d))              \
       , dummy (d)                                                       \
     {}                                                                  \
-    virtual ~_type() = default;                                         \
+    virtual ~_type() override = default;                                \
     _type (_type const&) = default;                                     \
     int dummy
 

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -31,8 +31,8 @@ namespace fhg
     {
       //! Require \a fun to throw an exception of type \c Exception,
       //! with the value \a expected. If an exception is indeed
-      //! thrown, \a throw_if_mismatch is called with the catched and
-      //! \a expected exception, which is then supposed to compare the
+      //! thrown, \a throw_if_mismatch is called with the \a expected
+      //! and catched exception, which is then supposed to compare the
       //! two, throwing information about the mismatch if not equal.
       //! \note \a throw_if_mismatch is default constructed for
       //! convenience with stateless comparators, only having to

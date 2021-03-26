@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,33 +18,35 @@
 # requires: GSPC_PREFIX = installation of gpispace
 # requires: SWH_PREFIX = installation of stochastic-with-heureka
 
-includes+=-I $(SWH_PREFIX)/include
-includes+=-I $(SWH_PREFIX)/example
-includes+=-I $(GMP_PREFIX)/include
-includes+=-I $(GSPC_PREFIX)/include
-includes+=-I $(GSPC_PREFIX)/external/boost/include
+CXXFLAGS+=-I $(SWH_PREFIX)/include
+CXXFLAGS+=-I $(SWH_PREFIX)/example
+CXXFLAGS+=-I $(GMP_PREFIX)/include
+CXXFLAGS+=-I $(GSPC_PREFIX)/include
+CXXFLAGS+=-I $(GSPC_PREFIX)/external/boost/include
+CXXFLAGS+=--std=c++11
+CXXFLAGS+=-fPIC
 
-library_dirs+=-L $(GSPC_PREFIX)/lib
-library_dirs+=-L $(GMP_PREFIX)/lib
-library_dirs+=-Wl,-rpath-link $(GSPC_PREFIX)/external/boost/lib
-
+LDFLAGS+=-L $(GSPC_PREFIX)/lib
+LDFLAGS+=-L $(GMP_PREFIX)/lib
+LDFLAGS+=-Wl,-rpath-link $(GSPC_PREFIX)/external/boost/lib
+LDFLAGS+=-Wl,-rpath $(GSPC_PREFIX)/lib
+LDFLAGS+=-Wl,-rpath $(GMP_PREFIX)/lib
 LDFLAGS+=-Wl,--no-undefined
-LDFLAGS+=-Wl,--copy-dt-needed-entries
+LDFLAGS+=-lwe-dev
+LDFLAGS+=-lgmp
+LDFLAGS+=-lgmpxx
 
 .PHONY: default
 default: all
 
-%.o: %.cpp
-	$(CXX) --std=c++11 -fPIC $(includes) -o $@ -c $^
-
 miller-rabin.so: miller-rabin.o util.o
-	$(CXX) --std=c++11 -o $@ -shared $(library_dirs) $(LDFLAGS) -lwe-dev -lgmp -lgmpxx $^
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ -shared $^
 
 generate-user-data: generate_user_data.cpp util.o
-	$(CXX) --std=c++11 -o $@ $(includes) $(library_dirs) $(LDFLAGS) -lwe-dev -lgmp -lgmpxx $^
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
-show-result: show_result.cpp
-	$(CXX) --std=c++11 -o $@ $(includes) $(library_dirs) $(LDFLAGS) -lwe-dev $^
+show-result: show_result.cpp util.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -o $@ $^
 
 .PHONY: clean all
 clean:

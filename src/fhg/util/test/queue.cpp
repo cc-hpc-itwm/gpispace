@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -96,10 +96,10 @@ BOOST_AUTO_TEST_CASE (thread_queue_put_by_multiple_threads)
     ++items_consumed;
   }
   BOOST_REQUIRE_EQUAL ( items_consumed
-                      , (size_t)(NUM_ITEMS_TO_PUT * NUM_THREADS)
+                      , NUM_ITEMS_TO_PUT * NUM_THREADS
                       );
 
-  for (int i = 0 ; i < NUM_THREADS ; i++)
+  for (decltype (threads)::size_type i = 0 ; i < NUM_THREADS ; i++)
   {
     threads [i]->join ();
     delete threads [i]; threads [i] = nullptr;

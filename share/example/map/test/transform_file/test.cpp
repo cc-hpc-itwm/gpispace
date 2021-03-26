@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -49,6 +49,7 @@
 #include <boost/program_options.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <fstream>
 #include <map>
 #include <vector>
@@ -86,7 +87,7 @@ namespace
 
       std::transform ( chunk.data(), chunk.data() + bytes
                      , std::back_inserter (verify)
-                     , [](char c) { return std::tolower (c); }
+                     , [](unsigned char c) { return std::tolower (c); }
                      );
 
       bytes_left -= bytes;

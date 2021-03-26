@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include <xml/parse/type/function.fwd.hpp>
 #include <xml/parse/type/with_position_of_definition.hpp>
 #include <xml/parse/type/eureka.hpp>
+#include <xml/parse/type_map_type.hpp>
 
 #include <xml/parse/util/position.fwd.hpp>
 
@@ -76,6 +77,8 @@ namespace xml
         bool require_module_unloads_without_rest() const;
 
         bool operator== (const module_type&) const;
+
+        void specialize (type_map_type const&);
 
       private:
         std::string _name;

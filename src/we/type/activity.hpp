@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -43,20 +43,10 @@
 #include <string>
 #include <vector>
 
-namespace gpi
+namespace iml
 {
-  namespace pc
-  {
-    namespace client
-    {
-      class api_t;
-    }
-  }
-}
-
-namespace gspc
-{
-  class scoped_allocation;
+  class Client;
+  class SharedMemoryAllocation;
 }
 
 //! is: activity.fwd.hpp
@@ -137,14 +127,14 @@ namespace we
 
       void execute
         ( we::loader::loader&
-        , gpi::pc::client::api_t /*const*/ *
-        , gspc::scoped_allocation /* const */ *
+        , iml::Client /*const*/ *
+        , iml::SharedMemoryAllocation /* const */ *
         , boost::optional<std::string> target_implementation
         , drts::worker::context*
         );
 
       Requirements_and_preferences requirements_and_preferences
-        (gpi::pc::client::api_t*);
+        (iml::Client*);
 
       explicit activity_t
         ( TESTING_ONLY

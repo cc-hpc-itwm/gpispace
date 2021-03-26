@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,6 +19,10 @@
 #include <drts/drts.hpp>
 #include <drts/private/startup_and_shutdown.hpp>
 
+#include <iml/Client.hpp>
+#include <iml/Rifs.hpp>
+#include <iml/RuntimeSystem.hpp>
+
 #include <logging/stream_emitter.hpp>
 
 #include <boost/filesystem.hpp>
@@ -36,6 +40,21 @@
 
 namespace gspc
 {
+  struct iml_runtime_system
+  {
+    std::unique_ptr<iml::Rifs> rifds;
+    std::unique_ptr<iml::RuntimeSystem> rts;
+
+    iml_runtime_system ( boost::program_options::variables_map const& vm
+                       , std::ostream& info_output
+                       );
+    iml_runtime_system (iml_runtime_system const&) = delete;
+    iml_runtime_system (iml_runtime_system&&) = default;
+    iml_runtime_system& operator= (iml_runtime_system const&) = delete;
+    iml_runtime_system& operator= (iml_runtime_system&&) = default;
+    ~iml_runtime_system() = default;
+  };
+
   struct scoped_runtime_system::implementation
   {
     implementation ( boost::program_options::variables_map const& vm
@@ -62,12 +81,12 @@ namespace gspc
       remove_worker (rifd_entry_points const&);
 
     boost::optional<boost::filesystem::path> _virtual_memory_socket;
-    boost::optional<std::chrono::seconds> _virtual_memory_startup_timeout;
+
+    boost::optional<iml_runtime_system> _iml_rts;
 
     struct started_runtime_system
     {
       started_runtime_system ( boost::optional<unsigned short> const& agent_port
-                             , bool gpi_enabled
                              , boost::optional<boost::filesystem::path> gpi_socket
                              , std::vector<boost::filesystem::path> app_path
                              , std::vector<std::string> worker_env_copy_variable
@@ -75,10 +94,7 @@ namespace gspc
                              , std::vector<boost::filesystem::path> worker_env_copy_file
                              , std::vector<std::string> worker_env_set_variable
                              , installation_path
-                             , boost::optional<std::chrono::seconds> vmem_startup_timeout
                              , std::vector<worker_description> worker_descriptions
-                             , boost::optional<unsigned short> vmem_port
-                             , boost::optional<fhg::vmem::netdev_id> vmem_netdev_id
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
                              , fhg::rif::entry_point const& master
                              , std::ostream& info_output
@@ -131,6 +147,7 @@ namespace gspc
       unsigned short _top_level_agent_port;
     } _started_runtime_system;
     fhg::logging::stream_emitter _logger;
-    std::unique_ptr<gpi::pc::client::api_t> _virtual_memory_api;
+
+    std::unique_ptr<iml::Client> _virtual_memory_api;
   };
 }

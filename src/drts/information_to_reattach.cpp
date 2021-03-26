@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,7 +47,7 @@ namespace gspc
         {
           return boost::get<T> (*v);
         }
-        catch (boost::bad_get const& ex)
+        catch (boost::bad_get const&)
         {
           throw std::logic_error
             ( "value did not had correct type at path: "

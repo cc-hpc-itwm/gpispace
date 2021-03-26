@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -26,6 +26,8 @@
 #include <we/type/net.hpp>
 
 #include <fhg/assert.hpp>
+
+#include <util-generic/print_container.hpp>
 
 namespace xml
 {
@@ -158,6 +160,21 @@ namespace xml
           && _ldflags == other._ldflags
           && _cxxflags == other._cxxflags
           ;
+      }
+
+      void module_type::specialize (type_map_type const& type_map)
+      {
+        if (!type_map.empty())
+        {
+          _function += fhg::util::print_container
+            ( "_", "_", "", type_map
+            , [] (auto& s, auto const& p) -> decltype (s)
+              {
+                return s << p.first << "_" << p.second;
+              }
+            ).string()
+            ;
+        }
       }
 
       namespace dump

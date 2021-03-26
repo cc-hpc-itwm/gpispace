@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -36,8 +36,6 @@ namespace we
         , std::function<void (id_type, type::activity_t)> rts_finished
         , std::function<void (id_type, std::string)> rts_failed
         , std::function<void (id_type)> rts_canceled
-        , std::function<void (id_type, id_type)> rts_discover
-        , std::function<void (id_type, sdpa::discovery_info_t)> rts_discovered
         , std::function<void (std::string, boost::optional<std::exception_ptr>)> rts_token_put
         , std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> rts_workflow_response
         , std::function<id_type()> rts_id_generator
@@ -48,8 +46,6 @@ namespace we
       , _rts_finished (rts_finished)
       , _rts_failed (rts_failed)
       , _rts_canceled (rts_canceled)
-      , _rts_discover (rts_discover)
-      , _rts_discovered (rts_discovered)
       , _rts_token_put (rts_token_put)
       , _rts_workflow_response (rts_workflow_response)
       , _rts_id_generator (rts_id_generator)
@@ -183,62 +179,6 @@ namespace we
 
         pos->second();
         _finalize_job_cancellation.erase (pos);
-      }
-    }
-
-    void layer::discover (id_type discover_id, id_type id)
-    {
-      _nets_to_extract_from.apply
-        ( id
-        , [this, discover_id] (activity_data_type& activity_data)
-        {
-          const id_type a_id (activity_data._id);
-
-          std::lock_guard<std::mutex> const _ (_discover_state_mutex);
-          fhg_assert (_discover_state.find (discover_id) == _discover_state.end());
-
-          std::pair<std::size_t, sdpa::discovery_info_t > state
-            (0, sdpa::discovery_info_t(a_id, boost::none, sdpa::discovery_info_set_t()));
-
-          _running_jobs.apply ( a_id
-                              , [this, &discover_id, &state] (id_type child)
-                              {
-                                ++state.first;
-                                _rts_discover (discover_id, child);
-                              }
-                              );
-
-          //! \note Not a race: discovered can't be called in parallel
-          if (state.first == std::size_t (0))
-          {
-            _rts_discovered (discover_id, state.second);
-          }
-          else
-          {
-            _discover_state.emplace (discover_id, state);
-          }
-        }
-        );
-    }
-
-    void layer::discovered
-      (id_type discover_id, sdpa::discovery_info_t result)
-    {
-      std::lock_guard<std::mutex> const _ (_discover_state_mutex);
-      fhg_assert (_discover_state.find (discover_id) != _discover_state.end());
-
-      std::pair<std::size_t, sdpa::discovery_info_t >& state
-        (_discover_state.find (discover_id)->second);
-
-      state.second.add_child_info (result);
-
-      --state.first;
-
-      if (state.first == std::size_t (0))
-      {
-        _rts_discovered (discover_id, state.second);
-
-        _discover_state.erase (discover_id);
       }
     }
 

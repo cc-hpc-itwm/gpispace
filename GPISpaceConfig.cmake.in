@@ -1,0 +1,537 @@
+# Arguments (via COMPONENTS):
+#  - DO_NOT_CHECK_GIT_SUBMODULES: Skip check that git submodules that
+#      are used in GPISpace as well are used in the same revision.
+#  - ALLOW_DIFFERENT_GIT_SUBMODULES: Legacy alias for
+#      DO_NOT_CHECK_GIT_SUBMODULES.
+#
+# provides
+# - library GPISpace::header-only
+# - library GPISpace::workflow_development
+# - library GPISpace::execution
+# - library IML::Client (via IML dependency)
+# - executable GPISpace::pnetc
+# - variable GSPC_HOME
+# - variable GSPC_XPNET_XSD
+# - variable GSPC_VERSION, GSPC_VERSION_FILE
+# - variable GSPC_GIT_SUBMODULES_FILE
+# - function bundle_GPISpace (DESTINATION)
+# - function bundle_GPISpace_add_rpath (TARGET INSTALL_DIRECTORY)
+
+cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
+
+include (CMakeFindDependencyMacro)
+
+@PACKAGE_INIT@
+
+set_and_check (GSPC_HOME "@PACKAGE_GSPC_HOME@")
+get_filename_component (GSPC_HOME "${GSPC_HOME}" REALPATH)
+
+# \todo remove the variables and only support the targets?
+# \todo configure-in names?
+set_and_check (GSPC_we-dev_LIBRARY "${GSPC_HOME}/lib/libwe-dev.so")
+set_and_check (GSPC_drts-context_LIBRARY "${GSPC_HOME}/lib/libdrts-context.so")
+set_and_check (GSPC_gspc_LIBRARY "${GSPC_HOME}/lib/libgspc.so")
+set_and_check (GSPC_rif_execution_LIBRARY "${GSPC_HOME}/lib/librif-started_process_promise.a")
+set_and_check (GSPC_pnetc_BINARY "${GSPC_HOME}/bin/pnetc")
+set_and_check (GSPC_INCLUDE_DIR "${GSPC_HOME}/include")
+set_and_check (GSPC_XPNET_XSD "${GSPC_HOME}/share/gspc/xml/xsd/pnet.xsd")
+set_and_check (GSPC_GIT_SUBMODULES_FILE "${GSPC_HOME}/git.submodules")
+
+# \todo remove, done by GPISpaceConfigVersion.cmake now
+set_and_check (GSPC_VERSION_FILE "${GSPC_HOME}/version")
+# \todo remove, legacy
+set (GSPC_VERSION "@PROJECT_VERSION@")
+
+foreach (_component ${GPISpace_FIND_COMPONENTS})
+  string (SUBSTRING "${_component}" 0 8 _prefix)
+  if ("${_prefix}" STREQUAL "VERSION=")
+    message (FATAL_ERROR "The GPISpace CMake find_package script no longer \
+supports specifying version via `COMPONENTS ${_component}`. Use the standard \
+find_package argument instead.")
+  endif()
+  string (SUBSTRING "${_component}" 0 9 _prefix)
+  if ("${_prefix}" STREQUAL "REVISION=")
+    message (FATAL_ERROR "The GPISpace CMake find_package script no longer \
+supports specifying version via `COMPONENTS ${_component}`. Use the standard \
+find_package argument for version numbers instead.")
+  endif()
+endforeach()
+
+set (GSPC_HOME "${GSPC_HOME}" CACHE PATH "" FORCE)
+mark_as_advanced (GSPC_HOME)
+
+################################################################################
+# Dependency: Boost                                                            #
+################################################################################
+
+# \todo BOOST_ROOT vs @BOOST_ROOT@ vs $GSPC_HOME/external/boost
+set (BOOST_ROOT "${GSPC_HOME}/external/boost" CACHE PATH "BOOST ROOT")
+
+set (_boost_components
+  chrono
+  context
+  coroutine
+  date_time
+  filesystem
+  iostreams
+  program_options
+  serialization
+  system
+  thread
+)
+
+find_dependency (Boost @Boost_VERSION@ EXACT REQUIRED
+  COMPONENTS ${_boost_components}
+)
+
+# The boost libraries may be bundled by GPI-Space, which may result in
+# missing -rpath-link to find them when linking against GPI-Space
+# libraries. Also add the bundle directory to the search path to avoid.
+# \todo This isn't a Boost property but a per-library-deployed
+# property that affects all dependencies. The impact can be lessened
+# by splitting up the bundled libraries into multiple directories to
+# only clash if needed. Additionally, it should be attached to the
+# GPISpace targets instead of the Boost ones, which currently happens
+# implicitly.
+# \todo One can silence warnings produced by this conflict by manually
+# adding `-rpath` and `-rpath-link` to the LINK_OPTIONS instead, but
+# that doesn't change anything, only hides the issue.
+target_link_directories (Boost::boost INTERFACE
+  "${GSPC_HOME}/libexec/bundle/lib"
+)
+
+@GPISpace_installconfig_boost_coroutine_warning_suppression@
+
+# Boost.ProgramOptions has a static string that has in the past often
+# triggered duplicate-frees when linked directly and indirectly into
+# the same target, or via both .a and .so (e.g. via GPISpace's
+# libgspc.so).
+# In order to prevent this, tell the linker to not re-export any
+# Boost.ProgramOptions symbols, which to our knowledge is fine as
+# there are no symbols that actually require to be singletons.
+# \note CMake <3.16 has a bug that does not allow setting properties
+# on `UNKNOWN` targets using the `target_xxx_xxx()` functions, so
+# reimplement `target_link_options()` here.
+get_property (_current_options
+  TARGET Boost::program_options
+  PROPERTY INTERFACE_LINK_OPTIONS
+)
+set (_boost_po_link_workaround
+  "LINKER:--exclude-libs,libboost_program_options.a"
+)
+if (NOT _boost_po_link_workaround IN_LIST _current_options)
+  set_property (TARGET Boost::program_options APPEND
+    PROPERTY INTERFACE_LINK_OPTIONS ${_boost_po_link_workaround}
+  )
+endif()
+
+################################################################################
+# Dependency: IML                                                              #
+################################################################################
+
+find_dependency (IML
+  @PROJECT_VERSION@ EXACT
+  REQUIRED
+  CONFIG HINTS "${GSPC_HOME}"
+)
+
+################################################################################
+# Git submodule check                                                          #
+################################################################################
+
+# \todo Is this still something we want?
+# \todo avoid temporary file?
+# \todo automatically don't do if not a git repo?
+# \todo automatically don't do if no submodules?
+
+set (_gspc_do_submodules_check true)
+if ("DO_NOT_CHECK_GIT_SUBMODULES" IN_LIST GPISpace_FIND_COMPONENTS)
+  set (_gspc_do_submodules_check false)
+  list (REMOVE_ITEM GPISpace_FIND_COMPONENTS "DO_NOT_CHECK_GIT_SUBMODULES")
+endif()
+if ("ALLOW_DIFFERENT_GIT_SUBMODULES" IN_LIST GPISpace_FIND_COMPONENTS)
+  set (_gspc_do_submodules_check false)
+  list (REMOVE_ITEM GPISpace_FIND_COMPONENTS "ALLOW_DIFFERENT_GIT_SUBMODULES")
+endif()
+
+if (${_gspc_do_submodules_check})
+  find_dependency (Git REQUIRED)
+
+  @ASSERT_GIT_SUBMODULE_VERSIONS_SOURCE@
+
+  list_and_store_git_submodules ("${CMAKE_CURRENT_BINARY_DIR}/git.submodules")
+  assert_same_git_submodules ("${CMAKE_CURRENT_BINARY_DIR}/git.submodules" "${GSPC_GIT_SUBMODULES_FILE}")
+endif()
+
+################################################################################
+# GPISpace targets                                                             #
+################################################################################
+
+add_library (GPISpace-header-only INTERFACE)
+add_library (GPISpace::header-only ALIAS GPISpace-header-only)
+target_include_directories (GPISpace-header-only SYSTEM
+  INTERFACE "${GSPC_INCLUDE_DIR}"
+)
+
+# A large percentage of users at some point end up in the context of
+# dynamically loaded (dlopen-ed + dlclose-ed) modules, in one way or
+# the other. `dlclose` ends up not unloading libraries with `unique`
+# symbols, so in an effort to reduce the amount of times debugging
+# this, enforce that at least this project's libraries are free of
+# them. Also building the libraries that never end up being linked
+# into a workflow module with this flag is accepted collateral damage.
+target_compile_options (GPISpace-header-only
+  INTERFACE $<$<AND:$<COMPILE_LANGUAGE:CXX>,$<STREQUAL:GNU,$<CXX_COMPILER_ID>>>:-fno-gnu-unique>
+  INTERFACE $<$<AND:$<COMPILE_LANGUAGE:C>,$<STREQUAL:GNU,$<C_COMPILER_ID>>>:-fno-gnu-unique>
+)
+
+add_library (GPISpacePrivate::we-dev SHARED IMPORTED)
+set_target_properties (GPISpacePrivate::we-dev PROPERTIES IMPORTED_LOCATION ${GSPC_we-dev_LIBRARY})
+
+add_library (GPISpacePrivate::drts-context SHARED IMPORTED)
+set_target_properties (GPISpacePrivate::drts-context PROPERTIES IMPORTED_LOCATION ${GSPC_drts-context_LIBRARY})
+
+add_library (GPISpacePrivate::gspc SHARED IMPORTED)
+set_target_properties (GPISpacePrivate::gspc PROPERTIES IMPORTED_LOCATION ${GSPC_gspc_LIBRARY})
+
+add_library (GPISpacePrivate::rif_execution STATIC IMPORTED)
+set_target_properties (GPISpacePrivate::rif_execution PROPERTIES IMPORTED_LOCATION ${GSPC_rif_execution_LIBRARY})
+
+add_library (GPISpace-workflow_development INTERFACE)
+add_library (GPISpace::workflow_development ALIAS GPISpace-workflow_development)
+target_link_libraries (GPISpace-workflow_development
+  INTERFACE GPISpace::header-only
+            GPISpacePrivate::we-dev
+            GPISpacePrivate::drts-context
+            IML::Client
+            Boost::filesystem
+            Boost::iostreams
+            Boost::serialization
+            Boost::system
+            Boost::thread
+)
+
+add_library (GPISpace-execution INTERFACE)
+add_library (GPISpace::execution ALIAS GPISpace-execution)
+target_link_libraries (GPISpace-execution
+  INTERFACE GPISpace::header-only
+            GPISpacePrivate::gspc
+            IML::Client
+            GPISpacePrivate::rif_execution
+            GPISpacePrivate::drts-context
+            Boost::coroutine
+            Boost::date_time
+            Boost::filesystem
+            Boost::program_options
+            Boost::serialization
+            Boost::thread
+)
+
+add_executable (GPISpace::pnetc IMPORTED)
+set_target_properties (GPISpace::pnetc PROPERTIES
+  IMPORTED_LOCATION "${GSPC_pnetc_BINARY}"
+)
+
+
+################################################################################
+# deployment helpers                                                           #
+################################################################################
+
+# There are multiple ways to deploy an application that is using
+# GPISpace. Not all strategies are available depending on the GPISpace
+# configuration flags.
+#
+# - Require there to be an GPISpace installation that exists at the
+#   same position as when the application was configured, i.e. don't
+#   explicitly deploy GPISpace within the application at all.
+#
+# - "LocationIndependent": Bundle GPISpace into the application
+#   installation, but require all dependencies of GPISpace itself to
+#   still be available where they have been at GPISpace configure
+#   time.
+#
+# - "LocationAndHostIndependent": Bundle GPISpace into the application
+#   installation so that all dependencies of GPISpace are included as
+#   well, creating a fully location and host(*) independent
+#   application installation directory.
+#
+# The application's targets need to point to the GPISpace libraries
+# depending on deployment strategy, so calls to
+# `GPISpace_deploy_$strategy_add_rpath()` are required for all targets
+# using GPISpace.
+#
+# In addition to the dependency properties, GPISpace can also be
+# deployed in separate components, to reduce the GPISpace deployment
+# size. If no component is given, all are deployed. Most applications
+# only need to bundle the "runtime" and "monitoring" component.
+#
+# - "runtime": The libraries and binaries to run and interface with
+#   GPISpace and to execute workflows. This implies the IML components
+#   "runtime" and "bootstrap_exe".
+#
+# - "monitoring": Tools to monitor a running GPISpace runtime system.
+#
+# - "devel": All headers, libraries and metadata, i.e. the full
+#   installation. This is only required if the user of the application
+#   calling this function needs to use the GPISpace API, not if the
+#   application itself is using it! Implies all IML components.
+#
+# As GPISpace itself depends on IML to provide virtual memory
+# functionality, IML will also be deployed together with GPISpace. IML
+# components can also be requested additionally to the implicitly
+# added ones, e.g. to only provide a runtime GPISpace but allow end
+# users to develop for the virtual memory.
+#
+# *) Host independence is non-trivial and may still require the same
+#    distribution used on the host building the application/GPISpace.
+
+function (GPISpace_deploy_LocationAndHostIndependentBundle)
+  if (@INSTALL_DO_NOT_BUNDLE@)
+    message (FATAL_ERROR "The GPI-Space installation '${GSPC_HOME}' is not \
+location and host independent and can't be bundled.")
+  endif()
+
+  set (options)
+  set (one_value_options DESTINATION)
+  set (multi_value_options COMPONENTS IML_COMPONENTS)
+  set (required_options DESTINATION)
+  _GPISpace_parse_arguments (ARG "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _GPISpace_deploy_destination_set()
+
+  if (ARG_COMPONENTS AND NOT "devel" IN_LIST ARG_COMPONENTS)
+    _GPISpace_deploy_make_parts_list()
+    _GPISpace_deploy_make_bundled_libraries_list()
+    _GPISpace_deploy_do_installs_individual()
+
+    IML_deploy_LocationAndHostIndependentBundle (DESTINATION ${ARG_DESTINATION}
+      COMPONENTS ${ARG_IML_COMPONENTS}
+    )
+  else()
+    _GPISpace_deploy_do_installs_whole()
+
+    IML_deploy_LocationAndHostIndependentBundle (DESTINATION ${ARG_DESTINATION})
+  endif()
+endfunction()
+
+# Set RPATH of \a TARGET which is installed to \a INSTALL_DIRECTORY to
+# include the bundled GPI-Space.
+# \note Any target using GPI-Space with a bundle_GPISpace()-bundled
+# GPI-Space installation (rather than pointing to an external one)
+# needs to set up RPATH to point into that bundle.
+# \note The \a INSTALL_DIRECTORY shall be the *relative* path of the
+# target in the installation, i.e. if installing the target Target to
+# "lib/libTarget.so", TARGET shall be "Target" and INSTALL_DIRECTORY
+# shall be "lib".
+function (GPISpace_deploy_LocationAndHostIndependentBundle_add_rpath)
+  set (options)
+  set (one_value_options TARGET INSTALL_DIRECTORY)
+  set (multi_value_options)
+  set (required_options TARGET INSTALL_DIRECTORY)
+  _GPISpace_parse_arguments (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _GPISpace_deploy_destination_get ("LocationAndHostIndependentBundle"
+    "LocationAndHostIndependentBundle_add_rpath")
+
+  string (REGEX REPLACE "[^/]+" ".." _rpath_mid "${_arg_INSTALL_DIRECTORY}")
+  set (_rpath_prefix "\$ORIGIN/${_rpath_mid}/${_gpispace_bundle_destination}")
+
+  get_property (_rpath TARGET ${_arg_TARGET} PROPERTY INSTALL_RPATH)
+
+  list (APPEND _rpath "${_rpath_prefix}/lib")
+  list (APPEND _rpath "${_rpath_prefix}/libexec/bundle/lib")
+
+  set_property (TARGET ${_arg_TARGET} PROPERTY INSTALL_RPATH ${_rpath})
+
+  IML_deploy_LocationAndHostIndependentBundle_add_rpath (TARGET "${_arg_TARGET}"
+    INSTALL_DIRECTORY "${_arg_INSTALL_DIRECTORY}"
+  )
+endfunction()
+
+function (bundle_GPISpace)
+  GPISpace_deploy_LocationIndependentBundle (${ARGV})
+endfunction()
+function (bundle_GPISpace_add_rpath)
+  GPISpace_deploy_LocationIndependentBundle_add_rpath (${ARGV})
+endfunction()
+
+function (GPISpace_deploy_LocationIndependentBundle)
+  set (options)
+  set (one_value_options DESTINATION)
+  set (multi_value_options COMPONENTS IML_COMPONENTS)
+  set (required_options DESTINATION)
+  _GPISpace_parse_arguments (ARG "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _GPISpace_deploy_destination_set()
+
+  if (ARG_COMPONENTS AND NOT "devel" IN_LIST ARG_COMPONENTS)
+    _GPISpace_deploy_make_parts_list()
+    if (NOT @INSTALL_DO_NOT_BUNDLE@)
+      _GPISpace_deploy_make_bundled_libraries_list()
+    endif()
+    _GPISpace_deploy_do_installs_individual()
+
+    IML_deploy_LocationIndependentBundle (DESTINATION ${ARG_DESTINATION}
+      COMPONENTS ${ARG_IML_COMPONENTS}
+    )
+  else()
+    _GPISpace_deploy_do_installs_whole()
+
+    IML_deploy_LocationIndependentBundle (DESTINATION ${ARG_DESTINATION})
+  endif()
+endfunction()
+
+# Set RPATH of \a TARGET which is installed to \a INSTALL_DIRECTORY to
+# include the bundled GPI-Space.
+# \note Any target using GPI-Space with a bundle_GPISpace()-bundled
+# GPI-Space installation (rather than pointing to an external one)
+# needs to set up RPATH to point into that bundle.
+# \note The \a INSTALL_DIRECTORY shall be the *relative* path of the
+# target in the installation, i.e. if installing the target Blorb to
+# "lib/libBlorb.so", TARGET shall be "Blorb" and INSTALL_DIRECTORY
+# shall be "lib".
+function (GPISpace_deploy_LocationIndependentBundle_add_rpath)
+  set (options)
+  set (one_value_options TARGET INSTALL_DIRECTORY)
+  set (multi_value_options)
+  set (required_options TARGET INSTALL_DIRECTORY)
+  _GPISpace_parse_arguments (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+
+  _GPISpace_deploy_destination_get ("LocationIndependentBundle"
+    "LocationIndependentBundle_add_rpath")
+
+  string (REGEX REPLACE "[^/]+" ".." _rpath_mid "${_arg_INSTALL_DIRECTORY}")
+  set (_rpath_prefix "\$ORIGIN/${_rpath_mid}/${_gpispace_bundle_destination}")
+
+  get_property (_rpath TARGET ${_arg_TARGET} PROPERTY INSTALL_RPATH)
+
+  list (APPEND _rpath "${_rpath_prefix}/lib")
+  if (NOT @INSTALL_DO_NOT_BUNDLE@)
+    list (APPEND _rpath "${_rpath_prefix}/libexec/bundle/lib")
+  endif()
+
+  set_property (TARGET ${_arg_TARGET} PROPERTY INSTALL_RPATH ${_rpath})
+
+  IML_deploy_LocationIndependentBundle_add_rpath (TARGET "${_arg_TARGET}"
+    INSTALL_DIRECTORY "${_arg_INSTALL_DIRECTORY}"
+  )
+endfunction()
+
+macro (_GPISpace_deploy_destination_set)
+  get_property (_had_bundle_before GLOBAL PROPERTY GPISpace_deploy_destination SET)
+  if (_had_bundle_before)
+    message (FATAL_ERROR "It is not supported to call GPISpace_deploy_*() twice.")
+  endif()
+  set_property (GLOBAL PROPERTY GPISpace_deploy_destination "${ARG_DESTINATION}")
+endmacro()
+
+macro (_GPISpace_deploy_destination_get _caller _prereq)
+  get_property (_had_bundle_before GLOBAL PROPERTY GPISpace_deploy_destination SET)
+  if (NOT _had_bundle_before)
+    message (FATAL_ERROR "GPISpace_deploy_${_prereq}() needs to be called before \
+using GPISpace_deploy_${_caller}()."
+    )
+  endif()
+  get_property (_gpispace_bundle_destination GLOBAL PROPERTY GPISpace_deploy_destination)
+endmacro()
+
+macro (_GPISpace_deploy_make_parts_list)
+  set (_parts)
+
+  foreach (_component ${ARG_COMPONENTS})
+    if ("${_component}" STREQUAL "runtime")
+      list (APPEND _parts "bin/gspc-bootstrap-rifd"
+                          "bin/gspc-rifd"
+                          "bin/gspc-teardown-rifd"
+                          "bin/iml-bootstrap-rifd"
+                          "bin/iml-teardown-rifd"
+                          "lib/libIML-Client.so"
+                          "lib/libdrts-context.so"
+                          "lib/libgspc.so"
+                          "lib/libwe-dev.so"
+                          "libexec/gspc/agent"
+                          "libexec/gspc/drts-kernel"
+                          "libexec/gspc/gspc-logging-demultiplexer.exe"
+                          "libexec/iml/iml-gpi-server"
+                          "libexec/iml/iml-rifd"
+                          "libexec/iml/libIMLPrivate-Installation.so"
+      )
+      list (APPEND ARG_IML_COMPONENTS "runtime")
+      list (APPEND ARG_IML_COMPONENTS "bootstrap_exe")
+    elseif ("${_component}" STREQUAL "monitoring")
+      list (APPEND _parts "bin/gspc-monitor")
+    else()
+      message (FATAL_ERROR "unknown GPISpace component ${_component}")
+    endif()
+  endforeach()
+endmacro()
+
+macro (_GPISpace_deploy_make_bundled_libraries_list)
+  set (_bundled_libraries "")
+
+  foreach (_part ${_parts})
+    get_filename_component (_name "${_part}" NAME)
+
+    string (REGEX REPLACE "^lib(.*)\\.so$" "\\1" _name "${_name}")
+
+    file (READ "${GSPC_HOME}/libexec/bundle/info/${_name}" _info)
+    string (REGEX REPLACE ";" "\\\\;" _info "${_info}")
+    string (REGEX REPLACE "\n" ";" _info "${_info}")
+    foreach (_bundled ${_info})
+      list (APPEND _bundled_libraries "${GSPC_HOME}/${_bundled}")
+    endforeach()
+  endforeach()
+
+  list (REMOVE_DUPLICATES _bundled_libraries)
+endmacro()
+
+macro (_GPISpace_deploy_do_installs_individual)
+  foreach (_part ${_parts})
+    get_filename_component (_directory "${_part}" DIRECTORY)
+
+    install (PROGRAMS "${GSPC_HOME}/${_part}"
+      DESTINATION "${ARG_DESTINATION}/${_directory}"
+    )
+  endforeach()
+
+  install (PROGRAMS ${_bundled_libraries}
+    DESTINATION "${ARG_DESTINATION}/libexec/bundle/lib"
+  )
+  install (FILES "${GSPC_HOME}/version"
+    DESTINATION "${ARG_DESTINATION}"
+  )
+endmacro()
+
+macro (_GPISpace_deploy_do_installs_whole)
+  install (DIRECTORY "${GSPC_HOME}/"
+    DESTINATION "${ARG_DESTINATION}"
+    USE_SOURCE_PERMISSIONS
+  )
+endmacro()
+
+define_property (GLOBAL PROPERTY GPISpace_deploy_destination
+  BRIEF_DOCS "Path of bundled GPISpace"
+  FULL_DOCS "The path specified as DESTINATION in an bundle_GPISpace() call."
+)
+
+macro (_GPISpace_parse_arguments _prefix _options _one_value_options _multi_value_options _required_options)
+  cmake_parse_arguments ("${_prefix}" "${_options}" "${_one_value_options}" "${_multi_value_options}" ${ARGN})
+
+  foreach (required ${_required_options})
+    if (NOT ${_prefix}_${required})
+      message (FATAL_ERROR "required argument ${required} missing")
+    endif()
+  endforeach()
+
+  if (${_prefix}_UNPARSED_ARGUMENTS)
+    list (LENGTH ${_prefix}_UNPARSED_ARGUMENTS _unparsed_length)
+    if (NOT _unparsed_length EQUAL 0)
+      message (FATAL_ERROR "unknown arguments: ${${_prefix}_UNPARSED_ARGUMENTS}")
+    endif()
+  endif()
+endmacro()
+
+################################################################################
+
+# - actually support components (monitoring, sdk)
+check_required_components (GPISpace)

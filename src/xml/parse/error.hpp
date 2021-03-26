@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -613,7 +613,7 @@ namespace xml
         memory_buffer_without_size ( std::string const&
                                    , util::position_type const&
                                    );
-        virtual ~memory_buffer_without_size() throw() = default;
+        virtual ~memory_buffer_without_size() noexcept override = default;
 
       private:
         std::string const _name;
@@ -624,14 +624,14 @@ namespace xml
       {
       public:
         memory_buffer_for_non_module (type::function_type const&);
-        ~memory_buffer_for_non_module() throw() = default;
+        ~memory_buffer_for_non_module() noexcept override = default;
       };
 
       class memory_transfer_for_non_module : public generic
       {
       public:
         memory_transfer_for_non_module (type::function_type const&);
-        ~memory_transfer_for_non_module() throw() = default;
+        ~memory_transfer_for_non_module() noexcept override = default;
       };
 
       class memory_buffer_with_same_name_as_port : public generic
@@ -639,7 +639,7 @@ namespace xml
       public:
         memory_buffer_with_same_name_as_port
           (type::memory_buffer_type const&, type::port_type const&);
-        virtual ~memory_buffer_with_same_name_as_port() throw() = default;
+        virtual ~memory_buffer_with_same_name_as_port() noexcept override = default;
       };
 
       // ******************************************************************* //

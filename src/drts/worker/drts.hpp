@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,15 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <drts/private/scoped_allocation.hpp>
+#include <iml/SharedMemoryAllocation.hpp>
+#include <iml/Client.hpp>
 
-#include <fhg/util/thread/bounded_queue.hpp>
 #include <fhg/util/thread/queue.hpp>
 
 #include <fhgcom/peer.hpp>
 #include <logging/stream_emitter.hpp>
-
-#include <gpi-space/pc/client/api.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
 
@@ -103,8 +101,8 @@ public:
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
     , unsigned short comm_port
-    , gpi::pc::client::api_t /*const*/* virtual_memory_socket
-    , gspc::scoped_allocation /*const*/* shared_memory
+    , iml::Client /*const*/* virtual_memory_socket
+    , iml::SharedMemoryAllocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -112,7 +110,7 @@ public:
     , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     );
-  ~DRTSImpl();
+  ~DRTSImpl() override;
 
   virtual void handle_worker_registration_response
     (fhg::com::p2p::address_t const& source, const sdpa::events::worker_registration_response *e) override;
@@ -124,8 +122,6 @@ public:
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e) override;
   virtual void handleJobFinishedAckEvent
     (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e) override;
-  virtual void handleDiscoverJobStatesEvent
-    (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent*) override;
 
 private:
   void event_thread();
@@ -150,8 +146,8 @@ private:
   fhg::logging::stream_emitter& _log_emitter;
   void emit_gantt (wfe_task_t const&, sdpa::daemon::NotificationEvent::state_t);
 
-  gpi::pc::client::api_t /*const*/* _virtual_memory_api;
-  gspc::scoped_allocation /*const*/* _shared_memory;
+  iml::Client /*const*/* _virtual_memory_api;
+  iml::SharedMemoryAllocation /*const*/* _shared_memory;
 
   //! \todo Two sets for connected and unconnected masters?
   masters_t m_masters;

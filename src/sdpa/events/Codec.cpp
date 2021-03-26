@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,15 +23,12 @@
 #include <sdpa/events/CapabilitiesLostEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFailedAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedAckEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/Serialization.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
@@ -63,8 +60,6 @@ namespace sdpa
         boost::serialization::void_cast_register<TYPE, BASE>();         \
         ar.template register_type<TYPE>()
 
-        REGISTER (DiscoverJobStatesEvent, JobEvent);
-        REGISTER (DiscoverJobStatesReplyEvent, MgmtEvent);
         REGISTER (CancelJobAckEvent, JobEvent);
         REGISTER (CancelJobEvent, JobEvent);
         REGISTER (CapabilitiesGainedEvent, MgmtEvent);
@@ -77,7 +72,6 @@ namespace sdpa
         REGISTER (JobFinishedAckEvent, JobEvent);
         REGISTER (JobFinishedEvent, JobEvent);
         REGISTER (JobStatusReplyEvent, JobEvent);
-        REGISTER (QueryJobStatusEvent, JobEvent);
         REGISTER (SubmitJobAckEvent, JobEvent);
         REGISTER (SubmitJobEvent, SDPAEvent);
         REGISTER (SubscribeAckEvent, MgmtEvent);

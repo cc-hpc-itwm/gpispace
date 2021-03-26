@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,11 +14,11 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <vmem/netdev_id.hpp>
-
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
+
+#include <iml/gaspi/NetdevID.hpp>
 
 namespace gspc
 {
@@ -70,10 +70,13 @@ namespace gspc
   //! \todo Let this be a `map<string, string>` for UX?
   ACCESS (worker_env_set_variable, std::vector<std::string>);
 
+  GET (remote_iml_vmem_socket, boost::filesystem::path);
+  REQUIRE (remote_iml_vmem_socket, boost::filesystem::path);
+
   ACCESS (virtual_memory_socket, boost::filesystem::path);
   ACCESS (virtual_memory_port, unsigned short);
   ACCESS (virtual_memory_startup_timeout, unsigned long);
-  ACCESS (virtual_memory_netdev_id, fhg::vmem::netdev_id);
+  ACCESS (virtual_memory_netdev_id, iml::gaspi::NetdevID);
 
   ACCESS (rif_entry_points_file, boost::filesystem::path);
   ACCESS (rif_port, unsigned short);

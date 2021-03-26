@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include <boost/range/adaptor/map.hpp>
 
+#include <ios>
 #include <stdexcept>
 
 #include <stdio.h>
@@ -130,8 +131,8 @@ namespace fhg
         std::ostringstream log_message;
         log_message << "received signal "
                     << sig_num << " (" << strsignal(sig_num) << "),"
-                    << " address is " << (void*)info->si_addr
-                    << " from " << (void*)caller_address;
+                    << " address is " << static_cast<void*> (info->si_addr)
+                    << " from " << std::hex << caller_address;
 
         logger.emit ( fhg::util::make_backtrace (log_message.str())
                     , fhg::logging::legacy::category_level_error

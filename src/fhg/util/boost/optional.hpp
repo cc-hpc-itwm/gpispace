@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -47,18 +47,6 @@ namespace fhg
         }
 
         return optional.get();
-      }
-
-      template<typename Fun, typename... Args>
-        boost::optional<typename std::result_of<Fun(Args...)>::type>
-          exception_is_none (Fun&& fun, Args&&... args)
-      try
-      {
-        return fun (std::forward<Args> (args)...);
-      }
-      catch (...)
-      {
-        return boost::none;
       }
     }
   }

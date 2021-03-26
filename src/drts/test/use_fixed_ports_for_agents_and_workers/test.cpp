@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,7 +20,10 @@
 
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
+#include <drts/private/option.hpp>
 #include <drts/scoped_rifd.hpp>
+
+#include <drts/private/option.hpp>
 
 #include <test/hopefully_free_port.hpp>
 #include <test/make.hpp>

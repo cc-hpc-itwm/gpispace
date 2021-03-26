@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -166,8 +166,29 @@ namespace fhg
           _default_value_string.emplace();
         }
 
+        inline HelpException::HelpException (const std::string& options_description)
+          : std::runtime_error (options_description)
+        {}
+
+        inline VersionException::VersionException (const std::string& version)
+          : std::runtime_error (version)
+        {}
+
         inline options::options (std::string const& header)
           : _options_description (header)
+        {}
+
+        inline options::options
+          (std::string const& header, unsigned line_length)
+          : _options_description (header, line_length)
+        {}
+
+        inline options::options
+          ( std::string const& header
+          , unsigned line_length
+          , unsigned min_description_length
+          )
+          : _options_description (header, line_length, min_description_length)
         {}
 
         template<typename... Args>
@@ -205,13 +226,13 @@ namespace fhg
 
           if (vm.count ("help"))
           {
-            throw std::runtime_error
+            throw HelpException
               (::boost::lexical_cast<std::string> (options_description));
           }
 
           if (vm.count ("version"))
           {
-            throw std::runtime_error (_version.get());
+            throw VersionException (_version.get());
           }
 
           vm.notify();

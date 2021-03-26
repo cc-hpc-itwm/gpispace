@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 #include <util-generic/join.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
-const int WE_GUARD_SYMBOL = 0xDEADBEEF;
+const unsigned int WE_GUARD_SYMBOL = 0xDEADBEEF;
 
 namespace we
 {

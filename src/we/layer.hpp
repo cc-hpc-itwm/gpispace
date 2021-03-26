@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include <we/workflow_response.hpp>
 #include <we/eureka_response.hpp>
 
-#include <sdpa/discovery_info.hpp>
 #include <sdpa/types.hpp>
 
 #include <boost/bimap/bimap.hpp>
@@ -63,10 +62,6 @@ namespace we
             , std::function<void (id_type, std::string reason)> rts_failed
               // reply to cancel (parent) -> top level
             , std::function<void (id_type)> rts_canceled
-              // reply to discover (parent) -> child jobs
-            , std::function<void (id_type discover_id, id_type)> rts_discover
-              // result of discover (parent) -> top level
-            , std::function<void (id_type discover_id, sdpa::discovery_info_t)> rts_discovered
               // result of put_token (parent) -> top level
             , std::function<void (std::string put_token_id, boost::optional<std::exception_ptr>)> rts_token_put
               //result of workflow_response (parent) -> top level
@@ -91,13 +86,6 @@ namespace we
       // shall not be called from within rts_cancel!
       void canceled (id_type);
 
-      // initial from exec_layer -> top level, unique discover_id
-      void discover (id_type discover_id, id_type);
-
-      // reply to _rts_discover (after top level discovered/failure) -> childs only
-      // shall not be called from within rts_discover!
-      void discovered (id_type discover_id, sdpa::discovery_info_t);
-
       // initial from exec_layer -> top level, unique put_token_id
       void put_token ( id_type
                      , std::string put_token_id
@@ -118,8 +106,6 @@ namespace we
       std::function<void (id_type, type::activity_t)> _rts_finished;
       std::function<void (id_type, std::string)> _rts_failed;
       std::function<void (id_type)> _rts_canceled;
-      std::function<void (id_type, id_type)> _rts_discover;
-      std::function<void (id_type, sdpa::discovery_info_t)> _rts_discovered;
       std::function<void (std::string, boost::optional<std::exception_ptr>)> _rts_token_put;
       std::function<void (std::string workflow_response_id, boost::variant<std::exception_ptr, pnet::type::value::value_type>)> _rts_workflow_response;
       std::function<id_type()> _rts_id_generator;
@@ -258,11 +244,6 @@ namespace we
 
       std::unordered_map<id_type, std::function<void()>>
         _finalize_job_cancellation;
-
-      mutable std::mutex _discover_state_mutex;
-      std::unordered_map
-        < id_type, std::pair<std::size_t, sdpa::discovery_info_t >
-        > _discover_state;
 
       struct locked_parent_child_relation_type
       {

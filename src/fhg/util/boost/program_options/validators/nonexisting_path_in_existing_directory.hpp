@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -41,8 +41,8 @@ namespace fhg
           {}
 
           nonexisting_path_in_existing_directory
-              (boost::filesystem::path const& path)
-            : nonexisting_path_in_existing_directory (path.string())
+              (boost::filesystem::path const& p)
+            : nonexisting_path_in_existing_directory (p.string())
           {}
 
         private:

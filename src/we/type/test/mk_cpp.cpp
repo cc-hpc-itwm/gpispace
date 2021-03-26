@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -125,6 +125,11 @@ try
       i << "#include <" << fheader << ">" << std::endl;
     }
 
+    if (fheader_op.empty())
+    {
+      throw std::invalid_argument ("mk_cpp: -I requires -O");
+    }
+    i << "#include \"" << fheader_op << "\"\n";
     i << impl (p) << std::endl;
     i << impl (l) << std::endl;
   }

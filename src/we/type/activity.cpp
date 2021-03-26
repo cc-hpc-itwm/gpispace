@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -23,9 +23,8 @@
 #include <fhg/assert.hpp>
 #include <fhg/util/starts_with.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-
-#include <drts/private/scoped_allocation.hpp>
+#include <iml/Client.hpp>
+#include <iml/SharedMemoryAllocation.hpp>
 
 #include <drts/worker/context.hpp>
 
@@ -52,8 +51,8 @@ namespace
   {
     wfe_exec_context
       ( we::loader::loader& loader
-      , gpi::pc::client::api_t /*const*/* virtual_memory
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , iml::Client /*const*/* virtual_memory
+      , iml::SharedMemoryAllocation /*const*/* shared_memory
       , boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       , expr::eval::context const& evaluation_context
@@ -135,8 +134,8 @@ namespace
 
   private:
     we::loader::loader& _loader;
-    gpi::pc::client::api_t /*const*/* _virtual_memory;
-    gspc::scoped_allocation /*const*/* _shared_memory;
+    iml::Client /*const*/* _virtual_memory;
+    iml::SharedMemoryAllocation /*const*/* _shared_memory;
     boost::optional<std::string> _target_implementation;
     drts::worker::context* _worker_context;
     expr::eval::context const& _evaluation_context;
@@ -431,8 +430,8 @@ namespace we
 
     void activity_t::execute
       ( we::loader::loader& loader
-      , gpi::pc::client::api_t /*const*/ * virtual_memory
-      , gspc::scoped_allocation /* const */ * shared_memory
+      , iml::Client /*const*/ * virtual_memory
+      , iml::SharedMemoryAllocation /* const */ * shared_memory
       , boost::optional<std::string> target_implementation
       , drts::worker::context* worker_context
       )
@@ -517,8 +516,26 @@ namespace we
       }
     }
 
+    namespace
+    {
+      std::list<iml::MemoryRegion> define_memory_regions
+        (std::list<std::pair<we::local::range, we::global::range>> const& transfers)
+      {
+        std::list<iml::MemoryRegion> regions;
+        for (auto const& range: transfers | boost::adaptors::map_values)
+        {
+          regions.emplace_back
+            ( iml::MemoryLocation (range.handle().name(), range.offset())
+            , range.size()
+            );
+        }
+
+        return regions;
+      }
+    }
+
     Requirements_and_preferences activity_t::requirements_and_preferences
-      (gpi::pc::client::api_t* virtual_memory_api)
+      (iml::Client* virtual_memory_api)
     {
       auto const context (evaluation_context());
 
@@ -553,9 +570,8 @@ namespace we
       return
         { requirements
         , std::move (schedule_data)
-        , [&]
+        , [&]() -> decltype (null_transfer_cost)
           {
-            //! \todo Move to gpi::pc::client::api_t
             if (!transition().module_call())
             {
               return null_transfer_cost;
@@ -579,7 +595,13 @@ namespace we
                 ("vmem transfers without vmem knowledge in agent");
             }
 
-            return virtual_memory_api->transfer_costs (vm_transfers);
+            return [ costs
+                   = virtual_memory_api->transfer_costs
+                       (define_memory_regions (vm_transfers))
+                   ] (std::string const& host)
+                   {
+                     return costs.at (host);
+                   };
           }()
         , computational_cost
         , !transition().module_call()

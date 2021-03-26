@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -221,7 +221,7 @@ namespace sdpa
       std::set<job_id_t> jobs_started;
       bool started (false);
 
-      long num_free_workers_left
+      auto num_free_workers_left
         (_worker_manager.num_free_workers());
 
       for ( auto it (_pending_jobs.begin())

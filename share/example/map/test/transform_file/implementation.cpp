@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 
 #include <boost/format.hpp>
 
+#include <cctype>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -86,7 +87,7 @@ void map_process
 
   std::transform ( mem_input, mem_input + input.second
                  , mem_output
-                 , [](char c) { return std::tolower (c); }
+                 , [](unsigned char c) { return std::tolower (c); }
                  );
 }
 

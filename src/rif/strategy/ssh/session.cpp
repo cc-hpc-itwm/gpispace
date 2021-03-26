@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -82,7 +82,7 @@ namespace libssh2
                 , LIBSSH2_CHANNEL_WINDOW_DEFAULT
                 , LIBSSH2_CHANNEL_PACKET_DEFAULT
                 , nullptr
-                , 0
+                , 0u
                 )
             )
       {}

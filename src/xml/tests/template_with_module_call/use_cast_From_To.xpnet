@@ -1,0 +1,64 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2021 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="use_cast_From_To">
+  <in name="from" type="bool" place="from"/>
+  <out name="to_int" type="int" place="to_int"/>
+  <out name="to_long" type="long" place="to_long"/>
+  <net>
+    <include-template href="cast_From_To.xpnet"/>
+    <specialize name="cast_bool_int" use="cast_From_To">
+      <type-map replace="From" with="bool"/>
+      <type-map replace="To" with="int"/>
+    </specialize>
+    <specialize name="cast_bool_long" use="cast_From_To">
+      <type-map replace="From" with="bool"/>
+      <type-map replace="To" with="long"/>
+    </specialize>
+
+    <transition name="dup">
+      <defun>
+        <in name="in" type="bool"/>
+        <out name="one" type="bool"/>
+        <out name="two" type="bool"/>
+        <expression>
+          ${one} := ${two} := ${in}
+        </expression>
+      </defun>
+      <connect-in port="in" place="from"/>
+      <connect-out port="one" place="from_1"/>
+      <connect-out port="two" place="from_2"/>
+    </transition>
+
+    <place name="from" type="bool"/>
+    <place name="from_1" type="bool"/>
+    <place name="from_2" type="bool"/>
+
+    <place name="to_int" type="int"/>
+    <place name="to_long" type="long"/>
+
+    <transition name="cast_bool_int">
+      <use name="cast_bool_int"/>
+      <connect-in port="from" place="from_1"/>
+      <connect-out port="to" place="to_int"/>
+    </transition>
+    <transition name="cast_bool_long">
+      <use name="cast_bool_long"/>
+      <connect-in port="from" place="from_2"/>
+      <connect-out port="to" place="to_long"/>
+    </transition>
+  </net>
+</defun>

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,13 +21,10 @@
 #include <sdpa/events/Codec.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
 #include <sdpa/events/JobFinishedEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
-#include <sdpa/events/QueryJobStatusEvent.hpp>
 #include <sdpa/events/SubmitJobAckEvent.hpp>
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
@@ -92,11 +89,13 @@ namespace sdpa
       }
       else if ( ec == boost::system::errc::operation_canceled
               || ec == boost::system::errc::network_down
+              || ec == boost::asio::error::eof
+              || ec == boost::asio::error::connection_reset
               )
       {
         _stopping = true;
       }
-      else
+      else if (!_stopping)
       {
         if (message.header.src != m_peer.address())
         {
@@ -218,12 +217,6 @@ namespace sdpa
         (sdpa::events::CancelJobEvent (jid));
     }
 
-    sdpa::discovery_info_t Client::discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id)
-    {
-      return send_and_wait_for_reply<sdpa::events::DiscoverJobStatesReplyEvent>
-        (sdpa::events::DiscoverJobStatesEvent (job_id, discover_id)).discover_result();
-    }
-
     void Client::put_token
       (job_id_t job_id, std::string place_name, pnet::type::value::value_type value)
     {
@@ -271,24 +264,6 @@ namespace sdpa
       }
 
       return response.get();
-    }
-
-    sdpa::status::code Client::queryJob(const job_id_t &jid)
-    {
-      job_info_t UNUSED_info;
-      return queryJob (jid, UNUSED_info);
-    }
-
-    sdpa::status::code Client::queryJob(const job_id_t &jid, job_info_t &info)
-    {
-      const sdpa::events::JobStatusReplyEvent reply
-        ( send_and_wait_for_reply<sdpa::events::JobStatusReplyEvent>
-          (sdpa::events::QueryJobStatusEvent (jid))
-        );
-
-      info.error_message = reply.error_message();
-
-      return reply.status();
     }
 
     void Client::deleteJob(const job_id_t &jid)

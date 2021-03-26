@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,8 +20,7 @@
 
 #include <logging/message.hpp>
 
-#include <ostream>
-#include <tuple>
+#include <iosfwd>
 
 namespace fhg
 {
@@ -31,16 +30,8 @@ namespace fhg
     //! namespace for lookup reasons: they are used from a boost
     //! namespace, so only an anonymous namespace in that boost
     //! namespace would be used.
-    bool operator== (message const& lhs, message const& rhs)
-    {
-      return std::tie (lhs._content, lhs._category)
-        == std::tie (rhs._content, rhs._category);
-    }
-    std::ostream& operator<< (std::ostream& os, message const& x)
-    {
-      return os << "content=" << x._content << ", "
-                << "category=" << x._category;
-    }
+    bool operator== (message const& lhs, message const& rhs);
+    std::ostream& operator<< (std::ostream& os, message const& x);
   }
 
   namespace util

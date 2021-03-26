@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-#include <stdlib.h> // abort
-
 #include <we/expr/parse/action.hpp>
 
 #include <we/expr/token/assoc.hpp>
 #include <we/expr/token/prec.hpp>
 #include <we/expr/token/prop.hpp>
 #include <we/expr/exception.hpp>
+
+#include <util-generic/unreachable.hpp>
 
 #include <iostream>
 
@@ -42,8 +42,9 @@ namespace expr
           case error2: return s << "error: missing operator";
           case error3: return s << "error: unbalanced parenthesis";
           case error4: return s << "error: invalid function argument";
-          default: abort();
           }
+
+        FHG_UTIL_UNREACHABLE();
       }
 
       //! \todo change behavior of parser here

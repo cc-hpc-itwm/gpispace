@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,8 +20,11 @@
 #include <we/loader/loader.hpp>
 #include <we/type/module_call.hpp>
 
-#include <gpi-space/pc/client/api.hpp>
-#include <drts/private/scoped_allocation.hpp>
+namespace iml
+{
+  class Client;
+  class SharedMemoryAllocation;
+}
 
 namespace we
 {
@@ -29,8 +32,8 @@ namespace we
   {
     expr::eval::context module_call
       ( we::loader::loader& loader
-      , gpi::pc::client::api_t /*const*/*
-      , gspc::scoped_allocation /*const*/*
+      , iml::Client /*const*/*
+      , iml::SharedMemoryAllocation /*const*/*
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call

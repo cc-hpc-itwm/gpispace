@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -42,7 +42,6 @@
 #include <functional>
 #include <mutex>
 #include <ostream>
-#include <stdexcept>
 #include <string>
 #include <thread>
 #include <utility>
@@ -124,8 +123,6 @@ namespace
       case Order::Connect_AsyncRecv_Send:
         os << "Connect_AsyncRecv_Send";
         break;
-      default:
-        throw std::invalid_argument ("bad order");
     }
 
     return os;

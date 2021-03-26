@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -56,6 +56,7 @@
 #include <xml/parse/util/position.hpp>
 
 #include <util-generic/join.hpp>
+#include <fhg/util/cctype.hpp>
 #include <fhg/util/read_bool.hpp>
 #include <fhg/util/boost/optional.hpp>
 
@@ -1400,7 +1401,7 @@ namespace xml
           // here R stands for the return port, F for the function
           // name and A for the list of argument ports
 
-          fhg::util::parse::position_string pos (input);
+          fhg::util::parse::position pos (input);
 
           std::string function (parse_name (pos));
           boost::optional<std::string> port_return;
@@ -1501,7 +1502,7 @@ namespace xml
               ++pos;
             }
 
-            while (!pos.end() && isspace(*pos))
+            while (!pos.end() && fhg::util::isspace (*pos))
             {
               ++pos;
             }
@@ -1589,7 +1590,7 @@ namespace xml
         boost::optional<util::position_type> pod_of_code;
         std::list<std::string> cincludes;
         std::list<std::string> ldflags;
-        if (pass_context)
+        if (pass_context.get_value_or (false))
         {
           ldflags.emplace_back ("-ldrts-context");
         }

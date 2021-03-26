@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -77,6 +77,8 @@ namespace fhg
           mark_task_scope& operator= (mark_task_scope&) = delete;
           ~mark_task_scope();
 
+          mark_task_scope (std::shared_ptr<state>);
+        private:
           std::shared_ptr<state> _state;
         };
 

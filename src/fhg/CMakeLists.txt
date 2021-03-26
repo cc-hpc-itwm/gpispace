@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -37,8 +37,8 @@ extended_add_library (NAME fhg-util
           "util/parse/position.cpp"
           "util/parse/error.cpp"
           "util/parse/require.cpp"
-          "util/parse/until.cpp"
 
+          "util/cctype.cpp"
           "util/num.cpp"
           "util/num/show.cpp"
           "util/indenter.cpp"

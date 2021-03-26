@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include <util-generic/testing/printer/optional.hpp>
 #include <util-generic/testing/random.hpp>
 
-#include <we/test/operator_equal.hpp>
 #include <we/type/activity.hpp>
 
 #include <boost/range/combine.hpp>

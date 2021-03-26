@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 #include <fhg/util/parse/require.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <iterator>
 #include <stdexcept>
 
@@ -32,10 +33,11 @@ namespace fhg
       std::string inp;
 
       std::transform ( _inp.begin(), _inp.end()
-                     , std::back_inserter (inp), tolower
+                     , std::back_inserter (inp)
+                     , [] (unsigned char c) { return std::tolower (c); }
                      );
 
-      parse::position_string pos (inp);
+      parse::position pos (inp);
 
       return parse::require::boolean (pos);
     }

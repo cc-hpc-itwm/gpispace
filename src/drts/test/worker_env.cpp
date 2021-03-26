@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -205,7 +205,7 @@ BOOST_AUTO_TEST_CASE (specifying_nothing_leads_to_empty_env)
 
 // Counts chosen by random dice roll.
 BOOST_DATA_TEST_CASE
-  (copy_variable, std::vector<int> ({2, 3, 6, 8, 11, 13}), count)
+  (copy_variable, std::vector<std::size_t> ({2, 3, 6, 8, 11, 13}), count)
 {
   std::vector<random_env_kvpair> kvs (count);
 

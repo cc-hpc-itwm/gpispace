@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -18,23 +18,13 @@
 
 #include <we/type/value/show.hpp>
 
+#include <cstddef>
 #include <iostream>
-
-namespace
-{
-  we::type::bytearray to_bytearray (std::string number)
-  {
-    size_t count;
-    void* buffer
-      ( mpz_export
-        (NULL, &count, 1, sizeof (char), 0, 0, mpz_class (number).get_mpz_t())
-      );
-    return we::type::bytearray
-      (std::string (static_cast<char*> (buffer), count));
-  }
-}
+#include <ostream>
+#include <string>
 
 int main (int argc, char** argv)
+try
 {
   if (argc != 2)
   {
@@ -43,8 +33,16 @@ int main (int argc, char** argv)
   }
 
   std::cout << pnet::type::value::show
-                 (pnet::type::value::value_type (to_bytearray (argv[1])))
+                 ( pnet::type::value::value_type
+                     (miller_rabin::generate_user_data (argv[1]))
+                 )
             << std::endl;
 
   return 0;
+}
+catch (std::exception const& e)
+{
+  std::cout << "EXCEPTION: " << e.what() << std::endl;
+
+  return -1;
 }

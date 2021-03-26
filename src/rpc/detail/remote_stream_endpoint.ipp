@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -159,9 +159,9 @@ namespace fhg
 
         _async_task_termination_guard.spawn_task
           ( _io_service
-          , [this] (boost::asio::yield_context yield)
+          , [this] (boost::asio::yield_context yield_)
             {
-              read_responses (yield);
+              read_responses (yield_);
             }
           );
       }
@@ -200,7 +200,7 @@ namespace fhg
             (boost::asio::yield_context yield, Lockable&... lockable)
         {
 #define CALL(fun_)                                              \
-          std::initializer_list<int> {(lockable.fun_(), 0)...};
+          std::initializer_list<int> {(lockable.fun_(), 0)...}
           return {yield, [&] { CALL (unlock); }, [&] { CALL (lock); }};
 #undef CALL
         }

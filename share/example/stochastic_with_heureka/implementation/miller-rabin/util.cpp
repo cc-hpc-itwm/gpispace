@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -74,5 +74,24 @@ namespace miller_rabin
     }
 
     return true;
+  }
+
+  we::type::bytearray generate_user_data (std::string const& number)
+  {
+    std::size_t count;
+    void* buffer
+      ( mpz_export
+        (NULL, &count, 1, sizeof (char), 0, 0, mpz_class (number).get_mpz_t())
+      );
+    return we::type::bytearray
+      (std::string (static_cast<char*> (buffer), count));
+  }
+
+  void show_result (std::ostream& os, we::type::bytearray const& output)
+  {
+    bool result;
+    output.copy (&result);
+
+    os << "result = " << (result ? "composite" : "probably prime") << "\n";
   }
 }

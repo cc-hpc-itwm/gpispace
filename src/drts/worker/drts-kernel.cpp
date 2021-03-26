@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
 #include <drts/worker/drts.hpp>
 
 #include <fhg/util/boost/program_options/validators/existing_path.hpp>
-#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/getenv.hpp>
 #include <util-generic/print_exception.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
@@ -199,26 +198,23 @@ int main(int ac, char **av)
     fhg::util::scoped_signal_handler const SIGINT_handler
       (signal_handlers, SIGINT, std::bind (request_stop));
 
-    std::unique_ptr<gpi::pc::client::api_t> const virtual_memory_api
+    std::unique_ptr<iml::Client> const virtual_memory_api
       ( vm.count (option_name::virtual_memory_socket)
-      ? fhg::util::cxx14::make_unique<gpi::pc::client::api_t>
-          ( log_emitter
-          , (static_cast<boost::filesystem::path>
+      ? std::make_unique<iml::Client>
+          ( static_cast<boost::filesystem::path>
               ( vm.at (option_name::virtual_memory_socket)
               .as<fhg::util::boost::program_options::existing_path>()
               )
-            ).string()
           )
       : nullptr
       );
-    std::unique_ptr<gspc::scoped_allocation> const shared_memory
+    std::unique_ptr<iml::SharedMemoryAllocation> const shared_memory
       ( ( virtual_memory_api
         && vm.count (option_name::shared_memory_size)
         && vm.at (option_name::shared_memory_size).as<unsigned long>() > 0
         )
-      ? fhg::util::cxx14::make_unique<gspc::scoped_allocation>
-        ( virtual_memory_api
-        , kernel_name + "-shared_memory"
+      ? std::make_unique<iml::SharedMemoryAllocation>
+        ( *virtual_memory_api
         , vm.at (option_name::shared_memory_size).as<unsigned long>()
         )
       : nullptr
@@ -264,7 +260,7 @@ int main(int ac, char **av)
 
     DRTSImpl const plugin
       ( request_stop
-      , fhg::util::cxx14::make_unique<boost::asio::io_service>()
+      , std::make_unique<boost::asio::io_service>()
       , kernel_name
       , comm_port
       , virtual_memory_api.get()

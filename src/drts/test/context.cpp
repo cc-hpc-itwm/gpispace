@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -45,7 +45,7 @@ namespace
       void write (T&& x) const
     {
       BOOST_REQUIRE_EQUAL
-        (sizeof (x), fhg::util::syscall::write (_fds.write, &x, sizeof (x)));
+        (sizeof (x), fhg::util::syscall::write (_fds.fd.write, &x, sizeof (x)));
     }
     template<typename T>
       T read() const
@@ -53,20 +53,21 @@ namespace
       T x;
 
       BOOST_REQUIRE_EQUAL
-        (sizeof (x), fhg::util::syscall::read (_fds.read, &x, sizeof (x)));
+        (sizeof (x), fhg::util::syscall::read (_fds.fd.read, &x, sizeof (x)));
 
       return x;
     }
 
   private:
+    struct fds
+    {
+      int read;
+      int write;
+    };
     union
     {
       int both[2];
-      struct
-      {
-        int read;
-        int write;
-      };
+      struct fds fd;
     } _fds;
   };
 

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -201,7 +201,7 @@ struct fixture_scheduler_and_requirements_and_preferences
 
   std::map<sdpa::job_id_t, Requirements_and_preferences> _requirements_and_preferences;
 
-  unsigned long count_assigned_jobs
+  long count_assigned_jobs
     ( std::map<sdpa::job_id_t, std::set<sdpa::worker_id_t>> assignment
     , const sdpa::worker_id_t& worker_id
     )
@@ -478,13 +478,13 @@ BOOST_FIXTURE_TEST_CASE
   _scheduler.assignJobsToWorkers();
   auto const assignment (get_current_assignment());
 
-  unsigned long const assigned_to_worker_0
+  auto const assigned_to_worker_0
     (count_assigned_jobs (assignment, "worker_0"));
-  unsigned long const assigned_to_worker_1
+  auto const assigned_to_worker_1
     (count_assigned_jobs (assignment, "worker_1"));
 
-  BOOST_REQUIRE (  (assigned_to_worker_0 <= assigned_to_worker_1 + 1UL)
-                && (assigned_to_worker_1 <= assigned_to_worker_0 + 1UL)
+  BOOST_REQUIRE (  (assigned_to_worker_0 <= assigned_to_worker_1 + 1L)
+                && (assigned_to_worker_1 <= assigned_to_worker_0 + 1L)
                 );
 }
 
@@ -1110,7 +1110,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
                , _worker_manager
                );
 
-  for (int i=0; i<n_workers;i++)
+  for (decltype (worker_ids)::size_type i=0; i<n_workers;i++)
   {
     _worker_manager.addWorker (worker_ids[i], {}, random_ulong(), false, host_ids[i], fhg::util::testing::random_string());
   }
@@ -1136,7 +1136,7 @@ BOOST_AUTO_TEST_CASE (scheduling_bunch_of_jobs_with_preassignment_and_load_balan
       : assignment | boost::adaptors::map_values
       )
   {
-    for (int k=0; k<n_workers; ++k)
+    for (decltype (worker_ids)::size_type k=0; k<n_workers; ++k)
     {
       sum_costs_assigned_jobs[k] += job_assigned_workers.count (worker_ids[k])
                                   * (transfer_costs[k] + _computational_cost);

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -122,9 +122,9 @@ namespace share_example_stream_test
       . add<test::option::gen::include> (test::source_directory (vm))
       );
 
-    gspc::stream::number_of_slots const num_slots
+    auto const num_slots
       (vm.at (option_num_slots).as<validators::positive_integral<unsigned long>>());
-    gspc::stream::size_of_slot const size_slot
+    auto const size_slot
       (vm.at (option_size_slot).as<validators::positive_integral<unsigned long>>());
 
     unsigned long const size (num_slots * (size_slot + 1));

@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,14 +16,21 @@
 
 #pragma once
 
-#include <drts/drts.fwd.hpp>
-#include <drts/pimpl.hpp>
-#include <drts/virtual_memory.fwd.hpp>
+#include <drts/stream.fwd.hpp>
 
 #include <we/type/value.hpp>
 
+#include <iml/Client.hpp>
+#include <iml/MemoryOffset.hpp>
+#include <iml/MemoryRegion.hpp>
+#include <iml/MemorySize.hpp>
+#include <iml/SegmentAndAllocation.hpp>
+#include <iml/SharedMemoryAllocation.hpp>
+
+#include <cstddef>
 #include <functional>
 #include <string>
+#include <unordered_set>
 #include <utility>
 
 namespace gspc
@@ -31,56 +38,39 @@ namespace gspc
   class stream
   {
   public:
-    struct size_of_slot
-    {
-      explicit size_of_slot (std::size_t size)
-        : _ (size)
-        {}
-
-      operator std::size_t const& () const
-      {
-        return _;
-      }
-    private:
-      const std::size_t _;
-    };
-    struct number_of_slots
-    {
-      explicit number_of_slots (std::size_t count)
-        : _ (count)
-      {}
-
-      operator std::size_t const& () const
-      {
-        return _;
-      }
-    private:
-      const std::size_t _;
-    };
-
-  private:
-    friend class scoped_runtime_system;
-
-    stream ( scoped_runtime_system const&
-           , std::string const& name
-           , gspc::vmem_allocation const& buffer
-           , size_of_slot const&
-           , std::function<void (pnet::type::value::value_type const&)>
-               on_slot_filled
-           );
-  public:
     void write (std::string const&);
 
     static void mark_free ( const char old_flag_value
                           , std::pair<void*, unsigned long> ptr_to_flag
                           );
 
+    stream() = delete;
     stream (stream const&) = delete;
+    stream (stream&&) = default;
     stream& operator= (stream const&) = delete;
-
-    stream (stream&&);
     stream& operator= (stream&&) = delete;
+    ~stream() = default;
 
-    PIMPL (stream);
+  private:
+    friend class scoped_runtime_system;
+    stream ( iml::Client& client
+           , iml::SegmentAndAllocation const& buffer
+           , iml::MemorySize size_of_slot
+           , std::function<void (::pnet::type::value::value_type const&)> on_slot_filled
+           );
+
+    iml::Client& _virtual_memory;
+    std::function<void (::pnet::type::value::value_type const&)> _on_slot_filled;
+    iml::SegmentAndAllocation const& _buffer;
+    iml::MemorySize const _size_of_slot;
+    std::size_t const _number_of_slots;
+    iml::MemoryOffset const _offset_to_meta_data;
+
+    iml::SharedMemoryAllocation _flags;
+    iml::SharedMemoryAllocation _update;
+    iml::SharedMemoryAllocation _data;
+
+    std::unordered_set<unsigned long> _free_slots;
+    std::size_t _sequence_number;
   };
 }

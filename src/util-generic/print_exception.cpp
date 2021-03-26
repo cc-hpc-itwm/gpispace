@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -70,10 +70,10 @@ namespace fhg
         {
           std::rethrow_if_nested (e);
         }
-        catch (std::exception const& e)
+        catch (std::exception const& catched)
         {
           print_exception
-            (os, e, static_separator, maybe_inc (indentation), false);
+            (os, catched, static_separator, maybe_inc (indentation), false);
         }
         catch (...)
         {
@@ -93,9 +93,10 @@ namespace fhg
         {
           std::rethrow_exception (e);
         }
-        catch (std::exception const& e)
+        catch (std::exception const& catched)
         {
-          print_exception (os, e, static_separator, indentation, is_first);
+          print_exception
+            (os, catched, static_separator, indentation, is_first);
         }
         catch (...)
         {

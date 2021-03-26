@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <implementation/miller-rabin/util.hpp>
+
 #include <bin/run.hpp>
 
 //! \note workaround for gmp bug: cstddef included with libstdcxx
@@ -21,8 +23,12 @@
 #include <cstddef>
 #include <gmpxx.h>
 
+#include <cstddef>
+#include <exception>
+#include <ios>
 #include <iostream>
-#include <iomanip>
+#include <ostream>
+#include <string>
 
 namespace
 {
@@ -57,18 +63,8 @@ try
       , "miller-rabin"
       , [] (boost::program_options::variables_map const& vm)
         {
-          size_t count;
-
-          void* buffer
-            ( mpz_export
-              ( nullptr, &count
-              , 1, sizeof (char), 0, 0
-              , mpz_class (vm[option::to_test].as<std::string>()).get_mpz_t()
-              )
-            );
-
-          return we::type::bytearray
-            (std::string (static_cast<char*> (buffer), count));
+          return miller_rabin::generate_user_data
+            (vm[option::to_test].as<std::string>());
         }
       )
     );
@@ -78,11 +74,10 @@ try
   std::cout << "number_of_rolls_done = "
             << workflow_result.number_of_rolls_done() << std::endl;
 
-  bool result;
-  workflow_result.result().copy (&result);
-
-  std::cout << "result = " << (result ? "composite" : "probably prime")
-            << std::endl;
+  miller_rabin::show_result
+    ( std::cout
+    , workflow_result.result()
+    );
 
   return 0;
 }

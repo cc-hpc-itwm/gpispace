@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,24 +14,26 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME transform_file_type
-  SOURCES "type.cpp"
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
-  LIBRARIES we-dev
-            Boost::filesystem
-)
+if (BUILD_TESTING)
+  extended_add_library (NAME transform_file_type
+    SOURCES "type.cpp"
+    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+    LIBRARIES we-dev
+              Boost::filesystem
+  )
 
-extended_add_library (NAME transform_file_map-impl
-  TYPE MODULE
-  SOURCES "implementation.cpp"
-  LIBRARIES transform_file_type
-  INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
-)
+  extended_add_library (NAME transform_file_map-impl
+    TYPE MODULE
+    SOURCES "implementation.cpp"
+    LIBRARIES transform_file_type
+    INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
+  )
 
-math (EXPR size_input "20 << 20")
-math (EXPR size_output "20 << 20")
-math (EXPR size_block "2 << 20")
-math (EXPR num_block "120")
+  math (EXPR size_input "20 << 20")
+  math (EXPR size_output "20 << 20")
+  math (EXPR size_block "2 << 20")
+  math (EXPR num_block "120")
+endif()
 
 fhg_add_test (NAME share_example_map_transform_file
   SOURCES test.cpp

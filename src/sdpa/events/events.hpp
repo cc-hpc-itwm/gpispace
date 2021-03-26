@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,8 +16,6 @@
 
 #pragma once
 
-#include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>

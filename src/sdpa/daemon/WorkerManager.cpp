@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -133,26 +133,6 @@ namespace sdpa
       private:
         size_t capacity_;
       };
-    }
-
-    worker_id_host_info_t::worker_id_host_info_t
-        ( worker_id_t worker_id
-        , std::string worker_host
-        , unsigned long shared_memory_size
-        , double last_time_idle
-        , boost::optional<std::string> implementation
-        )
-      : worker_id_ (std::move (worker_id))
-      , worker_host_ (std::move (worker_host))
-      , shared_memory_size_ (shared_memory_size)
-      , _last_time_idle (last_time_idle)
-      , _implementation (std::move (implementation))
-    {}
-
-    boost::optional<std::string> const&
-      worker_id_host_info_t::implementation() const
-    {
-      return _implementation;
     }
 
     std::string WorkerManager::host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const

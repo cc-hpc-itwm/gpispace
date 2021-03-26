@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -24,10 +24,11 @@ extended_add_library (NAME Qt
   NAMESPACE Util
   SOURCES "do_after_event_loop.cpp"
           "make_drop_target.cpp"
-          "testing/Application.cpp"
-          "testing/CoreApplication.cpp"
-          "testing/detail/FakeCommandLineArguments.cpp"
-          "testing/detail/MinimalPlatformInitializer.cpp"
+          "style.cpp"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/Application.cpp>"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/CoreApplication.cpp>"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/detail/FakeCommandLineArguments.cpp>"
+          "$<$<BOOL:${BUILD_TESTING}>:testing/detail/MinimalPlatformInitializer.cpp>"
           "widget/file_line_edit.cpp"
           "widget/mini_button.cpp"
   MOC "widget/file_line_edit.hpp"

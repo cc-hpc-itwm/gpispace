@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,27 +14,42 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-include (CheckCXXCompilerFlag)
+include (add_cxx_compiler_flag_if_supported)
 
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
 
-macro (CHECK_AND_ADD_COMPILER_FLAG _VAR _FLAG)
-  STRING(REGEX REPLACE "[-=]" "_" __flag_literal ${_FLAG})
-  set(__flag_literal "FLAG${__flag_literal}")
-  CHECK_CXX_COMPILER_FLAG (${_FLAG} ${__flag_literal})
-  if (${__flag_literal})
-     set (${_VAR} "${${_VAR}} ${_FLAG}")
-  endif ()
-endmacro ()
-
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -W)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -Wall)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -Wextra)
-check_and_add_compiler_flag (CMAKE_CXX_FLAGS -Wunreachable-code-break)
-check_and_add_compiler_flag (CMAKE_CXX_FLAGS -Wimplicit-fallthrough)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -Wnon-virtual-dtor)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -fpic)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -fPIC)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -ftemplate-depth=1024)
-CHECK_AND_ADD_COMPILER_FLAG (CMAKE_CXX_FLAGS -fcolor-diagnostics)
+add_cxx_compiler_flag_if_supported (-W)
+add_cxx_compiler_flag_if_supported (-Wall)
+add_cxx_compiler_flag_if_supported (-Wextra)
+add_cxx_compiler_flag_if_supported (-Wbitfield-enum-conversion)
+add_cxx_compiler_flag_if_supported (-Wc++20-compat)
+add_cxx_compiler_flag_if_supported (-Wcomma)
+add_cxx_compiler_flag_if_supported (-Wcovered-switch-default)
+add_cxx_compiler_flag_if_supported (-Wdeprecated-copy-dtor)
+add_cxx_compiler_flag_if_supported (-Wdeprecated-dynamic-exception-spec)
+add_cxx_compiler_flag_if_supported (-Wextra-semi)
+add_cxx_compiler_flag_if_supported (-Wfloat-equal)
+add_cxx_compiler_flag_if_supported (-Wgnu-anonymous-struct)
+add_cxx_compiler_flag_if_supported (-Wgnu-case-range)
+add_cxx_compiler_flag_if_supported (-Wimplicit-fallthrough)
+add_cxx_compiler_flag_if_supported (-Winconsistent-missing-destructor-override)
+add_cxx_compiler_flag_if_supported (-Wmissing-prototypes)
+add_cxx_compiler_flag_if_supported (-Wmissing-variable-declarations)
+add_cxx_compiler_flag_if_supported (-Wnested-anon-types)
+add_cxx_compiler_flag_if_supported (-Wno-redundant-move)
+add_cxx_compiler_flag_if_supported (-Wnon-virtual-dtor)
+add_cxx_compiler_flag_if_supported (-Wold-style-cast)
+add_cxx_compiler_flag_if_supported (-Wpessimizing-move)
+add_cxx_compiler_flag_if_supported (-Wrange-loop-analysis)
+add_cxx_compiler_flag_if_supported (-Wreturn-std-move-in-c++11)
+add_cxx_compiler_flag_if_supported (-Wshadow-field)
+add_cxx_compiler_flag_if_supported (-Wundefined-func-template)
+add_cxx_compiler_flag_if_supported (-Wunreachable-code)
+add_cxx_compiler_flag_if_supported (-Wunreachable-code-break)
+add_cxx_compiler_flag_if_supported (-Wunused)
+add_cxx_compiler_flag_if_supported (-Wunused-exception-parameter)
+add_cxx_compiler_flag_if_supported (-fPIC)
+add_cxx_compiler_flag_if_supported (-fpic)
+add_cxx_compiler_flag_if_supported (-fcolor-diagnostics)
+add_cxx_compiler_flag_if_supported (-ftemplate-depth=1024)

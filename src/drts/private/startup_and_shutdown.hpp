@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -29,8 +29,6 @@
 #include <rif/entry_point.hpp>
 #include <rif/protocol.hpp>
 
-#include <vmem/netdev_id.hpp>
-
 #include <boost/filesystem/path.hpp>
 #include <boost/noncopyable.hpp>
 #include <boost/optional.hpp>
@@ -57,7 +55,6 @@ namespace fhg
 
     enum class component_type
     {
-      vmem,
       agent,
       worker,
       logging_demultiplexer,
@@ -119,13 +116,9 @@ namespace fhg
 
     startup_result startup
       ( boost::optional<unsigned short> const& agent_port
-      , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const&
       , fhg::util::signal_handler_manager& signal_handler_manager
-      , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , boost::optional<unsigned short> vmem_port
-      , boost::optional<vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const&
       , fhg::rif::entry_point const&
       , processes_storage&

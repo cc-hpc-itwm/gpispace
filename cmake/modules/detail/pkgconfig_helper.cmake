@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,9 @@ macro (_use_find_package _target_name _pkg _pkg_target)
   # there is no dependency between the actual target we find here and
   # successors. Hopefully there are no common dependencies with
   # different paths.
+  # \note These are always required as it is only used if the package
+  # was found and needs a dependency. If the package exists but a
+  # dependency does not, that's an unexpected and broken environment.
   # \todo This is dangerous and may lead to linking a shared and
   # static version of such a common dependency at the same time! It is
   # unclear how to solve this without controlling all find_package
@@ -89,11 +92,7 @@ macro (_use_imported_location _target_name _want_relocatable _name _search_path)
       )
     endif()
   else()
-    if (_raw_${_target_name} MATCHES ".*\.a")
-      add_library (${_target_name} STATIC IMPORTED)
-    else()
-      add_library (${_target_name} SHARED IMPORTED)
-    endif()
+    add_library (${_target_name} UNKNOWN IMPORTED)
     set_property (TARGET ${_target_name}
       PROPERTY IMPORTED_LOCATION "${_raw_${_target_name}}"
     )
@@ -154,15 +153,21 @@ endmacro()
 #! _PC_${CMAKE_FIND_PACKAGE_NAME} for pkgconfig variables, for use by
 #! the caller.
 macro (_pkgconfig_find_library_module _pkgname _libnamespace _libname)
-  if (NOT ${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
-    message (AUTHOR_WARNING "pkg-config based find_package scripts "
-      "don't support optional right now. This check will always search as "
-      "if REQUIRED was given. Please add REQUIRED or extend this script."
-    )
+  set (_pc_search_extra_args)
+  if (${CMAKE_FIND_PACKAGE_NAME}_FIND_REQUIRED)
+    list (APPEND _pc_search_extra_args REQUIRED)
   endif()
+  if (${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
+    list (APPEND _pc_search_extra_args QUIET)
+  endif()
+  pkg_search_module (_PC_${CMAKE_FIND_PACKAGE_NAME} ${_pc_search_extra_args} ${_pkgname})
 
-  pkg_search_module (_PC_${CMAKE_FIND_PACKAGE_NAME} REQUIRED ${_pkgname})
+  if (${_PC_${CMAKE_FIND_PACKAGE_NAME}_FOUND})
+    _pkgconfig_find_library_module_handle_success (${_pkgname} ${_libnamespace} ${_libname})
+  endif()
+endmacro()
 
+macro (_pkgconfig_find_library_module_handle_success _pkgname _libnamespace _libname)
   set (_${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS)
   if (_PC_${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS)
     set (_${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS ${_PC_${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS})
@@ -232,6 +237,16 @@ endmacro()
 #! Finalize a previous `_pkgconfig_find_library_module` call, with \a
 #! ARGN being additional variables to require to be set.
 macro (_pkgconfig_find_library_module_finalize)
+  # FindPkgConfig's `_pkgconfig_unset()` doesn't actually unset but
+  # set the value to empty, so the variable is defined and
+  # FindPackageHandleStandardArgs in turn thinks it was found and
+  # should be printed, leading to a weird looking error message. By
+  # actually unsetting the error message no longer complains about a
+  # mismatching version "".
+  if ("${_PC_${CMAKE_FIND_PACKAGE_NAME}_VERSION}" STREQUAL "")
+    unset (_PC_${CMAKE_FIND_PACKAGE_NAME}_VERSION CACHE)
+  endif()
+
   include (FindPackageHandleStandardArgs)
   find_package_handle_standard_args (${CMAKE_FIND_PACKAGE_NAME}
     REQUIRED_VARS _${CMAKE_FIND_PACKAGE_NAME}_INCLUDE_DIRS

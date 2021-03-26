@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,10 +17,11 @@
 #pragma once
 
 #include <sdpa/events/SDPAEvent.hpp>
+#include <sdpa/job_states.hpp>
 #include <sdpa/types.hpp>
 
-#include <we/layer.hpp>
 #include <we/type/activity.hpp>
+#include <we/type/net.hpp>
 #include <we/type/value.hpp>
 
 #include <fhgcom/peer.hpp>
@@ -56,10 +57,7 @@ namespace sdpa
 
       job_id_t submitJob(we::type::activity_t);
       void cancelJob(const job_id_t &);
-      status::code queryJob(const job_id_t &);
-      status::code queryJob(const job_id_t &, job_info_t &);
       void deleteJob(const job_id_t &);
-      sdpa::discovery_info_t discoverJobStates(const we::layer::id_type& discover_id, const job_id_t &job_id);
       void put_token
         (job_id_t, std::string place_name, pnet::type::value::value_type);
       pnet::type::value::value_type workflow_response

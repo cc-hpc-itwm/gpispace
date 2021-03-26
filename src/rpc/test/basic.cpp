@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -344,7 +344,7 @@ namespace protocol
 //! \note issue #15
 BOOST_DATA_TEST_CASE
   ( provider_ensures_ongoing_calls_are_finished_before_unwinding
-  , std::vector<int> ({1, 2})
+  , std::vector<std::size_t> ({1, 2})
   , number_of_server_threads
   )
 {

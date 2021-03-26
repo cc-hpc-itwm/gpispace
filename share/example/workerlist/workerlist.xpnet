@@ -1,5 +1,5 @@
 <!-- This file is part of GPI-Space.                                       -->
-<!-- Copyright (C) 2020 Fraunhofer ITWM                                    -->
+<!-- Copyright (C) 2021 Fraunhofer ITWM                                    -->
 <!--                                                                       -->
 <!-- This program is free software: you can redistribute it and/or modify  -->
 <!-- it under the terms of the GNU General Public License as published by  -->
@@ -26,9 +26,6 @@
 
     <transition name="run">
       <defun>
-        <in name="num_workers" type="unsigned long"/>
-        <out name="workers" type="list"/>
-        <out name="hostnames" type="map"/>
         <properties name="fhg">
           <properties name="drts">
             <properties name="schedule">
@@ -36,6 +33,9 @@
             </properties>
           </properties>
         </properties>
+        <in name="num_workers" type="unsigned long"/>
+        <out name="workers" type="list"/>
+        <out name="hostnames" type="map"/>
         <module name="workerlist" function="run (workers, hostnames)"
                 pass_context="true">
           <ld flag="-lwe-dev" />

@@ -1,0 +1,47 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2021 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="use_print_T">
+  <in name="l" type="long" place="l"/>
+  <out name="l_printed" type="string" place="l_printed"/>
+  <in name="s" type="string" place="s"/>
+  <out name="s_printed" type="string" place="s_printed"/>
+  <net>
+    <include-template href="print_T.xpnet"/>
+    <specialize name="print_long" use="print_T">
+      <type-map replace="T" with="long"/>
+    </specialize>
+    <specialize name="print_string" use="print_T">
+      <type-map replace="T" with="string"/>
+    </specialize>
+
+    <place name="l" type="long"/>
+    <place name="l_printed" type="string"/>
+    <transition name="print_long">
+      <use name="print_long"/>
+      <connect-in port="x" place="l"/>
+      <connect-out port="printed" place="l_printed"/>
+    </transition>
+
+    <place name="s" type="string"/>
+    <place name="s_printed" type="string"/>
+    <transition name="print_string">
+      <use name="print_string"/>
+      <connect-in port="x" place="s"/>
+      <connect-out port="printed" place="s_printed"/>
+    </transition>
+  </net>
+</defun>

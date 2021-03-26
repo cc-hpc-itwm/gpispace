@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,8 +34,8 @@ namespace fhg
       {
         T _event;
         bool _signalled {false};
-        mutable std::mutex _mutex;
-        mutable std::condition_variable _condition;
+        std::mutex _mutex;
+        std::condition_variable _condition;
 
       public:
         T wait()
@@ -63,8 +63,8 @@ namespace fhg
         class event<void> : boost::noncopyable
       {
         bool _signalled {false};
-        mutable std::mutex _mutex;
-        mutable std::condition_variable _condition;
+        std::mutex _mutex;
+        std::condition_variable _condition;
 
       public:
         void wait()

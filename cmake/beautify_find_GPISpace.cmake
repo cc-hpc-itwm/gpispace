@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -16,32 +16,39 @@
 
 include (parse_arguments)
 
-function (find_GPISpace)
+macro (find_GPISpace)
+  cmake_minimum_required (VERSION 3.12)
+
   set (options ALLOW_DIFFERENT_GIT_SUBMODULES)
-  set (one_value_options REVISION)
-  set (multi_value_options)
+  set (one_value_options REVISION VERSION)
+  set (multi_value_options COMPONENTS)
   set (required_options)
-  _parse_arguments (FIND "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
+  _parse_arguments (_find_gpispace_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
-  set (_components)
-
-  if (FIND_ALLOW_DIFFERENT_GIT_SUBMODULES)
-    list (APPEND _components ALLOW_DIFFERENT_GIT_SUBMODULES)
+  if (DEFINED ENV{GSPC_HOME})
+    set (GPISpace_ROOT "$ENV{GSPC_HOME}")
+  elseif (DEFINED GSPC_HOME)
+    set (GPISpace_ROOT "${GSPC_HOME}")
   endif()
 
-  if (FIND_REVISION)
-    list (APPEND _components "REVISION=${FIND_REVISION}")
+  if (_find_gpispace_arg_ALLOW_DIFFERENT_GIT_SUBMODULES)
+    list (APPEND _find_gpispace_arg_COMPONENTS ALLOW_DIFFERENT_GIT_SUBMODULES)
   endif()
 
-  find_package (GPISpace REQUIRED COMPONENTS ${_components})
+  if (NOT ALLOW_ANY_GPISPACE_VERSION)
+    if (_find_gpispace_arg_REVISION)
+      list (APPEND _find_gpispace_arg_COMPONENTS
+        "REVISION=${_find_gpispace_arg_REVISION}")
+    endif()
 
-  #! \note Since this is a funtion, all variables set by find_package
-  #! are local. To behave like find_package (GPISpace) would have been
-  #! called instead of this wrapper, re-export variables.
-  set (GPISpace_FOUND ${GPISpace_FOUND} PARENT_SCOPE)
-  set (GSPC_HOME ${GSPC_HOME} PARENT_SCOPE)
-  set (GSPC_XPNET_XSD ${GSPC_XPNET_XSD} PARENT_SCOPE)
-  set (GSPC_REVISION_FILE ${GSPC_REVISION_FILE} PARENT_SCOPE)
-  set (GSPC_GIT_SUBMODULES_FILE ${GSPC_GIT_SUBMODULES_FILE} PARENT_SCOPE)
-  set (GSPC_REVISION ${GSPC_REVISION} PARENT_SCOPE)
-endfunction()
+    set (_find_gpispace_version_arguments)
+    if (_find_gpispace_arg_VERSION)
+      set (_find_gpispace_version_arguments ${_find_gpispace_arg_VERSION} EXACT)
+    endif()
+  endif()
+
+  find_package (GPISpace
+    ${_find_gpispace_version_arguments}
+    REQUIRED
+    COMPONENTS ${_find_gpispace_arg_COMPONENTS})
+endmacro()

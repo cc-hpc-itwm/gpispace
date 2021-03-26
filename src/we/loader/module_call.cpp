@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -27,6 +27,11 @@
 #include <drts/worker/context_impl.hpp>
 
 #include <fhg/assert.hpp>
+
+#include <iml/Client.hpp>
+#include <iml/MemoryOffset.hpp>
+#include <iml/MemorySize.hpp>
+#include <iml/SharedMemoryAllocation.hpp>
 
 #include <boost/format.hpp>
 
@@ -61,58 +66,49 @@ namespace we
       unsigned long _position;
     };
 
-    typedef unsigned long fvmAllocHandle_t;
-    typedef unsigned long fvmSize_t;
-    typedef unsigned long fvmOffset_t;
-    typedef unsigned long fvmShmemOffset_t;
-
     void put_global_data
-      ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_allocation /*const*/& shared_memory
-      , const fvmAllocHandle_t global_memory_handle
-      , const fvmOffset_t global_memory_offset
-      , const fvmSize_t size
-      , const fvmShmemOffset_t shared_memory_offset
+      ( iml::Client /*const*/& virtual_memory_api
+      , iml::SharedMemoryAllocation /*const*/& shared_memory
+      , const iml::AllocationHandle global_memory_handle
+      , const iml::MemoryOffset global_memory_offset
+      , const iml::MemorySize size
+      , const iml::MemoryOffset shared_memory_offset
       )
     {
-      virtual_memory_api.memcpy_and_wait
-        ( gpi::pc::type::memory_location_t
-            (global_memory_handle, global_memory_offset)
-        , gpi::pc::type::memory_location_t
-            (shared_memory, shared_memory_offset)
+      virtual_memory_api.memcpy
+        ( iml::MemoryLocation (global_memory_handle, global_memory_offset)
+        , shared_memory.memory_location (shared_memory_offset)
         , size
         );
     }
 
     void get_global_data
-      ( gpi::pc::client::api_t /*const*/& virtual_memory_api
-      , gspc::scoped_allocation /*const*/& shared_memory
-      , const fvmAllocHandle_t global_memory_handle
-      , const fvmOffset_t global_memory_offset
-      , const fvmSize_t size
-      , const fvmShmemOffset_t shared_memory_offset
+      ( iml::Client /*const*/& virtual_memory_api
+      , iml::SharedMemoryAllocation /*const*/& shared_memory
+      , const iml::AllocationHandle global_memory_handle
+      , const iml::MemoryOffset global_memory_offset
+      , const iml::MemorySize size
+      , const iml::MemoryOffset shared_memory_offset
       )
     {
-      virtual_memory_api.memcpy_and_wait
-        ( gpi::pc::type::memory_location_t
-            (shared_memory, shared_memory_offset)
-        , gpi::pc::type::memory_location_t
-            (global_memory_handle, global_memory_offset)
+      virtual_memory_api.memcpy
+        ( shared_memory.memory_location (shared_memory_offset)
+        , iml::MemoryLocation (global_memory_handle, global_memory_offset)
         , size
         );
     }
 
     void transfer
       ( std::function<void
-                      ( gpi::pc::client::api_t /*const*/&
-                      , gspc::scoped_allocation /*const*/&
-                      , const fvmAllocHandle_t
-                      , const fvmOffset_t
-                      , const fvmSize_t
-                      , const fvmShmemOffset_t
+                      ( iml::Client /*const*/&
+                      , iml::SharedMemoryAllocation /*const*/&
+                      , const iml::AllocationHandle
+                      , const iml::MemoryOffset
+                      , const iml::MemorySize
+                      , const iml::MemoryOffset
                       )> do_transfer
-      , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , iml::Client /*const*/* virtual_memory_api
+      , iml::SharedMemoryAllocation /*const*/* shared_memory
       , std::unordered_map<std::string, buffer> const& memory_buffer
       , std::list<std::pair<local::range, global::range>> const& transfers
       )
@@ -149,7 +145,7 @@ namespace we
         do_transfer
           ( *virtual_memory_api
           , *shared_memory
-          , std::stoul (global.handle().name(), nullptr, 16)
+          , global.handle().name()
           , global.offset()
           , local.size()
           , memory_buffer.at (local.buffer()).position() + local.offset()
@@ -206,8 +202,8 @@ namespace we
   {
     expr::eval::context module_call
       ( we::loader::loader& loader
-      , gpi::pc::client::api_t /*const*/* virtual_memory_api
-      , gspc::scoped_allocation /*const*/* shared_memory
+      , iml::Client /*const*/* virtual_memory_api
+      , iml::SharedMemoryAllocation /*const*/* shared_memory
       , drts::worker::context* context
       , expr::eval::context const& input
       , const we::type::module_call_t& module_call
@@ -266,8 +262,7 @@ namespace we
             );
          }
 
-        char* const local_memory
-          ((static_cast<char*> (virtual_memory_api->ptr (*shared_memory))));
+        char* const local_memory (shared_memory->pointer());
         char* buffer_ptr (local_memory);
         std::size_t space (shared_memory_size);
 
@@ -285,7 +280,7 @@ namespace we
                      "Please take into account also the buffer alignments "
                      "when allocating local shared memory!"
                     )
-                % (buffer_ptr - local_memory + size + alignment)
+                % (buffer_ptr + size + alignment - local_memory)
                 % shared_memory_size
                 ).str()
 	      );

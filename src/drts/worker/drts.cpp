@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -24,8 +24,6 @@
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/Codec.hpp>
-#include <sdpa/events/DiscoverJobStatesEvent.hpp>
-#include <sdpa/events/DiscoverJobStatesReplyEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobFailedAckEvent.hpp>
 #include <sdpa/events/JobFailedEvent.hpp>
@@ -122,8 +120,8 @@ DRTSImpl::DRTSImpl
     , std::unique_ptr<boost::asio::io_service> peer_io_service
     , std::string const& kernel_name
     , unsigned short comm_port
-    , gpi::pc::client::api_t /*const*/* virtual_memory_api
-    , gspc::scoped_allocation /*const*/* shared_memory
+    , iml::Client /*const*/* virtual_memory_api
+    , iml::SharedMemoryAllocation /*const*/* shared_memory
     , std::vector<master_info> const& masters
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
@@ -392,30 +390,6 @@ void DRTSImpl::handleJobFinishedAckEvent
   m_jobs.erase (job_it);
 }
 
-void DRTSImpl::handleDiscoverJobStatesEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::DiscoverJobStatesEvent* event)
-{
-  std::lock_guard<std::mutex> const _ (m_job_map_mutex);
-
-  const map_of_jobs_t::iterator job_it (m_jobs.find (event->job_id()));
-  send_event<sdpa::events::DiscoverJobStatesReplyEvent>
-    ( source
-    , event->discover_id()
-    , sdpa::discovery_info_t
-        ( event->job_id()
-        , job_it == m_jobs.end() ? boost::optional<sdpa::status::code>()
-        : job_it->second->state == DRTSImpl::Job::PENDING ? sdpa::status::PENDING
-        : job_it->second->state == DRTSImpl::Job::RUNNING ? sdpa::status::RUNNING
-        : job_it->second->state == DRTSImpl::Job::FINISHED ? sdpa::status::FINISHED
-        : job_it->second->state == DRTSImpl::Job::FAILED ? sdpa::status::FAILED
-        : job_it->second->state == DRTSImpl::Job::CANCELED ? sdpa::status::CANCELED
-        : job_it->second->state == DRTSImpl::Job::CANCELED_DUE_TO_WORKER_SHUTDOWN ? sdpa::status::FAILED
-        : INVALID_ENUM_VALUE (DRTSImpl::Job::state_t, job_it->second->state)
-        , sdpa::discovery_info_set_t()
-        )
-    );
-}
-
 void DRTSImpl::event_thread()
 try
 {
@@ -427,7 +401,7 @@ try
     {
       event.second->handleBy (event.first, this);
     }
-    catch (std::exception const& ex)
+    catch (std::exception const&)
     {
       send_event<sdpa::events::ErrorEvent>
         ( event.first

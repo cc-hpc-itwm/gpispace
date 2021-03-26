@@ -1,5 +1,5 @@
 # This file is part of GPI-Space.
-# Copyright (C) 2020 Fraunhofer ITWM
+# Copyright (C) 2021 Fraunhofer ITWM
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@ install (FILES
   client.hpp
   drts.fwd.hpp
   drts.hpp
+  drts_iml.hpp
   pimpl.hpp
   rifd_entry_points.fwd.hpp
   rifd_entry_points.hpp
@@ -29,8 +30,8 @@ install (FILES
   scoped_rifd.hpp
   stream.fwd.hpp
   stream.hpp
-  information_to_reattach.fwd.hpp
   information_to_reattach.hpp
+  information_to_reattach.fwd.hpp
   virtual_memory.fwd.hpp
   virtual_memory.hpp
   worker_description.hpp
@@ -41,6 +42,7 @@ extended_add_library (NAME gspc
   TYPE SHARED
   SOURCES "client.cpp"
           "drts.cpp"
+          "drts_iml.cpp"
           "information_to_reattach.cpp"
           "private/option.cpp"
           "private/startup_and_shutdown.cpp"
@@ -51,13 +53,11 @@ extended_add_library (NAME gspc
   LIBRARIES sdpa
             pnet
             rif-strategies
-            gpi-space-pc-client-static
-            gpi-space-pc-segment
-            GPISpace::vmem
             fhg-project_configuration
             Util::Generic
             Boost::filesystem
             Boost::program_options
+            IML::Client
   INSTALL
   CREATE_BUNDLE_INFO
 )

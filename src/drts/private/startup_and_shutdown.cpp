@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -34,6 +34,7 @@
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/serialization/boost/filesystem/path.hpp>
 #include <util-generic/split.hpp>
+#include <util-generic/unreachable.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
 #include <rpc/remote_function.hpp>
@@ -541,13 +542,9 @@ namespace fhg
 
     startup_result startup
       ( boost::optional<unsigned short> const& agent_port
-      , bool gpi_enabled
       , boost::optional<boost::filesystem::path> gpi_socket
       , gspc::installation_path const& installation_path
       , fhg::util::signal_handler_manager& signal_handler_manager
-      , boost::optional<std::chrono::seconds> vmem_startup_timeout
-      , boost::optional<unsigned short> vmem_port
-      , boost::optional<vmem::netdev_id> vmem_netdev_id
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
       , fhg::rif::entry_point const& master
       , fhg::drts::processes_storage& processes
@@ -639,90 +636,11 @@ namespace fhg
         , "connecting to rif entry points"
         );
 
-      if (gpi_enabled)
+      if (gpi_socket)
       {
-        if (!vmem_startup_timeout)
-        {
-          throw std::invalid_argument
-            ("vmem startup timeout is required when gpi is enabled");
-        }
-        if (!vmem_port)
-        {
-          throw std::invalid_argument
-            ("vmem port is required when gpi is enabled");
-        }
-        if (!gpi_socket)
-        {
-          throw std::invalid_argument
-            ("vmem socket is required when gpi is enabled");
-        }
-
-        info_output << "I: starting VMEM on: " << gpi_socket.get()
-                    << " with a timeout of " << vmem_startup_timeout.get().count()
-                    << " seconds\n";
-
-        fhg::util::nest_exceptions<std::runtime_error>
-          ( [&]
-            {
-              std::unordered_map<fhg::rif::entry_point, std::future<pid_t>>
-                queued_start_requests;
-              std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
-                fails;
-
-              //! \note requires ranks to be matching index in hostnames!
-              std::size_t rank (0);
-              for (auto& connection : rif_connections)
-              {
-                try
-                {
-                  queued_start_requests.emplace
-                    ( connection.second
-                    , connection.first.start_vmem
-                        ( installation_path.vmem()
-                        , gpi_socket.get()
-                        , vmem_port.get()
-                        , vmem_startup_timeout.get()
-                        , hostnames
-                        , master.string()
-                        , rank++
-                        , vmem_netdev_id.get()
-                        )
-                    );
-                }
-                catch (...)
-                {
-                  fails.emplace (connection.second, std::current_exception());
-                }
-              }
-
-              for (auto& request : queued_start_requests)
-              {
-                try
-                {
-                  processes.store (request.first, "vmem", request.second.get());
-                }
-                catch (...)
-                {
-                  fails.emplace (request.first, std::current_exception());
-                }
-              }
-
-              if (!fails.empty())
-              {
-                fhg::util::throw_collected_exceptions
-                  ( fails
-                  , [] (std::pair<rif::entry_point, std::exception_ptr> const& fail)
-                    {
-                      return ( boost::format ("vmem startup failed %1%: %2%")
-                             % fail.first
-                             % fhg::util::exception_printer (fail.second)
-                             ).str();
-                    }
-                  );
-              }
-            }
-          , "could not start vmem"
-          );
+        info_output << "I: external IML as VMEM running on: "
+                    << gpi_socket.get()
+                    << "\n";
       }
 
       master_agent_name = "agent-" + master.string() + "-0";
@@ -772,13 +690,11 @@ namespace fhg
               return "drts-kernel";
             case component_type::agent:
               return "agent";
-            case component_type::vmem:
-              return "vmem";
             case component_type::logging_demultiplexer:
               return "logging-demultiplexer";
-            default:
-              throw std::logic_error ("invalid enum value");
           }
+
+          FHG_UTIL_UNREACHABLE();
         }(component);
 
         std::unordered_map
@@ -961,7 +877,6 @@ namespace fhg
       util::apply_for_each_and_collect_exceptions
         ( { component_type::worker
           , component_type::agent
-          , component_type::vmem
           , component_type::logging_demultiplexer
           }
         , [this] (component_type component)

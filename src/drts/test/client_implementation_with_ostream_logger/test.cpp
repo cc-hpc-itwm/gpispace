@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -137,22 +137,19 @@ BOOST_DATA_TEST_CASE
   {
     using random_string = fhg::util::testing::random<std::string>;
     // - \n because that's what we join/split on
-    // - non-empty because otherwise it is swallowed if at end,
-    //   leading to a test failure (top/gpispace#823)
     // - \\ and \" because the string value parser breaks
-    lines.emplace_back
-      ( random_string{} ( random_string::except ("\n\\\"")
-                        , random_string::default_max_length
-                        , 1
-                        )
-      );
+    lines.emplace_back (random_string{} (random_string::except ("\n\\\"")));
   }
+
+  // - "flush" all lines with an "\n", because otherwise an empty last
+  //   it is "swallowed" (top/gpispace#823)
+  auto const message (fhg::util::join (lines, '\n').string() + "\n");
 
   std::multimap<std::string, pnet::type::value::value_type> const result
     ( gspc::client (drts, certificates).put_and_run
       ( gspc::workflow (make.pnet())
       , { {"implementation", implementation.string()}
-        , {"message", fhg::util::join (lines, '\n').string()}
+        , {"message", message}
         }
       )
     );

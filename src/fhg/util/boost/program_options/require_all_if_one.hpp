@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ namespace fhg
       {
         using namespace ::boost::program_options;
 
+        static
         void require_all_if_one
           (variables_map const& vm, std::initializer_list<const char*> options)
         {

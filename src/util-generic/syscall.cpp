@@ -1,5 +1,5 @@
 // This file is part of GPI-Space.
-// Copyright (C) 2020 Fraunhofer ITWM
+// Copyright (C) 2021 Fraunhofer ITWM
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
 
 #include <util-generic/syscall.hpp>
 
+#include <util-generic/map_failed.hpp>
+#include <util-generic/sig_err.hpp>
 #include <util-generic/warning.hpp>
 
 #include <boost/system/system_error.hpp>
@@ -87,7 +89,7 @@ namespace fhg
 
         void* MAP_FAILED_fails_with_errno (void* rc)
         {
-          if (rc == MAP_FAILED)
+          if (rc == map_failed())
           {
             throw boost::system::system_error
               (boost::system::error_code (errno, boost::system::system_category()));
@@ -97,7 +99,7 @@ namespace fhg
 
         sighandler_t SIG_ERR_fails_with_errno (sighandler_t rc)
         {
-          if (rc == SIG_ERR)
+          if (rc == sig_err())
           {
             throw boost::system::system_error
               (boost::system::error_code (errno, boost::system::system_category()));
