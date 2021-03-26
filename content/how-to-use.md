@@ -116,7 +116,7 @@ the `${GPISPACE_INSTALL_DIR}/share/gspc/README.md` file and additionally
   where the example application will be installed in.
 
 Note: You can find the complete application example source code at
-`${GPISPACE_INSTALL_DIR}/share/gspc/example-compute_and_aggregate/` in
+`${GPISPACE_INSTALL_DIR}/share/gspc/example/compute_and_aggregate/` in
 your GPI-Space installation.
 
 #### User Code
@@ -491,8 +491,7 @@ can be launched with the following steps:
     values_on_ports.emplace ("task_trigger", we::type::literal::control{});
   }
 
-  auto const results
-    (gspc::client (drts).put_and_run (workflow, values_on_ports));
+  auto const results (client.put_and_run (workflow, values_on_ports));
 ```
 
 ##### Retrieving Output Results
@@ -568,18 +567,22 @@ GPI-Space libraries as follows:
   -std=c++11                                                      \
   -DAPP_INSTALL_DIR="\"${APP_INSTALL_DIR}\""                      \
   -DGPISPACE_INSTALL_DIR="\"${GPISPACE_INSTALL_DIR}\""            \
-  -isystem "${GPISPACE_INSTALL_DIR}/include"                      \
-  -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \
-  -Wl,--exclude-libs,libboost_program_options.a                   \
-  -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
-  -L "${GPISPACE_INSTALL_DIR}/external/boost/lib/"                \
-  -Wl,-rpath-link,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"   \
-  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib:${GPISPACE_INSTALL_DIR}/external/boost/lib/" \
   driver.cpp                                                      \
+  -o "${APP_INSTALL_DIR}/bin/compute_and_aggregate"               \
+                                                                  \
+  -isystem "${GPISPACE_INSTALL_DIR}/include"                      \
+  -L "${GPISPACE_INSTALL_DIR}/lib/"                               \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/lib/"                       \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/bundle/lib/"        \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/libexec/iml/"               \
   -lgspc                                                          \
+                                                                  \
+  -isystem "${GPISPACE_INSTALL_DIR}/external/boost/include"       \
+  -L "${GPISPACE_INSTALL_DIR}/external/boost/lib/"                \
+  -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"        \
+  -Wl,--exclude-libs,libboost_program_options.a                   \
   -lboost_program_options                                         \
-  -lboost_system                                                  \
-  -o "${APP_INSTALL_DIR}/bin/compute_and_aggregate"
+  -lboost_system
 ```
 
 As a result, the `run_compute_and_aggregate` application is ready to
@@ -615,7 +618,7 @@ directories, e.g. `libexec/bundle/gpispace`, and then at runtime use
 the executable's path (determined for example using `dladdr()`) and
 the knowledge of the relative path to construct a
 `gspc::installation`. The same method can also be used to avoid
-compiling `${ALL_INSTALL_DIR}` into the binaries, to get the `.pnet`
+compiling `${APP_INSTALL_DIR}` into the binaries, to get the `.pnet`
 and module call library location.
 
 The libraries and executables built want to change the `-rpath` which
@@ -634,14 +637,17 @@ For example, for `compute_and_aggregate`, the driver
 launch the workflow on a single node with 4 cores, as follows:
 
 ```bash
-hostname > nodefile
-# or to test in a cluster allocation, for `--nodefile` below, use
+hostname > "${APP_INSTALL_DIR}/nodefile"
+# note: the location doesn't matter for the execution
+# note: this script puts the nodefile into the ${APP_INSTALL_DIR} as
+# this directory is known to be writeable
+# note: to test in a cluster allocation, for `--nodefile` below, use
 # Slurm: "$(generate_pbs_nodefile)"
 # PBS/Torque: "${PBS_NODEFILE}"
 
 "${APP_INSTALL_DIR}/bin/compute_and_aggregate"                    \
   --rif-strategy ssh                                              \
-  --nodefile "${PWD}/nodefile"                                    \
+  --nodefile "${APP_INSTALL_DIR}/nodefile"                        \
   ${LOG_PORT:+--log-host ${HOSTNAME} --log-port ${LOG_PORT}}      \
   --N 20                                                          \
   --workers-per-node 4

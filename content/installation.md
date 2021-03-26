@@ -4,45 +4,67 @@ title: Installation
 permalink: /installation
 ---
 
-GPI-Space targets and has been successfully used on x86-64 Linux
-systems.
-Other architectures are not guaranteed to work properly at this point.
+GPI-Space targets x86-64 Linux systems. Other architectures are not
+supported at this point. It is built and tested daily on
 
-The virtual memory layer can be backed with either Ethernet,
-Infiniband or BeeOND.
-
-GPI-Space supports multiple Linux distributions:
 * Centos 6
 * Centos 7
 * Centos 8
 * Ubuntu 18.04 LTS
 * Ubuntu 20.04 LTS
 
-It is built and tested daily on those systems.
+The virtual memory layer can be backed with either Ethernet,
+Infiniband or BeeOND.
+
+GPI-Space is usually installed on cluster systems where a shared
+filesystem is available on all nodes. It is suggested to use a
+previously empty directory on such a shared filesystem for the
+GPI-Space installation and all manually installed dependencies.
+
+The source and build directories are not required to be shared
+and for best performance it is recommended to place them in a
+fast (local) file system.
 
 ### Dependencies
-GPI-Space comes with some third-party dependencies.
-The following are provided out of the box as packages or other binary distributions on most supported operating systems.
+
+GPI-Space requires some third-party dependencies. Most of the
+following are provided out of the box as (-devel/-dev) packages or
+other binary distributions on most supported operating systems.
+
+`Boost` and `GPI-2` require a manual installation on all systems.
+`libssh2` is also required to be built manually on some systems, due
+to build version compatibility issues with other dependencies.
 
 * [GCC](https://gcc.gnu.org/) (>= 4.9.4), or compatible compiler
-* [OpenSSL](https://www.openssl.org/) (>= 0.9)
 * [CMake](https://cmake.org/) (>= 3.13)
+  * Some distributions name the binary `cmake3` while others use
+    `cmake`. Snippets below assume `cmake`.
+* [OpenSSL](https://www.openssl.org/) (>= 0.9)
+  * When using OpenSSL >= 1.1, Boost >= 1.62 and libssh2 (>= 1.8) are
+    required for compatibility.
 * [hwloc](https://www.open-mpi.org/projects/hwloc/) (>= 1.10)
 * [Qt5](https://www.qt.io/) (>= 5.9)
 * [chrpath](https://tracker.debian.org/pkg/chrpath) (>= 0.13)
+* [Boost](https://boost.org) (>= 1.61, <= 1.63)
+  * When using OpenSSL >= 1.1, Boost >= 1.62 is required.
+* [libssh2](https://www.libssh2.org/) (>= 1.7, built with OpenSSL backend)
+  * When SSH keys are generated with OpenSSH >= 7.8, only libssh2 >= 1.9
+    is compatible.
+  * Among others, Ubuntu 20.04 ships with libgcrypt as backend as well
+    as OpenSSH 8.2, thus needs a custom installation of libssh2.
+* [GPI-2](http://www.gpi-site.com) (1.3.2)
 
-`Boost` and `GPI-2` require a manual installation on all systems.
-`libssh2` is also required to be built manually on some systems, due to build version compatibility issues with other dependencies.
+> ---
+> **WARNING:**
+>
+> It is important to keep the versions of all dependencies used in
+> GPI-Space as well as the applications using GPI-Space synchronized
+> to avoid hard to debug conflicts at run-time. Using a single
+> environment to build the entire stack is strongly encouraged.
+>
+> ---
 
 #### Boost
-
-| Website | Supported Versions |
-| :-: | :-: |
-| [Boost](https://boost.org) | >= 1.61, <= 1.63 |
-
-Boost needs to be installed to a directory containing only the Boost
-installation, making it required to build Boost from source for
-GPI-Space. It is strongly suggested to configure and build Boost as follows:
 
 > ---
 > **WARNING:**
@@ -51,72 +73,62 @@ GPI-Space. It is strongly suggested to configure and build Boost as follows:
 >
 > ---
 
+Boost needs to be installed to a directory containing only the Boost
+installation, hence GPI-Space requires to build Boost from source.
+
+Due to the size of Boost, extracting the sources and building might
+take some time. A local non-shared filesystem is strongly suggested
+to be used for building Boost.
+
+As this Boost installation is also used by GPI-Space applications,
+additional requirements like specifying a Python installation to use
+may be required.
+
 ```bash
-boost_version=1.61.0
-export BOOST_ROOT=<install-prefix>
+export BOOST_ROOT=<boost-install-prefix>
+boost_version=1.63.0
 
-git clone                                                         \
-    --jobs $(nproc)                                               \
-    --depth 1                                                     \
-    --shallow-submodules                                          \
-    --recursive                                                   \
-    --branch boost-${boost_version}                               \
-    https://github.com/boostorg/boost.git                         \
-    boost
+wget "https://downloads.sourceforge.net/project/boost/boost/${boost_version}/boost_${boost_version//./_}.tar.gz" \
+  -O boost_${boost_version//./_}.tar.gz
+tar xf "boost_${boost_version//./_}.tar.gz"
+cd "boost_${boost_version//./_}"
 
-./boost/bootstrap.sh --prefix="${BOOST_ROOT}"
-./boost/b2                                                        \
-  -j $(nproc)                                                     \
-  headers
-./boost/b2                                                        \
-  cflags="-fPIC -fno-gnu-unique"                                  \
-  cxxflags="-fPIC -fno-gnu-unique"                                \
-  link=static                                                     \
-  variant=release                                                 \
-  install
+./bootstrap.sh --prefix="${BOOST_ROOT}"
+./b2                               \
+  cflags="-fPIC -fno-gnu-unique"   \
+  cxxflags="-fPIC -fno-gnu-unique" \
+  link=static                      \
+  variant=release                  \
+  install                          \
+  -j $(nproc)
 ```
 
 #### GPI-2
 
-| Website | Supported Versions |
-| :-: | :-: |
-| [GPI-2](http://www.gpi-site.com) | 1.3.2 |
-
-If Infiniband support is required, the `--with-ethernet` option can be omitted.
+GPI-2 supports both Infiniband and Ethernet, but the decision has to
+be made at compilation time. If the system used does not support
+Infiniband, `with_ethernet=--with-ethernet` needs to be specified
+below or installing GPI-2 will fail.
 
 ```bash
-arch=$(getconf LONG_BIT)
-export GASPI_ROOT=<install-prefix>
-export PKG_CONFIG_PATH="${GASPI_ROOT}/lib${arch}/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+GPI2_ROOT=<gpi2-install-prefix>
+#with_ethernet=--with-ethernet ## remove '#' if no Infiniband
+gpi2_version=1.3.2
 
-RUN gpi2_version=1.3.2                                                        \
- && git clone                                                                 \
-        --depth 1                                                             \
-        --branch v${gpi2_version}                                             \
-        https://github.com/cc-hpc-itwm/GPI-2.git                              \
-        GPI-2                                                                 \
- && cd GPI-2                                                                  \
- && grep "^CC\s*=\s*gcc$" . -lR                                               \
-    | xargs sed -i'' -e '/^CC\s*=\s*gcc$/d'                                   \
- && ./install.sh -p "${GASPI_ROOT}"                                           \
-                 --with-fortran=false                                         \
-                 --with-ethernet
+export PKG_CONFIG_PATH="${GPI2_ROOT}/lib64/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
+
+wget "https://github.com/cc-hpc-itwm/GPI-2/archive/v${gpi2_version}.tar.gz" \
+  -O "GPI-2-${gpi2_version}.tar.gz"
+tar xf "GPI-2-${gpi2_version}.tar.gz"
+cd "GPI-2-${gpi2_version}"
+
+grep "^CC\s*=\s*gcc$" . -lR | xargs sed -i'' -e '/^CC\s*=\s*gcc$/d'
+./install.sh -p "${GPI2_ROOT}" \
+  --with-fortran=false         \
+  ${with_ethernet:-}
 ```
 
 #### libssh2
-
-| Website | Supported Versions |
-| :-: | :-: |
-| [libssh2](https://www.libssh2.org/) | >= 1.7 |
-
-`libssh2` is not built with the OpenSSL backend on all systems.
-Additionally, some versions available via package manager might not be compatible with OpenSSH's
-default settings.
-For those reasons, we highly recommend building `libssh2` 1.9 from scratch.
-Doing so is however straightforward thanks to CMake.
-As additional dependencies `OpenSSL` and `Zlib` are required (e.g. from a package manager).
-Also, unless `Libssh2_ROOT` is set to `/usr`, the `LD_LIBRARY_PATH` needs to be set in order for
-applications to find the correct one.
 
 > ---
 > **WARNING:**
@@ -125,85 +137,142 @@ applications to find the correct one.
 >
 > ---
 
+`libssh2` can be built with various backends, but GPI-Space requires
+`OpenSSL` to be used, which is not the default on various
+distributions. In some distributions the `OpenSSH` default settings
+are incompatible with the `libssh2` package. It is thus highly
+recommended to build `libssh2` version 1.9 from scratch.
+
+`libssh2` requires the dependencies `OpenSSL` and `zlib` (which are
+assumed to be installed via the system package manager below).
+
 ```bash
+Libssh2_ROOT=<libssh2-install-prefix>
 libssh2_version=1.9.0
-export Libssh2_ROOT=<install-prefix>
-export LD_LIBRARY_PATH="${Libssh2_ROOT}/lib"${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 
-git clone --jobs $(nproc)                                         \
-          --depth 1                                               \
-          --shallow-submodules                                    \
-          --recursive                                             \
-          --branch libssh2-${libssh2_version}                     \
-          https://github.com/libssh2/libssh2.git                  \
-          libssh2
+export PKG_CONFIG_PATH="${Libssh2_ROOT}/lib/pkgconfig:${Libssh2_ROOT}/lib64/pkgconfig"${PKG_CONFIG_PATH:+:${PKG_CONFIG_PATH}}
 
-cmake -D CRYPTO_BACKEND=OpenSSL                                   \
-      -D CMAKE_BUILD_TYPE=Release                                 \
-      -D CMAKE_INSTALL_PREFIX="${Libssh2_ROOT}"                   \
-      -D ENABLE_ZLIB_COMPRESSION=ON                               \
-      -D BUILD_SHARED_LIBS=ON                                     \
-      -B libssh2/build                                            \
-      -S libssh2
+wget "https://github.com/libssh2/libssh2/releases/download/libssh2-${libssh2_version}/libssh2-${libssh2_version}.tar.gz" \
+  -O "libssh2-${libssh2_version}.tar.gz"
+tar xf "libssh2-${libssh2_version}.tar.gz"
+mkdir "libssh2-${libssh2_version}/build"
+cd "libssh2-${libssh2_version}/build"
 
-cmake --build libssh2/build                                       \
-      --target install                                            \
-      -j $(nproc)
+cmake -D CRYPTO_BACKEND=OpenSSL                 \
+      -D CMAKE_BUILD_TYPE=Release               \
+      -D CMAKE_INSTALL_PREFIX="${Libssh2_ROOT}" \
+      -D ENABLE_ZLIB_COMPRESSION=ON             \
+      -D BUILD_SHARED_LIBS=ON                   \
+      -D BUILD_TESTING=OFF                      \
+      ..
+cmake --build . --target install -- -j$(nproc)
 ```
 
-### Building the package
-GPI-Space can be built as follows. The code listings in this document
-assume
+### Building GPI-Space
 
-- `${GPISPACE_SOURCE_DIR}` to be the directory storing the GPI-Space
-  sources.
-- `${GPISPACE_BUILD_DIR}` to be an empty directory to be used for
-  building GPI-Space.
-- `${GPISPACE_INSTALL_DIR}` to be a directory to install GPI-Space
-  to. It is suggested to use a previously empty directory on a shared
-  filesystem.
-- `${GPISPACE_TEST_DIR}` to be an empty directory on a shared
-  filesystem, which used when running the system tests.
+GPI-Space can be built as described below. The dependencies are found
+via various environment variables in addition to being searched in
+system directories. Some dependencies may have multiple ways to be
+found. The dependency-install snippets above already set the
+corresponding variables. It may be required to set additional
+environment or CMake variables if packages are not installed
+system-wide.
+
+- Boost: `BOOST_ROOT`. Newer versions use CMake's new config format
+  and will be automatically preferred if existing. Using config format
+  installations can be disabled with the CMake option
+  `-DBoost_NO_BOOST_CMAKE=on`.
+- GPI-2: `PKG_CONFIG_PATH`
+- libssh2: `PKG_CONFIG_PATH`. Note that libssh2 also installs a CMake
+  new-config-format file, but GPI-Space currently does not support it.
+- OpenSSL: `OPENSSL_ROOT_DIR`
+- hwloc: `PKG_CONFIG_PATH`
+- Qt5: `PATH` (the `qmake`/`qmake-qt5` binary), `Qt5_ROOT`, `Qt5_DIR`
+  or `CMAKE_PREFIX_PATH`
+- chrpath: `PATH`
+
+By default, GPI-Space does not build unit- and system tests. To enable
+them, the options `-DBUILD_TESTING=ON` and
+`-DSHARED_DIRECTORY_FOR_TESTS=<shared-directory>` need to be
+given to CMake by setting `build_tests` in the snippet
+below. `SHARED_DIRECTORY_FOR_TESTS` shall point to an existing but
+empty directory on a shared filesystem. The tests can then be run with
+`GSPC_NODEFILE_FOR_TESTS=<path to nodefile> ctest` within the build
+directory.
 
 ```bash
-cd "${GPISPACE_SOURCE_DIR}"
+export GPISpace_ROOT=<gpispace-install-prefix>
+# to build tests, remove leading # and choose a shared directory to be
+# used to store temporary data.
+#build_tests="-DBUILD_TESTING=on -DSHARED_DIRECTORY_FOR_TESTS=<shared-directory>"
+gpispace_version=main
 
-mkdir -p "${GPISPACE_BUILD_DIR}" && cd "${GPISPACE_BUILD_DIR}"
+# While CMake finds GPI-Space via GPISpace_ROOT, many applications
+# and tools still use this variable for legacy reasons.
+export GSPC_HOME="${GPISpace_ROOT}"
 
-cmake -C ${GPISPACE_SOURCE_DIR}/config.cmake                      \
-      -B ${GPISPACE_BUILD_DIR}                                    \
-      -S ${GPISPACE_SOURCE_DIR}
+wget "https://github.com/cc-hpc-itwm/gpispace/archive/${gpispace_version}.tar.gz" \
+  -O "gpispace-${gpispace_version}.tar.gz"
+tar xf "gpispace-${gpispace_version}.tar.gz"
 
-cmake --build ${GPISPACE_BUILD_DIR}                               \
-      --target install                                            \
+cmake -D CMAKE_INSTALL_PREFIX="${GPISpace_ROOT}"  \
+      -B "gpispace-${gpispace_version}/build" \
+      -S "gpispace-${gpispace_version}"       \
+      ${build_tests:-}
+cmake --build "gpispace-${gpispace_version}/build" \
+      --target install                             \
       -j $(nproc)
 ```
 
-After installing, you can verify the installation by running a simple
-self-test as follows:
+After installing, the installation can be verified by running a simple
+self-test example as follows:
 
 > ---
 > **NOTE:**
 >
 > GPI-Space requires a working SSH environment with a password-less
-> SSH-key when using the SSH RIF strategy.
+> SSH-key when using the SSH RIF strategy, the default for most
+> applications.
+>
+> By default, `${HOME}/.ssh/id_rsa` is used for authentication. If no
+> such key exists,
+>
+> ```bash
+> ssh-keygen -t rsa -b 4096 -N '' -f "${HOME}/.ssh/id_rsa"
+> ssh-copy-id -f -i "${HOME}/.ssh/id_rsa" "${HOSTNAME}"
+> ```
+> can be used to create and register one.
 >
 > ---
 
 ```bash
-cd "${GPISPACE_BUILD_DIR}"
+# to test with multiple nodes, set GSPC_NODEFILE_FOR_TESTS
+#   Slurm: export GSPC_NODEFILE_FOR_TESTS="$(generate_pbs_nodefile)"
+#   PBS/Torque: export GSPC_NODEFILE_FOR_TESTS="${PBS_NODEFILE}"
+# and SWH_INSTALL_DIR:
+#   export SWH_INSTALL_DIR=<a-shared-directory-visible-on-all-nodes>
 
-hostname > nodefile
-export GSPC_NODEFILE_FOR_TESTS="${PWD}/nodefile"
-# or to test in a cluster allocation:
-# Slurm: export GSPC_NODEFILE_FOR_TESTS="$(generate_pbs_nodefile)"
-# PBS/Torque: export GSPC_NODEFILE_FOR_TESTS="${PBS_NODEFILE}"
+"${GPISpace_ROOT}/share/gspc/example/stochastic_with_heureka/selftest"
+```
 
-ctest --output-on-failure                                         \
-      --tests-regex share_selftest
+If GPI-Space has been built with testing enabled, then `ctest` can be
+used to execute the unit- and system tests:
+
+```bash
+# it is always required to set GSPC_NODEFILE_FOR_TESTS for ctest:
+#   Slurm: export GSPC_NODEFILE_FOR_TESTS="$(generate_pbs_nodefile)"
+#   PBS/Torque: export GSPC_NODEFILE_FOR_TESTS="${PBS_NODEFILE}"
+#   single-host: export GSPC_NODEFILE_FOR_TESTS=/etc/hostname
+#     or hostname > nodefile; export ...="${PWD}/nodefile"
+export GSPC_NODEFILE_FOR_TESTS=<path-to-a-nodefile>
+
+cd "gpispace-${gpispace_version}/build"
+ctest --output-on-failure \
+      -j $(nproc)
 ```
 
 ## Next steps
+
 After a successful GPI-Space installation, the next step is to make
 use of it and create the first application. For that, a step-by-step
 guide on how to get started and create a first application is

@@ -4,9 +4,15 @@ title: Contact
 permalink: /contact
 ---
 
-{% comment %}
-Additional content can be added after this comment and will be displayed below the contacts section.
-{% endcomment %}
+# Maintainers
+
+| Author | Affiliation |
+| :-: | :-: |
+| Bernd Lörwald | Fraunhofer ITWM |
+| Rui Machado | Fraunhofer ITWM |
+| Mirko Rahn | Fraunhofer ITWM |
+| Tiberiu Rotaru | Fraunhofer ITWM |
+| Max Zeyen | Fraunhofer ITWM |
 
 # Contributing
 
