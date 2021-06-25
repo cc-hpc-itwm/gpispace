@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <bin/run.hpp>
+#include <util/print_exception.hpp>
 
 #include <implementation/pcp/pcp.hpp>
 
@@ -66,7 +67,7 @@ try
 }
 catch (std::exception const& e)
 {
-  std::cout << "EXCEPTION: " << e.what() << std::endl;
+  std::cout << "EXCEPTION: " << util::print_exception (e) << std::endl;
 
   return -1;
 }

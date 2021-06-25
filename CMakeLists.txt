@@ -15,9 +15,14 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
-project (gspc VERSION 21.03 LANGUAGES CXX)
-set (PROJECT_VERSION "21.03")
-set (PROJECT_VERSION_MINOR "03")
+project (gspc VERSION 21.06 LANGUAGES CXX)
+
+# CMake automatically trims leading zeros in versions. Since GPI-Space
+# versions are dates, revert that.
+if (PROJECT_VERSION_MINOR LESS 10)
+  set (PROJECT_VERSION_MINOR "0${PROJECT_VERSION_MINOR}")
+endif()
+set (PROJECT_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}")
 
 # Sane default build type with optimizations enabled.
 if (NOT CMAKE_BUILD_TYPE)
@@ -44,15 +49,18 @@ list (APPEND CMAKE_MODULE_PATH "$ENV{CMAKE_MODULE_PATH}")
 
 set (BUILD_TESTING OFF CACHE BOOL "")
 
+option (GSPC_WITH_MONITOR_APP "Enable the 'gspc-monitor' execution and logging \
+monitor application (also known as 'gantt')" ON)
+
 add_subdirectory (cmake)
 
-include (add_macros)
-include (beautify_find_boost)
-include (require_compiler_version)
+include (util-cmake/add_macros)
+include (util-cmake/beautify_find_boost)
+include (util-cmake/require_compiler_version)
 
 set (PROJECT_CONTACT "gpispace-support@itwm.fraunhofer.de" CACHE STRING "Contact information")
 
-# BEGIN RELEASE v21.03
+# BEGIN RELEASE v21.06
 install (FILES "${CMAKE_SOURCE_DIR}/git.submodules" DESTINATION .)
 # END RELEASE
 
@@ -79,12 +87,13 @@ if (BUILD_TESTING)
 
   set (IML_TESTING_RIF_STRATEGY ${TESTING_RIF_STRATEGY}
     CACHE STRING
-    "The strategy to bootstrap passed to --iml-rif-strategy in tests."
+    "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY instead."
+    FORCE
   )
   set (IML_TESTING_RIF_STRATEGY_PARAMETERS ${TESTING_RIF_STRATEGY_PARAMETERS}
     CACHE STRING
-    "A semicolon-separated list of parameters to pass to
-     --iml-rif-strategy-parameters in tests."
+    "FORCE-set by GPI-Space, modify TESTING_RIF_STRATEGY_PARAMETERS instead."
+    FORCE
   )
   # Might not be a BeeGFS directory, but IML will check that.
   set (IML_TESTING_BEEGFS_DIRECTORY ${SHARED_DIRECTORY_FOR_TESTS}
@@ -105,7 +114,6 @@ endif()
 
 add_definitions ("-DFHG_ASSERT_MODE=${FHG_ASSERT_MODE}")
 
-set (FHG_QT_MOC_BOOST_HACK_OPTIONS "-DBOOST_LEXICAL_CAST_INCLUDED;-DBOOST_TT_HAS_OPERATOR_HPP_INCLUDED;-DBOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION;-DBOOST_TT_HAS_PLUS_HPP_INCLUDED;-DBOOST_TT_HAS_PLUS_ASSIGN_HPP_INCLUDED;-DBOOST_TT_HAS_MINUS_HPP_INCLUDED;-DBOOST_TT_HAS_MINUS_ASSIGN_HPP_INCLUDED")
 set (PNETC_LIB_DIR "share/gspc/xml/lib")
 
 add_definitions ("-DBOOST_NO_CXX11_SCOPED_ENUMS") # required if linking against boost not built with c++11
@@ -145,7 +153,9 @@ endif()
 find_package (GASPI 1.3.2 REQUIRED)
 find_package (HWLOC REQUIRED)
 find_package (LibRT REQUIRED)
-find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED)
+if (GSPC_WITH_MONITOR_APP)
+  find_package (Qt5 COMPONENTS Core Gui Widgets Xml Network REQUIRED)
+endif()
 find_package (Threads REQUIRED)
 find_package (OpenSSL REQUIRED)
 
@@ -153,9 +163,14 @@ include (CompilerFlags)
 include (InstallRequiredSystemLibraries)
 include (fhg_test_macros)
 
-macro (fhg_add_runtime_executable)
-  extended_add_executable (DONT_APPEND_EXE_SUFFIX INSTALL ${ARGN})
-endmacro()
+include (gspc_add_executable)
+include (gspc_add_library)
+
+add_library (GPISpace-header-only INTERFACE)
+add_library (GPISpace::header-only ALIAS GPISpace-header-only)
+target_include_directories (GPISpace-header-only
+  INTERFACE "${CMAKE_SOURCE_DIR}/include"
+)
 
 include_directories ("${CMAKE_SOURCE_DIR}/share")
 include_directories ("${CMAKE_SOURCE_DIR}/src")
@@ -218,10 +233,6 @@ install (FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
   DESTINATION "share/gspc/"
 )
 
-file (READ "${CMAKE_SOURCE_DIR}/cmake/git_submodules.cmake"
-  ASSERT_GIT_SUBMODULE_VERSIONS_SOURCE
-)
-
 set (GPISpace_installconfig_destination "share/GPISpace/cmake")
 set (GSPC_HOME ".")
 
@@ -259,4 +270,10 @@ write_basic_package_version_file (GPISpaceConfigVersion.cmake
 install (FILES "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfig.cmake"
                "${CMAKE_CURRENT_BINARY_DIR}/GPISpaceConfigVersion.cmake"
   DESTINATION "${GPISpace_installconfig_destination}"
+)
+
+install (FILES
+  "include/gspc/detail/dllexport.hpp"
+  "include/gspc/detail/dllexport.ipp"
+  DESTINATION include/gspc/detail
 )

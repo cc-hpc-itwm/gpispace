@@ -68,17 +68,14 @@ namespace
 struct fixture_add_new_workers
 {
   fixture_add_new_workers()
-    : _worker_manager()
-    , _scheduler
-       ( std::bind ( &fixture_add_new_workers::requirements_and_preferences
+    : _scheduler
+        (std::bind ( &fixture_add_new_workers::requirements_and_preferences
                    , this
                    , std::placeholders::_1
                    )
-       , _worker_manager
-       )
+        )
   {}
 
-  sdpa::daemon::WorkerManager _worker_manager;
   sdpa::daemon::CoallocationScheduler _scheduler;
 
   void add_job ( const sdpa::job_id_t& job_id
@@ -110,19 +107,18 @@ struct fixture_add_new_workers
         cpbset.emplace (capability_name, worker);
       }
 
-      _worker_manager.addWorker ( worker
-                                , cpbset
-                                , random_ulong()
-                                , false
-                                , fhg::util::testing::random_string()
-                                , fhg::util::testing::random_string()
-                                );
+      _scheduler.add_worker ( worker
+                            , cpbset
+                            , random_ulong()
+                            , fhg::util::testing::random_string()
+                            , fhg::util::testing::random_string()
+                            );
     }
   }
 
   void request_scheduling()
   {
-    _scheduler.assignJobsToWorkers();
+    _scheduler.assign_jobs_to_workers();
     _scheduler.steal_work();
   }
 
@@ -160,7 +156,7 @@ BOOST_FIXTURE_TEST_CASE
                   )
         );
 
-      _scheduler.enqueueJob (task);
+      _scheduler.submit_job (task);
       request_scheduling();
     }
   };

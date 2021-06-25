@@ -46,6 +46,8 @@ namespace we
                        , expression_t ("${in} :gt: 0UL")
                        , no_properties()
                        , priority_type()
+                       , boost::optional<we::type::eureka_id_type>{}
+                       , std::list<we::type::preference_t>{}
                        );
       port_id_type const in
         ( dec.add_port
@@ -61,6 +63,8 @@ namespace we
                        , expression_t ("${x} :le: 0UL")
                        , no_properties()
                        , priority_type()
+                       , boost::optional<we::type::eureka_id_type>{}
+                       , std::list<we::type::preference_t>{}
                        );
       port_id_type const x
         ( eat.add_port
@@ -106,8 +110,8 @@ namespace we
         auto const start (Clock::now());
 
         BOOST_REQUIRE
-          ( !net.fire_expressions_and_extract_activity_random
-              (random_engine(), unexpected_workflow_response)
+          ( !net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+              (random_engine(), unexpected_workflow_response, unexpected_eureka)
           );
 
         auto const duration
@@ -170,6 +174,8 @@ namespace we
                                 , expression_t {"${x}"}
                                 , no_properties()
                                 , we::priority_type{}
+                                , boost::optional<we::type::eureka_id_type>{}
+                                , std::list<we::type::preference_t>{}
                                 );
 
         auto add_in_port

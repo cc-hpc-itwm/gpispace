@@ -54,6 +54,8 @@ struct activity
                                     , boost::none
                                     , we::type::property::type()
                                     , we::priority_type()
+                                    , boost::optional<we::type::eureka_id_type>{}
+                                    , std::list<we::type::preference_t>{}
                                     )
            )
   {

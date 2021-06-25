@@ -31,6 +31,9 @@ add_subdirectory (use_sequence/test)
 add_subdirectory (vmem_1_to_n/test)
 add_subdirectory (workerlist)
 
+# The stochastic_with_heureka example is not installing itself as the
+# entire directory is supposed to be self-contained.
+
 install (DIRECTORY "stochastic_with_heureka"
   DESTINATION "${example_install_prefix}"
   USE_SOURCE_PERMISSIONS
@@ -39,9 +42,14 @@ install (DIRECTORY "stochastic_with_heureka"
 set (installed_stochastic_with_heureka_path
   "${CMAKE_INSTALL_PREFIX}/${example_install_prefix}/stochastic_with_heureka"
 )
+list (TRANSFORM TESTING_RIF_STRATEGY_PARAMETERS
+  PREPEND "--rif-strategy-parameters="
+  OUTPUT_VARIABLE _testing_rif_strategy_parameters_with_arg_prefix)
 add_test (NAME example-stochastic_with_heureka
   COMMAND "${installed_stochastic_with_heureka_path}/selftest"
           "${CMAKE_COMMAND}"
+          "${TESTING_RIF_STRATEGY}"
+          ${_testing_rif_strategy_parameters_with_arg_prefix}
 )
 set_property (TEST example-stochastic_with_heureka
   PROPERTY ENVIRONMENT

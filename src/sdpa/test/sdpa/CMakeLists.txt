@@ -15,7 +15,8 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_library (NAME SDPATestUtilities
+  gspc_add_library (NAME SDPATestUtilities
+    TYPE STATIC
     NAMESPACE GPISpace
     SOURCES "utils.cpp"
     LIBRARIES sdpa
@@ -32,14 +33,6 @@ fhg_add_test (NAME sdpa_AddNewWorkers
 
 fhg_add_test (NAME sdpa_CancelJob
   SOURCES CancelJob.cpp
-  USE_BOOST
-  LIBRARIES GPISpace::SDPATestUtilities
-            sdpa
-            test-utilities
-)
-
-fhg_add_test (NAME sdpa_Capabilities
-  SOURCES Capabilities.cpp
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa
@@ -125,24 +118,8 @@ fhg_add_test (NAME sdpa_Subscriber
             test-utilities
 )
 
-fhg_add_test (NAME sdpa_Topologies
-  SOURCES Topologies.cpp
-  USE_BOOST
-  LIBRARIES GPISpace::SDPATestUtilities
-            sdpa
-            test-utilities
-)
-
 fhg_add_test (NAME sdpa_WorkerManager
   SOURCES WorkerManager.cpp
-  USE_BOOST
-  LIBRARIES GPISpace::SDPATestUtilities
-            sdpa
-            test-utilities
-)
-
-fhg_add_test (NAME sdpa_WorkerReportsBacklogFull
-  SOURCES WorkerReportsBacklogFull.cpp
   USE_BOOST
   LIBRARIES GPISpace::SDPATestUtilities
             sdpa

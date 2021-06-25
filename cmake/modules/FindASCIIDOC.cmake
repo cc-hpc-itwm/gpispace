@@ -61,7 +61,9 @@ add_imported_executable (NAME asciidoc
   LOCATION "${ASCIIDOC_ASCIIDOC_BINARY}"
 )
 
-include (parse_arguments)
+#"BEGIN INCLUDE"
+include (util-cmake/parse_arguments)
+#"END INCLUDE"
 
 function (asciidoc)
   set (options INSTALL)

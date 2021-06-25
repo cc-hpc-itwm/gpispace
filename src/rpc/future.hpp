@@ -17,12 +17,10 @@
 #pragma once
 
 #include <boost/asio/io_service.hpp>
-#include <boost/asio/local/stream_protocol.hpp>
 #include <boost/asio/spawn.hpp>
-#include <boost/optional.hpp>
 
-#include <future>
-#include <mutex>
+#include <exception>
+#include <memory>
 
 namespace fhg
 {
@@ -30,37 +28,17 @@ namespace fhg
   {
     namespace detail
     {
-      enum class content
-      {
-        not_yet_set,
-        value,
-        exception,
-      };
-
       template<typename T>
-        struct promise_future_shared_state
-      {
-        promise_future_shared_state (boost::asio::io_service&);
-
-        void wake();
-        void wait();
-        void wait (boost::asio::yield_context);
-
-        boost::asio::local::stream_protocol::socket _sender;
-        boost::asio::local::stream_protocol::socket _receiver;
-
-        std::mutex _guard;
-        content _content = content::not_yet_set;
-        std::exception_ptr _exception;
-        bool _future_created = false;
-        typename std::conditional<std::is_void<T>{}, void*, boost::optional<T>>::type
-          _value;
-      };
+        struct promise_future_shared_state;
     }
-
     template<typename T> struct promise;
     template<typename T> struct future;
 
+    //! A Boost.Asio-coroutine-variant of \c std::promise<T>.
+    //! \note The implementation uses a UNIX stream socket to
+    //! communicate between promise and future. This implies two file
+    //! descriptors being used per promise. Futures share state with
+    //! the promise and add no additional resource costs.
     template<typename T>
       struct promise
     {
@@ -83,10 +61,16 @@ namespace fhg
       std::shared_ptr<detail::promise_future_shared_state<T>> _state;
     };
 
+    //! A Boost.Asio-coroutine-variant of \c std::future<T>.
+    //! Pass as template argument to \c remote_function to use a \c
+    //! remote_function e.g. within a \c service_handler's callback.
     template<typename T>
       struct future
     {
+      //! Wait until the corresponding \c promise has been set.
       T get();
+      //! Wait until the corresponding \c promise has been set. Does
+      //! not block but yields if the promise was not yet set.
       T get (boost::asio::yield_context);
 
       future (future<T> const&) = delete;

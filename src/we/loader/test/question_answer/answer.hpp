@@ -16,8 +16,10 @@
 
 #pragma once
 
+#include <util-generic/dllexport.hpp>
+
 extern "C"
 {
-  extern long the_answer;
-  extern long get_answer();
+  FHG_UTIL_DLLEXPORT extern long the_answer;
+  FHG_UTIL_DLLEXPORT long get_answer();
 }

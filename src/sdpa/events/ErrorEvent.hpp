@@ -31,7 +31,6 @@ namespace sdpa
 
       enum error_code_t
         {
-          SDPA_EBACKLOGFULL,
           SDPA_ENODE_SHUTDOWN,
           SDPA_EUNKNOWN,
         };

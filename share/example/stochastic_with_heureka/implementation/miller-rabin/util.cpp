@@ -16,6 +16,8 @@
 
 #include <implementation/miller-rabin/util.hpp>
 
+#include <iostream>
+
 namespace miller_rabin
 {
   // factor_out_powers_of_two :: Integer -> (Integer, Integer)

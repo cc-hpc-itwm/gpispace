@@ -32,6 +32,13 @@
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 
+#include <algorithm>
+#include <future>
+#include <initializer_list>
+#include <limits>
+#include <memory>
+#include <thread>
+
 namespace protocol
 {
   FHG_RPC_FUNCTION_DESCRIPTION (ping, int (int));

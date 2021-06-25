@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 #include <we/type/signature.hpp>
 
@@ -41,7 +43,7 @@ namespace pnet
     _name& operator= (_name const&) = delete;   \
     _name& operator= (_name&&) = delete
 
-    class type_error : public std::runtime_error
+    class GSPC_DLLEXPORT type_error : public std::runtime_error
     {
     public:
       type_error (const std::string&);
@@ -49,7 +51,7 @@ namespace pnet
       DTOR_COPY_MOVE_ASSIGN (type_error);
     };
 
-    class type_mismatch : public type_error
+    class GSPC_DLLEXPORT type_mismatch : public type_error
     {
     public:
       type_mismatch ( const type::signature::signature_type&
@@ -64,7 +66,7 @@ namespace pnet
       MEMBER (path, std::list<std::string>);
     };
 
-    class missing_field : public type_error
+    class GSPC_DLLEXPORT missing_field : public type_error
     {
     public:
       missing_field ( const type::signature::signature_type&
@@ -79,7 +81,7 @@ namespace pnet
       MEMBER (path, std::list<std::string>);
     };
 
-    class unknown_field : public type_error
+    class GSPC_DLLEXPORT unknown_field : public type_error
     {
     public:
       unknown_field ( const type::value::value_type&
@@ -92,7 +94,7 @@ namespace pnet
       MEMBER (path, std::list<std::string>);
     };
 
-    class eval : public type_error
+    class GSPC_DLLEXPORT eval : public type_error
     {
     public:
       eval (const ::expr::token::type&, const type::value::value_type&);
@@ -107,7 +109,7 @@ namespace pnet
       MEMBER (values, std::list<type::value::value_type>);
     };
 
-    class missing_binding : public std::runtime_error
+    class GSPC_DLLEXPORT missing_binding : public std::runtime_error
     {
     public:
       missing_binding (const std::string&);
@@ -117,7 +119,7 @@ namespace pnet
       MEMBER (key, std::string);
     };
 
-    class could_not_resolve : public std::runtime_error
+    class GSPC_DLLEXPORT could_not_resolve : public std::runtime_error
     {
     public:
       could_not_resolve (const std::string&, const std::list<std::string>&);
@@ -130,7 +132,7 @@ namespace pnet
 
     namespace port
     {
-      class unknown : public std::runtime_error
+      class GSPC_DLLEXPORT unknown : public std::runtime_error
       {
       public:
         unknown ( const std::string& transition_name

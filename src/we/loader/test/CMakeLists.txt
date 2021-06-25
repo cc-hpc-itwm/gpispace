@@ -36,21 +36,77 @@ fhg_add_test (NAME we_loader_module
           empty
 )
 
-extended_add_library (NAME answer TYPE SHARED SOURCES "question_answer/answer.cpp" LIBRARIES pnet)
-extended_add_library (NAME question TYPE SHARED SOURCES "question_answer/question.cpp" LIBRARIES answer)
-extended_add_library (NAME order_stack TYPE SHARED SOURCES "order/stack.cpp")
-extended_add_library (NAME order_a TYPE SHARED SOURCES "order/a.cpp" LIBRARIES order_stack pnet)
-extended_add_library (NAME order_b TYPE SHARED SOURCES "order/b.cpp" LIBRARIES order_stack pnet)
-extended_add_library (NAME initialize_throws TYPE SHARED SOURCES "module/initialize_throws.cpp" LIBRARIES pnet)
-extended_add_library (NAME empty_not_linked_with_pnet
+fhg_add_test (NAME we_loader_module-needs_api_guard
+  SOURCES "module-needs_api_guard.cpp"
+          # Can't link: not part of public API, and linking would add
+          # GPISpace::APIGuard to linked libraries, defeating the
+          # purpose of the test.
+          "../Module.cpp"
+          "../exceptions.cpp"
+  USE_BOOST
+  LIBRARIES GPISpace::header-only
+            Util::Generic
+  DEPENDS empty_not_linked_with_pnet
+)
+
+gspc_add_library (NAME answer
+  TYPE SHARED
+  SOURCES "question_answer/answer.cpp"
+  LIBRARIES pnet
+            Util::Generic
+)
+gspc_add_library (NAME question
+  TYPE SHARED
+  SOURCES "question_answer/question.cpp"
+  LIBRARIES answer
+            Util::Generic
+)
+
+gspc_add_library (NAME order_stack
+  TYPE SHARED
+  SOURCES "order/stack.cpp"
+  LIBRARIES Util::Generic
+)
+gspc_add_library (NAME order_a
+  TYPE SHARED
+  SOURCES "order/a.cpp"
+  LIBRARIES order_stack
+            pnet
+            Util::Generic
+)
+gspc_add_library (NAME order_b
+  TYPE SHARED
+  SOURCES "order/b.cpp"
+  LIBRARIES order_stack
+            pnet
+            Util::Generic
+)
+
+gspc_add_library (NAME initialize_throws
+  TYPE SHARED
+  SOURCES "module/initialize_throws.cpp"
+  LIBRARIES GPISpace::header-only
+            pnet
+)
+gspc_add_library (NAME empty_not_linked_with_pnet
   TYPE SHARED
   SOURCES "module/empty_not_linked_with_pnet.cpp"
-  LIBRARIES Boost::base
+  LIBRARIES GPISpace::header-only
+            Boost::base
 )
-extended_add_library (NAME empty TYPE SHARED SOURCES "module/empty" LIBRARIES pnet)
-extended_add_library (NAME empty_nodelete
+gspc_add_library (NAME empty
   TYPE SHARED
   SOURCES "module/empty.cpp"
-  LIBRARIES pnet
+  LIBRARIES GPISpace::header-only
+            pnet
 )
+gspc_add_library (NAME empty_nodelete
+  TYPE SHARED
+  SOURCES "module/empty.cpp"
+  LIBRARIES GPISpace::header-only
+            pnet
+)
+# Explicitly mark the library as not being unloaded if `dlclose()` is
+# called on it. This emulates the behavior that some libraries with
+# global variables have (see `STB_GNU_UNIQUE`,`-fno-gnu-unique`).
 target_link_options (empty_nodelete PUBLIC LINKER:-z,nodelete)

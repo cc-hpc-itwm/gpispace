@@ -68,6 +68,7 @@ struct_type =
 # <token><value>0</value></token> and allow just <token>0</token>
 token_type = (element value { xsd:string })*
 mod_type =
+  element eureka-group { xsd:string }?,
   (element cinclude { cinclude_type }
    | element ld { flag_type }
    | element cxx { flag_type })*,

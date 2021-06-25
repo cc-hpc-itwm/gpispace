@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <drts/worker/context_fwd.hpp>
 
 #include <functional>
@@ -28,13 +30,13 @@ namespace drts
   namespace worker
   {
     class redirect_output;
-    class context_constructor;
+    class GSPC_DLLEXPORT context_constructor;
 
-    [[noreturn]] void throw_cancelled();
-    [[noreturn]] void on_signal_unexpected (int);
-    [[noreturn]] void on_exit_unexpected (int);
+    [[noreturn]] GSPC_DLLEXPORT void throw_cancelled();
+    [[noreturn]] GSPC_DLLEXPORT void on_signal_unexpected (int);
+    [[noreturn]] GSPC_DLLEXPORT void on_exit_unexpected (int);
 
-    class context
+    class GSPC_DLLEXPORT context
     {
     private:
       friend class redirect_output;
@@ -73,7 +75,7 @@ namespace drts
           );
       }
 
-      struct cancelled : public std::exception {};
+      struct GSPC_DLLEXPORT cancelled : public std::exception {};
 
       void execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN (std::function<void()> fun)
       {

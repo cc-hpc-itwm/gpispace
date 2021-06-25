@@ -138,7 +138,7 @@ BOOST_AUTO_TEST_CASE (memory_buffer_random_sizes_and_alignments)
   expr::eval::context context;
 
   for (std::string const& name : names)
-  { 
+  {
     std::string size_expr ("size_" + name);
     std::string alignment_expr ("alignment_" + name);
 

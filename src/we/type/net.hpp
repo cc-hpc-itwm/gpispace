@@ -49,8 +49,6 @@ namespace we
 {
   namespace type
   {
-    [[noreturn]] void unexpected_eureka (eureka_ids_type const&);
-
     class net_type
     {
     public:
@@ -136,20 +134,17 @@ namespace we
           );
 
       boost::optional<we::type::activity_t>
-        fire_expressions_and_extract_activity_random
+        fire_expressions_and_extract_activity_random_TESTING_ONLY
           ( std::mt19937&
           , we::workflow_response_callback const&
-          , we::eureka_response_callback const& = &unexpected_eureka
+          , we::eureka_response_callback const&
           );
 
       void inject ( transition_id_type
                   , TokensOnPorts const& output
                   , TokensOnPorts const& input //! \todo remember input
                   , workflow_response_callback
-                  = [] ( pnet::type::value::value_type const&
-                       , pnet::type::value::value_type const&
-                       ) {}
-                  , eureka_response_callback = &unexpected_eureka
+                  , eureka_response_callback
                   );
 
     private:
@@ -237,8 +232,8 @@ namespace we
         ar & BOOST_SERIALIZATION_NVP (_adj_tp);
         ar & BOOST_SERIALIZATION_NVP (_port_to_place);
         ar & BOOST_SERIALIZATION_NVP (_port_many_to_place);
-        ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_port_to_eureka);
+        ar & BOOST_SERIALIZATION_NVP (_port_to_response);
         ar & BOOST_SERIALIZATION_NVP (_place_to_port);
         ar & BOOST_SERIALIZATION_NVP (_token_id);
         ar & BOOST_SERIALIZATION_NVP (_token_by_place_id);

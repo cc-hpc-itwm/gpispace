@@ -19,7 +19,7 @@
 
 #include <fhg/util/thread/queue.hpp>
 
-#include <fhgcom/peer.hpp>
+#include <fhgcom/channel.hpp>
 #include <logging/stream_emitter.hpp>
 
 #include <util-generic/threadsafe_queue.hpp>
@@ -45,8 +45,6 @@ struct wfe_task_t;
 
 class DRTSImpl final : public sdpa::events::EventHandler
 {
-  using masters_t = std::vector<fhg::com::p2p::address_t>;
-
 public:
   class Job
   {
@@ -61,18 +59,14 @@ public:
     , CANCELED_DUE_TO_WORKER_SHUTDOWN
     };
 
-    using owner_type = masters_t::const_iterator;
-
     Job ( std::string const& jobid
         , we::type::activity_t const& activity_
         , boost::optional<std::string> const& target_impl_
-        , owner_type const& owner_
         , std::set<std::string> const& workers_
         )
       : id (jobid)
       , activity (activity_)
       , target_impl (target_impl_)
-      , owner (owner_)
       , workers (workers_)
       , state (Job::PENDING)
       , result()
@@ -82,7 +76,6 @@ public:
     std::string const id;
     we::type::activity_t activity;
     boost::optional<std::string> const target_impl;
-    owner_type const owner;
     std::set<std::string> const workers;
     std::atomic<state_t> state;
     we::type::activity_t result;
@@ -94,8 +87,6 @@ private:
 
 public:
 
-  using master_info = std::tuple<fhg::com::host_t, fhg::com::port_t>;
-
   DRTSImpl
     ( std::function<void()> request_stop
     , std::unique_ptr<boost::asio::io_service> peer_io_service
@@ -103,10 +94,9 @@ public:
     , unsigned short comm_port
     , iml::Client /*const*/* virtual_memory_socket
     , iml::SharedMemoryAllocation /*const*/* shared_memory
-    , std::vector<master_info> const& masters
+    , std::tuple<fhg::com::host_t, fhg::com::port_t> const& parent
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
-    , std::size_t backlog_length
     , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     );
@@ -130,7 +120,7 @@ private:
   void start_receiver();
 
   template<typename Event, typename... Args>
-    void send_event (fhg::com::p2p::address_t const& destination, Args&&... args);
+    void send_event_to_parent (Args&&... args);
 
   std::function<void()> _request_stop;
 
@@ -138,7 +128,7 @@ private:
 
   std::string m_my_name;
 
-  mutable std::mutex _currently_executed_tasks_mutex;
+  std::mutex _currently_executed_tasks_mutex;
   std::map<std::string, wfe_task_t *> _currently_executed_tasks;
 
   we::loader::loader m_loader;
@@ -149,33 +139,25 @@ private:
   iml::Client /*const*/* _virtual_memory_api;
   iml::SharedMemoryAllocation /*const*/* _shared_memory;
 
-  //! \todo Two sets for connected and unconnected masters?
-  masters_t m_masters;
-
-  fhg::util::interruptible_threadsafe_queue<std::pair< fhg::com::p2p::address_t
-                                                     , sdpa::events::SDPAEvent::Ptr
-                                                     >
+  fhg::util::interruptible_threadsafe_queue<sdpa::events::SDPAEvent::Ptr
                                            > m_event_queue;
 
-  mutable std::mutex m_job_map_mutex;
+  std::mutex m_job_map_mutex;
 
   map_of_jobs_t m_jobs;
 
-  fhg::util::interruptible_bounded_threadsafe_queue<std::shared_ptr<DRTSImpl::Job>>
+  fhg::util::interruptible_threadsafe_queue<std::shared_ptr<DRTSImpl::Job>>
     m_pending_jobs;
 
-  mutable std::mutex _guard_backlogfull_notified_masters;
-  std::unordered_set<fhg::com::p2p::address_t> _masters_backlogfull_notified;
-
-  fhg::com::peer_t _peer;
+  fhg::com::channel _peer;
 
   boost::strict_scoped_thread<> m_event_thread;
   decltype (m_event_queue)::interrupt_on_scope_exit _interrupt_event_thread;
   boost::strict_scoped_thread<> m_execution_thread;
   decltype (m_pending_jobs)::interrupt_on_scope_exit _interrupt_execution_thread;
 
-  std::unordered_map<fhg::com::p2p::address_t, std::promise<void>>
-    _registration_responses;
+  std::promise<void> _registration_response;
+  bool _registered {false};
 
   struct mark_remaining_tasks_as_canceled_helper
   {

@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_runtime_executable (NAME gspc-monitor
+gspc_add_executable (NAME gspc-monitor
+  RUNTIME
   SOURCES "monitor.cpp"
           "ui/execution_monitor.cpp"
           "ui/execution_monitor_detail.cpp"

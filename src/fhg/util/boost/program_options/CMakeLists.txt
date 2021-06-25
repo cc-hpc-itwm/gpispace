@@ -14,9 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-include (add_macros)
+include (util-cmake/add_macros)
+include (util-cmake/add_unit_test)
 
-include (beautify_find_boost)
+include (util-cmake/beautify_find_boost)
 find_boost (1.59 REQUIRED QUIET
   COMPONENTS program_options
              test_exec_monitor

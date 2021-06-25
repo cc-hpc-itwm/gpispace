@@ -18,6 +18,8 @@
 
 #include <iml/rif/strategy/ssh/detail.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <util-generic/nest_exceptions.hpp>
 
 struct _LIBSSH2_CHANNEL;
@@ -126,7 +128,7 @@ namespace libssh2
       }
       while (bytes_read_or_rc);
 
-      return {buffer.begin(), buffer.begin() + bytes_read_total};
+      return {buffer.begin(), fhg::util::next (buffer.begin(), bytes_read_total)};
     }
 
     session::execute_return_type execute_impl ( LIBSSH2_SESSION* session

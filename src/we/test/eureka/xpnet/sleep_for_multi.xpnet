@@ -1,0 +1,95 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2021 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="sleep_for_multi">
+  <in name="register_host" type="string"/>
+  <in name="register_port" type="int"/>
+  <in name="task" type="string"/>
+  <in name="eureka_group" type="string"/>
+  <in name="milliseconds" type="unsigned int"/>
+  <modules>
+    <preferences>
+      <target>A</target>
+      <target>B</target>
+    </preferences>
+
+    <module name="we_test_eureka"
+            function="sleep_for ( register_host
+                                , register_port
+                                , task
+                                , eureka_group
+                                , milliseconds
+                                )"
+            pass_context="true"
+            target="A"
+            >
+      <eureka-group>${eureka_group}</eureka-group>
+      <cinclude href="we/test/eureka/jobserver/client.hpp"/>
+      <cinclude href="chrono"/>
+      <cinclude href="thread"/>
+      <code><![CDATA[
+      gspc::we::test::eureka::jobserver::client client
+        (register_host, register_port, task, eureka_group);
+
+      _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
+        ( [=]
+          {
+            std::this_thread::sleep_for
+              (std::chrono::milliseconds (milliseconds));
+          }
+        , [] {}
+        , &drts::worker::on_signal_unexpected
+        , [] (int) {}
+        );
+
+      client.exited_or_cancelled();
+      ]]></code>
+    </module>
+
+    <module name="we_test_eureka"
+            function="sleep_for ( register_host
+                                , register_port
+                                , task
+                                , eureka_group
+                                , milliseconds
+                                )"
+            pass_context="true"
+            target="B"
+            >
+      <eureka-group>${eureka_group}</eureka-group>
+      <cinclude href="we/test/eureka/jobserver/client.hpp"/>
+      <cinclude href="chrono"/>
+      <cinclude href="thread"/>
+      <code><![CDATA[
+      gspc::we::test::eureka::jobserver::client client
+        (register_host, register_port, task, eureka_group);
+
+      _pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
+        ( [=]
+          {
+            std::this_thread::sleep_for
+              (std::chrono::milliseconds (milliseconds));
+          }
+        , [] {}
+        , &drts::worker::on_signal_unexpected
+        , [] (int) {}
+        );
+
+      client.exited_or_cancelled();
+      ]]></code>
+    </module>
+  </modules>
+</defun>

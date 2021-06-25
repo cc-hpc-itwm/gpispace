@@ -28,11 +28,11 @@ namespace fhg
       {
         void* _ptr;
         T* _data;
-      } sym;
+      } symbol;
 
-      sym._ptr = syscall::dlsym (_, name.c_str());
+      symbol._ptr = syscall::dlsym (_, name.c_str());
 
-      return sym._data;
+      return symbol._data;
     }
     catch (...)
     {

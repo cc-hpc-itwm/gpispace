@@ -16,11 +16,8 @@
 
 #include <sdpa/events/Codec.hpp>
 
-#include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
 #include <sdpa/events/DeleteJobAckEvent.hpp>
 #include <sdpa/events/DeleteJobEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
@@ -62,8 +59,6 @@ namespace sdpa
 
         REGISTER (CancelJobAckEvent, JobEvent);
         REGISTER (CancelJobEvent, JobEvent);
-        REGISTER (CapabilitiesGainedEvent, MgmtEvent);
-        REGISTER (CapabilitiesLostEvent, MgmtEvent);
         REGISTER (DeleteJobAckEvent, JobEvent);
         REGISTER (DeleteJobEvent, JobEvent);
         REGISTER (ErrorEvent, MgmtEvent);
@@ -82,7 +77,6 @@ namespace sdpa
         REGISTER (put_token_response, MgmtEvent);
         REGISTER (workflow_response, JobEvent);
         REGISTER (workflow_response_response, MgmtEvent);
-        REGISTER (BacklogNoLongerFullEvent, MgmtEvent);
 
 #undef REGISTER
 

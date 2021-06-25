@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <drts/stream.fwd.hpp>
 
 #include <we/type/value.hpp>
@@ -35,7 +37,7 @@
 
 namespace gspc
 {
-  class stream
+  class GSPC_DLLEXPORT stream
   {
   public:
     void write (std::string const&);

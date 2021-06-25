@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 
 #include <boost/optional.hpp>
@@ -26,24 +28,24 @@ namespace pnet
   {
     namespace value
     {
-      boost::optional<const value_type&>
+      GSPC_DLLEXPORT boost::optional<const value_type&>
       peek ( const std::list<std::string>::const_iterator&
            , const std::list<std::string>::const_iterator&
            , const value_type&
            );
-      boost::optional<const value_type&>
+      GSPC_DLLEXPORT boost::optional<const value_type&>
       peek (const std::list<std::string>& path, const value_type& node);
-      boost::optional<const value_type&>
+      GSPC_DLLEXPORT boost::optional<const value_type&>
       peek (const std::string&, const value_type&);
 
-      boost::optional<value_type&>
+      GSPC_DLLEXPORT boost::optional<value_type&>
       peek ( const std::list<std::string>::const_iterator&
            , const std::list<std::string>::const_iterator&
            , value_type&
            );
-      boost::optional<value_type&>
+      GSPC_DLLEXPORT boost::optional<value_type&>
       peek (const std::list<std::string>& path, value_type& node);
-      boost::optional<value_type&>
+      GSPC_DLLEXPORT boost::optional<value_type&>
       peek (const std::string&, value_type&);
     }
   }

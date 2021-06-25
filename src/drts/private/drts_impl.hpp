@@ -61,7 +61,7 @@ namespace gspc
                    , installation const&
                    , std::string const& topology_description
                    , boost::optional<rifd_entry_points> const& entry_points
-                   , rifd_entry_point const& master
+                   , rifd_entry_point const& parent
                    , std::ostream& info_output
                    , Certificates const& certificates
                    );
@@ -96,7 +96,7 @@ namespace gspc
                              , installation_path
                              , std::vector<worker_description> worker_descriptions
                              , std::vector<fhg::rif::entry_point> const& rif_entry_points
-                             , fhg::rif::entry_point const& master
+                             , fhg::rif::entry_point const& parent
                              , std::ostream& info_output
                              , boost::optional<fhg::rif::entry_point> log_rif_entry_point
                              , std::vector<fhg::logging::endpoint> default_log_receivers
@@ -125,7 +125,7 @@ namespace gspc
         > remove_worker (std::vector<fhg::rif::entry_point> const&);
 
       std::ostream& _info_output;
-      fhg::rif::entry_point _master;
+      fhg::rif::entry_point _parent;
       boost::optional<boost::filesystem::path> _gpi_socket;
       std::vector<boost::filesystem::path> _app_path;
       std::vector<std::string> _worker_env_copy_variable;
@@ -140,8 +140,8 @@ namespace gspc
 
       fhg::drts::processes_storage _processes_storage;
 
-      std::string _master_agent_name;
-      fhg::drts::hostinfo_type _master_agent_hostinfo;
+      std::string _parent_agent_name;
+      fhg::drts::hostinfo_type _parent_agent_hostinfo;
 
       std::string _top_level_agent_host;
       unsigned short _top_level_agent_port;

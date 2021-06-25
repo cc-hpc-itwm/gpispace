@@ -21,12 +21,14 @@
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/types.hpp>
 
+#include <fhgcom/header.hpp>
+
 #include <boost/optional.hpp>
-#include <boost/range/adaptor/map.hpp>
 
 #include <algorithm>
 #include <functional>
 #include <mutex>
+#include <unordered_set>
 
 namespace sdpa
 {
@@ -36,54 +38,92 @@ namespace sdpa
     {
     public:
       CoallocationScheduler
-        ( std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
-        , WorkerManager&
-        );
+        (std::function<Requirements_and_preferences (const sdpa::job_id_t&)>);
 
       // -- used by daemon
-      bool delete_job (const sdpa::job_id_t&);
-      void delete_pending_job (const sdpa::job_id_t&);
+      void delete_job (const sdpa::job_id_t&);
 
-      void store_result (worker_id_t const&, job_id_t const&, terminal_state);
+      void store_result
+        (fhg::com::p2p::address_t const&, job_id_t const&, terminal_state);
       boost::optional<job_result_type>
         get_aggregated_results_if_all_terminated (job_id_t const&);
 
       // -- used by daemon and self
-      void enqueueJob (const sdpa::job_id_t&);
-      void request_scheduling();
+      void submit_job (const sdpa::job_id_t&);
 
       // used by daemon and self and test
-      void releaseReservation (const sdpa::job_id_t&);
-      void assignJobsToWorkers();
+      void release_reservation (const sdpa::job_id_t&);
+      void assign_jobs_to_workers();
       void steal_work();
 
-      void reschedule_worker_jobs_and_maybe_remove_worker
-        ( worker_id_t const&
-        , std::function<Job* (sdpa::job_id_t const&)>
-        , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
+      bool cancel_job_and_siblings
+        ( job_id_t const&
         , bool
+        , std::function<void (fhg::com::p2p::address_t const&)>
+        );
+      void notify_submitted_or_acknowledged_workers
+        ( job_id_t const&
+        , std::function<void ( fhg::com::p2p::address_t const&)>
+        );
+      void reschedule_worker_jobs_and_maybe_remove_worker
+        ( fhg::com::p2p::address_t const&
+        , std::function<Job* (sdpa::job_id_t const&)>
+        , std::function<void (fhg::com::p2p::address_t const& addr, job_id_t const&)>
         );
 
-      std::set<job_id_t> start_pending_jobs
+      bool reschedule_job_if_the_reservation_was_canceled
+        (job_id_t const& job, status::code const);
+
+      void start_pending_jobs
         (std::function<void ( WorkerSet const&
                             , Implementation const&
                             , const job_id_t&
+                            , std::function<fhg::com::p2p::address_t (worker_id_t const&)>
                             )
                       >
         );
 
-      bool reservation_canceled (job_id_t const&) const;
+      void add_worker ( worker_id_t const&
+                      , capabilities_set_t const&
+                      , unsigned long
+                      , std::string const&
+                      , fhg::com::p2p::address_t const&
+                      );
+
+      void delete_worker_TESTING_ONLY (worker_id_t const&);
+
+      void acknowledge_job_sent_to_worker
+        (job_id_t const&, fhg::com::p2p::address_t const&);
+
     private:
-      double compute_reservation_cost
-        ( const job_id_t&
-        , const std::set<worker_id_t>&
-        , const double computational_cost
-        ) const;
+      void release_reservation
+        ( const sdpa::job_id_t&
+        , std::lock_guard<std::mutex> const&
+        , std::lock_guard<std::mutex> const&
+        );
+
+      std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
+        ( worker_id_t const&
+        , std::function<Job* (sdpa::job_id_t const&)>
+        , std::function<void (fhg::com::p2p::address_t const&, job_id_t const&)>
+        , std::lock_guard<std::mutex> const&
+        , std::lock_guard<std::mutex> const&
+        );
+
+      Workers_implementation_and_transfer_cost find_assignment
+        ( job_id_t const& job_id, std::lock_guard<std::mutex> const&) const;
+
+      std::pair<boost::optional<double>, boost::optional<std::string>>
+        match_requirements_and_preferences
+          ( job_id_t const& job_id
+          , std::set<std::string> const& capabilities
+          ) const;
 
       std::function<Requirements_and_preferences (const sdpa::job_id_t&)>
         _requirements_and_preferences;
 
-      WorkerManager& _worker_manager;
+      std::mutex _mtx_worker_man;
+      WorkerManager _worker_manager;
 
       class locked_job_id_list
       {
@@ -96,13 +136,11 @@ namespace sdpa
         std::list<job_id_t> get_and_clear();
 
       private:
-        mutable std::mutex mtx_;
+        std::mutex mtx_;
         std::list<job_id_t> container_;
       } _jobs_to_schedule;
 
-      //! \note to be able to call releaseReservation instead of
-      //! reimplementing in reschedule_worker_jobs
-      mutable std::recursive_mutex mtx_alloc_table_;
+      std::mutex mtx_alloc_table_;
       using allocation_table_t
         = std::unordered_map<job_id_t, std::unique_ptr<scheduler::Reservation>>;
       allocation_table_t allocation_table_;

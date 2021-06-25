@@ -40,12 +40,14 @@ BOOST_AUTO_TEST_CASE (transition_without_input_port_can_not_fire)
                        , boost::none
                        , no_properties()
                        , we::priority_type()
+                       , boost::optional<we::type::eureka_id_type>{}
+                       , std::list<we::type::preference_t>{}
                        )
                      );
 
   BOOST_REQUIRE
-    ( !net.fire_expressions_and_extract_activity_random
-        (random_engine(), unexpected_workflow_response)
+    ( !net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+        (random_engine(), unexpected_workflow_response, unexpected_eureka)
     );
 }
 
@@ -62,6 +64,8 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
                          , boost::none
                          , no_properties()
                          , we::priority_type()
+                         , boost::optional<we::type::eureka_id_type>{}
+                         , std::list<we::type::preference_t>{}
                          )
                        );
 
@@ -74,8 +78,8 @@ BOOST_AUTO_TEST_CASE (deserialized_transition_without_input_port_can_not_fire)
   iar >> net;
 
   BOOST_REQUIRE
-    ( !net.fire_expressions_and_extract_activity_random
-        (random_engine(), unexpected_workflow_response)
+    ( !net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+        (random_engine(), unexpected_workflow_response, unexpected_eureka)
     );
 }
 
@@ -114,6 +118,8 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
     , boost::none
     , no_properties()
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
 
   auto&& add_port
@@ -150,8 +156,8 @@ BOOST_AUTO_TEST_CASE (transition_that_depends_on_own_output_can_fire)
   BOOST_REQUIRE_EQUAL (net.get_token (place_credit).size(), 1);
 
   BOOST_REQUIRE
-    ( !net.fire_expressions_and_extract_activity_random
-        (random_engine(), unexpected_workflow_response)
+    ( !net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+        (random_engine(), unexpected_workflow_response, unexpected_eureka)
     );
 
   BOOST_REQUIRE (net.get_token (place_in).empty());
@@ -176,8 +182,8 @@ namespace we
       BOOST_REQUIRE (net.port_to_response().empty());
       BOOST_REQUIRE (net.place_to_port().empty());
       BOOST_REQUIRE
-        ( !net.fire_expressions_and_extract_activity_random
-            (random_engine(), unexpected_workflow_response)
+        ( !net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+            (random_engine(), unexpected_workflow_response, unexpected_eureka)
         );
     }
   }

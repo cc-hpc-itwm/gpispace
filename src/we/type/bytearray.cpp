@@ -16,6 +16,8 @@
 
 #include <we/type/bytearray.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <boost/functional/hash.hpp>
 
 #include <iostream>
@@ -42,7 +44,7 @@ namespace we
     {
       const std::size_t s (std::min (_v.size(), size));
 
-      std::copy (_v.begin(), _v.begin() + s, buf);
+      std::copy (_v.begin(), fhg::util::next (_v.begin(), s), buf);
 
       return s;
     }

@@ -49,11 +49,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
         <fhg::util::boost::program_options::existing_path>()->required()
     , "path to test binary"
     )
-    ( "bundle-path"
-    , boost::program_options::value
-        <fhg::util::boost::program_options::existing_directory>()->required()
-    , "path to bundled libraries"
-    )
     ;
 
   boost::program_options::variables_map vm
@@ -76,10 +71,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
     ( vm.at ("test-binary")
     . as<fhg::util::boost::program_options::existing_path>()
     );
-  boost::filesystem::path const bundle_path
-    ( vm.at ("bundle-path")
-    . as<fhg::util::boost::program_options::existing_directory>()
-    );
 
   gspc::installation const installation (vm);
 
@@ -98,7 +89,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
                         ( hosts
                         , test_binary
                         , {"--option", option_value}
-                        , {{"LD_LIBRARY_PATH", bundle_path.string()}}
                         )
                       );
 
@@ -122,8 +112,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
     auto const result ( scoped_rifds.execute
                         ( hosts
                         , test_binary
-                        , {}
-                        , {{"LD_LIBRARY_PATH", bundle_path.string()}}
                         )
                       );
 
@@ -148,8 +136,6 @@ BOOST_AUTO_TEST_CASE (scoped_rifd_from_command_line)
     auto const result ( scoped_rifds.execute
                         ( std::unordered_set<std::string> {""}
                         , {}
-                        , {}
-                        , std::unordered_map<std::string, std::string> {}
                         )
                       );
 

@@ -2,6 +2,9 @@
 
 # arguments: (optional) path to cmake binary, defaults to cmake3 or
 #            cmake, if available, else aborts.
+# arguments: (optional) rif strategy to use, defaults to ssh.
+# arguments: (optional) additional parameters to pass to the drts
+#            started by the selftest, e.g. --rif-strategy-parameters.
 # requires: $CXX is compiler with --std=c++11 available
 # requires: $GPISpace_ROOT or $CMAKE_PREFIX_PATH or $GPISpace_DIR set
 # optional: $GSPC_NODEFILE_FOR_TESTS pointing to a path of a nodefile
@@ -16,6 +19,8 @@
 set -euo pipefail
 
 cmake_bin="${1:-$(command -v cmake3 2>/dev/null || command -v cmake)}"
+rif_strategy="${2:-ssh}"
+shift 2 || true
 
 cleanups=()
 function push_cleanup()
@@ -68,14 +73,15 @@ ctest --output-on-failure
 pop_cleanup
 
 drts_arguments=(--nodefile "${test_dir}/nodefile")
-drts_arguments+=(--rif-strategy "ssh")
+drts_arguments+=(--rif-strategy "${rif_strategy}")
+drts_arguments+=("${@}")
 
 function run_test_do_check() {
   local name="${1}"
   local expected="${2}"
   local got="${3}"
 
-  if [[ "${got}" != "${expected}" ]]
+  if [[ ! "${got}" =~ ${expected} ]]
   then
     echo >&2 "Test '${name}' failed. Expected:"
     echo >&2 "${expected}"
@@ -209,7 +215,7 @@ fi
 # todo: miller-rabin user example
 
 run_test "pcp" \
-  "solution abb" \
+  "solution (abb|cbbb)" \
   \
   "${install_dir}/bin/run-pcp" \
     --post-process-per-node 1 \

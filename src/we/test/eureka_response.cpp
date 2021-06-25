@@ -71,6 +71,8 @@ namespace
         , we::type::expression_t (eureka_condition)
         , {}
         , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
     we::port_id_type const port_id_eureka_gid
       ( trans_eureka.add_port ( we::type::port_t
@@ -166,7 +168,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_no_eureka_responses)
     (fhg::util::testing::detail::GLOBAL_random_engine()());
 
   BOOST_REQUIRE
-    ( !eureka_net.net.fire_expressions_and_extract_activity_random
+    ( !eureka_net.net.fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( random_engine
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
@@ -217,7 +219,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_eureka_id_on_eureka_response)
     (fhg::util::testing::detail::GLOBAL_random_engine()());
 
   BOOST_REQUIRE
-    ( !eureka_net.net.fire_expressions_and_extract_activity_random
+    ( !eureka_net.net.fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( random_engine
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&
@@ -277,7 +279,7 @@ BOOST_AUTO_TEST_CASE (check_transition_generates_one_or_more_eureka_responses)
     (fhg::util::testing::detail::GLOBAL_random_engine()());
 
   BOOST_REQUIRE
-    ( !eureka_net.net.fire_expressions_and_extract_activity_random
+    ( !eureka_net.net.fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( random_engine
         , [] ( pnet::type::value::value_type const&
              , pnet::type::value::value_type const&

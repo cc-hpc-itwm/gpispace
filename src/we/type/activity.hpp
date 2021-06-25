@@ -23,7 +23,6 @@
 #include <we/loader/loader.hpp>
 #include <we/plugin/Plugins.hpp>
 #include <we/type/eureka.hpp>
-#include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
 #include <we/type/value/serialize.hpp>
 #include <we/workflow_response.hpp>
@@ -35,7 +34,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/serialization/access.hpp>
-#include <boost/variant.hpp>
 
 #include <iosfwd>
 #include <map>
@@ -87,12 +85,14 @@ namespace we
 
       std::string to_string() const;
 
-      boost::variant<we::type::transition_t> const& data() const;
+      we::type::transition_t const& transition() const;
 
       std::string const& name() const;
       bool handle_by_workflow_engine() const;
 
-      boost::optional<eureka_id_type> const& eureka_id() const;
+      //! evaluates the eureka expression once and memorizes the value
+      //! for subsequent calls
+      boost::optional<eureka_id_type> const& eureka_id();
 
       void set_wait_for_output();
       void put_token
@@ -150,9 +150,8 @@ namespace we
 
     private:
       we::type::transition_t& mutable_transition();
-      const we::type::transition_t& transition() const;
 
-      boost::variant<we::type::transition_t> _data;
+      we::type::transition_t _transition;
       boost::optional<we::transition_id_type> _transition_id;
 
       friend class net_type;
@@ -160,6 +159,7 @@ namespace we
       TokensOnPorts _output;
 
       bool _evaluation_context_requested {false};
+      boost::optional<eureka_id_type> _eureka_id;
 
       explicit activity_t
         ( we::type::transition_t

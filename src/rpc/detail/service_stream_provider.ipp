@@ -16,6 +16,8 @@
 
 #include <rpc/detail/service_stream_provider.hpp>
 
+#include <rpc/detail/packet_header.hpp>
+#include <rpc/detail/vector_sink.hpp>
 #include <rpc/service_dispatcher.hpp>
 
 #include <util-generic/cxx14/make_unique.hpp>
@@ -310,7 +312,7 @@ namespace fhg
               boost::iostreams::stream_buffer<decltype (source)> input_stream (source);
               boost::archive::binary_iarchive input (input_stream);
 
-              util::vector_sink sink (response);
+              detail::vector_sink sink (response);
               boost::iostreams::stream<decltype (sink)> output_stream (sink);
               boost::archive::binary_oarchive output (output_stream);
 

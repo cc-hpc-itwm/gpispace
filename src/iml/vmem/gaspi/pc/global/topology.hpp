@@ -55,8 +55,6 @@ namespace gpi
                    );
 
 
-        virtual bool is_master () const override;
-
         virtual void alloc ( const iml::SegmentHandle segment
                            , const iml::AllocationHandle
                            , const iml::MemoryOffset
@@ -73,7 +71,7 @@ namespace gpi
         virtual void del_memory (const iml::SegmentHandle seg_id) override;
 
       private:
-        mutable std::mutex m_global_alloc_mutex;
+        std::mutex m_global_alloc_mutex;
 
         fhg::iml::vmem::gaspi_context& _gaspi_context;
 

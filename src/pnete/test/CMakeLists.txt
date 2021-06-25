@@ -15,7 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_executable (NAME monitor_pressure_generator
+  gspc_add_executable (NAME monitor_pressure_generator
     SOURCES monitor_pressure_generator.cpp
     LIBRARIES pnet
               gspc::logging

@@ -17,7 +17,6 @@
 #pragma once
 
 #include <sdpa/job_states.hpp>
-#include <sdpa/master_network_info.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
@@ -149,13 +148,8 @@ namespace sdpa
     using Implementation = boost::optional<std::string>;
 
     struct job_source_wfe {};
-    struct job_source_master
-    {
-      master_info_t::iterator _;
-    };
     struct job_source_client {};
     using job_source = boost::variant < job_source_wfe
-                                      , job_source_master
                                       , job_source_client
                                       >;
 

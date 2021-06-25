@@ -48,9 +48,6 @@ namespace fhg
 {
   namespace drts
   {
-    gspc::worker_description parse_capability
-      (std::size_t def_num_proc, std::string const& cap_spec);
-
     using hostinfo_type = std::pair<std::string, unsigned short>;
 
     enum class component_type
@@ -91,8 +88,8 @@ namespace fhg
              , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
              > start_workers_for
       ( std::vector<fhg::rif::entry_point> const& entry_points
-      , std::string master_name
-      , fhg::drts::hostinfo_type master_hostinfo
+      , std::string parent_name
+      , fhg::drts::hostinfo_type parent_hostinfo
       , gspc::worker_description const& description
       , fhg::drts::processes_storage& processes
       , boost::optional<boost::filesystem::path> const& gpi_socket
@@ -122,8 +119,8 @@ namespace fhg
       , std::vector<fhg::rif::entry_point> const&
       , fhg::rif::entry_point const&
       , processes_storage&
-      , std::string& master_agent_name
-      , fhg::drts::hostinfo_type& master_agent_hostinfo
+      , std::string& parent_agent_name
+      , fhg::drts::hostinfo_type& parent_agent_hostinfo
       , std::ostream& info_output
       , boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers

@@ -1,0 +1,377 @@
+// This file is part of GPI-Space.
+// Copyright (C) 2021 Fraunhofer ITWM
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#include <boost/test/unit_test.hpp>
+
+#include <drts/worker_description.hpp>
+#include <drts/private/startup_and_shutdown.hpp>
+#include <drts/private/worker_description_implementation.hpp>
+
+#include <util-generic/join.hpp>
+#include <util-generic/print_container.hpp>
+#include <util-generic/read_lines.hpp>
+#include <util-generic/testing/random.hpp>
+
+#include <boost/format.hpp>
+#include <boost/optional/optional_io.hpp>
+#include <boost/test/data/test_case.hpp>
+
+#include <iostream>
+#include <sstream>
+#include <tuple>
+#include <vector>
+
+namespace gspc
+{
+  std::ostream& operator<< (std::ostream&, worker_description const&);
+  std::ostream& operator<< (std::ostream& os, worker_description const& wd)
+  {
+    return os
+      << "WorkerDescription"
+      << "["
+      << "capabilities = " << fhg::util::print_container ("[", ", ", "]", wd._->capabilities)
+      << ", num_per_node = " << wd._->num_per_node
+      << ", max_nodes = " << wd._->max_nodes
+      << ", shm_size = " << wd._->shm_size
+      << ", socket = " << wd._->socket
+      << ", base_port = " << wd._->base_port
+      << "]"
+      ;
+  }
+  bool operator== (worker_description const&, worker_description const&);
+  bool operator== (worker_description const& lhs, worker_description const& rhs)
+  {
+#define ESSENCE(wd)                             \
+    std::tie ( wd._->capabilities               \
+             , wd._->num_per_node               \
+             , wd._->max_nodes                  \
+             , wd._->shm_size                   \
+             , wd._->socket                     \
+             , wd._->base_port                  \
+             )
+
+    return ESSENCE (lhs) == ESSENCE (rhs);
+
+#undef ESSENCE
+  }
+}
+
+namespace
+{
+  struct RandomIdentifier
+  {
+    std::string operator()() const
+    {
+      return _random_string
+        (fhg::util::testing::random<std::string>::identifier());
+    }
+
+  private:
+    fhg::util::testing::random<std::string> _random_string;
+  };
+
+  std::vector<std::string> random_identifiers (std::size_t n)
+  {
+    using fhg::util::testing::randoms;
+    return randoms<std::vector<std::string>, RandomIdentifier> (n);
+  }
+  std::vector<std::string> random_identifiers()
+  {
+    using fhg::util::testing::random;
+    return random_identifiers (random<std::size_t>{} (100, 1));
+  }
+}
+
+namespace fhg
+{
+  namespace drts
+  {
+    BOOST_AUTO_TEST_CASE (plain_identifier_is_capability)
+    {
+      auto const identifiers (random_identifiers (1));
+      gspc::worker_description const wd (identifiers.front());
+      gspc::worker_description const expected
+        { identifiers
+        , 1
+        , 0
+        , 0
+        , {}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (multiple_identifiers_separated_by_PLUS_are_capabilities)
+    {
+      auto const identifiers (random_identifiers());
+      auto const input
+        (str ( boost::format ("%1%")
+             % fhg::util::join (identifiers, "+")
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , 1
+        , 0
+        , 0
+        , {}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (test_issue_986)
+    {
+      auto const identifiers (fhg::util::read_lines ("@ISSUE_986_DATA@"));
+      auto const input
+        (str ( boost::format ("%1%")
+             % fhg::util::join (identifiers, "+")
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , 1
+        , 0
+        , 0
+        , {}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (socket_is_separated_from_identifiers_by_HASH)
+    {
+      auto const identifiers (random_identifiers());
+      auto const socket (fhg::util::testing::random<std::size_t>{}());
+      auto const input
+        (str ( boost::format ("%1%#%2%")
+             % fhg::util::join (identifiers, "+")
+             % socket
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , 1
+        , 0
+        , 0
+        , {socket}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE
+      (per_node_is_separated_from_identifiers_by_DOUBLE_COLON)
+    {
+      auto const identifiers (random_identifiers());
+      auto const per_node (fhg::util::testing::random<std::size_t>{}());
+      auto const input
+        (str ( boost::format ("%1%:%2%")
+             % fhg::util::join (identifiers, "+")
+             % per_node
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , per_node
+        , 0
+        , 0
+        , {}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (per_node_is_separated_from_socket_by_DOUBLE_COLON)
+    {
+      auto const identifiers (random_identifiers());
+      auto const socket (fhg::util::testing::random<std::size_t>{}());
+      auto const per_node (fhg::util::testing::random<std::size_t>{}());
+      auto const input
+        (str ( boost::format ("%1%#%2%:%3%")
+             % fhg::util::join (identifiers, "+")
+             % socket
+             % per_node
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , per_node
+        , 0
+        , 0
+        , {socket}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (max_nodes_is_separated_from_per_node_by_X)
+    {
+      auto const identifiers (random_identifiers());
+      auto const per_node (fhg::util::testing::random<std::size_t>{}());
+      auto const max_nodes (fhg::util::testing::random<std::size_t>{}());
+      auto const input
+        (str ( boost::format ("%1%:%2%x%3%")
+             % fhg::util::join (identifiers, "+")
+             % per_node
+             % max_nodes
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , per_node
+        , max_nodes
+        , 0
+        , {}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (shm_size_is_separated_from_per_node_by_COMMA)
+    {
+      auto const identifiers (random_identifiers());
+      auto const per_node (fhg::util::testing::random<std::size_t>{}());
+      auto const shm_size (fhg::util::testing::random<std::size_t>{}());
+      auto const input
+        (str ( boost::format ("%1%:%2%,%3%")
+             % fhg::util::join (identifiers, "+")
+             % per_node
+             % shm_size
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , per_node
+        , 0
+        , shm_size
+        , {}
+        , {}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    BOOST_AUTO_TEST_CASE (port_is_separated_from_per_node_by_SLASH)
+    {
+      auto const identifiers (random_identifiers());
+      auto const per_node (fhg::util::testing::random<std::size_t>{}());
+      auto const port (fhg::util::testing::random<unsigned short>{}());
+      auto const input
+        (str ( boost::format ("%1%:%2%/%3%")
+             % fhg::util::join (identifiers, "+")
+             % per_node
+             % port
+             )
+        );
+      gspc::worker_description const wd (input);
+      gspc::worker_description const expected
+        { identifiers
+        , per_node
+        , 0
+        , 0
+        , {}
+        , {port}
+        };
+
+      BOOST_REQUIRE_EQUAL (wd, expected);
+    }
+
+    namespace
+    {
+      std::vector<bool> onoff()
+      {
+        return {true, false};
+      }
+    }
+
+    BOOST_DATA_TEST_CASE
+      ( worker_description_parser_optional_combinations
+      , onoff() * onoff() * onoff() * onoff()
+      , _socket
+      , _max_nodes
+      , _shm_size
+      , _port
+      )
+    {
+      auto const identifiers (random_identifiers());
+      auto const socket (fhg::util::testing::random<std::size_t>{}());
+      auto const per_node (fhg::util::testing::random<std::size_t>{}());
+      auto const max_nodes (fhg::util::testing::random<std::size_t>{}());
+      auto const shm_size (fhg::util::testing::random<std::size_t>{}());
+      auto const port (fhg::util::testing::random<unsigned short>{}());
+
+      std::ostringstream input;
+      input << fhg::util::join (identifiers, "+");
+
+      if (_socket)    { input << '#' << socket;    }
+                        input << ':' << per_node;
+      if (_max_nodes) { input << 'x' << max_nodes; }
+      if (_shm_size)  { input << ',' << shm_size;  }
+      if (_port)      { input << '/' << port;      }
+
+      gspc::worker_description const wd (input.str());
+      gspc::worker_description const expected
+        { identifiers
+        , per_node
+        , _max_nodes ? max_nodes : 0
+        , _shm_size ? shm_size : 0
+        , boost::make_optional (_socket, socket)
+        , boost::make_optional (_port, port)
+        };
+    }
+
+    BOOST_AUTO_TEST_CASE (construction_from_to_string_is_identity)
+    {
+      using fhg::util::testing::random;
+      auto random_switch (random<bool>{});
+      auto random_num (random<std::size_t>{});
+      auto random_port (random<unsigned short>{});
+
+      auto const identifiers (random_identifiers());
+      auto const _socket (random_switch());
+      auto const _per_node (random_switch());
+      auto const _max_nodes (_per_node && random_switch());
+      auto const _shm_size (_per_node && random_switch());
+      auto const _port (_per_node && random_switch());
+
+      gspc::worker_description const wd
+        ( identifiers
+        , _per_node ? random_num() : 1
+        , _max_nodes ? random_num() : 0
+        , _shm_size ? random_num() : 0
+        , boost::make_optional (_socket, random_num())
+        , boost::make_optional (_port, random_port())
+        );
+
+      BOOST_REQUIRE_EQUAL (wd, gspc::worker_description (to_string (wd)));
+    }
+  }
+}

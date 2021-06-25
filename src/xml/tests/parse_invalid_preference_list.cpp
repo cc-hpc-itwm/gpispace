@@ -20,6 +20,8 @@
 #include <xml/parse/parser.hpp>
 #include <xml/parse/state.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
@@ -380,13 +382,13 @@ namespace
       auto const split_b
         (fhg::util::testing::random<std::size_t>{} (split_a));
 
-      auto it_a = std::next ( targets.begin()
-                            , split_a
-                            );
+      auto it_a = fhg::util::next ( targets.begin()
+                                  , split_a
+                                  );
 
-      auto it_b = std::next ( targets.begin()
-                            , split_b
-                            );
+      auto it_b = fhg::util::next ( targets.begin()
+                                  , split_b
+                                  );
 
       preferences = std::list<xml::parse::type::preference_type>
                     ( targets.begin()

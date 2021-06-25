@@ -73,10 +73,8 @@ namespace we
                    , boost::optional<expression_t> const& _condition
                    , const we::type::property::type& prop
                    , we::priority_type priority
-                   , boost::optional<eureka_id_type> const&
-                     _eureka_id = boost::none
-                   , const std::list<we::type::preference_t>&
-                     preferences = {}
+                   , boost::optional<eureka_id_type> const& _eureka_id
+                   , const std::list<we::type::preference_t>& preferences
                    )
         try
           :  name_  (name)

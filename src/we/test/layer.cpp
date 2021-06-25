@@ -25,6 +25,7 @@
 #include <we/type/transition.hpp>
 #include <we/type/value/read.hpp>
 #include <we/type/value/poke.hpp>
+#include <we/type/value/show.hpp>
 
 #include <we/test/layer.common.hpp>
 
@@ -45,6 +46,7 @@
 #include <list>
 #include <memory>
 #include <mutex>
+#include <sstream>
 #include <tuple>
 
 namespace
@@ -104,7 +106,7 @@ namespace
       return EQ_IMPL;                                                   \
     }                                                                   \
     bool _happened;                                                     \
-    mutable std::mutex _happened_mutex;                                 \
+    std::mutex _happened_mutex;                                         \
     std::condition_variable _happened_condition;                        \
                                                                         \
     MEMBER_VARIABLES;                                                   \
@@ -454,6 +456,8 @@ BOOST_FIXTURE_TEST_CASE (expressions_shall_not_be_sumitted_to_rts, daemon)
     , boost::none
     , we::type::property::type()
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
   transition.add_port
     (we::type::port_t ( "in"
@@ -505,6 +509,8 @@ BOOST_FIXTURE_TEST_CASE (module_calls_should_be_submitted_to_rts, daemon)
     , boost::none
     , we::type::property::type()
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
   transition.add_port ( we::type::port_t ( "in"
                                          , we::type::PORT_IN
@@ -1082,7 +1088,7 @@ namespace
             , we::type::transition_t
             , we::transition_id_type
             >
-    wfr_net_with_childs (bool put_on_input, std::size_t token_count)
+    wfr_net_with_childs (bool put_on_input)
   {
     /* |> in -> [ trans_a ] -> mid -> [ trans_b ] -> out >|
                         *> request -> [         ] >*
@@ -1127,6 +1133,8 @@ namespace
       , boost::none
       , we::type::property::type()
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
     we::port_id_type const trans_a_port_id_in
       ( trans_a.add_port ( we::type::port_t ( "in"
@@ -1152,6 +1160,8 @@ namespace
       , boost::none
       , we::type::property::type()
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
     we::port_id_type const trans_b_port_id_in
       ( trans_b.add_port ( we::type::port_t ( "in"
@@ -1191,10 +1201,7 @@ namespace
     we::transition_id_type const trans_b_id
       (net.add_transition (trans_b));
 
-    for (std::size_t i (0); i < token_count; ++i)
-    {
       net.put_value (put_on_input ? place_id_in : place_id_out, value::CONTROL);
-    }
 
     {
       using we::edge::TP;
@@ -1222,6 +1229,8 @@ namespace
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
+                               , boost::optional<we::type::eureka_id_type>{}
+                               , std::list<we::type::preference_t>{}
                                )
       , trans_a
       , trans_a_id
@@ -1233,16 +1242,16 @@ namespace
             , we::type::activity_t
             , we::type::activity_t
             >
-    wfr_activity_with_child (std::size_t token_count)
+    wfr_activity_with_child()
   {
     we::transition_id_type transition_id_child;
     we::type::transition_t transition_in;
     we::type::transition_t transition_out;
     we::type::transition_t transition_child;
     std::tie (transition_in, transition_child, transition_id_child) =
-      wfr_net_with_childs (true, token_count);
+      wfr_net_with_childs (true);
     std::tie (transition_out, std::ignore, std::ignore) =
-      wfr_net_with_childs (false, token_count);
+      wfr_net_with_childs (false);
 
     we::type::activity_t activity_input (transition_in);
     we::type::activity_t activity_output (transition_out);
@@ -1267,7 +1276,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_works, daemon)
   we::type::activity_t activity_child;
   we::type::activity_t activity_result;
   std::tie (activity_input, activity_output, activity_child, activity_result)
-    = wfr_activity_with_child (1);
+    = wfr_activity_with_child();
 
   we::layer::id_type const id (generate_id());
 
@@ -1350,7 +1359,7 @@ BOOST_FIXTURE_TEST_CASE (workflow_response_fails_when_workflow_fails, daemon)
   we::type::activity_t activity_input;
   we::type::activity_t activity_child;
   std::tie (activity_input, std::ignore, activity_child, std::ignore)
-    = wfr_activity_with_child (1);
+    = wfr_activity_with_child();
 
   we::layer::id_type const id (generate_id());
 
@@ -1414,6 +1423,8 @@ namespace
       , boost::none
       , we::type::property::type()
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
     transition.add_requirement (requirement);
 
@@ -1478,6 +1489,8 @@ namespace
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
+                               , boost::optional<we::type::eureka_id_type>{}
+                               , std::list<we::type::preference_t>{}
                                )
       );
   }
@@ -1745,7 +1758,6 @@ namespace
 
   struct activity_with_transitions
   {
-    std::size_t token_count;
     we::type::net_type net;
 
     we::type::activity_t input;
@@ -1763,6 +1775,8 @@ namespace
       , std::set<we::type::eureka_id_type> const eurekaed_set
       )
     {
+      std::ostringstream oss;
+      oss << pnet::type::value::show (pnet::type::value::value_type (eureka_id));
       we::type::transition_t transition
         ( "module_call"
         , we::type::module_call_t
@@ -1777,7 +1791,8 @@ namespace
         , boost::none
         , we::type::property::type()
         , we::priority_type()
-        , eureka_id
+        , oss.str()
+        , std::list<we::type::preference_t>{}
         );
 
       we::port_id_type const port_id_in
@@ -1837,6 +1852,8 @@ namespace
                                  , boost::none
                                  , we::type::property::type()
                                  , we::priority_type()
+                                 , boost::optional<we::type::eureka_id_type>{}
+                                 , std::list<we::type::preference_t>{}
                                  )
         );
 
@@ -1854,6 +1871,8 @@ namespace
                                  , boost::none
                                  , we::type::property::type()
                                  , we::priority_type()
+                                 , boost::optional<we::type::eureka_id_type>{}
+                                 , std::list<we::type::preference_t>{}
                                  )
         );
     }

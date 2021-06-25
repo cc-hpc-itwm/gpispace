@@ -35,6 +35,19 @@ namespace fhg
       T _value;
     };
 
+    template<typename T>
+      struct temporary_return_value_holder<T&>
+    {
+      template<typename Fun, typename... Args>
+        temporary_return_value_holder (Fun&& fun, Args&&... args)
+          : _value (fun (std::forward<Args> (args)...))
+      {}
+      T& operator*() const { return _value; }
+
+    private:
+      T& _value;
+    };
+
     template<>
       struct temporary_return_value_holder<void>
     {

@@ -73,12 +73,12 @@ Produce a position independent shared object and link with `GPISpace::execution`
 Note: Inside of the GPI-Space repository link with `pnet`, e.g.
 
 ```
-extended_add_library (NAME Log
+gspc_add_library (NAME Log
   NAMESPACE Plugin
   SOURCES "Log.cpp"
-  POSITION_INDEPENDENT
   TYPE SHARED
-  LIBRARIES pnet
+  LIBRARIES GPISpace::header-only
+            pnet
   INSTALL
   INSTALL_DESTINATION "plugin"
 )

@@ -16,6 +16,7 @@
 
 #include <logging/endpoint.hpp>
 
+#include <fhg/util/next.hpp>
 #include <fhg/util/boost/program_options/validators.hpp>
 
 namespace fhg
@@ -76,7 +77,7 @@ namespace fhg
         }
 
         std::string result (it, prior_to_what);
-        it = prior_to_what + what.size();
+        it = fhg::util::next (prior_to_what, what.size());
         return result;
       }
 
@@ -113,7 +114,7 @@ namespace fhg
           error::throw_unexpected_token (it, end, what, false);
         }
 
-        it += what.size();
+        it = fhg::util::next (it, what.size());
       }
 
       std::string require_tcp_block

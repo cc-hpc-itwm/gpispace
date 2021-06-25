@@ -29,9 +29,9 @@ namespace fhg
 
     template<typename Description> template<typename Func, typename Yielding>
       service_handler<Description>::service_handler
-          (service_dispatcher& manager, Func&& handler, Yielding)
+          (service_dispatcher& dispatcher, Func&& handler, Yielding)
         : _handler_registration
-            ( manager._handlers
+            ( dispatcher._handlers
             , typeid (Description).name()
             , [handler] ( boost::asio::yield_context yield
                         , boost::archive::binary_iarchive& input

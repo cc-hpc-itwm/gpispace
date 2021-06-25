@@ -14,6 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+# This file assembles `share/gspc/licenses.txt`, dynamically to easily
+# adopt to new dependencies or changes in the licenses.
+# - The license tests are read from `licenses/${name}.txt`.
+# - `append_license()` is called for every package with the package
+#   name, license name, an optional extra line of text, and the
+#   license text.
+
 set (licenses_filename "${CMAKE_CURRENT_BINARY_DIR}/licenses.txt")
 
 file (WRITE "${licenses_filename}" "")

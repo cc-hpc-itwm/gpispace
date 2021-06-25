@@ -18,6 +18,7 @@
 
 #include <we/loader/module_call.hpp>
 #include <we/type/net.hpp>
+#include <we/type/schedule_data.hpp>
 #include <we/type/transition.hpp>
 
 #include <fhg/assert.hpp>
@@ -162,7 +163,7 @@ namespace we
       ( we::type::transition_t transition
       , boost::optional<we::transition_id_type> transition_id
       )
-        : _data (std::move (transition))
+        : _transition (std::move (transition))
         , _transition_id (std::move (transition_id))
     {}
 
@@ -254,17 +255,13 @@ namespace we
       }
     }
 
-    boost::variant<we::type::transition_t> const& activity_t::data() const
-    {
-      return _data;
-    }
     const we::type::transition_t& activity_t::transition() const
     {
-      return boost::get<we::type::transition_t> (_data);
+      return _transition;
     }
     we::type::transition_t& activity_t::mutable_transition()
     {
-      return boost::get<we::type::transition_t> (_data);
+      return _transition;
     }
 
     std::string const& activity_t::name() const
@@ -276,9 +273,20 @@ namespace we
       return !!transition().net();
     }
 
-    boost::optional<eureka_id_type> const& activity_t::eureka_id() const
+    boost::optional<eureka_id_type> const& activity_t::eureka_id()
     {
-      return transition().eureka_id();
+      if (!_eureka_id)
+      {
+        if (auto id = transition().eureka_id())
+        {
+          auto context (evaluation_context());
+
+          _eureka_id = boost::get<eureka_id_type>
+            (expression_t (*id).ast().eval_all (context));
+        }
+      }
+
+      return _eureka_id;
     }
 
     void activity_t::set_wait_for_output()
@@ -700,6 +708,8 @@ namespace we
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
+                               , boost::optional<we::type::eureka_id_type>{}
+                               , std::list<we::type::preference_t>{}
                                );
 
       return activity_t {transition_net_wrapper, _transition_id};

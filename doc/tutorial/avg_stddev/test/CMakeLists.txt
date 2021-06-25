@@ -15,7 +15,7 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_executable (NAME gen
+  gspc_add_executable (NAME gen
     SOURCES "gen.cpp"
     LIBRARIES Util::Generic
               Boost::program_options

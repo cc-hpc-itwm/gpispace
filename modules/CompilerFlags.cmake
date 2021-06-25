@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-include (add_cxx_compiler_flag_if_supported)
+include (util-cmake/add_cxx_compiler_flag_if_supported)
 
 set (CMAKE_CXX_STANDARD 14)
 set (CMAKE_CXX_STANDARD_REQUIRED on)
@@ -53,3 +53,11 @@ add_cxx_compiler_flag_if_supported (-fPIC)
 add_cxx_compiler_flag_if_supported (-fpic)
 add_cxx_compiler_flag_if_supported (-fcolor-diagnostics)
 add_cxx_compiler_flag_if_supported (-ftemplate-depth=1024)
+
+# Modern Debian has changed the default from `--no-as-needed` to
+# `--as-needed`, which leads to shared objects being filtered if the
+# linker can't prove it being used. This check fails when symbols are
+# needed only by dlopen()ed libraries, e.g. when linking
+# GPISpace::APIGuard to provide WE_GUARD_SYMBOL in drts-kernel. Thus,
+# be sure to always link without that optimization.
+add_cxx_compiler_flag_if_supported (-Wl,--no-as-needed)

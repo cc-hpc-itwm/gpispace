@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME fhg_util_qt
+gspc_add_library (NAME fhg_util_qt
+  TYPE STATIC
   SOURCES "dual_list_selector.cpp"
           "mvc/alphanum_sort_proxy.cpp"
           "mvc/delegating_header_view.cpp"

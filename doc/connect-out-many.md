@@ -1,5 +1,4 @@
-connect-out-many
-===================
+# connect-out-many
 
 ## Motivation
 Sometimes it is unknown in advance how many tokens a module call or an expression produces on a certain port.  In this,

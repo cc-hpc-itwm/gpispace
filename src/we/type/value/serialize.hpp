@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 
 #include <boost/serialization/list.hpp>
@@ -31,8 +33,8 @@ namespace pnet
   {
     namespace value
     {
-      std::string to_string (value_type const&);
-      value_type from_string (std::string const&);
+      GSPC_DLLEXPORT std::string to_string (value_type const&);
+      GSPC_DLLEXPORT value_type from_string (std::string const&);
     }
   }
 }

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <drts/certificates.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/information_to_reattach.fwd.hpp>
@@ -49,15 +51,15 @@ namespace gspc
 {
   namespace options
   {
-    boost::program_options::options_description logging();
-    boost::program_options::options_description installation();
-    boost::program_options::options_description drts();
-    boost::program_options::options_description external_rifd();
-    boost::program_options::options_description remote_iml();
-    boost::program_options::options_description virtual_memory();
+    GSPC_DLLEXPORT boost::program_options::options_description logging();
+    GSPC_DLLEXPORT boost::program_options::options_description installation();
+    GSPC_DLLEXPORT boost::program_options::options_description drts();
+    GSPC_DLLEXPORT boost::program_options::options_description external_rifd();
+    GSPC_DLLEXPORT boost::program_options::options_description remote_iml();
+    GSPC_DLLEXPORT boost::program_options::options_description virtual_memory();
   }
 
-  class installation
+  class GSPC_DLLEXPORT installation
   {
   public:
     installation (boost::filesystem::path const& gspc_home);
@@ -72,7 +74,7 @@ namespace gspc
     boost::filesystem::path const _gspc_home;
   };
 
-  class scoped_runtime_system
+  class GSPC_DLLEXPORT scoped_runtime_system
   {
   public:
     scoped_runtime_system ( boost::program_options::variables_map const& vm
@@ -93,7 +95,7 @@ namespace gspc
       , installation const&
       , std::string const& topology_description
       , boost::optional<rifd_entry_points> const& entry_points
-      , rifd_entry_point const& master
+      , rifd_entry_point const& parent
       , std::ostream& info_output = std::cerr
       , Certificates const& certificates = boost::none
       );
@@ -159,14 +161,16 @@ namespace gspc
     PIMPL (scoped_runtime_system);
   };
 
-  void set_application_search_path ( boost::program_options::variables_map&
-                                   , boost::filesystem::path const&
-                                   );
-  void set_gspc_home ( boost::program_options::variables_map&
-                     , boost::filesystem::path const&
-                     );
+  GSPC_DLLEXPORT void set_application_search_path
+    ( boost::program_options::variables_map&
+    , boost::filesystem::path const&
+    );
+  GSPC_DLLEXPORT void set_gspc_home ( boost::program_options::variables_map&
+                                    , boost::filesystem::path const&
+                                    );
 
-  void set_remote_iml_vmem_socket ( boost::program_options::variables_map&
-                                  , boost::filesystem::path const&
-                                  );
+  GSPC_DLLEXPORT void set_remote_iml_vmem_socket
+    ( boost::program_options::variables_map&
+    , boost::filesystem::path const&
+    );
 }

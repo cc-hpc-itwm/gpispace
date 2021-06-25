@@ -21,7 +21,6 @@
 #include <drts/private/option.hpp>
 #include <drts/private/rifd_entry_points_impl.hpp>
 
-#include <util-generic/blocked.hpp>
 #include <util-generic/read_lines.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>

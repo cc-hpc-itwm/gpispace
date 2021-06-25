@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 
 #include <string>
@@ -37,8 +39,8 @@ namespace pnet
   {
     namespace value
     {
-      value_type read (fhg::util::parse::position&);
-      value_type read (const std::string&);
+      GSPC_DLLEXPORT value_type read (fhg::util::parse::position&);
+      GSPC_DLLEXPORT value_type read (const std::string&);
     }
   }
 }

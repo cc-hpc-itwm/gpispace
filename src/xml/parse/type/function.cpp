@@ -644,6 +644,8 @@ namespace xml
             , condition()
             , _properties
             , _priority
+            , boost::none //! \todo eureka_id
+            , {}          //! \todo preferences
             );
 
           add_ports (trans, fun.ports());
@@ -661,6 +663,7 @@ namespace xml
             , _properties
             , _priority
             , mod.eureka_id()
+            , {} //! \todo preferences
             );
 
           add_ports (trans, fun.ports());
@@ -694,6 +697,8 @@ namespace xml
             , condition()
             , properties
             , _priority
+            , boost::none //! \todo eureka_id
+            , {}          //! \todo preferences
             );
 
           add_ports (trans, fun.ports(), pid_of_place, net);

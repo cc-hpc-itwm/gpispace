@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <drts/rifd_entry_points.fwd.hpp>
 #include <drts/pimpl.hpp>
 
@@ -23,7 +25,7 @@
 
 namespace gspc
 {
-  class rifd_entry_points
+  class GSPC_DLLEXPORT rifd_entry_points
   {
   public:
     rifd_entry_points (boost::filesystem::path const&);
@@ -42,7 +44,7 @@ namespace gspc
     rifd_entry_points (implementation*);
   };
 
-  class rifd_entry_point
+  class GSPC_DLLEXPORT rifd_entry_point
   {
   private:
     PIMPL (rifd_entry_point);
@@ -65,9 +67,10 @@ namespace gspc
     friend bool operator== (rifd_entry_point const&, rifd_entry_point const&);
   };
 
-  struct rifd_entry_point_hash
+  struct GSPC_DLLEXPORT rifd_entry_point_hash
   {
     std::size_t operator() (rifd_entry_point const&) const;
   };
-  bool operator== (rifd_entry_point const&, rifd_entry_point const&);
+  GSPC_DLLEXPORT bool operator==
+    (rifd_entry_point const&, rifd_entry_point const&);
 }

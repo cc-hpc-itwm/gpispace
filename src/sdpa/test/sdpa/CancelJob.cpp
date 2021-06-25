@@ -45,11 +45,11 @@ namespace
     fake_drts_worker_notifying_submission_and_cancel
         ( std::function<void (std::string)> announce_job
         , std::function<void (std::string)> announce_cancel
-        , const utils::agent& master_agent
+        , const utils::agent& parent_agent
         , fhg::com::Certificates const& certificates
         )
       : utils::no_thread::fake_drts_worker_notifying_module_call_submission
-        (announce_job, master_agent, certificates)
+        (announce_job, parent_agent, certificates)
       , _announce_cancel (announce_cancel)
     {}
 
@@ -101,7 +101,7 @@ namespace
     }
   private:
     std::function<void (std::string)> _announce_cancel;
-    mutable std::mutex _cancels_mutex;
+    std::mutex _cancels_mutex;
     std::list<std::pair<fhg::com::p2p::address_t, fhg::com::p2p::address_t>>
       _sources_and_owners;
     basic_drts_component::event_thread_and_worker_join _ = {*this};

@@ -16,6 +16,7 @@
 
 #pragma once
 
+#include <drts/client.fwd.hpp>
 #include <sdpa/events/MgmtEvent.hpp>
 
 namespace sdpa

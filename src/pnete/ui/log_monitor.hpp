@@ -73,7 +73,7 @@ namespace detail
   private:
     QList<formatted_log_event> _pending_data;
     bool _clear_on_update;
-    mutable QMutex _mutex_pending;
+    QMutex _mutex_pending;
 
     QList<formatted_log_event> _data;
     mutable QMutex _mutex_data;

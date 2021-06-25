@@ -17,7 +17,6 @@
 #include <rif/strategy/local.hpp>
 
 #include <fhg/util/system_with_blocked_SIGCHLD.hpp>
-#include <util-generic/blocked.hpp>
 #include <util-generic/hostname.hpp>
 
 #include <boost/format.hpp>

@@ -133,7 +133,7 @@ namespace we
       {
         return lhs.input() == rhs.input()
           && lhs.output() == rhs.output()
-          && lhs.data() == rhs.data()
+          && lhs.transition() == rhs.transition()
           ;
       }
     }

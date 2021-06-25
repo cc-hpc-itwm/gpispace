@@ -14,12 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-include (add_macros)
-include (beautify_find_boost)
+include (util-cmake/add_macros)
+include (util-cmake/beautify_find_boost)
 
 # Dependencies
 
-include (beautify_find_boost)
 find_boost (1.61 REQUIRED COMPONENTS
   filesystem
   iostreams
@@ -70,6 +69,13 @@ macro (_iml_assemble_rpath _install_destination _rpath)
   endforeach()
 endmacro()
 
+#! Wrapper for shared/cmake's \see extended_add_library() which
+#! additionally
+#! - Requires \a NAMESPACE.
+#! - Lets `RPATH` be relative paths.
+#! - Adds `--exclude-libs,ALL` to link options so that resulting
+#!   libraries do not re-export unintended symbols.
+#! - Always adds `CREATE_BUNDLE_INFO` on \a INSTALL.
 function (iml_add_library)
   set (options INSTALL)
   set (one_value_options INSTALL_DESTINATION)
@@ -91,6 +97,13 @@ function (iml_add_library)
   endif()
 endfunction()
 
+#! Wrapper for shared/cmake's \see extended_add_executable() which
+#! additionally
+#! - Lets `RPATH` be relative paths.
+#! - Adds `--exclude-libs,ALL` to link options so that resulting
+#!   libraries do not re-export unintended symbols.
+#! - Always adds `CREATE_BUNDLE_INFO` on \a INSTALL.
+#! - Always adds `DONT_APPEND_EXE_SUFFIX` and `NO_RDYNAMIC`.
 function (iml_add_executable)
   set (options INSTALL)
   set (one_value_options INSTALL_DESTINATION)
@@ -98,18 +111,23 @@ function (iml_add_executable)
   set (required_options)
   _parse_arguments_with_unknown (_arg "${options}" "${one_value_options}" "${multi_value_options}" "${required_options}" ${ARGN})
 
+  set (_fwd_args
+    ${_arg_UNPARSED_ARGUMENTS}
+    DONT_APPEND_EXE_SUFFIX
+    NO_RDYNAMIC
+  )
+
   if (_arg_INSTALL)
     _iml_assemble_rpath ("${_arg_INSTALL_DESTINATION}" "${_arg_RPATH}")
 
-    extended_add_executable (${_arg_UNPARSED_ARGUMENTS}
+    extended_add_executable (${_fwd_args}
       INSTALL
-        DONT_APPEND_EXE_SUFFIX
         INSTALL_DESTINATION "${_arg_INSTALL_DESTINATION}"
         CREATE_BUNDLE_INFO
         RPATH ${_rpaths}
     )
   else()
-    extended_add_executable (${_arg_UNPARSED_ARGUMENTS})
+    extended_add_executable (${_fwd_args})
   endif()
 endfunction()
 
@@ -166,9 +184,11 @@ iml_add_library (NAME Client
     PRIVATE Util::Generic
     PRIVATE Libssh2::libssh2
     PRIVATE OpenSSL::Crypto
+    PRIVATE OpenSSL::SSL
     PUBLIC Boost::filesystem
     PUBLIC Boost::program_options
     PUBLIC Boost::serialization
+    PRIVATE Boost::thread
   INCLUDE_DIRECTORIES
     PUBLIC "${CMAKE_SOURCE_DIR}/include"
   INSTALL
@@ -464,6 +484,12 @@ set (_iml_testing_beegfs_tests)
 
 ## Unit tests
 
+#! Wrapper for shared/cmake's \see add_unit_test() which additionally
+#! - Takes \a NEEDS_BEEGFS to only run the test if the global variable
+#!   \c IML_TESTING_BEEGFS_DIRECTORY is on a valid BeeGFS mountpoint.
+#! - Takes \a NEEDS_INSTALLATION to automatically override the
+#!   installation sentinel derived path. Does **not** add
+#!   `REQUIRED_FILES`, \see iml_add_system_test() instead.
 function (iml_add_unit_test)
   if (NOT BUILD_TESTING)
     return()
@@ -574,6 +600,14 @@ iml_add_unit_test (NAME rif-started_process_promise
 
 ## System tests
 
+#! Wrapper for \see iml_add_unit_test() and thus shared/cmake's \see
+#! add_unit_test() which additionally
+#! - Takes \a STARTS_SERVER to add `--iml-vmem-*` arguments and label
+#!   the test as `requires_vmem` and implies `RUN_SERIAL`.
+#! - Takes \a STARTS_RIFD to add `--iml-rif-*` arguments.
+#! - Always adds `NEEDS_INSTALLATION` and `REQUIRED_FILES` for all
+#!   files in the installation. The label `requires_installation` is
+#!   also always added.
 function (iml_add_system_test)
   if (NOT BUILD_TESTING)
     return()
@@ -665,7 +699,7 @@ if (BUILD_TESTING)
   )
 
   file (GENERATE OUTPUT "${CMAKE_BINARY_DIR}/CTestCustom.cmake"
-    CONTENT "execute_process (COMMAND \"$<TARGET_FILE:iml-check_beegfs_segment_requirements.exe>\"
+    CONTENT "execute_process (COMMAND \"$<TARGET_FILE:iml-check_beegfs_segment_requirements>\"
                                       \"${IML_TESTING_BEEGFS_DIRECTORY}\"
                WORKING_DIRECTORY \"${CMAKE_BINARY_DIR}\"
                RESULT_VARIABLE iml_check_beegfs_segment_requirements_result

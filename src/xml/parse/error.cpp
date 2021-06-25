@@ -293,6 +293,29 @@ namespace xml
                    )
         {}
 
+      eureka_group_attribute_and_tag::eureka_group_attribute_and_tag
+          ( std::string const& module_name
+          , we::type::eureka_id_type const& id_attribute
+          , util::position_type const& pod_attribute
+          , we::type::eureka_id_type const& id_tag
+          , util::position_type const& pod_tag
+          )
+            : generic
+              ( boost::format
+                 ("both are given:"
+                 " the eureka attribute '%2%' at '%3%'"
+                 " and the eureka tag '%4%' at '%5%'"
+                 " in module '%1%'"
+                 " Define only the attribute or only the tag."
+                 )
+              % module_name
+              % id_attribute
+              % pod_attribute
+              % id_tag
+              % pod_tag
+              )
+      {}
+
       connect_eureka_to_nonexistent_out_port::connect_eureka_to_nonexistent_out_port
        ( type::transition_type const& transition
        , const type::eureka_type& eureka

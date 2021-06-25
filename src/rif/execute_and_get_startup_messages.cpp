@@ -18,6 +18,8 @@
 
 #include <rif/started_process_promise.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <util-generic/exit_status.hpp>
 #include <util-generic/serialization/exception.hpp>
 #include <util-generic/syscall.hpp>
@@ -70,7 +72,7 @@ namespace fhg
         {
           throw std::logic_error ("append assumes preallocated buffer");
         }
-        std::copy (str.begin(), str.end(), buffer.begin() + pos);
+        std::copy (str.begin(), str.end(), fhg::util::next (buffer.begin(), pos));
         return pos + str.size();
       }
       size_t append (std::vector<char>& buffer, char c, size_t pos)
@@ -79,7 +81,7 @@ namespace fhg
         {
           throw std::logic_error ("append assumes preallocated buffer");
         }
-        *(buffer.begin() + pos) = c;
+        *fhg::util::next (buffer.begin(), pos) = c;
         return pos + 1;
       }
 

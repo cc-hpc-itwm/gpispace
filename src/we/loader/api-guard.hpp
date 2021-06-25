@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <boost/version.hpp>
 
 #ifdef __cplusplus
@@ -29,7 +31,7 @@ extern "C" {
 #define WE_GUARD_SYMBOL                                                        \
   WE_MAKE_SYMBOL(MODULE_DETECTED_INCOMPATIBLE_BOOST_VERSION_,BOOST_VERSION)
 
-  extern const unsigned int WE_GUARD_SYMBOL;
+  extern GSPC_DLLEXPORT const unsigned int WE_GUARD_SYMBOL;
 
 #ifdef __cplusplus
 }

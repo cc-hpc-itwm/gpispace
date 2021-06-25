@@ -17,8 +17,6 @@
 #include <sdpa/daemon/Agent.hpp>
 #include <sdpa/daemon/Job.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
 #include <sdpa/events/ErrorEvent.hpp>
 #include <sdpa/events/JobStatusReplyEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
@@ -82,22 +80,18 @@ namespace sdpa
         , const std::string url
         , std::unique_ptr<boost::asio::io_service> peer_io_service
         , boost::optional<boost::filesystem::path> const& vmem_socket
-        , master_info_t masters
         , bool create_wfe
         , fhg::com::Certificates const& certificates
         )
       : _name (name)
-      , _master_info (std::move (masters))
       , _subscriptions()
       , _job_map_mutex()
       , job_map_()
       , _cleanup_job_map_on_dtor_helper (job_map_)
-      , _worker_manager()
       , _scheduler ( [this] (job_id_t job_id)
                      {
                        return findJob (job_id)->requirements_and_preferences();
                      }
-                   , _worker_manager
                    )
       , _cancel_mutex()
       , _scheduling_requested_guard()
@@ -106,9 +100,7 @@ namespace sdpa
       , _random_extraction_engine
         (boost::make_optional (create_wfe, std::mt19937 (std::random_device()())))
       , mtx_subscriber_()
-      , mtx_cpb_()
       , _log_emitter()
-      , _registration_timeout (std::chrono::seconds (1))
       , _event_queue()
       , _network_strategy ( [this] ( fhg::com::p2p::address_t const& source
                                    , events::SDPAEvent::Ptr const& e
@@ -136,7 +128,6 @@ namespace sdpa
               )
           : nullptr
           )
-      , _registration_threads()
       , _scheduling_thread (&Agent::scheduling_thread, this)
       , _interrupt_scheduling_thread
           ( [this]
@@ -153,12 +144,7 @@ namespace sdpa
         )
       , _event_handler_thread (&Agent::handle_events, this)
       , _interrupt_event_queue (_event_queue)
-    {
-      for (master_network_info& master : _master_info)
-      {
-        requestRegistration (master);
-      }
-    }
+    {}
 
     Agent::cleanup_job_map_on_dtor_helper::cleanup_job_map_on_dtor_helper
         (job_map_t& m)
@@ -187,6 +173,7 @@ namespace sdpa
       ( WorkerSet const& workers
       , Implementation const& implementation
       , const job_id_t& jobId
+      , std::function<fhg::com::p2p::address_t (worker_id_t const&)> address
       )
     {
       Job const* const ptrJob = findJob (jobId);
@@ -196,7 +183,7 @@ namespace sdpa
         {
           child_proxy
             ( this
-            , _worker_manager.address_by_worker (worker).get()->second
+            , address (worker)
             )
             .submit_job ( ptrJob->id()
                         , ptrJob->activity()
@@ -351,14 +338,6 @@ namespace sdpa
           );
       }
 
-      if ( boost::get<job_source_master> (&job->source())
-         && boost::get<job_source_master> (job->source())._->address != source
-         )
-      {
-        throw std::logic_error
-          ("trying to cancel job owned by different master");
-      }
-
       //! \note send immediately an acknowledgment to the component
       // that requested the cancellation if it does not get a
       // notification right after
@@ -457,13 +436,10 @@ namespace sdpa
 
       const job_id_t job_id (e.job_id() ? *e.job_id() : job_id_t (gen_id()));
 
-      auto const maybe_master (master_by_address (source));
       Job* const pJob ( addJobWithNoPreferences
                           ( job_id
                           , e.activity()
-                          , maybe_master
-                          ? job_source (job_source_master {*maybe_master})
-                          : job_source (job_source_client{})
+                          , job_source (job_source_client{})
                           , hasWorkflowEngine()
                           ? job_handler (job_handler_wfe())
                           : job_handler (job_handler_worker())
@@ -482,7 +458,7 @@ namespace sdpa
         }
       }
       else {
-        _scheduler.enqueueJob(job_id);
+        _scheduler.submit_job (job_id);
         request_scheduling();
       }
     }
@@ -493,42 +469,15 @@ namespace sdpa
       )
     try
     {
-      // check if the worker source has already registered!
-      // delete inherited capabilities that are owned by the current agent
-      sdpa::capabilities_set_t workerCpbSet;
-
-      // take the difference
-      for (const sdpa::capability_t& cpb : event->capabilities())
-      {
-        // own capabilities have always the depth 0 and are not inherited
-        // by the descendants
-        if (!isOwnCapability (cpb))
-        {
-          workerCpbSet.emplace (cpb.with_increased_depth());
-        }
-      }
-
-      _worker_manager.addWorker
+      _scheduler.add_worker
         ( event->name()
-        , workerCpbSet
+        , event->capabilities()
         , event->allocated_shared_memory_size()
-        , event->children_allowed()
-        , event->hostname(), source
+        , event->hostname()
+        , source
         );
 
       request_scheduling();
-
-      // send to the masters my new set of capabilities
-      if (!workerCpbSet.empty())
-      {
-        for (master_network_info const& info : _master_info)
-        {
-          if (info.address)
-          {
-            parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
-          }
-        }
-      }
 
       child_proxy (this, source)
         .worker_registration_response (boost::none);
@@ -546,75 +495,31 @@ namespace sdpa
     {
       const sdpa::events::ErrorEvent& error (*evt);
 
-      boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
-        (_worker_manager.worker_by_address (source));
-
       // if it'a communication error, inspect all jobs and
       // send results if they are in a terminal state
 
       switch (error.error_code())
       {
-        // this  should  better go  into  a  distinct  event, since  the  ErrorEvent
-        // 'reason' should not be reused for important information
-        case events::ErrorEvent::SDPA_EBACKLOGFULL:
-        {
-          sdpa::job_id_t const jobId(*error.job_id());
-          Job* const pJob (findJob (jobId));
-          if (!pJob)
-          {
-            throw std::runtime_error ("Got SDPA_EBACKLOGFULL error related to unknown job!");
-          }
-
-          if (!as_worker)
-          {
-            throw std::runtime_error ("Unknown entity (unregister worker) rejected the job " + jobId);
-          }
-        }
-        FHG_UTIL_FALLTHROUGH;
         case events::ErrorEvent::SDPA_ENODE_SHUTDOWN:
         {
           unsubscribe(source);
 
-          if (as_worker)
-          {
-            for (master_network_info const& info : _master_info)
-            {
-              if (info.address)
+          std::lock_guard<std::mutex> const _ (_cancel_mutex);
+          _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
+            ( source
+            , [this] (job_id_t const& job)
               {
-                parent_proxy (this, *info.address).capabilities_lost
-                  (_worker_manager.worker_capabilities (as_worker.get()->second));
+                return findJob (job);
               }
-            }
+            , [this] (fhg::com::p2p::address_t const& addr, job_id_t const& job)
+              {
+                return child_proxy ( this
+                                   , addr
+                                   ).cancel_job (job);
+              }
+            );
 
-            std::lock_guard<std::mutex> const _ (_cancel_mutex);
-            _scheduler.reschedule_worker_jobs_and_maybe_remove_worker
-              ( as_worker.get()->second
-              , [this] (job_id_t const& job)
-                {
-                  return findJob (job);
-                }
-              , [this] (worker_id_t const& worker, job_id_t const& job)
-                {
-                  return child_proxy ( this
-                                     , _worker_manager.address_by_worker (worker).get()->second
-                                     ).cancel_job (job);
-                }
-              , (error.error_code() == events::ErrorEvent::SDPA_EBACKLOGFULL)
-              );
-
-            request_scheduling();
-          }
-          else
-          {
-            boost::optional<master_info_t::iterator> const as_master
-              (master_by_address (source));
-
-            if (as_master)
-            {
-              as_master.get()->address = boost::none;
-              request_registration_soon (*as_master.get());
-            }
-          }
+          request_scheduling();
 
           break;
         }
@@ -646,7 +551,7 @@ namespace sdpa
       {
         addJob (job_id, std::move (activity), job_source_wfe(), job_handler_worker());
 
-        _scheduler.enqueueJob (job_id);
+        _scheduler.submit_job (job_id);
         request_scheduling();
       }
     }
@@ -683,30 +588,20 @@ namespace sdpa
 
       pJob->CancelJob();
 
-      const std::unordered_set<worker_id_t>
-        workers_to_cancel (_worker_manager.workers_to_send_cancel (job_id));
-
-      if (!workers_to_cancel.empty())
-      {
-        if (cancel_already_requested)
-        {
-          return;
-        }
-
-        for (worker_id_t const& w : workers_to_cancel)
-        {
-          child_proxy ( this
-                      , _worker_manager.address_by_worker (w).get()->second
-                      ).cancel_job (job_id);
-        }
-      }
-      else
+      if (!_scheduler.cancel_job_and_siblings
+            ( job_id
+            , cancel_already_requested
+            , [this, &job_id] (fhg::com::p2p::address_t const& addr)
+              {
+                return Agent::child_proxy (this, addr).cancel_job (job_id);
+              }
+            )
+         )
       {
         job_canceled (pJob);
 
+        _scheduler.release_reservation (job_id);
         _scheduler.delete_job (job_id);
-        _scheduler.releaseReservation (job_id);
-        _scheduler.delete_pending_job (job_id);
 
         if (!boost::get<job_source_client> (&pJob->source()))
         {
@@ -734,7 +629,6 @@ namespace sdpa
       if ( fhg::util::visit<bool>
              ( pJob->source()
              , [] (job_source_wfe const&) { return false; }
-             , [] (job_source_master const&) { return true; }
              , [] (job_source_client const&) { return true; }
              )
          )
@@ -773,11 +667,6 @@ namespace sdpa
       job_canceled (pJob);
 
       emit_gantt (pJob->id(), pJob->result(), NotificationEvent::STATE_CANCELED);
-
-      if (boost::get<job_source_master> (&pJob->source()))
-      {
-        deleteJob (job_id);
-      }
     }
 
     void Agent::handle_job_termination (Job* job)
@@ -791,14 +680,11 @@ namespace sdpa
       }
 
       //! \note rescheduled: never tell workflow engine or modify state!
-      if ( _scheduler.reservation_canceled (job->id())
-        && (job->getStatus() != sdpa::status::CANCELING)
+      if ( _scheduler.reschedule_job_if_the_reservation_was_canceled
+             (job->id(), job->getStatus())
          )
       {
-        _scheduler.releaseReservation (job->id());
-        _scheduler.enqueueJob (job->id());
         request_scheduling();
-
         return;
       }
 
@@ -831,7 +717,7 @@ namespace sdpa
         }
       }
 
-      _scheduler.releaseReservation (job->id());
+      _scheduler.release_reservation (job->id());
       request_scheduling();
 
       if (boost::get<job_source_wfe> (&job->source()))
@@ -849,10 +735,7 @@ namespace sdpa
         (require_job (event->job_id(), "job_finished for unknown job"));
 
       _scheduler.store_result
-        ( _worker_manager.worker_by_address (source).get()->second
-        , job->id()
-        , JobFSM_::s_finished (event->result())
-        );
+        (source, job->id(), JobFSM_::s_finished (event->result()));
 
       handle_job_termination (job);
 
@@ -868,10 +751,7 @@ namespace sdpa
         (require_job (event->job_id(), "job_failed for unknown job"));
 
       _scheduler.store_result
-        ( _worker_manager.worker_by_address (source).get()->second
-        , job->id()
-        , JobFSM_::s_failed (event->error_message())
-        );
+        (source, job->id(), JobFSM_::s_failed (event->error_message()));
 
       handle_job_termination (job);
 
@@ -887,10 +767,7 @@ namespace sdpa
         (require_job (event->job_id(), "cancel_job_ack for unknown job"));
 
       _scheduler.store_result
-        ( _worker_manager.worker_by_address (source).get()->second
-        , job->id()
-        , JobFSM_::s_canceled()
-        );
+        (source, job->id(), JobFSM_::s_canceled());
 
       handle_job_termination (job);
     }
@@ -908,10 +785,6 @@ namespace sdpa
           _wfe->finished (_job->id(), _job->result());
         }
         void operator() (job_source_client const&) const {}
-        void operator() (job_source_master const& master) const
-        {
-          parent_proxy (_this, master._).job_finished (_job->id(), _job->result());
-        }
         Agent* _this;
         Job* _job;
         we::layer* _wfe;
@@ -933,11 +806,6 @@ namespace sdpa
           _wfe->failed (_job->id(), _job->error_message());
         }
         void operator() (job_source_client const&) const {}
-        void operator() (job_source_master const& master) const
-        {
-          parent_proxy (_this, master._).job_failed
-            (_job->id(), _job->error_message());
-        }
         Agent* _this;
         Job* _job;
         we::layer* _wfe;
@@ -959,10 +827,6 @@ namespace sdpa
           _wfe->canceled (_job->id());
         }
         void operator() (job_source_client const&) const {}
-        void operator() (job_source_master const& master) const
-        {
-          parent_proxy (_this, master._).cancel_job_ack (_job->id());
-        }
         Agent* _this;
         Job* _job;
         we::layer* _wfe;
@@ -972,104 +836,12 @@ namespace sdpa
       notify_subscribers<events::CancelJobAckEvent> (job->id(), job->id());
     }
 
-    boost::optional<master_info_t::iterator>
-      Agent::master_by_address (fhg::com::p2p::address_t const& address)
-    {
-      master_info_t::iterator const it
-        ( std::find_if ( _master_info.begin()
-                       , _master_info.end()
-                       , [&address] (master_info_t::value_type const& info)
-                         {
-                           return info.address == address;
-                         }
-                       )
-        );
-      return boost::make_optional (it != _master_info.end(), it);
-    }
-
     void Agent::handle_worker_registration_response
-      ( fhg::com::p2p::address_t const& source
+      ( fhg::com::p2p::address_t const&
       , sdpa::events::worker_registration_response const* response
       )
     {
-      fhg::util::boost::get_or_throw<std::runtime_error>
-        ( master_by_address (source)
-        , "workerRegistrationAckEvent from source not in list of masters"
-        );
-
       response->get();
-    }
-
-    void Agent::handleCapabilitiesGainedEvent
-      ( fhg::com::p2p::address_t const& source
-      , const events::CapabilitiesGainedEvent* pCpbGainEvt
-      )
-    {
-      WorkerManager::worker_connections_t::right_map::iterator const worker
-        ( fhg::util::boost::get_or_throw<std::runtime_error>
-            ( _worker_manager.worker_by_address (source)
-            , "capabilities_gained for unknown worker"
-            )
-        );
-
-      sdpa::capabilities_set_t workerCpbSet;
-
-      for (const sdpa::capability_t& cpb : pCpbGainEvt->capabilities())
-      {
-        // own capabilities have always the depth 0
-        if (!isOwnCapability (cpb))
-        {
-          workerCpbSet.emplace (cpb.with_increased_depth());
-        }
-      }
-
-      bool const bModified
-        (_worker_manager.add_worker_capabilities (worker->second, workerCpbSet));
-
-      if (bModified)
-      {
-        request_scheduling();
-
-        if (!workerCpbSet.empty())
-        {
-          for (master_network_info const& info : _master_info)
-          {
-            if (info.address)
-            {
-              parent_proxy (this, *info.address).capabilities_gained (workerCpbSet);
-            }
-          }
-        }
-      }
-    }
-
-    void Agent::handleCapabilitiesLostEvent
-      ( fhg::com::p2p::address_t const& source
-      , const events::CapabilitiesLostEvent* pCpbLostEvt
-      )
-    {
-      // tell the scheduler to remove the capabilities of the worker source
-
-     WorkerManager::worker_connections_t::right_map::iterator const worker
-        ( fhg::util::boost::get_or_throw<std::runtime_error>
-            ( _worker_manager.worker_by_address (source)
-            , "capabilities_lost for unknown worker"
-            )
-        );
-
-      if ( _worker_manager.remove_worker_capabilities
-             ( worker->second, pCpbLostEvt->capabilities())
-         )
-      {
-        for (master_network_info const& info : _master_info)
-        {
-          if (info.address)
-          {
-            parent_proxy (this, *info.address).capabilities_lost
-              (pCpbLostEvt->capabilities());
-          }
-        }
-      }
     }
 
     void Agent::handle_events()
@@ -1103,40 +875,6 @@ namespace sdpa
         ( fhg::com::p2p::address_t()
         , events::SDPAEvent::Ptr (new events::delayed_function_call (fun))
         );
-    }
-
-    void Agent::request_registration_soon
-      (master_network_info& master)
-    {
-      _registration_threads.start
-        (std::bind (&Agent::do_registration_after_sleep, this, master));
-    }
-
-    void Agent::do_registration_after_sleep
-      (master_network_info& master)
-    {
-      std::this_thread::sleep_for (_registration_timeout);
-
-      requestRegistration (master);
-    }
-
-    void Agent::requestRegistration (master_network_info& master)
-    {
-      try
-      {
-        master.address = _network_strategy.connect_to (master.host, master.port);
-      }
-      catch (std::exception const&)
-      {
-        request_registration_soon (master);
-      }
-
-      std::lock_guard<std::mutex> const guard_capabilites (mtx_cpb_);
-      capabilities_set_t cpbSet;
-
-      _worker_manager.getCapabilities (cpbSet);
-
-      parent_proxy (this, master).worker_registration (cpbSet);
     }
 
     void Agent::unsubscribe(const fhg::com::p2p::address_t& id)
@@ -1210,7 +948,7 @@ namespace sdpa
 
     /**
      * Event SubmitJobAckEvent
-     * Precondition: an acknowledgment event was received from a master
+     * Precondition: an acknowledgment event was received from a parent
      * Action: - if the job was found, put the job into the state Running
      *         - move the job from the submitted queue of the worker worker_id, into its
      *           acknowledged queue
@@ -1240,16 +978,8 @@ namespace sdpa
       if(ptrJob->getStatus() == sdpa:: status::CANCELING)
         return;
 
-      WorkerManager::worker_connections_t::right_map::iterator const worker
-        ( fhg::util::boost::get_or_throw<std::runtime_error>
-            ( _worker_manager.worker_by_address (source)
-            , "submit_job_ack for unknown worker"
-            )
-        );
-
       ptrJob->Dispatch();
-      _worker_manager.acknowledge_job_sent_to_worker
-        (pEvent->job_id(), worker->second);
+      _scheduler.acknowledge_job_sent_to_worker (pEvent->job_id(), source);
     }
 
     // respond to a worker that the JobFinishedEvent was received
@@ -1280,18 +1010,6 @@ namespace sdpa
 
       // delete it from the map when you receive a JobFailedAckEvent!
       deleteJob(pEvt->job_id());
-    }
-
-    void Agent::handleBacklogNoLongerFullEvent
-      ( fhg::com::p2p::address_t const& source
-      , const events::BacklogNoLongerFullEvent*
-      )
-    {
-      boost::optional<WorkerManager::worker_connections_t::right_map::iterator> const as_worker
-        (_worker_manager.worker_by_address (source));
-
-      _worker_manager.set_worker_backlog_full (as_worker.get()->second, false);
-      request_scheduling ();
     }
 
     namespace
@@ -1332,18 +1050,18 @@ namespace sdpa
           {
             _put_token_source.emplace (event->put_token_id(), source);
 
-            std::unordered_set<worker_id_t> const workers
-              (_worker_manager.findSubmOrAckWorkers (job_id));
-
-            for (worker_id_t const& w : workers)
-            {
-              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-                .put_token ( job_id
-                           , event->put_token_id()
-                           , event->place_name()
-                           , event->value()
-                           );
-            }
+            _scheduler.notify_submitted_or_acknowledged_workers
+              ( job_id
+              , [this, &job_id, &event] (fhg::com::p2p::address_t const& addr)
+                {
+                  return Agent::child_proxy (this, addr)
+                    .put_token ( job_id
+                               , event->put_token_id()
+                               , event->place_name()
+                               , event->value()
+                               );
+                }
+              );
           }
         , [&] (job_handler_wfe const&)
           {
@@ -1413,19 +1131,18 @@ namespace sdpa
           {
             _workflow_response_source.emplace (event->workflow_response_id(), source);
 
-            std::unordered_set<worker_id_t> const workers
-              (_worker_manager.findSubmOrAckWorkers (job_id));
-
-            for (worker_id_t const& w : workers)
-            {
-              child_proxy (this, _worker_manager.address_by_worker (w).get()->second)
-                .workflow_response ( job_id
-                                   , event->workflow_response_id()
-                                   , event->place_name()
-                                   , event->value()
-                                   );
-            }
-
+            _scheduler.notify_submitted_or_acknowledged_workers
+              ( job_id
+              , [this, &job_id, &event] (fhg::com::p2p::address_t const& addr)
+                {
+                  return Agent::child_proxy (this, addr)
+                    .workflow_response ( job_id
+                                       , event->workflow_response_id()
+                                       , event->place_name()
+                                       , event->value()
+                                       );
+                }
+              );
           }
         , [&] (job_handler_wfe const&)
           {
@@ -1499,7 +1216,7 @@ namespace sdpa
 
         std::lock_guard<std::mutex> const _ (_cancel_mutex);
 
-        _scheduler.assignJobsToWorkers();
+        _scheduler.assign_jobs_to_workers();
         _scheduler.steal_work();
         _scheduler.start_pending_jobs
           (std::bind ( &Agent::serveJob
@@ -1507,6 +1224,7 @@ namespace sdpa
                      , std::placeholders::_1
                      , std::placeholders::_2
                      , std::placeholders::_3
+                     , std::placeholders::_4
                      )
           );
       }
@@ -1586,46 +1304,6 @@ namespace sdpa
       , _address (address)
     {}
 
-    Agent::parent_proxy::parent_proxy
-        (Agent* that, master_network_info const& master)
-      : parent_proxy (that, master.address.get())
-    {}
-
-    Agent::parent_proxy::parent_proxy
-        ( Agent* that
-        , boost::optional<master_info_t::iterator> const& job_master
-        )
-      : parent_proxy (that, *job_master.get())
-    {}
-
-    void Agent::parent_proxy::worker_registration
-      ( capabilities_set_t capabilities
-      ) const
-    {
-      _that->sendEventToOther<events::WorkerRegistrationEvent>
-        ( _address
-        , _that->name(), capabilities, 0ul, true, fhg::util::hostname()
-        );
-    }
-
-    void Agent::parent_proxy::notify_shutdown() const
-    {
-      _that->sendEventToOther<events::ErrorEvent>
-        (_address, events::ErrorEvent::SDPA_ENODE_SHUTDOWN, "");
-    }
-
-    void Agent::parent_proxy::job_failed
-      (job_id_t id, std::string message) const
-    {
-      _that->sendEventToOther<events::JobFailedEvent> (_address, id, message);
-    }
-
-    void Agent::parent_proxy::job_finished
-      (job_id_t id, we::type::activity_t result) const
-    {
-      _that->sendEventToOther<events::JobFinishedEvent> (_address, id, result);
-    }
-
     void Agent::parent_proxy::cancel_job_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::CancelJobAckEvent> (_address, id);
@@ -1639,20 +1317,6 @@ namespace sdpa
     void Agent::parent_proxy::submit_job_ack (job_id_t id) const
     {
       _that->sendEventToOther<events::SubmitJobAckEvent> (_address, id);
-    }
-
-    void Agent::parent_proxy::capabilities_gained
-      (capabilities_set_t capabilities) const
-    {
-      _that->sendEventToOther<events::CapabilitiesGainedEvent>
-        (_address, capabilities);
-    }
-
-    void Agent::parent_proxy::capabilities_lost
-      (capabilities_set_t capabilities) const
-    {
-      _that->sendEventToOther<events::CapabilitiesLostEvent>
-        (_address, capabilities);
     }
 
     void Agent::parent_proxy::put_token_response

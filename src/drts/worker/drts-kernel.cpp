@@ -35,6 +35,7 @@
 #include <set>
 #include <stdexcept>
 #include <string>
+#include <tuple>
 #include <vector>
 
 //! \todo move to a central option name collection
@@ -47,10 +48,9 @@ namespace
     constexpr char const* const shared_memory_size
       {"shared-memory-size"};
     constexpr char const* const capability {"capability"};
-    constexpr char const* const backlog_length {"backlog-length"};
     constexpr char const* const library_search_path {"library-search-path"};
     constexpr char const* const socket {"socket"};
-    constexpr char const* const master {"master"};
+    constexpr char const* const parent {"parent"};
     constexpr char const* const certificates {"certificates"};
   }
 
@@ -155,10 +155,6 @@ int main(int ac, char **av)
         ->default_value (std::vector<std::string>(), "{}")
       , "capabilities of worker"
       )
-      ( option_name::backlog_length
-      , po::value<std::size_t>()->required()
-      , "length of job backlog"
-      )
       ( option_name::library_search_path
       , po::value<std::vector<boost::filesystem::path>>()
         ->default_value (std::vector<boost::filesystem::path>(), "{}")
@@ -168,9 +164,9 @@ int main(int ac, char **av)
       , po::value<std::size_t>()
       , "socket to pin worker on"
       )
-      ( option_name::master
-      , po::value<std::vector<std::string>>()->required()
-      , "masters to connect to (unique_name%host%port)"
+      ( option_name::parent
+      , po::value<std::string>()->required()
+      , "parent to connect to (unique_name%host%port)"
       )
       ( option_name::certificates
       , po::value<boost::filesystem::path>()
@@ -220,31 +216,26 @@ int main(int ac, char **av)
       : nullptr
       );
 
-    std::vector<DRTSImpl::master_info> master_info;
-    std::set<std::string> seen_master_names;
-    for ( std::string const& master
-        : vm.at (option_name::master).as<std::vector<std::string>>()
-        )
+    auto const parent_info
+      ( [&]() -> std::tuple<fhg::com::host_t, fhg::com::port_t>
     {
       boost::tokenizer<boost::char_separator<char>> const tok
-        (master, boost::char_separator<char> ("%"));
+        ( vm.at (option_name::parent).as<std::string>()
+        , boost::char_separator<char> ("%")
+        );
 
       std::vector<std::string> const parts (tok.begin(), tok.end());
 
       if (parts.size() != 3)
       {
         throw std::invalid_argument
-          ("invalid master information: has to be of format 'name%host%port'");
+          ("invalid parent information: has to be of format 'name%host%port'");
       }
 
-      if (!seen_master_names.emplace (master).second)
-      {
-        throw std::invalid_argument ("master already specified: " + master);
-      }
-
-      master_info.emplace_back
+      return std::make_tuple
         (fhg::com::host_t (parts[1]), fhg::com::port_t (parts[2]));
-    }
+    }()
+        );
 
     if (vm.count (option_name::socket))
     {
@@ -265,13 +256,11 @@ int main(int ac, char **av)
       , comm_port
       , virtual_memory_api.get()
       , shared_memory.get()
-      , master_info
+      , parent_info
       , vm.at (option_name::capability)
       .as<std::vector<std::string>>()
       , vm.at (option_name::library_search_path)
       .as<std::vector<boost::filesystem::path>>()
-      , vm.at (option_name::backlog_length)
-      .as<std::size_t>()
       , log_emitter
       , certificates
       );

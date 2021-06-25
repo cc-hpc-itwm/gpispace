@@ -30,6 +30,14 @@ namespace fhg
 {
   namespace rpc
   {
+    //! This namespace contains wrappers around \c
+    //! service_tcp_provider and \c remote_tcp_endpoint which are
+    //! exchanging connection information via the filesystem. The \c
+    //! locked_with_info_file::server expects a \c
+    //! util::filesystem_lock_directory to already been created, which
+    //! ensures that there is only exactly one server listening at the
+    //! given path. Many \c locked_with_info_file::client can then be
+    //! created by passing the path used on server construction.
     namespace locked_with_info_file
     {
       namespace error

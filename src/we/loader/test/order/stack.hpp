@@ -16,7 +16,9 @@
 
 #pragma once
 
+#include <util-generic/dllexport.hpp>
+
 #include <stack>
 #include <string>
 
-extern std::stack<std::string>& start();
+FHG_UTIL_DLLEXPORT std::stack<std::string>& start();

@@ -233,7 +233,6 @@ try
     start_agent_service
       ( service_dispatcher
       , [] ( std::string const& name
-           , boost::optional<fhg::rif::protocol::hostinfo_t> const& parent
            , boost::optional<unsigned short> const& agent_port
            , boost::optional<boost::filesystem::path> const& gpi_socket
            , gspc::Certificates const& certificates
@@ -244,12 +243,6 @@ try
             { "-u", "*:" + std::to_string (agent_port.get_value_or (0))
             , "-n", name
             };
-          if (parent)
-          {
-            arguments.emplace_back ("--masters");
-            arguments.emplace_back
-              (parent->first + "%" + std::to_string (parent->second));
-          }
           if (gpi_socket)
           {
             arguments.emplace_back ("--vmem-socket");
@@ -298,9 +291,6 @@ try
         {
           arguments.emplace_back ("-n");
           arguments.emplace_back (name);
-
-          arguments.emplace_back ("--backlog-length");
-          arguments.emplace_back ("1");
 
           auto const pid_and_startup_messages
             ( fhg::rif::execute_and_get_startup_messages

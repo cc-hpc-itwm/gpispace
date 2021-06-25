@@ -19,7 +19,7 @@
   <in name="host" type="string" place="host"/>
   <in name="port" type="unsigned int" place="port"/>
   <out name="all_done" type="control" place="all_done"/>
-   
+
   <net>
     <place name="start" type="bool"/>
     <place name="trigger_A" type="bool"/>
@@ -30,7 +30,7 @@
     <specialize name="triple_bool" use="triple">
       <type-map replace="T" with="bool"/>
     </specialize>
-   
+
     <transition name="trigger_all" inline="true">
       <use name="triple_bool"/>
       <connect-in port="in" place="start"/>
@@ -43,10 +43,10 @@
     <place name="done_A" type="control"/>
     <place name="done_B" type="control"/>
     <place name="done_C" type="control"/>
-        
+
     <place name="host" type="string"/>
     <place name="port" type="unsigned int"/>
-    
+
 	<transition name="run_task_requiring_capability_A">
       <defun>
         <require key="A" mandatory="true"/>
@@ -63,10 +63,10 @@
           <cinclude href="util-generic/scoped_boost_asio_io_service_with_threads.hpp"/>
           <code><![CDATA[
             // Note: the test checks the exact identity of the worker executing
-            // a task that requires a specific capability. For this purpose, the worker 
+            // a task that requires a specific capability. For this purpose, the worker
             // sends to the user a notification containing the worker name.
             // However, i.o. to be independent from the user namig convention,
-            // it is sufficient to send a notification containing the capability 
+            // it is sufficient to send a notification containing the capability
             // of the worker executing the task, only (in all modules).
             const std::set<std::string> workers (_pnetc_context->workers());
             fhg::util::scoped_boost_asio_io_service_with_threads io_service (1);
@@ -81,7 +81,7 @@
       <connect-read port="port" place="port"/>
       <connect-out port="done_A" place="done_A"/>
     </transition>
-    
+
 	<transition name="run_task_requiring_capability_B">
       <defun>
         <require key="B" mandatory="true"/>
@@ -110,7 +110,7 @@
       <connect-read port="port" place="port"/>
       <connect-out port="done_B" place="done_B"/>
     </transition>
-    
+
 	<transition name="run_task_requiring_capability_C">
       <defun>
         <require key="C" mandatory="true"/>
@@ -139,9 +139,9 @@
       <connect-read port="port" place="port"/>
       <connect-out port="done_C" place="done_C"/>
     </transition>
-    
+
 	<transition name="finalize">
-      <defun>  
+      <defun>
         <in name="done_A" type="control"/>
         <in name="done_B" type="control"/>
         <in name="done_C" type="control"/>
@@ -149,7 +149,7 @@
         <in name="port" type="unsigned int"/>
         <out name="all_done" type="control"/>
         <expression>
-          ${all_done} := [];       
+          ${all_done} := [];
         </expression>
       </defun>
       <connect-in port="done_A" place="done_A"/>

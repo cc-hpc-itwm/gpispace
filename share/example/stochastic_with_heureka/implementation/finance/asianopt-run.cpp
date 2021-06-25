@@ -17,6 +17,7 @@
 #include <implementation/finance/asianopt.hpp>
 
 #include <bin/run.hpp>
+#include <util/print_exception.hpp>
 
 #include <boost/format.hpp>
 
@@ -160,7 +161,7 @@ try
 }
 catch (std::exception const& e)
 {
-  std::cout << "EXCEPTION: " << e.what() << std::endl;
+  std::cout << "EXCEPTION: " << util::print_exception (e) << std::endl;
 
   return -1;
 }

@@ -32,7 +32,6 @@ namespace sdpa
                          , const std::string& owner
                          )
     : name_ (name)
-    , depth_ (0)
     , owner_ (owner)
     , uuid_ (GLOBAL_id_generator_cap().next())
     {}

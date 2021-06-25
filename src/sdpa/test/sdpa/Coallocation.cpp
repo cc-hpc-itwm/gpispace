@@ -107,7 +107,7 @@ BOOST_DATA_TEST_CASE
   const std::string job_name (job_submitted_1.wait());
   BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
 
-  // 5. worker 2 is a slave and returns immediately
+  // 5. worker 2 is a child and returns immediately
   worker_2_shall_not_get_a_job = true;
   worker_2.finish_and_wait_for_ack (job_name);
 
@@ -509,4 +509,60 @@ BOOST_DATA_TEST_CASE
 
   BOOST_REQUIRE_EQUAL
     (client.wait_for_terminal_state (job_id), sdpa::status::FINISHED);
+}
+
+BOOST_DATA_TEST_CASE
+  ( worker_submits_result_and_dies_the_still_running_coallocated_jobs_are_canceled
+  , certificates_data
+  , certificates
+  )
+{
+  const utils::agent agent (certificates);
+
+  utils::client client (agent, certificates);
+  sdpa::job_id_t const job_id
+    (client.submit_job (utils::net_with_one_child_requiring_workers (3)));
+
+  fhg::util::thread::event<std::string> job_submitted_1;
+  fhg::util::thread::event<std::string> cancel_requested_1;
+
+  utils::fake_drts_worker_notifying_cancel worker_1
+    ( [&] (std::string j) { job_submitted_1.notify (j); }
+    , [&cancel_requested_1] (std::string j) { cancel_requested_1.notify (j); }
+    , agent
+    , certificates
+    );
+
+  fhg::util::thread::event<std::string> job_submitted_2;
+  fhg::util::thread::event<std::string> cancel_requested_2;
+  utils::fake_drts_worker_notifying_cancel worker_2
+    ( [&job_submitted_2] (std::string j) { job_submitted_2.notify (j); }
+    , [&cancel_requested_2] (std::string j) { cancel_requested_2.notify (j); }
+    , agent
+    , certificates
+    );
+
+  {
+    fhg::util::thread::event<std::string> job_submitted_3;
+
+    utils::fake_drts_worker_waiting_for_finished_ack worker_3
+      ( [&job_submitted_3] (std::string j) { job_submitted_3.notify (j); }
+      , agent
+      , certificates
+      );
+
+    std::string job_name (job_submitted_1.wait());
+    BOOST_REQUIRE_EQUAL (job_name, job_submitted_2.wait());
+    BOOST_REQUIRE_EQUAL (job_name, job_submitted_3.wait());
+
+    // worker 3 submits the result and dies
+    worker_3.finish_and_wait_for_ack (job_name);
+  }
+
+  // it is expected that the other 2 running tasks are canceled
+  auto const canceled_job_1 (cancel_requested_1.wait());
+  worker_1.canceled (canceled_job_1);
+  auto const canceled_job_2 (cancel_requested_2.wait());
+  BOOST_REQUIRE_EQUAL (canceled_job_2, canceled_job_1);
+  worker_2.canceled (canceled_job_2);
 }

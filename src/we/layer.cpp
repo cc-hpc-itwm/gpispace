@@ -345,10 +345,21 @@ namespace we
         if (activity)
         {
           const id_type child_id (_rts_id_generator());
-          _running_jobs.started ( activity_data._id
-                                , child_id
-                                , activity->eureka_id()
-                                );
+          try
+          {
+            _running_jobs.started ( activity_data._id
+                                  , child_id
+                                  , activity->eureka_id()
+                                  );
+          }
+          catch (...)
+          {
+            rts_failed_and_forget
+              ( activity_data._id
+              , fhg::util::current_exception_printer (": ").string()
+              );
+            continue;
+          }
           _rts_submit (child_id, std::move (*activity));
           was_active = true;
         }
@@ -434,11 +445,11 @@ namespace we
   {
     fhg::util::visit<void>
       ( _function
-      , [&] (std::function<void (activity_data_type&)>& fun)
+      , [&] (std::function<void (activity_data_type&)> const& fun)
         {
           return fun (activity_data);
         }
-      , [&] (ToFinish& to_finish)
+      , [&] (ToFinish const& to_finish)
         {
           activity_data.child_finished
             ( std::move (to_finish._result)
@@ -605,7 +616,6 @@ namespace we
     void layer::async_remove_queue::remove_and_apply
       ( id_type id
       , RemovalFunction fun
-      , std::function<void (std::exception_ptr)> on_error
       )
     {
       std::lock_guard<std::recursive_mutex> const _ (_container_mutex);
@@ -622,7 +632,7 @@ namespace we
         }
         catch (...)
         {
-          on_error (std::current_exception());
+          std::rethrow_exception (std::current_exception());
         }
         _container.erase (pos_container);
       }
@@ -634,13 +644,13 @@ namespace we
         }
         catch (...)
         {
-          on_error (std::current_exception());
+          std::rethrow_exception (std::current_exception());
         }
         _container_inactive.erase (pos_container_inactive);
       }
       else
       {
-        _to_be_removed[id].emplace_back (std::move (fun), on_error, false);
+        _to_be_removed[id].emplace_back (std::move (fun), &std::rethrow_exception, false);
       }
     }
 
@@ -810,12 +820,11 @@ namespace we
     }
 
 
-    template <typename Func>
     void layer::locked_parent_child_relation_type::apply_and_remove_eureka
       ( type::eureka_id_type const& eureka_id
       , id_type const& parent
       , boost::optional<id_type> const& eureka_caller
-      , Func fun
+      , std::function<void (id_type)> cancel
       )
     {
       std::lock_guard<std::mutex> const lock_for_eureka (_relation_mutex);
@@ -829,7 +838,7 @@ namespace we
       {
         if (eureka_caller != child)
         {
-          fun (child);
+          cancel (child);
         }
       }
 

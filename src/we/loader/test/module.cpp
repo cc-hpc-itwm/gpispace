@@ -55,24 +55,6 @@ BOOST_AUTO_TEST_CASE (ctor_failed_exception_from_we_mod_initialize)
     );
 }
 
-BOOST_AUTO_TEST_CASE (ctor_failed_bad_boost_version)
-{
-#define XSTR(x) STR(x)
-#define STR(x) #x
-  fhg::util::testing::require_exception
-    ( [] { we::loader::Module ("./libempty_not_linked_with_pnet.so"); }
-    , we::loader::module_load_failed
-        ( "./libempty_not_linked_with_pnet.so"
-        , ( boost::format
-              ("dlopen: ./libempty_not_linked_with_pnet.so: undefined symbol: %1%")
-          % XSTR (WE_GUARD_SYMBOL)
-          ).str()
-        )
-    );
-#undef STR
-#undef XSTR
-}
-
 BOOST_AUTO_TEST_CASE (call_not_found)
 {
   we::loader::Module m ("./libempty.so");
@@ -162,7 +144,7 @@ BOOST_AUTO_TEST_CASE (duplicate_function)
 
 BOOST_AUTO_TEST_CASE (ensures_library_unloads_properly)
 {
-  // \note Relies on the library not linking anyone in additional to
+  // \note Relies on the library not linking anyone in addition to
   // what is already loaded, so that the not-unloaded set is only
   // exactly the library we know about.
 

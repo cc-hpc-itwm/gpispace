@@ -37,7 +37,6 @@ namespace sdpa
 
       explicit Worker ( const capabilities_set_t&
                       , unsigned long allocated_shared_memory_size
-                      , const bool children_allowed
                       , const std::string& hostname
                       );
 
@@ -45,11 +44,8 @@ namespace sdpa
       void submit(const job_id_t&);
 
       void acknowledge(const job_id_t&);
-      bool is_terminal() const;
 
       // capabilities
-      bool addCapabilities(const capabilities_set_t& cpbset);
-      bool removeCapabilities(const capabilities_set_t& cpbset);
       bool hasCapability(const std::string& cpbName) const;
 
       bool has_pending_jobs() const;
@@ -60,8 +56,6 @@ namespace sdpa
 
       // methods related to reservation
       bool isReserved() const;
-      bool backlog_full() const;
-      void set_backlog_full (bool);
 
       // cost
       double cost_assigned_jobs() const;
@@ -72,7 +66,6 @@ namespace sdpa
       capabilities_set_t _capabilities;
       fhg::util::refcounted_set<std::string> capability_names_;
       unsigned long const _allocated_shared_memory_size;
-      bool const _children_allowed;
       std::string const _hostname;
       double _last_time_idle;
 
@@ -81,7 +74,6 @@ namespace sdpa
       std::set<job_id_t> acknowledged_; //! the queue of jobs assigned to this worker (successfully submitted)
 
       bool reserved_;
-      bool backlog_full_;
     };
   }
 }

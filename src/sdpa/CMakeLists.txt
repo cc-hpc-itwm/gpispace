@@ -14,30 +14,27 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-ADD_LIBRARY(sdpa
-  capability.cpp
-  client.cpp
-  com/NetworkStrategy.cpp
-  daemon/Agent.cpp
-  daemon/Job.cpp
-  daemon/scheduler/CoallocationScheduler.cpp
-  daemon/scheduler/Reservation.cpp
-  daemon/Worker.cpp
-  daemon/WorkerManager.cpp
-  events/Codec.cpp
-)
-
-target_link_libraries (sdpa
-  IML::Client
-  RPC
-  Boost::serialization
-  Boost::date_time
-  fhgcom
-  Boost::thread
-  fhg-util
-  pnet
-  Util::Generic
-  gspc::logging
+gspc_add_library (NAME sdpa
+  TYPE STATIC
+  SOURCES capability.cpp
+          client.cpp
+          com/NetworkStrategy.cpp
+          daemon/Agent.cpp
+          daemon/Job.cpp
+          daemon/Worker.cpp
+          daemon/WorkerManager.cpp
+          daemon/scheduler/CoallocationScheduler.cpp
+          daemon/scheduler/Reservation.cpp
+          events/Codec.cpp
+  LIBRARIES PUBLIC pnet
+            PUBLIC fhgcom
+            PUBLIC fhg-util
+            PUBLIC gspc::logging
+            PUBLIC IML::Client
+            PUBLIC Util::Generic
+            PUBLIC Boost::thread
+            PUBLIC Boost::serialization
+            PRIVATE Boost::date_time
 )
 
 add_subdirectory (test)

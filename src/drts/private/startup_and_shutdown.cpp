@@ -17,6 +17,7 @@
 #include <drts/private/startup_and_shutdown.hpp>
 
 #include <drts/private/drts_impl.hpp>
+#include <drts/private/worker_description_implementation.hpp>
 
 #include <rif/client.hpp>
 
@@ -33,7 +34,6 @@
 #include <util-generic/read_lines.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
 #include <util-generic/serialization/boost/filesystem/path.hpp>
-#include <util-generic/split.hpp>
 #include <util-generic/unreachable.hpp>
 #include <util-generic/wait_and_collect_exceptions.hpp>
 
@@ -44,7 +44,6 @@
 #include <boost/algorithm/string/classification.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
-#include <boost/lexical_cast.hpp>
 #include <boost/optional.hpp>
 #include <boost/range/adaptors.hpp>
 #include <boost/serialization/unordered_map.hpp>
@@ -59,7 +58,6 @@
 #include <list>
 #include <memory>
 #include <numeric>
-#include <regex>
 #include <stdexcept>
 #include <tuple>
 #include <type_traits>
@@ -123,24 +121,10 @@ namespace
            ).str();
   }
 
-  template<typename Res, typename Enum, typename Match>
-    boost::optional<Res> get_match (Match& match, Enum part)
-  {
-    typename Match::const_reference submatch
-      (match[static_cast<typename std::underlying_type<Enum>::type> (part)]);
-    if (submatch.matched)
-    {
-      return boost::lexical_cast<Res> (submatch.str());
-    }
-    return boost::none;
-  }
-
   fhg::drts::hostinfo_type start_agent
     ( fhg::rif::entry_point const& rif_entry_point
     , fhg::rif::client& rif_client
     , std::string const& name
-    , boost::optional<std::string> const& parent_name
-    , boost::optional<fhg::drts::hostinfo_type> const& parent_hostinfo
     , boost::optional<unsigned short> const& agent_port
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , gspc::installation_path const& installation_path
@@ -152,16 +136,11 @@ namespace
   {
     info_output << "I: starting agent: " << name << " on rif entry point "
                 << rif_entry_point;
-    if (parent_name)
-    {
-      info_output << " with parent " << *parent_name;
-    }
     info_output << "\n";
 
     auto const result
       ( rif_client.start_agent
           ( name
-          , parent_hostinfo
           , agent_port
           , gpi_socket
           , certificates
@@ -192,9 +171,9 @@ namespace fhg
              , std::unordered_map<fhg::rif::entry_point, std::exception_ptr>
              > start_workers_for
     ( std::vector<fhg::rif::entry_point> const& entry_points
-    , std::string master_name
-    , fhg::drts::hostinfo_type master_hostinfo
-    , gspc::worker_description const& description
+    , std::string parent_name
+    , fhg::drts::hostinfo_type parent_hostinfo
+    , gspc::worker_description const& description_
     , fhg::drts::processes_storage& processes
     , boost::optional<boost::filesystem::path> const& gpi_socket
     , std::vector<boost::filesystem::path> const& app_path
@@ -208,19 +187,21 @@ namespace fhg
     , gspc::Certificates const& certificates
     )
   {
+     auto const& description (*description_._);
+
      std::string name_prefix (fhg::util::join (description.capabilities, '+').string());
      std::replace_if
        (name_prefix.begin(), name_prefix.end(), boost::is_any_of ("+#.-"), '_');
 
-     info_output << "I: starting " << name_prefix << " workers (master "
-                 << master_name << ", "
+     info_output << "I: starting " << name_prefix << " workers (parent "
+                 << parent_name << ", "
                  << description.num_per_node << "/host, "
                  << ( description.max_nodes == 0 ? "unlimited"
                     : description.max_nodes == 1 ? "unique"
                     : "global max: " + std::to_string (description.max_nodes)
                     )
                  << ", " << description.shm_size << " SHM) with parent "
-                 << master_name << " on rif entry point "
+                 << parent_name << " on rif entry point "
                  << fhg::util::join
                       ( entry_points
                       | boost::adaptors::transformed
@@ -235,9 +216,9 @@ namespace fhg
 
      std::vector<std::string> arguments;
 
-     arguments.emplace_back ("--master");
+     arguments.emplace_back ("--parent");
      arguments.emplace_back
-       (build_parent_with_hostinfo (master_name, master_hostinfo));
+       (build_parent_with_hostinfo (parent_name, parent_hostinfo));
 
      for (boost::filesystem::path const& path : app_path)
      {
@@ -475,50 +456,6 @@ namespace fhg
       return results;
     }
 
-    gspc::worker_description parse_capability
-      (std::size_t def_num_proc, std::string const& cap_spec)
-    {
-      static std::regex const cap_spec_regex
-        ("^([^#:]+)(#([0-9]+))?(:([0-9]+)(x([0-9]+))?(,([0-9]+))?(/([0-9]+))?)?$");
-      enum class cap_spec_regex_part
-      {
-        capabilities = 1,
-        socket = 3,
-        num_per_node = 5,
-        max_nodes = 7,
-        shm = 9,
-        base_port = 11
-      };
-
-      std::smatch cap_spec_match;
-      if (!std::regex_match (cap_spec, cap_spec_match, cap_spec_regex))
-      {
-        throw std::invalid_argument
-          ("Invalid capability specification: " + cap_spec);
-      }
-
-      std::size_t const num_per_node
-        ( get_match<std::size_t>
-            (cap_spec_match, cap_spec_regex_part::num_per_node)
-          .get_value_or (def_num_proc)
-        );
-
-      return
-        { fhg::util::split<std::string, std::string, std::vector<std::string>>
-            ( get_match<std::string>
-                (cap_spec_match, cap_spec_regex_part::capabilities).get()
-            , '+'
-            )
-        , num_per_node
-        , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::max_nodes)
-          .get_value_or (0)
-        , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::shm)
-          .get_value_or (0)
-        , get_match<std::size_t> (cap_spec_match, cap_spec_regex_part::socket)
-        , get_match<unsigned short> (cap_spec_match, cap_spec_regex_part::base_port)
-        };
-    }
-
     namespace
     {
       std::unique_ptr<rpc::remote_endpoint> connect
@@ -546,10 +483,10 @@ namespace fhg
       , gspc::installation_path const& installation_path
       , fhg::util::signal_handler_manager& signal_handler_manager
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
-      , fhg::rif::entry_point const& master
+      , fhg::rif::entry_point const& parent
       , fhg::drts::processes_storage& processes
-      , std::string& master_agent_name
-      , fhg::drts::hostinfo_type& master_agent_hostinfo
+      , std::string& parent_agent_name
+      , fhg::drts::hostinfo_type& parent_agent_hostinfo
       , std::ostream& info_output
       , boost::optional<fhg::rif::entry_point> log_rif_entry_point
       , std::vector<logging::endpoint> default_log_receivers
@@ -565,13 +502,13 @@ namespace fhg
           }
         );
 
-      info_output << "I: starting base sdpa components on " << master << "...\n";
+      info_output << "I: starting base sdpa components on " << parent << "...\n";
 
       //! \todo let thread count be a parameter
       fhg::util::scoped_boost_asio_io_service_with_threads io_service
         (std::max (1UL, std::min (64UL, rif_entry_points.size())));
 
-      rif::client master_rif_client (io_service, master);
+      rif::client parent_rif_client (io_service, parent);
 
       boost::optional<rif::client> logging_rif_client;
       boost::optional<rif::protocol::start_logging_demultiplexer_result>
@@ -643,13 +580,11 @@ namespace fhg
                     << "\n";
       }
 
-      master_agent_name = "agent-" + master.string() + "-0";
+      parent_agent_name = "agent-" + parent.string() + "-0";
 
-      master_agent_hostinfo = start_agent ( master
-                                          , master_rif_client
-                                          , master_agent_name
-                                          , boost::none
-                                          , boost::none
+      parent_agent_hostinfo = start_agent ( parent
+                                          , parent_rif_client
+                                          , parent_agent_name
                                           , agent_port
                                           , gpi_socket
                                           , installation_path
@@ -665,7 +600,7 @@ namespace fhg
                                           , certificates
                                           );
 
-      return {master_agent_hostinfo, logging_rif_info};
+      return {parent_agent_hostinfo, logging_rif_info};
     }
 
     namespace

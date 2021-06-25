@@ -20,6 +20,8 @@
 #include <sdpa/daemon/scheduler/Reservation.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 
+#include <fhgcom/header.hpp>
+
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_set_of.hpp>
 #include <boost/noncopyable.hpp>
@@ -30,6 +32,7 @@
 #include <mutex>
 #include <set>
 #include <string>
+#include <tuple>
 #include <unordered_map>
 #include <unordered_set>
 #include <utility>
@@ -39,7 +42,8 @@ namespace sdpa
   namespace daemon
   {
     using WorkerSet = std::set<worker_id_t>;
-    using Workers_and_implementation = std::pair<WorkerSet, Implementation>;
+    using Workers_implementation_and_transfer_cost =
+      std::tuple<WorkerSet, Implementation, double>;
 
     class WorkerManager : boost::noncopyable
     {
@@ -66,13 +70,9 @@ namespace sdpa
 
         unsigned int n_pending_jobs() const;
         unsigned int n_running_jobs() const;
-        unsigned int n_workers() const;
 
         void add_worker_entry (worker_iterator);
         void remove_worker_entry (worker_iterator);
-
-        void steal_work
-          (std::function<scheduler::Reservation* (job_id_t const&)>, WorkerManager&);
 
         void allow_classes_matching_preferences_stealing
           ( std::map<std::set<std::string>, WorkerEquivalenceClass> const& worker_classes
@@ -82,98 +82,67 @@ namespace sdpa
       private:
         unsigned int _n_pending_jobs;
         unsigned int _n_running_jobs;
-        std::unordered_set<worker_id_t> _worker_ids;
         std::unordered_set<worker_id_t> _idle_workers;
         std::set<std::set<std::string>> _stealing_allowed_classes;
       };
 
     public:
-      unsigned long num_free_workers() const;
-
-      std::unordered_set<worker_id_t> findSubmOrAckWorkers
-        (const sdpa::job_id_t& job_id) const;
-
-      std::string host_INDICATES_A_RACE (const sdpa::worker_id_t& worker) const;
+      std::unordered_set<worker_id_t> find_subm_or_ack_workers
+        (const sdpa::job_id_t&, std::set<worker_id_t> const&) const;
 
       //! throws if workerId was not unique
-      void addWorker ( const worker_id_t& workerId
+      void add_worker ( const worker_id_t& workerId
                      , const capabilities_set_t& cpbset
                      , unsigned long allocated_shared_memory_size
-                     , const bool children_allowed
                      , const std::string& hostname
                      , const fhg::com::p2p::address_t& address
                      );
 
-      void deleteWorker (const worker_id_t& workerId);
-
-      void getCapabilities (sdpa::capabilities_set_t& cpbset) const;
-
-      Workers_and_implementation find_assignment
-        (const Requirements_and_preferences&) const;
+      void delete_worker (const worker_id_t& workerId);
 
       void steal_work (std::function<scheduler::Reservation* (job_id_t const&)> reservation);
 
-      std::pair<bool, unsigned long>
-        submit_and_serve_if_can_start_job_INDICATES_A_RACE
-          ( job_id_t const&
-          , WorkerSet const&
-          , Implementation const&
-          , std::function<void ( WorkerSet const&
-                               , Implementation const&
-                               , const job_id_t&
-                               )> const& serve_job
-          );
+      void assign_job_to_worker
+        (const job_id_t&, const worker_id_t&, double cost, Preferences const&);
+      void submit_job_to_worker (const job_id_t&, const worker_id_t&);
+      void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
+      void delete_job_from_worker (const job_id_t &job_id, const worker_id_t&, double);
 
-    std::unordered_set<sdpa::job_id_t> delete_or_cancel_worker_jobs
-      ( worker_id_t const&
-      , std::function<Job* (sdpa::job_id_t const&)>
-      , std::function<scheduler::Reservation* (sdpa::job_id_t const&)>
-      , std::function<void (sdpa::worker_id_t const&, job_id_t const&)>
-      );
+      using worker_connections_t
+        = boost::bimap < boost::bimaps::unordered_set_of<std::string>
+                       , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
+                       >;
 
-    void assign_job_to_worker
-      (const job_id_t&, const worker_id_t&, double cost, Preferences const&);
-    void acknowledge_job_sent_to_worker (const job_id_t&, const worker_id_t&);
-    void delete_job_from_worker (const job_id_t &job_id, const worker_id_t&, double);
-    const capabilities_set_t& worker_capabilities (const worker_id_t&) const;
-    bool add_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
-    bool remove_worker_capabilities (const worker_id_t&, const capabilities_set_t&);
-    void set_worker_backlog_full (const worker_id_t&, bool);
+      boost::optional<WorkerManager::worker_connections_t::right_iterator>
+        worker_by_address (fhg::com::p2p::address_t const&);
 
-    using worker_connections_t
-      = boost::bimap < boost::bimaps::unordered_set_of<std::string>
-                     , boost::bimaps::unordered_set_of<fhg::com::p2p::address_t>
-                     >;
+      boost::optional<WorkerManager::worker_connections_t::left_iterator>
+        address_by_worker (std::string const&);
 
-    boost::optional<WorkerManager::worker_connections_t::right_iterator>
-      worker_by_address (fhg::com::p2p::address_t const&);
+      unsigned long num_free_workers() const;
+      bool all_free (std::set<worker_id_t> const&) const;
 
-    boost::optional<WorkerManager::worker_connections_t::left_iterator>
-      address_by_worker (std::string const&);
+      std::unordered_set<job_id_t> pending_jobs (worker_id_t const& worker) const;
+      std::unordered_set<job_id_t> submitted_or_acknowledged_jobs
+        (worker_id_t const& worker) const;
 
-      bool hasWorker_INDICATES_A_RACE_TESTING_ONLY (const worker_id_t& worker_id) const;
-
-      std::unordered_set<worker_id_t> workers_to_send_cancel (job_id_t const& job_id);
-
+      std::tuple<double, unsigned long, double, double>
+        costs_memory_size_and_last_idle_time
+          (worker_id_t const&, Requirements_and_preferences const&) const;
+      unsigned long number_of_workers() const;
+      std::map<std::set<std::string>, std::unordered_set<worker_id_t>> const&
+        classes_and_workers() const;
     private:
       void assign_job_to_worker
         (const job_id_t&, worker_iterator, double cost, Preferences const&);
       void delete_job_from_worker
         (const job_id_t &job_id, const worker_iterator worker, double cost);
-      void submit_job_to_worker (const job_id_t&, const worker_id_t&);
-      void change_equivalence_class (worker_iterator, std::set<std::string> const&);
-
-      std::pair<boost::optional<double>, boost::optional<std::string>>
-        match_requirements_and_preferences
-          ( std::set<std::string> const& capabilities
-          , const Requirements_and_preferences&
-          ) const;
-
+      
       worker_map_t  worker_map_;
       worker_connections_t worker_connections_;
       std::map<std::set<std::string>, WorkerEquivalenceClass> worker_equiv_classes_;
+      std::map<std::set<std::string>, std::unordered_set<worker_id_t>> _classes_and_worker_ids;
 
-      mutable std::mutex mtx_;
       unsigned long _num_free_workers {0};
     };
   }

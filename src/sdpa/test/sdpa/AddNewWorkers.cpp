@@ -67,6 +67,8 @@ we::type::activity_t net_with_n_children (unsigned int n)
       , boost::none
       , props
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
   }
 
@@ -121,6 +123,8 @@ we::type::activity_t net_with_n_children (unsigned int n)
                              , boost::none
                              , we::type::property::type()
                              , we::priority_type()
+                             , boost::optional<we::type::eureka_id_type>{}
+                             , std::list<we::type::preference_t>{}
                              )
     );
 }

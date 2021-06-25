@@ -15,9 +15,16 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_library (NAME test_equality
+  gspc_add_library (NAME test_equality
+    TYPE STATIC
     NAMESPACE we
     SOURCES "operator_equal.cpp"
+    LIBRARIES pnet
+  )
+  gspc_add_library (NAME test_net_common
+    TYPE STATIC
+    NAMESPACE we
+    SOURCES "net.common.cpp"
     LIBRARIES pnet
   )
 endif()
@@ -69,13 +76,13 @@ fhg_add_test (NAME we_context
 fhg_add_test (NAME we_expression_based_cross_product
   SOURCES expression_based_cross_product.cpp
   USE_BOOST
-  LIBRARIES pnet
+  LIBRARIES pnet we::test_net_common
 )
 
 fhg_add_test (NAME we_tp_many_typecheck
   SOURCES tp_many_typecheck.cpp
   USE_BOOST
-  LIBRARIES pnet
+  LIBRARIES pnet we::test_net_common
 )
 
 fhg_add_test (NAME we_tp_many_duplicate_connections
@@ -88,6 +95,7 @@ fhg_add_test (NAME we_net
   SOURCES net.cpp
   USE_BOOST
   LIBRARIES pnet
+            we::test_net_common
             Util::Generic
 )
 
@@ -95,6 +103,7 @@ fhg_add_test (NAME we_net_performance
   SOURCES net.performance.cpp
   USE_BOOST
   LIBRARIES pnet
+            we::test_net_common
             Util::Generic
   PERFORMANCE_TEST
 )

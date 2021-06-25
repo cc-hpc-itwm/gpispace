@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME we-dev
+gspc_add_library (NAME we-dev
   TYPE SHARED
   SOURCES "exception.cpp"
           "expr/token/type.cpp"
@@ -36,14 +36,16 @@ extended_add_library (NAME we-dev
 
           "loader/Module.cpp"
           "loader/exceptions.cpp"
-  LIBRARIES fhg-util
+  LIBRARIES GPISpace::header-only
+            fhg-util
             ${CMAKE_DL_LIBS}
   INSTALL
   CREATE_BUNDLE_INFO
 )
 
 if (BUILD_TESTING)
-  extended_add_library (NAME we-dev-testing
+  gspc_add_library (NAME we-dev-testing
+    TYPE STATIC
     SOURCES "expr/token/testing/all_tokens.cpp"
     LIBRARIES we-dev
   )

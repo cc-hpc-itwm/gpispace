@@ -56,9 +56,9 @@ namespace sdpa
                , fhg::com::host_t ("*")
                , fhg::com::port_t ("0")
                , certificates
+               , top_level_agent_host
+               , top_level_agent_port
                )
-      , _drts_entrypoint_address
-          (m_peer.connect_to (top_level_agent_host, top_level_agent_port))
     {
       m_peer.async_recv ( std::bind ( &Client::handle_recv
                                     , this
@@ -147,10 +147,8 @@ namespace sdpa
     {
       std::lock_guard<std::mutex> const _ (_make_client_thread_safe);
 
-      m_incoming_events.INDICATES_A_RACE_clear();
-
       static sdpa::events::Codec const codec {};
-      m_peer.send (_drts_entrypoint_address, codec.encode (&event));
+      m_peer.send (codec.encode (&event));
 
       const sdpa::events::SDPAEvent::Ptr reply (m_incoming_events.get());
       if (Expected* const e = dynamic_cast<Expected*> (reply.get()))

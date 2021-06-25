@@ -21,12 +21,21 @@
 #include <util-generic/hostname.hpp>
 
 #include <boost/asio/connect.hpp>
+// should only need ssl/context.hpp, but that's missing an include
+#include <boost/asio/ssl.hpp>
 #include <boost/filesystem/operations.hpp>
 #include <boost/make_shared.hpp>
 #include <boost/system/system_error.hpp>
 
 #include <stdexcept>
 #include <utility>
+
+namespace
+{
+  //Note: this mutex is needed to ensure non-concurrent
+  //initialization of the boost::ssl:context in peers
+  std::mutex ssl_context_threadunsafety_guard;
+}
 
 namespace fhg
 {
@@ -68,6 +77,8 @@ namespace fhg
 
         if (certificates)
         {
+          std::lock_guard<std::mutex> lock_context
+            (ssl_context_threadunsafety_guard);
           ctx_ = fhg::util::cxx14::make_unique<boost::asio::ssl::context>
                    (*io_service_, boost::asio::ssl::context::sslv23);
 

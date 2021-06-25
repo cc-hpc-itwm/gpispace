@@ -93,8 +93,8 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_match_input_list_and_output_tokens
   BOOST_REQUIRE_EQUAL (test_net.net.get_token (test_net.pid_in).size(), 1);
 
   BOOST_REQUIRE
-    ( !test_net.net.fire_expressions_and_extract_activity_random
-        (random_engine(), unexpected_workflow_response)
+    ( !test_net.net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+        (random_engine(), unexpected_workflow_response, unexpected_eureka)
     );
 
   FHG_UTIL_TESTING_REQUIRE_CONTAINER_IS_PERMUTATION
@@ -139,8 +139,8 @@ BOOST_DATA_TEST_CASE ( tp_many_typecheck_mismatch_expection_for_all_types
   fhg::util::testing::require_exception
     ( [&]
       {
-        test_net.net.fire_expressions_and_extract_activity_random
-          (random_engine(), unexpected_workflow_response);
+        test_net.net.fire_expressions_and_extract_activity_random_TESTING_ONLY
+          (random_engine(), unexpected_workflow_response, unexpected_eureka);
       }
     , pnet::exception::type_mismatch
         ( name_to_signature (out_type_str)

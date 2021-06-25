@@ -35,8 +35,11 @@
 
 #include <boost/range/combine.hpp>
 
+#include <algorithm>
+#include <iterator>
 #include <regex>
 #include <sstream>
+#include <string>
 #include <vector>
 
 BOOST_AUTO_TEST_CASE (scoped_iml_rts_startup)
@@ -69,10 +72,13 @@ BOOST_AUTO_TEST_CASE (scoped_iml_rts_startup)
     iml::RuntimeSystem {rifs, vm, info_output_stream};
   }
 
-  std::vector<std::string> const expected_output
-    { "I: starting VMEM on: (.+) with a timeout of [0-9]+ seconds"
-    , "terminating vmem on (.+) [0-9]+ [0-9]+: [0-9]+"
-    };
+  std::vector<std::string> expected_output (hosts.size() + 1);
+  expected_output[0]
+    = "I: starting VMEM on: (.+) with a timeout of [0-9]+ seconds";
+  std::fill_n ( std::next (expected_output.begin())
+              , hosts.size()
+              , "terminating vmem on (.+) [0-9]+ [0-9]+: [0-9]+"
+              );
 
   BOOST_TEST_CONTEXT (info_output_stream.str())
   {

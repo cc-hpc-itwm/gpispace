@@ -14,21 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME Log
+gspc_add_library (NAME Log
   NAMESPACE Plugin
   SOURCES "Log.cpp"
-  POSITION_INDEPENDENT
   TYPE SHARED
-  LIBRARIES pnet
+  LIBRARIES GPISpace::header-only
+            we-dev
   INSTALL
   INSTALL_DESTINATION "plugin"
 )
-extended_add_library (NAME Tunnel
+gspc_add_library (NAME Tunnel
   NAMESPACE Plugin
   SOURCES "Tunnel.cpp"
-  POSITION_INDEPENDENT
   TYPE SHARED
-  LIBRARIES pnet
+  LIBRARIES GPISpace::header-only
+            we-dev
   INSTALL
   INSTALL_DESTINATION "plugin"
 )
@@ -41,8 +41,7 @@ function (test_Log case)
          --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/test/Log/${case}"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
          --plugin-path "${CMAKE_INSTALL_PREFIX}/plugin/$<TARGET_FILE_NAME:Plugin::Log>"
-    LIBRARIES gspc
-              test-utilities
+    LIBRARIES test-utilities
               fhg-util
               Boost::program_options
     REQUIRES_INSTALLATION
@@ -62,8 +61,7 @@ function (test_Tunnel case)
          --source-directory "${CMAKE_CURRENT_SOURCE_DIR}/test/Tunnel/${case}"
          --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
          --plugin-path "${CMAKE_INSTALL_PREFIX}/plugin/$<TARGET_FILE_NAME:Plugin::Tunnel>"
-    LIBRARIES gspc
-              test-utilities
+    LIBRARIES test-utilities
               fhg-util
               Boost::program_options
     REQUIRES_INSTALLATION

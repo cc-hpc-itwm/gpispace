@@ -30,7 +30,7 @@ BOOST_AUTO_TEST_CASE (throw_if_the_alignment_is_not_a_power_of_2)
     {fhg::util::testing::random<unsigned long>()()};
   auto const size_expr (fhg::util::testing::random_identifier());
   context.bind_and_discard_ref ({size_expr}, size);
- 
+
   unsigned long const exp
     (fhg::util::testing::random<unsigned long>{} (10, 2));
   unsigned long const alignment
@@ -44,7 +44,7 @@ BOOST_AUTO_TEST_CASE (throw_if_the_alignment_is_not_a_power_of_2)
     ("${" + size_expr + "}", "${" + alignment_expr + "}");
 
   BOOST_REQUIRE_EQUAL (memory_buffer_info.size (context), size);
-  BOOST_REQUIRE_EXCEPTION 
+  BOOST_REQUIRE_EXCEPTION
     ( memory_buffer_info.alignment (context)
     , std::runtime_error
     , [&] (std::runtime_error const& exc)
@@ -55,7 +55,7 @@ BOOST_AUTO_TEST_CASE (throw_if_the_alignment_is_not_a_power_of_2)
           ) != std::string::npos;
       }
     );
-} 
+}
 
 BOOST_AUTO_TEST_CASE (size_and_alignment_as_expressions)
 {

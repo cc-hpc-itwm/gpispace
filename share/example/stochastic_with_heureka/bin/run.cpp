@@ -19,10 +19,13 @@
 #include <drts/client.hpp>
 #include <drts/drts.hpp>
 #include <drts/scoped_rifd.hpp>
+#include <we/type/value/show.hpp>
 
 #include <boost/filesystem.hpp>
 #include <boost/format.hpp>
+#include <boost/lexical_cast.hpp>
 
+#include <exception>
 #include <sstream>
 #include <stdexcept>
 #include <vector>
@@ -65,7 +68,54 @@ namespace stochastic_with_heureka
         , std::string const& key
         )
     {
-      return boost::get<T> (r.find (key)->second);
+      if (r.count (key) != 1)
+      {
+        std::ostringstream oss;
+        bool first (true);
+
+        oss << "{";
+        for (auto const& x : r)
+        {
+          if (!first)
+          {
+            oss << ", ";
+          }
+          else
+          {
+            first = false;
+          }
+          oss << "'" << x.first << "': " << pnet::type::value::show (x.second);
+        }
+        oss << "}";
+
+        throw std::runtime_error
+          (str ( boost::format ("Extract: %1% key '%2%' in '%3%'")
+               % (r.count (key) ? "Duplicate" : "Missing")
+               % key
+               % oss.str()
+               )
+          );
+      }
+
+      auto const& value (r.find (key)->second);
+
+      try
+      {
+        return boost::get<T> (value);
+      }
+      catch (...)
+      {
+        std::throw_with_nested
+          ( std::runtime_error
+              (str ( boost::format ("Extract: Key '%1%', value '%2%'")
+                   % key
+                   % pnet::type::value::show (value)
+                   )
+              )
+          );
+      }
+
+      __builtin_unreachable();
     }
 
     namespace option_name

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <list>
 #include <string>
 
@@ -27,7 +29,7 @@ namespace pnet
     {
       namespace path
       {
-        class append
+        class GSPC_DLLEXPORT append
         {
         public:
           append (std::list<std::string>&, const std::string&);

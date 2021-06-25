@@ -45,7 +45,7 @@ include ("deployment/${SWH_DEPLOYMENT_STRATEGY}.cmake")
 
 include (CTest)
 
-find_package (GPISpace REQUIRED
+find_package (GPISpace 21.06 EXACT REQUIRED
   COMPONENTS
     # No need to check submodule versions as the SWH source directory
     # is no git repository and it doesn't use copies of submodules
@@ -109,10 +109,16 @@ function (swh_add_implementation_exe)
   list (APPEND _arg_LIBRARIES PRIVATE run-stochastic_with_heureka)
 
   add_executable (run-${_arg_NAME} ${_arg_SOURCES})
-  target_link_libraries (run-${_arg_NAME} ${_arg_LIBRARIES})
+  target_link_libraries (run-${_arg_NAME} ${_arg_LIBRARIES}
+    PRIVATE stochastic_with_heureka_util_print_exception
+  )
   install (TARGETS run-${_arg_NAME} RUNTIME DESTINATION "bin")
   _swh_deployment_implementation_exe (run-${_arg_NAME})
 endfunction()
+
+add_library (stochastic_with_heureka_util_print_exception STATIC
+  "util/print_exception.cpp"
+)
 
 add_library (run-stochastic_with_heureka STATIC "bin/run.cpp")
 target_link_libraries (run-stochastic_with_heureka
@@ -150,6 +156,9 @@ add_custom_command (
   COMMAND GPISpace::pnetc
           --gen-cxxflags=-O3
           --gen-cxxflags=-I${CMAKE_SOURCE_DIR}
+          --gen-cxxflags=-I${BOOST_ROOT}/include
+          --gen-ldflags=-L${BOOST_ROOT}/lib
+          --gen-ldflags=-lboost_filesystem
           --force-overwrite-file=true
           --input=${workflow_description}
           --output=/dev/null

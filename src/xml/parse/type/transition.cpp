@@ -606,6 +606,8 @@ namespace xml
               , we::type::expression_t (cond_in, parsed_condition_in)
               , properties
               , we::priority_type()
+              , boost::none //! \todo eureka_id
+              , {}          //! \todo preferences
               );
 
             {
@@ -681,6 +683,8 @@ namespace xml
               , boost::none
               , properties
               , we::priority_type()
+              , boost::none //! \todo eureka_id
+              , {}          //! \todo preferences
               );
 
             {

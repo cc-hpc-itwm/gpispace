@@ -43,6 +43,17 @@
 #include <string>
 #include <unordered_map>
 
+namespace boost
+{
+  namespace asio
+  {
+    namespace ssl
+    {
+      class context;
+    }
+  }
+}
+
 namespace fhg
 {
   namespace com
@@ -150,7 +161,7 @@ namespace fhg
       void acknowledge_handshake_response
         (connection_t::ptr_t connection, boost::system::error_code const& ec);
 
-      mutable mutex_type mutex_;
+      mutex_type mutex_;
 
       bool stopping_;
       std::string host_;

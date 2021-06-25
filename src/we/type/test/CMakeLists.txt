@@ -44,7 +44,7 @@ fhg_add_test (NAME we_type_module_call
   LIBRARIES pnet
 )
 
-extended_add_executable (NAME mk_cpp
+gspc_add_executable (NAME mk_cpp
   SOURCES "mk_cpp.cpp"
   LIBRARIES pnet Util::Generic
 )
@@ -60,10 +60,12 @@ add_custom_command (
   COMMAND "$<TARGET_FILE:mk_cpp.exe>" -H sig_struct.hpp -O sig_op.hpp -I sig_op.cpp
 )
 
-extended_add_library (NAME sig_op
+gspc_add_library (NAME sig_op
+  TYPE STATIC
   SOURCES "${CMAKE_CURRENT_BINARY_DIR}/sig_op.cpp"
   INCLUDE_DIRECTORIES PRIVATE "${CMAKE_CURRENT_BINARY_DIR}"
-  LIBRARIES Boost::base
+  LIBRARIES pnet
+            Boost::base
 )
 
 fhg_add_test (NAME we_type_sig

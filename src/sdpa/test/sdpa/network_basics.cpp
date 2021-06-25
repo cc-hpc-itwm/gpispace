@@ -61,7 +61,7 @@ namespace
     drts_component (fhg::com::Certificates const&);
 
     template<typename Component>
-      fhg::com::p2p::address_t connect_to (Component const& component);
+      fhg::com::p2p::address_t connect_to_TESTING_ONLY (Component const& component);
     template<typename Event, typename... Args>
       void perform (fhg::com::p2p::address_t addr, Args&&... args);
 
@@ -98,10 +98,10 @@ namespace
   {}
 
   template<typename Component>
-    fhg::com::p2p::address_t drts_component::connect_to
+    fhg::com::p2p::address_t drts_component::connect_to_TESTING_ONLY
       (Component const& component)
   {
-    return _network.connect_to (component.host(), component.port());
+    return _network.connect_to_TESTING_ONLY (component.host(), component.port());
   }
   template<typename Event, typename... Args>
     void drts_component::perform (fhg::com::p2p::address_t addr, Args&&... args)
@@ -117,7 +117,6 @@ namespace
       , name()
       , fhg::util::testing::random<sdpa::capabilities_set_t>{}()
       , fhg::util::testing::random<unsigned long>{}()
-      , fhg::util::testing::random<bool>{}()
       , fhg::util::testing::random<std::string>{}()
       );
   }
@@ -156,7 +155,7 @@ BOOST_DATA_TEST_CASE
 
   drts_component observer (certificates);
 
-  auto const addr (observer.connect_to (agent));
+  auto const addr (observer.connect_to_TESTING_ONLY (agent));
 
   observer.perform_WorkerRegistrationEvent (addr);
 
@@ -174,7 +173,7 @@ BOOST_DATA_TEST_CASE
 
   drts_component observer (certificates);
 
-  auto const addr (observer.connect_to (agent));
+  auto const addr (observer.connect_to_TESTING_ONLY (agent));
 
   observer.perform_WorkerRegistrationEvent (addr);
   observer.worker_registration_responses.get();
@@ -188,34 +187,4 @@ BOOST_DATA_TEST_CASE
     ( [&] { response.second.get(); }
     , std::runtime_error ("worker '" + observer.name() + "' already exists")
     );
-}
-
-BOOST_TEST_DECORATOR (*avoid_infinite_wait_for_events)
-BOOST_DATA_TEST_CASE
-  (agent_registes_with_parent_and_disconnects, certificates_data, certificates)
-{
-  drts_component observer (certificates);
-
-  boost::optional<fhg::com::p2p::address_t> agent_addr;
-
-  {
-    utils::agent const agent ({observer.host(), observer.port()}, certificates);
-
-    auto const registration (observer.worker_registrations.get());
-
-    BOOST_REQUIRE_EQUAL (registration.second.name(), agent.name());
-    BOOST_REQUIRE_EQUAL
-      (registration.second.capabilities(), sdpa::capabilities_set_t{});
-    BOOST_REQUIRE_EQUAL (registration.second.hostname(), fhg::util::hostname());
-    BOOST_REQUIRE_EQUAL (registration.second.children_allowed(), true);
-    BOOST_REQUIRE_EQUAL (registration.second.allocated_shared_memory_size(), 0);
-
-    agent_addr = registration.first;
-  }
-
-  auto const disconnect (observer.errors.get());
-  BOOST_REQUIRE_EQUAL (disconnect.first, *agent_addr);
-  BOOST_REQUIRE_EQUAL ( disconnect.second.error_code()
-                      , sdpa::events::ErrorEvent::SDPA_ENODE_SHUTDOWN
-                      );
 }

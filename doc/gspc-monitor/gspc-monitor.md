@@ -7,19 +7,19 @@ registered subscribers. The monitor is one possible subscriber. There
 are two ways to use it:
 
 ```bash
-$MASTER:shared> QT_GRAPHICSSYSTEM=native                      \
-                .../gpispace/bin/gspc-monitor                 \
-                --port $LOG_PORT
+$MAIN:shared> QT_GRAPHICSSYSTEM=native                      \
+              .../gpispace/bin/gspc-monitor                 \
+              --port $LOG_PORT
 ```
 
 starts a monitor that will listen for emitters on `$LOG_PORT`, which
-can be given to the GSPC runtime system with `--log-host $MASTER
+can be given to the GSPC runtime system with `--log-host $MAIN
 --log-port $LOG_PORT` for it to set up subscriptions. Alternatively,
 
 ```bash
-$MASTER:shared> QT_GRAPHICSSYSTEM=native                      \
-                .../gpispace/bin/gspc-monitor                 \
-                --emitters "${EMITTER_STRING}"
+$MAIN:shared> QT_GRAPHICSSYSTEM=native                      \
+              .../gpispace/bin/gspc-monitor                 \
+              --emitters "${EMITTER_STRING}"
 ```
 
 will start a monitor that attaches to an existing emitter. The

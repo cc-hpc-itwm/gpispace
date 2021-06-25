@@ -17,7 +17,6 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <vector>
 #include <csignal>
 
 #include <util-generic/connectable_to_address_string.hpp>
@@ -36,8 +35,6 @@
 #include <fhg/util/boost/program_options/validators/nonempty_string.hpp>
 #include <fhg/util/signal_handler_manager.hpp>
 #include <fhg/util/thread/event.hpp>
-
-#include <boost/tokenizer.hpp>
 
 #include <functional>
 
@@ -63,7 +60,6 @@ int main (int argc, char **argv)
 
     std::string agentName;
     std::string agentUrl;
-    std::vector<std::string> arrMasterNames;
     boost::optional<bfs::path> vmem_socket;
     fhg::com::Certificates ssl_certificates;
 
@@ -71,7 +67,6 @@ int main (int argc, char **argv)
     desc.add_options()
       ("name,n", po::value<std::string>(&agentName)->default_value("agent"), "Agent's logical name")
       ("url,u",  po::value<std::string>(&agentUrl)->default_value("localhost"), "Agent's url")
-      ("masters", po::value<std::vector<std::string>>(&arrMasterNames)->multitoken(), "Agent's master list, of format 'host%port'")
       ( option_name::vmem_socket
       , po::value<validators::nonempty_string>()
       , "socket file to communicate with the virtual memory manager"
@@ -97,29 +92,11 @@ int main (int argc, char **argv)
       ssl_certificates = vm.at (option_name::ssl_certificates).as<bfs::path>();
     }
 
-    sdpa::master_info_t masters;
-    for (auto const& host_port : arrMasterNames)
-    {
-      boost::tokenizer<boost::char_separator<char>> const tok
-        (host_port, boost::char_separator<char> ("%"));
-
-      std::vector<std::string> const parts (tok.begin(), tok.end());
-
-      if (parts.size() != 2)
-      {
-        throw std::runtime_error
-          ("invalid master information: has to be of format 'host%port'");
-      }
-
-      masters.emplace_front (parts[0], parts[1]);
-    }
-
     sdpa::daemon::Agent agent
       ( agentName
       , agentUrl
       , fhg::util::cxx14::make_unique<boost::asio::io_service>()
       , vmem_socket
-      , std::move (masters)
       , true
       , ssl_certificates
       );

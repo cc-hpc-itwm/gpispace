@@ -14,7 +14,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_runtime_executable (NAME pnet2dot
+gspc_add_executable (NAME pnet2dot
+  RUNTIME
   SOURCES "pnet2dot.cpp"
   LIBRARIES fhg-project_configuration
             pnet
@@ -24,7 +25,8 @@ fhg_add_runtime_executable (NAME pnet2dot
             Boost::system
 )
 
-fhg_add_runtime_executable (NAME pnetc
+gspc_add_executable (NAME pnetc
+  RUNTIME
   SOURCES "pnetc.cpp"
   LIBRARIES fhg-project_configuration
             pnet
@@ -35,7 +37,11 @@ fhg_add_runtime_executable (NAME pnetc
             Boost::system
 )
 
-fhg_add_runtime_executable (NAME agent
+gspc_add_executable (NAME agent
+  RUNTIME
+  # \note Exporting symbols so that modules see e.g. API guard symbol
+  # and don't need to link explicitly against pnet or we.
+  ENABLE_EXPORTS
   SOURCES "agent.cpp"
   LIBRARIES sdpa
             pnet

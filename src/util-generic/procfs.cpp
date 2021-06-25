@@ -62,7 +62,7 @@ namespace fhg
 
             if ( !name.empty()
                && std::all_of ( name.begin(), name.end()
-                              , [] (char c) { return std::isdigit (c); }
+                              , [] (unsigned char c) { return std::isdigit (c); }
                               )
                )
             {

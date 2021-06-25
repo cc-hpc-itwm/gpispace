@@ -1,3 +1,5 @@
+#! This script is not intended to be used stand-alone but is used by
+
 # This file is part of GPI-Space.
 # Copyright (C) 2021 Fraunhofer ITWM
 #
@@ -14,7 +16,58 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#! find modules that rely on pkg-config to do the actual finding.
+
+#! A find module using this wrapper should
+#!
+#! - Avoid running if the target already exists to avoid duplicate
+#!   work.
+#!
+#! - Call `_pkgconfig_find_library_module()` with the name used to find
+#!   by pkg-config as well as the intended CMake target's namespace and
+#!   name.
+#!
+#! - Optionally search additional requirements that aren't provided by
+#!   pkg-config, e.g. tool binaries that come extra with a library.
+#!
+#! - Call `_pkgconfig_find_library_module_finalize()`, optionally with
+#!   a list of additional variables to require being set.
+#!
+#! - Optionally, if `${${CMAKE_FIND_PACKAGE_NAME}_FOUND}`, provide
+#!   additional variables, compile flags or alike, and `return()`
+#!   otherwise.
+#!
+#! Since there are some quirks in how dependencies are resolved, a
+#! module author is advised to read implementation comments in this
+#! file.
+
 find_package (PkgConfig REQUIRED)
+
+# The macros will search for the given package using pkg-config. If
+# not found, an interface target with the given name is created. This
+# target is then set up to link pkg-config-given include directories,
+# and set up a chain of libraries to link the main library as well as
+# its dependencies.
+#
+# These libraries are using `_resolve_dependency()` to dispatch to one
+# of three ways to find that dependency:
+#
+# - `_use_find_package()`: Prefer to find the dependency using
+#   `find_package()` to automatically benefit from dependency search,
+#   compiler flags etc a package may know better than `-lpkg` would.
+#
+# - `_use_imported_libname()`: Tell CMake to just `-lpkg` without an
+#   absolute path or `-L`, for system libraries or libraries where the
+#   static-over-shared and relocatable preference should be ignored,
+#   and the system/compiler be trusted instead.
+#
+# - `_use_imported_location()`: Try finding `libpkg.a` or `libpkg.so`
+#   and link by absolute path. A static library is preferred, but if
+#   the package should be relocatable and `libpkg.a` does not contain
+#   symbols marked as relocatable it is ignored.
+#
+# The `_pkgconfig_find_library_module_finalize()` call handles the
+# standard `find_package_handle_standard_args()` boilerplate.
 
 macro (_use_find_package _target_name _pkg _pkg_target)
   # When forwarding to a different find_package script, we rely on it

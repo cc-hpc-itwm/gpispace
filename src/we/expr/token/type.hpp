@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <iosfwd>
 
 namespace expr
@@ -65,8 +67,8 @@ namespace expr
     , eof
     };
 
-    std::ostream& operator<< (std::ostream&, const type&);
-    class show
+    GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const type&);
+    class GSPC_DLLEXPORT show
     {
     public:
       show (const type&);
@@ -74,6 +76,6 @@ namespace expr
     private:
       const type& _token;
     };
-    std::ostream& operator<< (std::ostream&, const show&);
+    GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const show&);
   }
 }

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <boost/any.hpp>
 #include <boost/asio/local/stream_protocol.hpp>
 
@@ -30,14 +32,14 @@ namespace fhg
   {
     namespace error
     {
-      struct bad_host_and_socket_string : std::invalid_argument
+      struct GSPC_DLLEXPORT bad_host_and_socket_string : std::invalid_argument
       {
         bad_host_and_socket_string (std::string);
       };
     }
 
     //! \todo Actually part of fhg::rpc.
-    struct socket_endpoint
+    struct GSPC_DLLEXPORT socket_endpoint
     {
       using Socket = boost::asio::local::stream_protocol::endpoint;
       std::string host;
@@ -63,7 +65,7 @@ namespace fhg
       operator std::pair<std::string, Socket>() const;
     };
 
-    void validate
+    GSPC_DLLEXPORT void validate
       (boost::any&, std::vector<std::string> const&, socket_endpoint*, int);
   }
 }

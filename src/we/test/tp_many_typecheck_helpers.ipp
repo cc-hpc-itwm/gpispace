@@ -180,6 +180,8 @@ namespace
       , boost::none
       , no_properties()
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
 
     we::port_id_type const port_id_in
@@ -201,6 +203,8 @@ namespace
       , boost::none
       , no_properties()
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
 
     signature::signature_type const& type = name_to_signature (out_type_str);

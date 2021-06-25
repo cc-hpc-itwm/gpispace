@@ -139,7 +139,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
     }
   }
 
-  gspc::scoped_rifd const master
+  gspc::scoped_rifd const parent
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
@@ -151,7 +151,7 @@ BOOST_AUTO_TEST_CASE (add_worker)
                           );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "worker:1", boost::none, master.entry_point(), std::cerr, certificates);
+    (vm, installation, "worker:1", boost::none, parent.entry_point(), std::cerr, certificates);
 
   boost::asio::io_service io_service;
   boost::asio::io_service::work const work (io_service);

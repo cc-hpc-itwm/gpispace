@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <exception>
 #include <string>
 #include <vector>
@@ -24,7 +26,7 @@ namespace fhg
 {
   namespace rif
   {
-    struct started_process_promise
+    struct GSPC_DLLEXPORT started_process_promise
     {
       //! \note will remove special arguments
       started_process_promise (int& argc, char**& argv);

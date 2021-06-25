@@ -19,10 +19,11 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <boost/test/unit_test.hpp>
 
 #include <cstddef>
-#include <iterator>
 #include <stdexcept>
 
 BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
@@ -41,7 +42,7 @@ BOOST_AUTO_TEST_CASE (only_different_preferences_are_allowed)
   auto const insertion_point
     (random<std::size_t>{} (preferences.size() - 1));
   preferences.emplace
-    (std::next (preferences.begin(), insertion_point), preferences.front());
+    (fhg::util::next (preferences.begin(), insertion_point), preferences.front());
 
   fhg::util::testing::require_exception
     ( [&]

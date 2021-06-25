@@ -38,7 +38,7 @@ install (FILES
   DESTINATION include/drts/
 )
 
-extended_add_library (NAME gspc
+gspc_add_library (NAME gspc
   TYPE SHARED
   SOURCES "client.cpp"
           "drts.cpp"
@@ -50,14 +50,19 @@ extended_add_library (NAME gspc
           "scoped_rifd.cpp"
           "stream.cpp"
           "virtual_memory.cpp"
-  LIBRARIES sdpa
-            pnet
+          "worker_description.cpp"
+  LIBRARIES GPISpace::header-only
+            sdpa
             rif-strategies
             fhg-project_configuration
             Util::Generic
             Boost::filesystem
             Boost::program_options
             IML::Client
+            # The following two are intended to be merged into libgspc
+            # to provide public API.
+            pnet
+            rif-started_process_promise
   INSTALL
   CREATE_BUNDLE_INFO
 )

@@ -70,8 +70,13 @@ function (_swh_deployment_bundle_libraries _arg_TARGET _arg_INSTALL_DESTINATION)
 endfunction()
 
 macro (_swh_deployment_gpispace)
+  set (_gspc_bundled_components "runtime")
+  if (GSPC_WITH_MONITOR_APP)
+    list (APPEND _gspc_bundled_components "monitoring")
+  endif()
+
   bundle_GPISpace (DESTINATION "${_bundle_gspc_dir}"
-    COMPONENTS "runtime" "monitoring"
+    COMPONENTS ${_gspc_bundled_components}
   )
 endmacro()
 

@@ -33,6 +33,9 @@ namespace fhg
       }
     };
 
+    //! A remote endpoint communicating via TCP/IP. The endpoint is a
+    //! host+port pair which can be specified as pair or separate.
+    //! \see service_tcp_provider
     struct remote_tcp_endpoint
       : detail::remote_stream_endpoint
           <boost::asio::ip::tcp, remote_tcp_endpoint_traits>

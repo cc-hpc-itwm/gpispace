@@ -16,6 +16,8 @@
 
 #include <miller-rabin/util.hpp>
 
+#include <util/print_exception.hpp>
+
 #include <we/type/value/show.hpp>
 
 #include <cstddef>
@@ -42,7 +44,7 @@ try
 }
 catch (std::exception const& e)
 {
-  std::cout << "EXCEPTION: " << e.what() << std::endl;
+  std::cout << "EXCEPTION: " << util::print_exception (e) << std::endl;
 
   return -1;
 }

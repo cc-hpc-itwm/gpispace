@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/exception.hpp>
 #include <we/type/signature.hpp>
 #include <we/type/value.hpp>
@@ -25,10 +27,11 @@
 
 namespace pnet
 {
-  const type::value::value_type& field ( const std::string&
-                                       , const type::value::value_type&
-                                       , const type::signature::signature_type&
-                                       );
+  GSPC_DLLEXPORT const type::value::value_type& field
+    ( const std::string&
+    , const type::value::value_type&
+    , const type::signature::signature_type&
+    );
 
   template<typename T>
     const T& field_as ( const std::string& f

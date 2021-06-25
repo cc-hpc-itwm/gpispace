@@ -83,11 +83,6 @@ namespace gpi
         _server->set_dispatcher (&_service_dispatcher);
       }
 
-      bool topology_t::is_master () const
-      {
-        return 0 == _gaspi_context.rank();
-      }
-
       namespace
       {
         template<typename Duration, typename ContainerOfFutures>

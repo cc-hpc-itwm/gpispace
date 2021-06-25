@@ -14,6 +14,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#pragma once
+
+#include <util-generic/dllexport.hpp>
+
 #include <boost/filesystem.hpp>
 #include <boost/optional.hpp>
 #include <boost/program_options.hpp>
@@ -85,6 +89,23 @@ namespace gspc
   GET (rif_strategy_parameters, std::vector<std::string>);
   REQUIRE (rif_strategy_parameters, std::vector<std::string>);
   char const* name_rif_strategy_parameters();
+
+  // These are used in the testing tools library, so while they aren't
+  // public API (and thus aren't in public headers), they still need
+  // to be exported.
+  // \todo Merge into testing library (splits knowledge), or this
+  // header (needs more different macros or inlining of them)?
+  FHG_UTIL_DLLEXPORT void set_virtual_memory_socket
+    ( boost::program_options::variables_map&
+    , boost::filesystem::path const&
+    );
+  FHG_UTIL_DLLEXPORT void set_nodefile
+    ( boost::program_options::variables_map&
+    , boost::filesystem::path const&
+    );
+  FHG_UTIL_DLLEXPORT void set_agent_port
+    (boost::program_options::variables_map&, unsigned short const&);
+  FHG_UTIL_DLLEXPORT char const* name_rif_strategy_parameters();
 
 #undef ACCESS
 #undef REQUIRE

@@ -51,7 +51,7 @@ namespace fhg
             return m_gen (name);
           }
         private:
-          mutable std::mutex m_mutex;
+          std::mutex m_mutex;
           boost::uuids::name_generator m_gen;
         };
       }

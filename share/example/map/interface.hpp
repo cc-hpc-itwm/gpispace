@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/bytearray.hpp>
 
 #include <utility>
@@ -30,18 +32,18 @@ namespace map
 
 extern "C"
 {
-  void map_produce ( map::user_data_type const&
-                   , map::memory_buffer_type
-                   , unsigned long id
-                   );
+  GSPC_DLLEXPORT void map_produce ( map::user_data_type const&
+                                  , map::memory_buffer_type
+                                  , unsigned long id
+                                  );
 
-  void map_process ( map::user_data_type const&
-                   , map::const_memory_buffer_type
-                   , map::memory_buffer_type
-                   );
+  GSPC_DLLEXPORT void map_process ( map::user_data_type const&
+                                  , map::const_memory_buffer_type
+                                  , map::memory_buffer_type
+                                  );
 
-  void map_consume ( map::user_data_type const&
-                   , map::const_memory_buffer_type
-                   , unsigned long id
-                   );
+  GSPC_DLLEXPORT void map_consume ( map::user_data_type const&
+                                  , map::const_memory_buffer_type
+                                  , unsigned long id
+                                  );
 }

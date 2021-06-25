@@ -435,12 +435,12 @@ namespace gpi
 
       namespace
       {
-        //! \note for beegfs, master creates file that slaves need to
+        //! \note for beegfs, root creates file that others need to
         //! open determining filesize from the opened file. thus, to
-        //! avoid a race, the master is doing this before all
+        //! avoid a race, the root is doing this before all
         //! others. gaspi on the other side needs simultaneous
         //! initialization for gaspi_segment_create etc.
-        bool require_earlier_master_initialization
+        bool require_earlier_root_initialization
           (iml::SegmentDescription const& description)
         {
           return fhg::util::visit<bool>
@@ -482,7 +482,7 @@ namespace gpi
                            }
                          );
 
-        if (require_earlier_master_initialization (description))
+        if (require_earlier_root_initialization (description))
         {
           area_ptr_t area = create_area (description, total_size, topology, _handle_generator, _gaspi_context, true, id);
           add_area (id, std::move (area));

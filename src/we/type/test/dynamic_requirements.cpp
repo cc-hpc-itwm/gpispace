@@ -33,6 +33,8 @@ BOOST_AUTO_TEST_CASE (transition_has_no_dynamic_requirements)
     , boost::none
     , we::type::property::type()
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
 
   std::list<we::type::requirement_t> const static_requirements
@@ -79,6 +81,8 @@ BOOST_AUTO_TEST_CASE (transition_has_dynamic_requirements)
     , boost::none
     , properties
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
 
   std::list<we::type::requirement_t> const static_requirements

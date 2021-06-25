@@ -16,6 +16,7 @@
 
 #include <boost/test/unit_test.hpp>
 
+#include <we/test/net.common.hpp>
 #include <we/type/activity.hpp>
 #include <we/type/net.hpp>
 #include <we/type/value/poke.hpp>
@@ -53,6 +54,8 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
     , we::type::expression_t ("!bitset_is_element (${store.seen}, ${vid})")
     , we::type::property::type()
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
 
   pnet::type::signature::structure_type sig_pair_fields;
@@ -122,6 +125,8 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
                               , boost::none
                               , we::type::property::type()
                               , we::priority_type()
+                              , boost::optional<we::type::eureka_id_type>{}
+                              , std::list<we::type::preference_t>{}
                               );
   tnet.add_port
     (we::type::port_t ("vid", we::type::PORT_IN, std::string ("unsigned long"), pid_vid));
@@ -138,12 +143,13 @@ BOOST_AUTO_TEST_CASE (create_and_execute_cross_product)
 
   std::mt19937 engine;
 
-    while ( net.fire_expressions_and_extract_activity_random
+    while ( net.fire_expressions_and_extract_activity_random_TESTING_ONLY
               ( engine
               , [] (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
                 {
                   throw std::logic_error ("got unexpected workflow_response");
                 }
+              , unexpected_eureka
               )
           )
     {

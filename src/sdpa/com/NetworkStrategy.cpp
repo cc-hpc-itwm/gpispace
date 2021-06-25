@@ -51,7 +51,7 @@ namespace sdpa
       m_shutting_down = true;
     }
 
-    fhg::com::p2p::address_t NetworkStrategy::connect_to
+    fhg::com::p2p::address_t NetworkStrategy::connect_to_TESTING_ONLY
       (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
       return _peer.connect_to (host, port);

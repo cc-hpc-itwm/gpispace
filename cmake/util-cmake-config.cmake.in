@@ -1,0 +1,29 @@
+###############################################################################
+# CMake minimum required version verification
+###############################################################################
+
+if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS @CMAKE_MINIMUM_REQUIRED_VERSION@)
+  set (${CMAKE_FIND_PACKAGE_NAME}_FOUND false)
+  set (${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+    "The minimum required CMake version of the including project is too low! \
+    Projects using ${CMAKE_FIND_PACKAGE_NAME} are required to set CMake version \
+    @CMAKE_MINIMUM_REQUIRED_VERSION@ or above as their minimum required version! \
+    A line of code such as \
+    \
+      cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)'\
+    \
+    is required to be added at the top of the including project's root CMakeLists.txt."
+  )
+  return ()
+endif ()
+
+@PACKAGE_INIT@
+
+###############################################################################
+# Module paths
+###############################################################################
+
+list (APPEND CMAKE_MODULE_PATH
+  "@PACKAGE__project_config_install_dir@/include"
+  "@PACKAGE__project_config_install_dir@/modules"
+)

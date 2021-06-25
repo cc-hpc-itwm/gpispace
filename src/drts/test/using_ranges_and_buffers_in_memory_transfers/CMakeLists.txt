@@ -32,7 +32,7 @@ fhg_add_test (NAME using_ranges_and_buffers_in_memory_transfers
   START_SCOPED_RIF
 )
 
-extended_add_library (NAME build_net_description
+gspc_add_library (NAME build_net_description
   NAMESPACE Test
   TYPE STATIC
   SOURCES "net_description.cpp"

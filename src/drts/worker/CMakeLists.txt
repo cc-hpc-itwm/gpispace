@@ -14,10 +14,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_runtime_executable (NAME drts-kernel
+gspc_add_executable (NAME drts-kernel
+  RUNTIME
+  # \note Exporting symbols so that modules see e.g. API guard symbol
+  # and don't need to link explicitly against pnet or we.
+  ENABLE_EXPORTS
   SOURCES "drts-kernel.cpp"
           "drts.cpp"
-  LIBRARIES fhg-util
+  LIBRARIES GPISpace::APIGuard
+            fhg-util
             fhgcom
             sdpa
             we-dev
@@ -38,9 +43,10 @@ install (FILES context_fwd.hpp context.hpp
   DESTINATION include/drts/worker
 )
 
-extended_add_library (NAME drts-context
+gspc_add_library (NAME drts-context
   SOURCES "context.cpp"
-  LIBRARIES gspc::logging
+  LIBRARIES GPISpace::header-only
+            gspc::logging
             Boost::iostreams
   TYPE SHARED
   INSTALL

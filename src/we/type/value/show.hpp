@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 
 #include <iosfwd>
@@ -26,7 +28,7 @@ namespace pnet
   {
     namespace value
     {
-      class show
+      class GSPC_DLLEXPORT show
       {
       public:
         show (const value_type&);
@@ -34,7 +36,7 @@ namespace pnet
       private:
         const value_type& _value;
       };
-      std::ostream& operator<< (std::ostream&, const show&);
+      GSPC_DLLEXPORT std::ostream& operator<< (std::ostream&, const show&);
     }
   }
 }

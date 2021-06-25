@@ -20,7 +20,6 @@
 #include <drts/worker/context_impl.hpp>
 
 #include <sdpa/capability.hpp>
-#include <sdpa/events/BacklogNoLongerFullEvent.hpp>
 #include <sdpa/events/CancelJobAckEvent.hpp>
 #include <sdpa/events/CancelJobEvent.hpp>
 #include <sdpa/events/Codec.hpp>
@@ -122,10 +121,9 @@ DRTSImpl::DRTSImpl
     , unsigned short comm_port
     , iml::Client /*const*/* virtual_memory_api
     , iml::SharedMemoryAllocation /*const*/* shared_memory
-    , std::vector<master_info> const& masters
+    , std::tuple<fhg::com::host_t, fhg::com::port_t> const& parent
     , std::vector<std::string> const& capability_names
     , std::vector<boost::filesystem::path> const& library_path
-    , std::size_t backlog_length
     , fhg::logging::stream_emitter& log_emitter
     , fhg::com::Certificates const& certificates
     )
@@ -137,11 +135,12 @@ DRTSImpl::DRTSImpl
   , _log_emitter (log_emitter)
   , _virtual_memory_api (virtual_memory_api)
   , _shared_memory (shared_memory)
-  , m_pending_jobs (backlog_length)
   , _peer ( std::move (peer_io_service)
           , fhg::com::host_t ("*")
           , fhg::com::port_t (std::to_string (comm_port))
           , certificates
+          , std::get<0> (parent)
+          , std::get<1> (parent)
           )
   , m_event_thread (&DRTSImpl::event_thread, this)
   , _interrupt_event_thread (m_event_queue)
@@ -153,100 +152,46 @@ DRTSImpl::DRTSImpl
   std::set<sdpa::Capability> const capabilities
     (make_capabilities (capability_names, m_my_name));
 
-  std::vector<std::future<void>> registration_futures;
-
-  for (master_info const& master : masters)
-  {
-    fhg::com::p2p::address_t const master_address
-      (_peer.connect_to (std::get<0> (master), std::get<1> (master)));
-    m_masters.emplace_back (master_address);
-
-    registration_futures.emplace_back
-      ( _registration_responses.emplace
-          (master_address, std::promise<void>()).first->second.get_future()
-      );
-
-    send_event<sdpa::events::WorkerRegistrationEvent>
-      ( master_address
-      , m_my_name
+    send_event_to_parent<sdpa::events::WorkerRegistrationEvent>
+      ( m_my_name
       , capabilities
       , (_shared_memory != nullptr) ? _shared_memory->size() : 0
-      , false
       , fhg::util::hostname()
       );
-  }
 
-  fhg::util::wait_and_collect_exceptions (registration_futures);
+  _registration_response.get_future().wait();
 
-  _registration_responses.clear();
+  _registered = true;
 }
 
 DRTSImpl::~DRTSImpl()
 {
   m_shutting_down = true;
-
-  //! \note remove them all to avoid a legit backlogfull triggering
-  //! another job: we will reply to all submitjobs with a backlogfull
-  //! that should never be followed up with a no-longer-full
-  std::lock_guard<std::mutex> const _
-    (_guard_backlogfull_notified_masters);
-  _masters_backlogfull_notified.clear();
 }
 
 void DRTSImpl::handle_worker_registration_response
-  ( fhg::com::p2p::address_t const& source
+  ( fhg::com::p2p::address_t const&
   , sdpa::events::worker_registration_response const* response
   )
 {
-  auto const master_it
-    (std::find (m_masters.cbegin(), m_masters.cend(), source));
-
-  if (master_it == m_masters.cend())
-  {
-    throw std::runtime_error ("worker_registration_response for unknown master");
-  }
-
   try
   {
     response->get();
 
-    _registration_responses.at (source).set_value();
+    _registration_response.set_value();
   }
   catch (...)
   {
-    _registration_responses.at (source).set_exception (std::current_exception());
+    _registration_response.set_exception (std::current_exception());
   }
 }
 
 void DRTSImpl::handleSubmitJobEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::SubmitJobEvent *e)
+  (fhg::com::p2p::address_t const&, const sdpa::events::SubmitJobEvent *e)
 {
-  auto const master
-    (std::find (m_masters.cbegin(), m_masters.cend(), source));
-
-  if (master == m_masters.cend())
-  {
-    throw std::runtime_error ("got SubmitJob from unknown source");
-  }
-
   if (!e->job_id())
   {
     throw std::runtime_error ("Received job with an unspecified job id");
-  }
-
-  if (m_shutting_down)
-  {
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
-      , "abusing backlogfull to stop getting new jobs"
-      , *e->job_id()
-      );
-
-    //! \note not putting into _masters_backlogfull_notified to avoid
-    //! being marked as free again at any point
-
-    return;
   }
 
   std::lock_guard<std::mutex> const _lock_job_map_mutex (m_job_map_mutex);
@@ -254,7 +199,7 @@ void DRTSImpl::handleSubmitJobEvent
   map_of_jobs_t::iterator job_it (m_jobs.find(*e->job_id()));
   if (job_it != m_jobs.end())
   {
-    send_event<sdpa::events::SubmitJobAckEvent> (source, *e->job_id());
+    send_event_to_parent<sdpa::events::SubmitJobAckEvent> (*e->job_id());
     return;
   }
 
@@ -262,37 +207,18 @@ void DRTSImpl::handleSubmitJobEvent
     ( std::make_shared<DRTSImpl::Job> ( *e->job_id()
                                       , e->activity()
                                       , e->implementation()
-                                      , master
                                       , e->workers()
                                       )
     );
 
-  if (!m_pending_jobs.try_put (job))
-  {
-    _log_emitter.emit ( "cannot accept new job (" + job->id
-                      + "), backlog is full."
-                      , fhg::logging::legacy::category_level_warn
-                      );
-    send_event<sdpa::events::ErrorEvent>
-      ( source
-      , sdpa::events::ErrorEvent::SDPA_EBACKLOGFULL
-      , "I am busy right now, please try again later!"
-      , *e->job_id()
-      );
+  m_pending_jobs.put (job);
 
-    std::lock_guard<std::mutex> _lock_backlogfull_notified_masters
-      (_guard_backlogfull_notified_masters);
-    _masters_backlogfull_notified.emplace (source);
-
-    return;
-  }
-
-  send_event<sdpa::events::SubmitJobAckEvent> (*master, job->id);
+  send_event_to_parent<sdpa::events::SubmitJobAckEvent> (job->id);
   m_jobs.emplace (job->id, job);
 }
 
 void DRTSImpl::handleCancelJobEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::CancelJobEvent *e)
+  (fhg::com::p2p::address_t const&, const sdpa::events::CancelJobEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
@@ -305,10 +231,6 @@ void DRTSImpl::handleCancelJobEvent
   {
     throw std::runtime_error ("cancel_job for unknown job");
   }
-  if (*job_it->second->owner != source)
-  {
-    throw std::runtime_error ("cancel_job for non-owned job");
-  }
 
   Job::state_t job_state (Job::PENDING);
   if (job_it->second->state.compare_exchange_strong (job_state, Job::CANCELED))
@@ -316,8 +238,7 @@ void DRTSImpl::handleCancelJobEvent
     _log_emitter.emit ( "canceling pending job " + e->job_id()
                       , fhg::logging::legacy::category_level_trace
                       );
-    send_event<sdpa::events::CancelJobAckEvent>
-      (*job_it->second->owner, job_it->second->id);
+    send_event_to_parent<sdpa::events::CancelJobAckEvent> (job_it->second->id);
   }
   else if (job_state == DRTSImpl::Job::RUNNING)
   {
@@ -355,7 +276,7 @@ void DRTSImpl::handleCancelJobEvent
 }
 
 void DRTSImpl::handleJobFailedAckEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::JobFailedAckEvent *e)
+  (fhg::com::p2p::address_t const&, const sdpa::events::JobFailedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
@@ -364,16 +285,12 @@ void DRTSImpl::handleJobFailedAckEvent
   {
     throw std::runtime_error ("job_failed_ack for unknown job");
   }
-  if (*job_it->second->owner != source)
-  {
-    throw std::runtime_error ("job_failed_ack for non-owned job");
-  }
 
   m_jobs.erase (job_it);
 }
 
 void DRTSImpl::handleJobFinishedAckEvent
-  (fhg::com::p2p::address_t const& source, const sdpa::events::JobFinishedAckEvent *e)
+  (fhg::com::p2p::address_t const&, const sdpa::events::JobFinishedAckEvent *e)
 {
   std::lock_guard<std::mutex> const _ (m_job_map_mutex);
   map_of_jobs_t::iterator job_it (m_jobs.find(e->job_id()));
@@ -381,10 +298,6 @@ void DRTSImpl::handleJobFinishedAckEvent
   if (job_it == m_jobs.end())
   {
     throw std::runtime_error ("job_finished_ack for unknown job");
-  }
-  if (*job_it->second->owner != source)
-  {
-    throw std::runtime_error ("job_finished_ack for non-owned job");
   }
 
   m_jobs.erase (job_it);
@@ -395,17 +308,15 @@ try
 {
   for (;;)
   {
-    std::pair<fhg::com::p2p::address_t, sdpa::events::SDPAEvent::Ptr> event
-      (m_event_queue.get());
+    auto const event (m_event_queue.get());
     try
     {
-      event.second->handleBy (event.first, this);
+      event->handleBy (_peer.address(), this);
     }
     catch (std::exception const&)
     {
-      send_event<sdpa::events::ErrorEvent>
-        ( event.first
-        , sdpa::events::ErrorEvent::SDPA_EUNKNOWN
+      send_event_to_parent<sdpa::events::ErrorEvent>
+        ( sdpa::events::ErrorEvent::SDPA_EUNKNOWN
         , fhg::util::current_exception_printer (": ").string()
         );
     }
@@ -444,20 +355,7 @@ try
       std::abort();
     }
 
-    std::shared_ptr<DRTSImpl::Job> job;
-    bool notify_can_take_jobs;
-    std::tie (job, notify_can_take_jobs) = m_pending_jobs.get();
-
-    if (notify_can_take_jobs)
-    {
-      std::lock_guard<std::mutex> const _ (_guard_backlogfull_notified_masters);
-      for (const fhg::com::p2p::address_t& master : _masters_backlogfull_notified)
-      {
-        send_event<sdpa::events::BacklogNoLongerFullEvent> (master);
-      }
-
-      _masters_backlogfull_notified.clear();
-    }
+    std::shared_ptr<DRTSImpl::Job> job (m_pending_jobs.get());
 
     Job::state_t expeceted_job_state (Job::PENDING);
     if (!job->state.compare_exchange_strong (expeceted_job_state, Job::RUNNING))
@@ -587,18 +485,17 @@ try
     switch (job->state.load())
     {
     case DRTSImpl::Job::FINISHED:
-      send_event<sdpa::events::JobFinishedEvent>
-        (*job->owner, job->id, job->result);
+      send_event_to_parent<sdpa::events::JobFinishedEvent>
+        (job->id, job->result);
 
       break;
     case DRTSImpl::Job::FAILED:
-      send_event<sdpa::events::JobFailedEvent>
-        (*job->owner, job->id, job->message);
+      send_event_to_parent<sdpa::events::JobFailedEvent>
+        (job->id, job->message);
 
       break;
     case DRTSImpl::Job::CANCELED:
-      send_event<sdpa::events::CancelJobAckEvent>
-        (*job->owner, job->id);
+      send_event_to_parent<sdpa::events::CancelJobAckEvent> (job->id);
 
       break;
 
@@ -629,9 +526,13 @@ void DRTSImpl::start_receiver()
 
         if (!ec)
         {
+          if (source.get() != _peer.other_end())
+          {
+            throw std::runtime_error ("Message from unknown source.");
+          }
+
           m_event_queue.put
-            ( source.get()
-            , sdpa::events::SDPAEvent::Ptr
+            ( sdpa::events::SDPAEvent::Ptr
                 ( codec.decode
                     (std::string (message.data.begin(), message.data.end()))
                 )
@@ -641,9 +542,9 @@ void DRTSImpl::start_receiver()
         }
         else if (!m_shutting_down)
         {
-          if (!_registration_responses.empty())
+          if (!_registered)
           {
-            _registration_responses.at (source.get())
+            _registration_response
               .set_exception
                 ( std::make_exception_ptr
                     ( std::system_error
@@ -667,10 +568,8 @@ void DRTSImpl::start_receiver()
 }
 
 template<typename Event, typename... Args>
-  void DRTSImpl::send_event ( fhg::com::p2p::address_t const& destination
-                            , Args&&... args
-                            )
+  void DRTSImpl::send_event_to_parent (Args&&... args)
 {
   static sdpa::events::Codec codec;
-  _peer.send (destination, codec.encode<Event> (std::forward<Args> (args)...));
+  _peer.send (codec.encode<Event> (std::forward<Args> (args)...));
 }

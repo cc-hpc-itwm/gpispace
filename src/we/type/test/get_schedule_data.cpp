@@ -33,6 +33,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_not_set)
     , boost::none
     , we::type::property::type()
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
   we::type::activity_t activity (transition);
 
@@ -54,6 +56,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_constant_string)
     , boost::none
     , properties
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
   we::type::activity_t activity (transition);
 
@@ -76,6 +80,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_simple)
     , boost::none
     , properties
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
 
   transition.add_port
@@ -122,6 +128,8 @@ BOOST_AUTO_TEST_CASE (get_schedule_data_expression_sum)
     , boost::none
     , properties
     , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
 
   transition.add_port

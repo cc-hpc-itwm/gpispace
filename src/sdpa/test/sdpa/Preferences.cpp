@@ -26,6 +26,8 @@
 
 #include <we/type/activity.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <boost/range/combine.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
@@ -53,11 +55,11 @@ namespace
   {
   public:
     drts_component_observing_preferences
-        ( utils::agent const& master
+        ( utils::agent const& parent
         , std::string capability
         , fhg::com::Certificates const& certificates
         )
-      : basic_drts_component (master, {capability}, false, certificates)
+      : basic_drts_component (parent, {capability}, certificates)
     {}
 
     template<typename Event>
@@ -167,7 +169,10 @@ namespace
     }
 
     return we::type::activity_t
-      (we::type::transition_t (random_string(), net, {}, {}, {}));
+      (we::type::transition_t (random_string(), net, {}, {}, {}
+                              , boost::optional<we::type::eureka_id_type>{}
+                              , std::list<we::type::preference_t>{}
+                              ));
   }
 }
 
@@ -246,7 +251,7 @@ BOOST_DATA_TEST_CASE
     {generate_preference(), generate_preference(), generate_preference()};
 
   auto const chosen_preference
-    ( *std::next
+    ( *fhg::util::next
         ( preferences.begin()
         , fhg::util::testing::random<std::size_t>{} (preferences.size() - 1)
         )
@@ -269,12 +274,12 @@ namespace
   {
   public:
     fake_drts_worker_notifying_implementation_reception
-        ( utils::agent const& master
+        ( utils::agent const& parent
         , fhg::com::Certificates const& certificates
         , std::string capability
         , fhg::util::thread::event<boost::optional<std::string>>& job_submitted
         )
-      : basic_drts_component (master, {capability}, false, certificates)
+      : basic_drts_component (parent, {capability}, certificates)
       , _job_submitted (job_submitted)
     {}
 
@@ -364,114 +369,5 @@ BOOST_DATA_TEST_CASE
 
     auto const submission (job_submitted.wait());
     BOOST_CHECK_EQUAL (submission, preference);
-  }
-}
-
-namespace
-{
-  class drts_component_observing_preferences_shared_queue final
-    : public utils::basic_drts_component
-  {
-  public:
-    using Queue
-      = fhg::util::threadsafe_queue
-          <std::pair<std::string, sdpa::events::SubmitJobEvent>>;
-
-    drts_component_observing_preferences_shared_queue
-        ( utils::agent const& master
-        , fhg::com::Certificates const& certificates
-        , std::string capability
-        , Queue* jobs_submitted
-        )
-      : basic_drts_component (master, {capability}, false, certificates)
-      , _jobs_submitted (jobs_submitted)
-      , _capability (capability)
-    {}
-
-  private:
-    virtual void handleSubmitJobEvent
-      ( fhg::com::p2p::address_t const&
-      , sdpa::events::SubmitJobEvent const* event
-      ) override
-    {
-      _jobs_submitted->put (_capability, *event);
-    }
-
-    Queue* _jobs_submitted;
-    std::string _capability;
-    utils::basic_drts_component::event_thread_and_worker_join _ = {*this};
-  };
-}
-
-// Slightly different implementation from
-// variable_number_of_workers_and_tasks_with_preferences, but
-// semantically the same, just with tasks being submitted not at the
-// start but in batches of #worker_per_preference, to verify that the
-// preference is also taken into account and the most preferred one is
-// served first.
-BOOST_DATA_TEST_CASE
-  ( variable_number_of_workers_and_tasks_with_preferences_and_right_order
-  , certificates_data
-  , certificates
-  )
-{
-  unsigned int const max_num_workers_per_preference (10);
-  unsigned int const min_num_workers_per_preference (2);
-  unsigned int const num_preferences (3);
-
-  fhg::util::testing::unique_random<std::string> generate_preference;
-
-  utils::agent const agent (certificates);
-
-  drts_component_observing_preferences_shared_queue::Queue jobs_submitted;
-  std::list<drts_component_observing_preferences_shared_queue> workers;
-
-  Preferences preferences;
-  std::vector<std::size_t> num_workers_per_preference;
-
-  for (unsigned int i {0}; i < num_preferences; ++i)
-  {
-    preferences.emplace_back (generate_preference());
-
-    num_workers_per_preference.emplace_back
-      ( fhg::util::testing::random<std::size_t>{}
-          (max_num_workers_per_preference, min_num_workers_per_preference)
-      );
-
-    for (unsigned int k {0}; k < num_workers_per_preference.back(); ++k)
-    {
-      workers.emplace_back
-        ( agent
-        , certificates
-        , preferences.back()
-        , &jobs_submitted
-        );
-    }
-  }
-
-  utils::client client (agent, certificates);
-
-  // For every preference, in order of most preferred to least, we
-  // submit enough jobs to fill up all workers with the most preferred
-  // capability left.
-  for ( auto const num_workers_and_preference
-      : boost::combine (num_workers_per_preference, preferences)
-      )
-  {
-    auto num_workers (boost::get<0> (num_workers_and_preference));
-    auto const preference (boost::get<1> (num_workers_and_preference));
-
-    client.submit_job
-      (net_with_n_children_and_preferences (num_workers, preferences));
-
-    while (num_workers --> 0)
-    {
-      auto const submission (jobs_submitted.get());
-      // Worker actually supports that preference.
-      BOOST_CHECK_EQUAL (submission.first, preference);
-      // Worker was assigned the "best" preference.
-      BOOST_CHECK_EQUAL
-        (submission.second.implementation(), preference);
-    }
   }
 }

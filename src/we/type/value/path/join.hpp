@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <list>
 #include <string>
 
@@ -27,7 +29,7 @@ namespace pnet
     {
       namespace path
       {
-        std::string join (const std::list<std::string>&);
+        GSPC_DLLEXPORT std::string join (const std::list<std::string>&);
       }
     }
   }

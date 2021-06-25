@@ -54,12 +54,6 @@ namespace fhg
         m_container.insert (m_container.end(), begin, end);
         m_get_cond.notify_all();
       }
-
-      void INDICATES_A_RACE_clear()
-      {
-        std::unique_lock<std::mutex> const _ (m_mtx);
-        m_container.clear();
-      }
     private:
       std::mutex m_mtx;
       std::condition_variable m_get_cond;

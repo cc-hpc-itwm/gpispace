@@ -23,6 +23,8 @@
 #include <util-generic/functor_visitor.hpp>
 
 #include <boost/asio/read.hpp>
+#include <boost/asio/ssl/context.hpp>
+#include <boost/asio/ssl/stream.hpp>
 
 #include <stdexcept>
 #include <utility>

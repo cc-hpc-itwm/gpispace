@@ -93,7 +93,7 @@ BOOST_DATA_TEST_CASE (test_strategy, certificates_data, certificates)
     );
 
   net.perform<sdpa::events::ErrorEvent>
-    ( net.connect_to
+    ( net.connect_to_TESTING_ONLY
         ( fhg::com::host_t ( fhg::util::connectable_to_address_string
                                (net.local_endpoint().address())
                            )

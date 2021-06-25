@@ -14,10 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAME client_implementation_with_ostream_logger
-  SOURCES "client_implementation_with_ostream_logger.cpp"
-  TYPE MODULE
-)
+if (BUILD_TESTING)
+  gspc_add_library (NAME client_implementation_with_ostream_logger
+    SOURCES "client_implementation_with_ostream_logger.cpp"
+    TYPE MODULE
+    LIBRARIES GPISpace::header-only
+  )
+endif()
 
 fhg_add_test (NAME drts_client_implementation_with_ostream_logger
   SOURCES test.cpp

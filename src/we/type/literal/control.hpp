@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <iosfwd>
 
 namespace we
@@ -24,13 +26,17 @@ namespace we
   {
     namespace literal
     {
-      struct control
+      struct GSPC_DLLEXPORT control
       {
-        friend std::ostream& operator<< (std::ostream&, const control&);
-        friend bool operator== (const control&, const control&);
+        GSPC_DLLEXPORT
+          friend std::ostream& operator<< (std::ostream&, const control&);
+        GSPC_DLLEXPORT
+          friend bool operator== (const control&, const control&);
 
-        friend std::size_t hash_value (const control&);
-        friend bool operator< (const control&, const control&);
+        GSPC_DLLEXPORT
+          friend std::size_t hash_value (const control&);
+        GSPC_DLLEXPORT
+          friend bool operator< (const control&, const control&);
 
         template<typename Archive> void serialize (Archive&, unsigned int) {}
       };

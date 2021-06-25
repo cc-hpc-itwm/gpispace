@@ -115,25 +115,81 @@
         <in name="job" type="job"/>
         <out name="partial_result_and_heureka"
              type="partial_result_and_heureka"/>
+        <out name="eureka" type="set"/>
         <module name="stochastic_with_heureka"
                 function="roll_and_heureka ( implementation
                                            , user_data
                                            , job
                                            , partial_result_and_heureka
-                                           )">
+                                           , eureka
+                                           )"
+                pass_context="true">
+          <eureka-group>"roll_and_heureka"</eureka-group>
           <cinclude href="interface.hpp"/>
           <cinclude href="fhg/util/dl.hpp"/>
+          <cinclude href="boost/archive/binary_iarchive.hpp"/>
+          <cinclude href="boost/archive/binary_oarchive.hpp"/>
+          <cinclude href="boost/filesystem.hpp"/>
+          <cinclude href="fstream"/>
+          <cinclude href="string"/>
+          <cinclude href="utility"/>
           <cxx flag="--std=c++11"/>
           <code><![CDATA[
-          std::pair<we::type::bytearray, bool> const rah
-            ( fhg::util::scoped_dlhandle (implementation)
-              .sym<decltype (stochastic_with_heureka_roll_and_heureka)>
-                ("stochastic_with_heureka_roll_and_heureka")
-                  (job.roll_count, job.seed, user_data)
-            );
+bool cancelled (false);
 
-          partial_result_and_heureka.partial_result = rah.first;
-          partial_result_and_heureka.heureka = rah.second;
+auto const filename
+  ( boost::filesystem::unique_path
+      ("/dev/shm/stochastic_with_heureka_%%%%-%%%%-%%%%-%%%%")
+  );
+
+struct remove_file
+{
+  remove_file (boost::filesystem::path path) : _path (path) {}
+  ~remove_file() { boost::filesystem::remove (_path); }
+  boost::filesystem::path _path;
+} file_remover (filename);
+
+_pnetc_context->execute_and_kill_on_cancel_DO_NOT_OUTPUT_TO_STANDARD_STREAMS_FROM_WITHIN
+  ( [=]
+    {
+      std::pair<we::type::bytearray, bool> rah
+        ( fhg::util::scoped_dlhandle (implementation)
+          .sym<decltype (stochastic_with_heureka_roll_and_heureka)>
+            ("stochastic_with_heureka_roll_and_heureka")
+              (job.roll_count, job.seed, user_data)
+        );
+
+      std::ofstream of (filename.string());
+      boost::archive::binary_oarchive oa (of);
+      oa << rah.first;
+      oa << rah.second;
+    }
+  , [&]
+    {
+      cancelled = true;
+    }
+  , &drts::worker::on_signal_unexpected
+  , [] (int exit_code)
+    {
+      if (exit_code != 0)
+      {
+        drts::worker::on_exit_unexpected (exit_code);
+      }
+    }
+  );
+
+if (!cancelled)
+{
+  std::ifstream is (filename.string());
+  boost::archive::binary_iarchive ia (is);
+  ia >> partial_result_and_heureka.partial_result;
+  ia >> partial_result_and_heureka.heureka;
+
+  if (partial_result_and_heureka.heureka)
+  {
+    eureka.emplace (std::string ("roll_and_heureka"));
+  }
+}
           ]]></code>
         </module>
       </defun>
@@ -142,6 +198,7 @@
       <connect-in port="job" place="job"/>
       <connect-out port="partial_result_and_heureka"
                    place="rolled_and_heureka"/>
+      <connect-eureka port="eureka"/>
     </transition>
 
     <place name="rolled_and_heureka" type="partial_result_and_heureka"/>
@@ -278,7 +335,7 @@
 
     <place name="reduced_partial_result" type="bytearray"/>
 
-    <transition name="descrease_number_of_partial_results_in_reduction">
+    <transition name="decrease_number_of_partial_results_in_reduction">
       <defun>
         <inout name="partial_results_in_reduction" type="unsigned long"/>
         <inout name="partial_result" type="bytearray"/>
@@ -313,7 +370,7 @@
         ${partial_results_in_reduction} :eq: 1UL
       </condition>
       <condition>
-        ${jobs_in_progress} :eq: 0UL
+        (${jobs_in_progress} :eq: 0UL) || ${heureka}
       </condition>
       <condition>
         (${number_of_rolls_left} :eq: 0UL) || ${heureka}

@@ -24,7 +24,7 @@
 #include <we/type/net.hpp>
 #include <we/type/value.hpp>
 
-#include <fhgcom/peer.hpp>
+#include <fhgcom/channel.hpp>
 
 #include <fhg/util/thread/queue.hpp>
 
@@ -81,8 +81,7 @@ namespace sdpa
                        );
 
       bool _stopping;
-      fhg::com::peer_t m_peer;
-      fhg::com::p2p::address_t _drts_entrypoint_address;
+      fhg::com::channel m_peer;
       std::unordered_map<sdpa::job_id_t, we::type::activity_t> _job_results;
     };
   }

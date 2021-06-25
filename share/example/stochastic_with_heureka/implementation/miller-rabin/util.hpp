@@ -23,6 +23,8 @@
 #include <cstddef>
 #include <gmpxx.h>
 
+#include <iosfwd>
+#include <string>
 #include <utility>
 
 namespace miller_rabin

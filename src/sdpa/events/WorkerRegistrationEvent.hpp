@@ -34,14 +34,12 @@ namespace sdpa
         ( std::string const& name
         , const capabilities_set_t& cpbset
         , const unsigned long allocated_shared_memory_size
-        , bool children_allowed
         , const std::string& hostname
         )
           : MgmtEvent()
           , _name (name)
           , cpbset_ (cpbset)
           , allocated_shared_memory_size_ (allocated_shared_memory_size)
-          , children_allowed_(children_allowed)
           , hostname_(hostname)
       {}
 
@@ -59,11 +57,6 @@ namespace sdpa
         return hostname_;
       }
 
-      const bool& children_allowed() const
-      {
-	return children_allowed_;
-      }
-
       const unsigned long& allocated_shared_memory_size() const
       {
         return allocated_shared_memory_size_;
@@ -79,7 +72,6 @@ namespace sdpa
       std::string _name;
       capabilities_set_t cpbset_;
       unsigned long allocated_shared_memory_size_;
-      bool children_allowed_;
       std::string hostname_;
     };
 
@@ -89,7 +81,6 @@ namespace sdpa
       SAVE_TO_ARCHIVE (e->name());
       SAVE_TO_ARCHIVE (e->capabilities());
       SAVE_TO_ARCHIVE (e->allocated_shared_memory_size());
-      SAVE_TO_ARCHIVE (e->children_allowed());
       SAVE_TO_ARCHIVE (e->hostname());
     }
 
@@ -99,13 +90,11 @@ namespace sdpa
       LOAD_FROM_ARCHIVE (std::string, name);
       LOAD_FROM_ARCHIVE (capabilities_set_t, cpbset);
       LOAD_FROM_ARCHIVE (unsigned long, allocated_shared_memory_size);
-      LOAD_FROM_ARCHIVE (bool, children_allowed);
       LOAD_FROM_ARCHIVE (std::string, hostname);
 
       ::new (e) WorkerRegistrationEvent ( name
                                         , cpbset
                                         , allocated_shared_memory_size
-                                        , children_allowed
                                         , hostname
                                         );
     }

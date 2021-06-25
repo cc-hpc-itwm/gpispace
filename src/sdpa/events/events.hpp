@@ -31,9 +31,6 @@
 #include <sdpa/events/SubmitJobEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
-#include <sdpa/events/CapabilitiesGainedEvent.hpp>
-#include <sdpa/events/CapabilitiesLostEvent.hpp>
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/SubscribeAckEvent.hpp>
 #include <sdpa/events/put_token.hpp>
-#include <sdpa/events/BacklogNoLongerFullEvent.hpp>

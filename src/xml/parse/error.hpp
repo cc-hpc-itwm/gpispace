@@ -36,6 +36,7 @@
 
 #include <we/type/port.hpp>
 #include <we/type/property.hpp>
+#include <we/type/eureka.hpp>
 
 #include <we/type/signature.hpp>
 #include <we/type/signature/show.hpp>
@@ -378,6 +379,20 @@ namespace xml
         mismatching_eureka_for_module ( const std::string&
                                       , const util::position_type&
                                       );
+      };
+
+      // ******************************************************************* //
+
+      class eureka_group_attribute_and_tag : public generic
+      {
+      public:
+        eureka_group_attribute_and_tag
+          ( std::string const& module_name
+          , we::type::eureka_id_type const& id_attribute
+          , util::position_type const& pod_attribute
+          , we::type::eureka_id_type const& id_tag
+          , util::position_type const& pod_tag
+          );
       };
 
       // ******************************************************************* //

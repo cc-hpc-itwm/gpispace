@@ -16,28 +16,17 @@
 
 #pragma once
 
-#include <util-generic/testing/random.hpp>
+#include <we/type/eureka.hpp>
+#include <we/type/property.hpp>
+#include <we/type/value.hpp>
 
 #include <random>
 
-namespace
-{
   [[noreturn]] void unexpected_workflow_response
-    (pnet::type::value::value_type const&, pnet::type::value::value_type const&)
-  {
-    throw std::logic_error ("got unexpected workflow_response");
-  }
+    (pnet::type::value::value_type const&, pnet::type::value::value_type const&);
 
-  std::mt19937& random_engine()
-  {
-    static std::mt19937 _
-      (fhg::util::testing::detail::GLOBAL_random_engine()());
+  [[noreturn]] void unexpected_eureka (we::type::eureka_ids_type const&);
 
-    return _;
-  }
+  std::mt19937& random_engine();
 
-  we::type::property::type no_properties()
-  {
-    return {};
-  }
-}
+  we::type::property::type no_properties();

@@ -16,7 +16,8 @@
 
 find_package (Libssh2 REQUIRED COMPONENTS _relocatable)
 
-fhg_add_runtime_executable (NAME gspc-rifd
+gspc_add_executable (NAME gspc-rifd
+  RUNTIME
   SOURCES "gspc-rifd.cpp"
           "execute_and_get_startup_messages.cpp"
   LIBRARIES RPC
@@ -31,13 +32,15 @@ fhg_add_runtime_executable (NAME gspc-rifd
   CREATE_BUNDLE_INFO
 )
 
-extended_add_library (NAME rif-started_process_promise
+gspc_add_library (NAME rif-started_process_promise
+  # Object library for sake of re-exporting in libgspc.
+  TYPE OBJECT
   SOURCES "started_process_promise.cpp"
-  LIBRARIES Boost::iostreams
+  LIBRARIES GPISpace::header-only
+            Boost::iostreams
             Boost::program_options
             Boost::serialization
             Util-Generic
-  INSTALL
 )
 
 install (FILES
@@ -55,7 +58,8 @@ add_unit_test (NAME started_process_promise
             Util-Generic
 )
 
-extended_add_library (NAME rif-strategies
+gspc_add_library (NAME rif-strategies
+  TYPE STATIC
   SOURCES "strategy/local.cpp"
           "strategy/meta.cpp"
           "strategy/pbsdsh.cpp"
@@ -63,13 +67,20 @@ extended_add_library (NAME rif-strategies
           "strategy/ssh/context.cpp"
           "strategy/ssh/detail.cpp"
           "strategy/ssh/session.cpp"
-  LIBRARIES RPC
-            fhg-util
-            Libssh2::libssh2
-            OpenSSL::Crypto
+  LIBRARIES
+    PRIVATE RPC
+    PRIVATE Util::Generic
+    PRIVATE Libssh2::libssh2
+    PRIVATE OpenSSL::Crypto
+    PRIVATE OpenSSL::SSL
+    PUBLIC Boost::filesystem
+    PUBLIC Boost::program_options
+    PUBLIC Boost::serialization
+    PRIVATE Boost::thread
 )
 
-fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
+gspc_add_executable (NAME gspc-bootstrap-rifd
+  RUNTIME
   SOURCES "gspc-bootstrap-rifd.cpp"
   LIBRARIES rif-strategies
             fhg-project_configuration
@@ -80,7 +91,8 @@ fhg_add_runtime_executable (NAME gspc-bootstrap-rifd
             Boost::system
   CREATE_BUNDLE_INFO
 )
-fhg_add_runtime_executable (NAME gspc-teardown-rifd
+gspc_add_executable (NAME gspc-teardown-rifd
+  RUNTIME
   SOURCES "gspc-teardown-rifd.cpp"
   LIBRARIES rif-strategies
             fhg-project_configuration

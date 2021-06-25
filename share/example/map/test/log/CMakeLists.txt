@@ -15,11 +15,12 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_library (NAME log_map-impl
+  gspc_add_library (NAME log_map-impl
     TYPE MODULE
     SOURCES "implementation.cpp"
     INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
-    LIBRARIES we-dev
+    LIBRARIES GPISpace::header-only
+              we-dev
   )
 
   math (EXPR size_input 50)

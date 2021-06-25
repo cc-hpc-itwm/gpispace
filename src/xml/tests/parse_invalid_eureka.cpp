@@ -157,8 +157,14 @@ BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
   auto const eureka_a (eureka_groups());
   auto const eureka_b (eureka_groups());
 
-  std::string const input
-    ( ( boost::format (R"EOS(
+  for ( auto format
+      : { boost::format (R"EOS( eureka-group="%1%">)EOS")
+        , boost::format (R"EOS(><eureka-group>"%1%"</eureka-group>)EOS")
+        }
+      )
+  {
+    std::string const input
+      ( ( boost::format (R"EOS(
 <defun name="foo">
  <net>
   <transition name="foo">
@@ -168,35 +174,36 @@ BOOST_FIXTURE_TEST_CASE ( mismatching_eureka_for_modules_with_target
           <target>%2%</target>
           <target>%3%</target>
         </preferences>
-        <module name="%1%" function="func()" target="%2%" eureka-group="%4%"/>
-        <module name="%1%" function="func()" target="%3%" eureka-group="%5%"/>
+        <module name="%1%" function="func()" target="%2%"%4%</module>
+        <module name="%1%" function="func()" target="%3%"%5%</module>
       </modules>
     </defun>
   </transition>
  </net>
 </defun>)EOS")
-      % mod_name
-      % target_a
-      % target_b
-      % eureka_a
-      % eureka_b
-      ).str()
-    );
+        % mod_name
+        % target_a
+        % target_b
+        % str (format % eureka_a)
+        % str (format % eureka_b)
+        ).str()
+      );
 
-  fhg::util::testing::require_exception_with_message
-    <xml::parse::error::mismatching_eureka_for_module>
-    ( [&input]()
-      { xml::parse::state::type state_empty;
-        std::istringstream input_stream (input);
-        xml::parse::just_parse (state_empty, input_stream);
-      }
-    , boost::format
-        ( "ERROR: mismatching eureka group for module '%1%'"
-          " in multi-module transition at %2%"
-        )
-    % (mod_name + "_" + target_a)
-    % "[<stdin>:5:5]"
-    );
+    fhg::util::testing::require_exception_with_message
+      <xml::parse::error::mismatching_eureka_for_module>
+      ( [&input]()
+        { xml::parse::state::type state_empty;
+          std::istringstream input_stream (input);
+          xml::parse::just_parse (state_empty, input_stream);
+        }
+      , boost::format
+          ( "ERROR: mismatching eureka group for module '%1%'"
+            " in multi-module transition at %2%"
+          )
+      % (mod_name + "_" + target_a)
+      % "[<stdin>:5:5]"
+      );
+  }
 }
 
 BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
@@ -211,17 +218,20 @@ BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
   auto const target_a (target_names());
   auto const target_b (target_names());
   std::string const eureka
-    ( " eureka-group=\""
-    + fhg::util::testing::random_identifier_without_leading_underscore()
-    + "\""
-    );
+    (fhg::util::testing::random_identifier_without_leading_underscore());
   std::string const eureka_a
     (eureka_missing_on_first ? "" : eureka);
   std::string const eureka_b
     (eureka_missing_on_first ? eureka : "");
 
-  std::string const input
-    ( ( boost::format (R"EOS(
+  for ( auto format
+      : { boost::format (R"EOS( eureka-group="%1%">)EOS")
+        , boost::format (R"EOS(><eureka-group>"%1%"</eureka-group>)EOS")
+        }
+      )
+  {
+    std::string const input
+      ( ( boost::format (R"EOS(
 <defun name="foo">
  <net>
   <transition name="foo">
@@ -231,33 +241,79 @@ BOOST_DATA_TEST_CASE ( missing_eureka_for_modules_with_target
           <target>%2%</target>
           <target>%3%</target>
         </preferences>
-        <module name="%1%" function="func()" target="%2%"%4%/>
-        <module name="%1%" function="func()" target="%3%"%5%/>
+        <module name="%1%" function="func()" target="%2%"%4%</module>
+        <module name="%1%" function="func()" target="%3%"%5%</module>
       </modules>
     </defun>
   </transition>
  </net>
 </defun>)EOS")
-      % mod_name
-      % target_a
-      % target_b
-      % eureka_a
-      % eureka_b
+        % mod_name
+        % target_a
+        % target_b
+        % str (format % eureka_a)
+        % str (format % eureka_b)
+        ).str()
+      );
+
+    fhg::util::testing::require_exception_with_message
+      <xml::parse::error::mismatching_eureka_for_module>
+      ( [&input]()
+        { xml::parse::state::type state;
+          std::istringstream input_stream (input);
+          xml::parse::just_parse (state, input_stream);
+        }
+      , boost::format
+          ( "ERROR: mismatching eureka group for module '%1%'"
+            " in multi-module transition at %2%"
+          )
+      % (mod_name + "_" + target_a)
+      % "[<stdin>:5:5]"
+      );
+  }
+}
+
+BOOST_AUTO_TEST_CASE (throw_when_eureka_attribute_and_tag_both_are_given)
+{
+  using fhg::util::testing::random_identifier_without_leading_underscore;
+
+  auto const module_name (random_identifier_without_leading_underscore());
+  auto const eureka_attribute (random_identifier_without_leading_underscore());
+  auto const eureka_tag (random_identifier_without_leading_underscore());
+
+  std::string const input
+    ( ( boost::format (R"EOS(
+<defun>
+  <module name="%1%" function="%2%()" eureka-group="%3%">
+    <eureka-group>%4%</eureka-group>
+  </module>
+</defun>)EOS")
+      % module_name
+      % random_identifier_without_leading_underscore()
+      % eureka_attribute
+      % eureka_tag
       ).str()
     );
 
   fhg::util::testing::require_exception_with_message
-    <xml::parse::error::mismatching_eureka_for_module>
+    <xml::parse::error::eureka_group_attribute_and_tag>
     ( [&input]()
       { xml::parse::state::type state;
         std::istringstream input_stream (input);
         xml::parse::just_parse (state, input_stream);
       }
     , boost::format
-        ( "ERROR: mismatching eureka group for module '%1%'"
-          " in multi-module transition at %2%"
+        ( "ERROR:"
+          " both are given:"
+          " the eureka attribute '%2%' at '%3%'"
+          " and the eureka tag '%4%' at '%5%'"
+          " in module '%1%'"
+          " Define only the attribute or only the tag."
         )
-    % (mod_name + "_" + target_a)
-    % "[<stdin>:5:5]"
+    % module_name
+    % eureka_attribute
+    % "[<stdin>:3:3]"
+    % eureka_tag
+    % "[<stdin>:4:5]"
     );
 }

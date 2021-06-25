@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <drts/pimpl.hpp>
 #include <drts/drts.fwd.hpp>
 #include <drts/virtual_memory.fwd.hpp>
@@ -39,7 +41,7 @@ namespace gspc
     using segment_description = iml::SegmentDescription;
   }
 
-  class vmem_allocation
+  class GSPC_DLLEXPORT vmem_allocation
   {
   private:
     friend class scoped_runtime_system;

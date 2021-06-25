@@ -32,10 +32,11 @@ fhg_add_test (NAME we_buffer_alignment
 )
 
 if (BUILD_TESTING)
-  extended_add_library (NAME net_using_buffers
+  gspc_add_library (NAME net_using_buffers
     TYPE STATIC
     SOURCES "net_description.cpp"
             "nets_using_buffers.cpp"
-    LIBRARIES Util::Generic
+    LIBRARIES we-dev
+              Util::Generic
   )
 endif()

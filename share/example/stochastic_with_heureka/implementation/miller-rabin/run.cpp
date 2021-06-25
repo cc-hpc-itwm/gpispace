@@ -17,6 +17,7 @@
 #include <implementation/miller-rabin/util.hpp>
 
 #include <bin/run.hpp>
+#include <util/print_exception.hpp>
 
 //! \note workaround for gmp bug: cstddef included with libstdcxx
 //! implementation detail that changed in gcc 4.9.0
@@ -83,7 +84,7 @@ try
 }
 catch (std::exception const& e)
 {
-  std::cout << "EXCEPTION: " << e.what() << std::endl;
+  std::cout << "EXCEPTION: " << util::print_exception (e) << std::endl;
 
   return -1;
 }

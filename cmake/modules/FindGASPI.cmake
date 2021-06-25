@@ -28,7 +28,9 @@ if (TARGET ${_libnamespace}::${_libname})
   return()
 endif()
 
+#"BEGIN INCLUDE"
 include (detail/pkgconfig_helper)
+#"END INCLUDE"
 
 _pkgconfig_find_library_module (${_pkgname} ${_libnamespace} ${_libname})
 

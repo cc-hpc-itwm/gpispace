@@ -25,6 +25,7 @@
 #include <util-generic/serialization/exception.hpp>
 
 #include <iml/MemoryLocation.hpp>
+#include <iml/MemoryRegion.hpp>
 #include <iml/MemorySize.hpp>
 #include <iml/SegmentHandle.hpp>
 #include <iml/vmem/gaspi/pc/type/handle_descriptor.hpp>

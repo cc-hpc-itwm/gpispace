@@ -189,7 +189,6 @@ namespace we
         void remove_and_apply
           ( id_type
           , RemovalFunction
-          , std::function<void (std::exception_ptr)> = &std::rethrow_exception
           );
         void apply
           ( id_type
@@ -221,7 +220,7 @@ namespace we
           position_in_container_type _position_in_container;
         };
 
-        mutable std::recursive_mutex _container_mutex;
+        std::recursive_mutex _container_mutex;
         list_with_id_lookup _container;
         list_with_id_lookup _container_inactive;
 
@@ -259,12 +258,11 @@ namespace we
 
         void apply (id_type parent, std::function<void (id_type)>) const;
 
-        template <typename Func>
-          void apply_and_remove_eureka ( type::eureka_id_type const&
-                                       , id_type const&
-                                       , boost::optional<id_type> const&
-                                       , Func
-                                       );
+        void apply_and_remove_eureka ( type::eureka_id_type const&
+                                     , id_type const&
+                                     , boost::optional<id_type> const&
+                                     , std::function<void (id_type)> cancel
+                                     );
 
       private:
         mutable std::mutex _relation_mutex;

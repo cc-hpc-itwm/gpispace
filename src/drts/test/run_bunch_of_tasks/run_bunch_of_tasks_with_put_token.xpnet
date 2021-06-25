@@ -25,7 +25,7 @@
     <place name="start" type="control" put_token="true"/>
     <place name="num_tasks" type="long"/>
     <place name="done" type="control"/>
-    
+
     <place name="task_finished" type="control"/>
     <transition name="execute_task">
       <defun>
@@ -40,7 +40,7 @@
       <connect-in port="start" place="start"/>
       <connect-out port="task_finished" place="task_finished"/>
     </transition>
-      
+
     <include-template href="wait.xml"/>
     <specialize name="wait_control" use="wait">
       <type-map replace="T" with="control"/>

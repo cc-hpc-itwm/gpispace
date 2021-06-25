@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 
 #include <iosfwd>
@@ -27,7 +29,7 @@ namespace expr
 {
   namespace eval
   {
-    struct context
+    struct GSPC_DLLEXPORT context
     {
     private:
       typedef std::unordered_map< std::string
@@ -42,7 +44,8 @@ namespace expr
 
       ref_container_type _ref_container;
 
-      friend std::ostream& operator<< (std::ostream&, context const&);
+      GSPC_DLLEXPORT
+        friend std::ostream& operator<< (std::ostream&, context const&);
 
     public:
       void bind_ref (const std::string&, const pnet::type::value::value_type&);

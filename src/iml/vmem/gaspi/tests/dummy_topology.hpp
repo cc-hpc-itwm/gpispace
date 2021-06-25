@@ -49,11 +49,6 @@ namespace gpi
 
       virtual void del_memory (const iml::SegmentHandle) override
       {}
-
-      virtual bool is_master () const override
-      {
-        return true;
-      }
     };
   }
 }

@@ -87,5 +87,18 @@ namespace fhg
       *voider;
       BOOST_REQUIRE_EQUAL (*stringer, std::to_string (i));
     }
+
+    BOOST_AUTO_TEST_CASE (works_with_references)
+    {
+      int i (0);
+
+      auto const get_ref ([&] () -> int& { return i; });
+
+      temporary_return_value_holder<int&> tv {get_ref};
+
+      ++*tv;
+
+      BOOST_REQUIRE_EQUAL (i, 1);
+    }
   }
 }

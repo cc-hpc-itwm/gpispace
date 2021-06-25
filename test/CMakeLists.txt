@@ -70,7 +70,8 @@ if (BUILD_TESTING)
     @ONLY ESCAPE_QUOTES
   )
 
-  extended_add_library (NAME test-utilities
+  gspc_add_library (NAME test-utilities
+    TYPE STATIC
     SOURCES "certificates_data.cpp"
             "hopefully_free_port.cpp"
             "make.cpp"

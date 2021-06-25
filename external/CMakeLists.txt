@@ -14,11 +14,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-extended_add_library (NAMESPACE BeeGFS NAME ClientDevel
+gspc_add_library (NAMESPACE BeeGFS NAME ClientDevel
+  TYPE INTERFACE
   SYSTEM_INCLUDE_DIRECTORIES INTERFACE
   "${CMAKE_CURRENT_SOURCE_DIR}/beegfs-client-devel"
 )
 
-extended_add_library (NAME rapidxml
+gspc_add_library (NAME rapidxml
+  TYPE INTERFACE
   SYSTEM_INCLUDE_DIRECTORIES INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/rapidxml"
 )

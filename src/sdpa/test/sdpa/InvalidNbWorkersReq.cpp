@@ -30,10 +30,11 @@ BOOST_DATA_TEST_CASE
   (invalid_number_of_workers_required, certificates_data, certificates)
 {
   const utils::agent agent (certificates);
+  utils::client client (agent, certificates);
 
   BOOST_REQUIRE_EQUAL
-    ( utils::client::submit_job_and_wait_for_termination_as_subscriber
-      (utils::net_with_one_child_requiring_workers (0), agent, certificates)
+    ( client.wait_for_terminal_state_and_cleanup
+        (client.submit_job (utils::net_with_one_child_requiring_workers (0)))
     , sdpa::status::FAILED
     );
 }

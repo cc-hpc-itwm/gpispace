@@ -15,6 +15,7 @@
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 #include <fhgcom/peer.hpp>
+#include <fhgcom/channel.hpp>
 #include <fhgcom/peer_info.hpp>
 #include <fhgcom/tests/address_printer.hpp>
 
@@ -32,6 +33,8 @@
 #include <util-generic/testing/random.hpp>
 #include <util-generic/testing/require_exception.hpp>
 
+// should only need ssl/context.hpp, but that's missing an include
+#include <boost/asio/ssl.hpp>
 #include <boost/test/data/test_case.hpp>
 #include <boost/test/unit_test.hpp>
 #include <boost/version.hpp>
@@ -225,6 +228,90 @@ BOOST_DATA_TEST_CASE ( peer_run_two
 
   BOOST_CHECK_EQUAL (m.header.src, peer_1.address());
   BOOST_CHECK_EQUAL (std::string (m.data.begin(), m.data.end()), message);
+}
+
+namespace fhg
+{
+  namespace com
+  {
+    BOOST_DATA_TEST_CASE ( channel_other_end_is_other_end
+                         , certificates_data
+                         , certificates
+                         )
+    {
+      peer_t const a ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                     , host_t ("localhost")
+                     , port_t ("0")
+                     , certificates
+                     );
+      auto const lp (a.local_endpoint());
+      auto const h (host (lp));
+      auto const p (port (lp));
+
+      channel const b ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                      , host_t ("localhost")
+                      , port_t ("0")
+                      , certificates
+                      , h
+                      , p
+                      );
+
+      BOOST_TEST (  b.other_end()
+                 == p2p::address_t (std::string (h) + ":" + std::string (p))
+                 );
+    }
+
+    BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+    BOOST_DATA_TEST_CASE ( channel_sends_to_other_end
+                         , certificates_data * test_messages()
+                         , certificates
+                         , message
+                         )
+    {
+      peer_t a ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+               , host_t ("localhost")
+               , port_t ("0")
+               , certificates
+               );
+      auto const lp (a.local_endpoint());
+
+      channel b ( fhg::util::cxx14::make_unique<boost::asio::io_service>()
+                , host_t ("localhost")
+                , port_t ("0")
+                , certificates
+                , host (lp)
+                , port (lp)
+                );
+
+      fhg::util::thread::event<> recv_finished;
+      boost::system::error_code error;
+      boost::optional<p2p::address_t> source;
+      message_t m;
+
+      a.async_recv
+        ( [&] ( boost::system::error_code error_
+              , boost::optional<p2p::address_t> source_
+              , message_t message_
+              )
+          {
+            error = error_;
+            m = std::move (message_);
+            source = std::move (source_);
+            recv_finished.notify();
+          }
+        );
+
+      b.send (message);
+
+      recv_finished.wait();
+
+      BOOST_REQUIRE_EQUAL (error, boost::system::errc::success);
+
+      BOOST_CHECK_EQUAL (m.header.src, b.address());
+      BOOST_CHECK_EQUAL (std::string (m.data.begin(), m.data.end()), message);
+      BOOST_TEST (source == b.address());
+    }
+  }
 }
 
 BOOST_DATA_TEST_CASE (peer_loopback_forbidden, certificates_data, certificates)

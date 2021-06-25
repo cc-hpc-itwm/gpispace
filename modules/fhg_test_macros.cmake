@@ -14,9 +14,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+include (util-cmake/add_unit_test)
+
 set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-bootstrap-rifd"
-  "${CMAKE_INSTALL_PREFIX}/bin/gspc-monitor"
+  $<$<BOOL:${GSPC_WITH_MONITOR_APP}>:${CMAKE_INSTALL_PREFIX}/bin/gspc-monitor>
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/gspc-teardown-rifd"
   "${CMAKE_INSTALL_PREFIX}/bin/pnet2dot"
@@ -41,6 +43,8 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/drts/worker/context_fwd.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/fhg/util/dl.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/gspc/detail/dllexport.hpp"
+  "${CMAKE_INSTALL_PREFIX}/include/gspc/detail/dllexport.ipp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/endpoint.ipp"
   "${CMAKE_INSTALL_PREFIX}/include/logging/socket_endpoint.hpp"
@@ -73,8 +77,8 @@ set (FILES_REQUIRED_IN_INSTALLATION
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/to_value.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/unwrap.hpp"
   "${CMAKE_INSTALL_PREFIX}/include/we/type/value/wrap.hpp"
+  "${CMAKE_INSTALL_PREFIX}/lib/libGPISpace-APIGuard.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libdrts-context.so"
-  "${CMAKE_INSTALL_PREFIX}/lib/librif-started_process_promise.a"
   "${CMAKE_INSTALL_PREFIX}/lib/libgspc.so"
   "${CMAKE_INSTALL_PREFIX}/lib/libwe-dev.so"
   "${CMAKE_INSTALL_PREFIX}/libexec/gspc/agent"
@@ -179,7 +183,7 @@ macro (prepend _list)
   list (INSERT ${_list} 0 ${ARGN})
 endmacro()
 
-macro(FHG_ADD_TEST)
+function(FHG_ADD_TEST)
   if (NOT BUILD_TESTING)
     return()
   endif()
@@ -232,4 +236,4 @@ macro(FHG_ADD_TEST)
       "IML_TESTING_OVERRIDE_INSTALLATION_PREFIX=${CMAKE_INSTALL_PREFIX}"
     )
   endif()
-endmacro()
+endfunction()

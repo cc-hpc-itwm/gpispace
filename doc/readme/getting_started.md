@@ -578,6 +578,7 @@ GPI-Space libraries as follows:
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"        \
   -Wl,--exclude-libs,libboost_program_options.a                   \
   -lboost_program_options                                         \
+  -lboost_filesystem                                              \
   -lboost_system
 ```
 
@@ -587,8 +588,9 @@ be used and can be executed.
 #### Start the GPI-Space monitor
 GPI-Space provides a graphical interface for the logging messages from
 the application workflow (i.e., `std::cout` within modules is
-redirected here). This can be launched (with a user-specified port
-number that shall also be given to the runtime system) as follows:
+redirected here) if built with option `GSPC_WITH_MONITOR_APP`
+enabled. This can be launched (with a user-specified port number that
+shall also be given to the runtime system) as follows:
 
 ```bash
 "${GPISPACE_INSTALL_DIR}/bin/gspc-monitor" --port "${LOG_PORT}" &
@@ -642,19 +644,24 @@ hostname > "${APP_INSTALL_DIR}/nodefile"
 # PBS/Torque: "${PBS_NODEFILE}"
 
 "${APP_INSTALL_DIR}/bin/compute_and_aggregate"                    \
-  --rif-strategy ssh                                              \
+  --rif-strategy "${RIF_STRATEGY:-ssh}"                           \
   --nodefile "${APP_INSTALL_DIR}/nodefile"                        \
   ${LOG_PORT:+--log-host ${HOSTNAME} --log-port ${LOG_PORT}}      \
   --N 20                                                          \
-  --workers-per-node 4
+  --workers-per-node 4                                            \
+  "${@}"
 ```
 
 First, a `nodefile` containing the hostname of the system is
 created. Then the application is invoked, providing it with the
 necessary command line parameters:
 
-- `--rif-strategy`: use ssh to start the components (requires
-  password- and passphrase-less ssh, using `~/.ssh/id_rsa` by default)
+- `--rif-strategy`: the strategy used to bootstrap runtime system
+  components, usually "ssh" which uses password- and passphrase-less
+  `ssh` to the given nodes. The `ssh` strategy uses `~/.ssh/id_rsa` by
+  default, which can be overwritten by passing
+  `--rif-strategy-parameters="--ssh-private-key='${HOME}/.ssh/other_key'
+  --ssh-public-key='${HOME}/.ssh/other_key.pub'"` as well.
 - `--nodefile`: the file containing the hostnames where to run the
   application. In this case, the just created `nodefile` with a single
   host
@@ -666,4 +673,5 @@ necessary command line parameters:
   number of workers to use
 
 You can see more parameters that may be passed to the GPI-Space
-runtime system using `--help`.
+runtime system using `--help`. The snippet above symbolizes this as
+`"${@}"`.

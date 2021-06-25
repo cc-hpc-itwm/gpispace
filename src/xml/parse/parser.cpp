@@ -17,11 +17,32 @@
 #include <xml/parse/parser.hpp>
 
 #include <xml/parse/error.hpp>
+#include <xml/parse/rapidxml/types.hpp>
 #include <xml/parse/state.hpp>
+#include <xml/parse/type/connect.hpp>
+#include <xml/parse/type/eureka.hpp>
+#include <xml/parse/type/expression.hpp>
+#include <xml/parse/type/function.hpp>
+#include <xml/parse/type/memory_buffer.hpp>
+#include <xml/parse/type/memory_transfer.hpp>
+#include <xml/parse/type/mod.hpp>
+#include <xml/parse/type/multi_mod.hpp>
+#include <xml/parse/type/net.hpp>
+#include <xml/parse/type/place.hpp>
+#include <xml/parse/type/place_map.hpp>
+#include <xml/parse/type/port.hpp>
+#include <xml/parse/type/preferences.hpp>
+#include <xml/parse/type/response.hpp>
+#include <xml/parse/type/specialize.hpp>
+#include <xml/parse/type/struct.hpp>
+#include <xml/parse/type/template.hpp>
+#include <xml/parse/type/transition.hpp>
+#include <xml/parse/type/use.hpp>
 #include <xml/parse/util/cdata.hpp>
 #include <xml/parse/util/expect.hpp>
 #include <xml/parse/util/name_element.hpp>
 #include <xml/parse/util/optional.hpp>
+#include <xml/parse/util/position.hpp>
 #include <xml/parse/util/property.hpp>
 #include <xml/parse/util/required.hpp>
 #include <xml/parse/util/skip.hpp>
@@ -31,43 +52,17 @@
 #include <xml/parse/util/validstructfield.hpp>
 #include <xml/parse/warning.hpp>
 
-#include <xml/parse/rapidxml/types.hpp>
-
-#include <xml/parse/type/connect.hpp>
-#include <xml/parse/type/expression.hpp>
-#include <xml/parse/type/function.hpp>
-#include <xml/parse/type/memory_buffer.hpp>
-#include <xml/parse/type/memory_transfer.hpp>
-#include <xml/parse/type/mod.hpp>
-#include <xml/parse/type/net.hpp>
-#include <xml/parse/type/place.hpp>
-#include <xml/parse/type/place_map.hpp>
-#include <xml/parse/type/port.hpp>
-#include <xml/parse/type/response.hpp>
-#include <xml/parse/type/eureka.hpp>
-#include <xml/parse/type/specialize.hpp>
-#include <xml/parse/type/struct.hpp>
-#include <xml/parse/type/template.hpp>
-#include <xml/parse/type/transition.hpp>
-#include <xml/parse/type/use.hpp>
-#include <xml/parse/type/preferences.hpp>
-#include <xml/parse/type/multi_mod.hpp>
-
-#include <xml/parse/util/position.hpp>
-
-#include <util-generic/join.hpp>
-#include <fhg/util/cctype.hpp>
-#include <fhg/util/read_bool.hpp>
-#include <fhg/util/boost/optional.hpp>
-
-#include <we/type/transition.hpp>
 #include <we/type/id.hpp>
 #include <we/type/property.hpp>
-
 #include <we/type/signature.hpp>
+#include <we/type/transition.hpp>
+#include <we/type/value.hpp>
+#include <we/type/value/show.hpp>
 
-#include <istream>
-#include <stdexcept>
+#include <fhg/util/boost/optional.hpp>
+#include <fhg/util/cctype.hpp>
+#include <fhg/util/read_bool.hpp>
+#include <util-generic/join.hpp>
 
 #include <boost/format.hpp>
 #include <boost/lexical_cast.hpp>
@@ -75,6 +70,10 @@
 #include <boost/range/algorithm.hpp>
 
 #include <functional>
+#include <istream>
+#include <sstream>
+#include <stdexcept>
+#include <string>
 
 // ************************************************************************* //
 
@@ -1559,8 +1558,11 @@ namespace xml
               , optional (node, "require_module_unloads_without_rest")
               )
           );
-        const boost::optional<we::type::eureka_id_type> eureka_id
+        const util::position_type pod_of_eureka_group_attribute
+          (state.position (node));
+        boost::optional<we::type::eureka_id_type> eureka_id
           (optional (node, "eureka-group"));
+        bool const got_eureka_attribute (!!eureka_id);
         const util::position_type pod (state.position (node));
         const boost::optional<std::string> target
           (optional (node, "target"));
@@ -1625,6 +1627,23 @@ namespace xml
               pod_of_code = state.position (child);
               code = fhg::util::join (parse_cdata (child, state), '\n').string();
             }
+            else if (child_name == "eureka-group")
+            {
+              std::string const value (child->value(), child->value_size());
+
+              if (got_eureka_attribute)
+              {
+                throw error::eureka_group_attribute_and_tag
+                  ( name
+                  , *eureka_id
+                  , pod_of_eureka_group_attribute
+                  , value
+                  , state.position (child)
+                  );
+              }
+
+              eureka_id = value;
+            }
             else
             {
               state.warn
@@ -1649,6 +1668,14 @@ namespace xml
                                                    , *target
                                                    , pod
                                                    );
+        }
+
+        if (got_eureka_attribute)
+        {
+          std::ostringstream oss;
+          pnet::type::value::value_type const value (*eureka_id);
+          oss << pnet::type::value::show (value);
+          eureka_id = oss.str();
         }
 
         return type::module_type

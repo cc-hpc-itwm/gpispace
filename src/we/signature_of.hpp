@@ -16,10 +16,13 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/type/value.hpp>
 #include <we/type/signature.hpp>
 
 namespace pnet
 {
-  type::signature::signature_type signature_of (const type::value::value_type&);
+  GSPC_DLLEXPORT type::signature::signature_type
+    signature_of (const type::value::value_type&);
 }

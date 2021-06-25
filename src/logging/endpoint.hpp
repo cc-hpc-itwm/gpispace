@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <logging/tcp_endpoint.hpp>
 #include <logging/socket_endpoint.hpp>
 
@@ -32,23 +34,23 @@ namespace fhg
   {
     namespace error
     {
-      struct default_constructed_endpoint_used_for_non_deserialization
+      struct GSPC_DLLEXPORT default_constructed_endpoint_used_for_non_deserialization
         : std::logic_error
       {
         default_constructed_endpoint_used_for_non_deserialization();
       };
-      struct no_possible_matching_endpoint : std::runtime_error
+      struct GSPC_DLLEXPORT no_possible_matching_endpoint : std::runtime_error
       {
         no_possible_matching_endpoint (std::string);
       };
-      struct unexpected_token : std::invalid_argument
+      struct GSPC_DLLEXPORT unexpected_token : std::invalid_argument
       {
         unexpected_token (std::string);
       };
     }
 
     //! \todo Actually part of fhg::rpc.
-    struct endpoint
+    struct GSPC_DLLEXPORT endpoint
     {
       endpoint (tcp_endpoint);
       endpoint (socket_endpoint);
@@ -73,7 +75,7 @@ namespace fhg
         void serialize (Archive&, endpoint&, unsigned int);
     };
 
-    void validate
+    GSPC_DLLEXPORT void validate
       (boost::any&, std::vector<std::string> const&, endpoint*, int);
   }
 }

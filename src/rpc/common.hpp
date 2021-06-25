@@ -20,31 +20,79 @@
 #include <util-generic/serialization/boost/asio/ip/tcp/endpoint.hpp>
 #include <util-generic/serialization/exception.hpp>
 
-#include <boost/iostreams/concepts.hpp>
-#include <boost/optional.hpp>
-
-#include <algorithm>
-#include <cstdint>
+#include <exception>
+#include <stdexcept>
 #include <string>
-#include <unordered_map>
-#include <vector>
+#include <utility>
 
 namespace fhg
 {
+  //! The \c rpc ("remote procedure call") namespace provides a
+  //! framework for calling functions over process boundaries as if
+  //! they were local functions, with automatic serialization of
+  //! arguments and return values as well as C++ exceptions.
+  //!
+  //! RPC functions are declared with \c FHG_RPC_FUNCTION_DESCRIPTION()
+  //! and defined with a \c service_handler. Functions have a name and
+  //! a signature. Functions are called with \c remote_function. Both
+  //! \c service_handler and \c remote_function take the name as
+  //! template parameter to avoid typos off the name and check
+  //! signatures of handlers and calls at compile time.
+  //!
+  //! The underlying transport layers use Boost.Asio so both service
+  //! provider and caller need to have a \c boost::asio::io_service
+  //! ready with threads running (there are provider variants that
+  //! allow for forking and deferred starting). A caller usually needs
+  //! just one thread unless it is doing a lot of calls in parallel:
+  //! Calls are not blocking. On the provider side handlers of calls
+  //! *are* blocking, so multiple threads may help. Util-Generic
+  //! provides \c util::scoped_boost_asio_io_service_with_threads.
+  //!
+  //! On the provider side, to allow for multiple transport layers
+  //! being used at the same time, \c service_handler are registered
+  //! in a \c service_dispatcher. This dispatcher is given to one or
+  //! more \c service_tcp_provider or \c service_socket_provider.
+  //! These listen either on a given endpoint or automatically
+  //! determine an endpoint that can be queried using `.local_endpoint()`.
+  //!
+  //! In the caller process, a corresponding \c remote_tcp_endpoint or
+  //! \c remote_socket_endpoint is created to connect to a
+  //! provider. Using this endpoint, a \c remote_function functor can
+  //! be created and called. It returns a \c std::future which is used
+  //! to wait for asynchronous completion of the function call.
+  //!
+  //! Since waiting on a future is still blocking a thread and thus
+  //! can't be used in a cooperative coroutine, a \c future exists
+  //! which supports yielding to Boost.Asio. It can be used by \c
+  //! remote_function to allow for recursive calls to other RPC
+  //! providers from within a \c service_handler.
+  //!
+  //! The \c locked_with_info_file helpers wrap the pattern of a
+  //! unique server that's communicating connection information via a
+  //! shared filesystem.
+  //!
+  //! In summary, usually:
+  //!
+  //! - A shared header has \c FHG_RPC_FUNCTION_DESCRIPTION() calls to
+  //!  define the API.
+  //!
+  //!- A caller has
+  //!  - a \c boost::asio::io_service with threads
+  //!  - usually one \c remote_xxx_endpoint per service provider used
+  //!  - usually one \c remote_function per API function called
+  //!  - may have a `client` convenience wrapper around a collection
+  //!    of \c remote_function for a single `remote_xxx_endpoint` to
+  //!    treat the remote call like a method of an object representing
+  //!    the remote
+  //!
+  //!- A provider has
+  //!  - an \c boost::asio::io_service with threads
+  //!  - usually one \c service_dispatcher
+  //!  - one \c service_handler per API function provided
+  //!  - one or more `service_xxx_provider` per transport layer
+  //!    provided
   namespace rpc
   {
-    struct packet_header
-    {
-      uint64_t message_id;
-      uint64_t buffer_size;
-
-      packet_header() = default;
-      packet_header (uint64_t id, uint64_t size)
-        : message_id (id)
-        , buffer_size (size)
-      {}
-    };
-
     namespace error
     {
       struct duplicate_function : std::logic_error
@@ -55,7 +103,9 @@ namespace fhg
           , function_name (std::move (name))
         {}
 
+        //! Serialize to a string.
         std::string to_string() const { return function_name; }
+        //! Deserialize from a string.
         static duplicate_function from_string (std::string name) { return name; }
       };
 
@@ -67,11 +117,16 @@ namespace fhg
           , function_name (std::move (name))
         {}
 
+        //! Serialize to a string.
         std::string to_string() const { return function_name; }
+        //! Deserialize from a string.
         static unknown_function from_string (std::string name) { return name; }
       };
 
       using namespace util::serialization;
+      //! Extend the set of util-generic-exception-serialization
+      //! functions \a functions with the rpc-built-in exception
+      //! types.
       inline exception::serialization_functions add_builtin
         (exception::serialization_functions functions)
       {
@@ -80,64 +135,5 @@ namespace fhg
         return functions;
       }
     }
-  }
-
-  namespace util
-  {
-    template<typename Container>
-      struct unique_scoped_map_insert
-    {
-      unique_scoped_map_insert ( Container& container
-                               , typename Container::key_type key
-                               , typename Container::mapped_type value
-                               )
-        : _container (container)
-        , _key (boost::none)
-      {
-        if (!_container.emplace (key, std::move (value)).second)
-        {
-          throw rpc::error::duplicate_function (std::move (key));
-        }
-
-        _key = std::move (key);
-      }
-      unique_scoped_map_insert (unique_scoped_map_insert<Container>&& other)
-        : _container (std::move (other._container))
-        , _key (boost::none)
-      {
-        std::swap (_key, other._key);
-      }
-      ~unique_scoped_map_insert()
-      {
-        if (_key)
-        {
-          _container.erase (*_key);
-        }
-      }
-
-      unique_scoped_map_insert (unique_scoped_map_insert<Container> const&)
-        = delete;
-      unique_scoped_map_insert<Container>& operator=
-        (unique_scoped_map_insert<Container> const&) = delete;
-      unique_scoped_map_insert<Container>& operator=
-        (unique_scoped_map_insert<Container>&&) = delete;
-
-      Container& _container;
-      boost::optional<typename Container::key_type> _key;
-    };
-
-    struct vector_sink : boost::iostreams::sink
-    {
-      vector_sink (std::vector<char>& vector) : _vector (vector) {}
-
-      std::streamsize write (char_type const* s, std::streamsize n)
-      {
-        _vector.insert (_vector.end(), s, s + n);
-        return n;
-      }
-
-    private:
-      std::vector<char>& _vector;
-    };
   }
 }

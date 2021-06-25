@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <drts/certificates.hpp>
 #include <drts/client.fwd.hpp>
 #include <drts/drts.fwd.hpp>
@@ -33,7 +35,7 @@
 
 namespace gspc
 {
-  class workflow : boost::noncopyable
+  class GSPC_DLLEXPORT workflow : boost::noncopyable
   {
   public:
     workflow (boost::filesystem::path workflow);
@@ -50,9 +52,12 @@ namespace gspc
     PIMPL (workflow);
   };
 
-  class client : boost::noncopyable
+  class GSPC_DLLEXPORT client : boost::noncopyable
   {
   public:
+    //! \note The drts client constructor/destructor is not thread-safe
+    // with the scoped_rifd's constructor/destructor. However, such cases, when
+    // they are called concurrently, are extremly unlikely to happen in practice.
     client (scoped_runtime_system const&, Certificates const& = boost::none);
     explicit client (information_to_reattach const&, Certificates const& = boost::none);
 

@@ -15,33 +15,33 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_library (NAME A
+  gspc_add_library (NAME A
     NAMESPACE PluginTest
     SOURCES "A.cpp"
-    POSITION_INDEPENDENT
     TYPE SHARED
-    LIBRARIES pnet
+    LIBRARIES GPISpace::header-only
+              we-dev
   )
-  extended_add_library (NAME B
+  gspc_add_library (NAME B
     NAMESPACE PluginTest
     SOURCES "B.cpp"
-    POSITION_INDEPENDENT
     TYPE SHARED
-    LIBRARIES pnet
+    LIBRARIES GPISpace::header-only
+              we-dev
   )
-  extended_add_library (NAME C
+  gspc_add_library (NAME C
     NAMESPACE PluginTest
     SOURCES "C.cpp"
-    POSITION_INDEPENDENT
     TYPE SHARED
-    LIBRARIES pnet
+    LIBRARIES GPISpace::header-only
+              we-dev
   )
-  extended_add_library (NAME D
+  gspc_add_library (NAME D
     NAMESPACE PluginTest
     SOURCES "D.cpp"
-    POSITION_INDEPENDENT
     TYPE SHARED
-    LIBRARIES pnet
+    LIBRARIES GPISpace::header-only
+              we-dev
   )
 endif()
 

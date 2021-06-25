@@ -26,6 +26,7 @@
 #include <iml/SegmentDescription.hpp>
 #include <iml/SegmentHandle.hpp>
 #include <iml/SharedMemoryAllocationHandle.hpp>
+#include <iml/vmem/gaspi/pc/type/impl_types.hpp>
 
 namespace gpi
 {

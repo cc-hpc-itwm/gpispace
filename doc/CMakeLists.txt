@@ -17,6 +17,8 @@
 add_subdirectory (readme)
 add_subdirectory (tutorial)
 
-install (DIRECTORY gspc-monitor
-  DESTINATION share/gspc
-)
+if (GSPC_WITH_MONITOR_APP)
+  install (DIRECTORY gspc-monitor
+    DESTINATION share/gspc
+  )
+endif()

@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/expr/eval/context.hpp>
 #include <we/loader/api-guard.hpp>
 
@@ -34,7 +36,7 @@ namespace we
                                    , std::map<std::string, void*> const&
                                    );
 
-    class IModule
+    class GSPC_DLLEXPORT IModule
     {
     public:
       virtual ~IModule() {}

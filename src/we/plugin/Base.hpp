@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <we/expr/eval/context.hpp>
 #include <we/type/value.hpp>
 
@@ -41,7 +43,7 @@ namespace gspc
 
       //! All methods including constructor and destructor shall not
       //! block.
-      struct Base
+      struct GSPC_DLLEXPORT Base
       {
         //! executed after expression has been evaluated
         //! The callback is guaranteed to be valid during object life
@@ -66,7 +68,7 @@ namespace gspc
 #endif
 
 #define GSPC_WE_PLUGIN_CREATE_SIGNATURE()                                   \
-  extern "C" [[gnu::visibility ("default")]]                                \
+  extern "C" GSPC_DLLEXPORT                                                 \
     std::unique_ptr<::gspc::we::plugin::Base>                               \
       gspc_we_plugin_create ( ::gspc::we::plugin::Context const& context    \
                             , ::gspc::we::plugin::PutToken put_token        \

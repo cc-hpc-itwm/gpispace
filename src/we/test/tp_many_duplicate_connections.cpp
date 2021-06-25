@@ -36,6 +36,8 @@ BOOST_DATA_TEST_CASE ( add_connection_only_allows_a_tp_or_tp_many
       , boost::none
       , {}
       , we::priority_type()
+    , boost::optional<we::type::eureka_id_type>{}
+    , std::list<we::type::preference_t>{}
     );
   we::transition_id_type const tid (net.add_transition (trans_io));
 

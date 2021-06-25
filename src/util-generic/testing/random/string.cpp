@@ -20,6 +20,7 @@
 #include <util-generic/warning.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <cstddef>
 #include <random>
 #include <stdexcept>
@@ -114,7 +115,7 @@ namespace fhg
           bool is_only_whitespace (std::string const& s)
           {
             return std::all_of
-              (s.begin(), s.end(), [] (char x) { return std::isspace (x); });
+              (s.begin(), s.end(), [] (unsigned char x) { return std::isspace (x); });
           }
         }
 

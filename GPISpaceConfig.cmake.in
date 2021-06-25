@@ -8,16 +8,31 @@
 # - library GPISpace::header-only
 # - library GPISpace::workflow_development
 # - library GPISpace::execution
+# - library GPISpace::APIGuard
 # - library IML::Client (via IML dependency)
 # - executable GPISpace::pnetc
 # - variable GSPC_HOME
 # - variable GSPC_XPNET_XSD
 # - variable GSPC_VERSION, GSPC_VERSION_FILE
 # - variable GSPC_GIT_SUBMODULES_FILE
+# - variable GSPC_WITH_MONITOR_APP (mirroring configuration option)
 # - function bundle_GPISpace (DESTINATION)
 # - function bundle_GPISpace_add_rpath (TARGET INSTALL_DIRECTORY)
 
-cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
+if (CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS @CMAKE_MINIMUM_REQUIRED_VERSION@)
+  set (${CMAKE_FIND_PACKAGE_NAME}_FOUND false)
+  set (${CMAKE_FIND_PACKAGE_NAME}_NOT_FOUND_MESSAGE
+    "The minimum required CMake version of the including project is too low! \
+    Projects using ${CMAKE_FIND_PACKAGE_NAME} are required to set CMake version \
+    @CMAKE_MINIMUM_REQUIRED_VERSION@ or above as their minimum required version! \
+    A line of code such as \
+    \
+      cmake_minimum_required(VERSION @CMAKE_MINIMUM_REQUIRED_VERSION@)'\
+    \
+    is required to be added at the top of the including project's root CMakeLists.txt."
+  )
+  return ()
+endif ()
 
 include (CMakeFindDependencyMacro)
 
@@ -31,11 +46,13 @@ get_filename_component (GSPC_HOME "${GSPC_HOME}" REALPATH)
 set_and_check (GSPC_we-dev_LIBRARY "${GSPC_HOME}/lib/libwe-dev.so")
 set_and_check (GSPC_drts-context_LIBRARY "${GSPC_HOME}/lib/libdrts-context.so")
 set_and_check (GSPC_gspc_LIBRARY "${GSPC_HOME}/lib/libgspc.so")
-set_and_check (GSPC_rif_execution_LIBRARY "${GSPC_HOME}/lib/librif-started_process_promise.a")
+set_and_check (GSPC_APIGuard_LIBRARY "${GSPC_HOME}/lib/libGPISpace-APIGuard.so")
 set_and_check (GSPC_pnetc_BINARY "${GSPC_HOME}/bin/pnetc")
 set_and_check (GSPC_INCLUDE_DIR "${GSPC_HOME}/include")
 set_and_check (GSPC_XPNET_XSD "${GSPC_HOME}/share/gspc/xml/xsd/pnet.xsd")
 set_and_check (GSPC_GIT_SUBMODULES_FILE "${GSPC_HOME}/git.submodules")
+
+set (GSPC_WITH_MONITOR_APP "@GSPC_WITH_MONITOR_APP@")
 
 # \todo remove, done by GPISpaceConfigVersion.cmake now
 set_and_check (GSPC_VERSION_FILE "${GSPC_HOME}/version")
@@ -157,7 +174,89 @@ endif()
 if (${_gspc_do_submodules_check})
   find_dependency (Git REQUIRED)
 
-  @ASSERT_GIT_SUBMODULE_VERSIONS_SOURCE@
+  #! Assuming \c CMAKE_SOURCE_DIR is a git repository, list all git
+  #! submodules checked out there, their path and version in \a FILE.
+  #! \note Assumes `grep`, `git`, `sort`, `readlink` `sed` to exist and
+  #! be executable by name alone, i.e. be contained in `$PATH`.
+  function (list_and_store_git_submodules FILE)
+    execute_process (COMMAND git submodule --quiet foreach "echo $(grep -m1 url $(sed \"s,gitdir: ,,\" .git 2>/dev/null || readlink -f .git)/config | sed \"s,.*:,,;s,.git,,\") $sha1"
+      WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}"
+      OUTPUT_VARIABLE _list_git_submodules
+      RESULT_VARIABLE _result_list_git_submodules
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (NOT ${_result_list_git_submodules} EQUAL 0)
+      message (FATAL_ERROR
+        "couldn't list git submodules: ${_result_list_git_submodules}"
+      )
+    endif()
+    execute_process (COMMAND echo "${_list_git_submodules}" COMMAND sort -u
+      OUTPUT_VARIABLE _git_submodules
+      RESULT_VARIABLE _result_sort_git_submodules
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+    )
+    if (NOT ${_result_sort_git_submodules} EQUAL 0)
+      message (FATAL_ERROR "couldn't sort git submodules")
+    endif()
+    write_file ("${FILE}" "${_git_submodules}")
+  endfunction()
+
+  #! Produces the file \a NAME in \c CMAKE_BINARY_DIR either by calling
+  #! `list_and_store_git_submodules (${CMAKE_BINARY_DIR}/${NAME})`, or
+  #! if file `${CMAKE_SOURCE_DIR}/${NAME}` exists by copying that
+  #! without additional checks.
+  function (list_and_store_git_submodules_if_not_exists NAME)
+    if (EXISTS "${CMAKE_SOURCE_DIR}/${NAME}")
+      message (STATUS "Using git submodules from file ${CMAKE_SOURCE_DIR}/${NAME}")
+      file (COPY "${CMAKE_SOURCE_DIR}/${NAME}" DESTINATION "${CMAKE_BINARY_DIR}")
+    else()
+      list_and_store_git_submodules ("${CMAKE_BINARY_DIR}/${NAME}")
+    endif()
+  endfunction()
+
+  #! Generate the file \a NAME in \c CMAKE_BINARY_DIR as per rules of
+  #! \see list_and_store_git_submodules_if_not_exists() and install with
+  #! the same \a NAME to the top level in the project's installation.
+  function (install_git_submodules_information NAME)
+    list_and_store_git_submodules_if_not_exists ("${NAME}")
+    install (FILES "${CMAKE_BINARY_DIR}/${NAME}" DESTINATION .)
+  endfunction()
+
+  #! Given two file names \a HERE and \a THERE that have previously been
+  #! produced with the \see list_and_store_git_submodules() family, ensure
+  #! that if a submodule exists in both lists, they are using the exact
+  #! same revision. Submodules that only exist on one side are ignored.
+  macro (assert_same_git_submodules HERE THERE)
+    file (READ "${HERE}" _ours)
+    string (REGEX REPLACE "\n" ";" _ours "${_ours}")
+
+    file (READ "${THERE}" _theirs)
+    string (REGEX REPLACE " [a-f0-9]*\n" ";" _theirs_names "${_theirs}")
+    string (REGEX REPLACE "\n" ";" _theirs "${_theirs}")
+
+    set (_any_mismatch FALSE)
+
+    foreach (_our ${_ours})
+      string (REGEX REPLACE " .*" "" _our_name "${_our}")
+
+      if ("${_our_name}" IN_LIST _theirs_names AND NOT "${_our}" IN_LIST _theirs)
+        set (_their ${_theirs})
+        list (FILTER _their INCLUDE REGEX "${_our_name}.*")
+        string (REGEX REPLACE ".* " "" _their_hash "${_their}")
+        string (REGEX REPLACE ".* " "" _our_hash "${_our}")
+
+        message (STATUS "submodule ${_our_name} versions differ:")
+        message (STATUS " - ours:   ${_our_hash}")
+        message (STATUS " - theirs: ${_their_hash}")
+
+        set (_any_mismatch TRUE)
+      endif()
+    endforeach()
+
+    if (${_any_mismatch})
+      message (FATAL_ERROR "At least one git submodule in ${HERE} (ours) and ${THERE} (theirs) differs. See above for the list of mismatches.")
+    endif()
+  endmacro()
 
   list_and_store_git_submodules ("${CMAKE_CURRENT_BINARY_DIR}/git.submodules")
   assert_same_git_submodules ("${CMAKE_CURRENT_BINARY_DIR}/git.submodules" "${GSPC_GIT_SUBMODULES_FILE}")
@@ -194,8 +293,12 @@ set_target_properties (GPISpacePrivate::drts-context PROPERTIES IMPORTED_LOCATIO
 add_library (GPISpacePrivate::gspc SHARED IMPORTED)
 set_target_properties (GPISpacePrivate::gspc PROPERTIES IMPORTED_LOCATION ${GSPC_gspc_LIBRARY})
 
-add_library (GPISpacePrivate::rif_execution STATIC IMPORTED)
-set_target_properties (GPISpacePrivate::rif_execution PROPERTIES IMPORTED_LOCATION ${GSPC_rif_execution_LIBRARY})
+add_library (GPISpace::APIGuard SHARED IMPORTED)
+set_target_properties (GPISpace::APIGuard PROPERTIES IMPORTED_LOCATION ${GSPC_APIGuard_LIBRARY})
+target_link_libraries (GPISpace::APIGuard
+  INTERFACE GPISpace::header-only
+  INTERFACE Boost::boost
+)
 
 add_library (GPISpace-workflow_development INTERFACE)
 add_library (GPISpace::workflow_development ALIAS GPISpace-workflow_development)
@@ -216,8 +319,8 @@ add_library (GPISpace::execution ALIAS GPISpace-execution)
 target_link_libraries (GPISpace-execution
   INTERFACE GPISpace::header-only
             GPISpacePrivate::gspc
+            GPISpacePrivate::we-dev
             IML::Client
-            GPISpacePrivate::rif_execution
             GPISpacePrivate::drts-context
             Boost::coroutine
             Boost::date_time
@@ -269,7 +372,9 @@ set_target_properties (GPISpace::pnetc PROPERTIES
 #   GPISpace and to execute workflows. This implies the IML components
 #   "runtime" and "bootstrap_exe".
 #
-# - "monitoring": Tools to monitor a running GPISpace runtime system.
+# - "monitoring": Tools to monitor a running GPISpace runtime
+#   system. Only available when GPI-Space was built with the
+#   GSPC_WITH_MONITOR_APP configuration option.
 #
 # - "devel": All headers, libraries and metadata, i.e. the full
 #   installation. This is only required if the user of the application
@@ -445,6 +550,7 @@ macro (_GPISpace_deploy_make_parts_list)
                           "bin/gspc-teardown-rifd"
                           "bin/iml-bootstrap-rifd"
                           "bin/iml-teardown-rifd"
+                          "lib/libGPISpace-APIGuard.so"
                           "lib/libIML-Client.so"
                           "lib/libdrts-context.so"
                           "lib/libgspc.so"
@@ -459,7 +565,12 @@ macro (_GPISpace_deploy_make_parts_list)
       list (APPEND ARG_IML_COMPONENTS "runtime")
       list (APPEND ARG_IML_COMPONENTS "bootstrap_exe")
     elseif ("${_component}" STREQUAL "monitoring")
-      list (APPEND _parts "bin/gspc-monitor")
+      if (@GSPC_WITH_MONITOR_APP@)
+        list (APPEND _parts "bin/gspc-monitor")
+      else()
+        message (FATAL_ERROR "GPISpace_deploy_*() called with component \
+'monitoring', but GPI-Space was not built with GSPC_WITH_MONITOR_APP.")
+      endif()
     else()
       message (FATAL_ERROR "unknown GPISpace component ${_component}")
     endif()

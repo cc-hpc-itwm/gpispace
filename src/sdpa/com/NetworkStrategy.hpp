@@ -50,13 +50,14 @@ namespace sdpa
                       );
       ~NetworkStrategy();
 
-      fhg::com::p2p::address_t connect_to
-        (fhg::com::host_t const&, fhg::com::port_t const&);
-
       template<typename Event, typename... Args>
         void perform (fhg::com::p2p::address_t const& address, Args&&... args);
 
       boost::asio::ip::tcp::endpoint local_endpoint() const;
+
+      //! \todo remove TESTING_ONLY method
+      fhg::com::p2p::address_t connect_to_TESTING_ONLY
+        (fhg::com::host_t const&, fhg::com::port_t const&);
 
     private:
       sdpa::events::Codec _codec;

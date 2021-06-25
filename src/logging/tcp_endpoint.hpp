@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <boost/any.hpp>
 
 #include <string>
@@ -28,14 +30,14 @@ namespace fhg
   {
     namespace error
     {
-      struct bad_host_and_port_string : std::invalid_argument
+      struct GSPC_DLLEXPORT bad_host_and_port_string : std::invalid_argument
       {
         bad_host_and_port_string (std::string);
       };
     }
 
     //! \todo Actually part of fhg::rpc.
-    struct tcp_endpoint
+    struct GSPC_DLLEXPORT tcp_endpoint
     {
       std::string host;
       unsigned short port;
@@ -59,7 +61,7 @@ namespace fhg
       operator std::pair<std::string, unsigned short>() const;
     };
 
-    void validate
+    GSPC_DLLEXPORT void validate
       (boost::any&, std::vector<std::string> const&, tcp_endpoint*, int);
   }
 }

@@ -21,8 +21,6 @@
 #include <util-generic/join.hpp>
 #include <util-generic/cxx14/make_unique.hpp>
 
-const unsigned int WE_GUARD_SYMBOL = 0xDEADBEEF;
-
 namespace we
 {
   namespace loader

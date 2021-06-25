@@ -21,6 +21,7 @@
 #include <rpc/service_tcp_provider.hpp>
 
 #include <util-generic/connectable_to_address_string.hpp>
+#include <util-generic/cxx14/make_unique.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/latch.hpp>
 #include <util-generic/scoped_boost_asio_io_service_with_threads.hpp>
@@ -417,4 +418,112 @@ BOOST_DATA_TEST_CASE
   server_finished.get();
   BOOST_REQUIRE_EQUAL (service_tcp_provider_destructed, true);
   call_returned.get();
+}
+
+#define PREMATURE_DESTRUCTION_TEST_PREAMBLE                             \
+  auto const s (fhg::util::testing::random<int>{}());                   \
+                                                                        \
+  fhg::util::latch service_was_called (1);                              \
+  fhg::util::latch prevent_response (1);                                \
+                                                                        \
+  fhg::rpc::service_dispatcher service_dispatcher;                      \
+  fhg::rpc::service_handler<protocol::ping> pong_service                \
+  ( service_dispatcher                                                  \
+    , [&] (int i)                                                       \
+      {                                                                 \
+        service_was_called.count_down();                                \
+        prevent_response.wait();                                        \
+        return i;                                                       \
+      }                                                                 \
+    );                                                                  \
+  fhg::util::scoped_boost_asio_io_service_with_threads io_service_server (1); \
+  fhg::rpc::service_tcp_provider const server                           \
+    {io_service_server, service_dispatcher};                            \
+                                                                        \
+  fhg::util::scoped_boost_asio_io_service_with_threads io_service_client (1); \
+                                                                        \
+  auto client                                                           \
+    ( fhg::util::cxx14::make_unique<fhg::rpc::remote_tcp_endpoint>      \
+      ( io_service_client                                               \
+      , fhg::util::connectable_to_address_string (server.local_endpoint()) \
+      )                                                                 \
+    );                                                                  \
+  auto ping                                                             \
+    ( fhg::util::cxx14::make_unique<fhg::rpc::remote_function<protocol::ping>> \
+        (*client)                                                       \
+    )
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_AUTO_TEST_CASE (destroying_remote_function_before_result_is_fine)
+{
+  PREMATURE_DESTRUCTION_TEST_PREAMBLE;
+
+  // 1. call
+  auto pong ((*ping) (s));
+
+  // 2. wait that service was actually called
+  service_was_called.wait();
+
+  // 3. destroy remote_function
+  ping.reset();
+
+  // 4. allow response from service
+  prevent_response.count_down();
+
+  // 5. wait for call -- returns normally as future is kept alive
+  BOOST_REQUIRE_EQUAL (pong.get(), s);
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_AUTO_TEST_CASE (destroying_remote_endpoint_before_result_gives_exception)
+{
+  PREMATURE_DESTRUCTION_TEST_PREAMBLE;
+
+  // 1. call
+  auto pong ((*ping) (s));
+
+  // 2. wait that service was actually called
+  service_was_called.wait();
+
+  // 6. release service callback to avoid hang -- result is ignored
+  FHG_UTIL_FINALLY ([&] { prevent_response.count_down(); });
+
+  // do not explicitly destroy function
+
+  // 3. destroy remote_endpoint -- promise is set to exception
+  client.reset();
+
+  // 4. wait for call -- throws exception from 3.
+  // \note Not testing specific one as an underlying system call
+  // returns an error and that has turned out to always lead to issues
+  // with changes down the road.
+  BOOST_REQUIRE_THROW (pong.get(), boost::system::system_error);
+}
+
+BOOST_TEST_DECORATOR (*boost::unit_test::timeout (30))
+BOOST_AUTO_TEST_CASE
+  (destroying_remote_endpoint_and_function_before_result_gives_exception)
+{
+  PREMATURE_DESTRUCTION_TEST_PREAMBLE;
+
+  // 1. call
+  auto pong ((*ping) (s));
+
+  // 2. wait that service was actually called
+  service_was_called.wait();
+
+  // 5. release service callback to avoid hang -- result is ignored
+  FHG_UTIL_FINALLY ([&] { prevent_response.count_down(); });
+
+  // 3. destroy remote_function
+  ping.reset();
+
+  // 4. destroy remote_endpoint -- promise is set to exception
+  client.reset();
+
+  // 5. wait for call -- throws exception from 4.
+  // \note Not testing specific one as an underlying system call
+  // returns an error and that has turned out to always lead to issues
+  // with changes down the road.
+  BOOST_REQUIRE_THROW (pong.get(), boost::system::system_error);
 }

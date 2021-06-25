@@ -23,11 +23,13 @@ configure_file (
 
 file (WRITE "${CMAKE_BINARY_DIR}/version" "${PROJECT_VERSION}")
 
-extended_add_library (NAME fhg-project_configuration
+gspc_add_library (NAME fhg-project_configuration
+  TYPE STATIC
   SOURCES "${CMAKE_CURRENT_BINARY_DIR}/project_configuration.cpp"
 )
 
-extended_add_library (NAME fhg-util
+gspc_add_library (NAME fhg-util
+  TYPE STATIC
   SOURCES "util/backtracing_exception.cpp"
           "util/signal_handler_manager.cpp"
           "util/remove_prefix.cpp"

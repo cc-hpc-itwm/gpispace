@@ -14,11 +14,21 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
-fhg_add_test (NAME we_eureka
-  SOURCES test.cpp
+set (GSPC_WE_TEST_EUREKA_INVALID_EXPRESSION "bummer")
+configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/xpnet/invalid_eureka_expression.xpnet.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/xpnet/invalid_eureka_expression.xpnet"
+                @ONLY
+)
+configure_file ("${CMAKE_CURRENT_SOURCE_DIR}/invalid_eureka_expression_throws_during_execution.cpp.in"
+                "${CMAKE_CURRENT_BINARY_DIR}/invalid_eureka_expression_throws_during_execution.cpp"
+                @ONLY
+)
+
+fhg_add_test (NAME we_eureka_invalid_eureka_expression_throws_during_execution
+  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/invalid_eureka_expression_throws_during_execution.cpp"
   USE_BOOST
   ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
-       --source-directory "${CMAKE_CURRENT_SOURCE_DIR}"
+       --source-directory "${CMAKE_CURRENT_BINARY_DIR}"
        --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
   LIBRARIES gspc
             test-utilities
@@ -28,3 +38,58 @@ fhg_add_test (NAME we_eureka
   REQUIRES_INSTALLATION
   START_SCOPED_RIF
 )
+
+if (BUILD_TESTING)
+  gspc_add_library (NAME we_test_eureka_Fixture
+    NAMESPACE GSPC
+    TYPE STATIC
+    SOURCES "Fixture.cpp"
+    LIBRARIES
+      PUBLIC GSPC::we_test_eureka_jobserver_provider
+      PUBLIC gspc
+      PUBLIC test-utilities
+      PUBLIC Util::Generic
+      PUBLIC Boost::filesystem
+      PUBLIC Boost::program_options
+  )
+  gspc_add_library (NAME we_test_eureka_jobserver_client
+    NAMESPACE GSPC
+    TYPE STATIC
+    SOURCES "jobserver/client.cpp"
+    LIBRARIES
+      PRIVATE RPC
+      PRIVATE Util::Generic
+  )
+  gspc_add_library (NAME we_test_eureka_jobserver_provider
+    TYPE STATIC
+    NAMESPACE GSPC
+    SOURCES "jobserver/provider.cpp"
+    LIBRARIES
+      PRIVATE RPC
+      PRIVATE Util::Generic
+  )
+endif()
+
+macro (add_we_eureka_test what)
+  fhg_add_test (NAME "we_eureka_${what}"
+    SOURCES "${what}.cpp"
+    USE_BOOST
+    ARGS --gspc-home "${CMAKE_INSTALL_PREFIX}"
+         --source-directory "${CMAKE_SOURCE_DIR}/src"
+         --shared-directory "${SHARED_DIRECTORY_FOR_TESTS}"
+         --jobserver-client "$<TARGET_FILE:GSPC-we_test_eureka_jobserver_client>"
+    LIBRARIES PRIVATE GSPC::we_test_eureka_Fixture
+    REQUIRES_INSTALLATION
+    START_SCOPED_RIF
+  )
+endmacro()
+
+add_we_eureka_test ("eureka_group_can_be_reused_after_eureka")
+add_we_eureka_test ("finite_tasks_exit_or_get_cancelled")
+add_we_eureka_test ("infinite_tasks_get_cancelled")
+add_we_eureka_test ("multi_mod")
+add_we_eureka_test ("multiple_eurekas_at_once")
+add_we_eureka_test ("multiple_functions_in_the_same_group")
+add_we_eureka_test ("multiple_functions_multiple_groups")
+add_we_eureka_test ("multiple_groups")
+add_we_eureka_test ("pending_tasks_are_removed")

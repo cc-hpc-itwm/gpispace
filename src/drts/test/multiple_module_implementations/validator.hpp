@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <drts/worker/context.hpp>
+
 #include <boost/format.hpp>
 
 #include <stdexcept>

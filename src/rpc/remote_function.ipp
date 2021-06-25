@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <https://www.gnu.org/licenses/>.
 
+#include <rpc/detail/vector_sink.hpp>
+
 #include <util-generic/callable_signature.hpp>
 #include <util-generic/serialization/std/tuple.hpp>
 
@@ -52,6 +54,8 @@ namespace fhg
       }
     };
 
+    // Allow always passing `io_service` in generic code, but don't
+    // actually pass it to `std::promise`.
     template<typename Future>
       struct promise_for;
     template<typename T>
@@ -78,7 +82,7 @@ namespace fhg
           (remote_endpoint& endpoint)
         : _endpoint (endpoint)
     {
-      //! \todo check that function with signature exists
+      //! \todo check that function with signature exists, optionally?
     }
 
     namespace
@@ -133,7 +137,7 @@ namespace fhg
 
       std::vector<char> request;
       {
-        util::vector_sink sink (request);
+        detail::vector_sink sink (request);
         boost::iostreams::stream<decltype (sink)> stream (sink);
         boost::archive::binary_oarchive archive (stream);
         archive << std::string (typeid (Description).name());
@@ -218,6 +222,9 @@ namespace fhg
         auto sync_remote_function<Description, Future>::operator() (Args&&... args)
           -> typename Description::result_type
     {
+      // Split `yield` from remaining arguments and pass to `.get()`
+      // instead: either `_function (args...).get()` or `_function
+      // (args...).get (yield)`.
       return detail::sync (_function, std::forward<Args> (args)...);
     }
   }

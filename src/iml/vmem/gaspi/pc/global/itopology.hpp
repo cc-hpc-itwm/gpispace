@@ -33,8 +33,6 @@ namespace gpi
       public:
         virtual ~itopology_t () = default;
 
-        virtual bool is_master () const = 0;
-
         // initiate a global alloc
         virtual void alloc ( const iml::SegmentHandle segment
                            , const iml::AllocationHandle

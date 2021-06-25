@@ -57,10 +57,10 @@ namespace
         )
     {}
 
-    fhg::com::p2p::address_t connect_to
+    fhg::com::p2p::address_t connect_to_TESTING_ONLY
       (fhg::com::host_t const& host, fhg::com::port_t const& port)
     {
-      return _network.connect_to (host, port);
+      return _network.connect_to_TESTING_ONLY (host, port);
     }
 
     template<typename Event, typename... Args>
@@ -143,7 +143,6 @@ BOOST_DATA_TEST_CASE
     , "localhost"
     , fhg::util::cxx14::make_unique<boost::asio::io_service>()
     , boost::none
-    , sdpa::master_info_t()
     , true
     , certificates
     );
@@ -151,7 +150,7 @@ BOOST_DATA_TEST_CASE
   network_strategy child (certificates);
 
   child.send<sdpa::events::JobFinishedAckEvent>
-    ( child.connect_to
+    ( child.connect_to_TESTING_ONLY
       ( fhg::com::host_t
           ( fhg::util::connectable_to_address_string
               (agent.peer_local_endpoint().address())

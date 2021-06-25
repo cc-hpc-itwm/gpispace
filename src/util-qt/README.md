@@ -94,6 +94,10 @@ loop round finished.
 A QApplication/QCoreApplication that can be used in a `$DISPLAY`-less
 unit test environment. Shall be inside a test body.
 
+## Printer for QString
+
+A Boost test log printer for QString.
+
 # Widgets
 
 ## message_box
@@ -256,9 +260,10 @@ qbytearray_iarchive ia (ba);
 ia >> object;
 ```
 
-## serialization/QList, serialization/QVector, serialization/QPointF
+## Boost.serialization for basic Qt types
 
-Boost.Serialization implementation for QLists, QVector and QPointF.
+Boost.Serialization implementation for QList, QModelIndex, QPointF, QVector,
+and QString.
 
 ## serialization/QModelIndex
 

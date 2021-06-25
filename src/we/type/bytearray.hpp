@@ -16,6 +16,8 @@
 
 #pragma once
 
+#include <gspc/detail/dllexport.hpp>
+
 #include <boost/serialization/vector.hpp>
 
 #include <algorithm>
@@ -29,7 +31,7 @@ namespace we
 {
   namespace type
   {
-    class bytearray
+    class GSPC_DLLEXPORT bytearray
     {
     public:
       void push_back (char c);
@@ -65,10 +67,14 @@ namespace we
       std::string to_string() const;
       std::vector<char> const& v() const { return _v; }
 
-      friend std::ostream& operator<< (std::ostream&, const bytearray&);
-      friend std::size_t hash_value (const bytearray&);
-      friend bool operator== (const bytearray&, const bytearray&);
-      friend bool operator< (const bytearray&, const bytearray&);
+      GSPC_DLLEXPORT
+        friend std::ostream& operator<< (std::ostream&, const bytearray&);
+      GSPC_DLLEXPORT
+        friend std::size_t hash_value (const bytearray&);
+      GSPC_DLLEXPORT
+        friend bool operator== (const bytearray&, const bytearray&);
+      GSPC_DLLEXPORT
+        friend bool operator< (const bytearray&, const bytearray&);
 
       template<typename T>
       bytearray& operator= (const T& other)

@@ -135,7 +135,7 @@ namespace gspc
     , installation const& installation
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
-    , rifd_entry_point const& master
+    , rifd_entry_point const& parent
     , std::ostream& info_output
     , Certificates const& certificates
     )
@@ -143,7 +143,7 @@ namespace gspc
                               , installation
                               , topology_description
                               , entry_points
-                              , master
+                              , parent
                               , info_output
                               , certificates
                               )
@@ -163,9 +163,7 @@ namespace gspc
           : fhg::util::split<std::string, std::string> (descriptions, ' ')
           )
       {
-        //! \todo configurable: default number of processes
-        worker_descriptions.emplace_back
-          (fhg::drts::parse_capability (1, description));
+        worker_descriptions.emplace_back (description);
       }
       return worker_descriptions;
     }
@@ -182,14 +180,14 @@ namespace gspc
       , gspc::installation_path installation_path
       , std::vector<worker_description> worker_descriptions
       , std::vector<fhg::rif::entry_point> const& rif_entry_points
-      , fhg::rif::entry_point const& master
+      , fhg::rif::entry_point const& parent
       , std::ostream& info_output
       , boost::optional<fhg::rif::entry_point> logging_rif_entry_point
       , std::vector<fhg::logging::endpoint> default_log_receivers
       , Certificates const& certificates
       )
     : _info_output (info_output)
-    , _master (master)
+    , _parent (parent)
     , _gpi_socket (gpi_socket)
     , _app_path (app_path)
     , _worker_env_copy_variable (std::move (worker_env_copy_variable))
@@ -198,7 +196,7 @@ namespace gspc
     , _worker_env_set_variable (std::move (worker_env_set_variable))
     , _installation_path (installation_path)
     , _logging_rif_entry_point (logging_rif_entry_point)
-    , _worker_descriptions (worker_descriptions)
+    , _worker_descriptions (std::move (worker_descriptions))
     , _processes_storage (_info_output)
   {
     fhg::util::signal_handler_manager signal_handler_manager;
@@ -210,10 +208,10 @@ namespace gspc
           , _installation_path
           , signal_handler_manager
           , rif_entry_points
-          , _master
+          , _parent
           , _processes_storage
-          , _master_agent_name
-          , _master_agent_hostinfo
+          , _parent_agent_name
+          , _parent_agent_hostinfo
           , _info_output
           , _logging_rif_entry_point
           , default_log_receivers
@@ -294,8 +292,8 @@ namespace gspc
       for ( auto const& fail
           : start_workers_for
               ( entry_points
-              , _master_agent_name
-              , _master_agent_hostinfo
+              , _parent_agent_name
+              , _parent_agent_hostinfo
               , description
               , _processes_storage
               , _gpi_socket
@@ -356,7 +354,7 @@ namespace gspc
     , installation const& installation
     , std::string const& topology_description
     , boost::optional<rifd_entry_points> const& entry_points
-    , rifd_entry_point const& master
+    , rifd_entry_point const& parent
     , std::ostream& info_output
     , Certificates const& certificates
     )
@@ -386,10 +384,10 @@ namespace gspc
           , !entry_points
             ? decltype (entry_points->_->_entry_points) {}
             : entry_points->_->_entry_points
-          , master._->_entry_point
+          , parent._->_entry_point
           , info_output
           //! \todo User-configurable.
-          , master._->_entry_point
+          , parent._->_entry_point
           , extract_default_receivers (vm)
           , certificates
           )

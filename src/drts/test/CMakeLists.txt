@@ -36,6 +36,18 @@ fhg_add_test (NAME drts_context
   LIBRARIES gspc
 )
 
+set (ISSUE_986_DATA "${CMAKE_CURRENT_SOURCE_DIR}/issue_986.data")
+configure_file (
+  "${CMAKE_CURRENT_SOURCE_DIR}/worker_description.cpp.in"
+  "${CMAKE_CURRENT_BINARY_DIR}/worker_description.cpp"
+  @ONLY
+)
+fhg_add_test (NAME drts_worker_description
+  SOURCES "${CMAKE_CURRENT_BINARY_DIR}/worker_description.cpp"
+  USE_BOOST
+  LIBRARIES gspc
+)
+
 fhg_add_test (NAME scoped_rifd
   SOURCES scoped_rifd.cpp
   USE_BOOST
@@ -60,10 +72,12 @@ fhg_add_test (NAME scoped_drts
   START_SCOPED_RIF
 )
 
-extended_add_library (NAME module_nounload_detection-empty
-  SOURCES "module_nounload_detection/empty.cpp"
-  TYPE SHARED
-)
+if (BUILD_TESTING)
+  gspc_add_library (NAME module_nounload_detection-empty
+    SOURCES "module_nounload_detection/empty.cpp"
+    TYPE SHARED
+  )
+endif()
 
 fhg_add_test (NAME module_nounload_detection
   SOURCES "module_nounload_detection.cpp"

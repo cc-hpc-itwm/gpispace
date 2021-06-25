@@ -195,10 +195,63 @@ namespace fhg
 
       namespace
       {
+        // Various operations in this file unlock mutexes before
+        // yielding to an asynchronous operation. This has two
+        // reasons:
+        //
+        // - Since coroutines are run on a thread pool and mutexes
+        //   maintain a state of what *thread* locked them, that state
+        //   would potentially be wrong when resuming the
+        //   coroutine. Dropping coroutines would allow to avoid this,
+        //   but would revert back to callback hell and throw away the
+        //   readability that coroutines give.
+        //
+        // - During waiting for completion of an asynchronous
+        //   operation, there is no need to hold the lock: the network
+        //   queue does not need to lock class state. It would only
+        //   mean to serialize everything. Callback-based async
+        //   operations keep the lock to post the operation and then
+        //   re-acquire the mutex in the callback. This is equivalent
+        //   to unlocking directly before yielding and locking
+        //   directly after resuming.
+        //
+        // The difficulty in translating from
+        // ```
+        //   std::lock_guard<> const lock (_mutex);
+        //   async_operation (socket,  [&] {
+        //     std::lock_guard<> const lock (_mutex);
+        //   });
+        // ```
+        // to coroutines is that the lock is still held while queueing
+        // the operation, and is needed to do so: One thing to guard
+        // is the socket itself. The trivial translation
+        // ```
+        //   std::unique_lock<> lock (_mutex);
+        //   lock.unlock();
+        //   async_operation (socket, yield);
+        //   lock.lock();
+        // ```
+        // is wrong since it is unlocking too early. By using
+        // `yield_context_with_hooks` we can move the unlocking and
+        // locking to still guard queuing the operations and only
+        // unlock at the point the thread would.
+        //
+        // The stream providers do not have this issue since they are
+        // using a single "thread" per socket, thus don't need to
+        // guard queuing the operations.
+
         template<typename... Lockable>
           yield_context_with_hooks with_unlocked
             (boost::asio::yield_context yield, Lockable&... lockable)
         {
+          // The discarded initializer list exists to expand the
+          // `lockable` argpack, which needs *something* to insert
+          // commas into. Since `lock`/`unlock` don't return anything,
+          // use `(x(), 0)` to have non-void values, discarding the
+          // result of `x()` and filling the initializer list with
+          // zeros. Since the function call has side-effects it isn't
+          // optimized-away, even though the initializer list
+          // hopefully is.
 #define CALL(fun_)                                              \
           std::initializer_list<int> {(lockable.fun_(), 0)...}
           return {yield, [&] { CALL (unlock); }, [&] { CALL (lock); }};

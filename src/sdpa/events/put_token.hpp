@@ -17,6 +17,7 @@
 #pragma once
 
 #include <sdpa/events/JobEvent.hpp>
+#include <sdpa/events/MgmtEvent.hpp>
 #include <sdpa/events/Serialization.hpp>
 
 #include <we/type/value.hpp>

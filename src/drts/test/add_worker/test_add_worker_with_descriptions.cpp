@@ -175,7 +175,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
     }
   }
 
-  gspc::scoped_rifd const master
+  gspc::scoped_rifd const parent
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
@@ -187,7 +187,7 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
                           );
 
   gspc::scoped_runtime_system drts
-    (vm, installation, "", boost::none, master.entry_point(), std::cerr, certificates);
+    (vm, installation, "", boost::none, parent.entry_point(), std::cerr, certificates);
 
   std::set<std::string> expected_workers;
 
@@ -197,9 +197,10 @@ BOOST_AUTO_TEST_CASE (add_workers_with_different_descriptions)
     store_expected_worker
       (shared_directory, rifd, capabilities[k], expected_workers);
 
-    gspc::worker_description const description
-      {{capabilities[k++]}, 1, 0, 0, boost::none, boost::none};
-    drts.add_worker ({description}, rifd.entry_points(), certificates);
+    std::vector<gspc::worker_description> descriptions;
+    descriptions.emplace_back
+      (std::vector<std::string> {capabilities[k++]}, 1, 0, 0, boost::none, boost::none);
+    drts.add_worker (descriptions, rifd.entry_points(), certificates);
   }
 
   gspc::client client (drts, certificates);

@@ -79,7 +79,7 @@ BOOST_DATA_TEST_CASE
 }
 
 BOOST_DATA_TEST_CASE
-  ( no_worker_started_on_master
+  ( no_worker_started_on_parent
   , certificates_data
   , certificates
   )
@@ -111,7 +111,7 @@ BOOST_DATA_TEST_CASE
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));
 
-  gspc::scoped_rifd const master
+  gspc::scoped_rifd const parent
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
@@ -126,7 +126,7 @@ BOOST_DATA_TEST_CASE
       , installation
       , "worker:1"
       , boost::none
-      , master.entry_point()
+      , parent.entry_point()
       , info_output_stream
       , certificates
       );
@@ -141,7 +141,7 @@ BOOST_DATA_TEST_CASE
     BOOST_TEST_CONTEXT (info_output_stream.str())
     BOOST_REQUIRE_EQUAL (info_output.size(), 6);
 
-    std::string const entry_point_master
+    std::string const entry_point_parent
       ([&info_output, &hosts]()
        {
          std::smatch match;
@@ -179,7 +179,7 @@ BOOST_DATA_TEST_CASE
       , ( boost::format ("I: starting agent: agent-%1%-0"
                         " on rif entry point %1%"
                         )
-        % entry_point_master
+        % entry_point_parent
         ).str()
       );
 
@@ -187,7 +187,7 @@ BOOST_DATA_TEST_CASE
       ( std::regex_match
         ( info_output[4]
         , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_master
+                       % entry_point_parent
                        ).str()
                      }
         )
@@ -197,7 +197,7 @@ BOOST_DATA_TEST_CASE
       ( std::regex_match
         ( info_output[5]
         , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
-                       % entry_point_master
+                       % entry_point_parent
                        ).str()
                      }
         )
@@ -206,7 +206,7 @@ BOOST_DATA_TEST_CASE
 }
 
 BOOST_DATA_TEST_CASE
-  ( workers_are_started_on_non_master
+  ( workers_are_started_on_child
   , certificates_data
   , certificates
   )
@@ -238,7 +238,7 @@ BOOST_DATA_TEST_CASE
   std::vector<std::string> const hosts
     (fhg::util::read_lines (nodefile_from_environment.path()));
 
-  gspc::scoped_rifd const master
+  gspc::scoped_rifd const parent
     ( gspc::rifd::strategy {vm}
     , gspc::rifd::hostname {hosts.front()}
     , gspc::rifd::port {vm}
@@ -260,7 +260,7 @@ BOOST_DATA_TEST_CASE
       , installation
       , worker + ":1"
       , scoped_rifds.entry_points()
-      , master.entry_point()
+      , parent.entry_point()
       , info_output_stream
       , certificates
       );
@@ -275,7 +275,7 @@ BOOST_DATA_TEST_CASE
     BOOST_TEST_CONTEXT (info_output_stream.str())
     BOOST_REQUIRE_EQUAL (info_output.size(), 8);
 
-    std::string const entry_point_master
+    std::string const entry_point_parent
       ([&info_output, &hosts]()
        {
          std::smatch match;
@@ -313,12 +313,12 @@ BOOST_DATA_TEST_CASE
       , ( boost::format ("I: starting agent: agent-%1%-0"
                         " on rif entry point %1%"
                         )
-        % entry_point_master
+        % entry_point_parent
         ).str()
       );
 
     std::string const entry_point_worker
-      ([&info_output, &hosts, &entry_point_master, &worker]()
+      ([&info_output, &hosts, &entry_point_parent, &worker]()
        {
          std::smatch match;
 
@@ -328,11 +328,11 @@ BOOST_DATA_TEST_CASE
              , match
              , std::regex
                ( ( boost::format ("I: starting %2% workers"
-                                 " \\(master agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
+                                 " \\(parent agent-%1%-0, 1/host, unlimited, 0 SHM\\)"
                                  " with parent agent-%1%-0"
                                  " on rif entry point ((.+) [0-9]+ [0-9]+)"
                                  )
-                 % entry_point_master
+                 % entry_point_parent
                  % worker
                  ).str()
                )
@@ -359,7 +359,7 @@ BOOST_DATA_TEST_CASE
       ( std::regex_match
         ( info_output[6]
         , std::regex { ( boost::format ("terminating agent on %1%: [0-9]+")
-                       % entry_point_master
+                       % entry_point_parent
                        ).str()
                      }
         )
@@ -369,7 +369,7 @@ BOOST_DATA_TEST_CASE
       ( std::regex_match
         ( info_output[7]
         , std::regex { ( boost::format ("terminating logging-demultiplexer on %1%: [0-9]+")
-                       % entry_point_master
+                       % entry_point_parent
                        ).str()
                      }
         )

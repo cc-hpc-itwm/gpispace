@@ -20,9 +20,10 @@ set -euo pipefail
 scriptfile="$(readlink -f ${BASH_SOURCE})"; scriptdir="${scriptfile%/*}"
 cd "${scriptdir}"
 
-if test ${#} -lt 1 || test ${#} -gt 4
+if test ${#} -lt 1
 then
-  echo >&2 "usage: ${0} GPISPACE_INSTALL_DIR [APP_INSTALL_DIR [LOG_PORT [CXX]]]"
+  echo >&2 "usage: ${0} GPISPACE_INSTALL_DIR [APP_INSTALL_DIR [LOG_PORT [CXX \
+[RIF_STRATEGY [extra_runtime_system_arguments]...]]]]"
   exit 1
 fi
 
@@ -53,6 +54,8 @@ done
 
 LOG_PORT="${3:-}"
 CXX="${4:-c++}"
+RIF_STRATEGY="${5:-ssh}"
+shift 5 || true
 
 mkdir -p "${APP_INSTALL_DIR}/"{bin,lib,src}
 
@@ -90,6 +93,7 @@ make install                                                      \
   -Wl,-rpath,"${GPISPACE_INSTALL_DIR}/external/boost/lib/"        \
   -Wl,--exclude-libs,libboost_program_options.a                   \
   -lboost_program_options                                         \
+  -lboost_filesystem                                              \
   -lboost_system
 
 if test -n "${LOG_PORT}"
@@ -106,8 +110,9 @@ hostname > "${APP_INSTALL_DIR}/nodefile"
 # PBS/Torque: "${PBS_NODEFILE}"
 
 "${APP_INSTALL_DIR}/bin/compute_and_aggregate"                    \
-  --rif-strategy ssh                                              \
+  --rif-strategy "${RIF_STRATEGY:-ssh}"                           \
   --nodefile "${APP_INSTALL_DIR}/nodefile"                        \
   ${LOG_PORT:+--log-host ${HOSTNAME} --log-port ${LOG_PORT}}      \
   --N 20                                                          \
-  --workers-per-node 4
+  --workers-per-node 4                                            \
+  "${@}"

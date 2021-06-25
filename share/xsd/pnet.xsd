@@ -115,6 +115,7 @@
 
   <xsd:complexType name="mod_type">
     <xsd:sequence>
+      <xsd:element minOccurs="0" maxOccurs="1" name="eureka-group" type="xsd:string"/>
       <xsd:choice minOccurs="0" maxOccurs="unbounded">
         <xsd:element name="cinclude" type="cinclude_type"/>
         <xsd:element name="ld" type="flag_type"/>

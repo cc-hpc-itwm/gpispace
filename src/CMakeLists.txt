@@ -16,18 +16,26 @@
 
 add_subdirectory (iml)
 
-extended_add_library (NAME fhgcom
-  SOURCES "fhgcom/connection.cpp"
+gspc_add_library (NAME fhgcom
+  TYPE STATIC
+  SOURCES "fhgcom/channel.cpp"
+          "fhgcom/connection.cpp"
           "fhgcom/header.cpp"
           "fhgcom/peer.cpp"
-  LIBRARIES Util::Generic
-            OpenSSL::SSL
-            OpenSSL::Crypto
+  LIBRARIES
+    PRIVATE Util::Generic
+    PRIVATE OpenSSL::Crypto
+    PRIVATE OpenSSL::SSL
+    PUBLIC Boost::filesystem
+    PUBLIC Boost::system
+    PUBLIC Boost::thread
 )
 add_subdirectory (fhgcom/tests)
 
+if (GSPC_WITH_MONITOR_APP)
   add_subdirectory (pnete)
   add_subdirectory (util)
+endif()
 
 file (READ "we/type/signature/pnetc_compare.hpp" PNETC_COMPARE_HPP)
 
@@ -40,7 +48,21 @@ configure_file ("we/type/test/signature.cpp.in"
   @ONLY
 )
 
-extended_add_library (NAME pnet
+gspc_add_library (NAME APIGuard
+  NAMESPACE GPISpace
+  TYPE SHARED
+  SOURCES
+    "we/loader/api-guard.cpp"
+  LIBRARIES
+    PUBLIC GPISpace::header-only
+    PUBLIC Boost::boost
+  INSTALL
+    CREATE_BUNDLE_INFO
+)
+
+gspc_add_library (NAME pnet
+  # Object library for sake of re-exporting in libgspc.
+  TYPE OBJECT
   SOURCES "we/exception.cpp"
           "we/expr/eval/context.cpp"
           "we/expr/eval/eval.cpp"
@@ -145,7 +167,9 @@ extended_add_library (NAME pnet
           "xml/parse/util/validstructfield.cpp"
           "xml/parse/util/weparse.cpp"
           "xml/parse/warning.cpp"
-  LIBRARIES fhg-util
+  LIBRARIES GPISpace::header-only
+            GPISpace::APIGuard
+            fhg-util
             drts-context
             IML::Client
             Util::Generic
@@ -155,8 +179,6 @@ extended_add_library (NAME pnet
             RPC
             ${CMAKE_DL_LIBS}
             rapidxml
-            OpenSSL::SSL
-            OpenSSL::Crypto
   COMPILE_DEFINITIONS -DHAS_STD_ALIGN=$<BOOL:${HAS_STD_ALIGN}>
 )
 
@@ -174,9 +196,12 @@ add_subdirectory (rif)
 add_subdirectory (sdpa)
 add_subdirectory (fhg)
 add_subdirectory (util-generic)
-add_subdirectory (util-qt)
+if (GSPC_WITH_MONITOR_APP)
+  add_subdirectory (util-qt)
+endif()
 
-extended_add_library (NAME logging
+gspc_add_library (NAME logging
+  TYPE STATIC
   NAMESPACE gspc
   SOURCES "logging/demultiplexer.cpp"
           "logging/endpoint.cpp"
@@ -205,7 +230,7 @@ install (FILES
   DESTINATION include/logging
 )
 
-extended_add_executable (NAME gspc-logging-demultiplexer
+gspc_add_executable (NAME gspc-logging-demultiplexer
   SOURCES "logging/gspc-logging-demultiplexer.cpp"
   LIBRARIES gspc::logging
             Util::Generic
@@ -214,13 +239,14 @@ extended_add_executable (NAME gspc-logging-demultiplexer
   INSTALL INSTALL_DESTINATION "libexec/gspc"
 )
 
-extended_add_library (NAME logging_test
+gspc_add_library (NAME logging_test
+  TYPE STATIC
   NAMESPACE gspc
   SOURCES "logging/test/message.cpp"
   LIBRARIES gspc::logging
 )
 
-extended_add_executable (NAME gspc-logging-to-stdout
+gspc_add_executable (NAME gspc-logging-to-stdout
   SOURCES "logging/gspc-logging-to-stdout.cpp"
   LIBRARIES gspc::logging_test
             Util::Generic

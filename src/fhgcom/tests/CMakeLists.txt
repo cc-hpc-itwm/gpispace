@@ -36,4 +36,6 @@ fhg_add_test (NAME fhgcom_peer
             Boost::serialization
             Boost::date_time
             Boost::thread
+            OpenSSL::SSL
+            OpenSSL::Crypto
 )

@@ -85,15 +85,7 @@ namespace utils
 
   struct agent
   {
-    agent (sdpa::master_network_info, fhg::com::Certificates const&);
-    agent (basic_drts_component const& master, fhg::com::Certificates const&);
-    agent (agent const& master, fhg::com::Certificates const&);
     agent (fhg::com::Certificates const&);
-
-    agent ( agent const& master_0
-          , agent const& master_1
-          , fhg::com::Certificates const&
-          );
 
     agent() = delete;
     agent (agent const&) = delete;
@@ -160,22 +152,17 @@ namespace utils
   class basic_drts_component : public basic_drts_component_no_logic
   {
   public:
-    basic_drts_component ( bool accept_workers
-                         , fhg::com::Certificates const&
-                         );
-    basic_drts_component ( agent const& master
+    basic_drts_component (fhg::com::Certificates const&);
+    basic_drts_component ( agent const& parent
                          , sdpa::capabilities_set_t
-                         , bool accept_workers
                          , fhg::com::Certificates const&
                          );
-    basic_drts_component ( agent const& master
+    basic_drts_component ( agent const& parent
                          , CapabilityNames
-                         , bool accept_workers
                          , fhg::com::Certificates const&
                          );
     basic_drts_component ( reused_component_name
-                         , agent const& master
-                         , bool accept_workers
+                         , agent const& parent
                          , fhg::com::Certificates const&
                          );
     ~basic_drts_component() override;
@@ -198,8 +185,7 @@ namespace utils
     void wait_for_workers_to_shutdown();
 
   protected:
-    boost::optional<fhg::com::p2p::address_t> _master;
-    bool _accept_workers;
+    boost::optional<fhg::com::p2p::address_t> _parent;
     std::unordered_set<fhg::com::p2p::address_t> _accepted_workers;
 
     struct event_thread_and_worker_join
@@ -222,17 +208,17 @@ namespace utils
     {
     public:
       basic_drts_worker
-        ( agent const& master
+        ( agent const& parent
         , fhg::com::Certificates const&
         );
       basic_drts_worker
-        ( agent const& master
+        ( agent const& parent
         , sdpa::capabilities_set_t
         , fhg::com::Certificates const&
         );
       basic_drts_worker
         ( reused_component_name
-        , agent const& master
+        , agent const& parent
         , fhg::com::Certificates const&
         );
     };
@@ -243,7 +229,7 @@ namespace utils
     public:
       fake_drts_worker_notifying_module_call_submission
         ( std::function<void (std::string)> announce_job
-        , agent const& master
+        , agent const& parent
         , fhg::com::Certificates const&
         );
 
@@ -292,14 +278,14 @@ namespace utils
     public:
       fake_drts_worker_waiting_for_finished_ack
         ( std::function<void (std::string)> announce_job
-        , agent const& master
+        , agent const& parent
         , fhg::com::Certificates const&
         );
 
       fake_drts_worker_waiting_for_finished_ack
         ( reused_component_name name
         , std::function<void (std::string)> announce_job
-        , agent const& master
+        , agent const& parent
         , fhg::com::Certificates const&
         );
 
@@ -317,10 +303,10 @@ namespace utils
 
   struct basic_drts_worker final : public no_thread::basic_drts_worker
   {
-    basic_drts_worker ( agent const& master
+    basic_drts_worker ( agent const& parent
                       , fhg::com::Certificates const&
                       );
-    basic_drts_worker ( agent const& master
+    basic_drts_worker ( agent const& parent
                       , sdpa::capabilities_set_t
                       , fhg::com::Certificates const&
                       );
@@ -333,14 +319,14 @@ namespace utils
   {
     fake_drts_worker_notifying_module_call_submission
       ( std::function<void (std::string)> announce_job
-      , agent const& master
+      , agent const& parent
       , fhg::com::Certificates const&
       );
 
     fake_drts_worker_notifying_module_call_submission
       ( reused_component_name name
       , std::function<void (std::string)> announce_job
-      , agent const& master
+      , agent const& parent
       , fhg::com::Certificates const&
       );
 
@@ -352,14 +338,14 @@ namespace utils
   {
     fake_drts_worker_waiting_for_finished_ack
       ( std::function<void (std::string)> announce_job
-      , agent const& master
+      , agent const& parent
       , fhg::com::Certificates const&
       );
 
     fake_drts_worker_waiting_for_finished_ack
       ( reused_component_name name
       , std::function<void (std::string)> announce_job
-      , agent const& master
+      , agent const& parent
       , fhg::com::Certificates const&
       );
 
@@ -373,7 +359,7 @@ namespace utils
     fake_drts_worker_notifying_cancel
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
-      , agent const& master
+      , agent const& parent
       , fhg::com::Certificates const&
       );
 
@@ -386,7 +372,7 @@ namespace utils
 
   private:
     std::function<void (std::string)> _announce_cancel;
-    mutable std::mutex _cancels_mutex;
+    std::mutex _cancels_mutex;
     std::map<std::string, fhg::com::p2p::address_t> _cancels;
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
@@ -398,7 +384,7 @@ namespace utils
     fake_drts_worker_notifying_cancel_but_never_replying
       ( std::function<void (std::string)> announce_job
       , std::function<void (std::string)> announce_cancel
-      , agent const& master
+      , agent const& parent
       , fhg::com::Certificates const&
       );
 
@@ -412,7 +398,7 @@ namespace utils
     basic_drts_component::event_thread_and_worker_join _ = {*this};
   };
 
-  struct client : boost::noncopyable
+  struct client
   {
     client (agent const&, fhg::com::Certificates const&);
 
@@ -437,11 +423,5 @@ namespace utils
     void cancel_job (sdpa::job_id_t const&);
 
     sdpa::client::Client _;
-
-    static sdpa::status::code submit_job_and_wait_for_termination_as_subscriber
-      ( we::type::activity_t
-      , agent const&
-      , fhg::com::Certificates const&
-      );
   };
 }

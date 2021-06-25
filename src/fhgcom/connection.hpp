@@ -23,7 +23,6 @@
 
 #include <boost/asio/io_service.hpp>
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/ssl/stream.hpp>
 #include <boost/asio/strand.hpp>
 #include <boost/enable_shared_from_this.hpp>
 #include <boost/noncopyable.hpp>
@@ -47,6 +46,7 @@ namespace boost
     namespace ssl
     {
       class context;
+      template<typename> class stream;
     }
   }
 }

@@ -35,7 +35,6 @@
 #include <sdpa/events/SubscribeEvent.hpp>
 #include <sdpa/events/WorkerRegistrationEvent.hpp>
 #include <sdpa/events/worker_registration_response.hpp>
-#include <sdpa/master_network_info.hpp>
 #include <sdpa/requirements_and_preferences.hpp>
 #include <sdpa/types.hpp>
 
@@ -48,7 +47,6 @@
 #include <we/type/net.hpp>
 #include <we/type/schedule_data.hpp>
 
-#include <fhg/util/thread/set.hpp>
 #include <util-generic/connectable_to_address_string.hpp>
 #include <util-generic/finally.hpp>
 #include <util-generic/hash/std/pair.hpp>
@@ -57,11 +55,11 @@
 #include <boost/bimap.hpp>
 #include <boost/bimap/unordered_multiset_of.hpp>
 #include <boost/optional.hpp>
+#include <boost/range/adaptor/map.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/thread/scoped_thread.hpp>
 #include <boost/utility.hpp>
 
-#include <chrono>
 #include <condition_variable>
 #include <forward_list>
 #include <memory>
@@ -79,7 +77,6 @@ namespace sdpa {
                    , const std::string url
                    , std::unique_ptr<boost::asio::io_service> peer_io_service
                    , boost::optional<boost::filesystem::path> const& vmem_socket
-                   , master_info_t masters
                    , bool create_wfe
                    , fhg::com::Certificates const& certificates
                    );
@@ -107,7 +104,7 @@ namespace sdpa {
       void addCapability(const capability_t& cpb);
 
     private:
-      // masters and subscribers
+      // parents and subscribers
       void unsubscribe(const fhg::com::p2p::address_t&);
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const& source, const sdpa::events::SubscribeEvent*) override;
 
@@ -129,26 +126,11 @@ namespace sdpa {
         _subscriptions.right.erase (job_id);
       }
 
-      // agent info and properties
-
-      bool isOwnCapability(const sdpa::capability_t& cpb)
-      {
-    	  return (cpb.owner()==name());
-      }
-
       // event handlers
     private:
       virtual void handleCancelJobEvent
         ( fhg::com::p2p::address_t const&
         , sdpa::events::CancelJobEvent const*
-        ) override;
-      virtual void handleCapabilitiesGainedEvent
-        ( fhg::com::p2p::address_t const&
-        , const sdpa::events::CapabilitiesGainedEvent*
-        ) override;
-      virtual void handleCapabilitiesLostEvent
-        ( fhg::com::p2p::address_t const&
-        , const sdpa::events::CapabilitiesLostEvent*
         ) override;
       virtual void handleDeleteJobEvent
         ( fhg::com::p2p::address_t const&
@@ -181,10 +163,6 @@ namespace sdpa {
       virtual void handleWorkerRegistrationEvent
         ( fhg::com::p2p::address_t const&
         , const sdpa::events::WorkerRegistrationEvent*
-        ) override;
-      virtual void handleBacklogNoLongerFullEvent
-        ( fhg::com::p2p::address_t const&
-        , const events::BacklogNoLongerFullEvent*
         ) override;
       virtual void handle_put_token
         ( fhg::com::p2p::address_t const&
@@ -224,10 +202,6 @@ namespace sdpa {
       }
       void delay (std::function<void()>);
 
-      // registration
-      void requestRegistration (master_network_info&);
-      void request_registration_soon (master_network_info&);
-
       // workflow engine
       const std::unique_ptr<we::layer>& workflowEngine() const { return ptr_workflow_engine_; }
       bool hasWorkflowEngine() const { return !!ptr_workflow_engine_;}
@@ -255,7 +229,11 @@ namespace sdpa {
 
       // workers
       void serveJob
-        (WorkerSet const&, Implementation const&, const job_id_t&);
+        ( WorkerSet const&
+        , Implementation const&
+        , job_id_t const&
+        , std::function<fhg::com::p2p::address_t (worker_id_t const&)>
+        );
 
       // jobs
       std::string gen_id();
@@ -285,11 +263,6 @@ namespace sdpa {
 
       std::string _name;
 
-      master_info_t _master_info;
-
-      boost::optional<master_info_t::iterator> master_by_address
-        (fhg::com::p2p::address_t const&);
-
       using subscriber_relation_type =
         boost::bimap
         < boost::bimaps::unordered_multiset_of<fhg::com::p2p::address_t>
@@ -315,7 +288,6 @@ namespace sdpa {
         Agent::job_map_t& _;
       } _cleanup_job_map_on_dtor_helper;
 
-      WorkerManager _worker_manager;
       CoallocationScheduler _scheduler;
 
       std::mutex _cancel_mutex;
@@ -328,17 +300,12 @@ namespace sdpa {
       boost::optional<std::mt19937> _random_extraction_engine;
 
       std::mutex mtx_subscriber_;
-      std::mutex mtx_cpb_;
 
       fhg::logging::stream_emitter _log_emitter;
       void emit_gantt ( job_id_t const&
                       , we::type::activity_t const&
                       , NotificationEvent::state_t
                       );
-
-      std::chrono::seconds _registration_timeout;
-
-      void do_registration_after_sleep (master_network_info&);
 
       fhg::util::interruptible_threadsafe_queue
         < std::pair< fhg::com::p2p::address_t
@@ -349,8 +316,6 @@ namespace sdpa {
       sdpa::com::NetworkStrategy _network_strategy;
 
       std::unique_ptr<we::layer> ptr_workflow_engine_;
-
-      fhg::thread::set _registration_threads;
 
       boost::strict_scoped_thread<> _scheduling_thread;
       fhg::util::finally_t<std::function<void()>> _interrupt_scheduling_thread;
@@ -406,22 +371,11 @@ namespace sdpa {
       struct parent_proxy
       {
         parent_proxy (Agent*, fhg::com::p2p::address_t const&);
-        parent_proxy (Agent*, master_network_info const&);
-        parent_proxy (Agent*, boost::optional<master_info_t::iterator> const&);
-
-        void worker_registration (capabilities_set_t) const;
-        void notify_shutdown() const;
-
-        void job_failed (job_id_t, std::string error_message) const;
-        void job_finished (job_id_t, we::type::activity_t) const;
 
         void cancel_job_ack (job_id_t) const;
         //! \todo Client only. Move to client_proxy?
         void delete_job_ack (job_id_t) const;
         void submit_job_ack (job_id_t) const;
-
-        void capabilities_gained (capabilities_set_t) const;
-        void capabilities_lost (capabilities_set_t) const;
 
         void put_token_response ( std::string put_token_id
                                 , boost::optional<std::exception_ptr>

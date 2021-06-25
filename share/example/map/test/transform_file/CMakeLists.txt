@@ -15,17 +15,19 @@
 # along with this program. If not, see <https://www.gnu.org/licenses/>.
 
 if (BUILD_TESTING)
-  extended_add_library (NAME transform_file_type
+  gspc_add_library (NAME transform_file_type
+    TYPE STATIC
     SOURCES "type.cpp"
     INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
     LIBRARIES we-dev
               Boost::filesystem
   )
 
-  extended_add_library (NAME transform_file_map-impl
+  gspc_add_library (NAME transform_file_map-impl
     TYPE MODULE
     SOURCES "implementation.cpp"
-    LIBRARIES transform_file_type
+    LIBRARIES GPISpace::header-only
+              transform_file_type
     INCLUDE_DIRECTORIES PRIVATE "${CMAKE_SOURCE_DIR}/share/example"
   )
 

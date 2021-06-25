@@ -1,0 +1,59 @@
+<!-- This file is part of GPI-Space.                                       -->
+<!-- Copyright (C) 2021 Fraunhofer ITWM                                    -->
+<!--                                                                       -->
+<!-- This program is free software: you can redistribute it and/or modify  -->
+<!-- it under the terms of the GNU General Public License as published by  -->
+<!-- the Free Software Foundation, either version 3 of the License, or     -->
+<!-- (at your option) any later version.                                   -->
+<!--                                                                       -->
+<!-- This program is distributed in the hope that it will be useful,       -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of        -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the          -->
+<!-- GNU General Public License for more details.                          -->
+<!--                                                                       -->
+<!-- You should have received a copy of the GNU General Public License     -->
+<!-- along with this program. If not, see <https://www.gnu.org/licenses/>. -->
+
+<defun name="multi_mod">
+  <properties name="drts">
+    <property key="wait_for_output" value="true"/>
+  </properties>
+  <in name="register_host" type="string" place="register_host"/>
+  <in name="register_port" type="int" place="register_port"/>
+  <out name="result" type="int" place="result"/>
+  <net>
+    <place name="register_host" type="string"/>
+    <place name="register_port" type="int"/>
+    <place name="result" type="int"/>
+
+    <place name="task" type="string" put_token="true"/>
+    <place name="eureka_group" type="string" put_token="true"/>
+    <place name="sleep_for" type="unsigned int" put_token="true"/>
+    <transition name="sleep_for">
+      <include-function href="sleep_for_multi.xpnet"/>
+      <connect-read port="register_host" place="register_host"/>
+      <connect-read port="register_port" place="register_port"/>
+      <connect-in port="task" place="task"/>
+      <connect-in port="milliseconds" place="sleep_for"/>
+      <connect-in port="eureka_group" place="eureka_group"/>
+    </transition>
+
+    <place name="eureka" type="int" put_token="true"/>
+    <transition name="eureka">
+      <defun>
+        <in name="trigger" type="int"/>
+        <in name="eureka_group" type="string"/>
+        <out name="eureka" type="set"/>
+        <out name="result" type="int"/>
+        <expression>
+          ${eureka} := set_insert (Set{}, ${eureka_group});
+          ${result} := ${trigger};
+        </expression>
+      </defun>
+      <connect-in port="trigger" place="eureka"/>
+      <connect-in port="eureka_group" place="eureka_group"/>
+      <connect-eureka port="eureka"/>
+      <connect-out port="result" place="result"/>
+    </transition>
+  </net>
+</defun>

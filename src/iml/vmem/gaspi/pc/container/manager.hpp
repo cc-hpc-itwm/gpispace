@@ -59,7 +59,7 @@ namespace gpi
         bool m_stopping;
 
         std::atomic<iml::MemorySize> m_process_counter;
-        mutable std::mutex _mutex_processes;
+        std::mutex _mutex_processes;
         std::map<gpi::pc::type::process_id_t, std::thread> m_processes;
 
         memory::manager_t _memory_manager;

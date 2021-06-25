@@ -1,5 +1,9 @@
 # provides
 # - library IML::Client
+# - function IML_deploy_LocationAndHostIndependentBundle
+# - function IML_deploy_LocationAndHostIndependentBundle_add_rpath
+# - function IML_deploy_LocationIndependentBundle
+# - function IML_deploy_LocationIndependentBundle_add_rpath
 
 cmake_minimum_required (VERSION 3.13 FATAL_ERROR)
 

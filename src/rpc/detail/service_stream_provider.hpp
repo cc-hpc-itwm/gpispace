@@ -18,6 +18,7 @@
 
 #include <rpc/common.hpp>
 #include <rpc/detail/async_task_termination_guard.hpp>
+#include <rpc/detail/socket_traits.hpp>
 
 #include <boost/archive/binary_iarchive.hpp>
 #include <boost/archive/binary_oarchive.hpp>
@@ -38,17 +39,65 @@ namespace fhg
     struct service_dispatcher;
     namespace detail
     {
+      //! A service stream provider listens on a stream of the given
+      //! \a Protocol and forwards incoming function call requests to
+      //! a given dispatcher. The setup of the infrastructure is split
+      //! into two steps, to allow determining the endpoint to connect
+      //! to before forking and actually handling requests.
+      //!
+      //! The standard usage is to
+      //!
+      //! - Set up a \c service_dispatcher with various
+      //!   \c service_handler implementing the API.
+      //!
+      //! - Create a `boost::asio::io_service` and set up one or more
+      //!   threads to handle IO. A convenience wrapper for this
+      //!   exists as \c util::scoped_boost_asio_io_service_with_threads
+      //!   or the `_and_deferred_startup` variant in case of a
+      //!   daemonizing service.
+      //!
+      //! - Create a \c service_stream_provider or a
+      //!   \c service_stream_provider_with_deferred_start in case of
+      //!   a daemonizing service.
+      //!
+      //! - Communicate the `local_endpoint()` of the provider with
+      //!   the outside world.
+      //!
+      //! - (Daemonizing service only) Fork and call `post_fork_*()`
+      //!   on the `io_service` in the respective processes. Call
+      //!   `start()` on the provider and set up IO threads by calling
+      //!   `start_in_threads_and_current_thread()` on the `io_service`.
+      //!
+      //! \a Traits is used to apply options on incoming connections,
+      //! calling \c Traits::apply_socket_options() on every socket.
       template<typename Protocol, typename Traits>
         struct service_stream_provider_with_deferred_start
       {
+        static_assert
+          ( is_socket_traits_t<Traits, Protocol>{}
+          , "Traits shall have Traits::apply_socket_options (Socket&)"
+          );
+
       public:
-        //! \note The given io_service _has_ to have at least one
+        //! Prepare the infrastructure to listen for function call
+        //! requests on \a endpoint using \a io_service, and
+        //! dispatching incoming requests using \a dispatcher. The
+        //! provider is not handling calls until \c start() has been
+        //! called.
+        //!
+        //! The \a endpoint may be default-constructed to let the
+        //! provider automatically choose one. This prevents "already
+        //! in use" errors, but requires to publish \c local_endpoint()
+        //! after construction, i.e. needs a separate communication
+        //! channel, e.g. a file or copying from `stdout`.
+        //!
+        //! \warn The given io_service _has_ to have at least one
         //! thread running. If there are no running threads, behaviour
         //! is undefined (and probably hangs during destructor).
         service_stream_provider_with_deferred_start
-          ( boost::asio::io_service&
-          , service_dispatcher&
-          , typename Protocol::endpoint = {}
+          ( boost::asio::io_service& io_service
+          , service_dispatcher& dispatcher
+          , typename Protocol::endpoint endpoint = {}
           );
 
         service_stream_provider_with_deferred_start
@@ -61,12 +110,22 @@ namespace fhg
           , typename Protocol::endpoint = {}
           );
 
-        //! \note May only be start()ed once. There is no check to
+        //! Start handling requests.
+        //! \note Shall only be called once. There is no check to
         //! prevent duplicate calls.
         void start();
 
         ~service_stream_provider_with_deferred_start();
 
+        //! The endpoint this provider is listening on, either as
+        //! specified in the constructor or as automatically assigned.
+        //!
+        //! \note This endpoint may not be globally uniquely defined,
+        //! e.g. UNIX stream sockets are bound to a specific host
+        //! which is not included in the endpoint. A TCP/IP endpoint
+        //! may use a local address part, not the publicly visible one
+        //! (`localhost/::1` vs `example.com`). For the latter \c
+        //! util::connectable_to_address_string() can add be used.
         typename Protocol::endpoint local_endpoint() const;
 
       private:
@@ -98,6 +157,10 @@ namespace fhg
                     );
       };
 
+      //! \c service_stream_provider is a scoped wrapper of \c
+      //! service_stream_provider_with_deferred_start. It implicitly
+      //! calls \c service_stream_provider_with_deferred_start::start()
+      //! in the constructor and is otherwise equivalent.
       template<typename Protocol, typename Traits>
         struct service_stream_provider
           : service_stream_provider_with_deferred_start<Protocol, Traits>
@@ -117,6 +180,11 @@ namespace fhg
           );
       };
 
+      //! The `_with_deferred_dispatcher` variant of \c
+      //! service_stream_provider will set up the infrastructure but
+      //! will stall handling calls until a dispatcher has been
+      //! added. Once a dispatcher is set, future calls are handled
+      //! immediately.
       template<typename Protocol, typename Traits>
         struct service_stream_provider_with_deferred_dispatcher
           : public service_stream_provider<Protocol, Traits>
@@ -125,6 +193,8 @@ namespace fhg
         service_stream_provider_with_deferred_dispatcher
           (boost::asio::io_service&);
 
+        //! Set the dispatcher to use and wake any stalled calls.
+        //! \note Shall be called only once. No check is performed.
         void set_dispatcher (service_dispatcher*);
 
       private:

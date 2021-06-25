@@ -25,6 +25,8 @@
 
 #include <we/require_type.hpp>
 
+#include <fhg/util/next.hpp>
+
 #include <util-generic/nest_exceptions.hpp>
 #include <util-generic/print_container.hpp>
 
@@ -650,7 +652,7 @@ namespace we
         std::uniform_int_distribution<std::size_t> random
           (0, transition_ids.size() - 1);
         transition_id_type const transition_id
-          (*std::next (transition_ids.begin(), random (engine)));
+          (*fhg::util::next (transition_ids.begin(), random (engine)));
         we::type::transition_t const& transition (_tmap.at (transition_id));
 
         if (transition.expression())
@@ -673,7 +675,7 @@ namespace we
     }
 
     boost::optional<we::type::activity_t>
-      net_type::fire_expressions_and_extract_activity_random
+      net_type::fire_expressions_and_extract_activity_random_TESTING_ONLY
         ( std::mt19937& engine
         , we::workflow_response_callback const& workflow_response
         , we::eureka_response_callback const& eureka_response
@@ -959,15 +961,6 @@ namespace we
             );
         }
       }
-    }
-
-    void unexpected_eureka (eureka_ids_type const& ids)
-    {
-      throw std::logic_error
-        (str ( boost::format ("Unexpected call to eureka: %1%")
-             % fhg::util::print_container ("{", ", ", "}", ids)
-             )
-        );
     }
 
     // cross_type

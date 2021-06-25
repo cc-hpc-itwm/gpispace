@@ -39,8 +39,6 @@ namespace sdpa
     class SubmitJobEvent;
     class worker_registration_response;
     class WorkerRegistrationEvent;
-    class CapabilitiesGainedEvent;
-    class CapabilitiesLostEvent;
     class SubscribeEvent;
     class SubscribeAckEvent;
     class put_token;
@@ -82,10 +80,6 @@ namespace sdpa
       { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistrationAck"); }
       virtual void handleWorkerRegistrationEvent (fhg::com::p2p::address_t const&, const WorkerRegistrationEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: WorkerRegistration"); }
-      virtual void handleCapabilitiesGainedEvent (fhg::com::p2p::address_t const&, const CapabilitiesGainedEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: CapabilitiesGained"); }
-      virtual void handleCapabilitiesLostEvent (fhg::com::p2p::address_t const&, const CapabilitiesLostEvent*)
-      { throw std::runtime_error ("UNHANDLED EVENT: CapabilitiesLost"); }
       virtual void handleSubscribeEvent (fhg::com::p2p::address_t const&, const SubscribeEvent*)
       { throw std::runtime_error ("UNHANDLED EVENT: Subscribe"); }
       virtual void handleSubscribeAckEvent (fhg::com::p2p::address_t const&, const SubscribeAckEvent*)

@@ -61,6 +61,8 @@ namespace
       , boost::none
       , we::type::property::type()
       , we::priority_type()
+      , boost::optional<we::type::eureka_id_type>{}
+      , std::list<we::type::preference_t>{}
       );
     we::port_id_type const port_id_in
       ( transition.add_port ( we::type::port_t ( "in"
@@ -109,6 +111,8 @@ namespace
                                , boost::none
                                , we::type::property::type()
                                , we::priority_type()
+                               , boost::optional<we::type::eureka_id_type>{}
+                               , std::list<we::type::preference_t>{}
                                )
       , transition
       , transition_id

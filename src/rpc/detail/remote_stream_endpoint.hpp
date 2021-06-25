@@ -18,6 +18,8 @@
 
 #include <rpc/common.hpp>
 #include <rpc/detail/async_task_termination_guard.hpp>
+#include <rpc/detail/packet_header.hpp>
+#include <rpc/detail/socket_traits.hpp>
 #include <rpc/remote_endpoint.hpp>
 
 #include <util-generic/serialization/exception.hpp>
@@ -42,37 +44,89 @@ namespace fhg
   {
     namespace detail
     {
+      //! A remote stream endpoint connects to a \c
+      //! service_stream_provider of the given \a Protocol, handling
+      //! the underlying IO of \c remote_function.
+      //!
+      //! One endpoint may handle multiple concurrent function calls,
+      //! even with a single threaded `io_service`.
+      //!
+      //! The standard usage is to
+      //!
+      //! - Create a `boost::asio::io_service` and set up one or more
+      //!   threads to handle IO. A convenience wrapper for this
+      //!   exists as \c util::scoped_boost_asio_io_service_with_threads.
+      //!
+      //! - Create a \c remote_stream_endpoint for the providers to
+      //!   use by providing a previously communicated endpoint address.
+      //!
+      //! - Create (can be a temporary) a \c remote_function for every
+      //!   API function provided/needed.
+      //!
+      //! - Use the \c remote_function objects to place calls
+      //!   asynchronously or synchronously from one or many threads.
+      //!
+      //! \a Traits is used to apply options on the underlying socket,
+      //! calling \c Traits::apply_socket_options() on it after
+      //! connecting.
+      //!
       template<typename Protocol, typename Traits>
         struct remote_stream_endpoint : remote_endpoint
       {
+        static_assert
+          ( is_socket_traits_t<Traits, Protocol>{}
+          , "Traits shall have Traits::apply_socket_options (Socket&)"
+          );
+
       public:
+        //! Connect to the given \a endpoint, using \a io_service for
+        //! underlying IO. Throws if connecting fails.
+        //!
+        //! \note The IO service shall have threads handling
+        //! operations already or this thread will block until another
+        //! thread starts IO threads.
+        //!
         //! \note Spawns operations on strands and is blocking, so may
         //! *not* be used in a `service_handler` when using the same
-        //! \a io_service as that handler's server does.
+        //! \a io_service as that handler's server does. Use the
+        //! overload with a \c boost::asio::yield_context instead.
         remote_stream_endpoint
-          ( boost::asio::io_service&
-          , typename Protocol::endpoint = {}
+          ( boost::asio::io_service& io_service
+          , typename Protocol::endpoint endpoint
           , util::serialization::exception::serialization_functions
           = util::serialization::exception::serialization_functions()
           );
+        //! Connect to the given \a endpoint, using \a io_service for
+        //! underlying IO and yielding to \a yield until the
+        //! connection is established. Throws if connecting fails.
+        //!
+        //! \note The IO service shall have threads handling
+        //! operations already or this thread will block until another
+        //! thread starts IO threads.
         remote_stream_endpoint
-          ( boost::asio::io_service&
-          , boost::asio::yield_context
-          , typename Protocol::endpoint = {}
+          ( boost::asio::io_service& io_service
+          , boost::asio::yield_context yield
+          , typename Protocol::endpoint endpoint
           , util::serialization::exception::serialization_functions
           = util::serialization::exception::serialization_functions()
           );
+        //! Identical to the first overload except that \a endpoints
+        //! are iterated over and the first endpoint that manages to
+        //! connect will be used. Not all \a endpoints may be tried,
+        //! iteration ends as soon as a connection is successful.
         template<typename EndpointIterator>
           remote_stream_endpoint
             ( boost::asio::io_service&
-            , EndpointIterator
+            , EndpointIterator endpoints
             , util::serialization::exception::serialization_functions
             = util::serialization::exception::serialization_functions()
             );
+        //! Identical to the previous overload except that connecting
+        //! will yield to \a yield until established.
         template<typename EndpointIterator>
           remote_stream_endpoint
             ( boost::asio::io_service&
-            , boost::asio::yield_context
+            , boost::asio::yield_context yield
             , EndpointIterator
             , util::serialization::exception::serialization_functions
             = util::serialization::exception::serialization_functions()

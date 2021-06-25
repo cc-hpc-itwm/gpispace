@@ -18,6 +18,8 @@
 
 #include <util-generic/cxx14/make_unique.hpp>
 
+#include <boost/noncopyable.hpp>
+
 #include <algorithm>
 #include <functional>
 #include <mutex>
