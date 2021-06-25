@@ -35,6 +35,10 @@ other binary distributions on most supported operating systems.
 `libssh2` is also required to be built manually on some systems, due
 to build version compatibility issues with other dependencies.
 
+Note that some GPI-Space components can be disabled, which may remove
+some dependencies needed. Also see the "Building GPI-Space" section
+and subsection "Optional Components" below.
+
 * [GCC](https://gcc.gnu.org/) (>= 4.9.4), or compatible compiler
 * [CMake](https://cmake.org/) (>= 3.13)
   * Some distributions name the binary `cmake3` while others use
@@ -44,6 +48,7 @@ to build version compatibility issues with other dependencies.
     required for compatibility.
 * [hwloc](https://www.open-mpi.org/projects/hwloc/) (>= 1.10)
 * [Qt5](https://www.qt.io/) (>= 5.9)
+  * Only required if GPI-Space is built with `-DGSPC_WITH_MONITOR_APP=ON`.
 * [chrpath](https://tracker.debian.org/pkg/chrpath) (>= 0.13)
 * [Boost](https://boost.org) (>= 1.61, <= 1.63)
   * When using OpenSSL >= 1.1, Boost >= 1.62 is required.
@@ -270,6 +275,16 @@ cd "gpispace-${gpispace_version}/build"
 ctest --output-on-failure \
       -j $(nproc)
 ```
+
+## Optional Components
+
+GPI-Space supports disabling some components at configuration time to
+reduce the dependencies needed as well as build time. The following
+options can be given to CMake with either `=OFF` or `=ON` appended:
+
+- `-DGSPC_WITH_MONITOR_APP`: The `gspc-monitor` (also known as
+  "gantt") application for execution monitoring. This component
+  requires Qt5.
 
 ## Next steps
 
